@@ -25,8 +25,6 @@ package de.metas.contracts.modular.impexp;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
@@ -70,7 +68,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 
 public class ModularContractLogImportProcess extends SimpleImportProcessTemplate<I_I_ModCntr_Log>
@@ -134,52 +131,43 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 			return ImportRecordResult.Nothing;
 		}
 
-		final Optional<LogEntryCreateRequest> logEntryCreateRequest = getLogEntryCreateRequestFrom(importRecord);
-		if (logEntryCreateRequest.isPresent())
-		{
-			modularContractLogDAO.create(logEntryCreateRequest.get());
-			return ImportRecordResult.Inserted;
-		}
+		final LogEntryCreateRequest logEntryCreateRequest = getLogEntryCreateRequestFrom(importRecord);
+		modularContractLogDAO.create(logEntryCreateRequest);
 
-		return ImportRecordResult.Nothing;
+		return ImportRecordResult.Inserted;
 	}
 
-	private Optional<LogEntryCreateRequest> getLogEntryCreateRequestFrom(@NonNull final I_I_ModCntr_Log record)
+	private LogEntryCreateRequest getLogEntryCreateRequestFrom(@NonNull final I_I_ModCntr_Log record)
 	{
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
-		final Optional<ModuleConfig> config = getModuleConfigFrom(record);
-
-		if (Objects.isNull(harvestingYearId)
-				|| config.isEmpty())
-		{
-			return Optional.empty();
-		}
-
+		final ModuleConfig config = getModuleConfigFrom(record);
 		final ProductPrice productPrice = getPriceActual(record);
-		return Optional.of(LogEntryCreateRequest.builder()
-								   //
-								   .referencedRecord(TableRecordReference.of(importModCntrLogTableID, record.getI_ModCntr_Log_ID()))
-								   .configId(config.get().getId())
-								   .year(harvestingYearId)
-								   .transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
-								   .soTrx(SOTrx.ofBoolean(record.isSOTrx()))
-								   .documentType(LogEntryDocumentType.IMPORT_LOG) // dev note : all imported logs should have ImportLog as doctype
-								   .contractType(LogEntryContractType.MODULAR_CONTRACT)
-								   //
-								   .contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
-								   .collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(record.getCollectionPoint_BPartner_ID()))
-								   .producerBPartnerId(BPartnerId.ofRepoIdOrNull(record.getProducer_BPartner_ID()))
-								   .invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
-								   .invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
-								   .productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-								   .quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
-								   .priceActual(productPrice)
-								   .amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
-								   .warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
-								   .processed(false)
-								   .description(record.getDescription())
-								   //
-								   .build());
+
+		// build the log entry request
+		return LogEntryCreateRequest.builder()
+				//
+				.referencedRecord(TableRecordReference.of(importModCntrLogTableID, record.getI_ModCntr_Log_ID()))
+				.configId(config.getId())
+				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.documentType(LogEntryDocumentType.IMPORT_LOG) // dev note : all imported logs should have ImportLog as doctype
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
+				//
+				.contractId(FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()))
+				.collectionPointBPartnerId(BPartnerId.ofRepoId(record.getCollectionPoint_BPartner_ID()))
+				.producerBPartnerId(BPartnerId.ofRepoId(record.getProducer_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoId(record.getBill_BPartner_ID()))
+				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
+				.priceActual(productPrice)
+				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.processed(false)
+				.description(record.getDescription())
+				//
+				.build();
+
 	}
 
 	private boolean isImportLog(@NonNull final I_I_ModCntr_Log importRecord)
@@ -188,30 +176,27 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	}
 
 	@NonNull
-	private Optional<ModuleConfig> getModuleConfigFrom(@NonNull final I_I_ModCntr_Log importRecord)
+	private ModuleConfig getModuleConfigFrom(@NonNull final I_I_ModCntr_Log importRecord)
 	{
 		final I_ModCntr_Module module = importRecord.getModCntr_Module();
-		if (Objects.isNull(module))
-		{
-			return Optional.empty();
-		}
-
 		final I_ModCntr_Settings settings = module.getModCntr_Settings();
 		final I_ModCntr_Type modCntrType = module.getModCntr_Type();
-		final ModularContractSettingsId settingsId = ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
-		return Optional.of(ModuleConfig.builder()
-								   .id(ModuleConfigId.ofRepoId(settingsId, module.getModCntr_Module_ID()))
-								   .name(module.getName())
-								   .productId(ProductId.ofRepoId(module.getM_Product_ID()))
-								   .seqNo(SeqNo.ofInt(module.getSeqNo()))
-								   .invoicingGroup(module.getInvoicingGroup())
-								   .modularContractType(ModularContractType.builder()
-																.id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
-																.value(modCntrType.getValue())
-																.name(modCntrType.getName())
-																.build())
-								   .build());
 
+		final ModularContractSettingsId settingsId = ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
+
+		// build config
+		return ModuleConfig.builder()
+				.id(ModuleConfigId.ofRepoId(settingsId, module.getModCntr_Module_ID()))
+				.name(module.getName())
+				.productId(ProductId.ofRepoId(module.getM_Product_ID()))
+				.seqNo(SeqNo.ofInt(module.getSeqNo()))
+				.invoicingGroup(module.getInvoicingGroup())
+				.modularContractType(ModularContractType.builder()
+											 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
+											 .value(modCntrType.getValue())
+											 .name(modCntrType.getName())
+											 .build())
+				.build();
 	}
 
 	@Nullable
