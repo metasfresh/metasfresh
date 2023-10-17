@@ -362,7 +362,6 @@ public class ReceiptScheduleHUGenerator
 			@Override
 			public void run(final String localTrxName)
 			{
-				lutuConfigurationFactory.save(getM_HU_LUTU_Configuration()); // TODO
 				final List<I_M_HU> handlingUnits = generateLUTUHandlingUnitsForQtyToAllocate0(request);
 				result.addAll(handlingUnits);
 			}

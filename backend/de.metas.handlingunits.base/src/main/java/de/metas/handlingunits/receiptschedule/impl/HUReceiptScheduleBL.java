@@ -761,39 +761,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		return lutuConfig;
 	}
 
-	@Override
-	public void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
-				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
-		)
-		{
-			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
-			if (bestBeforeDate != null)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
-	@Override
-	public void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
-				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
-		{
-			final int bpId = receiptSchedule.getC_BPartner_ID();
-			if (bpId > 0)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
-				huAttributes.setSaveOnChange(true);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
 	@Nullable
 	LocalDate computeBestBeforeDate(@NonNull final ProductId productId, final @NonNull LocalDate datePromised)
 	{

@@ -84,10 +84,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
 
-	void setAttributeBBD(@NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull IAttributeStorage huAttributes);
-
-	void setVendorValueFromReceiptSchedule(@NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull IAttributeStorage huAttributes);
-
 	@Value
 	@Builder
 	class CreateReceiptsParameters

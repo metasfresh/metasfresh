@@ -77,6 +77,8 @@ class CreatePlanningHUsCommand
 				.setUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration)
 				.setM_HU_LUTU_Configuration(lutuConfiguration);
 
+
+		huGenerator.setDestroyExistingHUs(isDestroyExistingHUs);
 		//
 		// Calculate the target CUs that we want to allocate
 		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
@@ -86,7 +88,6 @@ class CreatePlanningHUsCommand
 			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
-		huGenerator.setDestroyExistingHUs(isDestroyExistingHUs);
 
 		//
 		// Generate the HUs

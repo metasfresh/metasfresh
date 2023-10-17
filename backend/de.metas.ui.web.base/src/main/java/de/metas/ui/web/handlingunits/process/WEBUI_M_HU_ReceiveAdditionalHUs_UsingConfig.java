@@ -12,13 +12,16 @@ import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
@@ -54,10 +57,6 @@ import java.util.Optional;
  */
 public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcessTemplate implements IProcessDefaultParametersProvider
 {
-	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
-
 	private static final String PARAM_IsSaveLUTUConfiguration = "IsSaveLUTUConfiguration";
 	//
 	// Parameters
@@ -70,7 +69,9 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 	private static final String PARAM_QtyTU = "QtyTU";
 	//
 	private static final String PARAM_QtyLU = "QtyLU";
-
+	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
 	private I_M_HU_LUTU_Configuration _defaultLUTUConfiguration; // lazy
 	@Param(parameterName = PARAM_IsSaveLUTUConfiguration)
 	private boolean p_IsSaveLUTUConfiguration;
@@ -153,7 +154,9 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 	private I_M_HU_LUTU_Configuration createLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = huReceiptScheduleBL.getCurrentLUTUConfiguration(receiptSchedule);
-		return createLUTUConfigurationFromTemplate(lutuConfigurationOrig);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = createLUTUConfigurationFromTemplate(lutuConfigurationOrig);
+		lutuConfigurationFactory.save(lutuConfiguration);
+		return lutuConfiguration;
 	}
 
 	private I_M_HU_LUTU_Configuration createLUTUConfigurationFromTemplate(final I_M_HU_LUTU_Configuration template)
@@ -194,6 +197,7 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule().orElseThrow(() -> new AdempiereException("No receipt schedule found"));
@@ -204,11 +208,19 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 						.receiptSchedule(receiptSchedule)
 						.isUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration())
 						.isDestroyExistingHUs(false)
+						.lotNumber(getLotNumber().orElse(null))
 						.build());
 
 		addToCurrentView(hus);
 
 		return MSG_OK;
+	}
+
+	private Optional<String> getLotNumber()
+	{
+		return getView().streamByIds(HUEditorRowFilter.ALL)
+				.map(row -> row.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber))
+				.findAny();
 	}
 
 	private void addToCurrentView(final List<I_M_HU> hus)
