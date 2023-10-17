@@ -195,7 +195,6 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 											 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 											 .value(modCntrType.getValue())
 											 .name(modCntrType.getName())
-											 .className(modCntrType.getClassname())
 											 .build())
 				.build();
 	}
