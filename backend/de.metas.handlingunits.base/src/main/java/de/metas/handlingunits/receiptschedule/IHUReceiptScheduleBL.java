@@ -5,7 +5,6 @@ package de.metas.handlingunits.receiptschedule;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;

@@ -68,7 +68,7 @@ public class ReceiptScheduleHUGenerator
 	 *            If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
 	 *            Because the {@link #generateWithinOwnTransaction()} method depends on the {@code trxName} being thread-inherited.
 	 */
-	public static final ReceiptScheduleHUGenerator newInstance(final IContextAware context)
+	public static ReceiptScheduleHUGenerator newInstance(final IContextAware context)
 	{
 		final IContextAware contextToUse;
 		if (ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()))
@@ -109,7 +109,7 @@ public class ReceiptScheduleHUGenerator
 	{
 	}
 
-	private final void assertConfigurable()
+	private void assertConfigurable()
 	{
 		Check.assume(_configurable, "{} is still configurable", this);
 	}
@@ -153,7 +153,7 @@ public class ReceiptScheduleHUGenerator
 		return updateReceiptScheduleDefaultConfiguration;
 	}
 
-	private final Quantity getQtyToAllocateTarget()
+	private Quantity getQtyToAllocateTarget()
 	{
 		Check.errorIf(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0, "QtyToAllocateTarget needs to be > 0; this={}", this);
 		return _qtyToAllocateTarget;

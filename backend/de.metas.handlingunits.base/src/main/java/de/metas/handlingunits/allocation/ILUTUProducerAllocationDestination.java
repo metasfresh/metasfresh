@@ -201,13 +201,11 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * @param createTUsForRemainingQty true if we shall create TU handling units for remaining qty.
-	 * @see #loadRe
 	 */
 	void setCreateTUsForRemainingQty(final boolean createTUsForRemainingQty);
 
 	/**
 	 * @return true if we shall create TU handling units for remaining qty
-	 * @see #loadRemaining(IAllocationRequest)
 	 */
 	boolean isCreateTUsForRemainingQty();
 

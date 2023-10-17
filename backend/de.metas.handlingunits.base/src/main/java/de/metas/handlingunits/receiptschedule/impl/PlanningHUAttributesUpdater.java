@@ -65,7 +65,7 @@ class PlanningHUAttributesUpdater
 
 	//
 	// State
-	private HashMap<LotNumberSeqKey, Optional<String>> lotNumberFromSeqMap = new HashMap<>();
+	private final HashMap<LotNumberSeqKey, Optional<String>> lotNumberFromSeqMap = new HashMap<>();
 
 	@Builder
 	private PlanningHUAttributesUpdater(

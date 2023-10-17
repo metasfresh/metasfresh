@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;

@@ -328,10 +328,9 @@ public class LUTUProducerDestination
 	/**
 	 * Gets/Creates the TU Producer for given LU.
 	 *
-	 * @param luHU
 	 * @return TU producer; never return null
 	 */
-	private final TUProducerDestination getCreateTUProducerDestination(final I_M_HU luHU)
+	private TUProducerDestination getCreateTUProducerDestination(final I_M_HU luHU)
 	{
 		//
 		// Get existing TU Producer
@@ -500,7 +499,7 @@ public class LUTUProducerDestination
 		return tuCapacity;
 	}
 
-	private final Capacity createCapacity(
+	private Capacity createCapacity(
 			@NonNull final ProductId cuProductId,
 			@NonNull final BigDecimal qtyCUPerTU,
 			@NonNull final I_C_UOM cuUOM)
@@ -595,7 +594,7 @@ public class LUTUProducerDestination
 		}
 	}
 
-	private final void loadExistingHUIfAny()
+	private void loadExistingHUIfAny()
 	{
 		//
 		// Get current assignments to this receipt schedule line
@@ -809,7 +808,7 @@ public class LUTUProducerDestination
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
-	private final Quantity calculateTotalQtyCU(final Capacity tuCapacity)
+	private Quantity calculateTotalQtyCU(final Capacity tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
 		final BigDecimal qtyCUsPerTU = tuCapacity.toBigDecimal();

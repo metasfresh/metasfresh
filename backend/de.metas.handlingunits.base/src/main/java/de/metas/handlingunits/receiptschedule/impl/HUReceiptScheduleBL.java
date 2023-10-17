@@ -625,6 +625,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	/**
 	 * Generate it's LU-TU structure automatically
 	 */
+	@Override
 	public void generateHUsIfNeeded(final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		// Skip Receipt schedules which are about Packing Materials
