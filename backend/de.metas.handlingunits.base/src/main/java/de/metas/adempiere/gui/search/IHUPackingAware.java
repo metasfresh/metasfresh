@@ -24,6 +24,7 @@ package de.metas.adempiere.gui.search;
 
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import de.metas.quantity.Quantity;
 
@@ -81,6 +82,10 @@ public interface IHUPackingAware
 	void setQtyTU(final BigDecimal qtyPacks);
 
 	void setC_BPartner_ID(int bpartnerId);
+
+	default void setQtyCUsPerTU(BigDecimal qtyCUsPerTU) {}
+
+	default Optional<BigDecimal> getQtyCUsPerTU() { return Optional.empty();}
 
 	int getC_BPartner_ID();
 
