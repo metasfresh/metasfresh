@@ -209,6 +209,7 @@ final class BPartnerCompositesLoader
 		countryIds.forEach(countryId -> allTableRecordRefs.add(TableRecordReference.of(I_C_Country.Table_Name, countryId)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = bpBankAccountDAO.getAllByBPartnerIds(bPartnerIds);
+		bpBankAccounts.values().forEach(bankAccount -> allTableRecordRefs.add(TableRecordReference.of(bankAccount)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpCreditLimits = bPartnerCreditLimitRepository.getAllByBPartnerIds(bPartnerIds);
 		bpCreditLimits.forEach((bpartnerId, bPartnerCreditLimitRecord) -> allTableRecordRefs.add(TableRecordReference.of(bPartnerCreditLimitRecord)));

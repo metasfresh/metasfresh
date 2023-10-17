@@ -134,6 +134,18 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null);
 		}
 
+		final Matcher ibanMatcher = Type.IBAN.pattern.matcher(identifier);
+		if (ibanMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.IBAN, identifier, null);
+		}
+
+		final Matcher qrIbanMatcher = Type.QR_IBAN.pattern.matcher(identifier);
+		if (qrIbanMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.QR_IBAN, identifier, null);
+		}
+
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -167,10 +179,12 @@ public class ExternalIdentifier
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-		if(glnMatcher.find()){
+		if (glnMatcher.find())
+		{
 			return GLN.ofString(glnMatcher.group(1));
 		}
-		else {
+		else
+		{
 			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
 		}
 

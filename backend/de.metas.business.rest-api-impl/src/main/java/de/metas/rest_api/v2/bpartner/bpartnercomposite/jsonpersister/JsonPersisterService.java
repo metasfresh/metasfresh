@@ -1652,7 +1652,7 @@ public class JsonPersisterService
 			bankAccount = existingBankAccount;
 			shortTermIndex.remove(existingBankAccount.getId());
 
-			syncOutcome = effectiveSyncAdvise.isLoadReadOnly() ? SyncOutcome.NOTHING_DONE : SyncOutcome.UPDATED;
+			syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{

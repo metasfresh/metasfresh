@@ -24,6 +24,8 @@ package de.metas.rest_api.v2.bpartner;
 
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestBankAccountsUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
@@ -59,6 +61,7 @@ public class JsonRequestConsolidateService
 
 		consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
 
+		consolidateWithIdentifier(bpartnerComposite.getBankAccountsNotNull());
 		// note that bank-accounts and creditLimits don't need this treatment yet because they don't have the identifier stuff etc
 	}
 
@@ -75,6 +78,14 @@ public class JsonRequestConsolidateService
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
 			consolidateWithIdentifier(locationRequestItem);
+		}
+	}
+
+	public void consolidateWithIdentifier(@NonNull final JsonRequestBankAccountsUpsert bankAccountUpsert)
+	{
+		for (final JsonRequestBankAccountUpsertItem item : bankAccountUpsert.getRequestItems())
+		{
+			consolidateWithIdentifier(item);
 		}
 	}
 
@@ -176,6 +187,31 @@ public class JsonRequestConsolidateService
 						.appendParametersToMessage()
 						.setParameter("externalIdentifier", externalIdentifier)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
+		}
+	}
+
+	private static void consolidateWithIdentifier(@NonNull final JsonRequestBankAccountUpsertItem requestItem)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getIdentifier());
+		switch (externalIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				// nothing to do; the JsonRequestBankAccountUpsertItem has no metasfresh-ID to consolidate with
+				break;
+			case EXTERNAL_REFERENCE:
+				// nothing to do
+				break;
+			case IBAN:
+				requestItem.setIban(externalIdentifier.asIban());
+				break;
+			case QR_IBAN:
+				requestItem.setQrIban(externalIdentifier.asQrIban());
+				break;
+			default:
+				throw new AdempiereException("Unexpected IdentifierString.Type=" + externalIdentifier.getType())
+						.appendParametersToMessage()
+						.setParameter("externalIdentifier", externalIdentifier)
+						.setParameter("JsonRequestBankAccountUpsertItem", requestItem);
 		}
 	}
 }

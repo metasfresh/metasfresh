@@ -28,15 +28,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @ToString
 @EqualsAndHashCode

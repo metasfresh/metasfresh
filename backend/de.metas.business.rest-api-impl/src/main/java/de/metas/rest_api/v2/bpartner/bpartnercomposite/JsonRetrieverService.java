@@ -804,6 +804,16 @@ public class JsonRetrieverService
 				};
 	}
 
+	@NonNull
+	public Optional<MetasfreshId> resolveBankAccountIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bankAccountIdentifier)
+	{
+		return getBPartnerComposite(orgId, bpartnerIdentifier)
+				.flatMap(bPartnerComposite -> resolveBankAccountId(bankAccountIdentifier, bPartnerComposite));
+	}
+
 	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
 	{
 		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
