@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.importFormat.AD_ImpFormat_StepDefData;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -180,6 +181,16 @@ public class C_DataImport_StepDef
 				+ activityValue + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
+	}
+
+	@And("store String as requestBody in context")
+	public void store_string_as_requestBody_in_context(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
+
+		final String content = DataTableUtil.extractStringOrNullForColumnName(row, "String");
+
+		testContext.setRequestPayload(content);
 	}
 
 	@And("store file content as requestBody in context")

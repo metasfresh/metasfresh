@@ -22,9 +22,10 @@
 
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -74,6 +75,28 @@ public interface I_I_Invoice_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Responsible External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_InCharge_ExternalReference(@Nullable String AD_User_InCharge_ExternalReference);
+
+	/**
+	 * Get Responsible External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	String getAD_User_InCharge_ExternalReference();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_AD_User_InCharge_ExternalReference = new ModelColumn<>(I_I_Invoice_Candidate.class, "AD_User_InCharge_ExternalReference", null);
+	String COLUMNNAME_AD_User_InCharge_ExternalReference = "AD_User_InCharge_ExternalReference";
+
+	/**
 	 * Set Responsible.
 	 *
 	 * <br>Type: Table
@@ -92,6 +115,28 @@ public interface I_I_Invoice_Candidate
 	int getAD_User_InCharge_ID();
 
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+
+	/**
+	 * Set Bill Partner External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_BPartner_ExternalReference(@Nullable String Bill_BPartner_ExternalReference);
+
+	/**
+	 * Get Bill Partner External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	String getBill_BPartner_ExternalReference();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Bill_BPartner_ExternalReference = new ModelColumn<>(I_I_Invoice_Candidate.class, "Bill_BPartner_ExternalReference", null);
+	String COLUMNNAME_Bill_BPartner_ExternalReference = "Bill_BPartner_ExternalReference";
 
 	/**
 	 * Set Bill Business Partner.
@@ -117,28 +162,50 @@ public interface I_I_Invoice_Candidate
 	 * Set Bill partner search key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBill_BPartner_Value (java.lang.String Bill_BPartner_Value);
+	void setBill_BPartner_Value (@Nullable String Bill_BPartner_Value);
 
 	/**
 	 * Get Bill partner search key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getBill_BPartner_Value();
+	@Nullable String getBill_BPartner_Value();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Bill_BPartner_Value = new ModelColumn<>(I_I_Invoice_Candidate.class, "Bill_BPartner_Value", null);
 	String COLUMNNAME_Bill_BPartner_Value = "Bill_BPartner_Value";
 
 	/**
+	 * Set Bill Location External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_ExternalReference(@Nullable String Bill_Location_ExternalReference);
+
+	/**
+	 * Get Bill Location External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	String getBill_Location_ExternalReference();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Bill_Location_ExternalReference = new ModelColumn<>(I_I_Invoice_Candidate.class, "Bill_Location_ExternalReference", null);
+	String COLUMNNAME_Bill_Location_ExternalReference = "Bill_Location_ExternalReference";
+
+	/**
 	 * Set Bill Location.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setBill_Location_ID (int Bill_Location_ID);
@@ -147,12 +214,34 @@ public interface I_I_Invoice_Candidate
 	 * Get Bill Location.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getBill_Location_ID();
 
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ExternalReference(@Nullable String Bill_User_ExternalReference);
+
+	/**
+	 * Get Bill Contact External Reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	String getBill_User_ExternalReference();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Bill_User_ExternalReference = new ModelColumn<>(I_I_Invoice_Candidate.class, "Bill_User_ExternalReference", null);
+	String COLUMNNAME_Bill_User_ExternalReference = "Bill_User_ExternalReference";
 
 	/**
 	 * Set Bill Contact.
@@ -203,7 +292,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Activity_Value (@Nullable java.lang.String C_Activity_Value);
+	void setC_Activity_Value (@Nullable String C_Activity_Value);
 
 	/**
 	 * Get Activity search key.
@@ -212,7 +301,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getC_Activity_Value();
+	@Nullable String getC_Activity_Value();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_C_Activity_Value = new ModelColumn<>(I_I_Invoice_Candidate.class, "C_Activity_Value", null);
 	String COLUMNNAME_C_Activity_Value = "C_Activity_Value";
@@ -367,7 +456,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDefault_OrgCode (java.lang.String Default_OrgCode);
+	void setDefault_OrgCode (String Default_OrgCode);
 
 	/**
 	 * Get Default Org Code.
@@ -377,7 +466,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDefault_OrgCode();
+	String getDefault_OrgCode();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Default_OrgCode = new ModelColumn<>(I_I_Invoice_Candidate.class, "Default_OrgCode", null);
 	String COLUMNNAME_Default_OrgCode = "Default_OrgCode";
@@ -389,7 +478,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription(@Nullable String Description);
 
 	/**
 	 * Get Description.
@@ -398,7 +487,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	@Nullable String getDescription();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Description = new ModelColumn<>(I_I_Invoice_Candidate.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -410,7 +499,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
+	void setDescriptionBottom(@Nullable String DescriptionBottom);
 
 	/**
 	 * Get End note.
@@ -419,7 +508,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescriptionBottom();
+	@Nullable String getDescriptionBottom();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DescriptionBottom = new ModelColumn<>(I_I_Invoice_Candidate.class, "DescriptionBottom", null);
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
@@ -455,7 +544,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType (@Nullable java.lang.String DocBaseType);
+	void setDocBaseType (@Nullable String DocBaseType);
 
 	/**
 	 * Get Document Base Type.
@@ -465,7 +554,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocBaseType();
+	@Nullable String getDocBaseType();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DocBaseType = new ModelColumn<>(I_I_Invoice_Candidate.class, "DocBaseType", null);
 	String COLUMNNAME_DocBaseType = "DocBaseType";
@@ -478,7 +567,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocSubType (@Nullable java.lang.String DocSubType);
+	void setDocSubType (@Nullable String DocSubType);
 
 	/**
 	 * Get Doc Sub Type.
@@ -488,7 +577,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocSubType();
+	@Nullable String getDocSubType();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DocSubType = new ModelColumn<>(I_I_Invoice_Candidate.class, "DocSubType", null);
 	String COLUMNNAME_DocSubType = "DocSubType";
@@ -500,7 +589,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
+	void setExternalHeaderId (@Nullable String ExternalHeaderId);
 
 	/**
 	 * Get External Header ID.
@@ -509,7 +598,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalHeaderId();
+	@Nullable String getExternalHeaderId();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_I_Invoice_Candidate.class, "ExternalHeaderId", null);
 	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
@@ -521,7 +610,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
+	void setExternalLineId (@Nullable String ExternalLineId);
 
 	/**
 	 * Get External Line ID.
@@ -530,10 +619,34 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalLineId();
+	@Nullable String getExternalLineId();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_I_Invoice_Candidate.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem(@Nullable String ExternalSystem);
+
+	/**
+	 * Get External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	String getExternalSystem();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_I_Invoice_Candidate.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
 
 	/**
 	 * Set Import Error Message.
@@ -543,7 +656,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_ErrorMsg (@Nullable java.lang.String I_ErrorMsg);
+	void setI_ErrorMsg (@Nullable String I_ErrorMsg);
 
 	/**
 	 * Get Import Error Message.
@@ -553,7 +666,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getI_ErrorMsg();
+	@Nullable String getI_ErrorMsg();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_I_ErrorMsg = new ModelColumn<>(I_I_Invoice_Candidate.class, "I_ErrorMsg", null);
 	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
@@ -609,7 +722,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_LineContent (@Nullable java.lang.String I_LineContent);
+	void setI_LineContent(@Nullable String I_LineContent);
 
 	/**
 	 * Get Import Line Content.
@@ -618,7 +731,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getI_LineContent();
+	@Nullable String getI_LineContent();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_I_LineContent = new ModelColumn<>(I_I_Invoice_Candidate.class, "I_LineContent", null);
 	String COLUMNNAME_I_LineContent = "I_LineContent";
@@ -652,7 +765,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+	void setInvoiceRule(@Nullable String InvoiceRule);
 
 	/**
 	 * Get Invoice Rule.
@@ -662,7 +775,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInvoiceRule();
+	@Nullable String getInvoiceRule();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_I_Invoice_Candidate.class, "InvoiceRule", null);
 	String COLUMNNAME_InvoiceRule = "InvoiceRule";
@@ -742,7 +855,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_Value (java.lang.String M_Product_Value);
+	void setM_Product_Value (String M_Product_Value);
 
 	/**
 	 * Get Product Value.
@@ -751,7 +864,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getM_Product_Value();
+	String getM_Product_Value();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_M_Product_Value = new ModelColumn<>(I_I_Invoice_Candidate.class, "M_Product_Value", null);
 	String COLUMNNAME_M_Product_Value = "M_Product_Value";
@@ -763,7 +876,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOrgCode (@Nullable java.lang.String OrgCode);
+	void setOrgCode (@Nullable String OrgCode);
 
 	/**
 	 * Get Org Code.
@@ -772,7 +885,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getOrgCode();
+	@Nullable String getOrgCode();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_OrgCode = new ModelColumn<>(I_I_Invoice_Candidate.class, "OrgCode", null);
 	String COLUMNNAME_OrgCode = "OrgCode";
@@ -785,7 +898,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable java.lang.String POReference);
+	void setPOReference (@Nullable String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -795,7 +908,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPOReference();
+	@Nullable String getPOReference();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_POReference = new ModelColumn<>(I_I_Invoice_Candidate.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
@@ -963,7 +1076,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setX12DE355 (@Nullable java.lang.String X12DE355);
+	void setX12DE355(@Nullable String X12DE355);
 
 	/**
 	 * Get UOM Code.
@@ -973,7 +1086,7 @@ public interface I_I_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getX12DE355();
+	@Nullable String getX12DE355();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_X12DE355 = new ModelColumn<>(I_I_Invoice_Candidate.class, "X12DE355", null);
 	String COLUMNNAME_X12DE355 = "X12DE355";
