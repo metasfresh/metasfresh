@@ -24,7 +24,9 @@ const WFLaunchersScreen = () => {
   const [currentPanel, setCurrentPanel] = useState('default');
   const [facets, setFacets] = useState([]);
 
-  const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
+  const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
+    getApplicationInfoById({ state, applicationId })
+  );
   const {
     filterByQRCode: currentFilterByQRCode,
     requestTimestamp,
@@ -83,7 +85,7 @@ const WFLaunchersScreen = () => {
           />
         </div>
       )}
-      {currentPanel === 'default' && !requiresLaunchersQRCodeFilter && (
+      {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
         <>
           <WFLaunchersFilterButton facets={facets} onClick={() => setCurrentPanel('filters')} />
           <br />

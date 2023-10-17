@@ -78,6 +78,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.showFilters(true)
 			.build();
 
 	private final PickingJobRestService pickingJobRestService;
