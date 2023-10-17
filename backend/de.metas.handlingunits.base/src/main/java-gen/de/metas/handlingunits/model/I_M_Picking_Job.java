@@ -142,6 +142,27 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Shipmentdate.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryDate (java.sql.Timestamp DeliveryDate);
+
+	/**
+	 * Get Shipmentdate.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDeliveryDate();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_Picking_Job.class, "DeliveryDate", null);
+	String COLUMNNAME_DeliveryDate = "DeliveryDate";
+
+	/**
 	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: String

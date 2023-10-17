@@ -21,6 +21,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -76,18 +77,19 @@ import java.util.function.Predicate;
  * System Environment and static variables.
  *
  * @author Jorg Janke
- * @version $Id: Env.java,v 1.3 2006/07/30 00:54:36 jjanke Exp $
- *
  * @author Teo Sarca, www.arhipac.ro
- *         <ul>
- *         <li>BF [ 1619390 ] Use default desktop browser as external browser
- *         <li>BF [ 2017987 ] Env.getContext(TAB_INFO) should NOT use global context
- *         <li>FR [ 2392044 ] Introduce Env.WINDOW_MAIN
- *         </ul>
+ * <ul>
+ * <li>BF [ 1619390 ] Use default desktop browser as external browser
+ * <li>BF [ 2017987 ] Env.getContext(TAB_INFO) should NOT use global context
+ * <li>FR [ 2392044 ] Introduce Env.WINDOW_MAIN
+ * </ul>
+ * @version $Id: Env.java,v 1.3 2006/07/30 00:54:36 jjanke Exp $
  */
 public final class Env
 {
-	/** Logging */
+	/**
+	 * Logging
+	 */
 	private static final Logger s_log = LogManager.getLogger(Env.class);
 
 	/**
@@ -219,16 +221,26 @@ public final class Env
 	/**************************************************************************
 	 * Application Context
 	 */
-	/** WindowNo for Main */
+	/**
+	 * WindowNo for Main
+	 */
 	public static final int WINDOW_MAIN = 1; // note: 0 is the ALogin window that's shown in the swing client on startup
-	/** WindowNo for Find */
+	/**
+	 * WindowNo for Find
+	 */
 	public static final int WINDOW_FIND = 1110;
-	/** WindowNo for PrintCustomize */
+	/**
+	 * WindowNo for PrintCustomize
+	 */
 	public static final int WINDOW_CUSTOMIZE = 1112;
-	/** WindowNo for PrintCustomize */
+	/**
+	 * WindowNo for PrintCustomize
+	 */
 	public static final int WINDOW_INFO = 1113;
 
-	/** Tab for Info */
+	/**
+	 * Tab for Info
+	 */
 	public static final int TAB_INFO = 1113;
 
 	public static final String CTXNAME_AD_Client_ID = "#AD_Client_ID";
@@ -282,7 +294,7 @@ public final class Env
 	public static final String CTXNAME_StoreCreditCardData = "#StoreCreditCardData";
 
 	public static final String CTXNAME_PROCESS_SELECTION_WHERECLAUSE = "SELECTION_WHERECLAUSE";
-	
+
 	/**
 	 * task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
 	 */
@@ -375,7 +387,7 @@ public final class Env
 		// we can't use this great tool, because it (reasonably) assumes that the given ctx does not have null values
 		// org.springframework.util.CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
 
-		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
+		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements(); )
 		{
 			final String key = (String)en.nextElement();
 			Object value = ctx.get(key);
@@ -507,9 +519,9 @@ public final class Env
 	/**
 	 * Set Global Context to Value
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
-	 * @param value context value
+	 * @param value   context value
 	 */
 	public static void setContext(final Properties ctx, final String context, final String value)
 	{
@@ -531,9 +543,9 @@ public final class Env
 	/**
 	 * Set Global Context to Value
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
-	 * @param value context value
+	 * @param value   context value
 	 */
 	public static void setContext(final Properties ctx, final String context, final Date value)
 	{
@@ -556,9 +568,9 @@ public final class Env
 	/**
 	 * Set Global Context to (int) Value
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
-	 * @param value context value
+	 * @param value   context value
 	 */
 	public static void setContext(final Properties ctx, final String context, final int value)
 	{
@@ -573,9 +585,9 @@ public final class Env
 	/**
 	 * Set Global Context to Y/N Value
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
-	 * @param value context value
+	 * @param value   context value
 	 */
 	public static void setContext(final Properties ctx, final String context, final boolean value)
 	{
@@ -585,10 +597,10 @@ public final class Env
 	/**
 	 * Set Context for Window to Value
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
-	 * @param value context value
+	 * @param context  context key
+	 * @param value    context value
 	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final String context, final String value)
 	{
@@ -611,10 +623,10 @@ public final class Env
 	/**
 	 * Set Context for Window to Value
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
-	 * @param value context value
+	 * @param context  context key
+	 * @param value    context value
 	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final String context, final Date value)
 	{
@@ -638,10 +650,10 @@ public final class Env
 	/**
 	 * Set Context for Window to int Value
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
-	 * @param value context value
+	 * @param context  context key
+	 * @param value    context value
 	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final String context, final int value)
 	{
@@ -657,10 +669,10 @@ public final class Env
 	/**
 	 * Set Context for Window to Y/N Value
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
-	 * @param value context value
+	 * @param context  context key
+	 * @param value    context value
 	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final String context, final boolean value)
 	{
@@ -670,11 +682,11 @@ public final class Env
 	/**
 	 * Set Context for Window & Tab to Value
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param TabNo tab no
-	 * @param context context key
-	 * @param value context value
+	 * @param TabNo    tab no
+	 * @param context  context key
+	 * @param value    context value
 	 */
 	public static void setContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final String value)
 	{
@@ -714,7 +726,7 @@ public final class Env
 	/**
 	 * Set Auto Commit
 	 *
-	 * @param ctx context
+	 * @param ctx        context
 	 * @param autoCommit auto commit (save)
 	 */
 	public static void setAutoCommit(final Properties ctx, final boolean autoCommit)
@@ -730,8 +742,8 @@ public final class Env
 	/**
 	 * Set Auto Commit for Window
 	 *
-	 * @param ctx context
-	 * @param WindowNo window no
+	 * @param ctx        context
+	 * @param WindowNo   window no
 	 * @param autoCommit auto commit (save)
 	 */
 	public static void setAutoCommit(final Properties ctx, final int WindowNo, final boolean autoCommit)
@@ -746,7 +758,7 @@ public final class Env
 	/**
 	 * Set Auto New Record
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param autoNew auto new record
 	 */
 	public static void setAutoNew(@Nullable final Properties ctx, final boolean autoNew)
@@ -761,9 +773,9 @@ public final class Env
 	/**
 	 * Set Auto New Record for Window
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param autoNew auto new record
+	 * @param autoNew  auto new record
 	 */
 	public static void setAutoNew(final Properties ctx, final int WindowNo, final boolean autoNew)
 	{
@@ -777,7 +789,7 @@ public final class Env
 	/**
 	 * Set SO Trx
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param isSOTrx SO Context
 	 */
 	public static void setSOTrx(final Properties ctx, final boolean isSOTrx)
@@ -792,7 +804,7 @@ public final class Env
 	/**
 	 * Get global Value of Context
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
@@ -804,9 +816,9 @@ public final class Env
 	/**
 	 * Get Value of Context for Window. if not found global context if available and enabled
 	 *
-	 * @param ctx context
-	 * @param WindowNo window
-	 * @param context context key
+	 * @param ctx        context
+	 * @param WindowNo   window
+	 * @param context    context key
 	 * @param onlyWindow if true, no defaults are used unless explicitly asked for
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
@@ -818,9 +830,9 @@ public final class Env
 	/**
 	 * Get Value of Context for Window. if not found global context if available
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window
-	 * @param context context key
+	 * @param context  context key
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
 	public static String getContext(final Properties ctx, final int WindowNo, final String context)
@@ -832,10 +844,10 @@ public final class Env
 	/**
 	 * Get Value of Context for Window & Tab, if not found global context if available. If TabNo is TAB_INFO only tab's context will be checked.
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param TabNo tab no
-	 * @param context context key
+	 * @param TabNo    tab no
+	 * @param context  context key
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
 	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context)
@@ -847,11 +859,11 @@ public final class Env
 	/**
 	 * Get Value of Context for Window & Tab, if not found global context if available. If TabNo is TAB_INFO only tab's context will be checked.
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param TabNo tab no
-	 * @param context context key
-	 * @param onlyTab if true, no window value is searched
+	 * @param TabNo    tab no
+	 * @param context  context key
+	 * @param onlyTab  if true, no window value is searched
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
 	public static String getContext(@NonNull final Properties ctx, final int WindowNo, final int TabNo, final String context, final boolean onlyTab)
@@ -899,9 +911,9 @@ public final class Env
 	/**
 	 * Get Context and convert it to an integer (0 if error)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
+	 * @param context  context key
 	 * @return value or 0
 	 */
 	public static int getContextAsInt(final Properties ctx, final int WindowNo, final String context)
@@ -926,9 +938,9 @@ public final class Env
 	/**
 	 * Get Context and convert it to an integer (0 if error)
 	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param context context key
+	 * @param ctx        context
+	 * @param WindowNo   window no
+	 * @param context    context key
 	 * @param onlyWindow if true, no defaults are used unless explicitly asked for
 	 * @return value or 0
 	 */
@@ -954,10 +966,10 @@ public final class Env
 	/**
 	 * Get Context and convert it to an integer (0 if error)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param TabNo tab no
-	 * @param context context key
+	 * @param TabNo    tab no
+	 * @param context  context key
 	 * @return value or 0
 	 */
 	public static int getContextAsInt(final Properties ctx, final int WindowNo, final int TabNo, final String context)
@@ -1003,7 +1015,7 @@ public final class Env
 	/**
 	 * Is Window AutoCommit (if not set use default)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
 	 * @return true if auto commit
 	 */
@@ -1054,7 +1066,7 @@ public final class Env
 	/**
 	 * Is Window Auto New Record (if not set use default)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
 	 * @return true if auto new record
 	 */
@@ -1091,7 +1103,7 @@ public final class Env
 	/**
 	 * Is Sales Order Trx
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
 	 * @return true if SO (default)
 	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
@@ -1106,7 +1118,7 @@ public final class Env
 	/**
 	 * Is Sales Order Trx (returns <code>null</code>)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
 	 * @return true if {@link #CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link #CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link #CTXNAME_IsSOTrx} is not set.
 	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
@@ -1126,7 +1138,7 @@ public final class Env
 	/**
 	 * Get Context and convert it to a Timestamp if error return today's date
 	 *
-	 * @param ctx context
+	 * @param ctx     context
 	 * @param context context key
 	 * @return Timestamp
 	 */
@@ -1138,9 +1150,9 @@ public final class Env
 	/**
 	 * Get Context and convert it to a Timestamp if error return today's date
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window no
-	 * @param context context key
+	 * @param context  context key
 	 * @return context timestamp or {@link SystemTime#asTimestamp()}; never returns <code>null</code>
 	 */
 	public static Timestamp getContextAsDate(final Properties ctx, final int WindowNo, final String context)
@@ -1445,13 +1457,15 @@ public final class Env
 		}
 	}
 
-	/** Context for POS ID */
+	/**
+	 * Context for POS ID
+	 */
 	static public final String POS_ID = "#POS_ID";
 
 	/**
 	 * Check Base Language
 	 *
-	 * @param ctx context
+	 * @param ctx       context
 	 * @param tableName table to be translated
 	 * @return true if base language and table not translated
 	 */
@@ -1467,7 +1481,7 @@ public final class Env
 	 * Check Base Language
 	 *
 	 * @param AD_Language language
-	 * @param tableName table to be translated
+	 * @param tableName   table to be translated
 	 * @return true if base language and table not translated
 	 */
 	public static boolean isBaseLanguage(final String AD_Language, final String tableName)
@@ -1481,7 +1495,7 @@ public final class Env
 	/**
 	 * Check Base Language
 	 *
-	 * @param language language
+	 * @param language  language
 	 * @param tableName table to be translated
 	 * @return true if base language and table not translated
 	 */
@@ -1519,6 +1533,11 @@ public final class Env
 		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 		return clientsRepo.isMultilingualDocumentsEnabled(clientId);
 	}    // isMultiLingualDocument
+
+	public static void setAD_Language(final String adLanguage)
+	{
+		setAD_Language(getCtx(), adLanguage);
+	}
 
 	public static void setAD_Language(final Properties ctx, final String adLanguage)
 	{
@@ -1616,6 +1635,13 @@ public final class Env
 		// return Language.getLoginLanguage();
 	}    // getLanguage
 
+	public static String verifyLanguageFallbackToBase(@NonNull final String testLang)
+	{
+		Language language = Language.getLanguage(testLang);
+		language = verifyLanguageFallbackToBase(language);
+		return language.getAD_Language();
+	}
+
 	/**
 	 * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
 	 *
@@ -1627,33 +1653,24 @@ public final class Env
 
 		//
 		// Get available languages, having BaseLanguage first and then System Language
-		final Set<String> AD_Languages = Services.get(ILanguageDAO.class)
-				.retrieveAvailableLanguages()
-				.getAD_Languages();
+		final ADLanguageList AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableLanguages();
 
 		//
 		// Check if we have a perfect match
-		if (AD_Languages.contains(searchAD_Language))
+		if (AD_Languages.containsADLanguage(searchAD_Language))
 		{
 			return testLang;
 		}
 
 		//
 		// Pick a similar language (with different country code and/or variant)
-		final String searchLangPart = searchAD_Language.substring(0, 2);
-		for (final String AD_Language : AD_Languages)
+		final String similarADLanguage = AD_Languages.findSimilarADLanguage(searchAD_Language).orElse(null);
+		if(similarADLanguage != null)
 		{
-			final String lang = AD_Language.substring(0, 2); // en
-			if (lang.equals(searchLangPart))
-			{
-				s_log.debug("Found similar Language {} for {}", AD_Language, testLang);
-				final Language similarLanguage = testLang
-						.toBuilder()
-						.m_AD_Language(AD_Language)
-						.build();
-				Language.addNewLanguage(similarLanguage);
-				return similarLanguage;
-			}
+			s_log.debug("Found similar Language {} for {}", similarADLanguage, testLang);
+			final Language similarLanguage = testLang.toBuilder().m_AD_Language(similarADLanguage).build();
+			Language.addNewLanguage(similarLanguage);
+			return similarLanguage;
 		}
 
 		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall return the system base language.
@@ -1690,7 +1707,7 @@ public final class Env
 	 * <p>
 	 * Uses {@link #CTXNAME_WindowName} from context to fetch the window name.
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window
 	 * @return Header String
 	 */
@@ -1738,7 +1755,7 @@ public final class Env
 	/**
 	 * Clean up context for Window (i.e. delete it)
 	 *
-	 * @param ctx context
+	 * @param ctx      context
 	 * @param WindowNo window
 	 */
 	public static void clearWinContext(final Properties ctx, final int WindowNo)
@@ -1762,20 +1779,19 @@ public final class Env
 	/**
 	 * Parse Context replaces global or Window context @tag@ with actual value.
 	 *
-	 * @tag@ are ignored otherwise "" is returned
-	 *
-	 * @param ctx context
-	 * @param WindowNo Number of Window
-	 * @param value Message to be parsed
-	 * @param onlyWindow if true, no defaults are used
+	 * @param ctx              context
+	 * @param WindowNo         Number of Window
+	 * @param value            Message to be parsed
+	 * @param onlyWindow       if true, no defaults are used
 	 * @param ignoreUnparsable if true, unsuccessful @return parsed String or "" if not successful and ignoreUnparsable
 	 * @return parsed context
+	 * @tag@ are ignored otherwise "" is returned
 	 */
 	public static String parseContext(
-			@NonNull final Properties ctx, 
-			final int WindowNo, 
-			final String value, 
-			final boolean onlyWindow, 
+			@NonNull final Properties ctx,
+			final int WindowNo,
+			final String value,
+			final boolean onlyWindow,
 			final boolean ignoreUnparsable)
 	{
 		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
@@ -1784,10 +1800,10 @@ public final class Env
 	}
 
 	public static String parseContext(
-			@NonNull final Properties ctx, 
-			final int WindowNo, 
-			final IStringExpression expression, 
-			final boolean onlyWindow, 
+			@NonNull final Properties ctx,
+			final int WindowNo,
+			final IStringExpression expression,
+			final boolean onlyWindow,
 			final boolean ignoreUnparsable)
 	{
 		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
@@ -1802,8 +1818,8 @@ public final class Env
 	}
 
 	public static String parseContext(
-			final Evaluatee evalCtx, 
-			@NonNull final IStringExpression expression, 
+			final Evaluatee evalCtx,
+			@NonNull final IStringExpression expression,
 			final boolean ignoreUnparsable)
 	{
 		return expression.evaluate(evalCtx, ignoreUnparsable);
@@ -1812,9 +1828,9 @@ public final class Env
 	/**
 	 * Parse Context replaces global or Window context @tag@ with actual value.
 	 *
-	 * @param ctx context
-	 * @param WindowNo Number of Window
-	 * @param value Message to be parsed
+	 * @param ctx        context
+	 * @param WindowNo   Number of Window
+	 * @param value      Message to be parsed
 	 * @param onlyWindow if true, no defaults are used
 	 * @return parsed String or "" if not successful
 	 */
@@ -1825,9 +1841,9 @@ public final class Env
 	}    // parseContext
 
 	public static String parseContext(
-			@NonNull final Properties ctx, 
-			final int WindowNo, 
-			final IStringExpression expression, 
+			@NonNull final Properties ctx,
+			final int WindowNo,
+			final IStringExpression expression,
 			final boolean onlyWindow)
 	{
 		final boolean ignoreUnparsable = false;
@@ -2031,10 +2047,14 @@ public final class Env
 	@Deprecated
 	static final public BigDecimal ONE = new BigDecimal("1.0");
 
-	/** Big Decimal 100 */
+	/**
+	 * Big Decimal 100
+	 */
 	static final public BigDecimal ONEHUNDRED = new BigDecimal("100.0");
 
-	/** New Line */
+	/**
+	 * New Line
+	 */
 	public static final String NL = System.getProperty("line.separator");
 
 	// metas: begin
@@ -2050,9 +2070,13 @@ public final class Env
 
 	// /* package */ static final String NoValue = "";
 
-	/** Marker used to flag a NULL ID */
+	/**
+	 * Marker used to flag a NULL ID
+	 */
 	private static final String CTXVALUE_NullID = new String("0"); // NOTE: new String to make sure it's a unique instance
-	/** Default context value (int) */
+	/**
+	 * Default context value (int)
+	 */
 	/* package */static final int CTXVALUE_NoValueInt = 0;
 	/**
 	 * Marker used to flag a NULL String
@@ -2084,10 +2108,10 @@ public final class Env
 	/**
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
-	public static String getContext(@NonNull final Properties ctx, 
-			final int WindowNo, 
-			final int TabNo, 
-			final String context, 
+	public static String getContext(@NonNull final Properties ctx,
+			final int WindowNo,
+			final int TabNo,
+			final String context,
 			final Scope scope)
 	{
 		final CtxName name = CtxNames.parse(context);
@@ -2241,9 +2265,9 @@ public final class Env
 	}    // setContext
 
 	public static Timestamp getContextAsDate(
-			@NonNull final Properties ctx, 
-			final int WindowNo, 
-			final String context, 
+			@NonNull final Properties ctx,
+			final int WindowNo,
+			final String context,
 			final boolean onlyWindow)
 	{
 		final String s = getContext(ctx, WindowNo, context, onlyWindow);
@@ -2257,9 +2281,9 @@ public final class Env
 	}
 
 	public static Timestamp getContextAsDate(
-			@NonNull final Properties ctx, 
-			int WindowNo, 
-			int TabNo, 
+			@NonNull final Properties ctx,
+			int WindowNo,
+			int TabNo,
 			String context)
 	{
 		return getContextAsDate(ctx, WindowNo, TabNo, context, false);
@@ -2283,10 +2307,10 @@ public final class Env
 	}    // getContextAsDate
 
 	public static void setContextAsDate(
-			@Nullable final Properties ctx, 
-			final int WindowNo, 
-			final int TabNo, 
-			@Nullable final String context, 
+			@Nullable final Properties ctx,
+			final int WindowNo,
+			final int TabNo,
+			@Nullable final String context,
 			final Date value)
 	{
 		if (ctx == null || context == null)
@@ -2300,12 +2324,12 @@ public final class Env
 	/**
 	 * Convert the string value to integer
 	 *
-	 * @param s string value
+	 * @param s       string value
 	 * @param context context name that was required (used only for logging)
 	 * @return int value
 	 */
 	private static int toInteger(
-			final String s, 
+			final String s,
 			final String context)
 	{
 		if (CTXVALUE_NullString.equals(s))
@@ -2577,8 +2601,7 @@ public final class Env
 	 */
 	public static <V> V get(final Properties ctx, final String propertyName)
 	{
-		@SuppressWarnings("unchecked")
-		final V value = (V)ctx.get(propertyName);
+		@SuppressWarnings("unchecked") final V value = (V)ctx.get(propertyName);
 		return value;
 	}
 
@@ -2610,7 +2633,7 @@ public final class Env
 	 * <p>
 	 * This method is thread safe.
 	 *
-	 * @param validator optional value validator
+	 * @param validator        optional value validator
 	 * @param valueInitializer optional value initializer to be used when the value was not found or it's null in <code>ctx</code>
 	 * @return value or <code>null</code> if the value was not present and value initializer was null
 	 */
@@ -2644,8 +2667,7 @@ public final class Env
 
 	public static <V> V getAndRemove(final Properties ctx, final String propertyName)
 	{
-		@SuppressWarnings("unchecked")
-		final V value = (V)ctx.remove(propertyName);
+		@SuppressWarnings("unchecked") final V value = (V)ctx.remove(propertyName);
 		return value;
 	}
 

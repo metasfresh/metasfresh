@@ -7,7 +7,6 @@ import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -260,13 +259,9 @@ public class Login
 
 	private void loadUserLanguage(final I_AD_User user)
 	{
-		final String adLanguage = StringUtils.trimBlankToNull(user.getAD_Language());
-		if (adLanguage != null)
-		{
-			Language language = Language.getLanguage(adLanguage);
-			language = Env.verifyLanguageFallbackToBase(language);
-			getCtx().setAD_Language(language.getAD_Language());
-		}
+		StringUtils.trimBlankToOptional(user.getAD_Language())
+				.map(Env::verifyLanguageFallbackToBase)
+				.ifPresent(getCtx()::setAD_Language);
 	}
 
 	@NonNull

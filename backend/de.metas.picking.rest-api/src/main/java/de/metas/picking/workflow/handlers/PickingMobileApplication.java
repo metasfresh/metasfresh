@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -57,15 +56,14 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
 
@@ -81,6 +79,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.showFilters(true)
 			.build();
 
 	private final PickingJobRestService pickingJobRestService;
@@ -104,18 +103,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		if (filterByQRCode != null)
+		if (query.getFilterByQRCode() != null)
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
 
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(query);
+	}
+
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+	{
+		return wfLaunchersProvider.getFacets(userId);
 	}
 
 	@NonNull

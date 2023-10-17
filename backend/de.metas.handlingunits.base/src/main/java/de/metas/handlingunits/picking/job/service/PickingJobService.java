@@ -8,7 +8,10 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -22,7 +25,6 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -32,14 +34,12 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -185,25 +185,35 @@ public class PickingJobService
 		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, loadingSupportingServices);
 	}
 
-	public Stream<PickingJobCandidate> streamPickingJobCandidates(
-			@NonNull final UserId userId,
-			@NonNull final Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
 	{
-		return packagingDAO
-				.stream(PackageableQuery.builder()
-						.onlyFromSalesOrder(true)
-						.lockedBy(userId)
-						.includeNotLocked(true)
-						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-						.orderBys(ImmutableSet.of(
-								PackageableQuery.OrderBy.PriorityRule,
-								PackageableQuery.OrderBy.PreparationDate,
-								PackageableQuery.OrderBy.SalesOrderId,
-								PackageableQuery.OrderBy.DeliveryBPLocationId,
-								PackageableQuery.OrderBy.WarehouseTypeId))
-						.build())
+		return packagingDAO.stream(toPackageableQuery(query))
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
+	}
+
+	private static PackageableQuery toPackageableQuery(@NonNull final PickingJobQuery query)
+	{
+		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
+				.onlyFromSalesOrder(true)
+				.lockedBy(query.getUserId())
+				.includeNotLocked(true)
+				.excludeShipmentScheduleIds(query.getExcludeShipmentScheduleIds())
+				.orderBys(ImmutableSet.of(
+						PackageableQuery.OrderBy.PriorityRule,
+						PackageableQuery.OrderBy.PreparationDate,
+						PackageableQuery.OrderBy.SalesOrderId,
+						PackageableQuery.OrderBy.DeliveryBPLocationId,
+						PackageableQuery.OrderBy.WarehouseTypeId));
+
+		final PickingJobFacetsQuery facets = query.getFacets();
+		if (facets != null)
+		{
+			builder.customerIds(facets.getCustomerIds());
+			builder.deliveryDays(facets.getDeliveryDays());
+		}
+
+		return builder.build();
 	}
 
 	private static PickingJobCandidate extractPickingJobCandidate(@NonNull final Packageable item)
@@ -217,6 +227,11 @@ public class PickingJobService
 				.warehouseTypeId(item.getWarehouseTypeId())
 				.partiallyPickedBefore(computePartiallyPickedBefore(item))
 				.build();
+	}
+
+	public PickingJobFacets getFacets(@NonNull PickingJobQuery query)
+	{
+		return packagingDAO.stream(toPackageableQuery(query)).collect(PickingJobFacets.collectFromPackageables());
 	}
 
 	private static boolean computePartiallyPickedBefore(final Packageable item)

@@ -5,8 +5,8 @@ import translations_de from './translations_de';
 import { getApplicationMessages } from '../apps';
 
 /** Just a shortcut & abstraction of counterpart's translate function */
-export const trl = (key, ...args) => {
-  return counterpart.translate(key, ...args);
+export const trl = (key, args = {}) => {
+  return counterpart.translate(key, args);
 };
 
 export const setupCounterpart = () => {

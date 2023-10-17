@@ -92,6 +92,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setDeliveryDate (final java.sql.Timestamp DeliveryDate)
+	{
+		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDeliveryDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
+	}
+
+	@Override
 	public void setDeliveryToAddress (final java.lang.String DeliveryToAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_DeliveryToAddress, DeliveryToAddress);
@@ -151,7 +163,7 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public boolean isApproved() 
+	public boolean isApproved()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
 	}
@@ -163,7 +175,7 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public boolean isPickingReviewRequired() 
+	public boolean isPickingReviewRequired()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingReviewRequired);
 	}
@@ -175,7 +187,7 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public boolean isReadyToReview() 
+	public boolean isReadyToReview()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadyToReview);
 	}

@@ -112,16 +112,24 @@ final class PackageableRowsRepository
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
-		return PackageableQuery.builder()
+		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderId(filterVO.getSalesOrderId())
-				.customerId(filterVO.getCustomerId())
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
-				.deliveryDate(filterVO.getDeliveryDate())
 				.preparationDate(filterVO.getPreparationDate())
-				.shipperId(filterVO.getShipperId())
-				.build();
+				.shipperId(filterVO.getShipperId());
+
+		if (filterVO.getCustomerId() != null)
+		{
+			builder.customerId(filterVO.getCustomerId());
+		}
+		if (filterVO.getDeliveryDate() != null)
+		{
+			builder.deliveryDay(filterVO.getDeliveryDate());
+		}
+
+		return builder.build();
 	}
 
 	private static ArrayKey extractGroupingKey(final Packageable packageable)
