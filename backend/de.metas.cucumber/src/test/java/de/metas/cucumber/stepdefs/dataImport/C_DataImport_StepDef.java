@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.importFormat.AD_ImpFormat_StepDefData;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -183,9 +184,9 @@ public class C_DataImport_StepDef
 	}
 
 	@And("store String as requestBody in context")
-	public void store_string_as_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException
+	public void store_string_as_requestBody_in_context(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
+		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
 
 		final String content = DataTableUtil.extractStringOrNullForColumnName(row, "String");
 

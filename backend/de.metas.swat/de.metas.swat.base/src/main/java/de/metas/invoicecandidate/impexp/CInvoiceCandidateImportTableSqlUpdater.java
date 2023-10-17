@@ -429,7 +429,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 	private static void dbUpdateErrorMessageExternalSystem(@NonNull final ImportRecordsSelection selection)
 	{
-		final String ExternalReferencesUsed = " AND ( i." + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL"
+		final String externalReferencesUsed = " AND ( i." + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL"
 				+ " OR i." + COLUMNNAME_Bill_Location_ExternalReference + " IS NOT NULL"
 				+ " OR i." + COLUMNNAME_Bill_User_ExternalReference + " IS NOT NULL"
 				+ " OR i." + COLUMNNAME_AD_User_InCharge_ExternalReference + " IS NOT NULL )";
@@ -438,7 +438,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_ExternalSystem + " missing for External References, '"
 				+ " WHERE i." + COLUMNNAME_ExternalSystem + " IS NULL "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ ExternalReferencesUsed
+				+ externalReferencesUsed
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlMissingExternalSystem, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
@@ -451,7 +451,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE i." + COLUMNNAME_ExternalSystem + " NOT IN (SELECT value FROM AD_Ref_List where AD_Reference_ID = 541117)" //Reference name: ExternalSystem
 				+ " AND i." + COLUMNNAME_ExternalSystem + " IS NOT NULL"
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ ExternalReferencesUsed
+				+ externalReferencesUsed
 				+ selection.toSqlWhereClause("i");
 		final int no2 = DB.executeUpdateAndThrowExceptionOnFail(sqlInvalidExternalSystem, ITrx.TRXNAME_ThreadInherited);
 		if (no2 != 0)
