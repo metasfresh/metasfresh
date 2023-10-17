@@ -244,7 +244,6 @@ public final class AllocationUtils
 
 	/**
 	 * Merge <code>from</code> result into <code>to</code> mutable result.
-	 *
 	 * i.e.
 	 * <ul>
 	 * <li>to's QtyToAllocated will be decreased with from's QtyAllocated

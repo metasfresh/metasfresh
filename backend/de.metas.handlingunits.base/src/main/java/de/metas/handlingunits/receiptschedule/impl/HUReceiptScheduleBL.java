@@ -14,8 +14,10 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -41,7 +43,6 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.InOutId;
-import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -50,7 +51,6 @@ import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -122,6 +122,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
+	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
+
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = CompositeDocumentLUTUConfigurationHandler.of(lutuConfigurationHandler);
 
@@ -131,8 +133,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
 	@Override
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
@@ -301,6 +305,14 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.receiptSchedule(rs)
 				.enforceCapacity(true)
 				.build();
+	}
+
+	@Override
+	public IAllocationSource createAllocationSource(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final IProductStorage productStorage = createProductStorage(receiptSchedule);
+		final IAllocationSource allocationSource = new GenericAllocationSourceDestination(productStorage, receiptSchedule);
+		return allocationSource;
 	}
 
 	@Override
@@ -606,6 +618,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	/**
 	 * Generate it's LU-TU structure automatically
 	 */
+	@Override
 	public void generateHUsIfNeeded(final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		// Skip Receipt schedules which are about Packing Materials
@@ -723,4 +736,54 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	@Override
 	public StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule receiptSchedule) {return receiptScheduleBL.getQtyToMove(receiptSchedule);}
+
+	@Override
+	public List<I_M_HU> createPlanningHUs(@NonNull final CreatePlanningHUsRequest request)
+	{
+		return CreatePlanningHUsCommand.builder()
+				.huContextFactory(huContextFactory)
+				.attributesUpdater(preparePlanningHUAttributesUpdater()
+						.fixedLotNumber(request.getLotNumber())
+						.build())
+				//
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	@Override
+	public void updatePlanningHUAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		preparePlanningHUAttributesUpdater()
+				.build()
+				.updateAttributes(hu, receiptSchedule);
+	}
+
+	private PlanningHUAttributesUpdater.PlanningHUAttributesUpdaterBuilder preparePlanningHUAttributesUpdater()
+	{
+		return PlanningHUAttributesUpdater.builder()
+				.productDAO(productDAO)
+				.attributeStorageFactory(attributeStorageFactoryService.createHUAttributeStorageFactory())
+				.huAttributesBL(huAttributesBL)
+				.docTypeDAO(docTypeDAO)
+				.lotNumberBL(lotNumberBL);
+	}
+
+	@Override
+	public I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
+	{
+
+		final I_M_HU_LUTU_Configuration lutuConfig = createLUTUConfigurationManager(receiptSchedule)
+				.getCreateLUTUConfiguration();
+
+		// Make sure nobody is overriding the existing configuration
+		if (lutuConfig.getM_HU_LUTU_Configuration_ID() > 0)
+		{
+			InterfaceWrapperHelper.setSaveDeleteDisabled(lutuConfig, true);
+		}
+
+		return lutuConfig;
+	}
+
+
 }
