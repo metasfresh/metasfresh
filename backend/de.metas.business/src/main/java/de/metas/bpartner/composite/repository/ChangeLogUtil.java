@@ -210,6 +210,10 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_Name, BPartnerBankAccount.NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, BPartnerBankAccount.QR_IBAN)
+			.put(I_C_BP_BankAccount.COLUMNNAME_SwiftCode, BPartnerBankAccount.SWIFT_CODE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_IsDefault, BPartnerBankAccount.IS_DEFAULT)
 			.build();
 
 	@VisibleForTesting

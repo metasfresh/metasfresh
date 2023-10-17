@@ -344,7 +344,7 @@ public final class BPartnerComposite
 	}
 
 	@Nullable
-	public String getOrgCode(@NonNull final Function<@NonNull OrgId,@NonNull String> orgId2String)
+	public String getOrgCode(@NonNull final Function<@NonNull OrgId, @NonNull String> orgId2String)
 	{
 		if (orgId == null)
 		{
@@ -352,5 +352,13 @@ public final class BPartnerComposite
 		}
 
 		return orgId2String.apply(orgId);
+	}
+
+	@NonNull
+	public Optional<BPartnerBankAccount> getBankAccountByQrIban(@NonNull final String qrIban)
+	{
+		return bankAccounts.stream()
+				.filter(bankAccount -> qrIban.equals(bankAccount.getQrIban()))
+				.findFirst();
 	}
 }

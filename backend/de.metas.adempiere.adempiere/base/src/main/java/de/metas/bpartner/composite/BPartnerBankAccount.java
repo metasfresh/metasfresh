@@ -69,8 +69,12 @@ public class BPartnerBankAccount
 	public static final String ID = "id";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String IBAN = "iban";
+	public static final String QR_IBAN = "qrIban";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
+	public static final String IS_DEFAULT = "isDefault";
+	public static final String NAME = "name";
+	public static final String SWIFT_CODE = "swiftCode";
 
 	@Nullable
 	private BPartnerBankAccountId id;
@@ -91,10 +95,15 @@ public class BPartnerBankAccount
 	@Nullable
 	private String qrIban;
 
+	@Nullable
+	private String name;
+
 	@NonNull
 	private CurrencyId currencyId;
 
 	private boolean active;
+
+	private boolean isDefault;
 
 	private final RecordChangeLog changeLog;
 
@@ -111,8 +120,10 @@ public class BPartnerBankAccount
 			@NonNull final String iban,
 			@Nullable final String swiftCode,
 			@Nullable final String qrIban,
+			@Nullable final String name,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
+			@Nullable final Boolean isDefault,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final BankId bankId)
@@ -121,8 +132,10 @@ public class BPartnerBankAccount
 		this.iban = iban;
 		this.swiftCode = swiftCode;
 		this.qrIban = qrIban;
+		this.name = name;
 		this.currencyId = currencyId;
 		this.active = coalesce(active, true);
+		this.isDefault = coalesce(isDefault, true);
 
 		this.changeLog = changeLog;
 
