@@ -53,6 +53,11 @@ import java.util.TreeSet;
  */
 public abstract class AbstractProducerDestination implements IHUProducerAllocationDestination
 {
+	//
+	// Services
+	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
 	/**
 	 * Error message which is thrown when the result of allocating to a new HU is ZERO
 	 */
@@ -62,10 +67,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private static final ModelDynAttributeAccessor<I_M_HU, AbstractProducerDestination> DYNATTR_Producer = new ModelDynAttributeAccessor<>(AbstractProducerDestination.class);
 	private static final ModelDynAttributeAccessor<I_M_HU, Boolean> DYNATTR_IsEmptyHU = new ModelDynAttributeAccessor<>(AbstractProducerDestination.class.getName(), "IsEmptyHU", Boolean.class);
-	//
-	// Services
-	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final HashMap<ArrayKey, HUListCursor> currentHUs = new HashMap<>();
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
@@ -74,6 +75,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
 	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<>(HUByIdComparator.instance);
+
 	//
 	// Parameters
 	private LocatorId _locatorId = null;
