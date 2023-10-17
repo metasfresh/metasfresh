@@ -138,3 +138,9 @@ UPDATE AD_Process_Trl SET Description='Receive HUs using custom configuration',U
 
 
 
+-- Value: WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig
+-- Classname: de.metas.ui.web.handlingunits.process.WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig
+-- 2023-10-17T14:15:37.358Z
+UPDATE AD_Process SET Classname='de.metas.ui.web.handlingunits.process.WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig', EntityType='de.metas.handlingunits', Value='WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig',Updated=TO_TIMESTAMP('2023-10-17 17:15:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585326
+;
+
