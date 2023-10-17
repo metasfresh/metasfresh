@@ -150,6 +150,8 @@ public class LUTUProducerDestination
 	 */
 	private IHUAllocations existingHUs;
 
+	private boolean isDestroyExistingHUs = true;
+
 	public LUTUProducerDestination()
 	{
 	}
@@ -587,7 +589,10 @@ public class LUTUProducerDestination
 	@Override
 	protected void loadStarting(final IAllocationRequest request)
 	{
-		loadExistingHUIfAny();
+		if (isDestroyExistingHUs)
+		{
+			loadExistingHUIfAny();
+		}
 	}
 
 	private final void loadExistingHUIfAny()
@@ -867,5 +872,11 @@ public class LUTUProducerDestination
 	{
 		assertConfigurable();
 		this.existingHUs = existingHUs;
+	}
+
+	@Override
+	public void setIsDestroyExistingHUs(final boolean isDestroyExistingHUs)
+	{
+		this.isDestroyExistingHUs = isDestroyExistingHUs;
 	}
 }

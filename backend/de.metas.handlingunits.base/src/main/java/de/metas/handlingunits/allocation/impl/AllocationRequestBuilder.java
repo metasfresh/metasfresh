@@ -34,7 +34,6 @@ import java.util.List;
 	@Nullable private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
 	private List<EmptyHUListener> emptyHUListeners = null;
-	private boolean destroyExistingHUs = true;
 
 	@Override
 	public IAllocationRequestBuilder setBaseAllocationRequest(final IAllocationRequest baseAllocationRequest)
@@ -197,23 +196,6 @@ import java.util.List;
 		return this;
 	}
 
-	@Override
-	public IAllocationRequestBuilder setDestroyExistingHUs(final boolean destroyExistingHUs)
-	{
-		this.destroyExistingHUs = destroyExistingHUs;
-		return this;
-	}
-
-	private boolean isDestroyExistingHUs()
-	{
-		if(destroyExistingHUs && baseAllocationRequest != null)
-		{
-			return baseAllocationRequest.isDestroyExistingHUs();
-		}
-
-		return destroyExistingHUs;
-	}
-
 	private boolean isForceQtyAllocationToUse()
 	{
 		if (forceQtyAllocation != null)
@@ -271,7 +253,6 @@ import java.util.List;
 		final TableRecordReference fromTableRecord = getFromReferencedTableRecordToUse();
 		final boolean forceQtyAllocation = isForceQtyAllocationToUse();
 		final ClearanceStatusInfo clearanceStatusInfo = getClearanceStatusInfo();
-		final boolean destroyExistingHUs = isDestroyExistingHUs();
 
 		return new AllocationRequest(
 				huContext,
@@ -280,7 +261,6 @@ import java.util.List;
 				date,
 				fromTableRecord,
 				forceQtyAllocation,
-				clearanceStatusInfo,
-				destroyExistingHUs);
+				clearanceStatusInfo);
 	}
 }

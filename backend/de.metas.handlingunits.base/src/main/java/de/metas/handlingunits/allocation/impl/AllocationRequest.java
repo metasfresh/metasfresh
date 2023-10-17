@@ -51,8 +51,6 @@ import java.time.ZonedDateTime;
 	private final boolean forceQtyAllocation;
 
 	@Getter
-	private final boolean destroyExistingHUs;
-	@Getter
 	@Nullable
 	private final ClearanceStatusInfo clearanceStatusInfo;
 
@@ -66,8 +64,7 @@ import java.time.ZonedDateTime;
 			@NonNull final ZonedDateTime date,
 			final TableRecordReference fromTableRecord,
 			final boolean forceQtyAllocation,
-			@Nullable final ClearanceStatusInfo clearanceStatusInfo,
-			final boolean destroyExistingHUs)
+			@Nullable final ClearanceStatusInfo clearanceStatusInfo)
 	{
 		Check.assumeNotNull(quantity.signum() >= 0, "qty >= 0 ({})", quantity);
 
@@ -81,13 +78,12 @@ import java.time.ZonedDateTime;
 
 		this.forceQtyAllocation = forceQtyAllocation;
 		this.clearanceStatusInfo = clearanceStatusInfo;
-		this.destroyExistingHUs = destroyExistingHUs;
 	}
 
 	@Override
 	public String toString()
 	{
-		final String fromTableRecordStr = fromTableRecord == null ? null : "" + fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
+		final String fromTableRecordStr = fromTableRecord == null ? null : fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
 		return "AllocationRequest ["
 				+ "product=" + productId
 				+ ", qty=" + (isInfiniteQty() ? "inifinite" : quantity)

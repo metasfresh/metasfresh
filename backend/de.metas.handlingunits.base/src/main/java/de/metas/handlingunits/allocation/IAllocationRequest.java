@@ -88,6 +88,4 @@ public interface IAllocationRequest
 
 	@Nullable
 	ClearanceStatusInfo getClearanceStatusInfo();
-
-	boolean isDestroyExistingHUs();
 }

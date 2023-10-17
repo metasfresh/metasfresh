@@ -477,10 +477,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final IAllocationResult load(final IAllocationRequest request)
 	{
 		// Notify that we are about to start the loading
-		if (request.isDestroyExistingHUs())
-		{
-			loadStarting(request);
-		}
+		loadStarting(request);
 
 		// Make sure that from this point on, the Destination is no longer configurable
 		setNotConfigurable();
@@ -529,10 +526,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					if (developerModeBL.isEnabled())
 					{
 						throw new AdempiereException("Allocated ZERO quantity on a newly created HU"
-															 + "\n Current Request: " + currentRequest
-															 + "\n Current Result: " + currentResult
-															 + "\n Initial Request: " + request
-															 + "\n PI: " + (currentHU_PI_Version != null ? currentHU_PI_Version.getName() : ""));
+								+ "\n Current Request: " + currentRequest
+								+ "\n Current Result: " + currentResult
+								+ "\n Initial Request: " + request
+								+ "\n PI: " + (currentHU_PI_Version != null ? currentHU_PI_Version.getName() : ""));
 					}
 
 					// throw a nice user friendly error
