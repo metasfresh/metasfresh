@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +29,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -46,6 +47,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
@@ -84,6 +86,7 @@ public class CreateBPartnerV2_StepDef
 	private final C_PaymentTerm_StepDefData paymentTermTable;
 	private final TestContext testContext;
 	private final AD_Org_StepDefData orgTable;
+	private final C_BPartner_Location_StepDefData locationTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -97,7 +100,8 @@ public class CreateBPartnerV2_StepDef
 			@NonNull final C_Incoterms_StepDefData incotermsTable,
 			@NonNull final C_PaymentTerm_StepDefData paymentTermTable,
 			@NonNull final TestContext testContext,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_BPartner_Location_StepDefData locationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
@@ -106,6 +110,7 @@ public class CreateBPartnerV2_StepDef
 		this.paymentTermTable = paymentTermTable;
 		this.testContext = testContext;
 		this.orgTable = orgTable;
+		this.locationTable = locationTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 	}
@@ -313,7 +318,7 @@ public class CreateBPartnerV2_StepDef
 		for (final Map<String, String> dataTableRow : locationsTableList)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
-			final String locationIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "locationIdentifier");
+			final String locationExternalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "locationIdentifier");
 			final String address1 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address1");
 			final String address2 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address2");
 			final String postal = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Postal");
@@ -334,18 +339,30 @@ public class CreateBPartnerV2_StepDef
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
-					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
+					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationExternalIdentifier));
 			final JsonResponseLocation persistedLocation = persistedResult.get();
 
 			final SoftAssertions softly = new SoftAssertions();
 
-			softly.assertThat(persistedLocation.getAddress1()).as(I_C_Location.COLUMNNAME_Address1).isEqualTo(address1);
-			softly.assertThat(persistedLocation.getAddress2()).as(I_C_Location.COLUMNNAME_Address2).isEqualTo(address2);
-			softly.assertThat(persistedLocation.getPostal()).as(I_C_Location.COLUMNNAME_Postal).isEqualTo(postal);
+			if (address1 != null)
+			{
+				softly.assertThat(persistedLocation.getAddress1()).as(I_C_Location.COLUMNNAME_Address1).isEqualTo(address1);
+			}
+			if (address2 != null)
+			{
+				softly.assertThat(persistedLocation.getAddress2()).as(I_C_Location.COLUMNNAME_Address2).isEqualTo(address2);
+			}
+			if (postal != null)
+			{
+				softly.assertThat(persistedLocation.getPostal()).as(I_C_Location.COLUMNNAME_Postal).isEqualTo(postal);
+			}
 			softly.assertThat(persistedLocation.getPoBox()).as(I_C_Location.COLUMNNAME_POBox).isEqualTo(poBox);
 			softly.assertThat(persistedLocation.getRegion()).as(I_C_Location.COLUMNNAME_RegionName).isEqualTo(region);
 			softly.assertThat(persistedLocation.getCountryCode()).as(I_C_Country.COLUMNNAME_CountryCode).isEqualTo(countryCode);
-			softly.assertThat(persistedLocation.getCity()).as(I_C_Location.COLUMNNAME_City).isEqualTo(city);
+			if (city != null)
+			{
+				softly.assertThat(persistedLocation.getCity()).as(I_C_Location.COLUMNNAME_City).isEqualTo(city);
+			}
 			softly.assertThat(persistedLocation.getDistrict()).as(I_C_Postal.COLUMNNAME_District).isEqualTo(DataTableUtil.extractValueOrNull(district));
 			softly.assertThat(persistedLocation.getGln()).as(I_C_BPartner_Location.COLUMNNAME_GLN).isEqualTo(gln);
 			softly.assertThat(persistedLocation.isHandoverLocation()).as(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation).isEqualTo(handoverLocation);
@@ -370,6 +387,13 @@ public class CreateBPartnerV2_StepDef
 			}
 
 			softly.assertAll();
+
+			final String locationIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (locationIdentifier != null)
+			{
+				final I_C_BPartner_Location locationRecord = InterfaceWrapperHelper.load(persistedLocation.getMetasfreshId().getValue(), I_C_BPartner_Location.class);
+				locationTable.putOrReplace(locationIdentifier, locationRecord);
+			}
 		}
 	}
 
@@ -395,6 +419,13 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
 			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
+
+			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_User.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (userIdentifier != null)
+			{
+				final I_AD_User locationRecord = InterfaceWrapperHelper.load(persistedContact.getMetasfreshId().getValue(), I_AD_User.class);
+				userTable.putOrReplace(userIdentifier, locationRecord);
+			}
 		}
 	}
 
