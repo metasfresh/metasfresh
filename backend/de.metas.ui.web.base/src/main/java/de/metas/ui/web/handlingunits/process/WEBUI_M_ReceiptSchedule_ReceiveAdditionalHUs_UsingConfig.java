@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -15,7 +16,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -135,9 +135,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	{
 		return getView()
 				.getReferencingDocumentPaths().stream()
-				.map(referencingDocumentPath -> getReceiptSchedule(referencingDocumentPath))
-				.collect(GuavaCollectors.toImmutableList())
-				.stream()
+				.map(this::getReceiptSchedule)
 				.findFirst();
 	}
 
