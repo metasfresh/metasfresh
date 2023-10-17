@@ -23,6 +23,7 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -38,6 +39,7 @@ public class PickingJobQuery
 	@NonNull UserId userId;
 	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
 	@Nullable PickingJobFacetsQuery facets;
+	@NonNull @Builder.Default ImmutableSet<BPartnerId> pickingProfileCustomerIds = ImmutableSet.of();
 
 	public static PickingJobQuery ofUserId(@NonNull final UserId userId) {return builder().userId(userId).build();}
 }

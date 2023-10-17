@@ -2,6 +2,8 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
@@ -38,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -153,10 +156,13 @@ public class PickingJobService
 				.ifPresent(this::abort);
 	}
 
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
+	@NonNull
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(
+			@NonNull final UserId pickerId,
+			@NonNull final Set<BPartnerId> onlyCustomerIds)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, loadingSupportingServices);
+		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, onlyCustomerIds, loadingSupportingServices);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
@@ -181,10 +187,23 @@ public class PickingJobService
 						PackageableQuery.OrderBy.WarehouseTypeId));
 
 		final PickingJobFacetsQuery facets = query.getFacets();
-		if (facets != null)
+		final ImmutableSet<BPartnerId> pickingProfileCustomerIds = query.getPickingProfileCustomerIds();
+		if (!pickingProfileCustomerIds.isEmpty() && facets != null)
+		{
+			final Set<BPartnerId> mutualCustomerIds = facets.getCustomerIds().isEmpty() 
+					? pickingProfileCustomerIds
+					: Sets.intersection(pickingProfileCustomerIds, facets.getCustomerIds());
+			builder.customerIds(mutualCustomerIds);
+			builder.deliveryDays(facets.getDeliveryDays());
+		}
+		else if (facets != null)
 		{
 			builder.customerIds(facets.getCustomerIds());
 			builder.deliveryDays(facets.getDeliveryDays());
+		}
+		else
+		{
+			builder.customerIds(pickingProfileCustomerIds);
 		}
 
 		return builder.build();
