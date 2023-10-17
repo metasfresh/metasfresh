@@ -52,7 +52,7 @@ import java.util.Optional;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcessTemplate implements IProcessDefaultParametersProvider
+public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcessTemplate implements IProcessDefaultParametersProvider
 {
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
