@@ -22,7 +22,9 @@
 
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -56,9 +58,11 @@ public class PickingJobRestService
 		return pickingJobService.getById(pickingJobId);
 	}
 
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId userId)
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(
+			@NonNull final UserId userId,
+			@NonNull final ImmutableSet<BPartnerId> onlyCustomerIds)
 	{
-		return pickingJobService.streamDraftPickingJobReferences(userId);
+		return pickingJobService.streamDraftPickingJobReferences(userId, onlyCustomerIds);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
