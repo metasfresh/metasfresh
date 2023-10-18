@@ -23,12 +23,14 @@
 package de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister;
 
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import lombok.NonNull;
@@ -108,6 +110,27 @@ public class JsonExternalReferenceHelper
 				.version(upsertItem.getExternalVersion())
 				.isReadOnlyMetasfresh(upsertItem.getIsReadOnlyInMetasfresh())
 				.externalReferenceUrl(upsertItem.getExternalReferenceUrl())
+				.build();
+
+		return Optional.of(externalReferenceItem);
+	}
+
+	@NonNull
+	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestBankAccountUpsertItem upsertItem)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getIdentifier());
+
+		if (externalIdentifier.getType() != EXTERNAL_REFERENCE)
+		{
+			return Optional.empty();
+		}
+
+		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+				.lookupItem(JsonExternalReferenceLookupItem.builder()
+									.type(BPBankAccountType.BPBankAccount.getCode())
+									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.build())
+				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.build();
 
 		return Optional.of(externalReferenceItem);
