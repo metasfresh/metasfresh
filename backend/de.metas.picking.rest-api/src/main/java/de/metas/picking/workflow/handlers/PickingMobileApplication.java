@@ -38,6 +38,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.PickingJobRestService;
@@ -87,10 +88,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 
 	public PickingMobileApplication(
-			@NonNull final PickingJobRestService pickingJobRestService)
+			@NonNull final PickingJobRestService pickingJobRestService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
 	{
 		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService);
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository);
 	}
 
 	@Override

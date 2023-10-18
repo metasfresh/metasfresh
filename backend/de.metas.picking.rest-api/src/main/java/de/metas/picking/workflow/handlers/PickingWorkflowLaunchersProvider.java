@@ -2,6 +2,7 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -10,6 +11,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.config.MobileUIPickingUserProfile;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
@@ -30,14 +33,17 @@ import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLIC
 class PickingWorkflowLaunchersProvider
 {
 	private final PickingJobRestService pickingJobRestService;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
 
 	PickingWorkflowLaunchersProvider(
-			@NonNull final PickingJobRestService pickingJobRestService)
+			@NonNull final PickingJobRestService pickingJobRestService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
 	{
 		this.pickingJobRestService = pickingJobRestService;
+		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 	}
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
@@ -60,7 +66,7 @@ class PickingWorkflowLaunchersProvider
 		}
 	}
 
-	private WorkflowLaunchersList computeLaunchers(@NonNull WorkflowLaunchersQuery query)
+	private WorkflowLaunchersList computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
@@ -68,9 +74,10 @@ class PickingWorkflowLaunchersProvider
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		//
 		// Already started launchers
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId)
+		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId, profile.getOnlyBPartnerIds())
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
@@ -86,10 +93,11 @@ class PickingWorkflowLaunchersProvider
 					.collect(ImmutableSet.toImmutableSet());
 
 			pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
-							.userId(userId)
-							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
-							.facets(facets)
-							.build())
+																	 .userId(userId)
+																	 .excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+																	 .facets(facets)
+																	 .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																	 .build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
 					.forEach(currentResult::add);
