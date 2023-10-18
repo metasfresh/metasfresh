@@ -1,5 +1,5 @@
 -- 2023-10-18T15:11:09.523Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540756,0,542373,TO_TIMESTAMP('2023-10-18 18:11:09','YYYY-MM-DD HH24:MI:SS'),100,'D','Nur ein aktives Mobile UI Kommissionierprofil ist erlaubt','Y','Y','IDX_unique_UserProfilePiccking','N',TO_TIMESTAMP('2023-10-18 18:11:09','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540756,0,542373,TO_TIMESTAMP('2023-10-18 18:11:09','YYYY-MM-DD HH24:MI:SS'),100,'D','Nur ein aktives Mobile UI Kommissionierprofil ist erlaubt','Y','Y','IDX_unique_UserProfilePicking','N',TO_TIMESTAMP('2023-10-18 18:11:09','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-10-18T15:11:09.537Z
