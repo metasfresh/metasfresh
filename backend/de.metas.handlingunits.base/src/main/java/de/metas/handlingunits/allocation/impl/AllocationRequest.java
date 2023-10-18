@@ -49,6 +49,7 @@ import java.time.ZonedDateTime;
 	private final ZonedDateTime date;
 	@Getter
 	private final boolean forceQtyAllocation;
+
 	@Getter
 	@Nullable
 	private final ClearanceStatusInfo clearanceStatusInfo;
@@ -82,7 +83,7 @@ import java.time.ZonedDateTime;
 	@Override
 	public String toString()
 	{
-		final String fromTableRecordStr = fromTableRecord == null ? null : "" + fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
+		final String fromTableRecordStr = fromTableRecord == null ? null : fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
 		return "AllocationRequest ["
 				+ "product=" + productId
 				+ ", qty=" + (isInfiniteQty() ? "inifinite" : quantity)
