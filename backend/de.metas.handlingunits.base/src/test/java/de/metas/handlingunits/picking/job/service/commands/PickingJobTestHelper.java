@@ -81,7 +81,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -157,7 +156,7 @@ public class PickingJobTestHelper
 						bpartnerBL,
 						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
 				),
-				Mockito.mock(ShipmentService.class));
+				ShipmentService.getInstance());
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)

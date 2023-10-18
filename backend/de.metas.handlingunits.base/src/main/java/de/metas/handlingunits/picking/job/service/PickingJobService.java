@@ -23,7 +23,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -54,7 +54,7 @@ public class PickingJobService
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
-	@NonNull private final ShipmentService shipmentService;
+	@NonNull private final IShipmentService shipmentService;
 
 	public PickingJobService(
 			final @NonNull PickingJobRepository pickingJobRepository,
@@ -64,7 +64,7 @@ public class PickingJobService
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			final @NonNull PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory,
-			final @NonNull ShipmentService shipmentService)
+			final @NonNull IShipmentService shipmentService)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;

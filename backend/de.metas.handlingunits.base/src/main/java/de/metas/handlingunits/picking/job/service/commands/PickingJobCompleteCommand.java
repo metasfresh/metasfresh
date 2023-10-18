@@ -8,7 +8,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,7 +28,7 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
-	@NonNull private final ShipmentService shipmentService;
+	@NonNull private final IShipmentService shipmentService;
 
 	@NonNull private final PickingJob initialPickingJob;
 	@NonNull private final CreateShipmentPolicy createShipmentPolicy;
@@ -39,7 +39,7 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
-			final @NonNull ShipmentService shipmentService,
+			final @NonNull IShipmentService shipmentService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy)
