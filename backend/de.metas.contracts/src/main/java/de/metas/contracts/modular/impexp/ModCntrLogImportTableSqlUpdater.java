@@ -34,6 +34,7 @@ import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
@@ -447,7 +448,7 @@ public class ModCntrLogImportTableSqlUpdater
 	}
 
 	@Builder
-	public record DBUpdateErrorMessageRequest(
+	record DBUpdateErrorMessageRequest(
 			@NonNull ImportRecordsSelection selection,
 			@NonNull String mandatoryColumnName,
 			@Nullable String linkColumnName,
