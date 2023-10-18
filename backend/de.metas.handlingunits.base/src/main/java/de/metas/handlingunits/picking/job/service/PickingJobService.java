@@ -23,6 +23,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -45,24 +46,25 @@ import java.util.stream.Stream;
 @Service
 public class PickingJobService
 {
-	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-	private final PickingJobRepository pickingJobRepository;
-	private final PickingJobLockService pickingJobLockService;
-	private final PickingJobSlotService pickingSlotService;
-	private final PickingCandidateService pickingCandidateService;
-	private final PickingJobHUReservationService pickingJobHUReservationService;
-	private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
-	private final PickingConfigRepositoryV2 pickingConfigRepo;
+	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final PickingJobLockService pickingJobLockService;
+	@NonNull private final PickingJobSlotService pickingSlotService;
+	@NonNull private final PickingCandidateService pickingCandidateService;
+	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
+	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
+	@NonNull private final ShipmentService shipmentService;
 
 	public PickingJobService(
-			final PickingJobRepository pickingJobRepository,
-			final PickingJobLockService pickingJobLockService,
-			final PickingJobSlotService pickingSlotService,
-			final PickingCandidateService pickingCandidateService,
-			final PickingJobHUReservationService pickingJobHUReservationService,
-			final PickingConfigRepositoryV2 pickingConfigRepo,
-			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory
-	)
+			final @NonNull PickingJobRepository pickingJobRepository,
+			final @NonNull PickingJobLockService pickingJobLockService,
+			final @NonNull PickingJobSlotService pickingSlotService,
+			final @NonNull PickingCandidateService pickingCandidateService,
+			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
+			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
+			final @NonNull PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory,
+			final @NonNull ShipmentService shipmentService)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;
@@ -71,6 +73,7 @@ public class PickingJobService
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.pickingConfigRepo = pickingConfigRepo;
 		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
+		this.shipmentService = shipmentService;
 	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -114,6 +117,7 @@ public class PickingJobService
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
+				.shipmentService(shipmentService)
 				//
 				.pickingJob(pickingJob);
 	}
