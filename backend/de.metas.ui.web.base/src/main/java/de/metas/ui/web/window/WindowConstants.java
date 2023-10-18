@@ -82,6 +82,9 @@ public final class WindowConstants
 
 	public static final String TABLENAME_AD_Ref_List = "AD_Ref_List";
 
+	public static final String SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED = "webui.documents.field.AD_Client_ID.IsDisplayed";
+	public static final String SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED = "webui.documents.field.AD_Org_ID.IsDisplayed";
+
 	private WindowConstants()
 	{
 	}
