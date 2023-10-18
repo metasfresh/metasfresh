@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -10,7 +9,6 @@ import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
@@ -38,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -186,24 +185,16 @@ public class PickingJobService
 						PackageableQuery.OrderBy.DeliveryBPLocationId,
 						PackageableQuery.OrderBy.WarehouseTypeId));
 
-		final PickingJobFacetsQuery facets = query.getFacets();
-		final ImmutableSet<BPartnerId> pickingProfileCustomerIds = query.getPickingProfileCustomerIds();
-		if (!pickingProfileCustomerIds.isEmpty() && facets != null)
+		final Set<BPartnerId> onlyBPartnerIds = query.getOnlyBPartnerIdsEffective();
+		if (!onlyBPartnerIds.isEmpty())
 		{
-			final Set<BPartnerId> mutualCustomerIds = facets.getCustomerIds().isEmpty() 
-					? pickingProfileCustomerIds
-					: Sets.intersection(pickingProfileCustomerIds, facets.getCustomerIds());
-			builder.customerIds(mutualCustomerIds);
-			builder.deliveryDays(facets.getDeliveryDays());
+			builder.customerIds(onlyBPartnerIds);
 		}
-		else if (facets != null)
+
+		final ImmutableSet<LocalDate> deliveryDays = query.getDeliveryDays();
+		if (!deliveryDays.isEmpty())
 		{
-			builder.customerIds(facets.getCustomerIds());
-			builder.deliveryDays(facets.getDeliveryDays());
-		}
-		else
-		{
-			builder.customerIds(pickingProfileCustomerIds);
+			builder.deliveryDays(deliveryDays);
 		}
 
 		return builder.build();

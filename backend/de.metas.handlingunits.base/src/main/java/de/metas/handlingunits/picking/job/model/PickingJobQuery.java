@@ -23,14 +23,19 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Value
 @Builder
@@ -39,7 +44,31 @@ public class PickingJobQuery
 	@NonNull UserId userId;
 	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
 	@Nullable PickingJobFacetsQuery facets;
-	@NonNull @Builder.Default ImmutableSet<BPartnerId> pickingProfileCustomerIds = ImmutableSet.of();
+	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 
 	public static PickingJobQuery ofUserId(@NonNull final UserId userId) {return builder().userId(userId).build();}
+
+	public Set<BPartnerId> getOnlyBPartnerIdsEffective()
+	{
+		if (onlyBPartnerIds.isEmpty())
+		{
+			return facets != null ? facets.getCustomerIds() : ImmutableSet.of();
+		}
+		else
+		{
+			if (facets != null && !facets.getCustomerIds().isEmpty())
+			{
+				return Sets.intersection(onlyBPartnerIds, facets.getCustomerIds());
+			}
+			else
+			{
+				return onlyBPartnerIds;
+			}
+		}
+	}
+
+	public ImmutableSet<LocalDate> getDeliveryDays()
+	{
+		return facets != null ? facets.getDeliveryDays() : ImmutableSet.of();
+	}
 }

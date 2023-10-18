@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -73,10 +74,10 @@ class PickingWorkflowLaunchersProvider
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
-		final ImmutableSet<BPartnerId> pickingProfileBPartnerIds = mobileUIPickingUserProfileRepository.getPickingProfileBPartnerIds();
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		//
 		// Already started launchers
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId, pickingProfileBPartnerIds)
+		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId, profile.getOnlyBPartnerIds())
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
@@ -95,7 +96,7 @@ class PickingWorkflowLaunchersProvider
 																	 .userId(userId)
 																	 .excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
 																	 .facets(facets)
-																	 .pickingProfileCustomerIds(pickingProfileBPartnerIds)
+																	 .onlyBPartnerIds(profile.getOnlyBPartnerIds())
 																	 .build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)

@@ -24,6 +24,7 @@ package de.metas.picking.config;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,16 +37,34 @@ public class MobileUIPickingUserProfileRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull
-	public ImmutableSet<BPartnerId> getPickingProfileBPartnerIds()
+	private final CCache<Integer, MobileUIPickingUserProfile> cache = CCache.<Integer, MobileUIPickingUserProfile>builder()
+			.tableName(I_MobileUI_UserProfile_Picking.Table_Name)
+			.build();
+
+	public MobileUIPickingUserProfile getProfile()
 	{
-		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+		return cache.getOrLoad(0, this::retrieveProfile);
+	}
+
+	@NonNull
+	public MobileUIPickingUserProfile retrieveProfile()
+	{
+		@NonNull final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
 				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, I_MobileUI_UserProfile_Picking_BPartner.class)
+				.create()
+				.firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
+
+		final ImmutableSet<BPartnerId> onlyBPartnerIds = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profile.getMobileUI_UserProfile_Picking_ID())
 				.create()
 				.stream()
 				.map(I_MobileUI_UserProfile_Picking_BPartner::getC_BPartner_ID)
 				.map(BPartnerId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+
+		return MobileUIPickingUserProfile.builder()
+				.onlyBPartnerIds(onlyBPartnerIds)
+				.build();
 	}
 }
