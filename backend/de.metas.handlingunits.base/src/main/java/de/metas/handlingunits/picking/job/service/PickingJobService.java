@@ -103,15 +103,19 @@ public class PickingJobService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
+		return prepareToComplete(pickingJob)
+				.build().execute();
+	}
+
+	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
+	{
 		return PickingJobCompleteCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				//
-				.pickingJob(pickingJob)
-				//
-				.build().execute();
+				.pickingJob(pickingJob);
 	}
 
 	public PickingJob abort(@NonNull final PickingJob pickingJob)
@@ -213,7 +217,7 @@ public class PickingJobService
 				.build();
 	}
 
-	public PickingJobFacets getFacets(@NonNull PickingJobQuery query)
+	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
 	{
 		return packagingDAO.stream(toPackageableQuery(query)).collect(PickingJobFacets.collectFromPackageables());
 	}
@@ -312,7 +316,7 @@ public class PickingJobService
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> {
-			for (PickingJob job : getDraftJobsByPickerId(userId))
+			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
 				pickingJobRepository.save(job.withLockedBy(null));
 			}

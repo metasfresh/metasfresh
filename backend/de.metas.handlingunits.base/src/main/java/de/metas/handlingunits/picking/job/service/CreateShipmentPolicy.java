@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.picking.job.service;
 
-import de.metas.handlingunits.model.X_MobileUI_UserProfile_Picking;
+import org.compiere.model.X_MobileUI_UserProfile_Picking;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -31,6 +31,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+@Getter
 @AllArgsConstructor
 public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 {
@@ -40,7 +41,6 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CreateShipmentPolicy> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
 	private final String code;
 
 	@NonNull

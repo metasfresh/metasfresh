@@ -28,7 +28,8 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final ShipmentService shipmentService;
 
-	private final PickingJob initialPickingJob;
+	@NonNull private final PickingJob initialPickingJob;
+	@NonNull @Builder.Default private CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
 
 	@Builder
 	private PickingJobCompleteCommand(
@@ -38,7 +39,8 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			final @NonNull ShipmentService shipmentService,
 			//
-			final @NonNull PickingJob pickingJob)
+			final @NonNull PickingJob pickingJob,
+			final @NonNull CreateShipmentPolicy createShipmentPolicy)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
@@ -47,6 +49,7 @@ public class PickingJobCompleteCommand
 		this.shipmentService = shipmentService;
 
 		this.initialPickingJob = pickingJob;
+		this.createShipmentPolicy = createShipmentPolicy;
 	}
 
 	public PickingJob execute()
@@ -77,8 +80,7 @@ public class PickingJobCompleteCommand
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 
-		final CreateShipmentPolicy shipmentPolicy = CREATE_AND_COMPLETE; //TODO: replace with get from profile
-		if (shipmentPolicy.equals(CREATE_AND_COMPLETE))
+		if (createShipmentPolicy.equals(CREATE_AND_COMPLETE))
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
 																	.scheduleIds(pickingJob.getShipmentScheduleIds())
@@ -87,7 +89,7 @@ public class PickingJobCompleteCommand
 																	.isCompleteShipment(true)
 																	.build());
 		}
-		else if (shipmentPolicy.equals(CREATE_DRAFT))
+		else if (createShipmentPolicy.equals(CREATE_DRAFT))
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
 																	.scheduleIds(pickingJob.getShipmentScheduleIds())
