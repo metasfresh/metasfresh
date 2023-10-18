@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
