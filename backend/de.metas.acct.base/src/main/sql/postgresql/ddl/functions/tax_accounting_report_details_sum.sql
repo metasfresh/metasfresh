@@ -51,36 +51,38 @@ BEGIN
                                  x.kontoname,
                                  x.taxname,
                                  x.taxrate,
-                                 (COALESCE(x.inv_baseamt, x.gl_baseamt, 0::numeric) + COALESCE(x.hdr_baseamt, 0::numeric)) AS taxbaseamt,
-                                 (COALESCE(x.inv_taxamt, x.gl_taxamt) + COALESCE(x.hdr_taxamt, 0 :: numeric))              AS taxamt,
-                                 x.taxamtperaccount                                                                        AS taxamtperaccount,
+                                 (COALESCE(x.inv_baseamt, x.gl_baseamt, x.sap_gl_baseamt, 0::numeric) + COALESCE(x.hdr_baseamt, 0::numeric)) AS taxbaseamt,
+                                 (COALESCE(x.inv_taxamt, x.gl_taxamt, x.sap_gl_taxamt) + COALESCE(x.hdr_taxamt, 0 :: numeric))               AS taxamt,
+                                 x.taxamtperaccount                                                                                          AS taxamtperaccount,
                                  x.dateacct,
                                  x.c_currency_id,
                                  x.C_Tax_ID,
                                  x.ad_org_id,
                                  x.ad_client_id
                           FROM (
-                                   SELECT ev.value       AS kontono,
-                                          ev.name        AS kontoname,
-                                          tax.name       AS taxname,
-                                          tax.rate       AS taxrate,
+                                   SELECT ev.value          AS kontono,
+                                          ev.name           AS kontoname,
+                                          tax.name          AS taxname,
+                                          tax.rate          AS taxrate,
                                           fa.dateacct,
-                                          i.taxbaseamt   AS inv_baseamt,
-                                          gl.taxbaseamt  AS gl_baseamt,
-                                          hdr.taxbaseamt AS hdr_baseamt,
-                                          i.taxamt       AS inv_taxamt,
-                                          gl.taxamt      AS gl_taxamt,
-                                          hdr.taxamt     AS hdr_taxamt,
+                                          i.taxbaseamt      AS inv_baseamt,
+                                          gl.taxbaseamt     AS gl_baseamt,
+                                          sap_gl.taxbaseamt AS sap_gl_baseamt,
+                                          hdr.taxbaseamt    AS hdr_baseamt,
+                                          i.taxamt          AS inv_taxamt,
+                                          gl.taxamt         AS gl_taxamt,
+                                          sap_gl.taxamt     AS sap_gl_taxamt,
+                                          hdr.taxamt        AS hdr_taxamt,
 
                                           (CASE
                                                WHEN fa.line_id IS NULL AND fa.C_Tax_id IS NOT NULL
                                                    THEN (fa.amtacctdr - fa.amtacctcr)
                                                    ELSE 0
-                                           END)          AS taxamtperaccount,
+                                           END)             AS taxamtperaccount,
 
                                           fa.c_currency_id,
 
-                                          fa.vatcode     AS vatcode,
+                                          fa.vatcode        AS vatcode,
                                           fa.C_Tax_ID,
                                           fa.ad_org_id,
                                           fa.ad_client_id
@@ -152,6 +154,26 @@ BEGIN
                                                                       COALESCE(gll.dr_tax_id, gll.cr_tax_id)
                                    ) gl ON fa.record_id = gl.gl_journal_id AND fa.ad_table_id = get_Table_Id('GL_Journal') AND
                                            gl.gl_journalline_id = fa.line_id AND gl.tax_id = fa.c_tax_id
+
+                                       --if SAP gl journal
+                                            LEFT OUTER JOIN (SELECT sap_gll.amtacct  AS taxamt,
+                                                                    (
+                                                                        SELECT amtacct
+                                                                        FROM SAP_GLJournalLine gll
+                                                                        WHERE gll.sap_gljournalline_id = sap_gll.parent_id
+                                                                          AND sap_gll.c_tax_id = gll.c_tax_id
+                                                                    )                AS taxbaseamt,
+                                                                    sap_gl.SAP_GLJournal_ID,
+                                                                    sap_gll.SAP_GLJournalLine_ID,
+                                                                    sap_gll.c_tax_id AS tax_id
+                                                             FROM SAP_GLJournal sap_gl
+                                                                      JOIN SAP_GLJournalLine sap_gll
+                                                                           ON sap_gl.SAP_GLJournal_ID = sap_gll.SAP_GLJournal_ID AND sap_gll.isActive = 'Y'
+                                                             WHERE sap_gl.isActive = 'Y'
+                                                               AND sap_gll.c_tax_id IS NOT NULL
+                                                               AND sap_gll.parent_id IS NOT NULL
+                                   ) sap_gl ON fa.record_id = sap_gl.SAP_GLJournal_ID AND fa.ad_table_id = get_Table_Id('SAP_GLJournal') AND
+                                               sap_gl.SAP_GLJournalLine_ID = fa.line_id AND sap_gl.tax_id = fa.c_tax_id
 
                                        --if allocationHdr
                                             LEFT OUTER JOIN (
