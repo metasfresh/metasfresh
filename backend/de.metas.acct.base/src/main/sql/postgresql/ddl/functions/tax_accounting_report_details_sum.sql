@@ -156,10 +156,7 @@ BEGIN
                                            gl.gl_journalline_id = fa.line_id AND gl.tax_id = fa.c_tax_id
 
                                        --if SAP gl journal
-                                            LEFT OUTER JOIN (SELECT (CASE
-                                                                         WHEN sap_gll.parent_id IS NOT NULL AND sap_gll.c_tax_id IS NOT NULL
-                                                                             THEN sap_gll.amtacct
-                                                                     END)            AS taxamt,
+                                            LEFT OUTER JOIN (SELECT sap_gll.amtacct  AS taxamt,
                                                                     (
                                                                         SELECT amtacct
                                                                         FROM SAP_GLJournalLine gll
