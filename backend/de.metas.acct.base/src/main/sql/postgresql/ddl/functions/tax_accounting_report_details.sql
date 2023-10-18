@@ -51,12 +51,12 @@ SELECT DISTINCT ON (x.vatcode, x.kontono, x.kontoname, x.dateacct, x.documentno,
                                                                                                                                           x.bpName,
                                                                                                                                           COALESCE(
                                                                                                                                                   COALESCE(
-                                                                                                                                                          COALESCE(x.inv_baseamt, x.gl_baseamt),
+                                                                                                                                                          COALESCE(x.inv_baseamt, x.gl_baseamt, x.sap_gl_baseamt),
                                                                                                                                                           x.hdr_baseamt,
                                                                                                                                                           0 :: numeric)) AS taxbaseamt,
                                                                                                                                           COALESCE(
                                                                                                                                                   COALESCE(
-                                                                                                                                                          COALESCE(x.inv_taxamt, x.gl_taxamt),
+                                                                                                                                                          COALESCE(x.inv_taxamt, x.gl_taxamt, x.sap_gl_taxamt),
                                                                                                                                                           x.hdr_taxamt,
                                                                                                                                                           0 :: numeric)) AS taxamt,
                                                                                                                                           taxamtperaccount,
@@ -71,29 +71,31 @@ SELECT DISTINCT ON (x.vatcode, x.kontono, x.kontoname, x.dateacct, x.documentno,
                                                                                                                                           x.account_id,
                                                                                                                                           x.ad_org_id
 FROM (
-         SELECT ev.value       AS kontono,
-                ev.name        AS kontoname,
+         SELECT ev.value          AS kontono,
+                ev.name           AS kontoname,
                 fa.dateacct,
                 fa.documentno,
 
-                tax.name       AS taxname,
-                tax.rate       AS taxrate,
+                tax.name          AS taxname,
+                tax.rate          AS taxrate,
 
-                bp.name        AS bpName,
+                bp.name           AS bpName,
 
-                i.taxbaseamt   AS inv_baseamt,
-                gl.taxbaseamt  AS gl_baseamt,
-                hdr.taxbaseamt AS hdr_baseamt,
+                i.taxbaseamt      AS inv_baseamt,
+                gl.taxbaseamt     AS gl_baseamt,
+                sap_gl.taxbaseamt AS sap_gl_baseamt,
+                hdr.taxbaseamt    AS hdr_baseamt,
 
-                i.taxamt       AS inv_taxamt,
-                gl.taxamt      AS gl_taxamt,
-                hdr.taxamt     AS hdr_taxamt,
+                i.taxamt          AS inv_taxamt,
+                gl.taxamt         AS gl_taxamt,
+                sap_gl.taxamt     AS sap_gl_taxamt,
+                hdr.taxamt        AS hdr_taxamt,
 
                 (CASE
                      WHEN fa.line_id IS NULL AND fa.C_Tax_id IS NOT NULL
                          THEN (fa.amtacctdr - fa.amtacctcr)
                          ELSE 0
-                 END)          AS taxamtperaccount,
+                 END)             AS taxamtperaccount,
 
                 c.iso_code,
 
@@ -101,9 +103,9 @@ FROM (
                      WHEN fa.line_id IS NULL AND fa.C_Tax_id IS NOT NULL
                          THEN 'Y'
                          ELSE 'N'
-                 END)          AS IsTaxLine,
+                 END)             AS IsTaxLine,
 
-                fa.vatcode     AS vatcode,
+                fa.vatcode        AS vatcode,
                 p_dateFrom,
                 p_dateTo,
                 (CASE
@@ -113,12 +115,12 @@ FROM (
                                FROM C_ElementValue
                                WHERE C_ElementValue_ID = p_account_id
                                  AND isActive = 'Y')
-                 END)          AS param_konto,
+                 END)             AS param_konto,
                 (CASE
                      WHEN p_vatcode IS NULL
                          THEN NULL
                          ELSE p_vatcode
-                 END)          AS param_vatcode,
+                 END)             AS param_vatcode,
                 (CASE
                      WHEN p_org_id IS NULL
                          THEN NULL
@@ -126,7 +128,7 @@ FROM (
                                FROM ad_org
                                WHERE ad_org_id = p_org_id
                                  AND isActive = 'Y')
-                 END)          AS param_org,
+                 END)             AS param_org,
                 fa.C_Tax_ID,
                 fa.account_id,
                 fa.ad_org_id
@@ -194,6 +196,30 @@ FROM (
                                    WHERE gl.isActive = 'Y'
          ) gl ON fa.record_id = gl.gl_journal_id AND fa.ad_table_id = get_Table_Id('GL_Journal') AND
                  gl.gl_journalline_id = fa.line_id AND gl.tax_id = fa.c_tax_id
+
+             --if SAP gl journal
+                  LEFT OUTER JOIN (SELECT (CASE
+                                               WHEN sap_gll.parent_id IS NOT NULL AND sap_gll.c_tax_id IS NOT NULL
+                                                   THEN sap_gll.amtacct
+                                           END)            AS taxamt,
+                                          (
+                                              SELECT amtacct
+                                              FROM SAP_GLJournalLine gll
+                                              WHERE gll.sap_gljournalline_id = sap_gll.parent_id
+                                                AND sap_gll.c_tax_id = gll.c_tax_id
+                                          )                AS taxbaseamt,
+                                          sap_gl.SAP_GLJournal_ID,
+                                          sap_gll.SAP_GLJournalLine_ID,
+                                          sap_gll.c_tax_id AS tax_id
+                                   FROM SAP_GLJournal sap_gl
+                                            JOIN SAP_GLJournalLine sap_gll
+                                                 ON sap_gl.SAP_GLJournal_ID = sap_gll.SAP_GLJournal_ID AND sap_gll.isActive = 'Y'
+                                   WHERE sap_gl.isActive = 'Y'
+                                     AND sap_gll.c_tax_id IS NOT NULL
+                                     AND sap_gll.parent_id IS NOT NULL
+         ) sap_gl ON fa.record_id = sap_gl.SAP_GLJournal_ID AND fa.ad_table_id = get_Table_Id('SAP_GLJournal') AND
+                     sap_gl.SAP_GLJournalLine_ID = fa.line_id AND sap_gl.tax_id = fa.c_tax_id
+
 
              --if allocationHdr
                   LEFT OUTER JOIN (
