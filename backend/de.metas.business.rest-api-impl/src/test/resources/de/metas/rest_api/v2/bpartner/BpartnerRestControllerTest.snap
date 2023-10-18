@@ -1,5 +1,6 @@
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_Update_BPartner_Name_Insert_Location=[
   {
+    "bankAccounts": [ ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -345,11 +346,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -582,11 +585,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -816,11 +821,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -1015,11 +1022,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -1403,6 +1412,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1502,6 +1530,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1601,6 +1648,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1721,6 +1787,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "changeInfo": {
+              "createdBy": 30,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 30,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "default": false,
+            "metasfreshBPartnerId": 20,
+            "metasfreshId": 50
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -1816,6 +1901,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ]
       },
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "changeInfo": {
+              "createdBy": 31,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 31,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "default": false,
+            "metasfreshBPartnerId": 21,
+            "metasfreshId": 51
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -1924,6 +2028,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "changeInfo": {
+              "createdBy": 32,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 32,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "default": false,
+            "metasfreshBPartnerId": 22,
+            "metasfreshId": 52
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -2019,6 +2142,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ]
       },
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "changeInfo": {
+              "createdBy": 33,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 33,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "default": false,
+            "metasfreshBPartnerId": 23,
+            "metasfreshId": 53
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -2127,6 +2269,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "changeInfo": {
+              "createdBy": 34,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 34,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "default": false,
+            "metasfreshBPartnerId": 24,
+            "metasfreshId": 54
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {

@@ -77,7 +77,7 @@ public class JsonResponseBPBankAccount
 			@JsonProperty(NAME) @Nullable final String name,
 			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(IS_DEFAULT) final boolean isDefault,
-			final JsonChangeInfo changeInfo)
+			@JsonProperty("changeInfo") final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
