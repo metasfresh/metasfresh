@@ -2,13 +2,13 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
@@ -36,8 +36,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -153,10 +155,13 @@ public class PickingJobService
 				.ifPresent(this::abort);
 	}
 
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
+	@NonNull
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(
+			@NonNull final UserId pickerId,
+			@NonNull final Set<BPartnerId> onlyCustomerIds)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, loadingSupportingServices);
+		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, onlyCustomerIds, loadingSupportingServices);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
@@ -180,11 +185,16 @@ public class PickingJobService
 						PackageableQuery.OrderBy.DeliveryBPLocationId,
 						PackageableQuery.OrderBy.WarehouseTypeId));
 
-		final PickingJobFacetsQuery facets = query.getFacets();
-		if (facets != null)
+		final Set<BPartnerId> onlyBPartnerIds = query.getOnlyBPartnerIdsEffective();
+		if (!onlyBPartnerIds.isEmpty())
 		{
-			builder.customerIds(facets.getCustomerIds());
-			builder.deliveryDays(facets.getDeliveryDays());
+			builder.customerIds(onlyBPartnerIds);
+		}
+
+		final ImmutableSet<LocalDate> deliveryDays = query.getDeliveryDays();
+		if (!deliveryDays.isEmpty())
+		{
+			builder.deliveryDays(deliveryDays);
 		}
 
 		return builder.build();
