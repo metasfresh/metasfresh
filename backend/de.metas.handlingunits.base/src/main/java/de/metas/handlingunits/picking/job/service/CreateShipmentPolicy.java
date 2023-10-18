@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.picking.job.service;
 
+import de.metas.handlingunits.model.X_MobileUI_UserProfile_Picking;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -33,9 +34,9 @@ import javax.annotation.Nullable;
 @AllArgsConstructor
 public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 {
-	DO_NOT_CREATE("NO"), //TODO: replace with RefList constant value
-	CREATE_DRAFT("DR"),
-	CREATE_AND_COMPLETE("CO");
+	DO_NOT_CREATE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_DO_NOT_CREATE),
+	CREATE_DRAFT(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_DRAFT),
+	CREATE_AND_COMPLETE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CreateShipmentPolicy> index = ReferenceListAwareEnums.index(values());
 
