@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -99,7 +98,6 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.title.Title;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -779,23 +777,18 @@ public class JsonRetrieverService
 			@NonNull final ExternalIdentifier bankAccountIdentifier,
 			@NonNull final BPartnerComposite bPartnerComposite)
 	{
-		Check.assumeNotNull(bPartnerComposite.getOrgId(), "At this point, the orgId is always resolved on BPartnerComposite!");
-
 		return switch (bankAccountIdentifier.getType())
 				{
 					case METASFRESH_ID -> Optional.of(bankAccountIdentifier.asMetasfreshId());
-					case EXTERNAL_REFERENCE -> externalReferenceService.getJsonMetasfreshIdFromExternalReference(bPartnerComposite.getOrgId(),
+					case EXTERNAL_REFERENCE -> externalReferenceService.getJsonMetasfreshIdFromExternalReference(bPartnerComposite.getOrgIdNotNull(),
 																												 bankAccountIdentifier,
 																												 BPBankAccountType.BPBankAccount)
-							.map(JsonMetasfreshId::getValue)
 							.map(MetasfreshId::of);
 					case IBAN -> bPartnerComposite.getBankAccountByIBAN(bankAccountIdentifier.asIban())
 							.map(BPartnerBankAccount::getId)
-							.map(BPartnerBankAccountId::getRepoId)
 							.map(MetasfreshId::of);
 					case QR_IBAN -> bPartnerComposite.getBankAccountByQrIban(bankAccountIdentifier.asQrIban())
 							.map(BPartnerBankAccount::getId)
-							.map(BPartnerBankAccountId::getRepoId)
 							.map(MetasfreshId::of);
 					default -> throw new InvalidIdentifierException("Given external identifier type is not supported!")
 							.appendParametersToMessage()
@@ -1057,8 +1050,8 @@ public class JsonRetrieverService
 
 	private static JsonResponseBPBankAccount toJson(@NonNull final BPartnerBankAccount bankAccount)
 	{
-		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.getId()));
-		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(bankAccount.getId().getBpartnerId()));
+		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId());
+		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getBpartnerId().getRepoId());
 		final JsonMetasfreshId currencyId = JsonMetasfreshId.of(CurrencyId.toRepoId(bankAccount.getCurrencyId()));
 
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bankAccount.getChangeLog(), BANK_ACCOUNT_FIELD_MAP);

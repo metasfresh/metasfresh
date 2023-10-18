@@ -28,6 +28,7 @@ import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.Check;
 import de.metas.money.CurrencyId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -147,6 +148,12 @@ public class BPartnerBankAccount
 	{
 		this.id = id;
 		this.bpartnerId = id != null ? id.getBpartnerId() : null;
+	}
+
+	@NonNull
+	public BPartnerBankAccountId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "Assuming the id is set at this point!");
 	}
 
 }

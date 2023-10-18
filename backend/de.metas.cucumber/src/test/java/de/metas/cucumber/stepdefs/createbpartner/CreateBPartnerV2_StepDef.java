@@ -145,7 +145,7 @@ public class CreateBPartnerV2_StepDef
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 			final String pricingSystemId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_PricingSystem_ID);
-			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
+			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse);
 			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_AD_Org org = Optional.ofNullable(orgIdentifier)
@@ -162,7 +162,11 @@ public class CreateBPartnerV2_StepDef
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
 			softly.assertThat(persistedBPartner.getName()).isEqualTo(name);
-			softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+
+			if (storageWarehouse != null)
+			{
+				softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+			}
 
 			if (Check.isNotBlank(code))
 			{

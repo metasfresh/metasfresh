@@ -136,8 +136,8 @@ public class JsonRequestBankAccountUpsertItem
 		this.syncAdvise = syncAdvise;
 	}
 
-	public Boolean getIsActive()
+	public boolean getIsActive()
 	{
-		return !activeSet ? null : CoalesceUtil.coalesceNotNull(active, true);
+		return activeSet && CoalesceUtil.coalesceNotNull(active, true);
 	}
 }

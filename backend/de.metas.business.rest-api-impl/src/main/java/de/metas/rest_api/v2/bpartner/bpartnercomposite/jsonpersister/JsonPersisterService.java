@@ -752,7 +752,7 @@ public class JsonPersisterService
 			final JsonResponseUpsertItemBuilder builder = jsonResponseBankAccountUpsertItemBuilders.get(requestItem.getIban());
 			final BPartnerBankAccount bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban())
 					.orElseThrow(() -> new AdempiereException("No BPBankAccount found for IBAN=" + requestItem.getIban()));
-			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.getId())));
+			builder.metasfreshId(JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId()));
 		}
 
 		bpartnerComposite.getCreditLimits()

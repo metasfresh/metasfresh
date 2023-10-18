@@ -361,4 +361,10 @@ public final class BPartnerComposite
 				.filter(bankAccount -> qrIban.equals(bankAccount.getQrIban()))
 				.findFirst();
 	}
+
+	@NonNull
+	public OrgId getOrgIdNotNull()
+	{
+		return Check.assumeNotNull(getOrgId(), "At this point, is expected the orgId to be resolved!");
+	}
 }
