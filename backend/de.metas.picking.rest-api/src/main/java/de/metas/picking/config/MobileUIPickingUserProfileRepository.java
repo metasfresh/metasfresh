@@ -49,10 +49,15 @@ public class MobileUIPickingUserProfileRepository
 	@NonNull
 	public MobileUIPickingUserProfile retrieveProfile()
 	{
-		@NonNull final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+		final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
+				.firstOnly(I_MobileUI_UserProfile_Picking.class);
+
+		if (profile == null)
+		{
+			return MobileUIPickingUserProfile.DEFAULT;
+		}
 
 		final ImmutableSet<BPartnerId> onlyBPartnerIds = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
 				.addOnlyActiveRecordsFilter()

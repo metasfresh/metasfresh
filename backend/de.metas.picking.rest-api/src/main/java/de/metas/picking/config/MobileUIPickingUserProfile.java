@@ -32,5 +32,7 @@ import lombok.Value;
 @Builder
 public class MobileUIPickingUserProfile
 {
-	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
+	public static final MobileUIPickingUserProfile DEFAULT = builder().build();
+
+	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 }
