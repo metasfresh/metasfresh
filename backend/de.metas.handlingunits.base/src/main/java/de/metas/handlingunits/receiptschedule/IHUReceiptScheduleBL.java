@@ -9,6 +9,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -93,6 +94,12 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 			@Nullable Quantity qtyToReceive);
 
 	StockQtyAndUOMQty getQtyToMove(I_M_ReceiptSchedule receiptSchedule);
+
+	List<I_M_HU> createPlanningHUs(CreatePlanningHUsRequest request);
+
+	void updatePlanningHUAttributes(@NonNull I_M_HU hu, @NonNull I_M_ReceiptSchedule receiptSchedule);
+
+	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
 
 	@Value
 	@Builder
