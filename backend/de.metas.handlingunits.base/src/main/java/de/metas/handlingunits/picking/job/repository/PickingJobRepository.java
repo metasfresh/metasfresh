@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -14,7 +15,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -43,7 +43,8 @@ public class PickingJobRepository
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		final Set<PickingJobId> pickingJobIds = queryDraftJobsByPickerId(pickerId)
+		final Set<PickingJobId> pickingJobIds = queryBuilderDraftJobsByPickerId(pickerId)
+				.create()
 				.listIds(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
@@ -55,7 +56,8 @@ public class PickingJobRepository
 				.loadByIds(pickingJobIds);
 	}
 
-	private IQuery<I_M_Picking_Job> queryDraftJobsByPickerId(final @NonNull ValueRestriction<UserId> pickerId)
+	@NonNull
+	private IQueryBuilder<I_M_Picking_Job> queryBuilderDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId)
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
@@ -63,7 +65,7 @@ public class PickingJobRepository
 
 		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);
 
-		return queryBuilder.create();
+		return queryBuilder;
 	}
 
 	public PickingJob getById(
@@ -74,11 +76,29 @@ public class PickingJobRepository
 				.loadById(pickingJobId);
 	}
 
+	@NonNull
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(
 			@NonNull final UserId pickerId,
+			@NonNull final Set<BPartnerId> onlyCustomerIds,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		return getDraftJobsByPickerId(ValueRestriction.equalsToOrNull(pickerId), loadingSupportServices)
+		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsTo(pickerId));
+		if (!onlyCustomerIds.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds);
+		}
+
+		final Set<PickingJobId> pickingJobIds = queryBuilder
+				.create()
+				.listIds(PickingJobId::ofRepoId);
+
+		if (pickingJobIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds)
 				.stream()
 				.map(PickingJobRepository::toPickingJobReference);
 	}
