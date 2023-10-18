@@ -85,6 +85,10 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -243,8 +247,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic()
 				.evaluatePartial(Evaluatees.mapBuilder()
-						.put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
-						.build());
+										 .put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
+										 .build());
 
 		//
 		// Entity descriptor
@@ -324,7 +328,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
-					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+																"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
 			builder.setTooltipIconName(tooltipIconName);
 		}
 		return builder;
@@ -654,7 +658,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final Class<?> valueClass,
 			@Nullable final LookupDescriptor lookupDescriptor)
 	{
-		if (gridFieldDefaultFilterInfo == null)
+		if (gridFieldDefaultFilterInfo == null || isSkipField(fieldName))
 		{
 			return null;
 		}
@@ -769,7 +773,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
 		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
-				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+													 trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
 		);
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
@@ -1087,4 +1091,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		return precision > 0 ? OptionalInt.of(precision) : OptionalInt.empty();
 	}
 
+	private boolean isSkipField(@NonNull final String fieldName)
+	{
+		return switch (fieldName)
+				{
+					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+					default -> false;
+				};
+	}
 }

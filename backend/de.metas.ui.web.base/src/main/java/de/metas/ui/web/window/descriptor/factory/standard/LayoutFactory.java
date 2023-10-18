@@ -67,6 +67,8 @@ import java.util.stream.Stream;
 
 import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
 import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -115,9 +117,6 @@ public class LayoutFactory
 
 	public static final AdMessageKey TAB_EMPTY_RESULT_HINT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_HINT");
 	public static final AdMessageKey TAB_EMPTY_RESULT_TEXT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_TEXT");
-
-	private static final String SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED = "webui.documents.field.AD_Client_ID.IsDisplayed";
-	private static final String SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED = "webui.documents.field.AD_Org_ID.IsDisplayed";
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
 
