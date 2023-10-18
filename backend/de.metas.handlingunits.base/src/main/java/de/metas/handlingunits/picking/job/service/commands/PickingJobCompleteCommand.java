@@ -17,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.handlingunits.picking.job.service.CreateShipmentPolicy.CREATE_AND_COMPLETE;
 import static de.metas.handlingunits.picking.job.service.CreateShipmentPolicy.CREATE_DRAFT;
+import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY;
 
 public class PickingJobCompleteCommand
 {
@@ -81,14 +82,16 @@ public class PickingJobCompleteCommand
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
 																	.scheduleIds(pickingJob.getShipmentScheduleIds())
+																	.quantityTypeToUse(TYPE_PICKED_QTY)
 																	.onTheFlyPickToPackingInstructions(true)
-																	.isCompleteShipment(false)
+																	.isCompleteShipment(true)
 																	.build());
 		}
 		else if (shipmentPolicy.equals(CREATE_DRAFT))
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
 																	.scheduleIds(pickingJob.getShipmentScheduleIds())
+																	.quantityTypeToUse(TYPE_PICKED_QTY)
 																	.onTheFlyPickToPackingInstructions(true)
 																	.isCompleteShipment(false)
 																	.build());
