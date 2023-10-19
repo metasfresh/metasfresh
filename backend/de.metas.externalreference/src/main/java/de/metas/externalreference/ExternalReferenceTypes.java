@@ -23,6 +23,7 @@
 package de.metas.externalreference;
 
 import de.metas.externalreference.allergen.AllergenExternalReferenceType;
+import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
@@ -61,6 +62,7 @@ public class ExternalReferenceTypes
 		registerType(ShipperExternalReferenceType.SHIPPER);
 		registerType(UOMExternalReferenceType.UOM);
 		registerType(AllergenExternalReferenceType.ALLERGEN);
+		registerType(BPBankAccountType.BPBankAccount);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)
