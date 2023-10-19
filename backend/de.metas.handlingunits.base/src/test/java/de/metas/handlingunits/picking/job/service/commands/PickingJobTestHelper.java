@@ -150,12 +150,12 @@ public class PickingJobTestHelper
 						bpartnerBL
 				),
 				new PickingJobHUReservationService(huReservationService),
-				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
 						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
 				),
+				pickingConfigRepo,
 				ShipmentService.getInstance());
 
 		huTracer = new HUTracerInstance()
