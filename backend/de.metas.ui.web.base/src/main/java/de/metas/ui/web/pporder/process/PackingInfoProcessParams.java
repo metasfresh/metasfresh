@@ -15,7 +15,6 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
@@ -23,8 +22,8 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
@@ -72,7 +71,7 @@ public class PackingInfoProcessParams
 	private int lu_PI_Item_ID;
 	//
 	public static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
+	@Getter @Param(parameterName = PARAM_QtyCU)
 	private BigDecimal qtyCU;
 	//
 	public static final String PARAM_QtyTU = "QtyTU";
@@ -80,7 +79,7 @@ public class PackingInfoProcessParams
 	private BigDecimal qtyTU;
 	//
 	public static final String PARAM_QtyLU = "QtyLU";
-	@Param(parameterName = PARAM_QtyLU)
+	@Getter @Param(parameterName = PARAM_QtyLU)
 	private BigDecimal qtyLU;
 
 	public static final String PARAM_IsReceiveIndividualCUs = "IsReceiveIndividualCUs";
@@ -145,9 +144,8 @@ public class PackingInfoProcessParams
 		final BPartnerId bpartnerId = ILUTUConfigurationFactory.extractBPartnerIdOrNull(defaultLUTUConfig);
 
 		final boolean includeVirtualItem = !enforcePhysicalTU;
-		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bpartnerId, includeVirtualItem);
 
-		return huPIItemProducts;
+		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bpartnerId, includeVirtualItem);
 	}
 
 	public LookupValuesList getM_HU_PI_Item_IDs(@Nullable final I_M_HU_PI_Item_Product pip)
@@ -172,10 +170,9 @@ public class PackingInfoProcessParams
 
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
+		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
 				null, // huUnitType
 				bpartnerId);
-		return luPIItems;
 	}
 
 	public I_M_HU_LUTU_Configuration getDefaultLUTUConfig()
@@ -266,8 +263,7 @@ public class PackingInfoProcessParams
 	/**
 	 * Modifies the given {@code defaultLUTUConfig} such that <b>one</b> top level HU (either LU or TU) is created.
 	 *
-	 * @param defaultLUTUConfig
-	 * @param availableQtyTU    optional, may be {@code null}. If given, and the given {@code defaultLUTUConfig}'s top level HU is an LU, then this is the number of TUs within the LU.
+	 * @param availableQtyTU optional, may be {@code null}. If given, and the given {@code defaultLUTUConfig}'s top level HU is an LU, then this is the number of TUs within the LU.
 	 */
 	private void adjustDefaultLUTUConfig_EnforceOneLUorTU(
 			@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig,
@@ -303,9 +299,6 @@ public class PackingInfoProcessParams
 
 	/**
 	 * Modifies the given {@code defaultLUTUConfig} such that the TU quantity and (if applicable) also the LU quantity are consistent with the given {@code availableQtyTU}.
-	 *
-	 * @param defaultLUTUConfig
-	 * @param availableQtyTU
 	 */
 	private void adjustDefaultLUTUConfig_EnforceAvailableTUs(
 			@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig,
@@ -335,31 +328,6 @@ public class PackingInfoProcessParams
 
 			defaultLUTUConfig.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
-	}
-
-	public static Quantity calculateTotalQtyCUs(final I_M_HU_LUTU_Configuration lutuConfig)
-	{
-		final Quantity qtyCUsTotal = Services.get(ILUTUConfigurationFactory.class).calculateQtyCUsTotal(lutuConfig);
-		if (qtyCUsTotal.isZero())
-		{
-			throw new AdempiereException("Zero quantity to receive");
-		}
-		else if (qtyCUsTotal.isInfinite())
-		{
-			throw new AdempiereException("Quantity to receive was not determined");
-		}
-
-		return qtyCUsTotal;
-	}
-
-	public I_M_HU_LUTU_Configuration createNewLUTUConfigFromDefaultsOnly()
-	{
-		final I_M_HU_LUTU_Configuration defaultLUTUConfigNewCopy = InterfaceWrapperHelper.copy()
-				.setFrom(getDefaultLUTUConfig())
-				.copyToNew(I_M_HU_LUTU_Configuration.class);
-
-		lutuConfigurationFactory.save(defaultLUTUConfigNewCopy);
-		return defaultLUTUConfigNewCopy;
 	}
 
 	public I_M_HU_LUTU_Configuration createAndSaveNewLUTUConfig()
@@ -465,11 +433,6 @@ public class PackingInfoProcessParams
 		this.tu_HU_PI_Item_Product_ID = tu_HU_PI_Item_Product_ID;
 	}
 
-	public BigDecimal getQtyCU()
-	{
-		return qtyCU;
-	}
-
 	public void setQtyCU(final BigDecimal qtyCU)
 	{
 		this.qtyCU = qtyCU;
@@ -477,17 +440,10 @@ public class PackingInfoProcessParams
 
 	/**
 	 * Called from the process class to set the TU qty from the process parameter.
-	 *
-	 * @param qtyTU
 	 */
 	public void setQtyTU(final BigDecimal qtyTU)
 	{
 		this.qtyTU = qtyTU;
-	}
-
-	public BigDecimal getQtyLU()
-	{
-		return qtyLU;
 	}
 
 	public void setQtyLU(final BigDecimal qtyLU)
