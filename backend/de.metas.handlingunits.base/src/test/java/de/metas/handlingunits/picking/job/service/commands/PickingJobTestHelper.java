@@ -48,6 +48,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
@@ -58,6 +59,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_Picking_Config_V2;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -153,15 +155,15 @@ public class PickingJobTestHelper
 						bpartnerBL,
 						ADReferenceService.newMocked()),
 				new PickingJobHUReservationService(huReservationService),
-				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
 						new HUQRCodesService(
 								huQRCodesRepository,
 								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
-				)
-		);
+				),
+				pickingConfigRepo,
+				ShipmentService.getInstance());
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -215,7 +217,7 @@ public class PickingJobTestHelper
 		return PickingSlotId.ofRepoId(record.getM_PickingSlot_ID());
 	}
 
-	public OrderAndLineId createOrderAndLineId(String documentNo)
+	public OrderAndLineId createOrderAndLineId(final String documentNo)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocumentNo(documentNo);
@@ -301,7 +303,7 @@ public class PickingJobTestHelper
 		return HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 	}
 
-	public LUPackingInstructions createLUPackingInstructions(final String name, HUPIItemProductId tuPackingInstructionId, QuantityTU qtyTU)
+	public LUPackingInstructions createLUPackingInstructions(final String name, final HUPIItemProductId tuPackingInstructionId, final QuantityTU qtyTU)
 	{
 		final I_M_HU_PI luPI = huTestHelper.createHUDefinition(name, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 
@@ -375,12 +377,12 @@ public class PickingJobTestHelper
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId).orElseThrow(() -> new AdempiereException("No QRCode found for HU " + huId));
 	}
 
-	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull String qrCodeId)
+	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull final String qrCodeId)
 	{
 		return createQRCode(huId, HUQRCodeUniqueId.ofJson(qrCodeId));
 	}
 
-	private HUQRCode createQRCode(@NonNull final HuId huId, @NonNull HUQRCodeUniqueId qrCodeId)
+	private HUQRCode createQRCode(@NonNull final HuId huId, @NonNull final HUQRCodeUniqueId qrCodeId)
 	{
 		final I_M_HU hu = huTestHelper.handlingUnitsBL().getById(huId);
 		final I_M_HU_PI_Version piVersion = huTestHelper.handlingUnitsBL().getPIVersion(hu);

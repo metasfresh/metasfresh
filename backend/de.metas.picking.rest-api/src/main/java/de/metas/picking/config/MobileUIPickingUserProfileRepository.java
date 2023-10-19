@@ -25,6 +25,7 @@ package de.metas.picking.config;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,7 +48,7 @@ public class MobileUIPickingUserProfileRepository
 	}
 
 	@NonNull
-	public MobileUIPickingUserProfile retrieveProfile()
+	private MobileUIPickingUserProfile retrieveProfile()
 	{
 		final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
 				.addOnlyActiveRecordsFilter()
@@ -70,6 +71,7 @@ public class MobileUIPickingUserProfileRepository
 
 		return MobileUIPickingUserProfile.builder()
 				.onlyBPartnerIds(onlyBPartnerIds)
+				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profile.getCreateShipmentPolicy()))
 				.build();
 	}
 }
