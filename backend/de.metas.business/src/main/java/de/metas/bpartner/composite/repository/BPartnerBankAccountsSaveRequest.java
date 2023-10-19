@@ -36,11 +36,11 @@ import javax.annotation.Nullable;
 public class BPartnerBankAccountsSaveRequest
 {
 	@NonNull
-	final BPartnerId bpartnerId;
+	BPartnerId bpartnerId;
 	@NonNull
-	final BPartnerBankAccount bankAccount;
+	BPartnerBankAccount bankAccount;
 	@Nullable
-	final OrgId orgId;
+	OrgId orgId;
 
 	/**
 	 * Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org. Still we need to be able to create the bank-account in that target-org.

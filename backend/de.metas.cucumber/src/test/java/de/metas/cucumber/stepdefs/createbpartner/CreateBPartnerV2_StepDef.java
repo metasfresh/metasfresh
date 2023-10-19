@@ -29,6 +29,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -38,7 +39,11 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -52,6 +57,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
@@ -87,11 +93,13 @@ public class CreateBPartnerV2_StepDef
 	private final TestContext testContext;
 	private final AD_Org_StepDefData orgTable;
 	private final C_BPartner_Location_StepDefData locationTable;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
+	private final JsonRetrieverService jsonRetriever;
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -101,7 +109,8 @@ public class CreateBPartnerV2_StepDef
 			@NonNull final C_PaymentTerm_StepDefData paymentTermTable,
 			@NonNull final TestContext testContext,
 			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_BPartner_Location_StepDefData locationTable)
+			@NonNull final C_BPartner_Location_StepDefData locationTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
@@ -111,8 +120,10 @@ public class CreateBPartnerV2_StepDef
 		this.testContext = testContext;
 		this.orgTable = orgTable;
 		this.locationTable = locationTable;
+		this.bankAccountTable = bankAccountTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
+		this.jsonRetriever = SpringContextHolder.instance.getBean(JsonServiceFactory.class).createRetriever();
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
@@ -134,7 +145,7 @@ public class CreateBPartnerV2_StepDef
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 			final String pricingSystemId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_PricingSystem_ID);
-			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
+			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse);
 			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_AD_Org org = Optional.ofNullable(orgIdentifier)
@@ -151,7 +162,11 @@ public class CreateBPartnerV2_StepDef
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
 			softly.assertThat(persistedBPartner.getName()).isEqualTo(name);
-			softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+
+			if (storageWarehouse != null)
+			{
+				softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+			}
 
 			if (Check.isNotBlank(code))
 			{
@@ -288,7 +303,7 @@ public class CreateBPartnerV2_StepDef
 			}
 
 			final Boolean isProspect = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_IsProspect);
-			if(isProspect != null)
+			if (isProspect != null)
 			{
 				softly.assertThat(bPartnerRecord.isProspect()).isEqualTo(isProspect);
 			}
@@ -493,6 +508,24 @@ public class CreateBPartnerV2_StepDef
 			}
 
 			softly.assertAll();
+		}
+	}
+
+	@And("locate C_BP_BankAccount by ExternalIdentifier:")
+	public void locateBPBankAccountByExternalIdentifier(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> dataTableRow : dataTable.asMaps())
+		{
+			final String bankAccountExternalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "BankAccountExternalIdentifier");
+			final String bpartnerExternalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "BPartnerExternalIdentifier");
+			final String bankAccountTableIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final MetasfreshId metasfreshId = jsonRetriever.resolveBankAccountIdentifier(OrgId.MAIN,
+																						 ExternalIdentifier.of(bpartnerExternalIdentifier),
+																						 ExternalIdentifier.of(bankAccountExternalIdentifier))
+					.orElseThrow(() -> new RuntimeException("No record found for Id = " + bankAccountExternalIdentifier));
+
+			bankAccountTable.put(bankAccountTableIdentifier, InterfaceWrapperHelper.load(metasfreshId.getValue(), I_C_BP_BankAccount.class));
 		}
 	}
 }
