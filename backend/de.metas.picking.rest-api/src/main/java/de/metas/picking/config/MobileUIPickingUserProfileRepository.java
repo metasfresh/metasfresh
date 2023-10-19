@@ -48,7 +48,7 @@ public class MobileUIPickingUserProfileRepository
 	}
 
 	@NonNull
-	public MobileUIPickingUserProfile retrieveProfile()
+	private MobileUIPickingUserProfile retrieveProfile()
 	{
 		final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
 				.addOnlyActiveRecordsFilter()
