@@ -2,7 +2,6 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -137,7 +136,13 @@ class PickingWorkflowLaunchersProvider
 
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
 	{
-		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.ofUserId(userId));
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+
+		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.builder()
+																					   .userId(userId)
+																					   .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																					   .build());
+
 		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets);
 	}
 
