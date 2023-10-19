@@ -39,6 +39,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 @Schema(description = "A BPartner with `n` contacts and `n` locations.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
@@ -73,9 +75,9 @@ public class JsonResponseComposite
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
-		this.locations = locations;
-		this.contacts = contacts;
-		this.bankAccounts = bankAccounts;
+		this.locations = coalesce(locations, ImmutableList.of());
+		this.contacts = coalesce(contacts, ImmutableList.of());
+		this.bankAccounts = coalesce(bankAccounts, ImmutableList.of());
 	}
 
 	public ImmutableList<String> extractLocationGlns()
