@@ -46,15 +46,15 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	/** CREATE_AND_COMPLETE = CO */
 	public static final String CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE = "CO";
 	@Override
-	public void setcreateShipmentPolicy (final java.lang.String createShipmentPolicy)
+	public void setCreateShipmentPolicy(final java.lang.String CreateShipmentPolicy)
 	{
-		set_Value (COLUMNNAME_createShipmentPolicy, createShipmentPolicy);
+		set_Value (COLUMNNAME_CreateShipmentPolicy, CreateShipmentPolicy);
 	}
 
 	@Override
-	public java.lang.String getcreateShipmentPolicy() 
+	public java.lang.String getCreateShipmentPolicy()
 	{
-		return get_ValueAsString(COLUMNNAME_createShipmentPolicy);
+		return get_ValueAsString(COLUMNNAME_CreateShipmentPolicy);
 	}
 
 	@Override

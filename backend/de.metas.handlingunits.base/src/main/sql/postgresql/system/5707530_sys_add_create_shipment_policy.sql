@@ -98,14 +98,14 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Nicht erstellen',Updated=TO_T
 ;
 
 -- 2023-10-18T09:21:19.328Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582769,0,'createShipmentPolicy',TO_TIMESTAMP('2023-10-18 11:21:19','YYYY-MM-DD HH24:MI:SS'),100,'Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen','D','Y','Erstellen von Lieferung Richtlinie','Erstellen von Lieferung Richtlinie',TO_TIMESTAMP('2023-10-18 11:21:19','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582769,0,'CreateShipmentPolicy',TO_TIMESTAMP('2023-10-18 11:21:19','YYYY-MM-DD HH24:MI:SS'),100,'Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen','D','Y','Erstellen von Lieferung Richtlinie','Erstellen von Lieferung Richtlinie',TO_TIMESTAMP('2023-10-18 11:21:19','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-10-18T09:21:19.340Z
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582769 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- Element: createShipmentPolicy
+-- Element: CreateShipmentPolicy
 -- 2023-10-18T09:21:34.278Z
 UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-18 11:21:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582769 AND AD_Language='de_CH'
 ;
@@ -114,7 +114,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-18 11:2
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582769,'de_CH') 
 ;
 
--- Element: createShipmentPolicy
+-- Element: CreateShipmentPolicy
 -- 2023-10-18T09:21:35.999Z
 UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-18 11:21:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582769 AND AD_Language='de_DE'
 ;
@@ -127,7 +127,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-18 11:2
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582769,'de_DE') 
 ;
 
--- Element: createShipmentPolicy
+-- Element: CreateShipmentPolicy
 -- 2023-10-18T09:22:57.851Z
 UPDATE AD_Element_Trl SET Description='Create Shipment Policy - Don''t Create, Create Draft, Create and Complete', IsTranslated='Y', Name='Create Shipment Policy', PrintName='Create Shipment Policy',Updated=TO_TIMESTAMP('2023-10-18 11:22:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582769 AND AD_Language='en_US'
 ;
@@ -136,10 +136,10 @@ UPDATE AD_Element_Trl SET Description='Create Shipment Policy - Don''t Create, C
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582769,'en_US') 
 ;
 
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
 -- 2023-10-18T09:31:27.936Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587574,582769,0,17,541839,542373,'createShipmentPolicy',TO_TIMESTAMP('2023-10-18 11:31:27','YYYY-MM-DD HH24:MI:SS'),100,'N','NO','Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen','D',0,2,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Erstellen von Lieferung Richtlinie',0,0,TO_TIMESTAMP('2023-10-18 11:31:27','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587574,582769,0,17,541839,542373,'CreateShipmentPolicy',TO_TIMESTAMP('2023-10-18 11:31:27','YYYY-MM-DD HH24:MI:SS'),100,'N','NO','Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen','D',0,2,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Erstellen von Lieferung Richtlinie',0,0,TO_TIMESTAMP('2023-10-18 11:31:27','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-10-18T09:31:27.943Z
@@ -151,13 +151,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2023-10-18T09:45:33.828Z
-/* DDL */ SELECT public.db_alter_table('MobileUI_UserProfile_Picking','ALTER TABLE public.MobileUI_UserProfile_Picking ADD COLUMN createShipmentPolicy VARCHAR(2) DEFAULT ''NO'' NOT NULL')
+/* DDL */ SELECT public.db_alter_table('MobileUI_UserProfile_Picking','ALTER TABLE public.MobileUI_UserProfile_Picking ADD COLUMN CreateShipmentPolicy VARCHAR(2) DEFAULT ''NO'' NOT NULL')
 ;
 
 -- Field: Mobile UI Kommissionierprofil -> Mobile UI Kommissionierprofil -> Erstellen von Lieferung Richtlinie
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
 -- Field: Mobile UI Kommissionierprofil(541743,D) -> Mobile UI Kommissionierprofil(547258,D) -> Erstellen von Lieferung Richtlinie
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
 -- 2023-10-18T09:39:46.880Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587574,721596,0,547258,0,TO_TIMESTAMP('2023-10-18 11:39:46','YYYY-MM-DD HH24:MI:SS'),100,'Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen',0,'D',0,'Y','Y','Y','N','N','N','N','N','Erstellen von Lieferung Richtlinie',0,10,0,1,1,TO_TIMESTAMP('2023-10-18 11:39:46','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -185,9 +185,9 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 ;
 
 -- UI Element: Mobile UI Kommissionierprofil -> Mobile UI Kommissionierprofil.Erstellen von Lieferung Richtlinie
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
 -- UI Element: Mobile UI Kommissionierprofil(541743,D) -> Mobile UI Kommissionierprofil(547258,D) -> main -> 10 -> settings.Erstellen von Lieferung Richtlinie
--- Column: MobileUI_UserProfile_Picking.createShipmentPolicy
+-- Column: MobileUI_UserProfile_Picking.CreateShipmentPolicy
 -- 2023-10-18T09:42:31.280Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,721596,0,547258,551255,621123,'F',TO_TIMESTAMP('2023-10-18 11:42:31','YYYY-MM-DD HH24:MI:SS'),100,'Erstellen von Lieferung Richtlinie - Nicht erstellen, Entwurf erstellen, Erstellen und fertigstellen','Y','N','N','Y','N','N','N',0,'Erstellen von Lieferung Richtlinie',10,0,0,TO_TIMESTAMP('2023-10-18 11:42:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;

@@ -82,7 +82,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setcreateShipmentPolicy (java.lang.String createShipmentPolicy);
+	void setCreateShipmentPolicy(java.lang.String createShipmentPolicy);
 
 	/**
 	 * Get Create Shipment Policy.
@@ -92,10 +92,10 @@ public interface I_MobileUI_UserProfile_Picking
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getcreateShipmentPolicy();
+	java.lang.String getCreateShipmentPolicy();
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_createShipmentPolicy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "createShipmentPolicy", null);
-	String COLUMNNAME_createShipmentPolicy = "createShipmentPolicy";
+	String COLUMNNAME_CreateShipmentPolicy = "CreateShipmentPolicy";
 
 	/**
 	 * Set Active.
