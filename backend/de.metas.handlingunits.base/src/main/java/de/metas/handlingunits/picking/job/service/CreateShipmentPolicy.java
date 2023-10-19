@@ -22,12 +22,12 @@
 
 package de.metas.handlingunits.picking.job.service;
 
-import org.compiere.model.X_MobileUI_UserProfile_Picking;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.X_MobileUI_UserProfile_Picking;
 
 import javax.annotation.Nullable;
 
@@ -54,4 +54,8 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	public boolean isCreateShipment() {return CREATE_DRAFT.equals(this) || CREATE_AND_COMPLETE.equals(this);}
+
+	public boolean isCreateAndCompleteShipment() {return CREATE_AND_COMPLETE.equals(this);}
 }

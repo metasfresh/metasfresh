@@ -17,8 +17,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
-import static de.metas.handlingunits.picking.job.service.CreateShipmentPolicy.CREATE_AND_COMPLETE;
-import static de.metas.handlingunits.picking.job.service.CreateShipmentPolicy.CREATE_DRAFT;
 import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY;
 
 public class PickingJobCompleteCommand
@@ -51,9 +49,7 @@ public class PickingJobCompleteCommand
 		this.shipmentService = shipmentService;
 
 		this.initialPickingJob = pickingJob;
-		this.createShipmentPolicy = createShipmentPolicy != null ?
-				createShipmentPolicy :
-				CreateShipmentPolicy.DO_NOT_CREATE;
+		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 	}
 
 	public PickingJob execute()
@@ -84,25 +80,21 @@ public class PickingJobCompleteCommand
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 
-		if (createShipmentPolicy.equals(CREATE_AND_COMPLETE))
-		{
-			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-																	.scheduleIds(pickingJob.getShipmentScheduleIds())
-																	.quantityTypeToUse(TYPE_PICKED_QTY)
-																	.onTheFlyPickToPackingInstructions(true)
-																	.isCompleteShipment(true)
-																	.build());
-		}
-		else if (createShipmentPolicy.equals(CREATE_DRAFT))
-		{
-			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-																	.scheduleIds(pickingJob.getShipmentScheduleIds())
-																	.quantityTypeToUse(TYPE_PICKED_QTY)
-																	.onTheFlyPickToPackingInstructions(true)
-																	.isCompleteShipment(false)
-																	.build());
-		}
+		createShipmentIfNeeded(pickingJob);
 
 		return pickingJob;
+	}
+
+	private void createShipmentIfNeeded(final PickingJob pickingJob)
+	{
+		if (createShipmentPolicy.isCreateShipment())
+		{
+			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
+					.scheduleIds(pickingJob.getShipmentScheduleIds())
+					.quantityTypeToUse(TYPE_PICKED_QTY)
+					.onTheFlyPickToPackingInstructions(true)
+					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
+					.build());
+		}
 	}
 }
