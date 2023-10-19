@@ -89,7 +89,7 @@ class PickingMobileApplicationTest
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 		Env.setAD_Language(Env.getCtx(), "de_DE");
 
-		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService);
+		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository());
 		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
 		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository);
 

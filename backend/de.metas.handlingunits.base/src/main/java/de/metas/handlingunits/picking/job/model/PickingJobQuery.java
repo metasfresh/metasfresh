@@ -46,8 +46,7 @@ public class PickingJobQuery
 	@Nullable PickingJobFacetsQuery facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 
-	public static PickingJobQuery ofUserId(@NonNull final UserId userId) {return builder().userId(userId).build();}
-
+	@NonNull
 	public Set<BPartnerId> getOnlyBPartnerIdsEffective()
 	{
 		if (onlyBPartnerIds.isEmpty())
