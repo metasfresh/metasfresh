@@ -1,17 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -22,17 +10,32 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
+import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -59,6 +62,7 @@ import lombok.NonNull;
 public class PackingInfoProcessParams
 {
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 	public static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
@@ -80,6 +84,9 @@ public class PackingInfoProcessParams
 	@Param(parameterName = PARAM_QtyLU)
 	private BigDecimal qtyLU;
 
+	public static final String PARAM_IsReceiveIndividualCUs = "IsReceiveIndividualCUs";
+	private Boolean isReceiveIndividualCUs;
+
 	private final IDocumentLUTUConfigurationManager defaultLUTUConfigManager;
 	private transient I_M_HU_LUTU_Configuration _defaultLUTUConfig;
 	private final BigDecimal enforceAvailableQtyTU;
@@ -87,17 +94,22 @@ public class PackingInfoProcessParams
 
 	private final boolean enforcePhysicalTU;
 
+	@NonNull
+	private final PPOrderLineRow selectedRow;
+
 	@Builder
 	public PackingInfoProcessParams(
 			@NonNull final IDocumentLUTUConfigurationManager defaultLUTUConfigManager,
 			@Nullable final BigDecimal enforceAvailableQtyTU,
 			final boolean enforceOneLUorTU,
-			final boolean enforcePhysicalTU)
+			final boolean enforcePhysicalTU,
+			@NonNull final PPOrderLineRow selectedRow)
 	{
 		this.enforcePhysicalTU = enforcePhysicalTU;
 		this.defaultLUTUConfigManager = defaultLUTUConfigManager;
 		this.enforceAvailableQtyTU = enforceAvailableQtyTU;
 		this.enforceOneLUorTU = enforceOneLUorTU;
+		this.selectedRow = selectedRow;
 	}
 
 	public Object getParameterDefaultValue(final String parameterName)
@@ -116,13 +128,14 @@ public class PackingInfoProcessParams
 				return defaultLUTUConfig.getQtyTU();
 			case PARAM_QtyLU:
 				return defaultLUTUConfig.getQtyLU();
+			case PARAM_IsReceiveIndividualCUs:
+				return getIsReceiveIndividualCUs();
 			default:
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 	}
 
 	/**
-	 *
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
 	public LookupValuesList getM_HU_PI_Item_Products()
@@ -161,8 +174,8 @@ public class PackingInfoProcessParams
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
-				null, // huUnitType
-				bpartnerId);
+																								 null, // huUnitType
+																								 bpartnerId);
 		return luPIItems;
 	}
 
@@ -228,8 +241,8 @@ public class PackingInfoProcessParams
 				false); // includeVirtualItem == false
 
 		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
-				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
-				productId, bpartnerId);
+					  "There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
+					  productId, bpartnerId);
 
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
@@ -253,9 +266,9 @@ public class PackingInfoProcessParams
 
 	/**
 	 * Modifies the given {@code defaultLUTUConfig} such that <b>one</b> top level HU (either LU or TU) is created.
-	 * 
+	 *
 	 * @param defaultLUTUConfig
-	 * @param availableQtyTU optional, may be {@code null}. If given, and the given {@code defaultLUTUConfig}'s top level HU is an LU, then this is the number of TUs within the LU.
+	 * @param availableQtyTU    optional, may be {@code null}. If given, and the given {@code defaultLUTUConfig}'s top level HU is an LU, then this is the number of TUs within the LU.
 	 */
 	private void adjustDefaultLUTUConfig_EnforceOneLUorTU(
 			@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig,
@@ -291,7 +304,7 @@ public class PackingInfoProcessParams
 
 	/**
 	 * Modifies the given {@code defaultLUTUConfig} such that the TU quantity and (if applicable) also the LU quantity are consistent with the given {@code availableQtyTU}.
-	 * 
+	 *
 	 * @param defaultLUTUConfig
 	 * @param availableQtyTU
 	 */
@@ -465,7 +478,7 @@ public class PackingInfoProcessParams
 
 	/**
 	 * Called from the process class to set the TU qty from the process parameter.
-	 * 
+	 *
 	 * @param qtyTU
 	 */
 	public void setQtyTU(final BigDecimal qtyTU)
@@ -483,4 +496,21 @@ public class PackingInfoProcessParams
 		this.qtyLU = qtyLU;
 	}
 
+	private boolean getIsReceiveIndividualCUs()
+	{
+		if (isReceiveIndividualCUs != null)
+		{
+			return isReceiveIndividualCUs;
+		}
+
+		if (selectedRow.getType() != PPOrderLineType.MainProduct
+				|| !UomId.EACH.equals(selectedRow.getUomId()))
+		{
+			return isReceiveIndividualCUs = false;
+		}
+
+		return isReceiveIndividualCUs = Optional.ofNullable(selectedRow.getOrderId())
+				.flatMap(ppOrderBOMBL::getSerialNoSequenceId)
+				.isPresent();
+	}
 }
