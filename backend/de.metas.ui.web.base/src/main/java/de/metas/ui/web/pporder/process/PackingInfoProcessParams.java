@@ -504,7 +504,8 @@ public class PackingInfoProcessParams
 		}
 
 		if (selectedRow.getType() != PPOrderLineType.MainProduct
-				|| !UomId.EACH.equals(selectedRow.getUomId()))
+				|| selectedRow.getUomId() == null
+				|| !selectedRow.getUomId().isEach())
 		{
 			return isReceiveIndividualCUs = false;
 		}

@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.product.ProductId;
@@ -117,8 +118,8 @@ public class PP_Product_BOM
 			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_SerialNo_Sequence_ID, I_PP_Product_BOM.COLUMNNAME_C_UOM_ID })
 	public void validateSeqNo(final I_PP_Product_BOM productBom)
 	{
-		if (productBom.getSerialNo_Sequence_ID() > 0
-				&& !UomId.EACH.equals(UomId.ofRepoId(productBom.getC_UOM_ID())))
+		if (DocSequenceId.ofRepoIdOrNull(productBom.getSerialNo_Sequence_ID()) != null
+				&& !UomId.ofRepoId(productBom.getC_UOM_ID()).isEach())
 		{
 			throw new AdempiereException(UOM_ID_MUST_BE_EACH_IF_SEQ_NO_IS_SET);
 		}
