@@ -1,3 +1,5 @@
+DROP VIEW de_metas_acct.tax_accounting_details_v;
+
 CREATE OR REPLACE VIEW de_metas_acct.tax_accounting_details_v
 AS
 SELECT ev.value          AS kontono,
