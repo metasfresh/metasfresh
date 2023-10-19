@@ -32,6 +32,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class PickingJobService
 {
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
@@ -55,26 +57,6 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
-
-	public PickingJobService(
-			final @NonNull PickingJobRepository pickingJobRepository,
-			final @NonNull PickingJobLockService pickingJobLockService,
-			final @NonNull PickingJobSlotService pickingSlotService,
-			final @NonNull PickingCandidateService pickingCandidateService,
-			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
-			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
-			final @NonNull PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory,
-			final @NonNull IShipmentService shipmentService)
-	{
-		this.pickingSlotService = pickingSlotService;
-		this.pickingJobRepository = pickingJobRepository;
-		this.pickingJobLockService = pickingJobLockService;
-		this.pickingCandidateService = pickingCandidateService;
-		this.pickingJobHUReservationService = pickingJobHUReservationService;
-		this.pickingConfigRepo = pickingConfigRepo;
-		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
-		this.shipmentService = shipmentService;
-	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
