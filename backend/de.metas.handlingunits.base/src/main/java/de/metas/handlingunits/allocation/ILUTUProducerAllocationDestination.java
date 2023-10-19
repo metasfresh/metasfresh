@@ -40,7 +40,6 @@ import java.math.BigDecimal;
  * It's an {@link IHUProducerAllocationDestination} which can be configured to produce TUs on LUs.
  *
  * @author tsa
- *
  */
 public interface ILUTUProducerAllocationDestination extends IHUProducerAllocationDestination
 {
@@ -59,14 +58,13 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	void addCUPerTU(Capacity tuCapacity);
 
 	/**
-	 *
 	 * @param qtyCUPerTU quantity
 	 */
 	void addCUPerTU(ProductId cuProductId, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
 
 	/**
 	 * Gets single TU capacity.
-	 *
+	 * <p>
 	 * If there is no TU capacity defined or there are more than one TU capacities, this method will throw an exception.
 	 *
 	 * @return TU capacity
@@ -105,7 +103,6 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	void setLUItemPI(final I_M_HU_PI_Item luItemPI);
 
 	/**
-	 *
 	 * @return true if there is LU configuration set, so only TUs will be generated
 	 */
 	boolean isNoLU();
@@ -118,20 +115,19 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * Let this producer to create as many LUs as needed.
-	 *
+	 * <p>
 	 * Same as calling {@link #setMaxLUs(int)} with {@link Integer#MAX_VALUE} parameter.
 	 */
 	void setMaxLUsInfinite();
 
 	/**
-	 *
 	 * @return true if producer will create as many LUs as needed
 	 */
 	boolean isMaxLUsInfinite();
 
 	/**
 	 * Set maximum amount of LUs to be created.
-	 *
+	 * <p>
 	 * If <code>maxLUs</code> is ZERO then no LUs will be created. In this case only "remaining" TUs will be created.<br/>
 	 * Please check the configuration methods: {@link #setCreateTUsForRemainingQty(boolean)}, {@link #setMaxTUsForRemainingQty(int)}.
 	 *
@@ -142,14 +138,13 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	void setMaxTUsPerLU(@NonNull QtyTU maxTUsPerLU);
 
 	/**
-	 *
 	 * @return maximum amount of LUs to be created
 	 */
 	int getMaxLUs();
 
 	/**
 	 * Sets how many TUs shall be created for one LU.
-	 *
+	 * <p>
 	 * If this value is not set, it will be taken from {@link #setLUItemPI(I_M_HU_PI_Item)} configuration.
 	 *
 	 * @param maxTUsPerLU how many TUs shall be created for one LU
@@ -165,9 +160,9 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * Gets how many TUs shall be created for one LU.
-	 *
+	 * <p>
 	 * If TUs/LU was not set using {@link #setMaxTUsPerLU(int)}, this method will also check the {@link #getLUItemPI()}'s settings.
-	 *
+	 * <p>
 	 * The returned value of this method will be used in actual LU/TU generation.
 	 *
 	 * @return how many TUs shall be created for one LU
@@ -206,19 +201,17 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * @param createTUsForRemainingQty true if we shall create TU handling units for remaining qty.
-	 * @see #loadRe
 	 */
 	void setCreateTUsForRemainingQty(final boolean createTUsForRemainingQty);
 
 	/**
 	 * @return true if we shall create TU handling units for remaining qty
-	 * @see #loadRemaining(IAllocationRequest)
 	 */
 	boolean isCreateTUsForRemainingQty();
 
 	/**
 	 * If this instance was created via {@link ILUTUConfigurationFactory#createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration)} then this getter shall return the config that was passed to the factory.
-	 *
+	 * <p>
 	 * When the lutu config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
 	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getQtyCUPerTU()} etc.
 	 *
@@ -228,7 +221,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * Adds given HU to the list of already created LUs (if it's an LU) or to the list of already created TUs for remaining Qty.
-	 *
+	 * <p>
 	 * NOTE: if number of LU/TUs exceed requested number of LU/TUs this hu won't be added.
 	 *
 	 * @param hu
@@ -250,13 +243,13 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 *
 	 * @param cuProductId
 	 * @return Can return following values
-	 *         <ul>
-	 *         <li>{@link IAllocationRequest#QTY_INFINITE} if it can accept infinite quantity (i.e. some of the CU/TU, TU/LU, count LUs etc quantities are infinite)
-	 *         <li>{@link BigDecimal#ZERO} if this configuration cannot accept any quantity
-	 *         <li>positive quantity if maxium quantity could be calculated
-	 *         </ul>
-	 *
-	 *         The UOM of returned quantity is {@link #getCUUOM()}.
+	 * <ul>
+	 * <li>{@link IAllocationRequest#QTY_INFINITE} if it can accept infinite quantity (i.e. some of the CU/TU, TU/LU, count LUs etc quantities are infinite)
+	 * <li>{@link BigDecimal#ZERO} if this configuration cannot accept any quantity
+	 * <li>positive quantity if maxium quantity could be calculated
+	 * </ul>
+	 * <p>
+	 * The UOM of returned quantity is {@link #getCUUOM()}.
 	 */
 	Quantity calculateTotalQtyCU(ProductId cuProductId);
 
@@ -270,11 +263,12 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * Set existing HUs to be considered when we do the LU/TU creation.
-	 *
+	 * <p>
 	 * All the matching HUs (that have the same LU/TU configuration) will be considered as "already created". Those who were not matched will be destroyed.
 	 *
 	 * @param existingHUs
 	 */
 	void setExistingHUs(IHUAllocations existingHUs);
 
+	void setIsDestroyExistingHUs(boolean isDestroyExistingHUs);
 }

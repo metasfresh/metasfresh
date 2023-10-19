@@ -204,4 +204,6 @@ public interface IProductBL extends ISingletonService
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
 }

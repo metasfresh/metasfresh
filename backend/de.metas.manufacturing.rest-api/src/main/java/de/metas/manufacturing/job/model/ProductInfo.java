@@ -1,18 +1,8 @@
-package de.metas.ui.web.handlingunits.process;
-
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.JavaProcess;
-import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,10 +20,19 @@ import java.util.Collection;
  * #L%
  */
 
-public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements IProcessPrecondition
+package de.metas.manufacturing.job.model;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ProductInfo
 {
-	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
-	{
-		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
-	}
+	@NonNull ProductId productId;
+	@NonNull ITranslatableString name;
+	@NonNull String value;
 }
