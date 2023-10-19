@@ -38,6 +38,7 @@ import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
@@ -45,18 +46,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class PickingJobRestService
 {
 	private final PickingJobService pickingJobService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
-
-	public PickingJobRestService(
-			@NonNull final PickingJobService pickingJobService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
-	{
-		this.pickingJobService = pickingJobService;
-		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
-	}
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
