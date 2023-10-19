@@ -18,13 +18,13 @@ create function m_hu_trace_report(p_ad_pinstance_id numeric)
                      finished_product_uom       character varying,
                      finished_product_lot       character varying,
                      Vendor_lot                 character varying,
-                     finished_product_mhd       character varying,
+                     finished_product_mhd       date,
                      finished_product_clearance character varying,
                      customer_vendor_no                character varying,
                      customer_vendor                   character varying,
                      shipmentqty                numeric,
                      shipment_note              character varying,
-                     shipment_date              character varying,
+                     shipment_date              date,
                      prod_stock                 numeric
         ,traceid numeric
         ,reportdate               character varying
@@ -58,13 +58,13 @@ SELECT distinct
     null as finished_product_uom,
     null as finished_product_lot,
     null as vendorlot,
-    null::varchar as finished_product_mhd,
+    null::date as finished_product_mhd,
     null as finished_product_clearance,
     null as customer_no,
     null as customer,
     null::numeric as shipmentqty,
     null as shipment_note,
-    null::varchar as shipment_date,
+    null::date as shipment_date,
     null::numeric AS prod_stock
         ,null::numeric AS traceid
         ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
@@ -119,13 +119,13 @@ UNION ALL
      null as finished_product_uom,
      null as finished_product_lot,
      null as vendorlot,
-     null::varchar as finished_product_mhd,
+     null::date as finished_product_mhd,
      null as finished_product_clearance,
      null as customer_no,
      null as customer,
      null::numeric as shipmentqty,
      null as shipment_note,
-     null::varchar as shipment_date,
+     null::date as shipment_date,
      null::numeric AS prod_stock
          ,null::numeric AS traceid
          ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
@@ -169,13 +169,13 @@ UNION ALL
      null as finished_product_uom,
      null as finished_product_lot,
      null as vendorlot,
-     null::varchar as finished_product_mhd,
+     null::date as finished_product_mhd,
      null as finished_product_clearance,
      null as customer_no,
      null as customer,
      null::numeric as shipmentqty,
      null as shipment_note,
-     null::varchar as shipment_date,
+     null::date shipment_date,
      null::numeric AS prod_stock
          ,null::numeric AS traceid
          ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
@@ -213,13 +213,13 @@ UNION ALL
      null as finished_product_uom,
      null as finished_product_lot,
      null as vendorlot,
-     null::varchar as finished_product_mhd,
+     null::date as finished_product_mhd,
      null as finished_product_clearance,
      null as customer_no,
      null as customer,
      null::numeric as shipmentqty,
      null as shipment_note,
-     null::varchar as shipment_date,
+     null::date as shipment_date,
      null::numeric AS prod_stock
          ,null::numeric AS traceid
          ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
@@ -262,7 +262,7 @@ UNION ALL
         prod_uom.uomsymbol as finished_product_uom,
         prod_trace.lotnumber as finished_product_lot,
         null as vendorlot,
-        (select  to_char(valuedate, 'DD.MM.YYYY')  from  m_hu_attribute mhd
+        (select valuedate::date from  m_hu_attribute mhd
          where  mhd.m_hu_id =  prod_trace.m_hu_id
            AND mhd.m_attribute_id = 540020::numeric) as finished_product_mhd,
 
@@ -271,7 +271,7 @@ UNION ALL
         bp.name as customer,
         prod_trace_shipment.qty as shipmentqty,
         inout.documentno as shipment_note,
-        null::varchar as shipment_date, -- TODO: decide which should the shipment date be
+        null::date as shipment_date, -- TODO: decide which should the shipment date be
         getcurrentstoragestock(t.m_product_id,
                                t.c_uom_id,
                                1000017, -- Lot-Nummer
@@ -336,12 +336,11 @@ UNION ALL
         prod_trace.qty as finished_product_qty,
         prod_uom.uomsymbol as finished_product_uom,
         prod_trace.lotnumber as finished_product_lot,
-        (select  value  from  m_hu_attribute vendorlot
-         where  vendorlot.m_hu_id =  prod_trace.m_hu_id
-           AND vendorlot.m_attribute_id = 1000029::numeric) as   vendorlot,
-        (select to_char(valuedate, 'DD.MM.YYYY') from  m_hu_attribute mhd
+        null as vendorlot,
+        (select valuedate::date from  m_hu_attribute mhd
          where  mhd.m_hu_id =  prod_trace.m_hu_id
            AND mhd.m_attribute_id = 540020::numeric) as finished_product_mhd,
+
         hulu_clearancestatus.name as finished_product_clearance,
         bp.value as customer_no,
         bp.name as customer,
@@ -351,12 +350,7 @@ UNION ALL
                   left join  m_inout inout on trc.m_inout_id = inout.m_inout_id
          where trc.lotnumber=prod_trace.lotnumber and trc.hutracetype='MATERIAL_RECEIPT'
         ) as receipt_note,
-        (select  to_char(inout.movementdate, 'DD.MM.YYYY')
-         from M_HU_Trace as trc
-                  left join  m_inout inout on trc.m_inout_id = inout.m_inout_id
-         where trc.lotnumber=prod_trace.lotnumber and trc.hutracetype='MATERIAL_RECEIPT'
-         limit 1
-        )  as shipment_date, -- TODO: decide which should the shipment date be
+        null::date as shipment_date, -- TODO: decide which should the shipment date be
 
         getcurrentstoragestock(t.m_product_id,
                                t.c_uom_id,
@@ -420,14 +414,14 @@ UNION ALL
      null as finished_product_uom,
      null as finished_product_lot,
      null as vendorlot,
-     null::varchar as finished_product_mhd,
+     null::date as finished_product_mhd,
 
      null as finished_product_clearance,
      null as customer_no,
      null as customer,
      null::numeric as shipmentqty,
      null as shipment_note,
-     null::varchar as shipment_date,
+     null::date as shipment_date,
      null::numeric AS prod_stock
          ,null::numeric AS traceid
          ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate

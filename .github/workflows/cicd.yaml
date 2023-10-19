@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.2'
+  PIPELINE_VERSION: '0.2.3'
 jobs:
 
   init:
@@ -88,6 +88,17 @@ jobs:
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-backend-dist
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.dist \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: build-camel
         run: |
           docker buildx build \
@@ -111,17 +122,25 @@ jobs:
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+      - name: push-maven-dists
         run: |
-          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
-      - name: push-camel-dist
-        run: |
+          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
           docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
@@ -152,11 +171,16 @@ jobs:
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        run: |
-          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -249,6 +273,16 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-db-migrations
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-migrations \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations \
+          .
       - name: build-db-preloaded
         run: |
           docker buildx build \
@@ -260,17 +294,24 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
       - name: push-images
-        run: |
-          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -278,6 +319,7 @@ jobs:
           echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   compatibility-images:
@@ -347,23 +389,28 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
-        run: |
-          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
-          docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
-          docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
-          docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+            docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
+            docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
+            docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
@@ -415,9 +462,14 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
-        run: |
-          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: push-results
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
@@ -462,9 +514,14 @@ jobs:
           --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        run: |
-          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
   cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
@@ -503,12 +560,18 @@ jobs:
           docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
           find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
-          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
+      - name: push-database-images
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          timeout_minutes: 5
+          command: |
+            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
