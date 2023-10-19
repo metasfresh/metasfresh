@@ -33,9 +33,12 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.picking.config.MobileUIPickingUserProfile;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
@@ -43,15 +46,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class PickingJobRestService
 {
 	private final PickingJobService pickingJobService;
-
-	public PickingJobRestService(
-			@NonNull final PickingJobService pickingJobService)
-	{
-		this.pickingJobService = pickingJobService;
-	}
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -70,7 +69,7 @@ public class PickingJobRestService
 		return pickingJobService.streamPickingJobCandidates(query);
 	}
 
-	public PickingJobFacets getFacets(@NonNull PickingJobQuery query)
+	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
 	{
 		return pickingJobService.getFacets(query);
 	}
@@ -123,7 +122,10 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		return pickingJobService.complete(pickingJob);
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		return pickingJobService.prepareToComplete(pickingJob)
+				.createShipmentPolicy(profile.getCreateShipmentPolicy())
+				.execute();
 	}
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()

@@ -24,6 +24,7 @@ package de.metas.picking.config;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,4 +36,5 @@ public class MobileUIPickingUserProfile
 	public static final MobileUIPickingUserProfile DEFAULT = builder().build();
 
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
 }
