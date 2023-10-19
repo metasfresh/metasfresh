@@ -60,7 +60,7 @@ public interface IPPOrderReceiptHUProducer
 
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();
 
-	List<I_M_HU> receiveDraftedIndividualCUs(@NonNull Quantity qtyToReceive);
+	List<I_M_HU> receiveIndividualPlanningCUs(@NonNull Quantity qtyToReceive);
 
 	IPPOrderReceiptHUProducer withPPOrderLocatorId();
 }

@@ -201,7 +201,7 @@ import java.util.Map;
 	}
 
 	@Override
-	public List<I_M_HU> receiveDraftedIndividualCUs(@NonNull final Quantity qtyToReceive)
+	public List<I_M_HU> receiveIndividualPlanningCUs(@NonNull final Quantity qtyToReceive)
 	{
 		this.processReceiptCandidates = false;
 		this.receiveUsingTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,

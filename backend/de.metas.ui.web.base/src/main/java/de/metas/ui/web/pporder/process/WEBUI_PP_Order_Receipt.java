@@ -226,7 +226,7 @@ public class WEBUI_PP_Order_Receipt
 		if (isReceiveIndividualCUs)
 		{
 			producer.withPPOrderLocatorId()
-					.receiveDraftedIndividualCUs(Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull()));
+					.receiveIndividualPlanningCUs(Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull()));
 		}
 		else
 		{
