@@ -55,6 +55,7 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	PRO_FORMA_SO(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO),
 	PRO_FORMA_SO_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract),
 	SHIPPING_NOTIFICATION(MODCNTR_LOG_DOCUMENTTYPE_Lieferavis),
+	IMPORT_LOG(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
