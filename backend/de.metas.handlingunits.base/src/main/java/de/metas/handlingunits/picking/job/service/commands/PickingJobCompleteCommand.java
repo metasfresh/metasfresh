@@ -52,6 +52,11 @@ public class PickingJobCompleteCommand
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 	}
 
+	public static class PickingJobCompleteCommandBuilder
+	{
+		public PickingJob execute() {return build().execute();}
+	}
+
 	public PickingJob execute()
 	{
 		initialPickingJob.assertNotProcessed();

@@ -106,8 +106,7 @@ public class PickingJobService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		return prepareToComplete(pickingJob)
-				.build().execute();
+		return prepareToComplete(pickingJob).execute();
 	}
 
 	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
