@@ -128,9 +128,9 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		final MobileUIPickingUserProfile mobileUIPickingUserProfile = mobileUIPickingUserProfileRepository.getProfile();
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		return pickingJobService.prepareToComplete(pickingJob)
-				.createShipmentPolicy(mobileUIPickingUserProfile.getCreateShipmentPolicy())
+				.createShipmentPolicy(profile.getCreateShipmentPolicy())
 				.execute();
 	}
 
