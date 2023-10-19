@@ -21,7 +21,6 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -174,8 +173,8 @@ public class PackingInfoProcessParams
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
-																								 null, // huUnitType
-																								 bpartnerId);
+				null, // huUnitType
+				bpartnerId);
 		return luPIItems;
 	}
 
@@ -241,8 +240,8 @@ public class PackingInfoProcessParams
 				false); // includeVirtualItem == false
 
 		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
-					  "There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
-					  productId, bpartnerId);
+				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
+				productId, bpartnerId);
 
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
@@ -498,19 +497,23 @@ public class PackingInfoProcessParams
 
 	private boolean getIsReceiveIndividualCUs()
 	{
-		if (isReceiveIndividualCUs != null)
+		if (isReceiveIndividualCUs == null)
 		{
-			return isReceiveIndividualCUs;
+			isReceiveIndividualCUs = computeIsReceiveIndividualCUs();
 		}
+		return isReceiveIndividualCUs;
+	}
 
+	private boolean computeIsReceiveIndividualCUs()
+	{
 		if (selectedRow.getType() != PPOrderLineType.MainProduct
 				|| selectedRow.getUomId() == null
 				|| !selectedRow.getUomId().isEach())
 		{
-			return isReceiveIndividualCUs = false;
+			return false;
 		}
 
-		return isReceiveIndividualCUs = Optional.ofNullable(selectedRow.getOrderId())
+		return Optional.ofNullable(selectedRow.getOrderId())
 				.flatMap(ppOrderBOMBL::getSerialNoSequenceId)
 				.isPresent();
 	}
