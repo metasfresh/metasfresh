@@ -231,7 +231,6 @@ public class WEBUI_PP_Order_Receipt
 		else
 		{
 			producer.packUsingLUTUConfiguration(getPackingInfoParams().createAndSaveNewLUTUConfig())
-					.bestBeforeDate(computeBestBeforeDate())
 					.createDraftReceiptCandidatesAndPlanningHUs();
 		}
 
