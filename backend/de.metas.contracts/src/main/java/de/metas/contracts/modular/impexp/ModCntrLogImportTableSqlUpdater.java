@@ -34,9 +34,11 @@ import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -135,7 +137,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE s." + I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " = i." + COLUMNNAME_M_Product_ID
 				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " = i." + COLUMNNAME_Harvesting_Year_ID
 				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx + " = i." + COLUMNNAME_IsSOTrx
-				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_AD_Org_ID + " = (i." + COLUMNNAME_AD_Org_ID + ", 0) "
 				+ " LIMIT 1 ";
 
 		final String sqlContractModuleId = "SELECT m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
@@ -157,9 +159,18 @@ public class ModCntrLogImportTableSqlUpdater
 
 	private void dbUpdateHarvestingYear(@NonNull final ImportRecordsSelection selection)
 	{
+
+		final String sqlCalendarId = "SELECT c." + I_C_Calendar.COLUMNNAME_C_Calendar_ID
+				+ " FROM " + I_C_Calendar.Table_Name + " c"
+				+ " WHERE c." + I_C_Calendar.COLUMNNAME_IsDefault + " = 'Y' "
+				+ " AND c." + I_C_Calendar.COLUMNNAME_AD_Org_ID + " IN (i." + I_I_ModCntr_Log.COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND c." + I_C_Calendar.COLUMNNAME_IsActive + "='Y'"
+				+ " LIMIT 1";
+
 		final String sqlYearId = "SELECT y." + I_C_Year.COLUMNNAME_C_Year_ID
 				+ " FROM " + I_C_Year.Table_Name + " y"
 				+ " WHERE y." + I_C_Year.COLUMNNAME_FiscalYear + " = i." + I_I_ModCntr_Log.COLUMNNAME_FiscalYear
+				+ " AND y." + I_C_Year.COLUMNNAME_C_Calendar_ID + " = (" + sqlCalendarId + " )"
 				+ " AND y." + I_C_Year.COLUMNNAME_AD_Org_ID + " IN (i." + I_I_ModCntr_Log.COLUMNNAME_AD_Org_ID + ", 0)"
 				+ " AND y." + I_C_Year.COLUMNNAME_IsActive + "='Y'"
 				+ " ORDER BY y." + I_C_Year.COLUMNNAME_AD_Org_ID + " DESC"
@@ -447,7 +458,7 @@ public class ModCntrLogImportTableSqlUpdater
 	}
 
 	@Builder
-	public record DBUpdateErrorMessageRequest(
+	record DBUpdateErrorMessageRequest(
 			@NonNull ImportRecordsSelection selection,
 			@NonNull String mandatoryColumnName,
 			@Nullable String linkColumnName,
