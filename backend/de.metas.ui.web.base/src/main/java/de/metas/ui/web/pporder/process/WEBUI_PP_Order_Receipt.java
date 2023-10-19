@@ -218,22 +218,22 @@ public class WEBUI_PP_Order_Receipt
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
+		final IPPOrderReceiptHUProducer producer = newReceiptCandidatesProducer()
+				.bestBeforeDate(computeBestBeforeDate());
+
 		if (isReceiveIndividualCUs)
 		{
-			newReceiptCandidatesProducer()
-					.withPPOrderLocatorId()
-					.bestBeforeDate(computeBestBeforeDate())
+			producer.withPPOrderLocatorId()
 					.receiveDraftedIndividualCUs(Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull()));
-
-			return MSG_OK;
 		}
-
-		newReceiptCandidatesProducer()
-				.packUsingLUTUConfiguration(getPackingInfoParams().createAndSaveNewLUTUConfig())
-				.bestBeforeDate(computeBestBeforeDate())
-				.createDraftReceiptCandidatesAndPlanningHUs();
+		else
+		{
+			producer.packUsingLUTUConfiguration(getPackingInfoParams().createAndSaveNewLUTUConfig())
+					.bestBeforeDate(computeBestBeforeDate())
+					.createDraftReceiptCandidatesAndPlanningHUs();
+		}
 
 		return MSG_OK;
 	}
