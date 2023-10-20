@@ -51,8 +51,6 @@ function createAuthObject() {
   const dispatch = useDispatch();
 
   const loginByToken = async ({ token, language }) => {
-    //console.log('auth.loginByToken: token=', { token, language });
-
     if (language) {
       setLanguage(language);
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
@@ -69,9 +67,7 @@ function createAuthObject() {
 
   const login = (username, password) => {
     return loginRequest(username, password)
-      .then(({ data }) => {
-        const { error, token, language } = data;
-
+      .then(({ error, token, language }) => {
         if (error) {
           return Promise.reject(error);
         } else {

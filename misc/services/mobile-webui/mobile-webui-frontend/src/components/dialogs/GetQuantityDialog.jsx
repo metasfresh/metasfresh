@@ -8,22 +8,26 @@ import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
-import { formatQtyToHumanReadable } from '../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
   userInfo,
   qtyTarget,
+  scaleTolerance,
   qtyCaption,
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  totalQty,
+  qtyAlreadyOnScale,
   //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
+  const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
@@ -38,12 +42,20 @@ const GetQuantityDialog = ({
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
       : 0;
 
-  const allValid = qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null);
+  const allValid =
+    doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
 
   const onDialogYes = () => {
     if (allValid) {
+      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+
+      let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
+      if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
+        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
+      }
+
       onQtyChange({
-        qtyEnteredAndValidated: qtyInfos.toNumberOrString(qtyInfo),
+        qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
       });
@@ -60,8 +72,23 @@ const GetQuantityDialog = ({
           onWebsocketMessage: (message) => {
             if (useScaleDevice) {
               const { value } = JSON.parse(message.body);
-              setQtyInfo(qtyInfos.invalidOfNumber(value));
+
+              const newQtyCandidate = qtyInfos.invalidOfNumber(value);
+
+              setQtyInfo((prev) => {
+                if (!prev || newQtyCandidate.qty !== prev.qty) {
+                  return newQtyCandidate;
+                }
+
+                return prev;
+              });
             }
+          },
+          headers: {
+            qtyTarget: totalQty || '0',
+            positiveTolerance: scaleTolerance?.positiveTolerance || '0',
+            negativeTolerance: scaleTolerance?.negativeTolerance || '0',
+            uom: uom,
           },
         });
       }
@@ -85,7 +112,7 @@ const GetQuantityDialog = ({
                 {qtyCaption && (
                   <tr>
                     <th>{qtyCaption}</th>
-                    <td>{formatQtyToHumanReadable({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                    <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                   </tr>
                 )}
                 {userInfo &&
@@ -132,7 +159,7 @@ const GetQuantityDialog = ({
                   <>
                     <tr>
                       <th>{trl('general.QtyRejected')}</th>
-                      <td>{formatQtyToHumanReadable({ qty: qtyRejected, uom })}</td>
+                      <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
@@ -183,10 +210,13 @@ GetQuantityDialog.propTypes = {
   // Properties
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  totalQty: PropTypes.number,
+  qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
+  scaleTolerance: PropTypes.object,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

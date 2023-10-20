@@ -14,7 +14,7 @@ import {
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadable } from '../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -26,6 +26,7 @@ const RawMaterialIssueLineScreen = () => {
     caption,
     userInstructions,
     productName,
+    productValue,
     uom,
     qtyToIssue,
     qtyToIssueTolerance,
@@ -43,6 +44,7 @@ const RawMaterialIssueLineScreen = () => {
           caption,
           userInstructions,
           productName,
+          productValue,
           uom,
           qtyToIssue,
           qtyToIssueTolerance,
@@ -93,8 +95,9 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: activity?.caption ?? 'Issue',
-    userInstructions: activity?.userInstructions,
+    userInstructions: line?.userInstructions || activity?.userInstructions,
     productName: line?.productName,
+    productValue: line?.productValue,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
     qtyToIssueTolerance: line?.qtyToIssueTolerance,
@@ -111,6 +114,7 @@ const computeHeaderEntriesFromParams = ({
   caption,
   userInstructions,
   productName,
+  productValue,
   uom,
   qtyToIssue,
   qtyToIssueTolerance,
@@ -122,10 +126,14 @@ const computeHeaderEntriesFromParams = ({
     caption: caption,
     userInstructions,
     values: [
+      {
+        caption: trl('general.ProductValue'),
+        value: productValue,
+      },
       { caption: trl('general.Product'), value: productName },
       {
         caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssue,
           uom,
           tolerance: qtyToIssueTolerance,
@@ -134,7 +142,7 @@ const computeHeaderEntriesFromParams = ({
       },
       {
         caption: trl('activities.mfg.issues.qtyToIssueRemaining'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssueRemaining,
           uom,
           precision: 999,
@@ -142,7 +150,7 @@ const computeHeaderEntriesFromParams = ({
       },
       {
         caption: trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadable({ qty: qtyIssued, uom, precision: 999 }),
+        value: formatQtyToHumanReadableStr({ qty: qtyIssued, uom, precision: 999 }),
       },
     ],
   };

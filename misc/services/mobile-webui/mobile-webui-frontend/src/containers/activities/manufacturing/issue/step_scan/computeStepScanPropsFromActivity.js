@@ -5,7 +5,7 @@ import {
   getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
 
-export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) => {
+export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isProcessedQtyStillOnScale }) => {
   const line = getLineByIdFromActivity(activity, lineId);
   const step = getStepByIdFromLine(line, stepId);
 
@@ -19,7 +19,12 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
   const stepQtyToIssue = step.qtyToIssue;
   const qtyHUCapacity = step.qtyHUCapacity;
 
-  const qtyToIssueMax = Math.max(lineQtyToIssueMax - lineQtyIssued, 0);
+  const qtyToIssueMax =
+    isWeightable && isProcessedQtyStillOnScale
+      ? Math.max(lineQtyToIssueMax, 0)
+      : Math.max(lineQtyToIssueMax - lineQtyIssued, 0);
+
+  const qtyAlreadyOnScale = isWeightable && isProcessedQtyStillOnScale ? Math.max(lineQtyIssued, 0) : undefined;
   //qtyToIssueMax = Math.min(qtyToIssueMax, qtyHUCapacity); // allow exceeding the HU capacity
 
   const lineQtyToIssueRemaining = Math.max(lineQtyToIssue - lineQtyIssued, 0);
@@ -32,12 +37,14 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     qtyToIssueMax,
     qtyHUCapacity,
     isIssueWholeHU,
+    qtyAlreadyOnScale,
     //
     line,
     step,
     //
     lineQtyToIssueMax,
     lineQtyToIssueRemaining,
+    lineQtyIssued,
     lineQtyToIssue,
     stepQtyToIssue,
   });
@@ -51,9 +58,12 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     lineQtyToIssue,
     lineQtyToIssueTolerance,
     lineQtyToIssueRemaining,
+    lineQtyIssued,
     isWeightable,
     isIssueWholeHU,
+    qtyAlreadyOnScale,
     qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
     scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
+    scaleTolerance: isWeightable ? step.scaleTolerance : null,
   };
 };
