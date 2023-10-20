@@ -570,3 +570,18 @@ UPDATE AD_Process SET Description=NULL, Help=NULL, Name='MHD Restlaufzeit in Mon
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2023-10-20 11:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
 ;
 
+-- Process: PackageLabel(de.metas.adempiere.process.PackageLabel)
+-- 2023-10-20T10:46:27.422Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540059
+;
+
+-- Value: PackageLabel
+-- Classname: de.metas.adempiere.process.PackageLabel
+-- 2023-10-20T10:46:32.015Z
+UPDATE AD_Process SET Description='Paketlabel zu einem Lieferschein mit zugehörigen Packstücken (z. Zt. nur mit Lieferweg "DPD")', Help='Die zugrunde liegenden Information können verworfen und neu ermittelt werden.', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540059
+;
+
+-- Process: PackageLabel(de.metas.adempiere.process.PackageLabel)
+-- 2023-10-20T10:46:31.991Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540059
+;
