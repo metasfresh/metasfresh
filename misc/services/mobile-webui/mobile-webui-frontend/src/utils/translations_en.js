@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Product',
+    ProductValue: 'Product Value',
     Locator: 'Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
