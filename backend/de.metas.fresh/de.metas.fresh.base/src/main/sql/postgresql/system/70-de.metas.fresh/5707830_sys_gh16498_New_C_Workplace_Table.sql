@@ -230,3 +230,17 @@ UPDATE AD_Column SET AD_Reference_ID=14,Updated=TO_TIMESTAMP('2023-10-19 20:52:0
 INSERT INTO t_alter_column values('c_workplace','Description','VARCHAR(255)',null,null)
 ;
 
+-- Column: C_Workplace.M_Warehouse_ID
+-- Column: C_Workplace.M_Warehouse_ID
+-- 2023-10-20T10:54:35.123Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-10-20 11:54:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587585
+;
+
+-- 2023-10-20T10:54:41.794Z
+INSERT INTO t_alter_column values('c_workplace','M_Warehouse_ID','NUMERIC(10)',null,null)
+;
+
+-- 2023-10-20T10:54:41.803Z
+INSERT INTO t_alter_column values('c_workplace','M_Warehouse_ID',null,'NOT NULL',null)
+;
+
