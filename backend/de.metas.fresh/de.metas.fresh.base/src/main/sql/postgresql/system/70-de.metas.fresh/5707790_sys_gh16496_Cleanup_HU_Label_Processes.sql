@@ -503,3 +503,70 @@ UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Nehmen Sie TU heraus un
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Nehmen Sie TU heraus und addieren Sie es zu LU',Updated=TO_TIMESTAMP('2023-10-19 18:51:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540917
 ;
 
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:05.587Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540578
+;
+
+-- Value: M_HU_DestroyEmptyHUs
+-- Classname: de.metas.handlingunits.process.M_HU_DestroyEmptyHUs
+-- 2023-10-20T10:22:10.390Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540578
+;
+
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:10.361Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540578
+;
+
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:19.738Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540578
+;
+
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:24.068Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540578
+;
+
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:29.280Z
+UPDATE AD_Process_Trl SET Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540578
+;
+
+-- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
+-- 2023-10-20T10:22:34.093Z
+UPDATE AD_Process_Trl SET Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540578
+;
+
+-- Process: M_HU_Trace_CreateForHU(de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU)
+-- 2023-10-20T10:25:33.551Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Create tracking records for HU',Updated=TO_TIMESTAMP('2023-10-20 11:25:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540803
+;
+
+-- Process: M_HU_Trace_CreateForHU(de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU)
+-- 2023-10-20T10:25:37.304Z
+UPDATE AD_Process_Trl SET Name='Create tracking records for HU',Updated=TO_TIMESTAMP('2023-10-20 11:25:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540803
+;
+
+-- Process: Wareneingangsetikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-20T10:28:15.651Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='Goods receipt labels',Updated=TO_TIMESTAMP('2023-10-20 11:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540370
+;
+
+-- Process: Wareneingangsetikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-20T10:28:25.573Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='Goods receipt labels',Updated=TO_TIMESTAMP('2023-10-20 11:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540370
+;
+
+-- Value: M_HU_Update_MonthsUntilExpiry_Attribute
+-- Classname: de.metas.handlingunits.expiry.process.M_HU_Update_MonthsUntilExpiry_Attribute
+-- 2023-10-20T10:34:33.466Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2023-10-20 11:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541193
+;
+
+-- Process: M_HU_Update_MonthsUntilExpiry_Attribute(de.metas.handlingunits.expiry.process.M_HU_Update_MonthsUntilExpiry_Attribute)
+-- 2023-10-20T10:34:33.460Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2023-10-20 11:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
+;
+
