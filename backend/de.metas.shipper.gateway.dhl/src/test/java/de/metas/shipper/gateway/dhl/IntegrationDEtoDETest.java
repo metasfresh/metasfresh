@@ -24,14 +24,13 @@ package de.metas.shipper.gateway.dhl;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static de.metas.shipper.gateway.dhl.DhlTestHelper.ACCOUNT_NUMBER_DE;
 import static de.metas.shipper.gateway.dhl.DhlTestHelper.createDummyDeliveryOrderDEtoDE;
 
-@Disabled("makes ACTUAL calls to dhl api and needs auth")
+// @Disabled("makes ACTUAL calls to dhl api and needs auth")
 class IntegrationDEtoDETest
 {
 	@BeforeEach
