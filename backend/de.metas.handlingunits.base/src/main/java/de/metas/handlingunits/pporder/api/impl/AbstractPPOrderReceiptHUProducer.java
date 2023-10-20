@@ -279,9 +279,10 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 	public List<I_M_HU> receiveIndividualPlanningCUs(@NonNull final Quantity qtyToReceive)
 	{
 		this.processReceiptCandidates = false;
-		this.receiveUsingTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
+		this.receiveUsingLUTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
 												   Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
-		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
+
+		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive).getHus());
 	}
 
 	private ReceiptCandidatesAndHUs receiveHUs(@NonNull final Quantity qtyToReceive)
