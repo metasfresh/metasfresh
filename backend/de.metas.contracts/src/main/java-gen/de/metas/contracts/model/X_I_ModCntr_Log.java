@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1173004821L;
+	private static final long serialVersionUID = 349671882L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -229,7 +229,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setCollectionPointValue (final java.lang.String CollectionPointValue)
+	public void setCollectionPointValue (final @Nullable java.lang.String CollectionPointValue)
 	{
 		set_Value (COLUMNNAME_CollectionPointValue, CollectionPointValue);
 	}
@@ -292,7 +292,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
@@ -676,7 +676,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setProductValue (final java.lang.String ProductValue)
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}

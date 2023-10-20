@@ -58,6 +58,7 @@ import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_C_UOM_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_CollectionPointValue;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_CollectionPoint_BPartner_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ContractModuleName;
+import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_DateTrx;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_DocumentNo;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_FiscalYear;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_Harvesting_Year_ID;
@@ -125,6 +126,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_C_Flatrate_Term_ID + " = (" + sqlContractId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_C_Flatrate_Term_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_DocumentNo + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -137,7 +139,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE s." + I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " = i." + COLUMNNAME_M_Product_ID
 				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " = i." + COLUMNNAME_Harvesting_Year_ID
 				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx + " = i." + COLUMNNAME_IsSOTrx
-				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_AD_Org_ID + " = (i." + COLUMNNAME_AD_Org_ID + ", 0) "
+				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0) "
 				+ " LIMIT 1 ";
 
 		final String sqlContractModuleId = "SELECT m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
@@ -152,6 +154,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_ModCntr_Module_ID + " = (" + sqlContractModuleId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_ModCntr_Module_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_ContractModuleName + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -159,7 +162,6 @@ public class ModCntrLogImportTableSqlUpdater
 
 	private void dbUpdateHarvestingYear(@NonNull final ImportRecordsSelection selection)
 	{
-
 		final String sqlCalendarId = "SELECT c." + I_C_Calendar.COLUMNNAME_C_Calendar_ID
 				+ " FROM " + I_C_Calendar.Table_Name + " c"
 				+ " WHERE c." + I_C_Calendar.COLUMNNAME_IsDefault + " = 'Y' "
@@ -180,6 +182,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_Harvesting_Year_ID + " = (" + sqlYearId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_Harvesting_Year_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_FiscalYear + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -199,6 +202,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_M_Warehouse_ID + " = (" + sqlWarehouseId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_M_Warehouse_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_WarehouseName + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -218,6 +222,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_M_Product_ID + " = (" + sqlProductId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_M_Product_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_ProductValue + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -237,6 +242,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_ModCntr_InvoicingGroup_ID + " = (" + sqlInvoicingGroupId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_ModCntr_InvoicingGroup_ID + " IS NULL"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_ModCntr_InvoicingGroupName + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -244,13 +250,11 @@ public class ModCntrLogImportTableSqlUpdater
 
 	private void dbUpdateErrorMessage(@NonNull final ImportRecordsSelection selection)
 	{
-
-		//  C_Flatrate_Term_ID
+		// DateTrx
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
 								   .selection(selection)
-								   .mandatoryColumnName(COLUMNNAME_C_Flatrate_Term_ID)
-								   .linkColumnName(COLUMNNAME_DocumentNo)
-								   .errorMessage(COLUMNNAME_C_Flatrate_Term_ID + " No C_Flatrate_Term Match!")
+								   .mandatoryColumnName(COLUMNNAME_DateTrx)
+								   .errorMessage(COLUMNNAME_DateTrx + " is Mandatory !")
 								   .build());
 
 		// Harvesting_Year_ID
@@ -260,6 +264,22 @@ public class ModCntrLogImportTableSqlUpdater
 								   .linkColumnName(COLUMNNAME_FiscalYear)
 								   .errorMessage(COLUMNNAME_Harvesting_Year_ID + " No Harvesting Year Match!")
 								   .build());
+
+		// ModCnr_Module_ID
+		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
+								   .errorMessage(COLUMNNAME_ModCntr_Module_ID + " is Mandatory!")
+								   .build());
+
+		// C_Flatrate_Term_ID
+		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_C_Flatrate_Term_ID)
+								   .linkColumnName(COLUMNNAME_DocumentNo)
+								   .errorMessage(COLUMNNAME_C_Flatrate_Term_ID + " No C_Flatrate_Term Match!")
+								   .build());
+
 
 		// CollectionPoint_BPartner_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
@@ -325,14 +345,6 @@ public class ModCntrLogImportTableSqlUpdater
 								   .errorMessage(COLUMNNAME_M_Warehouse_ID + " No Warehouse Match!")
 								   .build());
 
-		//  ModCnr_Module_ID
-		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-								   .selection(selection)
-								   .mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
-								   .linkColumnName(COLUMNNAME_ContractModuleName)
-								   .errorMessage(COLUMNNAME_ModCntr_Module_ID + " No Contract Module Match!")
-								   .build());
-
 		// Qty
 		updateQtyErrormessage(selection);
 	}
@@ -354,6 +366,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_ModCntr_Log_DocumentType + " must be " + LogEntryDocumentType.IMPORT_LOG.getCode() + " !" + ", '"
 				+ " WHERE i." + COLUMNNAME_ModCntr_Log_DocumentType + " <> '" + LogEntryDocumentType.IMPORT_LOG.getCode() + "' "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_ModCntr_Log_DocumentType + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -366,6 +379,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE c.isActive='Y' AND i." + COLUMNNAME_ISO_Code + "=c.ISO_Code) "
 				+ " WHERE " + COLUMNNAME_C_Currency_ID + " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_ISO_Code + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -378,6 +392,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE c.isActive='Y' AND " + COLUMNNAME_CollectionPointValue + "=c.Value) "
 				+ " WHERE " + COLUMNNAME_CollectionPoint_BPartner_ID + " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_CollectionPointValue + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -390,6 +405,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE c.isActive='Y' AND " + COLUMNNAME_BPartnerValue + "=c.Value) "
 				+ " WHERE " + COLUMNNAME_Producer_BPartner_ID + " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_BPartnerValue + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -402,18 +418,7 @@ public class ModCntrLogImportTableSqlUpdater
 				+ " WHERE c.isActive='Y' AND " + COLUMNNAME_Bill_BPartner_Value + "=c.Value) "
 				+ " WHERE " + COLUMNNAME_Bill_BPartner_ID + " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
-				+ selection.toSqlWhereClause("i");
-
-		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private void dbUpdateUOM(@NonNull final ImportRecordsSelection selection)
-	{
-		final String sql = "UPDATE " + targetTableName + " i "
-				+ " SET " + COLUMNNAME_Price_UOM_ID + "=(SELECT C_UOM_ID FROM C_UOM c"
-				+ " WHERE c.isActive='Y' AND i." + COLUMNNAME_PriceUOM + "=c.uomsymbol) "
-				+ " WHERE " + COLUMNNAME_Price_UOM_ID + " IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_Bill_BPartner_Value + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -422,10 +427,24 @@ public class ModCntrLogImportTableSqlUpdater
 	private void dbUpdatePriceUOM(@NonNull final ImportRecordsSelection selection)
 	{
 		final String sql = "UPDATE " + targetTableName + " i "
+				+ " SET " + COLUMNNAME_Price_UOM_ID + "=(SELECT C_UOM_ID FROM C_UOM c"
+				+ " WHERE c.isActive='Y' AND i." + COLUMNNAME_PriceUOM + "=c.uomsymbol) "
+				+ " WHERE " + COLUMNNAME_Price_UOM_ID + " IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_PriceUOM + ")) > 0 "
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdateUOM(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + targetTableName + " i "
 				+ " SET " + COLUMNNAME_C_UOM_ID + "=(SELECT C_UOM_ID FROM C_UOM c"
 				+ " WHERE c.isActive='Y' AND i." + COLUMNNAME_UOMSymbol + "=c.uomsymbol) "
 				+ " WHERE " + COLUMNNAME_C_UOM_ID + " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND LENGTH(TRIM( i." + COLUMNNAME_UOMSymbol + ")) > 0 "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
