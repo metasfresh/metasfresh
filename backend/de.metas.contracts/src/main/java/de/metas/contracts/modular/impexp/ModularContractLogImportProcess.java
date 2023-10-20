@@ -60,6 +60,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -149,10 +150,9 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
 		final Optional<ModuleConfig> config = getModuleConfigFrom(record);
 
-		if (Objects.isNull(harvestingYearId)
-				|| config.isEmpty())
+		if (Objects.isNull(harvestingYearId) || config.isEmpty())
 		{
-			return Optional.empty();
+			throw new AdempiereException("No Contract Config (Contract Settings / Contract Module) Match");
 		}
 
 		final ProductPrice productPrice = getPriceActual(record);
@@ -184,7 +184,8 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 
 	private boolean isImportLog(@NonNull final I_I_ModCntr_Log importRecord)
 	{
-		return Objects.equals(importRecord.getModCntr_Log_DocumentType(), X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog);
+		return Objects.equals(importRecord.getModCntr_Log_DocumentType(), X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog)
+				&& Objects.equals(importRecord.getI_IsImported(), "N");
 	}
 
 	@NonNull
