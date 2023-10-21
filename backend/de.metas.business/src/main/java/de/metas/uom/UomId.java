@@ -14,6 +14,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.business
@@ -133,4 +137,6 @@ public class UomId implements RepoIdAware
 			return commonUomId;
 		}
 	}
+
+	public boolean isEach() {return EACH.equals(this);}
 }
