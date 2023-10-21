@@ -955,3 +955,19 @@ UPDATE AD_Process SET Description='Paketlabel zu einem Lieferschein mit zugehör
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540059
 ;
 
+-- Value: EDI_Desadv_GenerateSSCCLabels
+-- Classname: de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels
+-- 2023-10-21T20:23:54.878Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='SSCC18-Label erstellen',Updated=TO_TIMESTAMP('2023-10-21 21:23:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540574
+;
+
+-- Process: EDI_Desadv_GenerateSSCCLabels(de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels)
+-- 2023-10-21T20:23:54.871Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='SSCC18-Label erstellen',Updated=TO_TIMESTAMP('2023-10-21 21:23:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540574
+;
+
+-- Process: EDI_Desadv_GenerateSSCCLabels(de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels)
+-- 2023-10-21T20:24:26.495Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Create SSCC18 Label',Updated=TO_TIMESTAMP('2023-10-21 21:24:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540574
+;
+
