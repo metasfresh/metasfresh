@@ -34,6 +34,7 @@ public class HUQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@NonNull
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
