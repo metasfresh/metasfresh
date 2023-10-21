@@ -184,4 +184,15 @@ public class Packageable
 				.add(getQtyPickedPlanned());
 
 	}
+
+	public Quantity getQtyToPick()
+	{
+		return qtyToDeliver
+				.subtract(qtyPickedNotDelivered)
+				// IMPORTANT: don't subtract the Qty PickedPlanned
+				// because we will also allocate existing DRAFT picking candidates
+				// .subtract(qtyPickedPlanned)
+				.toZeroIfNegative();
+
+	}
 }
