@@ -358,22 +358,22 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Etikett',Updated=TO_TI
 
 -- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2023-10-19T14:28:25.931Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540416
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540416
 ;
 
 -- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2023-10-19T14:28:30.458Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540416
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540416
 ;
 
 -- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2023-10-19T14:28:34.528Z
-UPDATE AD_Process_Trl SET Name='LU IFCO Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540416
+UPDATE AD_Process_Trl SET Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540416
 ;
 
 -- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2023-10-19T14:28:39.043Z
-UPDATE AD_Process_Trl SET Name='LU IFCO Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540416
+UPDATE AD_Process_Trl SET Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540416
 ;
 
 -- Process: Picking Label-Partner (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
