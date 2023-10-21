@@ -171,11 +171,6 @@ public class Packageable
 		}
 	}
 
-	public static Optional<UserId> extractSingleLockedBy(@NonNull final Collection<Packageable> packageables)
-	{
-		return extractSingleValue(packageables, Packageable::getLockedBy);
-	}
-
 	public static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final Collection<Packageable> items)
 	{
 		return items.stream().map(Packageable::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
