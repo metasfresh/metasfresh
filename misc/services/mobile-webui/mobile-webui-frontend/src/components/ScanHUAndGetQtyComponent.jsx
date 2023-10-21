@@ -174,7 +174,7 @@ const ScanHUAndGetQtyComponent = ({
           />
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
-              caption={`DEBUG: ${eligibleBarcode}`}
+              caption={`DEBUG: QR`}
               onClick={() => onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: eligibleBarcode }))}
             />
           )}
