@@ -128,4 +128,28 @@ public class C_Order
 		orderDAO.retrieveOrderLines(orderRecord)
 				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
+	public void validateHarvestingDatesForPurchaseOrder(@NonNull final I_C_Order orderRecord)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
+		if (soTrx.isSales())
+		{
+			return;
+		}
+
+		final boolean hasAnyContractTerms = orderDAO.retrieveOrderLines(orderRecord)
+				.stream()
+				.anyMatch(ol -> ol.getC_Flatrate_Conditions_ID() > 0);
+
+		if (!hasAnyContractTerms)
+		{
+			return;
+		}
+
+		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED)
+				.markAsUserValidationError();
+	}
 }
