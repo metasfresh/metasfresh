@@ -494,6 +494,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
+	LocatorId getLocatorId(HuId huId);
+
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{
 		final LocatorId locatorId = extractLocatorIdOrNull(hu);
