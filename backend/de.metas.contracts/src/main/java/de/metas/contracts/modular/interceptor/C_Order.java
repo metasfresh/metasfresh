@@ -59,6 +59,8 @@ public class C_Order
 {
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
 
+	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed_PurchaseOrder");
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final ModularContractService contractService;
@@ -147,7 +149,7 @@ public class C_Order
 			return;
 		}
 
-		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED)
+		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO)
 				.markAsUserValidationError();
 	}
 }
