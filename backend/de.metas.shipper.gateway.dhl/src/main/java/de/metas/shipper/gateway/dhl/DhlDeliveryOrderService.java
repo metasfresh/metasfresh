@@ -78,9 +78,9 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final InOutPackageRepository inOutPackageRepository;
 	private final CurrencyRepository currencyRepository;
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;

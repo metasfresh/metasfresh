@@ -210,7 +210,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.profile(DhlConstants.STANDARD_GRUPPENPROFIL);
 		final ImmutableList.Builder<JsonDhlShipment> shipments = ImmutableList.builder();
 		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines()) // only a single delivery position should exist
+		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 		{
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
 					.billingNumber(config.getAccountNumber())
