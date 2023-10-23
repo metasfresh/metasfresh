@@ -23,7 +23,6 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.mpackage.Package;
@@ -40,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -47,12 +47,12 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-public class InOutPackageDAO implements IInOutPackageDAO
+@Repository
+public class InOutPackageRepository
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Override
 	@NonNull
 	public ImmutableList<I_M_Package> createM_Packages(@NonNull final List<CreatePackagesRequest> packagesRequestList)
 	{
@@ -80,7 +80,6 @@ public class InOutPackageDAO implements IInOutPackageDAO
 		return mPackage;
 	}
 
-	@Override
 	public Package getPackageById(@NonNull final PackageId packageId)
 	{
 		final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);

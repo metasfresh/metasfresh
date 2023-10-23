@@ -22,18 +22,18 @@
 
 package de.metas.handlingunits.impl;
 
-import de.metas.handlingunits.IInOutPackageBL;
-import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.mpackage.Package;
 import de.metas.mpackage.PackageId;
-import de.metas.util.Services;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-public class InOutPackageBL implements IInOutPackageBL
+@Service
+@AllArgsConstructor
+public class InOutPackageService
 {
-	private final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+	private final InOutPackageRepository inOutPackageDAO;
 
-	@Override
 	public Package getPackageByIdIncludingDetails(@NonNull final PackageId packageId)
 	{
 		 return inOutPackageDAO.getPackageById(packageId);

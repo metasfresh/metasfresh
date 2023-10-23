@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.handlingunits.impl.InOutPackageRepository;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
@@ -223,7 +224,6 @@ class DhlTestHelper
 				.build();
 	}
 
-
 	void testAllSteps(final DeliveryOrder initialDummyDeliveryOrder, final String accountNumber)
 	{
 		//
@@ -232,10 +232,9 @@ class DhlTestHelper
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
-		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new CurrencyRepository(), orderRepository);
+		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new InOutPackageRepository(), new CurrencyRepository(), orderRepository);
 
 		final UomId dummyUom = UomId.ofRepoId(1);
-
 
 		final DhlClientConfig config = DhlClientConfig.builder()
 				.baseUrl(BASE_URL)

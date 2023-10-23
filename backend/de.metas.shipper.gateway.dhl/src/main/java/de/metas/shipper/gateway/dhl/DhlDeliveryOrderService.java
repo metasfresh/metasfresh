@@ -27,7 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.handlingunits.impl.InOutPackageRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.mpackage.Package;
@@ -75,7 +75,7 @@ import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShip
 public class DhlDeliveryOrderService implements DeliveryOrderService
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+	private final InOutPackageRepository inOutPackageDAO;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
