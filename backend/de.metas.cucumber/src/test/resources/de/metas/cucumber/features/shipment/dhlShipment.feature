@@ -107,7 +107,7 @@ Feature: Dhl Shipment
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-1000002",
       "productIdentifier": "val-test_product_dhl_01",
-      "qty": 2,
+      "qty": 1,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "ref_12301",
@@ -142,8 +142,8 @@ Feature: Dhl Shipment
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 2            | 2          | 2           | 10.0  | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 2          | 0           | 0.0   | 0        | EUR          | true      |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -151,8 +151,8 @@ Feature: Dhl Shipment
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                     | shipment_1            | test_product_dhl_01     | 2           | true      |
-      | line2                     | shipment_1            | packing_product_1       | 2           | true      |
+      | line1                     | shipment_1            | test_product_dhl_01     | 1           | true      |
+      | line2                     | shipment_1            | packing_product_1       | 1           | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
@@ -161,8 +161,8 @@ Feature: Dhl Shipment
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
-      | il2                         | invoice_1               | packing_product_1       | 2           | true      |
-      | il1                         | invoice_2               | test_product_dhl_01     | 2           | true      |
+      | il2                         | invoice_1               | packing_product_1       | 1           | true      |
+      | il1                         | invoice_2               | test_product_dhl_01     | 1           | true      |
     And load Transportation Order from Shipment
       | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
       | shipment_1            | shipTransp_1                          |

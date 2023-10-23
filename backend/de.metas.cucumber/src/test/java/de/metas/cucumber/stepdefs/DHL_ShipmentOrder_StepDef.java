@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Package;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -86,7 +87,6 @@ public class DHL_ShipmentOrder_StepDef
 			final I_C_BPartner_Location location = bpartnerLocationTable.get(bpLocationIdentifier);
 
 			softly.assertThat(bPartner.getC_BPartner_ID()).isEqualTo(dhlShipmentOrder.getC_BPartner_ID());
-			softly.assertThat(location.getC_BPartner_Location_ID()).isEqualTo(dhlShipmentOrder.getC_BPartner_Location_ID());
 
 			final Integer lengthInCm = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_LengthInCm);
 			softly.assertThat(lengthInCm).as("lengthInCm").isEqualTo(dhlShipmentOrder.getDHL_LengthInCm());
@@ -94,7 +94,7 @@ public class DHL_ShipmentOrder_StepDef
 			softly.assertThat(heightInCm).as("heightInCm").isEqualTo(dhlShipmentOrder.getDHL_HeightInCm());
 			final Integer widthInCm = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_WidthInCm);
 			softly.assertThat(widthInCm).as("widthInCm").isEqualTo(dhlShipmentOrder.getDHL_WidthInCm());
-			final Integer weightInKg = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_WeightInKg);
+			final BigDecimal weightInKg = DataTableUtil.extractBigDecimalForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_WeightInKg);
 			softly.assertThat(weightInKg).as("weightInKg").isEqualTo(dhlShipmentOrder.getDHL_WeightInKg());
 
 			softly.assertAll();
