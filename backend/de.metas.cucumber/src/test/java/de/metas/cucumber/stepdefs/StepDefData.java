@@ -55,6 +55,13 @@ public abstract class StepDefData<T>
 	}
 
 	public void put(
+			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final T record)
+	{
+		put(identifier.getAsString(), record);
+	}
+
+	public void put(
 			@NonNull final String identifier,
 			@NonNull final T record)
 	{
@@ -64,6 +71,13 @@ public abstract class StepDefData<T>
 		assertThat(oldRecord)
 				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
 				.isNull();
+	}
+
+	public void putOrReplace(
+			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final T record)
+	{
+		putOrReplace(identifier.getAsString(), record);
 	}
 
 	public void putOrReplace(

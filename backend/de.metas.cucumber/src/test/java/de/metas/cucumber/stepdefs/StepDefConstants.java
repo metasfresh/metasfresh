@@ -37,7 +37,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 public class StepDefConstants
 {
-	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
+	public static final String TABLECOLUMN_IDENTIFIER = StepDefDataIdentifier.SUFFIX;
 	public static final String CODE = "Code";
 	public static final String METASFRESH_VALUE = "metasfresh";
 
