@@ -291,7 +291,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 				parcel.setContent(deliveryOrderLine.getContent());
 				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
 				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg().intValue()));
-				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task, as with dhl
+				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task
 			}
 		}
 		{
