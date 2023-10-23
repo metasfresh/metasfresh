@@ -221,6 +221,10 @@ UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2023-10-
 INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540765,0,542376,TO_TIMESTAMP('2023-10-23 11:56:49','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','One_User_Per_Org','N',TO_TIMESTAMP('2023-10-23 11:56:49','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2023-10-23T14:52:39.209Z
+UPDATE AD_Index_Table SET IsUnique='Y',Updated=TO_TIMESTAMP('2023-10-23 15:52:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540765
+;
+
 -- 2023-10-23T10:56:49.273Z
 INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540765 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
 ;
@@ -233,6 +237,6 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587587,541357,540765,0,TO_TIMESTAMP('2023-10-23 11:57:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-10-23 11:57:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-10-23T10:57:17.994Z
-CREATE INDEX One_User_Per_Org ON C_Workplace_User_Assign (AD_User_ID,AD_Org_ID)
+-- 2023-10-23T14:52:52.767Z
+CREATE UNIQUE INDEX One_User_Per_Org ON C_Workplace_User_Assign (AD_User_ID,AD_Org_ID)
 ;
