@@ -476,7 +476,7 @@ public class C_BPartner_StepDef
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
 
-		final String value = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_Value);
+		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
 
 		if (Check.isNotBlank(value))
 		{
