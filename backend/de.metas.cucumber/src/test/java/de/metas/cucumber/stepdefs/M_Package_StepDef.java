@@ -22,14 +22,19 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.deliveryplanning.M_ShipperTransportation_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.inout.InOutId;
+import de.metas.product.ProductId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,15 +42,17 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@AllArgsConstructor
 public class M_Package_StepDef
 {
 	private final M_Package_StepDefData packageTable;
@@ -55,23 +62,9 @@ public class M_Package_StepDef
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	private final M_Product_StepDefData productTable;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final M_InOut_StepDefData shipmentTable;
 
-	public M_Package_StepDef(
-			@NonNull final M_Package_StepDefData packageTable,
-			@NonNull final M_Shipper_StepDefData shipperTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final M_ShipperTransportation_StepDefData deliveryInstructionTable,
-			@NonNull final M_Product_StepDefData productTable)
-	{
-		this.packageTable = packageTable;
-		this.shipperTable = shipperTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.bPartnerTable = bPartnerTable;
-		this.deliveryInstructionTable = deliveryInstructionTable;
-		this.productTable = productTable;
-	}
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("^load M_Package for M_ShipperTransportation: (.*)$")
 	public void load_M_Package(@NonNull final String deliveryInstructionIdentifier, @NonNull final DataTable dataTable)
@@ -79,26 +72,51 @@ public class M_Package_StepDef
 		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
 		assertThat(deliveryInstruction).isNotNull();
 
-		final I_M_ShippingPackage shippingPackage = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+		final List<I_M_ShippingPackage> shippingPackages = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstruction.getM_ShipperTransportation_ID())
+				.orderByDescending(I_M_ShippingPackage.COLUMNNAME_Created)
 				.create()
-				.firstOnlyNotNull(I_M_ShippingPackage.class);
+				.list();
+
+		final List<Map<String, String>> dataMaps = dataTable.asMaps();
+		// it's possible that other packages have been added to the transportation order
 
 		final SoftAssertions softly = new SoftAssertions();
-
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final Map<String, String> row : dataMaps)
 		{
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			softly.assertThat(product).isNotNull();
+			I_M_ShippingPackage shippingPackage = null;
 
-			softly.assertThat(shippingPackage.getM_Product_ID()).as(I_M_ShippingPackage.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShippingPackage.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShippingPackage.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			softly.assertThat(CoalesceUtil.firstNotBlank(productIdentifier, shipmentIdentifier)).as("Product or shipment identifiers").isNotBlank();
 
-			final I_M_Package packageRecord =  InterfaceWrapperHelper.load(shippingPackage.getM_Package_ID(), I_M_Package.class);
-			softly.assertThat(packageRecord).isNotNull();
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final ProductId productId = ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID());
 
-			final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
-			packageTable.putOrReplace(packageIdentifier, packageRecord);
+				shippingPackage = shippingPackages.stream()
+						.filter(pkg -> Objects.equals(pkg.getM_Product_ID(), productId.getRepoId()))
+						.findFirst()
+						.orElse(null);
+			}
+			else if (Check.isNotBlank(shipmentIdentifier))
+			{
+				final InOutId shipmentId = InOutId.ofRepoId(shipmentTable.get(shipmentIdentifier).getM_InOut_ID());
+				shippingPackage = shippingPackages.stream()
+						.filter(pkg -> Objects.equals(pkg.getM_InOut_ID(), shipmentId.getRepoId()))
+						.findFirst()
+						.orElse(null);
+			}
+			softly.assertThat(shippingPackage).as("Shipping package").isNotNull();
+
+			if (shippingPackage != null)
+			{
+				final I_M_Package packageRecord = InterfaceWrapperHelper.load(shippingPackage.getM_Package_ID(), I_M_Package.class);
+				softly.assertThat(packageRecord).as("Package").isNotNull();
+
+				final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
+				packageTable.putOrReplace(packageIdentifier, packageRecord);
+			}
 		}
 
 		softly.assertAll();

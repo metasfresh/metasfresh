@@ -66,7 +66,7 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -84,6 +84,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
@@ -470,6 +471,16 @@ public class C_BPartner_StepDef
 		if (id != null)
 		{
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(id);
+			assertThat(bPartnerRecord).isNotNull();
+
+			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+		}
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
+
+		if (Check.isNotBlank(value))
+		{
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);

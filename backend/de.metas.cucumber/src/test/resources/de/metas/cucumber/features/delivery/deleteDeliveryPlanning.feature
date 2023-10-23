@@ -74,7 +74,7 @@ Feature: Delete delivery planning
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveryDate |
       | deliveryInstructionDelete             | shipper_DHL             | customer                       | customerLocation               | 2023-02-25       |
     And load M_Package for M_ShipperTransportation: deliveryInstructionDelete
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageDelete           | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
