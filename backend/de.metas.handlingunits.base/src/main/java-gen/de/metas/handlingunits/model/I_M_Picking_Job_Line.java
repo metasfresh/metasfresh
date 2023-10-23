@@ -1,5 +1,6 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_Line
@@ -50,6 +51,58 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_ID();
+
+	org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -73,6 +126,28 @@ public interface I_M_Picking_Job_Line
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.
@@ -166,6 +241,27 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -185,6 +281,27 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Processed = new ModelColumn<>(I_M_Picking_Job_Line.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Qty To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToPick (BigDecimal QtyToPick);
+
+	/**
+	 * Get Qty To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToPick();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_QtyToPick = new ModelColumn<>(I_M_Picking_Job_Line.class, "QtyToPick", null);
+	String COLUMNNAME_QtyToPick = "QtyToPick";
 
 	/**
 	 * Get Updated.

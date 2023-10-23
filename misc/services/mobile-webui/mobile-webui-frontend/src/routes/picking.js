@@ -2,9 +2,13 @@ import PickStepScreen from '../containers/activities/picking/PickStepScreen';
 import PickStepScanScreen from '../containers/activities/picking/PickStepScanScreen';
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
+import PickLineScanScreen from '../containers/activities/picking/PickLineScanScreen';
 
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
+
+export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`;
 
 export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>
   pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) +
@@ -30,6 +34,15 @@ export const pickingRoutes = [
       lineId: ':lineId',
     }),
     Component: PickLineScreen,
+  },
+  {
+    path: pickingLineScanScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
+    Component: PickLineScanScreen,
   },
   {
     path: pickingStepScreenLocation({

@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -87,7 +88,7 @@ public class CreatePickingPlanCommand
 
 	//
 	// Params
-	private final ImmutableList<Packageable> packageables;
+	private final PackageableList packageables;
 
 	//
 	// State

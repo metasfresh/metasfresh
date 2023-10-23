@@ -36,5 +36,6 @@ public class MobileUIPickingUserProfile
 	public static final MobileUIPickingUserProfile DEFAULT = builder().build();
 
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	boolean isAllowPickingAnyHU;
 	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
 }

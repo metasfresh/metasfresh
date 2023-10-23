@@ -83,6 +83,7 @@ public class PickingJobRestService
 				.salesOrderId(params.getSalesOrderId())
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
+				.isAllowPickingAnyHU(mobileUIPickingUserProfileRepository.getProfile().isAllowPickingAnyHU())
 				.build());
 	}
 

@@ -38,6 +38,7 @@ import java.util.List;
 @Jacksonized
 public class JsonPickingJobLine
 {
+	@NonNull String pickingLineId;
 	@NonNull String caption;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -50,6 +51,7 @@ public class JsonPickingJobLine
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return builder()
+				.pickingLineId(line.getId().getAsString())
 				.caption(line.getProductName().translate(adLanguage))
 				.uom(line.getQtyToPick().getUOMSymbol())
 				.qtyToPick(line.getQtyToPick().toBigDecimal())

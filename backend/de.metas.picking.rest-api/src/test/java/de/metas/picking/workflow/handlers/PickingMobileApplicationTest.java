@@ -6,7 +6,9 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
@@ -28,6 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
@@ -39,9 +42,10 @@ import de.metas.workflow.rest_api.service.WFActivityHandlersRegistry;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,9 +56,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@ExtendWith(AdempiereTestWatcher.class)
 class PickingMobileApplicationTest
@@ -105,7 +109,7 @@ class PickingMobileApplicationTest
 				)))
 		);
 		workflowRestController = new WorkflowRestController(workflowRestAPIService);
-		pickingRestController = new PickingRestController(pickingMobileApplication);
+		pickingRestController = new PickingRestController(pickingMobileApplication, workflowRestController);
 
 		createMasterdata();
 	}
@@ -140,6 +144,16 @@ class PickingMobileApplicationTest
 				.qtyToDeliver("100")
 				.date(Instant.parse("2021-11-09T08:58:52Z"))
 				.build();
+
+		//
+		// Mobile UI Picking profile
+		{
+			I_MobileUI_UserProfile_Picking record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
+			record.setName("test");
+			record.setIsAllowPickingAnyHU(false);
+			record.setCreateShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE.getCode());
+			InterfaceWrapperHelper.saveRecord(record);
+		}
 	}
 
 	private JsonWFProcess startWFProcess()
@@ -164,7 +178,7 @@ class PickingMobileApplicationTest
 	private void assertEqualsToDatabaseVersion(final JsonWFProcess wfProcess)
 	{
 		final JsonWFProcess wfProcessFromDatabase = workflowRestController.getWFProcessById(wfProcess.getId());
-		Assertions.assertThat(wfProcess)
+		assertThat(wfProcess)
 				.usingRecursiveComparison()
 				.isEqualTo(wfProcessFromDatabase);
 	}
@@ -244,7 +258,8 @@ class PickingMobileApplicationTest
 		// Pick
 		{
 			final PickingJob pickingJob = retrievePickingJobFromDatabase(wfProcess);
-			final List<PickingJobStep> steps = pickingJob.streamSteps().collect(Collectors.toList());
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final List<PickingJobStep> steps = line.getSteps();
 			final JsonWFActivity pickingActivity = getFirstActivityByComponentType(wfProcess, ActualPickingWFActivityHandler.COMPONENTTYPE_PICK_PRODUCTS);
 
 			try
@@ -255,6 +270,7 @@ class PickingMobileApplicationTest
 										JsonPickingStepEvent.builder()
 												.wfProcessId(wfProcess.getId())
 												.wfActivityId(pickingActivity.getActivityId())
+												.pickingLineId(line.getId().getAsString())
 												.pickingStepId(steps.get(0).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
 												.huQRCode(toQRCodeString(lu1))
@@ -276,6 +292,7 @@ class PickingMobileApplicationTest
 										JsonPickingStepEvent.builder()
 												.wfProcessId(wfProcess.getId())
 												.wfActivityId(pickingActivity.getActivityId())
+												.pickingLineId(line.getId().getAsString())
 												.pickingStepId(steps.get(1).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
 												.huQRCode(toQRCodeString(lu2))
@@ -307,9 +324,10 @@ class PickingMobileApplicationTest
 	void scanPickingSlot_pickUsingAlternatives_complete()
 	{
 		JsonWFProcess wfProcess = startWFProcess();
-		final ImmutableList<PickingJobStep> steps = retrievePickingJobFromDatabase(wfProcess)
-				.streamSteps()
-				.collect(ImmutableList.toImmutableList());
+		final PickingJob pickingJob = retrievePickingJobFromDatabase(wfProcess);
+		assertThat(pickingJob.isAllowPickingAnyHU()).isFalse();
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		final ImmutableList<PickingJobStep> steps = line.getSteps();
 
 		final JsonWFActivity pickingActivity = getFirstActivityByComponentType(wfProcess, ActualPickingWFActivityHandler.COMPONENTTYPE_PICK_PRODUCTS);
 
@@ -323,6 +341,7 @@ class PickingMobileApplicationTest
 								JsonPickingStepEvent.builder()
 										.wfProcessId(wfProcess.getId())
 										.wfActivityId(pickingActivity.getActivityId())
+										.pickingLineId(line.getId().getAsString())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu1))
@@ -333,6 +352,7 @@ class PickingMobileApplicationTest
 								JsonPickingStepEvent.builder()
 										.wfProcessId(wfProcess.getId())
 										.wfActivityId(pickingActivity.getActivityId())
+										.pickingLineId(line.getId().getAsString())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu2))
@@ -345,6 +365,7 @@ class PickingMobileApplicationTest
 								JsonPickingStepEvent.builder()
 										.wfProcessId(wfProcess.getId())
 										.wfActivityId(pickingActivity.getActivityId())
+										.pickingLineId(line.getId().getAsString())
 										.pickingStepId(steps.get(1).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu2))
@@ -385,7 +406,8 @@ class PickingMobileApplicationTest
 		// Pick / Unpick
 		{
 			final PickingJob pickingJob = retrievePickingJobFromDatabase(wfProcess);
-			final List<PickingJobStep> steps = pickingJob.streamSteps().collect(Collectors.toList());
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final List<PickingJobStep> steps = line.getSteps();
 			final JsonWFActivity pickingActivity = getFirstActivityByComponentType(wfProcess, ActualPickingWFActivityHandler.COMPONENTTYPE_PICK_PRODUCTS);
 
 			//
@@ -396,6 +418,7 @@ class PickingMobileApplicationTest
 									JsonPickingStepEvent.builder()
 											.wfProcessId(wfProcess.getId())
 											.wfActivityId(pickingActivity.getActivityId())
+											.pickingLineId(line.getId().getAsString())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.PICK)
 											.huQRCode(toQRCodeString(lu1))
@@ -413,6 +436,7 @@ class PickingMobileApplicationTest
 									JsonPickingStepEvent.builder()
 											.wfProcessId(wfProcess.getId())
 											.wfActivityId(pickingActivity.getActivityId())
+											.pickingLineId(line.getId().getAsString())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.UNPICK)
 											.huQRCode(toQRCodeString(lu1))

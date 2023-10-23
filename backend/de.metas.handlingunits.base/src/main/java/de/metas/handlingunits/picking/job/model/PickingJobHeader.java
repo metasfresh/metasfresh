@@ -19,5 +19,6 @@ public class PickingJobHeader
 	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
+	boolean isAllowPickingAnyHU;
 	@Nullable UserId lockedBy;
 }

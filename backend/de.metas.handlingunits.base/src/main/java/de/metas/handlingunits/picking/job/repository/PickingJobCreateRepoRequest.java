@@ -19,6 +19,8 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class PickingJobCreateRepoRequest
@@ -30,6 +32,7 @@ public class PickingJobCreateRepoRequest
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
+	boolean isAllowPickingAnyHU;
 
 	@Singular @NonNull ImmutableList<Line> lines;
 
@@ -42,6 +45,9 @@ public class PickingJobCreateRepoRequest
 	public static class Line
 	{
 		@NonNull ProductId productId;
+		@NonNull Quantity qtyToPick;
+		@NonNull OrderAndLineId salesOrderAndLineId;
+		@Nullable ShipmentScheduleId shipmentScheduleId;
 		@Singular @NonNull ImmutableList<Step> steps;
 
 		@Builder.Default

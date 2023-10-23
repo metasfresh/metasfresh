@@ -71,6 +71,7 @@ public class MobileUIPickingUserProfileRepository
 
 		return MobileUIPickingUserProfile.builder()
 				.onlyBPartnerIds(onlyBPartnerIds)
+				.isAllowPickingAnyHU(profile.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profile.getCreateShipmentPolicy()))
 				.build();
 	}

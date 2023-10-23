@@ -106,6 +106,7 @@ public class PickingJobUnPickCommand
 		return pickingJob;
 	}
 
+	@Nullable
 	private PickingJobStep unpickStep(@NonNull final PickingJobStep step)
 	{
 		final ImmutableList<StepUnpickInstructions> unpickInstructionsList = this.unpickInstructionsMap.get(step.getId());
@@ -116,6 +117,12 @@ public class PickingJobUnPickCommand
 			final PickingJobStepPickFromKey pickFromKey = unpickInstructions.getPickFromKey();
 			changedStep = unpickStep(changedStep, pickFromKey);
 		}
+
+		if(changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
+		{
+			return null;
+		}
+
 
 		return changedStep;
 	}
