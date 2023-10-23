@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.9487171000000116"/>
+	<property name="ireport.x" value="474"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
+	<parameter name="keydate" class="java.sql.Date"/>
+	<queryString>
+		<![CDATA[select * from getCosts_at_keydate(p_m_product_id:=$P{M_Product_ID},
+                                  p_keydate:=$P{keydate}::date,
+                                  p_acctschema_id:=$P{C_AcctSchema_ID},
+                                  p_ad_org_id:=$P{AD_Org_ID},
+                                  p_m_product_category_id:=$P{M_Product_Category_ID});
+
+]]>
+	</queryString>
+	<field name="keydate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="keydate"/>
+	</field>
+	<field name="product" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="product"/>
+	</field>
+	<field name="productcategory" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productcategory"/>
+	</field>
+	<field name="costelement" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="costelement"/>
+	</field>
+	<field name="cost" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="cost"/>
+	</field>
+	<field name="organization" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="organization"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="115" splitType="Stretch">
+			<textField>
+				<reportElement x="37" y="20" width="198" height="14" uuid="7c279f43-6845-4393-b7cf-d95962d2c9a9"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="87" width="93" height="10" uuid="6c0c6e6c-4470-459b-a454-f8d279508a52"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="77" width="93" height="10" uuid="27452d4f-c4c9-47d4-985a-908505649c26"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{productcateg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="57" width="93" height="10" uuid="647209a3-aa0a-45b7-b814-f09cef285866"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Oganization}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="67" width="93" height="10" uuid="51a94a29-c07e-44bc-889c-d3e2f7064a0d"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{accschema}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="47" width="93" height="10" uuid="6d754d91-c9e2-4ff8-8164-daf7bfc34ef6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="87" width="113" height="10" uuid="08be4045-46f0-4356-8638-76fe3eda60b8"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="77" width="113" height="10" uuid="98feb490-5bb8-4484-afd6-b1ef1cef0b66"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{productcateg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="67" width="113" height="10" uuid="06cc0b5a-dff2-4c37-a684-f883cbcf2919"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{accschema}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="57" width="113" height="10" uuid="d4da951f-129e-4630-a456-bce2ba2d50ef"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{organization}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="130" y="47" width="113" height="10" uuid="4f86af3e-1413-48a8-b305-5d16ec382a8f"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{keydate}]]></textFieldExpression>
+				<patternExpression><![CDATA[dd.MM.yyyy]]></patternExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="40" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="37" y="20" width="45" height="12" uuid="2648dc40-e142-4718-84db-a89e22581678"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Nr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="81" y="20" width="90" height="12" uuid="e441ee26-1cc1-4edb-a42c-812a24000a2b"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="170" y="20" width="35" height="12" uuid="35196010-a565-476e-b023-fe4f36b89f38"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="204" y="20" width="41" height="12" uuid="09f141a0-3ed1-4cc5-8ec2-50488e59d06d"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{col12}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="244" y="20" width="41" height="12" uuid="53e0da28-2568-46e0-9c57-c920b70dd7c2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{col11}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="26" splitType="Stretch">
+			<textField>
+				<reportElement x="37" y="0" width="45" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 3)]]></printWhenExpression>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="34" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
