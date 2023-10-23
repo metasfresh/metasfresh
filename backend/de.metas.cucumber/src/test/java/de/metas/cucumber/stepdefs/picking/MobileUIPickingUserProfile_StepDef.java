@@ -22,12 +22,12 @@
 
 package de.metas.cucumber.stepdefs.picking;
 
-import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
