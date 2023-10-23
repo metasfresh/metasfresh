@@ -111,9 +111,15 @@ public class PPOrderAllocatorService
 	@NonNull
 	private Quantity getCapacityPerProductionCycle(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
-		final I_S_Resource resource = resourceDAO.getById(ResourceId.ofRepoId(ppOrderCandidate.getS_Resource_ID()));
-
 		final UomId candidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
+		final Quantity capacityOverride = Quantitys.create(ppOrderCandidate.getCapacityPerProductionCycleOverride(),
+														   candidateUomId);
+		if (capacityOverride.toBigDecimal().signum() > 0)
+		{
+			return capacityOverride;
+		}
+
+		final I_S_Resource resource = resourceDAO.getById(ResourceId.ofRepoId(ppOrderCandidate.getS_Resource_ID()));
 
 		if (resource.getCapacityPerProductionCycle().signum() == 0)
 		{
