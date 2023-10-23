@@ -301,19 +301,19 @@ public interface I_I_ModCntr_Log
 	 * Set Collection Point Key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCollectionPointValue (java.lang.String CollectionPointValue);
+	void setCollectionPointValue (@Nullable java.lang.String CollectionPointValue);
 
 	/**
 	 * Get Collection Point Key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCollectionPointValue();
+	@Nullable java.lang.String getCollectionPointValue();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CollectionPointValue = new ModelColumn<>(I_I_ModCntr_Log.class, "CollectionPointValue", null);
 	String COLUMNNAME_CollectionPointValue = "CollectionPointValue";
@@ -435,20 +435,20 @@ public interface I_I_ModCntr_Log
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DocumentNo = new ModelColumn<>(I_I_ModCntr_Log.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -945,10 +945,10 @@ public interface I_I_ModCntr_Log
  "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue (java.lang.String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
@@ -956,10 +956,10 @@ public interface I_I_ModCntr_Log
  "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ProductValue = new ModelColumn<>(I_I_ModCntr_Log.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
