@@ -1,3 +1,439 @@
+-- Value: WEBUI_Add_Batch_SerialNo_To_CUs
+-- Classname: de.metas.ui.web.handlingunits.process.WEBUI_Add_Batch_SerialNo_To_CUs
+-- 2023-10-19T13:58:56.880Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='CUs mit Seriennummern hinzufügen',Updated=TO_TIMESTAMP('2023-10-19 14:58:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540898
+;
+
+-- Process: WEBUI_Add_Batch_SerialNo_To_CUs(de.metas.ui.web.handlingunits.process.WEBUI_Add_Batch_SerialNo_To_CUs)
+-- 2023-10-19T13:58:56.840Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='CUs mit Seriennummern hinzufügen',Updated=TO_TIMESTAMP('2023-10-19 14:58:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540898
+;
+
+-- Process: WEBUI_Add_Batch_SerialNo_To_CUs(de.metas.ui.web.handlingunits.process.WEBUI_Add_Batch_SerialNo_To_CUs)
+-- 2023-10-19T13:59:47.084Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='CUs mit Seriennummern hinzufügen',Updated=TO_TIMESTAMP('2023-10-19 14:59:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540898
+;
+
+-- Process: EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels(de.metas.edi.process.EDI_DesadvPackGenerateCSV_FileForSSCC_Labels)
+-- 2023-10-19T14:02:48.666Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-19 15:02:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541232
+;
+
+-- Value: EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels
+-- Classname: de.metas.edi.process.EDI_DesadvPackGenerateCSV_FileForSSCC_Labels
+-- 2023-10-19T14:02:54.042Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='SSCC-Etiketten für Zebra-Drucker erstellen',Updated=TO_TIMESTAMP('2023-10-19 15:02:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541232
+;
+
+-- Process: EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels(de.metas.edi.process.EDI_DesadvPackGenerateCSV_FileForSSCC_Labels)
+-- 2023-10-19T14:02:54.035Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='SSCC-Etiketten für Zebra-Drucker erstellen',Updated=TO_TIMESTAMP('2023-10-19 15:02:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541232
+;
+
+-- Value: Label CU (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/cu/report_cu.jasper
+-- 2023-10-19T14:04:17.658Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='CU-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:04:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541195
+;
+
+-- Process: Label CU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:04:17.651Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='CU-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:04:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541195
+;
+
+-- Process: Label CU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:04:24.409Z
+UPDATE AD_Process_Trl SET Name='CU-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:04:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541195
+;
+
+-- Process: Label CU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:04:55.841Z
+UPDATE AD_Process_Trl SET Name='CU Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:04:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541195
+;
+
+-- Process: Label CU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:05:02.378Z
+UPDATE AD_Process_Trl SET Name='CU Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:05:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=541195
+;
+
+-- Value: CU Label (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/cu_manufacturing/report_cu.jasper
+-- 2023-10-19T14:05:45.645Z
+UPDATE AD_Process SET Description='', Help=NULL, Name='CU Manufacturing Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:05:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540802
+;
+
+-- Process: CU Label (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:05:45.640Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='CU Manufacturing Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:05:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540802
+;
+
+-- Process: CU Label (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:05:54.898Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='CU Manufacturing Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:05:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540802
+;
+
+-- Process: CU Label (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:06:14.277Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='CU Manufacturing Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:06:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540802
+;
+
+-- Process: CU Label (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:06:19.892Z
+UPDATE AD_Process_Trl SET Description='', Name='CU Manufacturing Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:06:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540802
+;
+
+-- Value: DPD_Label_InOut
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/sales/dpdlabel/report.jasper
+-- 2023-10-19T14:07:51.295Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='DPD-Barcode-Etikett (Lieferschein)',Updated=TO_TIMESTAMP('2023-10-19 15:07:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_InOut(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:07:51.288Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD-Barcode-Etikett (Lieferschein)',Updated=TO_TIMESTAMP('2023-10-19 15:07:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_InOut(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:07:57.341Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD-Barcode-Etikett (Lieferschein)',Updated=TO_TIMESTAMP('2023-10-19 15:07:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_InOut(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:08:15.794Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode Label (Delivery Note)',Updated=TO_TIMESTAMP('2023-10-19 15:08:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_InOut(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:08:20.424Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode Label (Delivery Note)',Updated=TO_TIMESTAMP('2023-10-19 15:08:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_InOut(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:08:34.020Z
+UPDATE AD_Process_Trl SET Name='DPD Barcode Label (Delivery Note)',Updated=TO_TIMESTAMP('2023-10-19 15:08:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540188
+;
+
+-- Process: DPD_Label_Package(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:09:11.823Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode-Etikett (Paket)',Updated=TO_TIMESTAMP('2023-10-19 15:09:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540189
+;
+
+-- Value: DPD_Label_Package
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/sales/dpdlabel/report1.jasper
+-- 2023-10-19T14:09:18.059Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='DPD Barcode-Etikett (Paket)',Updated=TO_TIMESTAMP('2023-10-19 15:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540189
+;
+
+-- Process: DPD_Label_Package(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:09:18.052Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode-Etikett (Paket)',Updated=TO_TIMESTAMP('2023-10-19 15:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540189
+;
+
+-- Process: DPD_Label_Package(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:09:35.207Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode Label (Package)',Updated=TO_TIMESTAMP('2023-10-19 15:09:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540189
+;
+
+-- Process: DPD_Label_Package(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:09:41.539Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='DPD Barcode Label (Package)',Updated=TO_TIMESTAMP('2023-10-19 15:09:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540189
+;
+
+-- Process: DPD_Label_Package(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:09:50.280Z
+UPDATE AD_Process_Trl SET Name='DPD Barcode Label (Package)',Updated=TO_TIMESTAMP('2023-10-19 15:09:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540189
+;
+
+-- Process: Create labels(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:11:25.830Z
+UPDATE AD_Process_Trl SET Name='Erstellen Sie Barcode-Etiketten',Updated=TO_TIMESTAMP('2023-10-19 15:11:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541044
+;
+
+-- Value: Create labels
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/reports/addresslabel/report.jasper
+-- 2023-10-19T14:11:30.409Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Erstellen Sie Barcode-Etiketten',Updated=TO_TIMESTAMP('2023-10-19 15:11:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541044
+;
+
+-- Process: Create labels(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:11:30.402Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Erstellen Sie Barcode-Etiketten',Updated=TO_TIMESTAMP('2023-10-19 15:11:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541044
+;
+
+-- Process: Create labels(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:11:40.737Z
+UPDATE AD_Process_Trl SET Name='Create Barcode Labels',Updated=TO_TIMESTAMP('2023-10-19 15:11:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541044
+;
+
+-- Process: Create labels(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:11:46.626Z
+UPDATE AD_Process_Trl SET Name='Create Barcode Labels',Updated=TO_TIMESTAMP('2023-10-19 15:11:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=541044
+;
+
+-- Process: Finishedproduct Label(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:12:34.002Z
+UPDATE AD_Process_Trl SET Description='', Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:12:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584694
+;
+
+-- Value: Finishedproduct Label
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/label/finishedproduct/report.jasper
+-- 2023-10-19T14:12:40.383Z
+UPDATE AD_Process SET Description='', Help=NULL, Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:12:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584694
+;
+
+-- Process: Finishedproduct Label(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:12:40.376Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:12:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584694
+;
+
+-- Process: Finishedproduct Label(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:12:55.288Z
+UPDATE AD_Process_Trl SET Description='', Name='Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:12:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584694
+;
+
+-- Process: Finishedproduct Label(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:13:00.906Z
+UPDATE AD_Process_Trl SET Description='', Name='Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:13:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=584694
+;
+
+-- Process: WEBUI_M_HU_PrintFinishedGoodsLabel(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel)
+-- 2023-10-19T14:19:56.665Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:19:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584852
+;
+
+-- Value: WEBUI_M_HU_PrintFinishedGoodsLabel
+-- Classname: de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel
+-- 2023-10-19T14:20:02.881Z
+UPDATE AD_Process SET Description='Ein Wareneingangsetikett für die HU ausdrucken', Help=NULL, Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:20:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584852
+;
+
+-- Process: WEBUI_M_HU_PrintFinishedGoodsLabel(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel)
+-- 2023-10-19T14:20:02.876Z
+UPDATE AD_Process_Trl SET Name='Barcode-Etikett für fertige Produkte',Updated=TO_TIMESTAMP('2023-10-19 15:20:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584852
+;
+
+-- Process: WEBUI_M_HU_PrintFinishedGoodsLabel(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel)
+-- 2023-10-19T14:20:15.099Z
+UPDATE AD_Process_Trl SET Name='Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:20:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584852
+;
+
+-- Process: WEBUI_M_HU_PrintFinishedGoodsLabel(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel)
+-- 2023-10-19T14:20:22.958Z
+UPDATE AD_Process_Trl SET Description='', Name='Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:20:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=584852
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:21:13.560Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:21:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540413
+;
+
+-- Value: Halbfabrikat Etikett LU (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/halbfabrikat/report_lu.jasper
+-- 2023-10-19T14:21:18.808Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='LU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:21:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:21:18.802Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:21:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:21:43.401Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:21:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:21:49.205Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:21:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:22:11.688Z
+UPDATE AD_Process_Trl SET Name='Étiquette de produit semi-fini',Updated=TO_TIMESTAMP('2023-10-19 15:22:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:22:20.582Z
+UPDATE AD_Process_Trl SET Name='LU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:22:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540413
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:23:39.445Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:23:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540414
+;
+
+-- Value: Halbfabrikat Etikett TU (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/halbfabrikat/report_tu.jasper
+-- 2023-10-19T14:23:44.717Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='TU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:23:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540414
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:23:44.710Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU-Barcode-Etikett für Halbfabrikate',Updated=TO_TIMESTAMP('2023-10-19 15:23:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540414
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:23:57.306Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:23:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540414
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:24:01.758Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:24:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540414
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:24:29.981Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Étiquette de code-barres pour produits semi-finis TU',Updated=TO_TIMESTAMP('2023-10-19 15:24:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540414
+;
+
+-- Process: Halbfabrikat Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:24:39.609Z
+UPDATE AD_Process_Trl SET Name='TU Semi-Finished Product Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:24:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540414
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:26:43.786Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:26:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540415
+;
+
+-- Value: IFCO Etikett TU (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/tu_ifco/report_tu.jasper
+-- 2023-10-19T14:26:50.437Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='TU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:26:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:26:50.431Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:26:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:27:05.713Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:27:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:27:10.393Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='TU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:27:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:27:16Z
+UPDATE AD_Process_Trl SET Name='TU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:27:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett TU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:27:20.987Z
+UPDATE AD_Process_Trl SET Name='TU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:27:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540415
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:10.417Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:28:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540416
+;
+
+-- Value: IFCO Etikett LU (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/tu_ifco/report_lu.jasper
+-- 2023-10-19T14:28:15.469Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='LU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540416
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:15.464Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540416
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:25.931Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540416
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:30.458Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540416
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:34.528Z
+UPDATE AD_Process_Trl SET Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540416
+;
+
+-- Process: IFCO Etikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:28:39.043Z
+UPDATE AD_Process_Trl SET Name='LU IFCO Label',Updated=TO_TIMESTAMP('2023-10-19 15:28:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540416
+;
+
+-- Process: Picking Label-Partner (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:29:50.471Z
+UPDATE AD_Process_Trl SET Description='', Name='TU-Partner-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:29:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541194
+;
+
+-- Value: Picking Label-Partner (Jasper)
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/c_bpartner_location/label.jasper
+-- 2023-10-19T14:29:57.676Z
+UPDATE AD_Process SET Description='', Help=NULL, Name='TU-Partner-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:29:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541194
+;
+
+-- Process: Picking Label-Partner (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:29:57.670Z
+UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='TU-Partner-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 15:29:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541194
+;
+
+-- Process: Picking Label-Partner (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:30:10.935Z
+UPDATE AD_Process_Trl SET Description='', Name='TU Partner Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:30:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541194
+;
+
+-- Process: Picking Label-Partner (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:30:17.040Z
+UPDATE AD_Process_Trl SET Description='', Name='TU Partner Barcode Label',Updated=TO_TIMESTAMP('2023-10-19 15:30:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=541194
+;
+
+-- Process: LU_Label_QRCode(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-10-19T14:31:18.206Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU QR Code Label',Updated=TO_TIMESTAMP('2023-10-19 15:31:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584998
+;
+
+-- Process: PackageLabel(de.metas.adempiere.process.PackageLabel)
+-- 2023-10-19T14:41:13.737Z
+UPDATE AD_Process_Trl SET Description='', Help='', IsTranslated='Y', Name='Package Label',Updated=TO_TIMESTAMP('2023-10-19 15:41:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540059
+;
+
+-- Process: PackageLabel(de.metas.adempiere.process.PackageLabel)
+-- 2023-10-19T14:41:21.543Z
+UPDATE AD_Process_Trl SET Description='', Help='', IsTranslated='Y', Name='Package Label',Updated=TO_TIMESTAMP('2023-10-19 15:41:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540059
+;
+
+-- Value: WEBUI_HUsToPick_PickCU
+-- Classname: de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU
+-- 2023-10-19T14:45:14.221Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='CUs auswählen',Updated=TO_TIMESTAMP('2023-10-19 15:45:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540894
+;
+
+-- Process: WEBUI_HUsToPick_PickCU(de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU)
+-- 2023-10-19T14:45:14.215Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='CUs auswählen',Updated=TO_TIMESTAMP('2023-10-19 15:45:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540894
+;
+
+-- Process: WEBUI_HUsToPick_PickCU(de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU)
+-- 2023-10-19T14:45:21.181Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='CUs auswählen',Updated=TO_TIMESTAMP('2023-10-19 15:45:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540894
+;
+
 -- Process: Picking Slot Label (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2023-10-19T15:04:44.936Z
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='PS-Barcode-Etikett',Updated=TO_TIMESTAMP('2023-10-19 16:04:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540818
@@ -503,73 +939,6 @@ UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Nehmen Sie TU heraus un
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Nehmen Sie TU heraus und addieren Sie es zu LU',Updated=TO_TIMESTAMP('2023-10-19 18:51:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540917
 ;
 
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:05.587Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540578
-;
-
--- Value: M_HU_DestroyEmptyHUs
--- Classname: de.metas.handlingunits.process.M_HU_DestroyEmptyHUs
--- 2023-10-20T10:22:10.390Z
-UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540578
-;
-
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:10.361Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Zerstöre leere HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540578
-;
-
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:19.738Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540578
-;
-
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:24.068Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540578
-;
-
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:29.280Z
-UPDATE AD_Process_Trl SET Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540578
-;
-
--- Process: M_HU_DestroyEmptyHUs(de.metas.handlingunits.process.M_HU_DestroyEmptyHUs)
--- 2023-10-20T10:22:34.093Z
-UPDATE AD_Process_Trl SET Name='Destroy empty HUs',Updated=TO_TIMESTAMP('2023-10-20 11:22:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Process_ID=540578
-;
-
--- Process: M_HU_Trace_CreateForHU(de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU)
--- 2023-10-20T10:25:33.551Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Create tracking records for HU',Updated=TO_TIMESTAMP('2023-10-20 11:25:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540803
-;
-
--- Process: M_HU_Trace_CreateForHU(de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU)
--- 2023-10-20T10:25:37.304Z
-UPDATE AD_Process_Trl SET Name='Create tracking records for HU',Updated=TO_TIMESTAMP('2023-10-20 11:25:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=540803
-;
-
--- Process: Wareneingangsetikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
--- 2023-10-20T10:28:15.651Z
-UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='Goods receipt labels',Updated=TO_TIMESTAMP('2023-10-20 11:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540370
-;
-
--- Process: Wareneingangsetikett LU (Jasper)(de.metas.report.jasper.client.process.JasperReportStarter)
--- 2023-10-20T10:28:25.573Z
-UPDATE AD_Process_Trl SET Description='', IsTranslated='Y', Name='Goods receipt labels',Updated=TO_TIMESTAMP('2023-10-20 11:28:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540370
-;
-
--- Value: M_HU_Update_MonthsUntilExpiry_Attribute
--- Classname: de.metas.handlingunits.expiry.process.M_HU_Update_MonthsUntilExpiry_Attribute
--- 2023-10-20T10:34:33.466Z
-UPDATE AD_Process SET Description=NULL, Help=NULL, Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2023-10-20 11:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541193
-;
-
--- Process: M_HU_Update_MonthsUntilExpiry_Attribute(de.metas.handlingunits.expiry.process.M_HU_Update_MonthsUntilExpiry_Attribute)
--- 2023-10-20T10:34:33.460Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2023-10-20 11:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
-;
-
 -- Process: PackageLabel(de.metas.adempiere.process.PackageLabel)
 -- 2023-10-20T10:46:27.422Z
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540059
@@ -585,3 +954,20 @@ UPDATE AD_Process SET Description='Paketlabel zu einem Lieferschein mit zugehör
 -- 2023-10-20T10:46:31.991Z
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paketlabel',Updated=TO_TIMESTAMP('2023-10-20 11:46:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540059
 ;
+
+-- Value: EDI_Desadv_GenerateSSCCLabels
+-- Classname: de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels
+-- 2023-10-21T20:23:54.878Z
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='SSCC18-Label erstellen',Updated=TO_TIMESTAMP('2023-10-21 21:23:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540574
+;
+
+-- Process: EDI_Desadv_GenerateSSCCLabels(de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels)
+-- 2023-10-21T20:23:54.871Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='SSCC18-Label erstellen',Updated=TO_TIMESTAMP('2023-10-21 21:23:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540574
+;
+
+-- Process: EDI_Desadv_GenerateSSCCLabels(de.metas.edi.process.EDI_Desadv_GenerateSSCCLabels)
+-- 2023-10-21T20:24:26.495Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Create SSCC18 Label',Updated=TO_TIMESTAMP('2023-10-21 21:24:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=540574
+;
+
