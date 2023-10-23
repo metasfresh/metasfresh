@@ -91,27 +91,4 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- generating a package name makes the process fail with "duplicate class/interface names." -->
-                    <!-- <generatePackage>de.metas.shipper.gateway.dhl.schematbp</generatePackage> -->
-                    <schemaIncludes>*.wsdl</schemaIncludes>
-                    <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dhl/schema/</schemaDirectory>
-                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -22,12 +22,10 @@ package de.metas.document;
  * #L%
  */
 
-
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
-
-import de.metas.util.ISingletonService;
 
 /**
  * Generic service that allows us do add handlers (could also be called listeners for all I know) which add module specific aspects to the copying of records.

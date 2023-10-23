@@ -22,13 +22,14 @@
 
 package de.metas.document.references.related_documents;
 
-import java.util.ArrayList;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -37,11 +38,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Note that webui records own source implementation.

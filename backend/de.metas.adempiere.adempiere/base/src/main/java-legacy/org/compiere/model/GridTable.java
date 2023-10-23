@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.cache.CacheMgt;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
@@ -30,7 +31,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;

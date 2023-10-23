@@ -1,19 +1,8 @@
 package de.metas.shipper.gateway.go;
 
-import java.util.List;
-import java.util.Set;
-
-import de.metas.mpackage.PackageId;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.model.ShipperTransportationId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -22,14 +11,22 @@ import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.OrderStatus;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -59,7 +56,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Repository
-public class GODeliveryOrderRepository implements DeliveryOrderRepository
+public class GODeliveryOrderRepository
 {
 	/**
 	 * NOTE to dev: keep in sync with {@link #toDeliveryOrderPO(DeliveryOrder)}
@@ -165,7 +162,6 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return orderPO;
 	}
 
-	@Override
 	public TableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
@@ -173,7 +169,6 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return TableRecordReference.of(I_GO_DeliveryOrder.Table_Name, deliveryOrderRepoId);
 	}
 
-	@Override
 	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		final I_GO_DeliveryOrder orderPO = InterfaceWrapperHelper.load(deliveryOrderId, I_GO_DeliveryOrder.class);
@@ -183,7 +178,6 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return deliveryOrder;
 	}
 
-	@Override
 	public DeliveryOrder save(final DeliveryOrder order)
 	{
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
@@ -252,7 +246,6 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		InterfaceWrapperHelper.save(orderPackagePO);
 	}
 
-	@Override
 	public String getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;

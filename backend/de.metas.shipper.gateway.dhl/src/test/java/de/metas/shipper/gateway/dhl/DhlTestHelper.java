@@ -23,7 +23,10 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.currency.CurrencyRepository;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.handlingunits.impl.InOutPackageRepository;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
@@ -39,7 +42,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
@@ -51,10 +54,12 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -63,8 +68,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @UtilityClass
 class DhlTestHelper
 {
-	static final String USER_NAME = "a";
-	static final String PASSWORD = "b";
+	static final String USER_NAME = "sandy_sandbox";
+	static final String PASSWORD = "pass";
+	static final String APP_TOKEN = "TXzU0LrbOdFj3xAW7CMD7kGvyhz2Uowj";
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
@@ -74,6 +80,8 @@ class DhlTestHelper
 	static final String ACCOUNT_NUMBER_DE = "22222222220104";
 	static final String ACCOUNT_NUMBER_AT = "22222222225301";
 	static final String ACCOUNT_NUMBER_CH = "22222222225301";
+	public static final String BASE_URL = "https://api-sandbox.dhl.com";
+	public static final PackageId PACKAGE_ID_1 = PackageId.ofRepoId(1);
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
@@ -106,16 +114,15 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
+				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+						.packageId(PACKAGE_ID_1)
+						.grossWeightKg(BigDecimal.ONE)
+						.build()))
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_Paket)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -154,16 +161,15 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
+				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+						.packageId(PACKAGE_ID_1)
+						.grossWeightKg(BigDecimal.ONE)
+						.build()))
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -202,28 +208,20 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
+				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+						.packageId(PACKAGE_ID_1)
+						.grossWeightKg(BigDecimal.ONE)
+						.build()))
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
-	}
-
-	private static Iterable<? extends PackageId> createPackageIDs()
-	{
-		return Stream.of(1, 2, 3, 4, 5)
-				.map(PackageId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	void testAllSteps(final DeliveryOrder initialDummyDeliveryOrder, final String accountNumber)
@@ -234,19 +232,26 @@ class DhlTestHelper
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
+		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new InOutPackageRepository(), new CurrencyRepository(), orderRepository);
 
 		final UomId dummyUom = UomId.ofRepoId(1);
-		final DhlShipperGatewayClient client = new DhlShipperGatewayClient(DhlClientConfig.builder()
-				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
-				.applicationID(DhlTestHelper.USER_NAME)
-				.applicationToken(DhlTestHelper.PASSWORD)
+
+		final DhlClientConfig config = DhlClientConfig.builder()
+				.baseUrl(BASE_URL)
+				.applicationID(USER_NAME)
+				.applicationToken(APP_TOKEN)
 				.accountNumber(accountNumber) // special account number, depending on target country. why dhl why?????
-				.signature("pass")
-				.username("2222222222_01")
+				.signature(PASSWORD)
+				.username(USER_NAME)
 				.lengthUomId(dummyUom)
 				.trackingUrlBase("dummy")
-				.build(),
-				DhlDatabaseClientLogger.instance);
+				.build();
+		final RestTemplate restTemplateBuilder = new RestTemplateBuilder()
+				.rootUri(config.getBaseUrl())
+				.basicAuthentication(config.getUsername(), config.getSignature())
+				.build();
+		final DhlShipperGatewayClient client = new DhlShipperGatewayClient(config,
+				DhlDatabaseClientLogger.instance, restTemplateBuilder);
 
 		//
 		// check 1: draft DO <->> initial dummy DO
@@ -264,13 +269,9 @@ class DhlTestHelper
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedDO = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
 		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
-				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 1))
-				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 2))
-				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 3))
-				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 4))
-				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 5))
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, PACKAGE_ID_1))
 				.build();
 		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
 				.customDeliveryData(customDeliveryData)
@@ -281,11 +282,7 @@ class DhlTestHelper
 		// check 4: run Client.completeDeliveryOrder
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
 		customDeliveryData = DhlCustomDeliveryData.builder()
-				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))
-				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 2))
-				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 3))
-				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 4))
-				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 5))
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, PACKAGE_ID_1))
 				.build();
 		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
 				.customDeliveryData(customDeliveryData)
@@ -301,7 +298,7 @@ class DhlTestHelper
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
@@ -322,7 +319,7 @@ class DhlTestHelper
 		assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
 	}
 
-	private DhlCustomDeliveryDataDetail extractFieldsAfterCompleteDeliveryOrder(@NonNull final DhlCustomDeliveryData customDeliveryData, @NonNull final DeliveryOrder completedDeliveryOrder, final int packageId)
+	private DhlCustomDeliveryDataDetail extractFieldsAfterCompleteDeliveryOrder(@NonNull final DhlCustomDeliveryData customDeliveryData, @NonNull final DeliveryOrder completedDeliveryOrder, final PackageId packageId)
 	{
 		assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
 
@@ -342,7 +339,7 @@ class DhlTestHelper
 				.build();
 	}
 
-	private DhlCustomDeliveryDataDetail extractPackageIdAndSequenceNumberFromDO(@NonNull final DeliveryOrder deliveryOrder, final int packageId)
+	private DhlCustomDeliveryDataDetail extractPackageIdAndSequenceNumberFromDO(@NonNull final DeliveryOrder deliveryOrder, final PackageId packageId)
 	{
 		//noinspection ConstantConditions
 		final DhlSequenceNumber sequenceNumber = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetailByPackageId(packageId).getSequenceNumber();
@@ -355,10 +352,10 @@ class DhlTestHelper
 
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder, @NonNull final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator)
 	{
-		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
+		final DeliveryOrderLine firstDeliveryOrderLine = deliveryOrder.getDeliveryOrderLines().get(0);
 
 		//
-		final Set<PackageId> mpackageIds = deliveryPosition.getPackageIds();
+		final Set<PackageId> packageIds = ImmutableSet.of(firstDeliveryOrderLine.getPackageId());
 
 		//
 		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
@@ -375,10 +372,10 @@ class DhlTestHelper
 
 		//
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
-		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
+		final BigDecimal grossWeightInKg = firstDeliveryOrderLine.getGrossWeightKg();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
-		final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+		final PackageDimensions packageDimensions = firstDeliveryOrderLine.getPackageDimensions();
 
 		final CustomDeliveryData customDeliveryData = null;
 
@@ -386,7 +383,7 @@ class DhlTestHelper
 
 		//noinspection ConstantConditions
 		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
-				mpackageIds,
+				packageIds,
 				pickupFromBPartner,
 				pickupFromLocation,
 				pickupDate,

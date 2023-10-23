@@ -29,7 +29,9 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFactory
@@ -51,9 +53,16 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		final DhlClientConfig config = configRepo.getByShipperId(shipperId);
+
+		final RestTemplate restTemplate = new RestTemplateBuilder()
+				.rootUri(config.getBaseUrl())
+				.basicAuthentication(config.getUsername(), config.getSignature())
+				.build();
+
 		return DhlShipperGatewayClient.builder()
 				.config(config)
 				.databaseLogger(DhlDatabaseClientLogger.instance)
+				.restTemplate(restTemplate)
 				.build();
 	}
 }

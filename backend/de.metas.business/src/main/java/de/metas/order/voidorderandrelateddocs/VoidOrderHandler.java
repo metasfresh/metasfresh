@@ -1,5 +1,6 @@
 package de.metas.order.voidorderandrelateddocs;
 
+import de.metas.common.util.pair.IPair;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -8,7 +9,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
