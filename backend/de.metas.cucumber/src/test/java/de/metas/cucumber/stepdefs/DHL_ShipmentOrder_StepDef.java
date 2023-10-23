@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Package;
 
 import java.math.BigDecimal;
@@ -83,8 +82,6 @@ public class DHL_ShipmentOrder_StepDef
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location location = bpartnerLocationTable.get(bpLocationIdentifier);
 
 			softly.assertThat(bPartner.getC_BPartner_ID()).isEqualTo(dhlShipmentOrder.getC_BPartner_ID());
 

@@ -4,7 +4,7 @@ Feature: Dhl Shipment
 
   Background:
     Given infrastructure and metasfresh are running
-    And metasfresh has date and time 2022-12-12T12:12:12+02:00[Europe/Bucharest]
+    And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And ensure product accounts exist
     And load M_Shipper:
@@ -72,7 +72,6 @@ Feature: Dhl Shipment
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | dhl_location | 1122334455667 | dhl_customer             | dhl_location                 | true         | true         | locationBPName   | locationName |
-
 
     # Create CU-TU Allocation
     And metasfresh contains M_HU_PI:
@@ -186,5 +185,5 @@ Feature: Dhl Shipment
       | DHL_ShipmentOrder_ID.Identifier | M_Package_ID.Identifier |
       | shippingPackageDI               | packageDI               |
     And validate DHL_ShipmentOrder:
-      | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | shippingPackageDI               | dhl_customer             | dhl_location                      | 30             | 20            | 10             | 1              |
+      | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
+      | shippingPackageDI               | dhl_customer             | 30             | 20            | 10             | 1              |
