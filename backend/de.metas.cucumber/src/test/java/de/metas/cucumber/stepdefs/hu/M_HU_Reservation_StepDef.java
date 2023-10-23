@@ -59,9 +59,7 @@ public class M_HU_Reservation_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
 
-	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_HU_StepDefData huTable;
-	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
 	@And("reserve HU to order")
