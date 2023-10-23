@@ -172,20 +172,19 @@ Feature: Dhl Shipment
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Location_ID |
       | orgBPLocation                     | 2202690                    |
-#
-#    And validate M_ShipperTransportation:
-#      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-#      | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
-#    And load M_Package for M_ShipperTransportation: shipTransp_1
-#      | M_Package_ID.Identifier | M_Product_ID.Identifier |
-#      | packageDI               | test_product_dhl_01     |
-#    And validate M_Package:
-#      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
-#      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          | 2022-12-12   |
-#    And load M_Shipping_Package:
-#      | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier |
-#      | shippingPackageDI               | packageDI               | shipTransp_1                          |
-#    And validate M_Shipping_Package:
-#      | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-#      | shippingPackageDI               | packageDI               | shipTransp_1                          | dhl_location                      | 2             | dhl_customer                 | test_product_dhl_01         | orderLine_1                   |
 
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
+    And load M_Package for M_ShipperTransportation: shipTransp_1
+      | M_Package_ID.Identifier | OPT.M_InOut_ID.Identifier |
+      | packageDI               | shipment_1                |
+    And validate M_Package:
+      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          |
+    And load DHL_ShipmentOrder:
+      | DHL_ShipmentOrder_ID.Identifier | M_Package_ID.Identifier |
+      | shippingPackageDI               | packageDI               |
+    And validate DHL_ShipmentOrder:
+      | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
+      | shippingPackageDI               | dhl_customer             | dhl_location                      | 30             | 20            | 10             | 1              |
