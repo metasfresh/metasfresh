@@ -513,3 +513,43 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000012, SeqNo=13, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000012, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541872 AND AD_Tree_ID=10
 ;
 
+-- UI Element: Arbeitsplatz -> Arbeitsplatz.Name
+-- Column: C_Workplace.Name
+-- UI Element: Arbeitsplatz(541744,D) -> Arbeitsplatz(547260,D) -> main -> 10 -> main.Name
+-- Column: C_Workplace.Name
+-- 2023-10-23T14:40:18.546Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2023-10-23 15:40:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621124
+;
+
+-- UI Element: Arbeitsplatz -> Arbeitsplatz.Lager
+-- Column: C_Workplace.M_Warehouse_ID
+-- UI Element: Arbeitsplatz(541744,D) -> Arbeitsplatz(547260,D) -> main -> 10 -> main.Lager
+-- Column: C_Workplace.M_Warehouse_ID
+-- 2023-10-23T14:40:19.562Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2023-10-23 15:40:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621125
+;
+
+-- UI Element: Arbeitsplatz -> Arbeitsplatz.Beschreibung
+-- Column: C_Workplace.Description
+-- UI Element: Arbeitsplatz(541744,D) -> Arbeitsplatz(547260,D) -> main -> 10 -> description.Beschreibung
+-- Column: C_Workplace.Description
+-- 2023-10-23T14:40:20.255Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2023-10-23 15:40:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621126
+;
+
+-- UI Element: Arbeitsplatz -> Arbeitsplatz.Aktiv
+-- Column: C_Workplace.IsActive
+-- UI Element: Arbeitsplatz(541744,D) -> Arbeitsplatz(547260,D) -> main -> 20 -> flags.Aktiv
+-- Column: C_Workplace.IsActive
+-- 2023-10-23T14:40:20.939Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2023-10-23 15:40:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621127
+;
+
+-- UI Element: Arbeitsplatz -> Arbeitsplatz.Sektion
+-- Column: C_Workplace.AD_Org_ID
+-- UI Element: Arbeitsplatz(541744,D) -> Arbeitsplatz(547260,D) -> main -> 20 -> orgs.Sektion
+-- Column: C_Workplace.AD_Org_ID
+-- 2023-10-23T14:40:21.633Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-10-23 15:40:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621128
+;
+
