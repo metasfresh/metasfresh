@@ -35,5 +35,5 @@ public class PackageItem
 {
 	@NonNull ProductId productId;
 	@NonNull Quantity quantity;
-	OrderLineId orderLineId;
+	@NonNull OrderLineId orderLineId;
 }

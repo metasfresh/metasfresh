@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.mpackage.PackageId;
-import de.metas.util.Check;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +31,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class DhlCustomDeliveryDataDetail
 {
 	@NonNull PackageId packageId;
@@ -51,28 +53,5 @@ public class DhlCustomDeliveryDataDetail
 
 	@Nullable
 	DhlCustomsDocument customsDocument;
-
-	@Builder(toBuilder = true)
-	private DhlCustomDeliveryDataDetail(
-			@NonNull final PackageId packageId,
-			@Nullable final DhlSequenceNumber sequenceNumber,
-			@Nullable final byte[] pdfLabelData,
-			@Nullable final String awb,
-			@Nullable final String trackingUrl,
-			final boolean internationalDelivery,
-			@Nullable final DhlCustomsDocument customsDocument
-	)
-	{
-		Check.assumeGreaterThanZero(PackageId.toRepoId(packageId), "packageId");
-
-		this.packageId = packageId;
-		this.sequenceNumber = sequenceNumber;
-		this.pdfLabelData = pdfLabelData;
-		this.awb = awb;
-		this.trackingUrl = trackingUrl;
-		this.internationalDelivery = internationalDelivery;
-		this.customsDocument = customsDocument;
-	}
-
 }
 
