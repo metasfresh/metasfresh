@@ -184,26 +184,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.C_Workplace_User_Assign (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, AD_User_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, C_Workplace_ID NUMERIC(10) NOT NULL, C_Workplace_User_Assign_ID NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT ADUser_CWorkplaceUserAssign FOREIGN KEY (AD_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CWorkplace_CWorkplaceUserAssign FOREIGN KEY (C_Workplace_ID) REFERENCES public.C_Workplace DEFERRABLE INITIALLY DEFERRED, CONSTRAINT C_Workplace_User_Assign_Key PRIMARY KEY (C_Workplace_User_Assign_ID))
 ;
 
--- 2023-10-19T20:06:41.972Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540758,0,542376,TO_TIMESTAMP('2023-10-19 21:06:41','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','One_User_Per_Workplace','N',TO_TIMESTAMP('2023-10-19 21:06:41','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-10-19T20:06:41.974Z
-INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540758 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
-;
-
--- 2023-10-19T20:07:00.102Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587594,541353,540758,0,TO_TIMESTAMP('2023-10-19 21:06:59','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2023-10-19 21:06:59','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-10-19T20:07:15.251Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587595,541354,540758,0,TO_TIMESTAMP('2023-10-19 21:07:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-10-19 21:07:14','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-10-19T20:07:16.974Z
-CREATE INDEX One_User_Per_Workplace ON C_Workplace_User_Assign (AD_User_ID,C_Workplace_ID)
-;
-
 -- Table: C_Workplace
 -- Table: C_Workplace
 -- 2023-10-19T20:14:07.573Z
@@ -237,3 +217,22 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Users assigned to workplace', 
 UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2023-10-19 21:33:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587594
 ;
 
+-- 2023-10-23T10:56:49.271Z
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540765,0,542376,TO_TIMESTAMP('2023-10-23 11:56:49','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','One_User_Per_Org','N',TO_TIMESTAMP('2023-10-23 11:56:49','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-10-23T10:56:49.273Z
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540765 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2023-10-23T10:57:04.623Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587594,541356,540765,0,TO_TIMESTAMP('2023-10-23 11:57:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2023-10-23 11:57:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-10-23T10:57:15.163Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587587,541357,540765,0,TO_TIMESTAMP('2023-10-23 11:57:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-10-23 11:57:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-10-23T10:57:17.994Z
+CREATE INDEX One_User_Per_Org ON C_Workplace_User_Assign (AD_User_ID,AD_Org_ID)
+;
