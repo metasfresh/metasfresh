@@ -26,22 +26,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.handlingunits.JsonHUQRCode;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
 import de.metas.cucumber.stepdefs.workflow.dto.WFActivityId;
 import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
-import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_QtyPicked;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,14 +57,13 @@ public class PickingRestController_StepDef
 	@And("process response and extract picking step and main HU picking candidate:")
 	public void extract_picking_information(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final String content = testContext.getApiResponse().getContent();
 		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
 
 		final WFProcessId wfProcessId = WFProcessId.of(response.at("/id").asText());
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(row, "WorkflowProcess.Identifier");
-		workflowProcessTable.putOrReplace(wfProcessIdentifier, wfProcessId);
+		row.getAsIdentifier("WorkflowProcess").putOrReplace(workflowProcessTable, wfProcessId);
 
 		final JsonNode wfActivities = response.at("/activities");
 		for (final JsonNode wfActivityNode : wfActivities)
@@ -80,24 +74,19 @@ public class PickingRestController_StepDef
 			}
 
 			final WFActivityId wfActivityId = WFActivityId.of(wfActivityNode.at("/activityId").asText());
-			final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(row, "WorkflowActivity.Identifier");
-			workflowActivityTable.put(wfActivityIdentifier, wfActivityId);
+			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, wfActivityId);
 
 			final JsonNode pickingLinesNodes = wfActivityNode.at("/componentProps/lines");
 			assertThat(pickingLinesNodes.size()).isOne();
 			final JsonPickingJobLine pickingLine = objectMapper.treeToValue(pickingLinesNodes.get(0), JsonPickingJobLine.class);
-			final String pickingLineIdentifier = DataTableUtil.extractStringForColumnName(row, "PickingLine.Identifier");
-			workflowPickingLineTable.put(pickingLineIdentifier, pickingLine);
+			row.getAsIdentifier("PickingLine").put(workflowPickingLineTable, pickingLine);
 
 			final JsonNode pickingStepsNodes = pickingLinesNodes.get(0).at("/steps");
 			assertThat(pickingStepsNodes.size()).isOne();
 			final JsonWFPickingStep pickingStep = objectMapper.treeToValue(pickingStepsNodes.get(0), JsonWFPickingStep.class);
 
-			final String pickingStepIdentifier = DataTableUtil.extractStringForColumnName(row, "PickingStep.Identifier");
-			workflowPickingStepTable.put(pickingStepIdentifier, pickingStep);
-
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(row, "PickingStepQRCode.Identifier");
-			qrCodeTable.put(qrCodeIdentifier, pickingStep.getMainPickFrom().getHuQRCode());
+			row.getAsIdentifier("PickingStep").put(workflowPickingStepTable, pickingStep);
+			row.getAsIdentifier("PickingStepQRCode").put(qrCodeTable, pickingStep.getMainPickFrom().getHuQRCode());
 		}
 	}
 
@@ -110,22 +99,16 @@ public class PickingRestController_StepDef
 
 	private JsonPickingStepEvent extractJsonPickingStepEvent(final @NonNull DataTable dataTable)
 	{
-		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
-		final WFProcessId workflowProcess = workflowProcessTable.get(DataTableUtil.extractStringForColumnName(row, "WorkflowProcess.Identifier"));
-		final WFActivityId workflowActivity = workflowActivityTable.get(DataTableUtil.extractStringForColumnName(row, "WorkflowActivity.Identifier"));
-		final JsonPickingJobLine pickingLine = workflowPickingLineTable.get(DataTableUtil.extractStringForColumnName(row, "PickingLine.Identifier"));
-		final JsonWFPickingStep pickingStep = workflowPickingStepTable.get(DataTableUtil.extractStringForColumnName(row, "PickingStep.Identifier"));
-		final JsonHUQRCode stepQRCode = qrCodeTable.get(DataTableUtil.extractStringForColumnName(row, "PickingStepQRCode.Identifier"));
-		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyPicked);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		return JsonPickingStepEvent.builder()
-				.wfProcessId(workflowProcess.getId())
-				.wfActivityId(workflowActivity.getActivityId())
+				.wfProcessId(row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable).getId())
+				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getActivityId())
 				.type(JsonPickingStepEvent.EventType.PICK)
-				.pickingLineId(pickingLine.getPickingLineId())
-				.pickingStepId(pickingStep.getPickingStepId())
-				.huQRCode(stepQRCode.getCode())
-				.qtyPicked(qtyPicked)
+				.pickingLineId(row.getAsIdentifier("PickingLine").lookupIn(workflowPickingLineTable).getPickingLineId())
+				.pickingStepId(row.getAsIdentifier("PickingStep").lookupIn(workflowPickingStepTable).getPickingStepId())
+				.huQRCode(row.getAsIdentifier("PickingStepQRCode").lookupIn(qrCodeTable).getCode())
+				.qtyPicked(row.getAsBigDecimal(COLUMNNAME_QtyPicked))
 				.build();
 	}
 }

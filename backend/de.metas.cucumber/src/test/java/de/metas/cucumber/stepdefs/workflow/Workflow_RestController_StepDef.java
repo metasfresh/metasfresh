@@ -29,8 +29,7 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
@@ -50,7 +49,6 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonR
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -67,7 +65,6 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,20 +126,19 @@ public class Workflow_RestController_StepDef
 	@And("update duration for AD_Workflow nodes")
 	public void update_AD_Workflow_nodes(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
 		{
-			updateADWorkflowNodes(tableRow);
+			updateADWorkflowNodes(row);
 		}
 	}
 
 	@And("create JsonWFProcessStartRequest for picking and store it in context as request payload:")
 	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
-		final I_C_BPartner bPartner = bPartnerTable.get(DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER));
-		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER));
-		final I_C_Order salesOrder = orderTable.get(DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER));
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final I_C_BPartner bPartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupIn(bPartnerTable);
+		final I_C_BPartner_Location bPartnerLocation = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID).lookupIn(bPartnerLocationTable);
+		final I_C_Order salesOrder = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupIn(orderTable);
 
 		final Map<String, Object> wfParams = new HashMap<>();
 		wfParams.put("applicationId", PickingMobileApplication.APPLICATION_ID.getAsString());
@@ -157,10 +153,8 @@ public class Workflow_RestController_StepDef
 	@And("create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:")
 	public void wf_manufacturing_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = CollectionUtils.singleElement(dataTable.asMaps());
-
-		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final I_PP_Order ppOrder = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID).lookupIn(ppOrderTable);
 
 		final Map<String, Object> wfParams = new HashMap<>();
 		wfParams.put("applicationId", ManufacturingMobileApplication.APPLICATION_ID.getAsString());
@@ -174,10 +168,8 @@ public class Workflow_RestController_StepDef
 	@And("create JsonWFProcessStartRequest for distribution and store it in context as request payload:")
 	public void wf_distribution_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = CollectionUtils.singleElement(dataTable.asMaps());
-
-		final String ddOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_Order.COLUMNNAME_DD_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final I_DD_Order ddOrder = row.getAsIdentifier(I_DD_Order.COLUMNNAME_DD_Order_ID).lookupIn(ddOrderTable);
 
 		final Map<String, Object> wfParams = new HashMap<>();
 		wfParams.put("applicationId", DistributionMobileApplication.APPLICATION_ID.getAsString());
@@ -191,20 +183,15 @@ public class Workflow_RestController_StepDef
 	@And("process response and extract distribution step and pickFrom HU distribution candidate:")
 	public void extract_distribution_information(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = CollectionUtils.singleElement(dataTable.asMaps());
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final String content = testContext.getApiResponse().getContent();
-
 		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
 
 		final WFProcessId wfProcessId = WFProcessId.of(response.at("/id").asText());
+		row.getAsIdentifier("WorkflowProcess").putOrReplace(workflowProcessTable, wfProcessId);
 
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-		workflowProcessTable.putOrReplace(wfProcessIdentifier, wfProcessId);
-
-		final JsonNode activities = response.at("/activities");
-
-		for (final JsonNode activityNode : activities)
+		for (final JsonNode activityNode : response.at("/activities"))
 		{
 			if (!DISTRIBUTION_ACTIVITY_COMPONENT_TYPE.equals(activityNode.at("/componentType").asText()))
 			{
@@ -212,45 +199,31 @@ public class Workflow_RestController_StepDef
 			}
 
 			final WFActivityId workflowActivity = WFActivityId.of(activityNode.at("/activityId").asText());
-
-			final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowActivity.Identifier");
-			workflowActivityTable.put(wfActivityIdentifier, workflowActivity);
+			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, workflowActivity);
 
 			final JsonNode distributionActivityLines = activityNode.at("/componentProps/lines");
-
 			assertThat(distributionActivityLines.size()).isOne();
-
 			final JsonNode workflowSteps = distributionActivityLines.get(0).at("/steps");
-
 			assertThat(workflowSteps.size()).isOne();
-
 			final JsonWFDistributionStep workflowDistributionStep = objectMapper.treeToValue(workflowSteps.get(0), JsonWFDistributionStep.class);
+			row.getAsIdentifier("WorkflowStep").put(workflowDistributionStepTable, workflowDistributionStep);
 
-			final String wfStepIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStep.Identifier");
-			workflowDistributionStepTable.put(wfStepIdentifier, workflowDistributionStep);
-
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStepQRCode.Identifier");
-			qrCodeTable.put(qrCodeIdentifier, workflowDistributionStep.getPickFromHU().getQrCode());
+			row.getAsIdentifier("WorkflowStepQRCode").put(qrCodeTable, workflowDistributionStep.getPickFromHU().getQrCode());
 		}
 	}
 
 	@And("process response and extract manufacturing step and issueTo HU manufacturing candidate:")
 	public void extract_manufacturing_issue_to_information(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = CollectionUtils.singleElement(dataTable.asMaps());
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final String content = testContext.getApiResponse().getContent();
-
 		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
 
 		final WFProcessId wfProcessId = WFProcessId.of(response.at("/id").asText());
+		row.getAsIdentifier("WorkflowProcess").putOrReplace(workflowProcessTable, wfProcessId);
 
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-		workflowProcessTable.putOrReplace(wfProcessIdentifier, wfProcessId);
-
-		final JsonNode activities = response.at("/activities");
-
-		for (final JsonNode activityNode : activities)
+		for (final JsonNode activityNode : response.at("/activities"))
 		{
 			if (!MANUFACTURING_ISSUE_TO_ACTIVITY_COMPONENT_TYPE.equals(activityNode.at("/componentType").asText()))
 			{
@@ -258,45 +231,30 @@ public class Workflow_RestController_StepDef
 			}
 
 			final WFActivityId workflowActivity = WFActivityId.of(activityNode.at("/activityId").asText());
-
-			final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowActivity.Identifier");
-			workflowActivityTable.put(wfActivityIdentifier, workflowActivity);
+			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, workflowActivity);
 
 			final JsonNode manufacturingActivityLines = activityNode.at("/componentProps/lines");
-
 			assertThat(manufacturingActivityLines.size()).isOne();
-
 			final JsonNode workflowSteps = manufacturingActivityLines.get(0).at("/steps");
-
 			assertThat(workflowSteps.size()).isOne();
-
 			final JsonWFManufacturingStep workflowManufacturingStep = objectMapper.treeToValue(workflowSteps.get(0), JsonWFManufacturingStep.class);
-
-			final String wfStepIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStep.Identifier");
-			workflowManufacturingStepTable.put(wfStepIdentifier, workflowManufacturingStep);
-
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStepQRCode.Identifier");
-			qrCodeTable.put(qrCodeIdentifier, workflowManufacturingStep.getHuQRCode());
+			row.getAsIdentifier("WorkflowStep").put(workflowManufacturingStepTable, workflowManufacturingStep);
+			row.getAsIdentifier("WorkflowStepQRCode").put(qrCodeTable, workflowManufacturingStep.getHuQRCode());
 		}
 	}
 
 	@And("process response and extract manufacturing line and receiving target values:")
 	public void extract_manufacturing_receive_from_information(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = CollectionUtils.singleElement(dataTable.asMaps());
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final String content = testContext.getApiResponse().getContent();
-
 		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
 
 		final WFProcessId wfProcessId = WFProcessId.of(response.at("/id").asText());
+		row.getAsIdentifier("WorkflowProcess").putOrReplace(workflowProcessTable, wfProcessId);
 
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-		workflowProcessTable.putOrReplace(wfProcessIdentifier, wfProcessId);
-
-		final JsonNode activities = response.at("/activities");
-
-		for (final JsonNode activityNode : activities)
+		for (final JsonNode activityNode : response.at("/activities"))
 		{
 			if (!MANUFACTURING_RECEIVE_FROM_ACTIVITY_COMPONENT_TYPE.equals(activityNode.at("/componentType").asText()))
 			{
@@ -304,58 +262,35 @@ public class Workflow_RestController_StepDef
 			}
 
 			final WFActivityId workflowActivity = WFActivityId.of(activityNode.at("/activityId").asText());
-
-			final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowActivity.Identifier");
-			workflowActivityTable.put(wfActivityIdentifier, workflowActivity);
+			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, workflowActivity);
 
 			final JsonNode manufacturingActivityLines = activityNode.at("/componentProps/lines");
-
 			assertThat(manufacturingActivityLines.size()).isOne();
-
 			final JsonNode workflowLine = manufacturingActivityLines.get(0);
-
 			final JsonWFLineManufacturingMaterialReceipt materialReceiptLine = objectMapper.treeToValue(workflowLine, JsonWFLineManufacturingMaterialReceipt.class);
-
-			final String workflowLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowLine.Identifier");
-			materialReceiptLineTable.put(workflowLineIdentifier, materialReceiptLine);
+			row.getAsIdentifier("WorkflowLine").put(materialReceiptLineTable, materialReceiptLine);
 
 			final JsonNode availableReceivingTargetValues = workflowLine.at("/availableReceivingTargets/values");
-
 			assertThat(availableReceivingTargetValues.size()).isOne();
-
 			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = objectMapper.treeToValue(availableReceivingTargetValues.get(0), JsonWFManufacturingReceivingTargetValues.class);
-
-			final String wfReceivingTargetValuesIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowReceivingTargetValues.Identifier");
-			receivingTargetValuesTable.put(wfReceivingTargetValuesIdentifier, receivingTargetValues);
+			row.getAsIdentifier("WorkflowReceivingTargetValues").put(receivingTargetValuesTable, receivingTargetValues);
 		}
 	}
 
 	@And("create JsonDistributionEvent and store it in context as request payload:")
 	public void distribution_event_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
-
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-		final WFProcessId workflowProcess = workflowProcessTable.get(wfProcessIdentifier);
-
-		final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowActivity.Identifier");
-		final WFActivityId workflowActivity = workflowActivityTable.get(wfActivityIdentifier);
-
-		final String wfDistributionStepIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStep.Identifier");
-		final JsonWFDistributionStep workflowDistributionStep = workflowDistributionStepTable.get(wfDistributionStepIdentifier);
-
-		final String event = DataTableUtil.extractStringForColumnName(tableRow, "Event");
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final JsonDistributionEvent.JsonDistributionEventBuilder distributionEventBuilder = JsonDistributionEvent.builder()
-				.wfProcessId(workflowProcess.getId())
-				.wfActivityId(workflowActivity.getActivityId())
-				.distributionStepId(workflowDistributionStep.getId());
+				.wfProcessId(row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable).getId())
+				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getActivityId())
+				.distributionStepId(row.getAsIdentifier("WorkflowStep").lookupIn(workflowDistributionStepTable).getId());
 
+		final String event = row.getAsString("Event");
 		if (event.equals("PickFrom"))
 		{
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStepQRCode.Identifier");
-			final JsonHUQRCode stepQRCode = qrCodeTable.get(qrCodeIdentifier);
-
+			final JsonHUQRCode stepQRCode = row.getAsIdentifier("WorkflowStepQRCode").lookupIn(qrCodeTable);
 			distributionEventBuilder.pickFrom(JsonDistributionEvent.PickFrom.builder().qrCode(stepQRCode.getCode()).build());
 		}
 		else if (event.equals("DropTo"))
@@ -369,25 +304,18 @@ public class Workflow_RestController_StepDef
 	@And("create JsonManufacturingOrderEvent and store it in context as request payload:")
 	public void manufacturing_event_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
-		final String event = DataTableUtil.extractStringForColumnName(tableRow, "Event");
-
-		final String wfProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-		final WFProcessId workflowProcess = workflowProcessTable.get(wfProcessIdentifier);
-
-		final String wfActivityIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowActivity.Identifier");
-		final WFActivityId workflowActivity = workflowActivityTable.get(wfActivityIdentifier);
+		final String event = row.getAsString("Event");
+		final WFProcessId workflowProcess = row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
+		final WFActivityId workflowActivity = row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable);
 
 		final JsonManufacturingOrderEvent.JsonManufacturingOrderEventBuilder manufacturingOrderEventBuilder = JsonManufacturingOrderEvent.builder();
 
 		if (event.equals("IssueTo"))
 		{
-			final String wfStepIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStep.Identifier");
-			final JsonWFManufacturingStep workflowStep = workflowManufacturingStepTable.get(wfStepIdentifier);
-
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowStepQRCode.Identifier");
-			final JsonHUQRCode qrCode = qrCodeTable.get(qrCodeIdentifier);
+			final JsonWFManufacturingStep workflowStep = row.getAsIdentifier("WorkflowStep").lookupIn(workflowManufacturingStepTable);
+			final JsonHUQRCode qrCode = row.getAsIdentifier("WorkflowStepQRCode").lookupIn(qrCodeTable);
 
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getId())
@@ -400,11 +328,8 @@ public class Workflow_RestController_StepDef
 		}
 		else if (event.equals("ReceiveFrom"))
 		{
-			final String wfLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowLine.Identifier");
-			final JsonWFLineManufacturingMaterialReceipt workflowLine = materialReceiptLineTable.get(wfLineIdentifier);
-
-			final String wfReceivingTargetValuesIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowReceivingTargetValues.Identifier");
-			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = this.receivingTargetValuesTable.get(wfReceivingTargetValuesIdentifier);
+			final JsonWFLineManufacturingMaterialReceipt workflowLine = row.getAsIdentifier("WorkflowLine").lookupIn(materialReceiptLineTable);
+			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = row.getAsIdentifier("WorkflowReceivingTargetValues").lookupIn(receivingTargetValuesTable);
 
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getId())
@@ -426,11 +351,10 @@ public class Workflow_RestController_StepDef
 		testContext.setRequestPayload(objectMapper.writeValueAsString(manufacturingOrderEventBuilder.build()));
 	}
 
-	private void updateADWorkflowNodes(@NonNull final Map<String, String> tableRow)
+	private void updateADWorkflowNodes(@NonNull final DataTableRow row)
 	{
-		final int id = DataTableUtil.extractIntForColumnName(tableRow, I_AD_Workflow.COLUMNNAME_AD_Workflow_ID);
-
-		final int duration = DataTableUtil.extractIntForColumnName(tableRow, I_AD_WF_Node.COLUMNNAME_Duration);
+		final int id = row.getAsInt(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID);
+		final int duration = row.getAsInt(I_AD_WF_Node.COLUMNNAME_Duration);
 
 		final I_AD_Workflow workflow = InterfaceWrapperHelper.load(id, I_AD_Workflow.class);
 

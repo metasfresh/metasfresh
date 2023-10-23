@@ -23,10 +23,9 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -45,11 +44,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -65,13 +62,13 @@ public class M_HU_Reservation_StepDef
 	@And("reserve HU to order")
 	public void reserveHUToOrder(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
 		{
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, "C_OrderLine_ID." + TABLECOLUMN_IDENTIFIER);
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID());
+			final I_C_OrderLine orderLine = row.getAsIdentifier("C_OrderLine_ID").lookupIn(orderLineTable);
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, "M_HU_ID." + TABLECOLUMN_IDENTIFIER);
-			final HuId huId = HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID());
+			final I_M_HU hu = row.getAsIdentifier("M_HU_ID").lookupIn(huTable);
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
 			final I_M_HU_Storage huStorageRecord = getHUStorageRecord(huId);
 
