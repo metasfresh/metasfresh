@@ -101,7 +101,7 @@ public class C_Order
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
 	public void validateHarvestingDatesForSalesOrder(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isSOTrx())
+		if (!orderRecord.isSOTrx())
 		{
 			return;
 		}
@@ -133,8 +133,7 @@ public class C_Order
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
 	public void validateHarvestingDatesForPurchaseOrder(@NonNull final I_C_Order orderRecord)
 	{
-		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
-		if (soTrx.isSales())
+		if (orderRecord.isSOTrx())
 		{
 			return;
 		}
