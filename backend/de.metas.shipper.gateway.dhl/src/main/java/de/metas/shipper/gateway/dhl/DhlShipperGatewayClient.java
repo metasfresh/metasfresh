@@ -347,7 +347,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, final String deliveryOrderIdAsString)
+	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final String deliveryOrderIdAsString)
 	{
 		return PackageLabels.builder()
 				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
