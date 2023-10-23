@@ -249,7 +249,7 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.qtyToPick(plan.getQtyToPick())
-				.salesOrderAndLineId(items.getSingleSalesOrderLineId().orElse(null))
+				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
 				.steps(lines.stream()
 						.map(this::createStepRequest)
@@ -264,7 +264,7 @@ public class PickingJobCreateCommand
 	private static PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull PackageableList items)
 	{
 		return PickingJobCreateRepoRequest.Line.builder()
-				.salesOrderAndLineId(items.getSingleSalesOrderLineId().orElseThrow(() -> new AdempiereException("No sales order line found for " + items)))
+				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
 				.productId(items.getSingleProductId())
 				.qtyToPick(items.getQtyToPick())

@@ -154,6 +154,7 @@ final class PackageableRowsRepository
 		}
 	}
 
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	private PackageableRow createPackageableRow(final PackageableList packageables)
 	{
 		Check.assume(!packageables.isEmpty(), "packageables is not empty");

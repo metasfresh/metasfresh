@@ -99,9 +99,9 @@ public final class PackageableList implements Iterable<Packageable>
 		return getSingleValue(Packageable::getProductId).orElseThrow(() -> new AdempiereException("No single product found in " + list));
 	}
 
-	public Optional<OrderAndLineId> getSingleSalesOrderLineId()
+	public OrderAndLineId getSingleSalesOrderLineId()
 	{
-		return getSingleValue(Packageable::getSalesOrderAndLineIdOrNull);
+		return getSingleValue(Packageable::getSalesOrderAndLineIdOrNull).orElseThrow(() -> new AdempiereException("No single sales order line found for " + list));
 	}
 
 	public Quantity getQtyToPick()
