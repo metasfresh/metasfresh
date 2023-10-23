@@ -54,6 +54,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 @Repository
 public class DhlDeliveryOrderRepository
 {
@@ -308,7 +310,7 @@ public class DhlDeliveryOrderRepository
 
 	private void updateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines()) // only a single delivery position should exist
+		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 		{
 			final PackageId packageId = deliveryOrderLine.getPackageId();
 			final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
@@ -334,7 +336,7 @@ public class DhlDeliveryOrderRepository
 				shipmentOrder.setTrackingURL(trackingUrl);
 			}
 
-			InterfaceWrapperHelper.save(shipmentOrder);
+			saveRecord(shipmentOrder);
 		}
 	}
 

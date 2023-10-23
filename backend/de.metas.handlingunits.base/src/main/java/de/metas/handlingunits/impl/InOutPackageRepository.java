@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @Repository
@@ -82,7 +83,7 @@ public class InOutPackageRepository
 
 	public Package getPackageById(@NonNull final PackageId packageId)
 	{
-		final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);
+		final I_M_Package mPackage = load(packageId, I_M_Package.class);
 		return fromPO(mPackage);
 	}
 

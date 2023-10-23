@@ -172,7 +172,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// services
-		final InOutPackageRepository inOutPackageDAO = SpringContextHolder.instance.getBean(InOutPackageRepository.class);
+		final InOutPackageRepository inOutPackageRepository = SpringContextHolder.instance.getBean(InOutPackageRepository.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 		//
@@ -193,7 +193,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			// Create M_Packages
 			final List<CreatePackagesRequest> createPackagesRequestList = buildCreatePackageRequest(shipperId, request);
 
-			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequestList);
+			final List<I_M_Package> mPackages = inOutPackageRepository.createM_Packages(createPackagesRequestList);
 			result.addAll(mPackages);
 
 			//

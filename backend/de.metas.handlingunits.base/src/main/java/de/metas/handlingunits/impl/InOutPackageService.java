@@ -32,11 +32,11 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class InOutPackageService
 {
-	private final InOutPackageRepository inOutPackageDAO;
+	private final InOutPackageRepository inOutPackageRepository;
 
 	public Package getPackageByIdIncludingDetails(@NonNull final PackageId packageId)
 	{
-		 return inOutPackageDAO.getPackageById(packageId);
+		 return inOutPackageRepository.getPackageById(packageId);
 	}
 
 }

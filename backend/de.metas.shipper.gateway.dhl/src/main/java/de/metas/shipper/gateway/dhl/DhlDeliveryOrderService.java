@@ -75,13 +75,14 @@ import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShip
 public class DhlDeliveryOrderService implements DeliveryOrderService
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final InOutPackageRepository inOutPackageDAO;
+
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	final CurrencyRepository currencyRepository;
-
+	
+	private final InOutPackageRepository inOutPackageRepository;
+	private final CurrencyRepository currencyRepository;
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
 	@Override
@@ -157,7 +158,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		final Package mPackage = inOutPackageDAO.getPackageById(PackageId.ofRepoId(po.getPackageId()));
+		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getPackageId()));
 
 		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
 				.stream()
