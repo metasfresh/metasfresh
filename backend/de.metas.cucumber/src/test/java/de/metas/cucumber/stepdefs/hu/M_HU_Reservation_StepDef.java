@@ -1,0 +1,105 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.cucumber.stepdefs.hu;
+
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.reservation.HUReservation;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import java.util.Map;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RequiredArgsConstructor
+public class M_HU_Reservation_StepDef
+{
+	@NonNull private static final Logger logger = LogManager.getLogger(M_HU_Reservation_StepDef.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
+
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+
+	@And("reserve HU to order")
+	public void reserveHUToOrder(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, "C_OrderLine_ID." + TABLECOLUMN_IDENTIFIER);
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID());
+
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, "M_HU_ID." + TABLECOLUMN_IDENTIFIER);
+			final HuId huId = HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID());
+
+			final I_M_HU_Storage huStorageRecord = getHUStorageRecord(huId);
+
+			final HUReservation huReservation = huReservationService.makeReservation(
+							ReserveHUsRequest.builder()
+									.qtyToReserve(Quantitys.create(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
+									.documentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+									.productId(ProductId.ofRepoId(huStorageRecord.getM_Product_ID()))
+									.huId(huId)
+									.build()
+					)
+					.orElse(null);
+
+			assertThat(huReservation).as("Reservation for " + huId).isNotNull();
+			logger.info("Reservation created: {}", huReservation);
+		}
+	}
+
+	private I_M_HU_Storage getHUStorageRecord(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.firstOnlyOptional(I_M_HU_Storage.class)
+				.orElseThrow(() -> new AdempiereException("No HU storage found for " + huId));
+	}
+
+}

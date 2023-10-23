@@ -65,6 +65,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -219,13 +220,13 @@ public class M_HU_StepDef
 			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
 
 			final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus);
-			if(Check.isNotBlank(clearanceStatus))
+			if (Check.isNotBlank(clearanceStatus))
 			{
 				assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
 			}
 
 			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceNote);
-			if(Check.isNotBlank(clearanceNote))
+			if (Check.isNotBlank(clearanceNote))
 			{
 				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
 			}
@@ -251,9 +252,9 @@ public class M_HU_StepDef
 			final HuId huId = HuId.ofRepoId(inventoryLineWithHU.getM_HU_ID());
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
-																		 .huId(huId)
-																		 .huIdentifier(huIdentifier)
-																		 .build()));
+					.huId(huId)
+					.huIdentifier(huIdentifier)
+					.build()));
 		}
 	}
 
@@ -422,7 +423,7 @@ public class M_HU_StepDef
 
 		final Map<String, Map<String, String>> identifierToRow = rows.stream()
 				.collect(Collectors.toMap(row -> DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER),
-										  Function.identity()));
+						Function.identity()));
 
 		final Map<String, String> topRow = rows.get(0);
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -575,7 +576,7 @@ public class M_HU_StepDef
 			assertThat(huId).isPresent();
 			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
 
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." +TABLECOLUMN_IDENTIFIER);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
 		}
 	}
@@ -583,21 +584,22 @@ public class M_HU_StepDef
 	private void validateHU(@NonNull final Map<String, String> row)
 	{
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huTable.get(huIdentifier).getM_HU_ID(), I_M_HU.class);
+		final HuId huId = HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID());
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		final String huDescription = huIdentifier + "/" + huId.getRepoId();
 
 		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
 		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
 
-		assertThat(huRecord).isNotNull();
-		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
-		assertThat(huRecord.isActive()).isEqualTo(isActive);
+		assertThat(huRecord).as(huDescription).isNotNull();
+		assertThat(huRecord.getHUStatus()).as(huDescription + " - HUStatus").isEqualTo(huStatus);
+		assertThat(huRecord.isActive()).as(huDescription + " - HUStatus").isEqualTo(isActive);
 
-		final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(locatorIdentifier))
+		final String locatorIdentifier = StringUtils.trimBlankToNull(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER));
+		if (locatorIdentifier != null)
 		{
 			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-			assertThat(huRecord.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+			assertThat(huRecord.getM_Locator_ID()).as(huDescription + " - Locator").isEqualTo(locator.getM_Locator_ID());
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,23 +20,12 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.cucumber.stepdefs.workflow;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.picking.rest_api.json.JsonPickingJobLine;
 
-@Value
-@Builder(toBuilder = true)
-public class MobileUIPickingUserProfile
+public class JsonWFPickingLine_StepDefData extends StepDefData<JsonPickingJobLine>
 {
-	public static final MobileUIPickingUserProfile DEFAULT = builder().name("default").build();
-
-	@NonNull String name;
-	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
-	boolean isAllowPickingAnyHU;
-	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
+	public JsonWFPickingLine_StepDefData() {super(JsonPickingJobLine.class);}
 }
