@@ -51,7 +51,7 @@ public class DHL_ShipmentOrder_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("^load DHL_ShipmentOrder:$")
-	public void load_M_Package(@NonNull final DataTable dataTable)
+	public void load_DHL_ShipmentOrder(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -71,7 +71,7 @@ public class DHL_ShipmentOrder_StepDef
 	}
 
 	@And("validate DHL_ShipmentOrder:")
-	public void validate_M_Package(@NonNull final DataTable dataTable)
+	public void validate_DHL_ShipmentOrder(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

@@ -28,7 +28,7 @@ public class DHL_Shipper_Config_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Given("metasfresh contains DHL Configuration:")
-	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_dhl_configuration(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
