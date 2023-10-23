@@ -49,7 +49,6 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 
 	@PostMapping("/events")
-	@Deprecated
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)
 	{

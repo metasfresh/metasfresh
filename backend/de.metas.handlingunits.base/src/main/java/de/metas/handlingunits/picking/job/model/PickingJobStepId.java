@@ -28,7 +28,6 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
