@@ -52,7 +52,7 @@ public class MobileUIPickingUserProfile_StepDef
 				.map(StringUtils::toBoolean)
 				.ifPresent(newProfileBuilder::isAllowPickingAnyHU);
 		StringUtils.trimBlankToOptional(DataTableUtil.extractNullableStringForColumnName(row, "CreateShipmentPolicy"))
-				.map(CreateShipmentPolicy::ofCode)
+				.map(CreateShipmentPolicy::ofCodeOrName)
 				.ifPresent(newProfileBuilder::createShipmentPolicy);
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
