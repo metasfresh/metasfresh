@@ -30,9 +30,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @ApiModel("Response to a a single mater data upsert request entity")
 @Value
@@ -60,16 +62,29 @@ public class JsonResponseUpsertItem
 
 	SyncOutcome syncOutcome;
 
+	@ApiModelProperty(value = "The name of the upserted record.\n"
+			+ "Generally missing, as it is only set for nested records that get upserted 'under' the root record.",//
+			position = 40, dataType = "java.lang.String")
+	String resourceName;
+
+	@ApiModelProperty(value = "The outcome of any included resources that get updated together with the root record.\n",
+			position = 40)
+	List<JsonResponseUpsertItem> includedResources;
+
 	@Builder
 	@JsonCreator
 	public JsonResponseUpsertItem(
 			@JsonProperty("identifier") @NonNull final String identifier,
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
-			@JsonProperty("syncOutcome") @NonNull final SyncOutcome syncOutcome)
+			@JsonProperty("syncOutcome") @NonNull final SyncOutcome syncOutcome,
+			@JsonProperty("entityName") @Nullable final String resourceName,
+			@JsonProperty("includedResources") @Singular final List<JsonResponseUpsertItem> includedResources)
 	{
 		this.identifier = identifier;
 		this.metasfreshId = metasfreshId;
 		this.syncOutcome = syncOutcome;
+		this.resourceName = resourceName;
+		this.includedResources = includedResources;
 	}
 
 }

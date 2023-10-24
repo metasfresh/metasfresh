@@ -52,6 +52,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
@@ -67,8 +68,10 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
+import de.metas.externalreference.greeting.GreetingExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
+import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -385,12 +388,20 @@ public class JsonRetrieverService
 
 			final BPartnerContactType contactType = contact.getContactType();
 
-			String greetingTrl = null;
+			JsonResponseGreeting greetingJson = null;
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
-				greetingTrl = greeting.getGreeting(ad_language);
+				final String greetingTrl = greeting.getGreeting(ad_language);
+
+				greetingJson = JsonResponseGreeting.builder()
+						.id(JsonMetasfreshId.of(greeting.getIdNotNull().getRepoId()))
+						.greeting(greetingTrl)
+						.name(greeting.getName())
+						.letterSalutation(greeting.getLetterSalutation())
+						.orgId(JsonMetasfreshId.of(greeting.getOrgId().getRepoId()))
+						.build();
 			}
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
@@ -409,7 +420,7 @@ public class JsonRetrieverService
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
-					.greeting(greetingTrl)
+					.greeting(greetingJson)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())
@@ -572,6 +583,30 @@ public class JsonRetrieverService
 				.stream()
 				.filter(jsonBPartnerLocation -> isBPartnerLocationMatches(orgId, jsonBPartnerLocation, bPartnerLocationExternalId))
 				.findAny());
+	}
+
+	@NonNull
+	public Optional<GreetingId> resolveExternalGreetingIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier greetingIdentifier)
+	{
+		switch (greetingIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				final GreetingId greetingId = greetingIdentifier.asMetasfreshId().mapToRepoId(GreetingId::ofRepoId);
+				return Optional.of(greetingId);
+			case EXTERNAL_REFERENCE:
+				return externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, greetingIdentifier, GreetingExternalReferenceType.GREETING)
+						.map(JsonMetasfreshId::getValue)
+						.map(GreetingId::ofRepoId);
+			case NAME:
+				return greetingRepository.getByName(greetingIdentifier.asName())
+						.map(Greeting::getId);
+			default:
+				throw new InvalidIdentifierException("Given external identifier type is not supported!")
+						.setParameter("externalIdentifierType", greetingIdentifier.getType())
+						.setParameter("rawExternalIdentifier", greetingIdentifier.getRawValue());
+		}
 	}
 
 	/**

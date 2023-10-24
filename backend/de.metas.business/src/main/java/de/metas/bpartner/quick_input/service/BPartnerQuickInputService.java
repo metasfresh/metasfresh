@@ -46,6 +46,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
+import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -81,6 +82,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -107,9 +109,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BPartnerQuickInputService
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
+
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
 	private final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository;
@@ -119,6 +123,9 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
+	private final UserGroupRepository userGroupRepository;
+	private final GreetingRepository greetingRepository;
+
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
@@ -130,37 +137,11 @@ public class BPartnerQuickInputService
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private final UserGroupRepository userGroupRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
 	private final AdMessageKey MSG_C_BPartnerCreatedFromAnotherOrg = AdMessageKey.of("C_BPartnerCreatedFromAnotherOrg");
-
-	public BPartnerQuickInputService(
-			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
-			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository,
-			@NonNull final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository,
-			@NonNull final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository,
-			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
-			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
-			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository,
-			@NonNull final UserGroupRepository userGroupRepository)
-	{
-		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
-		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
-		this.bpartnerQuickInputRelatedRecordsRepository = bpartnerQuickInputRelatedRecordsRepository;
-		this.bpartnerContactQuickInputAttributesRepository = bpartnerContactQuickInputAttributesRepository;
-		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
-		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
-		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
-		this.userGroupRepository = userGroupRepository;
-
-	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
 	{
@@ -521,7 +502,9 @@ public class BPartnerQuickInputService
 									 .firstName(contactTemplate.getFirstname())
 									 .lastName(contactTemplate.getLastname())
 									 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
-									 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
+									 .greeting(GreetingId.optionalOfRepoId(contactTemplate.getC_Greeting_ID())
+													   .map(greetingRepository::getById)
+													   .orElse(null))
 									 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 									 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
 									 .birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))

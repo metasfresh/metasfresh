@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-bpartner
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,22 @@
  * #L%
  */
 
-package de.metas.common.bpartner.v2.response;
+package de.metas.common.bpartner.v2.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
-@JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)
-public class JsonResponseUpsert
+@Jacksonized
+public class JsonRequestGreetingUpsertItem
 {
-	@Singular
-	@JsonProperty("responseItems")
-	List<JsonResponseUpsertItem> responseItems;
-
-	@Singular
-	@JsonProperty("greetingResponseItems")
-	List<JsonResponseUpsertItem> responseItems;
+	@NonNull String identifier;
+	@Nullable JsonRequestGreeting greetingInfo;
+	@Nullable SyncAdvise syncAdvise;
 }

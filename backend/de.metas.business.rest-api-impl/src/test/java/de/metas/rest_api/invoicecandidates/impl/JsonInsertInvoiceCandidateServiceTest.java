@@ -6,6 +6,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.greeting.GreetingRepository;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -155,7 +156,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new GreetingRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,

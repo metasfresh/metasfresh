@@ -34,6 +34,7 @@ import de.metas.common.shipping.v2.JsonRequestCandidateResults.JsonRequestCandid
 import de.metas.common.shipping.v2.Outcome;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.common.util.time.SystemTime;
+import de.metas.greeting.GreetingRepository;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
@@ -131,7 +132,7 @@ class ShipmentCandidateAPIServiceTest
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new GreetingRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

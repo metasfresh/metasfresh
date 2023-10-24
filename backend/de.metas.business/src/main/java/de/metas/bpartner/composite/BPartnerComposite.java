@@ -320,4 +320,10 @@ public final class BPartnerComposite
 				.filter(bankAccount -> iban.equals(bankAccount.getIban()))
 				.findFirst();
 	}
+
+	@NonNull
+	public OrgId getOrgIdNotNull()
+	{
+		return Check.assumeNotNull(orgId, "Assuming OrgId was set when calling this method!");
+	}
 }

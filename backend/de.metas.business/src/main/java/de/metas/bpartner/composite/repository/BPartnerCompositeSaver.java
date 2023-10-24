@@ -17,8 +17,9 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
+import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -30,6 +31,7 @@ import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.util.Check;
@@ -37,6 +39,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -57,6 +60,7 @@ import org.slf4j.MDC.MDCCloseable;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isBlank;
@@ -88,19 +92,16 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
  * #L%
  */
 
+@RequiredArgsConstructor
 final class BPartnerCompositeSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerBL bpartnerBL;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
 
-	BPartnerCompositeSaver(
-			@NonNull final IBPartnerBL bpartnerBL)
-	{
-		this.bpartnerBL = bpartnerBL;
-	}
+	private final IBPartnerBL bpartnerBL;
+	private final GreetingRepository greetingRepository;
 
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
@@ -511,7 +512,9 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
-			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+			bpartnerContactRecord.setC_Greeting_ID(saveGreeting(bpartnerContact.getGreeting())
+														   .map(GreetingId::getRepoId)
+														   .orElse(0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
@@ -572,6 +575,14 @@ final class BPartnerCompositeSaver
 
 			bankAccount.setId(id);
 		}
+	}
+
+	@NonNull
+	private Optional<GreetingId> saveGreeting(@Nullable final Greeting greeting)
+	{
+		return Optional.ofNullable(greeting)
+				.map(greetingRepository::save)
+				.map(Greeting::getIdNotNull);
 	}
 
 	private void assertCanCreateOrUpdate(@NonNull final Object record)

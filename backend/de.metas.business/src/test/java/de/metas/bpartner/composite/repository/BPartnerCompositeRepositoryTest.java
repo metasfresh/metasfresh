@@ -35,9 +35,12 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
+import de.metas.greeting.GreetingStandardType;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
@@ -69,13 +72,14 @@ class BPartnerCompositeRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
-		
+
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
-				new UserRoleRepository());
+				new UserRoleRepository(),
+				new GreetingRepository());
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -142,7 +146,14 @@ class BPartnerCompositeRepositoryTest
 						.fax("fax")
 						.mobilePhone("mobilePhone")
 						.description("description")
-						.greetingId(GreetingId.ofRepoId(12345))
+						.greeting(Greeting.builder()
+						  .id(GreetingId.ofRepoId(12345))
+						  .orgId(OrgId.MAIN)
+						  .name("greetingName")
+						  .standardType(GreetingStandardType.MRS)
+						  .greeting(TranslatableStrings.constant("greeting"))
+						  .letterSalutation("letterSalutation")
+						  .build())
 						.newsletter(true)
 						.membershipContact(true)
 						.subjectMatterContact(true)

@@ -28,6 +28,7 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.time.SystemTime;
+import de.metas.greeting.GreetingRepository;
 import de.metas.inoutcandidate.ReceiptScheduleRepository;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ReceiptScheduleAuditRepository;
@@ -109,7 +110,7 @@ class ReceiptCandidateAPIServiceTest
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
 				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new GreetingRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

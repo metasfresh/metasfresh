@@ -243,7 +243,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new GreetingRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
