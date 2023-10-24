@@ -92,6 +92,6 @@ public class DataTableRow
 
 	public int getAsInt(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractIntForColumnName(map, I_AD_Workflow.COLUMNNAME_AD_Workflow_ID);
+		return DataTableUtil.extractIntForColumnName(map, columnName);
 	}
 }
