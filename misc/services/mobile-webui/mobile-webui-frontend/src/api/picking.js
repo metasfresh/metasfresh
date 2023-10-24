@@ -11,6 +11,7 @@ export const postStepPicked = ({
   qtyPicked,
   qtyRejected,
   qtyRejectedReasonCode,
+  catchWeight,
 }) => {
   return postEvent({
     wfProcessId,
@@ -22,6 +23,7 @@ export const postStepPicked = ({
     qtyPicked,
     qtyRejectedReasonCode,
     qtyRejected,
+    catchWeight,
   });
 };
 

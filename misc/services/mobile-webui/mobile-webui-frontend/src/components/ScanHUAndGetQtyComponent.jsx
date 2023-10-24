@@ -32,6 +32,8 @@ const ScanHUAndGetQtyComponent = ({
   qtyRejectedReasons,
   scaleDevice,
   scaleTolerance,
+  catchWeight,
+  catchWeightUom,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -148,13 +150,15 @@ const ScanHUAndGetQtyComponent = ({
     return null;
   };
 
-  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason }) => {
+  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason, catchWeight, catchWeightUom }) => {
     onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      catchWeight,
+      catchWeightUom,
     });
   };
 
@@ -193,6 +197,8 @@ const ScanHUAndGetQtyComponent = ({
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
           scaleTolerance={resolvedBarcodeData.scaleTolerance}
+          catchWeight={catchWeight}
+          catchWeightUom={catchWeightUom}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
@@ -225,6 +231,8 @@ ScanHUAndGetQtyComponent.propTypes = {
   qtyRejectedReasons: PropTypes.array,
   scaleDevice: PropTypes.object,
   scaleTolerance: PropTypes.object,
+  catchWeight: PropTypes.number,
+  catchWeightUom: PropTypes.string,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

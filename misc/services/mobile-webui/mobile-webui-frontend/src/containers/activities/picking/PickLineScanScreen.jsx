@@ -38,7 +38,7 @@ const PickLineScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { qtyToPick, uom, qtyRejectedReasons } = useSelector(
+  const { qtyToPick, uom, qtyRejectedReasons, catchWeight, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -58,8 +58,16 @@ const PickLineScanScreen = () => {
     const huQRCode = parseQRCodeString(scannedBarcode);
     return { huQRCode };
   };
-  const onResult = ({ qty = 0, qtyRejected, reason = null, scannedBarcode = null, ...others }) => {
-    console.log('onResult', { qty, reason, scannedBarcode, ...others });
+  const onResult = ({
+    qty = 0,
+    qtyRejected,
+    reason = null,
+    scannedBarcode = null,
+    catchWeight = null,
+    catchWeightUom = null,
+    ...others
+  }) => {
+    console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
 
     postStepPicked({
       wfProcessId,
@@ -70,6 +78,7 @@ const PickLineScanScreen = () => {
       qtyPicked: qty,
       qtyRejectedReasonCode: reason,
       qtyRejected,
+      catchWeight,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
@@ -85,6 +94,8 @@ const PickLineScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
+      catchWeight={catchWeight}
+      catchWeightUom={catchWeightUom}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -102,6 +113,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyToPick: line.qtyToPick,
     uom: line.uom,
     qtyRejectedReasons,
+    //catchWeight:,
+    catchWeightUom: 'Kg', // FIXME HARDCODED
   };
 };
 
