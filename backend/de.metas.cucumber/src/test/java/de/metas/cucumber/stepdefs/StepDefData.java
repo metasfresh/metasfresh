@@ -120,6 +120,12 @@ public abstract class StepDefData<T>
 	}
 
 	@NonNull
+	public T get(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return get(identifier.getAsString());
+	}
+
+	@NonNull
 	public T get(@NonNull final String identifier)
 	{
 		final T record = getRecordDataItem(identifier).getRecord();
@@ -169,14 +175,14 @@ public abstract class StepDefData<T>
 			// just store ID and table name, to avoid any leaks
 			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(record), InterfaceWrapperHelper.getId(record));
 
-			return new RecordDataItem<>((T)null,
+			return new RecordDataItem<>(null,
 					tableRecordReference,
 					clazz,
 					Instant.now(),
 					updated);
 
 		}
-		return new RecordDataItem<T>(record, null, null, Instant.now(), Instant.MIN);
+		return new RecordDataItem<>(record, null, null, Instant.now(), Instant.MIN);
 	}
 
 	@Value

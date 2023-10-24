@@ -29,11 +29,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Workflow;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @EqualsAndHashCode
@@ -67,6 +67,18 @@ public class DataTableRow
 	}
 
 	@NonNull
+	public Optional<String> getAsOptionalString(@NonNull final String columnName)
+	{
+		String value = map.get(columnName);
+		if (value == null && !columnName.startsWith("OPT."))
+		{
+			value = map.get("OPT." + columnName);
+		}
+
+		return Optional.ofNullable(value);
+	}
+
+	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
 	{
 		String string = map.get(columnName);
@@ -83,6 +95,27 @@ public class DataTableRow
 		}
 
 		return StepDefDataIdentifier.ofString(string);
+	}
+
+	@NonNull
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
+	{
+		String string = map.get(columnName);
+		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+		if (string == null && !columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+
+		if (string == null || Check.isBlank(string))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(StepDefDataIdentifier.ofString(string));
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
