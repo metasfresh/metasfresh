@@ -43,7 +43,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class CreatePickingPlanCommand_UsingCUs_Test
 {
 	//
@@ -61,7 +61,8 @@ class CreatePickingPlanCommand_UsingCUs_Test
 	private final BPartnerLocationId customerLocationId = BPartnerLocationId.ofRepoId(3, 4);
 	private final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(2);
 	private final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(300, 301);
-	private Expect expect;
+
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -158,6 +159,6 @@ class CreatePickingPlanCommand_UsingCUs_Test
 		System.out.println("PLAN:\n" + Joiner.on("\n").join(plan.getLines()));
 		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 
-		expect.serializer("orderedJson").toMatchSnapshot(plan);
+		expect.toMatchSnapshot(plan);
 	}
 }

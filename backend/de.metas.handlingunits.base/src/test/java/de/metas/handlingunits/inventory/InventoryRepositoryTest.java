@@ -2,6 +2,7 @@ package de.metas.handlingunits.inventory;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -71,7 +72,7 @@ import static org.assertj.core.api.Assertions.tuple;
  * #L%
  */
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class InventoryRepositoryTest
 {
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
@@ -93,7 +94,7 @@ class InventoryRepositoryTest
 
 		orgId = createOrg(orgTimeZone);
 
-		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord = BusinessTestHelper.createUomEach();
 		saveRecord(uomRecord);
 
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
@@ -203,7 +204,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
-		expect.serializer("orderedJson").toMatchSnapshot(reloadedResult);
+		expect.toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

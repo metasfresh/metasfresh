@@ -43,7 +43,7 @@ public class PickingJobService_UsingTUs_Test
 
 	private TestRecorder results;
 
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -101,7 +101,7 @@ public class PickingJobService_UsingTUs_Test
 	void createJobAndGet()
 	{
 		final PickingJob pickingJob = createJob();
-		expect.serializer("orderedJson").toMatchSnapshot(results);
+		expect.toMatchSnapshot(results);
 
 		final PickingJob jobLoaded = helper.pickingJobService.getById(pickingJob.getId());
 		Assertions.assertThat(jobLoaded)
@@ -117,7 +117,7 @@ public class PickingJobService_UsingTUs_Test
 
 		results.reportStep("Picking Job after ABORT", pickingJob);
 		results.reportStepWithAllHUs("HUs after Picking Job ABORT");
-		expect.serializer("orderedJson").toMatchSnapshot(results);
+		expect.toMatchSnapshot(results);
 	}
 
 	@Test
@@ -156,7 +156,7 @@ public class PickingJobService_UsingTUs_Test
 		results.reportStep("Picking Job after Complete", pickingJob);
 		results.reportStepWithAllHUs("HUs after Complete");
 
-		expect.serializer("orderedJson").toMatchSnapshot(results);
+		expect.toMatchSnapshot(results);
 	}
 
 }

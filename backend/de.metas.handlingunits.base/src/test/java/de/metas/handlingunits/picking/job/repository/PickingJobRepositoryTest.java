@@ -48,7 +48,8 @@ class PickingJobRepositoryTest
 	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final OrderId salesOrderId = OrderId.ofRepoId(2);
 	private I_C_UOM uomEach;
-	private Expect expect;
+
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -134,7 +135,7 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
-		expect.serializer("orderedJson").toMatchSnapshot(jobCreated);
+		expect.toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)
