@@ -1,16 +1,16 @@
-DROP FUNCTION IF EXISTS getCostsPerDate(p_keydate               timestamp WITH TIME ZONE,
-                                            p_acctschema_id         numeric,
-                                            p_ad_org_id             numeric,
-                                            p_m_product_id          numeric,
-                                            p_M_Product_Category_ID numeric
+DROP FUNCTION IF EXISTS report.getCostsPerDate(p_date                  timestamp WITH TIME ZONE,
+                                               p_acctschema_id         numeric,
+                                               p_ad_org_id             numeric,
+                                               p_m_product_id          numeric,
+                                               p_M_Product_Category_ID numeric
 )
 ;
 
-CREATE FUNCTION getCostsPerDate(p_keydate               timestamp WITH TIME ZONE,
-                                    p_acctschema_id         numeric,
-                                    p_ad_org_id             numeric,
-                                    p_m_product_id          numeric = NULL,
-                                    p_M_Product_Category_ID numeric = NULL
+CREATE FUNCTION report.getCostsPerDate(p_date                  timestamp WITH TIME ZONE,
+                                       p_acctschema_id         numeric,
+                                       p_ad_org_id             numeric,
+                                       p_m_product_id          numeric = NULL,
+                                       p_M_Product_Category_ID numeric = NULL
 )
     RETURNS TABLE
             (
@@ -26,13 +26,13 @@ CREATE FUNCTION getCostsPerDate(p_keydate               timestamp WITH TIME ZONE
             )
 AS
 $$
-SELECT p_keydate::date                                                                                     AS keydate,
+SELECT p_date::date                                                                                        AS keydate,
        p.value || '_' || p.name                                                                            AS product,
        pc.name                                                                                             AS productCategory,
        ce.name                                                                                             AS costelement,
        getcurrentcost(p_m_product_id := p.m_product_id,
                       p_c_uom_id := p.c_uom_id,
-                      p_date := p_keydate::date,
+                      p_date := p_date::date,
                       p_acctschema_id := p_acctschema_id,
                       p_m_costelement_id := ce.m_costelement_id,
                       p_ad_client_id := ac.ad_client_id,
