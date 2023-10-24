@@ -292,3 +292,4 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=1, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542123 AND AD_Tree_ID=10
 ;
 
+UPDATE AD_Process_Para set AD_Val_Rule_ID=null where ad_process_para_id=542730;
