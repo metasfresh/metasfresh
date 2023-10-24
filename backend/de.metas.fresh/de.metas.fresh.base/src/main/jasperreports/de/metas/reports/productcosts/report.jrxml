@@ -15,9 +15,9 @@
 	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
-	<parameter name="keydate" class="java.sql.Date"/>
+	<parameter name="Date" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[select * from getCosts_at_keydate(p_keydate:=$P{keydate}::date,
+		<![CDATA[select * from getCosts_at_keydate(p_keydate:=$P{Date}::date,
                                   p_acctschema_id:=$P{C_AcctSchema_ID},
                                   p_ad_org_id:=$P{AD_Org_ID},
                                   p_m_product_id:=$P{M_Product_ID},
@@ -133,7 +133,7 @@
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{keydate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="165" y="67" width="10" height="12" uuid="5d551a59-8cc4-408a-9aeb-d08c65237018"/>
