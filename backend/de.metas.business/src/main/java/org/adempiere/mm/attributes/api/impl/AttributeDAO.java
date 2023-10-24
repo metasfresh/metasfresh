@@ -241,7 +241,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		return getAttributeDisplayNameByValue(AttributeCode.ofString(value));
+	}
+
+	@Override
+	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final AttributeCode attributeCode)
+	{
 		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
 		return attribute != null
 				? Optional.of(attribute.getDisplayName())

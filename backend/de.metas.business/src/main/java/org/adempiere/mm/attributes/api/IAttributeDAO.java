@@ -150,6 +150,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
+	Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull AttributeCode attributeCode);
+
 	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
 
 	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
