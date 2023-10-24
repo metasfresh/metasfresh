@@ -14,9 +14,6 @@
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
-	<parameter name="ad_language" class="java.lang.String">
-		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
-	</parameter>
 	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
 	<parameter name="keydate" class="java.sql.Date"/>
 	<queryString>
@@ -53,8 +50,8 @@
 	<field name="param_acctschema" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_acctschema"/>
 	</field>
-	<group name="PRODUCT">
-		<groupExpression><![CDATA[$F{product}]]></groupExpression>
+	<group name="productcategory">
+		<groupExpression><![CDATA[$F{productcategory}]]></groupExpression>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
@@ -104,35 +101,35 @@
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="175" y="103" width="113" height="12" uuid="08be4045-46f0-4356-8638-76fe3eda60b8"/>
+				<reportElement positionType="Float" x="175" y="103" width="627" height="12" uuid="08be4045-46f0-4356-8638-76fe3eda60b8"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_product}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="175" y="91" width="113" height="12" uuid="98feb490-5bb8-4484-afd6-b1ef1cef0b66"/>
+				<reportElement positionType="Float" x="175" y="91" width="627" height="12" uuid="98feb490-5bb8-4484-afd6-b1ef1cef0b66"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_product_categ}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="175" y="79" width="113" height="12" uuid="06cc0b5a-dff2-4c37-a684-f883cbcf2919"/>
+				<reportElement positionType="Float" x="175" y="79" width="627" height="12" uuid="06cc0b5a-dff2-4c37-a684-f883cbcf2919"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_acctschema}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="175" y="67" width="113" height="12" uuid="d4da951f-129e-4630-a456-bce2ba2d50ef"/>
+				<reportElement positionType="Float" x="175" y="67" width="627" height="12" uuid="d4da951f-129e-4630-a456-bce2ba2d50ef"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_organization}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="175" y="55" width="113" height="12" uuid="4f86af3e-1413-48a8-b305-5d16ec382a8f"/>
+				<reportElement x="175" y="55" width="627" height="12" uuid="4f86af3e-1413-48a8-b305-5d16ec382a8f"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
@@ -217,38 +214,38 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="17" splitType="Stretch">
+		<band height="23" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-4" x="37" y="2" width="773" height="12" backcolor="#FFFFCC" uuid="c07e7ffc-20a3-4097-98c5-b3e39848022e">
-					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{PRODUCT_COUNT}.intValue()%2)==1)]]></printWhenExpression>
+				<reportElement key="rectangle-4" stretchType="ContainerHeight" x="37" y="2" width="773" height="20" backcolor="#FFFFCC" uuid="c07e7ffc-20a3-4097-98c5-b3e39848022e">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{productcategory_COUNT}.intValue()%2)==1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="38" y="2" width="156" height="12" uuid="cd429597-e428-4335-be8a-131ef7dd9c73"/>
+				<reportElement x="38" y="5" width="156" height="12" uuid="cd429597-e428-4335-be8a-131ef7dd9c73"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productcategory}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="194" y="2" width="346" height="12" uuid="72b4e15e-3e83-4c8a-be46-d63b8124b58b"/>
+				<reportElement x="194" y="5" width="346" height="12" uuid="72b4e15e-3e83-4c8a-be46-d63b8124b58b"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{product}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="540" y="2" width="160" height="12" uuid="7695f415-e54f-4b81-a99a-6b027abc62a0"/>
+				<reportElement x="540" y="5" width="160" height="12" uuid="7695f415-e54f-4b81-a99a-6b027abc62a0"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{costelement}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="702" y="2" width="100" height="12" uuid="de9ee69e-a235-4470-ab7a-d1d81e61dc50"/>
+				<reportElement x="702" y="5" width="100" height="12" uuid="de9ee69e-a235-4470-ab7a-d1d81e61dc50"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
