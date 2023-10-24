@@ -93,6 +93,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -1167,5 +1168,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
+	}
+
+	@Override
+	public LocatorId getLocatorId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return IHandlingUnitsBL.extractLocatorId(hu);
 	}
 }

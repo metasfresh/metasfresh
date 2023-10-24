@@ -66,4 +66,32 @@ class CollectionUtilsTest
 					.hasMessageStartingWith("The given collection needs to have ZERO or ONE item");
 		}
 	}
+
+	@Nested
+	class map
+	{
+		@Test
+		void noChange()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item);
+			assertThat(listChanged).isSameAs(list);
+		}
+
+		@Test
+		void oneElementChanged()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? "99" : item);
+			assertThat(listChanged).containsExactly("1", "99", "3");
+		}
+
+		@Test
+		void oneElementRemoved()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? null : item);
+			assertThat(listChanged).containsExactly("1", "3");
+		}
+	}
 }

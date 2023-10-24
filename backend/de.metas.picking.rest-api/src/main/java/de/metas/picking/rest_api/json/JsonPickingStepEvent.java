@@ -38,10 +38,11 @@ import java.math.BigDecimal;
 public class JsonPickingStepEvent
 {
 	//
-	// Picking Step Identifier
+	// Picking Line/Step Identifier
 	@NonNull String wfProcessId;
 	@NonNull String wfActivityId;
-	@NonNull String pickingStepId;
+	@NonNull String pickingLineId;
+	@Nullable String pickingStepId;
 
 	//
 	// Event Type
