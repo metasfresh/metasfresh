@@ -47,6 +47,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -82,7 +83,8 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
 	private BigDecimal p_QtyLU;
 
-	@Param(parameterName = "NumberOfCUs")
+	private final static String PARAM_NumberOfCUs = "NumberOfCUs";
+	@Param(parameterName = PARAM_NumberOfCUs)
 	private int p_NumberOfCUs;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_IsReceiveIndividualCUs)
@@ -226,7 +228,7 @@ public class WEBUI_PP_Order_Receipt
 		if (isReceiveIndividualCUs)
 		{
 			producer.withPPOrderLocatorId()
-					.receiveIndividualPlanningCUs(Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull()));
+					.receiveIndividualPlanningCUs(getIndividualCUsCount());
 		}
 		else
 		{
@@ -290,5 +292,16 @@ public class WEBUI_PP_Order_Receipt
 		{
 			throw new AdempiereException("Receiving is not allowed");
 		}
+	}
+
+	@NonNull
+	private Quantity getIndividualCUsCount()
+	{
+		if (p_NumberOfCUs <= 0)
+		{
+			throw new FillMandatoryException(PARAM_NumberOfCUs);
+		}
+
+		return Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull());
 	}
 }
