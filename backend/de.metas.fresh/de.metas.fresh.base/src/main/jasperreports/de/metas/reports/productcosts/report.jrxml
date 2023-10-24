@@ -244,7 +244,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{costelement}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
 				<reportElement x="702" y="5" width="100" height="12" uuid="de9ee69e-a235-4470-ab7a-d1d81e61dc50"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10" isBold="false"/>
