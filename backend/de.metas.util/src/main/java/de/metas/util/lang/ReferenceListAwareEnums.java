@@ -307,6 +307,16 @@ public class ReferenceListAwareEnums
 
 		public T ofCode(@NonNull final String code)
 		{
+			final T type = typesByCode.get(code);
+			if (type == null)
+			{
+				throw Check.mkEx("No " + typeName + " found for code: " + code);
+			}
+			return type;
+		}
+
+		public T ofCodeOrName(@NonNull final String code)
+		{
 			T type = typesByCode.get(code);
 			if (type == null)
 			{
@@ -314,9 +324,10 @@ public class ReferenceListAwareEnums
 			}
 			if (type == null)
 			{
-				throw Check.mkEx("No " + typeName + " found for code: " + code);
+				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
 			}
 			return type;
 		}
+
 	}
 }

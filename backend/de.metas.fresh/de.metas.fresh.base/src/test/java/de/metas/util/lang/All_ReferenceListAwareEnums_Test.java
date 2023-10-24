@@ -56,12 +56,6 @@ public class All_ReferenceListAwareEnums_Test
 		for (final ReferenceListAwareEnum valueExpected : values)
 		{
 			assertThat(ReferenceListAwareEnums.ofCode(valueExpected.getCode(), clazz)).isSameAs(valueExpected);
-
-			if (valueExpected instanceof Enum)
-			{
-				final String name = ((Enum<?>)valueExpected).name();
-				assertThat(ReferenceListAwareEnums.ofCode(name, clazz)).isSameAs(valueExpected);
-			}
 		}
 	}
 
