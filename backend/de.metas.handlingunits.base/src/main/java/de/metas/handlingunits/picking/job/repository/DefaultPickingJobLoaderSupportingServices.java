@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -13,6 +12,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
@@ -59,7 +59,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public void warmUpCachesFrom(@NonNull final ImmutableList<Packageable> items)
+	public void warmUpCachesFrom(@NonNull final PackageableList items)
 	{
 		items.forEach(this::loadCacheFrom);
 	}

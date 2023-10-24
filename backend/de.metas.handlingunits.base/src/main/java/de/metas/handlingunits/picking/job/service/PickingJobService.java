@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
@@ -25,6 +24,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
@@ -59,6 +59,7 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
+	@NonNull private HUQRCodesService huQRCodesService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -259,10 +260,8 @@ public class PickingJobService
 			@NonNull final PickingJob pickingJob0,
 			@NonNull final List<PickingJobStepEvent> events)
 	{
-		final ImmutableCollection<PickingJobStepEvent> aggregatedEvents = PickingJobStepEvent.aggregateByStepIdAndPickFromKey(events).values();
-
 		PickingJob changedPickingJob = pickingJob0;
-		for (final PickingJobStepEvent event : aggregatedEvents)
+		for (final PickingJobStepEvent event : PickingJobStepEvent.removeDuplicates(events))
 		{
 			try
 			{
@@ -290,10 +289,13 @@ public class PickingJobService
 				return PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
+						.huQRCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
+						.pickingJobLineId(event.getPickingLineId())
 						.pickingJobStepId(event.getPickingStepId())
 						.pickFromKey(event.getPickFromKey())
+						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())

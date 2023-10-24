@@ -370,9 +370,15 @@ public final class CollectionUtils
 		for (final T item : collection)
 		{
 			final R changedItem = mappingFunction.apply(item);
-			result.add(changedItem);
-
-			if (!hasChanges && !Objects.equals(item, changedItem))
+			if (changedItem != null)
+			{
+				result.add(changedItem);
+				if (!hasChanges && !Objects.equals(item, changedItem))
+				{
+					hasChanges = true;
+				}
+			}
+			else
 			{
 				hasChanges = true;
 			}

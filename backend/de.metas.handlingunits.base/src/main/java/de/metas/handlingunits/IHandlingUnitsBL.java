@@ -207,7 +207,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
-	 *
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
 	 *
 	 * @return true if given HU was fully destroyed now or it was already destroyed
@@ -503,6 +502,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
 	}
+
+	LocatorId getLocatorId(HuId huId);
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{

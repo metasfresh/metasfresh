@@ -5,10 +5,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -17,7 +19,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -35,8 +40,13 @@ public class PickingJobRepository
 			@NonNull final PickingJobCreateRepoRequest request,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		return new PickingJobCreateRepoCommand(loadingSupportServices, request)
-				.execute();
+		return new PickingJobCreateRepoHelper(loadingSupportServices).createPickingJob(request);
+	}
+
+	public PickingJobStepId newPickingJobStepId()
+	{
+		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name, ITrx.TRXNAME_None);
+		return PickingJobStepId.ofRepoId(repoId);
 	}
 
 	public void save(final PickingJob pickingJob)

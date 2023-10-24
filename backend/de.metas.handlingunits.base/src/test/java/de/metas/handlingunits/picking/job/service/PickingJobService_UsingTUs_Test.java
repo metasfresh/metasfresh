@@ -7,6 +7,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
@@ -19,6 +20,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,6 +90,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickerId(UserId.ofRepoId(1234))
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
+						.isAllowPickingAnyHU(false) // we need a plan built
 						.build());
 		results.reportStep("Created Picking Job", pickingJob);
 		results.reportStepWithAllHUs("HUs after created Picking Job");
@@ -121,12 +124,14 @@ public class PickingJobService_UsingTUs_Test
 	void completeJob()
 	{
 		PickingJob pickingJob = createJob();
-		final ImmutableList<PickingJobStep> steps = pickingJob.streamSteps().collect(ImmutableList.toImmutableList());
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		final ImmutableList<PickingJobStep> steps = line.getSteps();
 		Assertions.assertThat(steps).hasSize(2);
 
 		pickingJob = helper.pickingJobService.processStepEvent(
 				pickingJob,
 				PickingJobStepEvent.builder()
+						.pickingLineId(line.getId())
 						.pickingStepId(steps.get(0).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
@@ -138,6 +143,7 @@ public class PickingJobService_UsingTUs_Test
 		pickingJob = helper.pickingJobService.processStepEvent(
 				pickingJob,
 				PickingJobStepEvent.builder()
+						.pickingLineId(line.getId())
 						.pickingStepId(steps.get(1).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)

@@ -193,6 +193,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public boolean isAllowPickingAnyHU()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
 	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
 	{
 		if (M_Picking_Job_ID < 1) 

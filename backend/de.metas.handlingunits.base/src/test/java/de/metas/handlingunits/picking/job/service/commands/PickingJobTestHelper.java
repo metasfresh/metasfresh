@@ -59,8 +59,6 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_Picking_Config_V2;
-import de.metas.printing.DoNothingMassPrintingService;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -142,7 +140,7 @@ public class PickingJobTestHelper
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -158,12 +156,11 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(
-								huQRCodesRepository,
-								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						huQRCodeService
 				),
 				pickingConfigRepo,
-				ShipmentService.getInstance());
+				ShipmentService.getInstance(),
+				huQRCodeService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -230,6 +227,7 @@ public class PickingJobTestHelper
 		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void createPickingConfigV2(final boolean considerAttributes)
 	{
 		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
@@ -320,11 +318,6 @@ public class PickingJobTestHelper
 	public HuId createVHU(final ProductId productId, final String qtyStr)
 	{
 		final Quantity qty = Quantity.of(qtyStr, productBL.getStockUOM(productId));
-		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
-	}
-
-	public HuId createVHU(final ProductId productId, final Quantity qty)
-	{
 		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
 	}
 

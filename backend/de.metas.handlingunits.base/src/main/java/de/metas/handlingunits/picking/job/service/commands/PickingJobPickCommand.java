@@ -18,7 +18,10 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
@@ -27,7 +30,11 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -37,6 +44,8 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -46,27 +55,40 @@ import java.util.Objects;
 
 public class PickingJobPickCommand
 {
+	//
+	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	@NonNull private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	@NonNull final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final PackToHUsProducer packToHUsProducer;
 
-	@NonNull private final PickingJob initialPickingJob;
-	@NonNull private final PickingJobStep initialStep;
-	@NonNull private final PickingJobStepPickFromKey pickFromKey;
+	//
+	// Params
+	@NonNull private final PickingJobLineId lineId;
+	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
+	@Nullable private final HUQRCode pickFromHUQRCode;
 	@NonNull private final Quantity qtyToPick;
 	@Nullable private final QtyRejectedWithReason qtyRejected;
+
+	//
+	// State
+	@NonNull private PickingJob pickingJob;
+	@Nullable private PickingJobStepId stepId;
 
 	@Builder
 	private PickingJobPickCommand(
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
+			final @NonNull HUQRCodesService huQRCodesService,
 			//
 			final @NonNull PickingJob pickingJob,
-			final @NonNull PickingJobStepId pickingJobStepId,
+			final @NonNull PickingJobLineId pickingJobLineId,
+			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
+			final @Nullable HUQRCode pickFromHUQRCode,
 			final @NonNull BigDecimal qtyToPickBD,
 			final @Nullable BigDecimal qtyRejectedBD,
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode)
@@ -75,19 +97,29 @@ public class PickingJobPickCommand
 
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
+		this.huQRCodesService = huQRCodesService;
+		this.packToHUsProducer = PackToHUsProducer.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
+				.huCapacityBL(Services.get(IHUCapacityBL.class))
+				.build();
 
-		this.initialPickingJob = pickingJob;
-		this.initialStep = initialPickingJob.getStepById(pickingJobStepId);
-		this.pickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
+		this.pickingJob = pickingJob;
+		this.lineId = pickingJobLineId;
+		this.stepId = pickingJobStepId;
+		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
+		this.pickFromHUQRCode = pickFromHUQRCode;
 
-		final I_C_UOM uom = initialStep.getUOM();
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
+		final I_C_UOM uom = line.getUOM();
 		this.qtyToPick = Quantity.of(qtyToPickBD, uom);
 
 		if (qtyRejectedReasonCode != null)
 		{
 			final Quantity qtyRejected = qtyRejectedBD != null
 					? Quantity.of(qtyRejectedBD, uom)
-					: computeQtyRejected(this.initialStep, this.pickFromKey, this.qtyToPick);
+					: computeQtyRejected(line, step, this.stepPickFromKey, this.qtyToPick);
 
 			this.qtyRejected = QtyRejectedWithReason.of(qtyRejected, qtyRejectedReasonCode);
 		}
@@ -98,73 +130,128 @@ public class PickingJobPickCommand
 	}
 
 	private static Quantity computeQtyRejected(
-			@NonNull PickingJobStep step,
-			@NonNull final PickingJobStepPickFromKey pickFromKey,
+			@NonNull PickingJobLine line,
+			@Nullable PickingJobStep step,
+			@Nullable final PickingJobStepPickFromKey pickFromKey,
 			@NonNull Quantity qtyPicked)
 	{
-		if (pickFromKey.isMain())
+		if (step != null)
 		{
-			return step.getQtyToPick().subtract(qtyPicked);
+			if (pickFromKey == null || pickFromKey.isMain())
+			{
+				return step.getQtyToPick().subtract(qtyPicked);
+			}
+			else
+			{
+				// NOTE: because, in case of alternatives, we don't know which is the qty scheduled to pick
+				// we cannot calculate the qtyRejected
+				throw new AdempiereException("Cannot calculate QtyRejected in case of alternatives");
+			}
 		}
 		else
 		{
-			// NOTE: because, in case of alternatives, we don't know which is the qty scheduled to pick
-			// we cannot calculate the qtyRejected
-			throw new AdempiereException("Cannot calculate QtyRejected in case of alternatives");
+			return line.getQtyToPick().subtract(qtyPicked);
 		}
-
 	}
 
 	public PickingJob execute()
 	{
-		initialPickingJob.assertNotProcessed();
-		initialStep.getPickFrom(pickFromKey).assertNotPicked();
-
+		pickingJob.assertNotProcessed();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
 	private PickingJob executeInTrx()
 	{
+		createStepIfNeeded();
+
 		final ImmutableList<PickedToHU> pickedHUs = createAndProcessPickingCandidate();
 
-		final PickingJob pickingJob = initialPickingJob.withChangedStep(
-				initialStep.getId(),
-				step -> updateStepFromPickingCandidate(step, pickFromKey, pickedHUs));
+		final PickingJobStepId stepId = Check.assumeNotNull(this.stepId, "step exists");
+		pickingJob = pickingJob.withChangedStep(
+				stepId,
+				step -> updateStepFromPickingCandidate(step, pickedHUs));
 
 		pickingJobRepository.save(pickingJob);
 
 		return pickingJob;
 	}
 
+	private void createStepIfNeeded()
+	{
+		if (stepId != null)
+		{
+			return;
+		}
+
+		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
+
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final HUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
+		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
+
+		pickingJob = pickingJob.withNewStep(
+				PickingJob.AddStepRequest.builder()
+						.isGeneratedOnFly(true)
+						.newStepId(newStepId)
+						.lineId(line.getId())
+						.qtyToPick(qtyToPick)
+						.pickFromLocator(LocatorInfo.builder()
+								.id(pickFromLocatorId)
+								.caption(warehouseBL.getLocatorNameById(pickFromLocatorId))
+								.build())
+						.pickFromHU(HUInfo.builder()
+								.id(pickFromHUId)
+								.qrCode(pickFromHUQRCode)
+								.build())
+						.packToSpec(PackToSpec.VIRTUAL)
+						.build()
+		);
+
+		this.stepId = newStepId;
+	}
+
 	private ImmutableList<PickedToHU> createAndProcessPickingCandidate()
 	{
 		final ImmutableList<PickedToHU> pickedToHUs = splitOutPickToHUs();
-		if (!pickedToHUs.isEmpty())
+		if (pickedToHUs.isEmpty())
 		{
-			for (final PickedToHU pickedToHU : pickedToHUs)
-			{
-				final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
-						.shipmentScheduleId(initialStep.getShipmentScheduleId())
-						.pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
-						.packToSpec(pickedToHU.getPickToSpecUsed())
-						.qtyToPick(pickedToHU.getQtyPicked())
-						.pickingSlotId(initialPickingJob.getPickingSlotId().orElse(null))
-						.autoReview(true)
-						.build());
+			return ImmutableList.of();
+		}
 
-				pickedToHU.setPickingCandidateId(pickResult.getPickingCandidateId());
-			}
-
-			pickingCandidateService.process(ProcessPickingCandidatesRequest.builder()
-					.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
-					.alwaysPackEachCandidateInItsOwnHU(true)
+		final ShipmentScheduleId shipmentScheduleId = getShipmentScheduleId();
+		final PickingSlotId pickingSlotId = pickingJob.getPickingSlotId().orElse(null);
+		for (final PickedToHU pickedToHU : pickedToHUs)
+		{
+			final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
+					.packToSpec(pickedToHU.getPickToSpecUsed())
+					.qtyToPick(pickedToHU.getQtyPicked())
+					.pickingSlotId(pickingSlotId)
+					.autoReview(true)
 					.build());
 
-			return pickedToHUs;
+			pickedToHU.setPickingCandidateId(pickResult.getPickingCandidateId());
+		}
+
+		pickingCandidateService.process(ProcessPickingCandidatesRequest.builder()
+				.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
+				.alwaysPackEachCandidateInItsOwnHU(true)
+				.build());
+
+		return pickedToHUs;
+	}
+
+	private ShipmentScheduleId getShipmentScheduleId()
+	{
+		if (stepId != null)
+		{
+			return pickingJob.getStepById(stepId).getShipmentScheduleId();
 		}
 		else
 		{
-			return ImmutableList.of();
+			return Check.assumeNotNull(pickingJob.getLineById(lineId).getShipmentScheduleId(), "line has shipment schedule set");
 		}
 	}
 
@@ -175,31 +262,30 @@ public class PickingJobPickCommand
 			return ImmutableList.of();
 		}
 
-		final PackToHUsProducer packToHUsProducer = PackToHUsProducer.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.huPIItemProductBL(huPIItemProductBL)
-				.huCapacityBL(huCapacityBL)
-				.build();
+		final PickingJobStepId stepId = Check.assumeNotNull(this.stepId, "step exists");
+		final PickingJobStep step = pickingJob.getStepById(stepId);
+		step.getPickFrom(stepPickFromKey).assertNotPicked();
 
-		final ProductId productId = initialStep.getProductId();
-		final PackToSpec packToSpec = initialStep.getPackToSpec();
-		final PickingJobStepPickFrom pickFrom = initialStep.getPickFrom(pickFromKey);
+		final ProductId productId = step.getProductId();
+		final PackToSpec packToSpec = step.getPackToSpec();
+		final PickingJobStepPickFrom pickFrom = step.getPickFrom(stepPickFromKey);
+		final HUInfo pickFromHU = pickFrom.getPickFromHU();
+		final LocatorId pickFromLocatorId = pickFrom.getPickFromLocatorId();
 
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(
 				packToSpec,
-				initialPickingJob.getDeliveryBPLocationId(),
-				pickFrom.getPickFromLocator().getId());
+				pickingJob.getDeliveryBPLocationId(),
+				pickFromLocatorId);
 
 		trxManager.assertThreadInheritedTrxExists();
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing();
-		final HUInfo pickFromHU = pickFrom.getPickFromHU();
 		final List<I_M_HU> packedHUs = packToHUsProducer.packToHU(
 				huContext,
 				pickFromHU.getId(),
 				packToInfo,
 				productId,
 				qtyToPick,
-				initialStep.getId().toTableRecordReference(),
+				lineId.toTableRecordReference(),
 				true);
 
 		if (packedHUs.isEmpty())
@@ -210,7 +296,8 @@ public class PickingJobPickCommand
 		{
 			final I_M_HU packedHU = packedHUs.get(0);
 			return ImmutableList.of(PickedToHU.builder()
-					.pickedFromHUId(pickFromHU.getId())
+					.pickedFromHU(pickFromHU)
+					.pickFromLocatorId(pickFromLocatorId)
 					.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
 					.pickToSpecUsed(packToSpec)
 					.qtyPicked(qtyToPick)
@@ -224,7 +311,8 @@ public class PickingJobPickCommand
 			{
 				final Quantity qtyPicked = huStorageFactory.getStorage(packedHU).getQuantity(productId, qtyToPick.getUOM());
 				result.add(PickedToHU.builder()
-						.pickedFromHUId(pickFromHU.getId())
+						.pickedFromHU(pickFromHU)
+						.pickFromLocatorId(pickFromLocatorId)
 						.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
 						.pickToSpecUsed(packToSpec)
 						.qtyPicked(qtyPicked)
@@ -237,12 +325,10 @@ public class PickingJobPickCommand
 
 	private PickingJobStep updateStepFromPickingCandidate(
 			@NonNull final PickingJobStep step,
-			@NonNull final PickingJobStepPickFromKey pickFromKey,
 			@NonNull final ImmutableList<PickedToHU> pickedHUs)
 	{
 		final PickingJobStepPickedTo picked = toPickingJobStepPickedTo(pickedHUs);
-
-		return step.reduceWithPickedEvent(pickFromKey, picked);
+		return step.reduceWithPickedEvent(stepPickFromKey, picked);
 	}
 
 	private PickingJobStepPickedTo toPickingJobStepPickedTo(@NonNull final ImmutableList<PickedToHU> pickedHUs)
@@ -259,7 +345,7 @@ public class PickingJobPickCommand
 	private static PickingJobStepPickedToHU toPickingJobStepPickedToHU(final PickedToHU pickedHU)
 	{
 		return PickingJobStepPickedToHU.builder()
-				.pickFromHUId(pickedHU.getPickedFromHUId())
+				.pickFromHUId(pickedHU.getPickedFromHU().getId())
 				.actualPickedHUId(pickedHU.getActuallyPickedToHUId())
 				.qtyPicked(pickedHU.getQtyPicked())
 				.pickingCandidateId(Objects.requireNonNull(pickedHU.getPickingCandidateId()))
@@ -282,7 +368,8 @@ public class PickingJobPickCommand
 	@Builder
 	private static class PickedToHU
 	{
-		@NonNull final HuId pickedFromHUId;
+		@NonNull final HUInfo pickedFromHU;
+		@NonNull final LocatorId pickFromLocatorId;
 
 		@NonNull final PackToSpec pickToSpecUsed;
 		@NonNull final HuId actuallyPickedToHUId;

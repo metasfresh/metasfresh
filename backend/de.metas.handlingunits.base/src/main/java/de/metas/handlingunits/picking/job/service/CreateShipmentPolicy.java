@@ -44,16 +44,13 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 	private final String code;
 
 	@NonNull
-	public static CreateShipmentPolicy ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
+	public static CreateShipmentPolicy ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@NonNull
+	public static CreateShipmentPolicy ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	@Nullable
-	public static CreateShipmentPolicy ofNullableCode(@Nullable final String code)
-	{
-		return index.ofNullableCode(code);
-	}
+	public static CreateShipmentPolicy ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	public boolean isCreateShipment() {return CREATE_DRAFT.equals(this) || CREATE_AND_COMPLETE.equals(this);}
 
