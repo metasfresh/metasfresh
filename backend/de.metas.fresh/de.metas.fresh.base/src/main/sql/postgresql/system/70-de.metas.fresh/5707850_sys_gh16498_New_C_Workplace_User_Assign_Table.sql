@@ -240,3 +240,20 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 -- 2023-10-23T14:52:52.767Z
 CREATE UNIQUE INDEX One_User_Per_Org ON C_Workplace_User_Assign (AD_User_ID,AD_Org_ID)
 ;
+
+-- 2023-10-23T17:06:58.630Z
+UPDATE AD_Index_Table SET ErrorMsg='Pro Sektion ist nur ein Benutzer erlaubt.',Updated=TO_TIMESTAMP('2023-10-23 18:06:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540765
+;
+
+-- 2023-10-23T17:07:34.454Z
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Only one user per organization is allowed.', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-23 18:07:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540765 AND AD_Language='en_US'
+;
+
+-- 2023-10-23T17:08:02.947Z
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Un seul utilisateur est autorisé par organisation', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-23 18:08:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540765 AND AD_Language='fr_CH'
+;
+
+-- 2023-10-23T17:07:13.026Z
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Pro Sektion ist nur ein Benutzer erlaubt.', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-23 18:07:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540765 AND AD_Language='de_CH'
+;
+
