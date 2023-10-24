@@ -17,14 +17,14 @@
 	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
 	<parameter name="Date" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[select * from getCostsPerDate(p_keydate:=$P{Date}::date,
+		<![CDATA[select * from report.getCostsPerDate(p_date:=$P{Date}::date,
                                   p_acctschema_id:=$P{C_AcctSchema_ID},
                                   p_ad_org_id:=$P{AD_Org_ID},
                                   p_m_product_id:=$P{M_Product_ID},
                                   p_m_product_category_id:=$P{M_Product_Category_ID});]]>
 	</queryString>
-	<field name="keydate" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="keydate"/>
+	<field name="date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="date"/>
 	</field>
 	<field name="product" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="product"/>
