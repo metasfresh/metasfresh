@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS getCosts_at_Keydate(p_keydate               timestamp WITH TIME ZONE,
+DROP FUNCTION IF EXISTS getCostsPerDate(p_keydate               timestamp WITH TIME ZONE,
                                             p_acctschema_id         numeric,
                                             p_ad_org_id             numeric,
                                             p_m_product_id          numeric,
@@ -6,7 +6,7 @@ DROP FUNCTION IF EXISTS getCosts_at_Keydate(p_keydate               timestamp WI
 )
 ;
 
-CREATE FUNCTION getCosts_at_Keydate(p_keydate               timestamp WITH TIME ZONE,
+CREATE FUNCTION getCostsPerDate(p_keydate               timestamp WITH TIME ZONE,
                                     p_acctschema_id         numeric,
                                     p_ad_org_id             numeric,
                                     p_m_product_id          numeric = NULL,
