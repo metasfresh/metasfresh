@@ -1,15 +1,15 @@
-DROP FUNCTION IF EXISTS getCosts_at_Keydate(p_m_product_id          numeric,
-                                            p_keydate               timestamp WITH TIME ZONE,
+DROP FUNCTION IF EXISTS getCosts_at_Keydate(p_keydate               timestamp WITH TIME ZONE,
                                             p_acctschema_id         numeric,
                                             p_ad_org_id             numeric,
+                                            p_m_product_id          numeric,
                                             p_M_Product_Category_ID numeric
 )
 ;
 
-CREATE FUNCTION getCosts_at_Keydate(p_m_product_id          numeric,
-                                    p_keydate               timestamp WITH TIME ZONE,
+CREATE FUNCTION getCosts_at_Keydate(p_keydate               timestamp WITH TIME ZONE,
                                     p_acctschema_id         numeric,
                                     p_ad_org_id             numeric,
+                                    p_m_product_id          numeric = NULL,
                                     p_M_Product_Category_ID numeric = NULL
 )
     RETURNS TABLE
@@ -30,7 +30,7 @@ SELECT p_keydate::date                                                          
        p.value || '_' || p.name                                                                            AS product,
        pc.name                                                                                             AS productCategory,
        ce.name                                                                                             AS costelement,
-       NULLIF(getcurrentcost(p_m_product_id := p_m_product_id,
+       NULLIF(getcurrentcost(p_m_product_id := p.m_product_id ,
                              p_c_uom_id := p.c_uom_id,
                              p_date := p_keydate::date,
                              p_acctschema_id := p_acctschema_id,

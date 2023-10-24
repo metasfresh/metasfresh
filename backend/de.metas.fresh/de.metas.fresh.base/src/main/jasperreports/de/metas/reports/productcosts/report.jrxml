@@ -20,10 +20,10 @@
 	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
 	<parameter name="keydate" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[select * from getCosts_at_keydate(p_m_product_id:=$P{M_Product_ID},
-                                  p_keydate:=$P{keydate}::date,
+		<![CDATA[select * from getCosts_at_keydate(p_keydate:=$P{keydate}::date,
                                   p_acctschema_id:=$P{C_AcctSchema_ID},
                                   p_ad_org_id:=$P{AD_Org_ID},
+                                  p_m_product_id:=$P{M_Product_ID},
                                   p_m_product_category_id:=$P{M_Product_Category_ID});]]>
 	</queryString>
 	<field name="keydate" class="java.sql.Date">
