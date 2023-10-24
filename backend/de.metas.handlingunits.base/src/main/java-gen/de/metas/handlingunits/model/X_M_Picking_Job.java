@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -675362545L;
+	private static final long serialVersionUID = 1026697317L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -157,6 +157,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public boolean isAllowPickingAnyHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
 	public void setIsApproved (final boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, IsApproved);
@@ -190,18 +202,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public boolean isReadyToReview() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadyToReview);
-	}
-
-	@Override
-	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
-	{
-		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
-	}
-
-	@Override
-	public boolean isAllowPickingAnyHU()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
 	}
 
 	@Override
