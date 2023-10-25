@@ -40,9 +40,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermPricing;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
@@ -52,6 +52,7 @@ import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactor
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -149,6 +150,7 @@ public class OrgChangeCommand
 			final @NonNull OrgChangeHistoryRepository orgChangeHistoryRepo,
 			final @NonNull OrgMappingRepository orgMappingRepo,
 			final @NonNull GroupTemplateRepository groupTemplateRepo,
+			final @NonNull GreetingRepository greetingRepository,
 			//
 			final @NonNull OrgChangeRequest request)
 	{
@@ -465,7 +467,7 @@ public class OrgChangeCommand
 						matchingContact);
 
 				matchingContact.setContactType(newContactType);
-				matchingContact.setGreetingId(sourceContact.getGreetingId());
+				matchingContact.setGreeting(sourceContact.getGreeting());
 				matchingContact.setFirstName(sourceContact.getFirstName());
 				matchingContact.setLastName(sourceContact.getLastName());
 				matchingContact.setMembershipContact(sourceContact.isMembershipContact());
