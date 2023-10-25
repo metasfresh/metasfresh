@@ -19,7 +19,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -348,7 +347,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -685,7 +683,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -1022,7 +1019,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -1351,7 +1347,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -1729,7 +1724,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -2115,7 +2109,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -2239,7 +2232,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -2607,7 +2599,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -3185,7 +3176,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -3522,7 +3512,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -3882,7 +3871,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -4006,7 +3994,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -4335,7 +4322,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -4876,7 +4862,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
@@ -5213,7 +5198,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
-                  "isAllowPickingAnyHU": false,
                   "pickingLineId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
