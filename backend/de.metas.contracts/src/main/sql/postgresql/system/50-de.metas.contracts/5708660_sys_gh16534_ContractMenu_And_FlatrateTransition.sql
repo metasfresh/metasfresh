@@ -218,7 +218,7 @@ UPDATE AD_Message_Trl SET MsgText='Modular Contract Transition',Updated=TO_TIMES
 
 -- Value: de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod
 -- 2023-10-25T08:17:29.819Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545356,0,TO_TIMESTAMP('2023-10-25 11:17:29.608','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Ein Jahr des Kalenders hat keine Periode','E',TO_TIMESTAMP('2023-10-25 11:17:29.608','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545356,0,TO_TIMESTAMP('2023-10-25 11:17:29.608','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Für das betreffende Jahr des ausgewählten Kalenders sind keine Kalenderperioden verfügbar. Bitte Kalenderperioden hinzufügen.','E',TO_TIMESTAMP('2023-10-25 11:17:29.608','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod')
 ;
 
 -- 2023-10-25T08:17:29.839Z
@@ -227,6 +227,6 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod
 -- 2023-10-25T08:17:37.318Z
-UPDATE AD_Message_Trl SET MsgText='One year of the calendar has no period.',Updated=TO_TIMESTAMP('2023-10-25 11:17:37.318','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545356
+UPDATE AD_Message_Trl SET MsgText='No calendar periods available for the relevant year of the selected calendar. Please add calendar periods.',Updated=TO_TIMESTAMP('2023-10-25 11:17:37.318','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545356
 ;
 
