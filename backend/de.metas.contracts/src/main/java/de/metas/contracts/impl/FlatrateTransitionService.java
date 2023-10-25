@@ -41,13 +41,26 @@ public class FlatrateTransitionService
 			@NonNull final FlatrateTransitionId flatrateTransitionTemplateId,
 			@NonNull final String namePrefix)
 	{
-		final FlatrateTransition templateFlatrateTransition = flatrateTransitionRepository.getById(flatrateTransitionTemplateId);
-
-		final FlatrateTransitionQuery flatrateTransitionQuery = FlatrateTransitionQuery.builder()
-				.calendarId(calendarId)
-				.templateFlatrateTransition(templateFlatrateTransition)
-				.build();
+		final FlatrateTransitionQuery flatrateTransitionQuery = buildFlatrateTransitionQuery(calendarId, flatrateTransitionTemplateId);
 
 		return flatrateTransitionRepository.getOrCreate(flatrateTransitionQuery, namePrefix);
+	}
+
+	@NonNull
+	private FlatrateTransitionQuery buildFlatrateTransitionQuery(
+			@NonNull final CalendarId calendarId,
+			@NonNull final FlatrateTransitionId flatrateTransitionTemplateId)
+	{
+		final FlatrateTransition templateFlatrateTransition = flatrateTransitionRepository.getById(flatrateTransitionTemplateId);
+
+		return FlatrateTransitionQuery.builder()
+				.calendarId(calendarId)
+				.endsWithCalendarYear(templateFlatrateTransition.getEndsWithCalendarYear())
+				.termDuration(templateFlatrateTransition.getTermDuration())
+				.termDurationUnit(templateFlatrateTransition.getTermDurationUnit())
+				.termOfNotice(templateFlatrateTransition.getTermOfNotice())
+				.termOfNoticeUnit(templateFlatrateTransition.getTermOfNoticeUnit())
+				.notifyUserInCharge(templateFlatrateTransition.getNotifyUserInCharge())
+				.build();
 	}
 }

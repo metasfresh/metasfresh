@@ -74,18 +74,17 @@ public class FlatrateTransitionRepository
 			@NonNull final String namePrefix)
 	{
 		final CalendarId calendarId = flatrateTransitionQuery.getCalendarId();
-		final FlatrateTransition flatrateTransitionTemplate = flatrateTransitionQuery.getTemplateFlatrateTransition();
 
 		final I_C_Flatrate_Transition transitionRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class);
 
 		transitionRecord.setName(namePrefix + " " + calendarDAO.getName(calendarId));
 		transitionRecord.setC_Calendar_Contract_ID(calendarId.getRepoId());
-		transitionRecord.setEndsWithCalendarYear(flatrateTransitionTemplate.getEndsWithCalendarYear());
-		transitionRecord.setTermDuration(flatrateTransitionTemplate.getTermDuration());
-		transitionRecord.setTermDurationUnit(flatrateTransitionTemplate.getTermDurationUnit().getCode());
-		transitionRecord.setTermOfNotice(flatrateTransitionTemplate.getTermOfNotice());
-		transitionRecord.setTermOfNoticeUnit(flatrateTransitionTemplate.getTermOfNoticeUnit().getCode());
-		transitionRecord.setIsNotifyUserInCharge(flatrateTransitionTemplate.getNotifyUserInCharge());
+		transitionRecord.setEndsWithCalendarYear(flatrateTransitionQuery.getEndsWithCalendarYear());
+		transitionRecord.setTermDuration(flatrateTransitionQuery.getTermDuration());
+		transitionRecord.setTermDurationUnit(flatrateTransitionQuery.getTermDurationUnit().getCode());
+		transitionRecord.setTermOfNotice(flatrateTransitionQuery.getTermOfNotice());
+		transitionRecord.setTermOfNoticeUnit(flatrateTransitionQuery.getTermOfNoticeUnit().getCode());
+		transitionRecord.setIsNotifyUserInCharge(flatrateTransitionQuery.getNotifyUserInCharge());
 		transitionRecord.setDocStatus(DocStatus.Completed.getCode());
 
 		saveRecord(transitionRecord);
@@ -96,17 +95,15 @@ public class FlatrateTransitionRepository
 	@Nullable
 	private FlatrateTransitionId getBy(@NonNull final FlatrateTransitionQuery flatrateTransitionQuery)
 	{
-		final FlatrateTransition flatrateTransitionTemplate = flatrateTransitionQuery.getTemplateFlatrateTransition();
-
 		final I_C_Flatrate_Transition transitionRecord = queryBL.createQueryBuilder(I_C_Flatrate_Transition.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_C_Calendar_Contract_ID, flatrateTransitionQuery.getCalendarId())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_EndsWithCalendarYear, flatrateTransitionTemplate.getEndsWithCalendarYear())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDuration, flatrateTransitionTemplate.getTermDuration())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDurationUnit, flatrateTransitionTemplate.getTermDurationUnit().getCode())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermOfNotice, flatrateTransitionTemplate.getTermOfNotice())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermOfNoticeUnit, flatrateTransitionTemplate.getTermOfNoticeUnit().getCode())
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_IsNotifyUserInCharge, flatrateTransitionTemplate.getNotifyUserInCharge())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_EndsWithCalendarYear, flatrateTransitionQuery.getEndsWithCalendarYear())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDuration, flatrateTransitionQuery.getTermDuration())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDurationUnit, flatrateTransitionQuery.getTermDurationUnit().getCode())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermOfNotice, flatrateTransitionQuery.getTermOfNotice())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermOfNoticeUnit, flatrateTransitionQuery.getTermOfNoticeUnit().getCode())
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_IsNotifyUserInCharge, flatrateTransitionQuery.getNotifyUserInCharge())
 				.create()
 				.firstOnly(I_C_Flatrate_Transition.class);
 

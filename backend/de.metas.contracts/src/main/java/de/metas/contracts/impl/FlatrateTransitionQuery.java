@@ -23,6 +23,7 @@
 package de.metas.contracts.impl;
 
 import de.metas.calendar.standard.CalendarId;
+import de.metas.contracts.TermDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,5 +33,16 @@ import lombok.Value;
 public class FlatrateTransitionQuery
 {
 	@NonNull CalendarId calendarId;
-	@NonNull FlatrateTransition templateFlatrateTransition;
+
+	@NonNull Boolean endsWithCalendarYear;
+
+	@NonNull Integer termDuration;
+
+	@NonNull TermDurationUnit termDurationUnit;
+
+	@NonNull Integer termOfNotice;
+
+	@NonNull TermDurationUnit termOfNoticeUnit;
+
+	@NonNull Boolean notifyUserInCharge;
 }
