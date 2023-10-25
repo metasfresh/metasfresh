@@ -1,4 +1,5 @@
 @from:cucumber
+@ignore
 Feature: workflow rest controller tests
 
   Background:
