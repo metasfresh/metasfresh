@@ -43,8 +43,9 @@ public class JsonPickingJobLine
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
 	@NonNull List<JsonPickingJobStep> steps;
+	boolean isAllowPickingAnyHU;
 
-	public static JsonPickingJobLine of(
+	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
 			@NonNull final JsonOpts jsonOpts)
 	{
@@ -58,7 +59,6 @@ public class JsonPickingJobLine
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }
