@@ -25,13 +25,16 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -41,6 +44,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
 
 import java.sql.Timestamp;
@@ -50,6 +54,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@AllArgsConstructor
 public class M_ShipperTransportation_StepDef
 {
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
@@ -58,23 +63,11 @@ public class M_ShipperTransportation_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
+	private final M_InOut_StepDefData shipmentTable;
+
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	public final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_ShipperTransportation_StepDef(
-			@NonNull final M_ShipperTransportation_StepDefData deliveryInstructionTable,
-			@NonNull final M_Delivery_Planning_StepDefData deliveryPlanningTable,
-			@NonNull final M_Shipper_StepDefData shipperTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable)
-	{
-		this.deliveryInstructionTable = deliveryInstructionTable;
-		this.deliveryPlanningTable = deliveryPlanningTable;
-		this.shipperTable = shipperTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.bPartnerTable = bPartnerTable;
-	}
 
 	@And("generate M_ShipperTransportation for M_Delivery_Planning:")
 	public void generate_Delivery_Instructions(@NonNull final DataTable dataTable)
@@ -182,5 +175,25 @@ public class M_ShipperTransportation_StepDef
 	{
 		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanning.getM_Delivery_Planning_ID());
+	}
+
+	@And("load Transportation Order from Shipment")
+	public void load_M_ShipperTransportation(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+
+			final I_M_ShipperTransportation shipperTransportation = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.orderBy(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+					.first();
+			assertThat(shipperTransportation).isNotNull();
+			final String shipperTransportationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
+			deliveryInstructionTable.putOrReplace(shipperTransportationIdentifier, shipperTransportation);
+		}
 	}
 }

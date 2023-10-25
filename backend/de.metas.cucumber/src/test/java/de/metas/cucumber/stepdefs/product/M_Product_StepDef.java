@@ -49,6 +49,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -60,6 +61,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_M_Product;
+import org.compiere.util.DB;
 
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -111,6 +113,12 @@ public class M_Product_StepDef
 		{
 			createM_Product(tableRow);
 		}
+	}
+
+	@Given("ensure product accounts exist")
+	public void metasfresh_ensure_product_accounts()
+	{
+		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select createm_product_acct();", null);
 	}
 
 	@And("no product with value {string} exists")

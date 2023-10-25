@@ -173,7 +173,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionSO_1               | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_1
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLineSO_1         | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -193,7 +193,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionSO_2               | shipper_DPD             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_2
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLineSO_2         | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -213,7 +213,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionPO_1               | shipper_DHL             | vendor                         | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation                                | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_1
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLinePO_1         | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -233,7 +233,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionPO_2               | shipper_DPD             | vendor                         | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation                                | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_2
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLinePO_2         | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -396,7 +396,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionSO_7.1             | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_7.1
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLineSO_7.1       | product_7               |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -416,7 +416,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionSO_7.2             | shipper_DPD             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_7.2
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLineSO_7.2       | product_7               |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -440,7 +440,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionPO_7.1             | shipper_DHL             | vendor_7                       | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation_7                              | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_7.1
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLinePO_7.1       | product_7               |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -460,7 +460,7 @@ Feature: Order to delivery instructions
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionPO_7.2             | shipper_DPD             | vendor_7                       | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation_7                              | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_7.2
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageLinePO_7.2       | product_7               |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
