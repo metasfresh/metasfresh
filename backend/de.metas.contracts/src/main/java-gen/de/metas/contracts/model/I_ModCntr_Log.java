@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
@@ -56,8 +78,8 @@ public interface I_ModCntr_Log
 	 * Set Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Table_ID (int AD_Table_ID);
@@ -66,8 +88,8 @@ public interface I_ModCntr_Log
 	 * Get Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Table_ID();
@@ -79,17 +101,17 @@ public interface I_ModCntr_Log
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAmount (BigDecimal Amount);
+	void setAmount (@Nullable BigDecimal Amount);
 
 	/**
 	 * Get Amount.
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getAmount();
@@ -157,7 +179,8 @@ public interface I_ModCntr_Log
 	 */
 	int getC_Flatrate_Term_ID();
 
-	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
 	void setC_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
@@ -206,6 +229,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_CollectionPoint_BPartner_ID = "CollectionPoint_BPartner_ID";
 
 	/**
+	 * Set Contract Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setContractType(java.lang.String ContractType);
+
+	/**
+	 * Get Contract Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getContractType();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_ContractType = new ModelColumn<>(I_ModCntr_Log.class, "ContractType", null);
+	String COLUMNNAME_ContractType = "ContractType";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -238,7 +282,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID(int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -257,20 +301,20 @@ public interface I_ModCntr_Log
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+	void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Date.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateTrx();
+	java.sql.Timestamp getDateTrx();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";
@@ -282,7 +326,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription(@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -300,7 +344,7 @@ public interface I_ModCntr_Log
 	 * Set Harvesting Year.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setHarvesting_Year_ID (int Harvesting_Year_ID);
@@ -309,14 +353,14 @@ public interface I_ModCntr_Log
 	 * Get Harvesting Year.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getHarvesting_Year_ID();
 
-	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+	org.compiere.model.I_C_Year getHarvesting_Year();
 
-	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+	void setHarvesting_Year(org.compiere.model.I_C_Year Harvesting_Year);
 
 	ModelColumn<I_ModCntr_Log, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_ModCntr_Log.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
@@ -345,6 +389,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Invoiceable.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsBillable (boolean IsBillable);
+
+	/**
+	 * Get Invoiceable.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isBillable();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsBillable = new ModelColumn<>(I_ModCntr_Log.class, "IsBillable", null);
+	String COLUMNNAME_IsBillable = "IsBillable";
+
+	/**
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *
@@ -368,22 +433,47 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Document Type.
+	 * Set Invoice Group.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Log_DocumentType (@Nullable java.lang.String ModCntr_Log_DocumentType);
+	void setModCntr_InvoicingGroup_ID (int ModCntr_InvoicingGroup_ID);
+
+	/**
+	 * Get Invoice Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_InvoicingGroup_ID();
+
+	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+
+	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+
+	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
+
+	/**
+	 * Set Document Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_DocumentType(java.lang.String ModCntr_Log_DocumentType);
 
 	/**
 	 * Get Document Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getModCntr_Log_DocumentType();
+	java.lang.String getModCntr_Log_DocumentType();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_ModCntr_Log_DocumentType = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Log_DocumentType", null);
 	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
@@ -410,6 +500,32 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
 
 	/**
+	 * Set Modules.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Module_ID(int ModCntr_Module_ID);
+
+	/**
+	 * Get Modules.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Module_ID();
+
+	@Nullable
+	de.metas.contracts.model.I_ModCntr_Module getModCntr_Module();
+
+	void setModCntr_Module(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_Module);
+
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Module_ID", de.metas.contracts.model.I_ModCntr_Module.class);
+	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
+
+	/**
 	 * Set Contract Module Type.
 	 *
 	 * <br>Type: Search
@@ -427,7 +543,8 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_Type_ID();
 
-	@Nullable de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
+	@Nullable
+	de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
 
 	void setModCntr_Type(@Nullable de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
 
@@ -442,7 +559,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID(int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -460,23 +577,90 @@ public interface I_ModCntr_Log
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID(int M_Warehouse_ID);
 
 	/**
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Cost_Collector_ID(int PP_Cost_Collector_ID);
+
+	/**
+	 * Get Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Cost_Collector_ID();
+
+	@Nullable
+	org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+
+	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
+
+	ModelColumn<I_ModCntr_Log, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_ModCntr_Log.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceActual (@Nullable BigDecimal PriceActual);
+
+	/**
+	 * Get Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceActual();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_ModCntr_Log.class, "PriceActual", null);
+	String COLUMNNAME_PriceActual = "PriceActual";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Processed.

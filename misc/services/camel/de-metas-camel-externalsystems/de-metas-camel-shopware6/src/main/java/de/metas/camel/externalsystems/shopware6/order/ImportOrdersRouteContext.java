@@ -37,6 +37,7 @@ import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvide
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonOrderProcessingConfig;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
@@ -160,6 +161,10 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	private PriceListBasicInfo priceListBasicInfo;
+
+	@NonNull
+	@Setter(AccessLevel.NONE)
+	private JsonOrderProcessingConfig orderProcessingConfig;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()

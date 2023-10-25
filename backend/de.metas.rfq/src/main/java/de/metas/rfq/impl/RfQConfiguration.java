@@ -1,7 +1,6 @@
 package de.metas.rfq.impl;
 
 import com.google.common.base.MoreObjects;
-
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfQResponseProducerFactory;

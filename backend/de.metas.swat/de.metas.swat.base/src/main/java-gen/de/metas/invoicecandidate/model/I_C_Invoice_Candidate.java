@@ -1,9 +1,8 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -178,29 +177,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ApprovalForInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "ApprovalForInvoicing", null);
 	String COLUMNNAME_ApprovalForInvoicing = "ApprovalForInvoicing";
-
-	/**
-	 * Set Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
-
-	/**
-	 * Get Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getBase_Commission_Points_Per_Price_UOM();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_Invoice_Candidate.class, "Base_Commission_Points_Per_Price_UOM", null);
-	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Bill Business Partner.
@@ -425,6 +401,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
+	 * Set Auction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Auction_ID (int C_Auction_ID);
+
+	/**
+	 * Get Auction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Auction_ID();
+
+	@Nullable org.compiere.model.I_C_Auction getC_Auction();
+
+	void setC_Auction(@Nullable org.compiere.model.I_C_Auction C_Auction);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Auction> COLUMN_C_Auction_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Auction_ID", org.compiere.model.I_C_Auction.class);
+	String COLUMNNAME_C_Auction_ID = "C_Auction_ID";
+
+	/**
 	 * Set Business Partner (2).
 	 *
 	 * <br>Type: Search
@@ -577,6 +578,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -588,6 +590,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -623,6 +626,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Flatrate_Term_ID", null);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
 	 * Set Invoicecandidate Controller.
@@ -1004,7 +1032,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
@@ -1014,7 +1042,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_ID();
@@ -1110,6 +1138,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Shipping_Location_ID", null);
 	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
+
+	/**
+	 * Set Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_Departure_Country_ID (int C_Tax_Departure_Country_ID);
+
+	/**
+	 * Get Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_Departure_Country_ID();
+
+	@Nullable org.compiere.model.I_C_Country getC_Tax_Departure_Country();
+
+	void setC_Tax_Departure_Country(@Nullable org.compiere.model.I_C_Country C_Tax_Departure_Country);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Country> COLUMN_C_Tax_Departure_Country_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Tax_Departure_Country_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_Tax_Departure_Country_ID = "C_Tax_Departure_Country_ID";
 
 	/**
 	 * Set Tax eff..
@@ -1721,6 +1774,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
 
 	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
 	 * Set Header  merge characteristic.
 	 *
 	 * <br>Type: String
@@ -1784,7 +1862,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -1794,7 +1872,7 @@ public interface I_C_Invoice_Candidate
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -2716,6 +2794,28 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Invoiced Amount.
@@ -3671,6 +3771,30 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getSalesRep_ID();
+
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
 	 * Set Update Status.
 	 *
 	 * <br>Type: Text
@@ -3787,27 +3911,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_TotalOfOrderExcludingDiscount = "TotalOfOrderExcludingDiscount";
 
 	/**
-	 * Set Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
-
-	/**
-	 * Get Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getTraded_Commission_Percent();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_Invoice_Candidate.class, "Traded_Commission_Percent", null);
-	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -3833,7 +3936,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set From Date.
+	 * Set UserElementDate1.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3842,7 +3945,7 @@ public interface I_C_Invoice_Candidate
 	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
 
 	/**
-	 * Get From Date.
+	 * Get UserElementDate1.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3854,7 +3957,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
 
 	/**
-	 * Set To Date.
+	 * Set UserElementDate2.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3863,7 +3966,7 @@ public interface I_C_Invoice_Candidate
 	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
 
 	/**
-	 * Get To Date.
+	 * Get UserElementDate2.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

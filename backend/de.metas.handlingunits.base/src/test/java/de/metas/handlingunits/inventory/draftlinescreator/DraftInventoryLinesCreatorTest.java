@@ -22,6 +22,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -86,12 +88,13 @@ class DraftInventoryLinesCreatorTest
 
 	private InventoryRepository inventoryRepo;
 
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(orgTimeZone);
 

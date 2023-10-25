@@ -61,6 +61,8 @@ public final class MutableBigDecimal extends Number implements IMutable<BigDecim
 		return value.toString();
 	}
 
+	public BigDecimal toBigDecimal() {return value;}
+
 	@Override
 	@NonNull
 	public BigDecimal getValue()

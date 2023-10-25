@@ -8,7 +8,7 @@ Feature: desadv and invoic
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  Scenario:
+  Scenario: 1
 
   in:
   C_OLCand:
@@ -178,7 +178,7 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-  Scenario:
+  Scenario: 2
 
   in:
   C_UOM_Conversions
@@ -344,7 +344,7 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-  Scenario:
+  Scenario: 3
   in:
 
   M_ProductPrice:
@@ -506,7 +506,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | PCE                       | 5                        | 10              | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-  Scenario:
+  Scenario: 4
 
   in:
   C_UOM_Conversion:
@@ -671,7 +671,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | KGM                       | 1.25                     | 5               | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-  Scenario:
+  Scenario: 5
 
   in:
   C_UOM_Conversion:
@@ -841,7 +841,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | KGM               | 1    | p_1                     | 10         | 5                 | 40         | PCE                       | 20                       | 10              | KGM                        | 5                       | 5                        | 20                        |
 
   @from:cucumber
-  Scenario:
+  Scenario: 6
 
   in:
   C_UOM_Conversion:

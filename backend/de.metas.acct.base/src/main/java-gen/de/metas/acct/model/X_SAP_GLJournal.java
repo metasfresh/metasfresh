@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.acct.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for SAP_GLJournal
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJournal, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2051816088L;
+	private static final long serialVersionUID = -2081421720L;
 
     /** Standard Constructor */
     public X_SAP_GLJournal (final Properties ctx, final int SAP_GLJournal_ID, @Nullable final String trxName)
@@ -123,6 +123,33 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_Tax_Departure_Country()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country(final org.compiere.model.I_C_Country C_Tax_Departure_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class, C_Tax_Departure_Country);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country_ID (final int C_Tax_Departure_Country_ID)
+	{
+		if (C_Tax_Departure_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	@Override
+	public int getC_Tax_Departure_Country_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_Departure_Country_ID);
+	}
+
+	@Override
 	public void setCurrencyRate (final BigDecimal CurrencyRate)
 	{
 		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
@@ -160,13 +187,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	}
 
 	@Override
-	public void setDescription (final String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription() 
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -207,13 +234,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	@Override
-	public void setDocAction (final String DocAction)
+	public void setDocAction (final java.lang.String DocAction)
 	{
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
 	@Override
-	public String getDocAction() 
+	public java.lang.String getDocAction() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
@@ -248,25 +275,25 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final String DocStatus)
+	public void setDocStatus (final java.lang.String DocStatus)
 	{
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
 	@Override
-	public String getDocStatus() 
+	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
-	public void setDocumentNo (final String DocumentNo)
+	public void setDocumentNo (final java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public String getDocumentNo() 
+	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -382,13 +409,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** Actual Year End = Y */
 	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	@Override
-	public void setPostingType (final String PostingType)
+	public void setPostingType (final java.lang.String PostingType)
 	{
 		set_Value (COLUMNNAME_PostingType, PostingType);
 	}
 
 	@Override
-	public String getPostingType() 
+	public java.lang.String getPostingType() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingType);
 	}

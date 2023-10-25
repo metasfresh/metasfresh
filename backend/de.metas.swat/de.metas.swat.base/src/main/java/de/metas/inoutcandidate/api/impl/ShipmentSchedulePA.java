@@ -88,7 +88,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
-
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
@@ -104,7 +103,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
@@ -636,14 +635,31 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).list();
+	}
+
+	@Override
 	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
+	}
+
+	@Override
+	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).anyMatch();
+	}
+
+	private IQueryBuilder<I_M_ShipmentSchedule> queryByOrderId(final @NonNull OrderId orderId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
-				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId);
 	}
 
 	@Override
@@ -667,4 +683,5 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
 		return ImmutableSet.copyOf(orderIds);
 	}
+
 }

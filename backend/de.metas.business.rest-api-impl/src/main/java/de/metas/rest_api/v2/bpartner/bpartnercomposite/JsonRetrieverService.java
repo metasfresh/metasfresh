@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -48,6 +49,7 @@ import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilde
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
@@ -68,6 +70,7 @@ import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -78,8 +81,9 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -170,6 +174,7 @@ public class JsonRetrieverService
 			.put(BPartner.SAP_BPARTNER_CODE, JsonResponseBPartner.SAP_BPARTNER_CODE)
 			.put(BPartner.SECTION_GROUP_PARTNER, JsonResponseBPartner.SECTION_GROUP_PARTNER)
 			.put(BPartner.SECTION_PARTNER, JsonResponseBPartner.SECTION_PARTNER)
+			.put(BPartner.URPRODUZENT, JsonResponseBPartner.URPRODUZENT)
 			.build();
 
 	/**
@@ -250,6 +255,21 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.SAP_BPARTNER_CODE, JsonResponseLocation.SAP_BPARTNER_CODE)
 			.build();
 
+	/**
+	 * Mapping between {@link JsonResponseBPBankAccount} property names and REST-API properties names
+	 */
+	private static final ImmutableMap<String, String> BANK_ACCOUNT_FIELD_MAP = ImmutableMap
+			.<String, String>builder()
+			.put(BPartnerBankAccount.ID, JsonResponseBPBankAccount.ID)
+			.put(BPartnerBankAccount.IBAN, JsonResponseBPBankAccount.IBAN)
+			.put(BPartnerBankAccount.QR_IBAN, JsonResponseBPBankAccount.QR_IBAN)
+			.put(BPartnerBankAccount.ACTIVE, JsonResponseBPBankAccount.ACTIVE)
+			.put(BPartnerBankAccount.NAME, JsonResponseBPBankAccount.NAME)
+			.put(BPartnerBankAccount.BPARTNER_ID, JsonResponseBPBankAccount.BPARTNER_ID)
+			.put(BPartnerBankAccount.SWIFT_CODE, JsonResponseBPBankAccount.SWIFT_CODE)
+			.put(BPartnerBankAccount.IS_DEFAULT, JsonResponseBPBankAccount.IS_DEFAULT)
+			.build();
+
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
@@ -258,7 +278,7 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
-	private final JobRepository jobRepository;
+	private final JobService jobService;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final IPaymentTermRepository paymentTermRepository;
@@ -274,7 +294,7 @@ public class JsonRetrieverService
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
-			@NonNull final JobRepository jobRepository,
+			@NonNull final JobService jobService,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final IPaymentTermRepository paymentTermRepository,
 			@NonNull final String identifier)
@@ -284,7 +304,7 @@ public class JsonRetrieverService
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
 		this.titleRepository = titleRepository;
-		this.jobRepository = jobRepository;
+		this.jobService = jobService;
 		this.externalReferenceService = externalReferenceService;
 		this.paymentTermRepository = paymentTermRepository;
 		this.identifier = identifier;
@@ -347,10 +367,17 @@ public class JsonRetrieverService
 			{
 				result.location(toJson(location));
 			}
+
+			// bank accounts
+			for (final BPartnerBankAccount bankAccount : bpartnerComposite.getBankAccounts())
+			{
+				result.bankAccount(toJson(bankAccount));
+			}
 			return result.build();
 		}
 	}
 
+	@NonNull
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
@@ -407,6 +434,7 @@ public class JsonRetrieverService
 				.sapBPartnerCode(bpartner.getSapBPartnerCode())
 				.sectionGroupPartner(bpartner.isSectionGroupPartner())
 				.sectionPartner(bpartner.isSectionPartner())
+				.urproduzent(bpartner.isUrproduzent())
 				.build();
 	}
 
@@ -482,15 +510,14 @@ public class JsonRetrieverService
 			String titleTrl = null;
 			if (contact.getTitleId() != null)
 			{
-				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(), language);
 				titleTrl = title.getTitle();
 			}
-
 
 			Job job = null;
 			if (contact.getJobId() != null)
 			{
-				job = jobRepository.getById(contact.getJobId());
+				job = jobService.getById(contact.getJobId());
 			}
 
 			final List<JsonResponseContactRole> roles = contact.getRoles()
@@ -734,7 +761,7 @@ public class JsonRetrieverService
 				.bPartnerProducts(productBPartners)
 				.build();
 	}
-
+	
 	/**
 	 * Visible to verify that caching actually works the way we expect it to (=> performance)
 	 */
@@ -743,6 +770,41 @@ public class JsonRetrieverService
 	{
 		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
 		return extractResult(bpartnerComposites);
+	}
+
+	@NonNull
+	public Optional<MetasfreshId> resolveBankAccountId(
+			@NonNull final ExternalIdentifier bankAccountIdentifier,
+			@NonNull final BPartnerComposite bPartnerComposite)
+	{
+		return switch (bankAccountIdentifier.getType())
+				{
+					case METASFRESH_ID -> Optional.of(bankAccountIdentifier.asMetasfreshId());
+					case EXTERNAL_REFERENCE -> externalReferenceService.getJsonMetasfreshIdFromExternalReference(bPartnerComposite.getOrgIdNotNull(),
+																												 bankAccountIdentifier,
+																												 BPBankAccountType.BPBankAccount)
+							.map(MetasfreshId::of);
+					case IBAN -> bPartnerComposite.getBankAccountByIBAN(bankAccountIdentifier.asIban())
+							.map(BPartnerBankAccount::getId)
+							.map(MetasfreshId::of);
+					case QR_IBAN -> bPartnerComposite.getBankAccountByQrIban(bankAccountIdentifier.asQrIban())
+							.map(BPartnerBankAccount::getId)
+							.map(MetasfreshId::of);
+					default -> throw new InvalidIdentifierException("Given external identifier type is not supported!")
+							.appendParametersToMessage()
+							.setParameter("externalIdentifierType", bankAccountIdentifier.getType())
+							.setParameter("rawExternalIdentifier", bankAccountIdentifier.getRawValue());
+				};
+	}
+
+	@NonNull
+	public Optional<MetasfreshId> resolveBankAccountIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bankAccountIdentifier)
+	{
+		return getBPartnerComposite(orgId, bpartnerIdentifier)
+				.flatMap(bPartnerComposite -> resolveBankAccountId(bankAccountIdentifier, bPartnerComposite));
 	}
 
 	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
@@ -983,6 +1045,28 @@ public class JsonRetrieverService
 				.excludedFromPurchase(record.isExcludedFromPurchase())
 				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
 				//
+				.build();
+	}
+
+	private static JsonResponseBPBankAccount toJson(@NonNull final BPartnerBankAccount bankAccount)
+	{
+		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId());
+		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getBpartnerId().getRepoId());
+		final JsonMetasfreshId currencyId = JsonMetasfreshId.of(CurrencyId.toRepoId(bankAccount.getCurrencyId()));
+
+		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bankAccount.getChangeLog(), BANK_ACCOUNT_FIELD_MAP);
+
+		return JsonResponseBPBankAccount.builder()
+				.metasfreshId(metasfreshId)
+				.metasfreshBPartnerId(metasfreshBPartnerId)
+				.currencyId(currencyId)
+				.iban(bankAccount.getIban())
+				.qrIban(bankAccount.getQrIban())
+				.name(bankAccount.getName())
+				.swiftCode(bankAccount.getSwiftCode())
+				.isDefault(bankAccount.isDefault())
+				.active(bankAccount.isActive())
+				.changeInfo(jsonChangeInfo)
 				.build();
 	}
 }

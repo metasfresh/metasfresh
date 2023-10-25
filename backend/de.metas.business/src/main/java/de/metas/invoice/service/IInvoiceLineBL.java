@@ -27,9 +27,11 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -96,4 +98,7 @@ public interface IInvoiceLineBL extends ISingletonService
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 
 	Quantity getQtyInvoicedStockUOM(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	@NonNull
+	ProductPrice getPriceActual(@NonNull I_C_InvoiceLine invoiceLine);
 }

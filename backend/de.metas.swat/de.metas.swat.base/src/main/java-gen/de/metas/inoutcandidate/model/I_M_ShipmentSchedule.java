@@ -1560,6 +1560,31 @@ public interface I_M_ShipmentSchedule
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
 
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
+	String COLUMNNAME_PackDescription = "PackDescription";
+
+	/**
+	 * Set Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+
+	/**
+	 * Get Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
+
+
 	/**
 	 * Set Date ready.
 	 *

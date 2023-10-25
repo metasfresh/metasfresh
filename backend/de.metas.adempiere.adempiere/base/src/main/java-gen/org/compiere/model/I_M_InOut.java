@@ -2043,4 +2043,25 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_Weight = new ModelColumn<>(I_M_InOut.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set Ready for interim invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInterimInvoiceable (boolean IsInterimInvoiceable);
+
+	/**
+	 * Get Ready for interim invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isInterimInvoiceable();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_IsInterimInvoiceable = new ModelColumn<>(I_M_InOut.class, "IsInterimInvoiceable", null);
+	String COLUMNNAME_IsInterimInvoiceable = "IsInterimInvoiceable";
 }

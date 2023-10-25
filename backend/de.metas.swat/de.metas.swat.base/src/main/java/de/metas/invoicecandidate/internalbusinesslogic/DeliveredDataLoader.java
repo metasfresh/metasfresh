@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.document.engine.DocStatus;
@@ -21,7 +20,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -142,15 +140,7 @@ public class DeliveredDataLoader
 		}
 		else
 		{
-			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoice(invoiceCandidateId);
-			if (!inOutLinesViaInterimInvoice.isEmpty())
-			{
-				icIolAssociationRecords = inOutLinesViaInterimInvoice;
-			}
-			else
-			{
-				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
-			}
+			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
 		}
 		return icIolAssociationRecords;
 	}
@@ -353,31 +343,5 @@ public class DeliveredDataLoader
 			result.add(deliveredQtyItem.build());
 		}
 		return result.build();
-	}
-
-	@NonNull
-	private StockQtyAndUOMQty getDeliveredQtyWhenNoValidICIOL()
-	{
-		final boolean hasInOutLineAllocations = invoiceCandDAO.countICIOLAssociations(invoiceCandidateId) > 0;
-
-		if (hasInOutLineAllocations)
-		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
-
-			return StockQtyAndUOMQty.builder()
-					.productId(productId)
-					.uomQty(Quantitys.createZero(icUomId))
-					.stockQty(Quantitys.createZero(productId))
-					.build();
-		}
-		else
-		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}",
-							defaultQtyDelivered, invoiceCandidateId);
-
-			return defaultQtyDelivered;
-		}
 	}
 }

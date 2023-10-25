@@ -1,11 +1,11 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 
 import java.util.Optional;
 
@@ -25,6 +25,8 @@ public class TaxAccounts
 	 * i.e. C_Tax_Acct.T_Revenue_Acct
 	 */
 	@NonNull Optional<Account> T_Revenue_Acct;
+	@NonNull Optional<Account> T_PayDiscount_Exp_Acct;
+	@NonNull Optional<Account> T_PayDiscount_Rev_Acct;
 
 	@NonNull
 	public Optional<Account> getAccount(final TaxAcctType acctType)
@@ -53,10 +55,24 @@ public class TaxAccounts
 		{
 			return T_Revenue_Acct;
 		}
+		else if (TaxAcctType.T_PayDiscount_Exp_Acct == acctType)
+		{
+			return T_PayDiscount_Exp_Acct;
+		}
+		else if (TaxAcctType.T_PayDiscount_Rev_Acct == acctType)
+		{
+			return T_PayDiscount_Rev_Acct;
+		}
 		else
 		{
 			throw new AdempiereException("Unknown tax account type: " + acctType);
 		}
+	}
+
+	public Optional<Account> getPayDiscountAccount(final boolean isExpense)
+	{
+		final TaxAcctType acctType = isExpense ? TaxAcctType.T_PayDiscount_Exp_Acct : TaxAcctType.T_PayDiscount_Rev_Acct;
+		return getAccount(acctType);
 	}
 
 }

@@ -6,6 +6,7 @@ import de.metas.product.ProductId;
 import lombok.NonNull;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -39,13 +40,13 @@ public interface ICostDetailService
 
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
-	Stream<CostDetail> streamAllCostDetailsAfter(CostDetail costDetail);
-
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
 	List<CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
 
 	CostDetailCreateResult toCostDetailCreateResult(CostDetail costDetail);
+
+	CostDetailCreateResultsList toCostDetailCreateResultsList(Collection<CostDetail> costDetails);
 
 	CostSegmentAndElement extractCostSegmentAndElement(CostDetail costDetail);
 

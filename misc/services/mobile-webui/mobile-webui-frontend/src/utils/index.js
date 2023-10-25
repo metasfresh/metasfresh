@@ -1,3 +1,5 @@
+import queryString from 'query-string';
+
 export const unboxAxiosResponse = (axiosResponse) => {
   //
   // Case: server is using API Audit feature
@@ -9,4 +11,8 @@ export const unboxAxiosResponse = (axiosResponse) => {
   else {
     return axiosResponse.data;
   }
+};
+
+export const toQueryString = (query) => {
+  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
 };

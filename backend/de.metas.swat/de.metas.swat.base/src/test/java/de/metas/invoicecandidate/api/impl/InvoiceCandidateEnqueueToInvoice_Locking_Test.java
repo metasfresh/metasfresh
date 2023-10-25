@@ -38,6 +38,7 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.money.MoneyService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
@@ -61,6 +62,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new ChargeRepository());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
+		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);

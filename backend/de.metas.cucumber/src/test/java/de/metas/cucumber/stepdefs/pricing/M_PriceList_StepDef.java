@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -375,7 +375,7 @@ public class M_PriceList_StepDef
 		final de.metas.handlingunits.model.I_M_ProductPrice productPrice = existingProductPrice == null
 				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
 				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
-
+		
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
 		productPrice.setM_Product_ID(productId);

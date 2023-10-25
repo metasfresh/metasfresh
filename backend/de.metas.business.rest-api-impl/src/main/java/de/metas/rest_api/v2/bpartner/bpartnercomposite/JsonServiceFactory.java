@@ -29,7 +29,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
@@ -52,7 +52,7 @@ public class JsonServiceFactory
 	private final GreetingRepository greetingRepository;
 	private final TitleRepository titleRepository;
 	private final CurrencyRepository currencyRepository;
-	private final JobRepository jobRepository;
+	private final JobService jobService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 	private final SectionCodeService sectionCodeService;
@@ -68,7 +68,7 @@ public class JsonServiceFactory
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final JobRepository jobRepository,
+			@NonNull final JobService jobService,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IncotermsRepository incotermsRepository,
@@ -82,7 +82,7 @@ public class JsonServiceFactory
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
-		this.jobRepository = jobRepository;
+		this.jobService = jobService;
 		this.externalReferenceService = externalReferenceService;
 		this.sectionCodeService = sectionCodeService;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
@@ -124,7 +124,7 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				greetingRepository,
 				titleRepository,
-				jobRepository,
+				jobService,
 				externalReferenceService,
 				paymentTermRepository,
 				identifier);

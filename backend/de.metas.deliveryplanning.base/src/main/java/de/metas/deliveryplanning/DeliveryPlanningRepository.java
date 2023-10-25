@@ -612,15 +612,24 @@ public class DeliveryPlanningRepository
 	}
 
 	@NonNull
-	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	public Optional<Timestamp> getMinActualLoadingDateFromPlannings(
+			@NonNull final OrderLineId orderLineId,
+			final boolean onlyWithCompletedInstructions)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+		IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
-				.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.andCollect(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate);
+
+		if (onlyWithCompletedInstructions)
+		{
+			queryBuilder = queryBuilder
+					.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
+					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+					.andCollect(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID);
+		}
+
+		return queryBuilder
 				.orderBy(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
 				.setLimit(QueryLimit.ONE)
 				.create()

@@ -531,25 +531,25 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-export function renderHeaderProperties(groups) {
-  return groups.reduce((acc, group, idx) => {
-    let cursor = 0;
+export function renderHeaderPropertiesGroups(groups) {
+  return groups.reduce((acc, group, groupIdx) => {
+    let entryIdx = 0;
 
     do {
-      const entry = group.entries[cursor];
+      const entry = group.entries[entryIdx];
 
       acc.push(
-        <span key={`${idx}_${cursor}`} className="optional-name">
+        <span key={`${groupIdx}_${entryIdx}`} className="optional-name">
           <p className="caption">{entry.caption}:</p>{' '}
           <p className="value">{entry.value}</p>
         </span>
       );
 
-      cursor += 1;
-    } while (cursor < group.entries.length);
+      entryIdx++;
+    } while (entryIdx < group.entries.length);
 
-    if (idx !== groups.length - 1) {
-      acc.push(<span key={`${idx}_${cursor}`} className="separator" />);
+    if (groupIdx !== groups.length - 1) {
+      acc.push(<span key={`${groupIdx}_${entryIdx}`} className="separator" />);
     }
 
     return acc;

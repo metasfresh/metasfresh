@@ -377,6 +377,31 @@ public interface I_M_Product_Category_Acct
 	String COLUMNNAME_P_Expense_Acct = "P_Expense_Acct";
 
 	/**
+	 * Set Externally Owned Stock.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setP_ExternallyOwnedStock_Acct (int P_ExternallyOwnedStock_Acct);
+
+	/**
+	 * Get Externally Owned Stock.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getP_ExternallyOwnedStock_Acct();
+
+	org.compiere.model.I_C_ValidCombination getP_ExternallyOwnedStock_A();
+
+	void setP_ExternallyOwnedStock_A(org.compiere.model.I_C_ValidCombination P_ExternallyOwnedStock_A);
+
+	ModelColumn<I_M_Product_Category_Acct, org.compiere.model.I_C_ValidCombination> COLUMN_P_ExternallyOwnedStock_Acct = new ModelColumn<>(I_M_Product_Category_Acct.class, "P_ExternallyOwnedStock_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_P_ExternallyOwnedStock_Acct = "P_ExternallyOwnedStock_Acct";
+
+	/**
 	 * Set Floor Stock.
 	 * The Floor Stock account is the account used Manufacturing Order
 	 *

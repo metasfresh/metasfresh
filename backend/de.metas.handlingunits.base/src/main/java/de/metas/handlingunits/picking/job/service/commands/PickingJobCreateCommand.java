@@ -112,6 +112,7 @@ public class PickingJobCreateCommand
 							.orgId(headerKey.getOrgId())
 							.salesOrderId(headerKey.getSalesOrderId())
 							.preparationDate(headerKey.getPreparationDate())
+							.deliveryDate(headerKey.getDeliveryDate())
 							.deliveryBPLocationId(headerKey.getDeliveryBPLocationId())
 							.deliveryRenderedAddress(headerKey.getDeliveryRenderedAddress())
 							.pickerId(request.getPickerId())
@@ -189,6 +190,7 @@ public class PickingJobCreateCommand
 		@NonNull OrgId orgId;
 		@NonNull OrderId salesOrderId;
 		@NonNull InstantAndOrgId preparationDate;
+		@NonNull InstantAndOrgId deliveryDate;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@NonNull String deliveryRenderedAddress;
 	}
@@ -199,6 +201,7 @@ public class PickingJobCreateCommand
 				.orgId(item.getOrgId())
 				.salesOrderId(Objects.requireNonNull(item.getSalesOrderId()))
 				.preparationDate(item.getPreparationDate())
+				.deliveryDate(item.getDeliveryDate())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.deliveryRenderedAddress(item.getCustomerAddress())
 				.build();

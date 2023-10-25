@@ -1,20 +1,39 @@
 import axios from 'axios';
-import { unboxAxiosResponse } from '../utils';
+import { toQueryString, unboxAxiosResponse } from '../utils';
 import { apiBasePath } from '../constants';
 import { useEffect } from 'react';
 import * as ws from '../utils/websocket';
-import { base64Encode } from '../utils/base64';
 import { toQRCodeString } from '../utils/huQRCodes';
 
 /**
  * @summary Get the list of available launchers
  */
-export const getLaunchers = (applicationId, filterByQRCode) => {
+export const getLaunchers = ({ applicationId, filterByQRCode, facets }) => {
   return axios
-    .get(`${apiBasePath}/userWorkflows/launchers`, {
+    .post(`${apiBasePath}/userWorkflows/launchers/query`, {
+      applicationId,
+      filterByQRCode: toQRCodeString(filterByQRCode),
+      facets,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const countLaunchers = ({ applicationId, facets }) => {
+  return axios
+    .post(`${apiBasePath}/userWorkflows/launchers/query`, {
+      applicationId,
+      facets,
+      countOnly: true,
+    })
+    .then((response) => unboxAxiosResponse(response))
+    .then((response) => response.count);
+};
+
+export const getFacets = (applicationId) => {
+  return axios
+    .get(`${apiBasePath}/userWorkflows/facets`, {
       params: {
         applicationId,
-        filterByQRCode: toQRCodeString(filterByQRCode),
       },
     })
     .then((response) => unboxAxiosResponse(response));
@@ -38,17 +57,6 @@ export const continueWorkflowRequest = (wfProcessId) => {
 };
 
 /**
- * @method startWorkflow
- * @summary Continue a workflow from the launchers list
- * @returns wfProcess
- */
-export const getWorkflowRequest = (wfProcessId) => {
-  return axios
-    .get(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}`)
-    .then((response) => unboxAxiosResponse(response));
-};
-
-/**
  * @method abortWorkflow
  * @summary Abort a workflow
  * @returns wfProcess
@@ -59,17 +67,28 @@ export const abortWorkflowRequest = (wfProcessId) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const useLaunchersWebsocket = ({ enabled, userToken, applicationId, filterByQRCode, onWebsocketMessage }) => {
+export const useLaunchersWebsocket = ({
+  enabled,
+  userToken,
+  applicationId,
+  filterByQRCode,
+  facets,
+  onWebsocketMessage,
+}) => {
   const filterByQRCodeString = toQRCodeString(filterByQRCode);
+  const facetIds = facets ? facets.map((facet) => facet.facetId).join(',') : null;
+
   useEffect(() => {
     let client;
     if (enabled) {
-      let topic = `/v2/userWorkflows/launchers/${userToken}/${applicationId}`;
-      if (filterByQRCodeString) {
-        topic += `/${base64Encode(filterByQRCodeString)}`;
-      }
+      const topic = `/v2/userWorkflows/launchers/?${toQueryString({
+        userToken,
+        applicationId,
+        qrCode: filterByQRCodeString,
+        facetIds,
+      })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode });
+      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
@@ -87,5 +106,5 @@ export const useLaunchersWebsocket = ({ enabled, userToken, applicationId, filte
         console.debug('WS disconnected', { applicationId, filterByQRCode });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, facetIds]);
 };

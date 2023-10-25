@@ -25,5 +25,7 @@ package de.metas.cucumber.stepdefs;
 public enum TableType
 {
 	invoice,
-	matchInvoice
+	matchInvoice,
+	inout,
+	shippingNotification
 }

@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
-
 /*
  * #%L
  * metasfresh-material-planning

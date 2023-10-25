@@ -6,14 +6,12 @@ DROP FUNCTION IF EXISTS de_metas_acct.tax_accounting_report_details_sum(IN p_dat
                                                                         IN p_org_id     numeric)
 ;
 
-
-
-CREATE OR REPLACE FUNCTION de_metas_acct.tax_accounting_report_details_sum(p_datefrom   date,
-                                                                           p_dateto     date,
-                                                                           p_vatcode    character varying,
-                                                                           p_account_id numeric,
-                                                                           p_c_tax_id   numeric,
-                                                                           p_org_id     numeric)
+CREATE OR REPLACE FUNCTION de_metas_acct.tax_accounting_report_details_sum(IN p_dateFrom   date,
+                                                                           IN p_dateTo     date,
+                                                                           IN p_vatcode    varchar,
+                                                                           IN p_account_id numeric,
+                                                                           IN p_c_tax_id   numeric,
+                                                                           IN p_org_id     numeric)
     RETURNS TABLE
             (
                 vatcode          character varying,
@@ -24,7 +22,7 @@ CREATE OR REPLACE FUNCTION de_metas_acct.tax_accounting_report_details_sum(p_dat
                 taxbaseamt       numeric,
                 taxamt           numeric,
                 taxamtperaccount numeric,
-                c_tax_id         numeric,
+                C_Tax_ID         numeric,
                 ad_org_id        numeric
             )
     LANGUAGE plpgsql
@@ -48,8 +46,8 @@ BEGIN
                                  x.kontoname,
                                  x.taxname,
                                  x.taxrate,
-                                 (COALESCE(x.inv_baseamt, x.gl_baseamt, 0::numeric) + COALESCE(x.alloc_baseamt, 0::numeric)) AS taxbaseamt,
-                                 (COALESCE(x.inv_taxamt, x.gl_taxamt, 0::numeric) + COALESCE(x.alloc_taxamt, 0 :: numeric))  AS taxamt,
+                                 (COALESCE(x.inv_baseamt, x.gl_baseamt, x.sap_gl_baseamt, 0::numeric) + COALESCE(x.alloc_baseamt, 0::numeric)) AS taxbaseamt,
+                                 (COALESCE(x.inv_taxamt, x.gl_taxamt, x.sap_gl_taxamt, 0::numeric) + COALESCE(x.alloc_taxamt, 0 :: numeric))  AS taxamt,
                                  x.taxamtperaccount                                                                          AS taxamtperaccount,
                                  x.dateacct,
                                  x.c_currency_id,
@@ -57,23 +55,23 @@ BEGIN
                                  x.ad_org_id,
                                  x.ad_client_id
                           FROM (
-                                   SELECT kontono,
-                                          kontoname,
-                                          taxname,
-                                          taxrate,
-                                          dateacct,
-                                          inv_baseamt,
-                                          gl_baseamt,
-                                          alloc_baseamt,
-                                          inv_taxamt,
-                                          gl_taxamt,
-                                          alloc_taxamt,
-
-                                          taxamtperaccount,
-
+                                   SELECT fa.kontono,
+                                          fa.kontoname,
+                                          fa.taxname,
+                                          fa.taxrate,
+                                          fa.dateacct,
+                                          fa.inv_baseamt,
+                                          fa.gl_baseamt,
+                                          fa.sap_gl_baseamt,
+                                          fa.alloc_baseamt,
+                                          fa.inv_taxamt,
+                                          fa.gl_taxamt,
+                                          fa.sap_gl_taxamt,
+                                          fa.alloc_taxamt,
+                                          fa.taxamtperaccount,
                                           fa.c_currency_id,
 
-                                          fa.vatcode AS vatcode,
+                                          fa.vatcode     AS vatcode,
                                           fa.C_Tax_ID,
                                           fa.ad_org_id,
                                           fa.ad_client_id

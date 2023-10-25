@@ -125,6 +125,7 @@ public class ProductAcctProviderTest
 		productAcct.setP_OutsideProcessing_Acct(111);
 		productAcct.setP_Overhead_Acct(111);
 		productAcct.setP_Scrap_Acct(111);
+		productAcct.setP_ExternallyOwnedStock_Acct(111);
 
 		saveRecord(productAcct);
 

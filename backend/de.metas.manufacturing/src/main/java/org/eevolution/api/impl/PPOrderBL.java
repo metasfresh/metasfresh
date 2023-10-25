@@ -29,6 +29,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -131,6 +132,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -657,7 +659,6 @@ public class PPOrderBL implements IPPOrderBL
 		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
 	}
 
-
 	@Override
 	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
 	{
@@ -684,4 +685,10 @@ public class PPOrderBL implements IPPOrderBL
 				});
 	}
 
+	public boolean isModularOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = getById(ppOrderId);
+
+		return docTypeBL.isModularManufacturingOrder(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+	}
 }

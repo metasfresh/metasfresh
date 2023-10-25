@@ -29,7 +29,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonSOTrx;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -77,7 +77,9 @@ import java.util.List;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class JsonInsertInvoiceCandidateServiceTest
@@ -157,6 +159,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		saveRecord(bpartnerLocationRecord);
 
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setName("tax");
 		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
 		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
 		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
@@ -172,7 +175,7 @@ class JsonInsertInvoiceCandidateServiceTest
 				new DocTypeService(),
 				new CurrencyService(),
 				new ManualCandidateService(bpartnerCompositeRepository),
-				new ExternallyReferencedCandidateRepository());
+				new InvoiceCandidateRepository());
 
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
@@ -214,10 +217,10 @@ class JsonInsertInvoiceCandidateServiceTest
 				.qtyOrdered(TEN)
 				.soTrx(JsonSOTrx.SALES)
 				.build();
-		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
+
+		return JsonCreateInvoiceCandidatesRequest.builder()
 				.item(minimalItem)
 				.build();
-		return request;
 	}
 
 	@Test

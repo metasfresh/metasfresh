@@ -48,17 +48,20 @@ public class DocTypeService
 	private final IOrgDAO orgsDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	@Nullable
-	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final DocBaseType docBaseType,
+	@NonNull
+	public DocTypeId getDocTypeId(
+			@NonNull final DocBaseType docBaseType,
+			@NonNull final OrgId orgId)
+	{
+		return getDocTypeId(docBaseType, null, orgId);
+	}
+
+	@NonNull
+	public DocTypeId getDocTypeId(
+			@NonNull final DocBaseType docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (docBaseType == null)
-		{
-			return null;
-		}
-
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
@@ -114,17 +117,12 @@ public class DocTypeService
 		}
 
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
-		if (docType == null)
-		{
-			return Optional.empty();
-		}
-
 		final DocBaseType docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
 		if (!docBaseType.isSalesOrder())
 		{
 			throw new AdempiereException("Invalid base doc type!");
 		}
 
-		return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
+		return Optional.ofNullable(JsonOrderDocType.ofCodeOrNull(docType.getDocSubType()));
 	}
 }

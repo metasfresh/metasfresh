@@ -4,15 +4,15 @@
   tbody {
     tr {
       th {
-        white-space: nowrap;
+        white-space: normal;
         max-width: 40vw !important;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 1.5rem;
       }
 
       td {
         text-align: right;
-        white-space: pre-wrap;
+        white-space: normal;
+        font-size: 1.5rem;
       }
     }
   }

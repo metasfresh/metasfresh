@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @UtilityClass
-final class InvoiceJsonConverters
+public final class InvoiceJsonConverters
 {
 	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{

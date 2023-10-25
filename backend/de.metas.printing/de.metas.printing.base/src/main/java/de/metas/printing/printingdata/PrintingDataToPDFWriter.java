@@ -39,7 +39,7 @@ import java.io.OutputStream;
 
 public class PrintingDataToPDFWriter implements IAutoCloseable
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFWriter.class);
+	private final static Logger logger = LogManager.getLogger(PrintingDataToPDFWriter.class);
 
 	private final PdfCopy pdfCopy;
 	private final Document document;

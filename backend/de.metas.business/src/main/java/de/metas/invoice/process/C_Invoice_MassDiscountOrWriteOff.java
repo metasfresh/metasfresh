@@ -116,7 +116,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 
 	private void invoiceDiscount(@NonNull final I_C_Invoice invoice)
 	{
-		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);;
+		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
 		if (invoiceOpenAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has OpenAmt=0 but IsPaid=N.");

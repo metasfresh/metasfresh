@@ -34,6 +34,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -249,16 +250,12 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		final BigDecimal priceList = imp.getPriceList();
 		final BigDecimal priceStd = imp.getPriceStd();
 		final BigDecimal priceLimit = imp.getPriceLimit();
-		if (priceStd.signum() == 0 && priceLimit.signum() == 0 && priceList.signum() == 0)
-		{
-			return;
-		}
 
 		//
 		// Get/Create Product Price record
 		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
 		final I_M_ProductPrice pp = Optional
-				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId, TaxCategoryId.ofRepoIdOrNull(taxCategoryId)))
 				.orElseGet(() -> newInstance(I_M_ProductPrice.class));
 
 		pp.setM_PriceList_Version_ID(priceListVersionId);    // FK

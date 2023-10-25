@@ -58,7 +58,11 @@ function createAuthObject() {
 
     await dispatch(setToken(token));
     Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
+
     axios.defaults.headers.common['Authorization'] = token;
+    if (language) {
+      axios.defaults.headers.common['Accept-Language'] = language;
+    }
   };
 
   const login = (username, password) => {

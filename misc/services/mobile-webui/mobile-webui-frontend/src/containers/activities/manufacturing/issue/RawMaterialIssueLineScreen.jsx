@@ -26,6 +26,7 @@ const RawMaterialIssueLineScreen = () => {
     caption,
     userInstructions,
     productName,
+    productValue,
     uom,
     qtyToIssue,
     qtyToIssueTolerance,
@@ -43,6 +44,7 @@ const RawMaterialIssueLineScreen = () => {
           caption,
           userInstructions,
           productName,
+          productValue,
           uom,
           qtyToIssue,
           qtyToIssueTolerance,
@@ -95,6 +97,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: activity?.caption ?? 'Issue',
     userInstructions: line?.userInstructions || activity?.userInstructions,
     productName: line?.productName,
+    productValue: line?.productValue,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
     qtyToIssueTolerance: line?.qtyToIssueTolerance,
@@ -111,6 +114,7 @@ const computeHeaderEntriesFromParams = ({
   caption,
   userInstructions,
   productName,
+  productValue,
   uom,
   qtyToIssue,
   qtyToIssueTolerance,
@@ -122,6 +126,10 @@ const computeHeaderEntriesFromParams = ({
     caption: caption,
     userInstructions,
     values: [
+      {
+        caption: trl('general.ProductValue'),
+        value: productValue,
+      },
       { caption: trl('general.Product'), value: productName },
       {
         caption: trl('activities.mfg.issues.qtyToIssueTarget'),

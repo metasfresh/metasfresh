@@ -26,6 +26,7 @@ public class PickingJobCreateRepoRequest
 	@NonNull OrgId orgId;
 	@NonNull OrderId salesOrderId;
 	@NonNull InstantAndOrgId preparationDate;
+	@NonNull InstantAndOrgId deliveryDate;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;

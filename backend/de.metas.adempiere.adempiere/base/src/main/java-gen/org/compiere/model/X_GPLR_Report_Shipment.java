@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_GPLR_Report_Shipment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1959906795L;
+	private static final long serialVersionUID = 502518617L;
 
     /** Standard Constructor */
     public X_GPLR_Report_Shipment (final Properties ctx, final int GPLR_Report_Shipment_ID, @Nullable final String trxName)
@@ -113,6 +113,30 @@ public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_G
 	}
 
 	@Override
+	public void setIsB2B (final boolean IsB2B)
+	{
+		set_Value (COLUMNNAME_IsB2B, IsB2B);
+	}
+
+	@Override
+	public boolean isB2B() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsB2B);
+	}
+
+	@Override
+	public void setIsDropShip (final boolean IsDropShip)
+	{
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
+	}
+
+	@Override
+	public boolean isDropShip() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
+	}
+
+	@Override
 	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
@@ -170,6 +194,18 @@ public class X_GPLR_Report_Shipment extends org.compiere.model.PO implements I_G
 	public java.lang.String getShipTo_CountryCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipTo_CountryCode);
+	}
+
+	@Override
+	public void setWarehouseExternalId (final @Nullable java.lang.String WarehouseExternalId)
+	{
+		set_Value (COLUMNNAME_WarehouseExternalId, WarehouseExternalId);
+	}
+
+	@Override
+	public java.lang.String getWarehouseExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_WarehouseExternalId);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package de.metas.gplr.source.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.order.OrderLineId;
+import de.metas.payment.paymentinstructions.PaymentInstructions;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.sectionCode.SectionCode;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class SourceOrder
 	@NonNull Instant dateOrdered;
 	@Nullable String poReference;
 	@NonNull PaymentTerm paymentTerm;
+	@Nullable PaymentInstructions paymentInstructions;
 	@Nullable SourceIncotermsAndLocation incotermsAndLocation;
 
 	@NonNull List<SourceOrderLine> lines;
@@ -40,9 +42,10 @@ public class SourceOrder
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Amount getEstimatedOrderCostAmountFC()
+	public Amount getNotInvoicedCostsFC()
 	{
 		return orderCosts.stream()
+				.filter(orderCost -> !orderCost.isInvoiced())
 				.map(SourceOrderCost::getCostAmountFC)
 				.reduce(Amount::add)
 				.orElseGet(() -> Amount.zero(currencyInfo.getForeignCurrencyCode()));
@@ -68,6 +71,6 @@ public class SourceOrder
 
 	private boolean isLineCreatedFromOrderCosts(final SourceOrderLine line)
 	{
-		return orderCosts.stream().anyMatch(orderCost -> OrderLineId.equals(orderCost.getCreatedOrderLineId(), line.getId()));
+		return orderCosts.stream().anyMatch(orderCost -> orderCost.isInvoicedBy(line.getId()));
 	}
 }

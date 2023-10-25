@@ -55,7 +55,7 @@ Feature: Shipment schedule updating
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1_S0271                    | hu_S0271           |
-    
+
     # create the orders (with DeliveryRule=Availability and verify the initial state of their shipment schedules
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |

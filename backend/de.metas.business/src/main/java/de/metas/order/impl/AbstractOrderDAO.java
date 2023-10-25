@@ -24,9 +24,11 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
@@ -495,7 +497,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			queryBuilder = createQueryBuilder();
 		}
 
-		queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBPartnerId());
+		if (query.getBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBPartnerId());
+		}
 
 		if (query.getDocTypeTargetId() != null)
 		{
@@ -505,6 +510,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		if (query.getDocStatus() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+
+		final ImmutableSet<WarehouseId> warehouseIds = query.getWarehouseIds();
+		if (!Check.isEmpty(warehouseIds))
+		{
+			queryBuilder.addInArrayFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseIds);
+		}
+
+		if (query.isOnlyActiveRecords())
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
 		}
 
 		if (query.isDescSortByDateOrdered())
@@ -524,5 +540,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsOnConsignment, true)
 				.anyMatch();
+	}
+
+	@Override
+	public Stream<I_C_Order> streamOrders(@NonNull final IQueryFilter<I_C_Order> orderFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.filter(orderFilter)
+				.create()
+				.iterateAndStream();
 	}
 }

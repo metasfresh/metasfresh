@@ -280,6 +280,10 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String sectionCode;
 
+	@Schema(description = "Translates to `C_Auction.Name`. The looked up sectionCode's ID is then set to `C_OLCand.C_Auction_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String auction;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -332,7 +336,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
 			@JsonProperty("phone") final @Nullable String phone,
-			@JsonProperty("sectionCode") final @Nullable String sectionCode)
+			@JsonProperty("sectionCode") final @Nullable String sectionCode,
+			@JsonProperty("auction") final @Nullable String auction)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -386,6 +391,7 @@ public class JsonOLCandCreateRequest
 		this.projectId = projectId;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 		this.sectionCode = sectionCode;
+		this.auction = auction;
 	}
 
 	/**

@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -49,8 +50,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
@@ -92,6 +95,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
+	Optional<BPartnerContactId> getShipToContactId(I_C_Order order);
+
 	/**
 	 * @return the order's bill location <b>OR</b> falls back to the "general" contact ({@code C_Order.C_BParter_Location_ID}).
 	 */
@@ -124,6 +129,11 @@ public interface IOrderBL extends ISingletonService
 	boolean setBill_User_ID(I_C_Order order);
 
 	List<I_C_Order> getByIds(@NonNull Collection<OrderId> orderIds);
+
+	default List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderId(@NonNull final OrderId orderId)
+	{
+		return getLinesByOrderIds(ImmutableSet.of(orderId));
+	}
 
 	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
 
@@ -251,6 +261,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
+	boolean isProFormaSO(@NonNull I_C_Order order);
+
 	boolean isMediated(@NonNull I_C_Order order);
 
 	boolean isPrepay(OrderId orderId);
@@ -301,9 +313,7 @@ public interface IOrderBL extends ISingletonService
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
-	Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull OrderId salesOrderId);
-
-	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
+	List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull OrderId salesOrderId);
 
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
@@ -335,4 +345,17 @@ public interface IOrderBL extends ISingletonService
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
 	Quantity getQtyEntered(I_C_OrderLine orderLine);
+
+	boolean isCompleted(OrderId orderId);
+
+	boolean isCompleted(I_C_Order order);
+
+	boolean isDraftedOrInProgress(@NonNull I_C_Order order);
+
+	@NonNull
+	List<I_C_Order> getOrdersByQuery(@NonNull GetOrdersQuery query);
+
+	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
 }

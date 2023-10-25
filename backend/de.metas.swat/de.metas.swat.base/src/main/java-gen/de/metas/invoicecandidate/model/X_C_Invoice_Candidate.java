@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1316655326L;
+	private static final long serialVersionUID = -1808384989L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -117,19 +117,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isApprovalForInvoicing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_ApprovalForInvoicing);
-	}
-
-	@Override
-	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
-	{
-		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
-	}
-
-	@Override
-	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -303,6 +290,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Auction getC_Auction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
+	}
+
+	@Override
+	public void setC_Auction(final org.compiere.model.I_C_Auction C_Auction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class, C_Auction);
+	}
+
+	@Override
+	public void setC_Auction_ID (final int C_Auction_ID)
+	{
+		if (C_Auction_ID < 1) 
+			set_Value (COLUMNNAME_C_Auction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Auction_ID, C_Auction_ID);
+	}
+
+	@Override
+	public int getC_Auction_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Auction_ID);
+	}
+
+	@Override
 	public void setC_BPartner2_ID (final int C_BPartner2_ID)
 	{
 		if (C_BPartner2_ID < 1) 
@@ -455,6 +469,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_Flatrate_Term_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	@Override
@@ -879,6 +920,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_Tax_Departure_Country()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country(final org.compiere.model.I_C_Country C_Tax_Departure_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class, C_Tax_Departure_Country);
+	}
+
+	@Override
+	public void setC_Tax_Departure_Country_ID (final int C_Tax_Departure_Country_ID)
+	{
+		if (C_Tax_Departure_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	@Override
+	public int getC_Tax_Departure_Country_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_Departure_Country_ID);
+	}
+
+	@Override
 	public void setC_Tax_Effective_ID (final int C_Tax_Effective_ID)
 	{
 		throw new IllegalArgumentException ("C_Tax_Effective_ID is virtual column");	}
@@ -1249,6 +1317,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getGroupCompensationType() 
 	{
 		return get_ValueAsString(COLUMNNAME_GroupCompensationType);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
 	}
 
 	@Override
@@ -1891,6 +1986,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
@@ -2541,6 +2651,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setSalesRep_ID (final int SalesRep_ID)
+	{
+		throw new IllegalArgumentException ("SalesRep_ID is virtual column");	}
+
+	@Override
+	public int getSalesRep_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	@Override
 	public void setSchedulerResult (final @Nullable java.lang.String SchedulerResult)
 	{
 		set_Value (COLUMNNAME_SchedulerResult, SchedulerResult);
@@ -2601,20 +2722,31 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
+	public void setUserElementDate1 (final @Nullable java.sql.Timestamp UserElementDate1)
 	{
-		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
+		set_Value (COLUMNNAME_UserElementDate1, UserElementDate1);
 	}
 
 	@Override
-	public BigDecimal getTraded_Commission_Percent()
+	public java.sql.Timestamp getUserElementDate1() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate1);
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable String UserElementString1)
+	public void setUserElementDate2 (final @Nullable java.sql.Timestamp UserElementDate2)
+	{
+		set_Value (COLUMNNAME_UserElementDate2, UserElementDate2);
+	}
+
+	@Override
+	public java.sql.Timestamp getUserElementDate2() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate2);
+	}
+
+	@Override
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -2695,29 +2827,5 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public void setUserElementDate1 (final @Nullable java.sql.Timestamp UserElementDate1)
-	{
-		set_Value (COLUMNNAME_UserElementDate1, UserElementDate1);
-	}
-
-	@Override
-	public java.sql.Timestamp getUserElementDate1()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate1);
-	}
-
-	@Override
-	public void setUserElementDate2 (final @Nullable java.sql.Timestamp UserElementDate2)
-	{
-		set_Value (COLUMNNAME_UserElementDate2, UserElementDate2);
-	}
-
-	@Override
-	public java.sql.Timestamp getUserElementDate2()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_UserElementDate2);
 	}
 }

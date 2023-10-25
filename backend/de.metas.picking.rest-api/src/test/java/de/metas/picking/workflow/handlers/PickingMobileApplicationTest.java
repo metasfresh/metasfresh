@@ -16,6 +16,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.Language;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -88,8 +89,9 @@ class PickingMobileApplicationTest
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 		Env.setAD_Language(Env.getCtx(), "de_DE");
 
-		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService);
-		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService);
+		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository());
+		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
+		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository);
 
 		final WorkflowRestAPIService workflowRestAPIService = new WorkflowRestAPIService(
 				Optional.of(ImmutableList.of(pickingMobileApplication)),

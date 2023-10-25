@@ -28,6 +28,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class CalendarId implements RepoIdAware
 {
@@ -39,19 +41,20 @@ public class CalendarId implements RepoIdAware
 		return new CalendarId(repoId);
 	}
 
+	@Nullable
 	public static CalendarId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new CalendarId(repoId) : null;
 	}
 
-	public static int toRepoId(final CalendarId CalendarId)
+	public static int toRepoId(@Nullable final CalendarId calendarId)
 	{
-		return CalendarId != null ? CalendarId.getRepoId() : -1;
+		return calendarId != null ? calendarId.getRepoId() : -1;
 	}
 
 	private CalendarId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Calendar_ID");
 	}
 
 	@JsonValue

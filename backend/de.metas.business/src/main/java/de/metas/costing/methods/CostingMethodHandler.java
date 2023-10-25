@@ -3,7 +3,7 @@ package de.metas.costing.methods;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -11,7 +11,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import lombok.NonNull;
 
-import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -42,7 +41,7 @@ public interface CostingMethodHandler
 
 	Set<String> getHandledTableNames();
 
-	Optional<CostDetailCreateResult> createOrUpdateCost(CostDetailCreateRequest request);
+	CostDetailCreateResultsList createOrUpdateCost(CostDetailCreateRequest request);
 
 	MoveCostsResult createMovementCosts(@NonNull MoveCostsRequest request);
 

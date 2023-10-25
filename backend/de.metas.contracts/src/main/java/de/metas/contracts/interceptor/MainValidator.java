@@ -1,10 +1,8 @@
-package de.metas.contracts.interceptor;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,9 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+package de.metas.contracts.interceptor;
+
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.Contracts_Constants;
@@ -62,10 +63,17 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+
+import java.util.Set;
 
 public class MainValidator extends AbstractModuleInterceptor
 {
@@ -73,7 +81,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	public static final AdMessageKey MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = AdMessageKey.of("Flatrate_DocAction_Not_Supported");
 
 	public static final AdMessageKey MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P = AdMessageKey.of("Flatrate_DocAction_Reactivate_Not_Supported");
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ContractOrderService contractOrderService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
@@ -111,6 +119,12 @@ public class MainValidator extends AbstractModuleInterceptor
 		this.callOrderContractService = callOrderContractService;
 		this.adReferenceService = adReferenceService;
 		this.glCategoryRepository = glCategoryRepository;
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(I_I_Flatrate_Term.Table_Name);
 	}
 
 	@Override
@@ -162,7 +176,6 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
-
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		registerInOutLinesWithMissingInvoiceCandidateFilter();
 
@@ -174,15 +187,35 @@ public class MainValidator extends AbstractModuleInterceptor
 
 	/**
 	 * Make sure that no {@link I_C_Invoice_Candidate}s are created for inout lines that belong to a subscription contract.
+	 * Make sure that no {@link I_C_Invoice_Candidate}s are created for inout lines that belong to ProFormaSO.
 	 */
 	private void registerInOutLinesWithMissingInvoiceCandidateFilter()
 	{
-		final IQueryFilter<I_M_InOutLine> filter = Services.get(IQueryBL.class)
+		final IQueryFilter<I_M_InOutLine> filter = queryBL
 				.createCompositeQueryFilter(I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.contracts.model.I_M_InOutLine.COLUMNNAME_C_SubscriptionProgress_ID, null);
 
 		inoutLinesWithMissingInvoiceCandidateRepo.addAdditionalFilter(filter);
+
+		final IQuery<I_C_DocType> docSubTypeNotProFormaSO = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addNotEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_ProFormaSO)
+				.create();
+
+		final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
+				.addInSubQueryFilter(I_C_Order.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docSubTypeNotProFormaSO)
+				.create();
+
+		final IQuery<I_M_InOut> inOutQuery = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addInSubQueryFilter(I_M_InOut.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQuery)
+				.create();
+
+		final IQueryFilter<I_M_InOutLine> filterProFormaSO = queryBL.createCompositeQueryFilter(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, inOutQuery);
+
+		inoutLinesWithMissingInvoiceCandidateRepo.addAdditionalFilter(filterProFormaSO);
+
 	}
 
 	@Override

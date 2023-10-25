@@ -1,6 +1,7 @@
 package de.metas.printing.model.validator;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.cache.CacheMgt;
@@ -46,6 +47,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Printing base - Main Validator
@@ -81,27 +83,6 @@ public class Main extends AbstractModuleInterceptor
 	protected void onBeforeInit()
 	{
 		//
-		// Configure tables which are skipped when we record migration scripts
-		{
-			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-			migrationLogger.addTableToIgnoreList(I_AD_User_Login.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Package.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_PrintPackageData.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_PackageInfo.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Detail.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Instructions.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Line.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Printing_Queue.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_Print_Clients.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_Calibration.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaSize.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaTray.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_Printer_Matching.Table_Name);
-		}
-
-		//
 		// Configure tables which are excluded by EXP_ReplicationTrx
 		{
 			final IReplicationTrxBL replicationTrxBL = Services.get(IReplicationTrxBL.class);
@@ -111,6 +92,28 @@ public class Main extends AbstractModuleInterceptor
 			// and we don't need gracefully handle not-unique lookup results.
 			replicationTrxBL.addTableToIgnoreList(I_AD_User_Login.Table_Name);
 		}
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				I_AD_User_Login.Table_Name,
+				I_C_Print_Package.Table_Name,
+				I_C_PrintPackageData.Table_Name,
+				I_C_Print_PackageInfo.Table_Name,
+				I_C_Print_Job.Table_Name,
+				I_C_Print_Job_Detail.Table_Name,
+				I_C_Print_Job_Instructions.Table_Name,
+				I_C_Print_Job_Line.Table_Name,
+				I_C_Printing_Queue.Table_Name,
+				I_AD_Print_Clients.Table_Name,
+				I_AD_PrinterHW.Table_Name,
+				I_AD_PrinterHW_Calibration.Table_Name,
+				I_AD_PrinterHW_MediaSize.Table_Name,
+				I_AD_PrinterHW_MediaTray.Table_Name,
+				I_AD_Printer_Matching.Table_Name
+		);
 	}
 
 	@Override

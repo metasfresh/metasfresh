@@ -56,6 +56,12 @@ public class SyncAdvise
 			.ifExists(IfExists.DONT_UPDATE)
 			.build();
 
+	public static final SyncAdvise REPLACE = SyncAdvise
+			.builder()
+			.ifNotExists(IfNotExists.CREATE)
+			.ifExists(IfExists.REPLACE)
+			.build();
+
 	public enum IfNotExists
 	{
 		CREATE(false/* fail */, true/* create */),
@@ -68,7 +74,7 @@ public class SyncAdvise
 		@Getter
 		private final boolean create;
 
-		private IfNotExists(boolean fail, boolean create)
+		IfNotExists(final boolean fail, final boolean create)
 		{
 			this.fail = fail;
 			this.create = create;
@@ -82,18 +88,22 @@ public class SyncAdvise
 			"")
 	public enum IfExists
 	{
-		UPDATE_MERGE(true/* updateMerge */),
+		UPDATE_MERGE(true/* updateMerge */, false/* replace */),
 
-		DONT_UPDATE(false/* updateMerge */),
-
-		REPLACE(true);
+		DONT_UPDATE(false/* updateMerge */, false/* replace */),
+		
+		REPLACE(false/* updateMerge */, true/* replace */);
 
 		@Getter
 		private final boolean update;
 
-		IfExists(final boolean update)
+		@Getter
+		private final boolean replace;
+
+		IfExists(final boolean update, final boolean replace)
 		{
 			this.update = update;
+			this.replace = replace;
 		}
 
 		public boolean isReplace()
@@ -124,7 +134,9 @@ public class SyncAdvise
 		return IfNotExists.FAIL.equals(ifNotExists);
 	}
 
-	/** If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching. */
+	/**
+	 * If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching.
+	 */
 	@JsonIgnore
 	public boolean isLoadReadOnly()
 	{

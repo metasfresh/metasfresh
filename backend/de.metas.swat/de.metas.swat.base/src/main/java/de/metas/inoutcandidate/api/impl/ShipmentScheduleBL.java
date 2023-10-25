@@ -32,20 +32,23 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.impl.DocTypeService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -90,7 +93,9 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -178,9 +183,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -199,13 +204,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		postponeMissingSchedsCreationUntilClose.set(true);
 
-		final IAutoCloseable onCloseCreateMissingScheds = //
-				() -> {
-					postponeMissingSchedsCreationUntilClose.set(false);
-					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-				};
-
-		return onCloseCreateMissingScheds;
+		return () -> {
+			postponeMissingSchedsCreationUntilClose.set(false);
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+		};
 	}
 
 	@Override
@@ -356,13 +358,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return false;
 		}
 
+		//noinspection UnnecessaryLocalVariable
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
-		if (!wasClosed)
-		{
-			return false;
-		}
-
-		return true; // was closed, but is now open
+		return wasClosed;// was closed, but is now open
 	}
 
 	@Override
@@ -533,15 +531,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return shipmentSchedulePA.getByOrderIds(orderId);
+	}
+
+	@Override
+	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
+	{
+		return shipmentSchedulePA.anyMatchByOrderId(orderId);
+	}
+
+	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+		return scheduleEffectiveBL.getBPartnerId(schedule);
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return shipmentScheduleEffectiveBL.getBPartnerLocationId(schedule);
+		return scheduleEffectiveBL.getBPartnerLocationId(schedule);
 	}
 
 	@Override
@@ -643,15 +653,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-
-		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-		if (orderLineId <= 0)
+		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentScheduleRecord.getC_Order_ID(), shipmentScheduleRecord.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
 			return true;
 		}
 
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
+		final I_C_OrderLine orderLineRecord = orderBL.getLineById(orderLineId);
 
 		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
 
@@ -732,13 +741,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
 						{
 							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
-										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 							closeShipmentSchedule(shipmentScheduleRecord);
 						}
 						else
 						{
 							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
-										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 						}
 					}
 				}
@@ -777,7 +786,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setDeliveryRule_Override(request.getDeliveryRule().getCode());
 		}
 
-		if (!Check.isEmpty(request.getAttributes()))
+		if (request.getAttributes() != null && !request.getAttributes().isEmpty())
 		{
 			addAttributes(shipmentSchedule, request.getAttributes());
 		}
@@ -802,10 +811,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
 	{
-		final boolean isCloseIfPartiallyInvoiced =
-				sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
-
-		return isCloseIfPartiallyInvoiced;
+		return sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 	}
 
 	private IAutoCloseable doNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
@@ -866,7 +872,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (qtyToDeliverWasIncreased)
 			{
 				logger.debug("currentExportStatus={} and qtyToDeliverWasIncreased from {} to {}; -> set export status to {}",
-							 APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
+						APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
 				schedRecord.setExportStatus(APIExportStatus.Pending.getCode());
 			}
 		}
@@ -891,9 +897,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@NonNull
 	public Quantity getQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = this.shipmentScheduleEffectiveBL;
-
-		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
+		final BigDecimal qtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
 
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 
@@ -932,18 +936,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-						 {
-							 allCounter.incrementAndGet();
-							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-							 {
-								 return;
-							 }
-							 record.setExportStatus(newExportStatus.getCode());
-							 updateCanBeExportedAfter(record);
-							 InterfaceWrapperHelper.saveRecord(record);
+				{
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedAfter(record);
+					InterfaceWrapperHelper.saveRecord(record);
 
-							 updatedCounter.incrementAndGet();
-						 });
+					updatedCounter.incrementAndGet();
+				});
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ShipmentSchedule", updatedCounter.get(), allCounter.get());
 	}
@@ -961,7 +965,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		if (shipmentSchedule.isProcessed())
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("ShipmentScheduleBL.setAsyncBatch(): M_ShipmentScheduled already processed,"
-																	+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
+					+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
 			return;
 		}
 
@@ -974,5 +978,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
 	{
 		return shipmentSchedulePA.getOrderIds(filter);
+	}
+
+	@Override
+	public ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer()
+	{
+		return new ShippingNotificationFromShipmentScheduleProducer(
+				SpringContextHolder.instance.getBean(ShippingNotificationService.class),
+				this,
+				orderBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class)
+		);
+	}
+
+	@Override
+	public void setPhysicalClearanceDate(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final Instant physicalClearanceDate)
+	{
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		shipmentSchedules.forEach(shipmentSchedule -> {
+			shipmentSchedule.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
+			shipmentSchedulePA.save(shipmentSchedule);
+		});
 	}
 }

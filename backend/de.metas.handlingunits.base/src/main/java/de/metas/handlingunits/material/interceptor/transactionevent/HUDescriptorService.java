@@ -23,8 +23,10 @@
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -52,6 +54,13 @@ public class HUDescriptorService
 {
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	@NonNull
+	public ImmutableList<HUDescriptor> createHuDescriptors(@NonNull final HuId huId)
+	{
+		return createHuDescriptors(handlingUnitsDAO.getById(huId));
+	}
 
 	@NonNull
 	public ImmutableList<HUDescriptor> createHuDescriptors(@NonNull final I_M_HU huRecord)
@@ -59,6 +68,7 @@ public class HUDescriptorService
 		return createHuDescriptors(huRecord, false);
 	}
 
+	@NonNull
 	public ImmutableList<HUDescriptor> createHuDescriptors(
 			@NonNull final I_M_HU huRecord,
 			final boolean deleted)

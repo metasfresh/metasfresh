@@ -6,50 +6,50 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
     },
     "docStatus": "Drafted",
     "documentNo": "documentNo",
-    "id": 100015,
+    "id": 1000000,
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "asiId": 100010,
+        "asiId": 1000000,
         "counted": true,
         "huAggregationType": "MULTI_HU",
-        "id": 100016,
+        "id": 1000000,
         "inventoryLineHUs": [
           {
             "huId": 100,
-            "id": 100019,
+            "id": 1000000,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "10",
-              "uomId": 100003
+              "uomId": 1000000
             },
             "qtyCount": {
               "qty": "1",
-              "uomId": 100003
+              "uomId": 1000000
             }
           },
           {
             "huId": 200,
-            "id": 100020,
+            "id": 1000001,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "20",
-              "uomId": 100003
+              "uomId": 1000000
             },
             "qtyCount": {
               "qty": "2",
-              "uomId": 100003
+              "uomId": 1000000
             }
           }
         ],
         "inventoryType": "PHYSICAL",
-        "locatorId": "100004_100005",
-        "orgId": 100001,
+        "locatorId": "1000000_1000000",
+        "orgId": 1000000,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
-    "orgId": 100001
+    "orgId": 1000000
   }
 ]

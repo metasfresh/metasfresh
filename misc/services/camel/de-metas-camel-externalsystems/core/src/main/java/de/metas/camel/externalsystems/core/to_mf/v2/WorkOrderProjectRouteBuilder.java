@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v2.project.JsonRequestProjectUpsert;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectQuery;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
@@ -56,13 +55,11 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof JsonWorkOrderProjectUpsertRequest))
+					if (!(lookupRequest instanceof final JsonWorkOrderProjectUpsertRequest jsonRequestUpsert))
 					{
 						throw new RuntimeCamelException("The route " + MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID + " requires the body to be instanceof JsonWorkOrderProjectRequest."
 																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
-
-					final JsonWorkOrderProjectUpsertRequest jsonRequestUpsert = ((JsonWorkOrderProjectUpsertRequest)lookupRequest);
 
 					log.info("WorkOrder-Project upsert route invoked");
 					exchange.getIn().setBody(jsonRequestUpsert);
@@ -81,12 +78,11 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.process(exchange -> {
 					final Object getWOProjectsQuery = exchange.getIn().getBody();
-					if (!(getWOProjectsQuery instanceof JsonWorkOrderProjectQuery))
+					if (!(getWOProjectsQuery instanceof final JsonWorkOrderProjectQuery getWorkOrderProjectsRequest))
 					{
 						throw new RuntimeCamelException("The route " + MF_GET_WORK_ORDER_PROJECT_BY_QUERY_V2_ROUTE_ID + " requires the body to be instanceof JsonWorkOrderProjectQuery. "
 																+ "However, it is " + (getWOProjectsQuery == null ? "null" : getWOProjectsQuery.getClass().getName()));
 					}
-					final JsonWorkOrderProjectQuery getWorkOrderProjectsRequest = (JsonWorkOrderProjectQuery)getWOProjectsQuery;
 
 					exchange.getIn().setBody(getWorkOrderProjectsRequest);
 				})
@@ -102,7 +98,6 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.log("Route invoked")
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{" + MF_GET_WORK_ORDER_PROJECT_V2_CAMEL_URI + "}}/${header." + HEADER_PROJECT_ID + "}")
 

@@ -85,7 +85,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
 	 */
 	boolean isHULoaderInProgress();
-	
+
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
@@ -277,6 +277,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable BPartnerId bpartnerId);
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
+
+	@NonNull
+	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
 
 	@Builder
 	@Value

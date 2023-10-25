@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO implements I_Fact_Acct_Transactions_View, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1919313793L;
+	private static final long serialVersionUID = -2105182354L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Transactions_View (final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
@@ -314,6 +314,33 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	@Override
@@ -738,6 +765,8 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** ModularOrder = MMO */
+	public static final String DOCBASETYPE_ModularOrder = "MMO";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -870,6 +899,33 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public int getGL_Category_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
 	}
 
 	@Override

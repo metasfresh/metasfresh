@@ -53,6 +53,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -120,6 +121,8 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
 	public static final AdMessageKey MSG_M_Delivery_Planning_WhithOutReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.WhithOutReleaseNo");
 	public static final AdMessageKey MSG_M_Delivery_Planning_BlockedPartner = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoBlockedPartner");
+	public static final AdMessageKey MSG_M_Delivery_Planning_SalesOrderFullyDelivered = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered");
+	public static final AdMessageKey MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
@@ -140,6 +143,7 @@ public class DeliveryPlanningService
 	private final DimensionService dimensionService;
 
 	final MoneyService moneyService;
+	private final MeansOfTransportationService meansOfTransportationService;
 
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
@@ -161,7 +165,8 @@ public class DeliveryPlanningService
 			@NonNull final BPartnerStatsService bPartnerStatsService,
 			@NonNull final MoneyService moneyService,
 			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final MeansOfTransportationService meansOfTransportationService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
@@ -169,6 +174,7 @@ public class DeliveryPlanningService
 		this.moneyService = moneyService;
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 		this.dimensionService = dimensionService;
+		this.meansOfTransportationService = meansOfTransportationService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -432,7 +438,7 @@ public class DeliveryPlanningService
 	}
 
 	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
-			@NonNull final CurrencyId currencyId)
+														 @NonNull final CurrencyId currencyId)
 	{
 		if (request.getOrderLineId() == null)
 		{
@@ -783,9 +789,9 @@ public class DeliveryPlanningService
 	}
 
 	@NonNull
-	public Optional<Timestamp> getMinActualLoadingDateFromPlanningsWithCompletedInstructions(@NonNull final OrderLineId orderLineId)
+	public Optional<Timestamp> getMinActualLoadingDateFromPlannings(@NonNull final OrderLineId orderLineId, @NonNull final SOTrx soTrx)
 	{
-		return deliveryPlanningRepository.getMinActualLoadingDateFromPlanningsWithCompletedInstructions(orderLineId);
+		return deliveryPlanningRepository.getMinActualLoadingDateFromPlannings(orderLineId, soTrx.isSales());
 	}
 
 	public void invalidateInvoiceCandidatesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
@@ -808,4 +814,10 @@ public class DeliveryPlanningService
 		}
 	}
 
+	public Optional<MeansOfTransportation> getMeansOfTransportationByDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
+		return MeansOfTransportationId.optionalOfRepoId(deliveryPlanning.getM_MeansOfTransportation_ID())
+				.map(meansOfTransportationService::getById);
+	}
 }

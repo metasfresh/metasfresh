@@ -1,106 +1,100 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<artifactId>de.metas.printing</artifactId>
-		<groupId>de.metas.printing</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>de.metas.printing</artifactId>
+        <groupId>de.metas.printing</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>de.metas.printing.base</artifactId>
-	<packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>de.metas.printing.base</artifactId>
+    <packaging>jar</packaging>
 
-	<description>Print Processing (Mass &amp; Single)</description>
+    <description>Print Processing (Mass &amp; Single)</description>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
+    <properties>
+        <migration-sql-basedir/>
+    </properties>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>de.metas.swat</groupId>
-			<artifactId>de.metas.swat.base</artifactId>
-			<version>10.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.async</groupId>
+            <artifactId>de.metas.async</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
-			<version>10.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
-		</dependency>
+        <dependency>
+            <!-- 03744: Required because printing needs to fetch documents from
+                archive -->
+            <groupId>de.metas.document.archive</groupId>
+            <artifactId>de.metas.document.archive.base</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.document.archive</groupId>
+            <artifactId>de.metas.document.archive.base</artifactId>
+            <version>10.0.0</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<!-- 03744: Required because printing needs to fetch documents from 
-				archive -->
-			<groupId>de.metas.document.archive</groupId>
-			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.document.archive</groupId>
-			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>10.0.0</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.printing</groupId>
+            <artifactId>de.metas.printing.client</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.printing</groupId>
-			<artifactId>de.metas.printing.client</artifactId>
-			<version>10.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>10.0.0</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+    </dependencies>
 
-	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- Create tests JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <!-- Create tests JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

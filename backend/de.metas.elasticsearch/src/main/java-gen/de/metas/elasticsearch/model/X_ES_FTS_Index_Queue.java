@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.elasticsearch.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ES_FTS_Index_Queue
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ES_FTS_Index_Queue extends org.compiere.model.PO implements I_ES_FTS_Index_Queue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -996417090L;
+	private static final long serialVersionUID = -1801793198L;
 
     /** Standard Constructor */
     public X_ES_FTS_Index_Queue (final Properties ctx, final int ES_FTS_Index_Queue_ID, @Nullable final String trxName)
@@ -115,6 +115,8 @@ public class X_ES_FTS_Index_Queue extends org.compiere.model.PO implements I_ES_
 	public static final String EVENTTYPE_Update = "U";
 	/** Delete = D */
 	public static final String EVENTTYPE_Delete = "D";
+	/** DeleteIndex = X */
+	public static final String EVENTTYPE_DeleteIndex = "X";
 	@Override
 	public void setEventType (final java.lang.String EventType)
 	{

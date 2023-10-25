@@ -1,8 +1,6 @@
 package de.metas.contracts.subscription.impl;
 
 import com.google.common.base.Preconditions;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -10,8 +8,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.Contracts_Constants;
-import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
@@ -41,7 +39,6 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -59,7 +56,6 @@ import de.metas.product.IProductPA;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -110,79 +106,15 @@ public class SubscriptionBL implements ISubscriptionBL
 	public static final int SEQNO_FIRST_VALUE = 10;
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
 			final boolean completeIt)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
-		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
-
-		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, ol);
-
-		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
-		newTerm.setC_Order_Term_ID(ol.getC_Order_ID());
-
-		newTerm.setC_Flatrate_Conditions_ID(cond.getC_Flatrate_Conditions_ID());
-
-		// important: we need to use qtyEntered here, because qtyOrdered (which
-		// is used for pricing) contains the number of goods to be delivered
-		// over the whole subscription term
-		newTerm.setPlannedQtyPerUnit(ol.getQtyEntered());
-		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
-
-		newTerm.setStartDate(order.getDatePromised());
-		newTerm.setMasterStartDate(order.getDatePromised());
-
-		newTerm.setDeliveryRule(order.getDeliveryRule());
-		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
-
-		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
-
-		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
-		ContractDocumentLocationAdapterFactory
-				.billLocationAdapter(newTerm)
-				.setFrom(billToLocationId, billToContactId);
-
-		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(ol.getC_BPartner_ID(), ol.getAD_User_ID());
-
-		final BPartnerLocationAndCaptureId dropshipLocationId = orderBL.getShipToLocationId(order);
-
-		ContractDocumentLocationAdapterFactory
-				.dropShipLocationAdapter(newTerm)
-				.setFrom(dropshipLocationId, dropshipContactId);
-
-		I_C_Flatrate_Data existingData = fetchFlatrateData(ol, order);
-		if (existingData == null)
-		{
-			existingData = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Data.class, ol);
-			existingData.setC_BPartner_ID(order.getBill_BPartner_ID());
-			save(existingData);
-		}
-
-		newTerm.setC_Flatrate_Data(existingData);
-
-		newTerm.setAD_User_InCharge_ID(order.getSalesRep_ID());
-
-		newTerm.setIsSimulation(cond.isSimulation());
-
-		newTerm.setM_Product_ID(ol.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
-
-		newTerm.setPriceActual(ol.getPriceActual());
-		newTerm.setC_Currency_ID(ol.getC_Currency_ID());
-
-		setPricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-
-		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
-		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
-		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
-
-		save(newTerm);
+		final I_C_Flatrate_Term newTerm = flatrateBL.createContractForOrderLine(ol);
 
 		linkContractsIfNeeded(newTerm);
 
@@ -192,68 +124,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		return newTerm;
-	}
-
-	private I_C_Flatrate_Data fetchFlatrateData(final I_C_OrderLine ol, final I_C_Order order)
-	{
-		final I_C_Flatrate_Data existingData = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Flatrate_Data.class, ol)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, order.getBill_BPartner_ID())
-				.addOnlyContextClient()
-				.create()
-				.firstOnly(I_C_Flatrate_Data.class);
-
-		return existingData;
-	}
-
-	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
-	{
-		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-		newTerm.setM_PricingSystem_ID(PricingSystemId.toRepoId(computed.getPricingSystemId()));
-		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId().getRepoId());
-		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
-	}
-
-	@lombok.Value
-	private static class PricingSystemTaxCategoryAndIsTaxIncluded
-	{
-		PricingSystemId pricingSystemId;
-		TaxCategoryId taxCategoryId;
-		boolean isTaxIncluded;
-	}
-
-	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
-	{
-		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
-		if (cond.getM_PricingSystem_ID() > 0)
-		{
-			final IPricingResult pricingInfo = calculateFlatrateTermPrice(ol, newTerm);
-			return new PricingSystemTaxCategoryAndIsTaxIncluded(
-					PricingSystemId.ofRepoId(cond.getM_PricingSystem_ID()),
-					pricingInfo.getTaxCategoryId(),
-					pricingInfo.isTaxIncluded());
-		}
-		else
-		{
-			final org.compiere.model.I_C_Order order = ol.getC_Order();
-			return new PricingSystemTaxCategoryAndIsTaxIncluded(
-					PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()),
-					TaxCategoryId.ofRepoIdOrNull(ol.getC_TaxCategory_ID()),
-					order.isTaxIncluded());
-		}
-	}
-
-	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
-	{
-		final org.compiere.model.I_C_Order order = ol.getC_Order();
-		return FlatrateTermPricing.builder()
-				.termRelatedProductId(ProductId.ofRepoId(ol.getM_Product_ID()))
-				.qty(ol.getQtyEntered())
-				.term(newTerm)
-				.priceDate(TimeUtil.asLocalDate(order.getDateOrdered()))
-				.build()
-				.computeOrThrowEx();
 	}
 
 	private void linkContractsIfNeeded(final I_C_Flatrate_Term newTerm)

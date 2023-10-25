@@ -59,6 +59,7 @@ import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -83,7 +84,6 @@ import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -112,10 +112,13 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPCostCollectorId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -168,13 +171,22 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public I_C_Order getById(@NonNull final OrderId orderId) {return orderDAO.getById(orderId);}
+	public I_C_Order getById(@NonNull final OrderId orderId)
+	{
+		return orderDAO.getById(orderId);
+	}
 
 	@Override
-	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds) {return orderDAO.getByIds(orderIds);}
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return orderDAO.getByIds(orderIds);
+	}
 
 	@Override
-	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds) {return orderDAO.retrieveOrderLinesByOrderIds(orderIds);}
+	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
 
 	@Override
 	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
@@ -714,9 +726,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -763,11 +775,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -874,21 +886,24 @@ public class OrderBL implements IOrderBL
 	@Override
 	public org.compiere.model.I_AD_User getShipToUser(final I_C_Order order)
 	{
-		final UserId contactId;
+		return getShipToContactId(order)
+				.map(contactId -> userDAO.getById(contactId.getUserId()))
+				.orElse(null);
+	}
+
+	@Override
+	public Optional<BPartnerContactId> getShipToContactId(final I_C_Order order)
+	{
 		if (order.isDropShip())
 		{
-			// check for isDropShip to avoid returning a "stale" dropship-partner
-			final UserId dropShipUserId = UserId.ofRepoIdOrNull(order.getDropShip_User_ID());
-			contactId = dropShipUserId != null ? dropShipUserId : UserId.ofRepoIdOrNull(order.getAD_User_ID());
+			final BPartnerContactId dropShipContactId = BPartnerContactId.ofRepoIdOrNull(order.getDropShip_BPartner_ID(), order.getDropShip_User_ID());
+			return Optional.ofNullable(dropShipContactId);
 		}
 		else
 		{
-			contactId = UserId.ofRepoIdOrNull(order.getAD_User_ID());
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+			return Optional.ofNullable(contactId);
 		}
-
-		return contactId != null
-				? userDAO.getById(contactId)
-				: null;
 	}
 
 	@NonNull
@@ -1025,6 +1040,19 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isRequisition(docTypeId);
+	}
+
+	@Override
+	public boolean isProFormaSO(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isSales())
+		{
+			return false;
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isProFormaSO(docTypeId);
 	}
 
 	@Override
@@ -1271,15 +1299,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Set<OrderId> getPurchaseOrderIdsBySalesOrderId(@NonNull final OrderId salesOrderId)
+	public List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull final OrderId salesOrderId)
 	{
-		return orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
-	}
-
-	@Override
-	public Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
-	{
-		return orderDAO.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
+		final Set<OrderId> purchaseOrderIds = orderDAO.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
+		return orderDAO.getByIds(purchaseOrderIds);
 	}
 
 	@Override
@@ -1344,5 +1367,48 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine) {return orderLineBL.getQtyEntered(orderLine);}
+	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		return orderLineBL.getQtyEntered(orderLine);
+	}
+
+	@Override
+	public boolean isCompleted(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isCompleted(order);
+	}
+
+	@Override
+	public boolean isCompleted(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
+	}
+
+	@Override
+	public boolean isDraftedOrInProgress(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isDraftedOrInProgress();
+	}
+
+	@NonNull
+	public List<I_C_Order> getOrdersByQuery(@NonNull final GetOrdersQuery query)
+	{
+		return orderDAO.getOrdersByQuery(query);
+	}
+
+	@Override
+	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
+	{
+		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
+		salesOrderRecord.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
+		orderDAO.save(salesOrderRecord);
+	}
+
+	@Override
+	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getPPCostCollectorId(orderLineId);
+	}
+
 }

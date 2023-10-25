@@ -28,15 +28,18 @@ import de.metas.gplr.source.model.SourceCurrencyInfo;
 import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.gplr.source.model.SourceIncotermsAndLocation;
 import de.metas.gplr.source.model.SourceInvoice;
+import de.metas.gplr.source.model.SourceInvoiceLine;
 import de.metas.gplr.source.model.SourceOrder;
 import de.metas.gplr.source.model.SourceOrderCost;
 import de.metas.gplr.source.model.SourceOrderLine;
 import de.metas.gplr.source.model.SourceShipment;
 import de.metas.gplr.source.model.SourceShipperInfo;
+import de.metas.gplr.source.model.SourceTaxInfo;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -117,7 +120,7 @@ final class GPLRReportCreateCommand
 		final Amount taxesFC = salesInvoice.getTaxAmtFC();
 		final Amount taxesLC = toLocal.apply(taxesFC);
 
-		final Amount estimatedFC = salesOrder.getEstimatedOrderCostAmountFC();
+		final Amount estimatedFC = salesOrder.getNotInvoicedCostsFC();
 		final Amount estimatedLC = toLocal.apply(estimatedFC);
 
 		final Amount cogsLC = salesOrder.getCOGS_LC();
@@ -159,7 +162,7 @@ final class GPLRReportCreateCommand
 				.documentDate(salesInvoice.getDateInvoiced())
 				.created(salesInvoice.getCreated())
 				.sapProductHierarchy(salesInvoice.getSapProductHierarchy())
-				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(salesInvoice.getPaymentTerm(), salesInvoice.getPaymentInstructions()))
 				.dueDate(salesInvoice.getDueDate())
 				.currencyInfo(toCurrencyInfo(salesInvoice.getCurrencyInfo()))
 				.build();
@@ -214,6 +217,7 @@ final class GPLRReportCreateCommand
 				.shipTo(toBPartnerName(shipment.getShipTo()))
 				.shipToCountry(shipment.getShipTo().getCountryCode())
 				.warehouse(toWarehouseName(shipment))
+				.isBackToBack(shipment.isBackToBack())
 				.movementDate(shipment.getMovementDate())
 				.incoterms(toIncotermsInfo(shipment.getIncoterms()))
 				.shipper(toShipperName(shipment.getShipper()))
@@ -225,6 +229,7 @@ final class GPLRReportCreateCommand
 		return GPLRWarehouseName.builder()
 				.code(shipment.getShipFrom().getWarehouseCode())
 				.name(shipment.getShipFrom().getWarehouseName())
+				.externalId(shipment.getShipFrom().getWarehouseExternalId())
 				.build();
 	}
 
@@ -260,7 +265,7 @@ final class GPLRReportCreateCommand
 				.documentNo(purchaseOrder.getDocumentNo())
 				.purchasedFrom(toBPartnerName(purchaseOrder.getBpartner()))
 				.vendorReference(purchaseOrder.getPoReference()) // is it OK?
-				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm()))
+				.paymentTerm(GPLRPaymentTermRenderedString.of(purchaseOrder.getPaymentTerm(), purchaseOrder.getPaymentInstructions()))
 				.incoterms(toIncotermsInfo(purchaseOrder.getIncotermsAndLocation()))
 				.currencyInfo(toCurrencyInfo(purchaseOrder.getCurrencyInfo()))
 				.build();
@@ -273,13 +278,16 @@ final class GPLRReportCreateCommand
 		//
 		// Sales Order
 		{
-			final SourceCurrencyInfo currencyInfo = source.getSalesInvoice().getCurrencyInfo();
+			final SourceInvoice salesInvoice = source.getSalesInvoice();
+			final SourceCurrencyInfo currencyInfo = salesInvoice.getCurrencyInfo();
 			final SourceOrder salesOrder = source.getSalesOrder();
 			for (final SourceOrderLine salesOrderLine : salesOrder.getLines())
 			{
-				result.add(createGPLRReportLine_DocumentLine(salesOrderLine, salesOrder));
-				result.add(createGPLRReportLine_Price(salesOrderLine, salesOrder, currencyInfo));
-				result.add(createGPLRReportLine_VAT(salesOrderLine, salesOrder, currencyInfo));
+				final SourceInvoiceLine salesInvoiceLine = salesInvoice.getLineByOrderLineId(salesOrderLine.getId()).orElse(null);
+
+				result.add(createGPLRReportLine_DocumentLine(salesInvoiceLine, salesOrderLine, salesOrder));
+				result.add(createGPLRReportLine_Price(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(salesInvoiceLine, salesOrderLine, salesOrder, currencyInfo));
 				result.add(createGPLRReportLine_COGS(salesOrderLine, salesOrder));
 			}
 		}
@@ -292,9 +300,9 @@ final class GPLRReportCreateCommand
 
 			for (final SourceOrderLine purchaseOrderLine : purchaseOrder.getLines())
 			{
-				result.add(createGPLRReportLine_DocumentLine(purchaseOrderLine, purchaseOrder));
-				result.add(createGPLRReportLine_Price(purchaseOrderLine, purchaseOrder, currencyInfo));
-				result.add(createGPLRReportLine_VAT(purchaseOrderLine, purchaseOrder, currencyInfo));
+				result.add(createGPLRReportLine_DocumentLine(null, purchaseOrderLine, purchaseOrder));
+				result.add(createGPLRReportLine_Price(null, purchaseOrderLine, purchaseOrder, currencyInfo));
+				result.add(createGPLRReportLine_VAT(null, purchaseOrderLine, purchaseOrder, currencyInfo));
 			}
 		}
 
@@ -308,45 +316,61 @@ final class GPLRReportCreateCommand
 		final Amount cogsLC = salesOrderLine.getCogsLC();
 		return GPLRReportLineItem.builder()
 				.documentNo(salesOrder.getDocumentNo())
-				.lineCode("VPRS")
+				.lineCode("COGS")
 				.description("Cost")
 				.amountFC(null)
 				.amountLC(cogsLC)
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_VAT(final SourceOrderLine salesOrderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_VAT(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine salesOrderLine,
+			@NonNull final SourceOrder order,
+			@NonNull final SourceCurrencyInfo currencyInfo)
 	{
-		final Amount taxAmtFC = salesOrderLine.getTaxAmtFC();
+		final Amount taxAmtFC = invoiceLine != null ? invoiceLine.getTaxAmtFC() : salesOrderLine.getTaxAmtFC();
+		final SourceTaxInfo tax = invoiceLine != null ? invoiceLine.getTax() : salesOrderLine.getTax();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
-				.lineCode("MWST")
-				.description(salesOrderLine.getTax().toRenderedString())
+				.lineCode("VAT")
+				.description(tax.toRenderedString())
 				.amountFC(taxAmtFC)
 				.amountLC(currencyInfo.convertToLocal(taxAmtFC, currencyCodeConverter))
 				.build();
 	}
 
-	private GPLRReportLineItem createGPLRReportLine_Price(final SourceOrderLine orderLine, final SourceOrder order, final SourceCurrencyInfo currencyInfo)
+	private GPLRReportLineItem createGPLRReportLine_Price(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine orderLine,
+			@NonNull final SourceOrder order,
+			@NonNull final SourceCurrencyInfo currencyInfo)
 	{
-		final Amount lineNetAmtFC = orderLine.getLineNetAmtFC();
+		final Amount lineNetAmtFC = invoiceLine != null ? invoiceLine.getLineNetAmtFC() : orderLine.getLineNetAmtFC();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
-				.lineCode("PR00")
+				.lineCode("PR")
 				.description("Price")
 				.amountFC(lineNetAmtFC)
 				.amountLC(currencyInfo.convertToLocal(lineNetAmtFC, currencyCodeConverter))
 				.build();
 	}
 
-	private static GPLRReportLineItem createGPLRReportLine_DocumentLine(final SourceOrderLine orderLine, final SourceOrder order)
+	private static GPLRReportLineItem createGPLRReportLine_DocumentLine(
+			@Nullable final SourceInvoiceLine invoiceLine,
+			@NonNull final SourceOrderLine orderLine,
+			@NonNull final SourceOrder order)
 	{
+		final Amount priceFC = invoiceLine != null ? invoiceLine.getPriceFC() : orderLine.getPriceFC();
+
 		return GPLRReportLineItem.builder()
 				.documentNo(order.getDocumentNo())
 				.lineCode(formatOrderLineNo(orderLine.getLineNo()))
 				.description(orderLine.getProductName())
 				.qty(orderLine.getQtyEntered())
-				.priceFC(orderLine.getPriceFC())
+				.priceFC(priceFC)
 				.batchNo(orderLine.getBatchNo())
 				.amountFC(null)
 				.amountLC(null)
@@ -408,12 +432,19 @@ final class GPLRReportCreateCommand
 
 	private ImmutableList<GPLRReportNote> createGPLRReportNotes()
 	{
+		final ImmutableList.Builder<GPLRReportNote> result = ImmutableList.builder();
+
 		final SourceInvoice salesInvoice = source.getSalesInvoice();
-		return ImmutableList.of(
-				GPLRReportNote.builder()
-						.sourceDocument("Billing Document " + salesInvoice.getDocumentNo())
-						.text(salesInvoice.getDescriptionBottom())
-						.build()
-		);
+		if (Check.isNotBlank(salesInvoice.getInvoiceAdditionalText()))
+		{
+			result.add(
+					GPLRReportNote.builder()
+							.sourceDocument("Billing Document " + salesInvoice.getDocumentNo())
+							.text(salesInvoice.getInvoiceAdditionalText())
+							.build()
+			);
+		}
+
+		return result.build();
 	}
 }

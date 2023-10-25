@@ -74,8 +74,8 @@ Feature: Sales order
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_600 | orderLine_SO_S0156_600    | N             | 24               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_600    | order_SO_S0156_600 | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_600    | order_SO_S0156_600    | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed |
       | schedule_SO_S0156_600            | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO_20062022         | PENDING          | order_SO_S0156_600        | orderLine_SO_S0156_600        | 26             | 24               | 2               | false        |
@@ -128,8 +128,8 @@ Feature: Sales order
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_700 | orderLine_SO_S0156_700    | N             | 24               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_700    | order_SO_S0156_700 | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_700    | order_SO_S0156_700    | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed |
       | schedule_SO_S0156_700            | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO_20062022         | PENDING          | order_SO_S0156_700        | orderLine_SO_S0156_700        | 26             | 24               | 2               | false        |
@@ -215,8 +215,8 @@ Feature: Sales order
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_800 | orderLine_SO_S0156_800    | N             | 26               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_800    | order_SO_S0156_800 | product_SO_20062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_800    | order_SO_S0156_800    | product_SO_20062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed |
       | schedule_SO_S0156_800            | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO_20062022         | PENDING          | order_SO_S0156_800        | orderLine_SO_S0156_800        | 26             | 26               | 0               | false        |
@@ -269,8 +269,8 @@ Feature: Sales order
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_900 | orderLine_SO_S0156_900    | N             | 24               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_900    | order_SO_S0156_900 | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_900    | order_SO_S0156_900    | product_SO_20062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed |
       | schedule_SO_S0156_900            | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO_20062022         | PENDING          | order_SO_S0156_900        | orderLine_SO_S0156_900        | 26             | 24               | 2               | false        |
@@ -294,8 +294,8 @@ Feature: Sales order
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_900 | orderLine_SO_S0156_900    | N             | 26               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_900    | order_SO_S0156_900 | product_SO_20062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_900    | order_SO_S0156_900    | product_SO_20062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO_S0156_900 | orderLine_SO_S0156_900    | N             |
@@ -351,8 +351,8 @@ Feature: Sales order
       | Identifier             | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_1000 | orderLine_SO_S0156_1000   | N             | 28               |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier    | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_SO_S0156_1000   | order_SO_S0156_1000 | product_SO_20062022     | 26         | 28           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_SO_S0156_1000   | order_SO_S0156_1000   | product_SO_20062022     | 26         | 28           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed |
       | schedule_SO_S0156_1000           | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO_20062022         | PENDING          | order_SO_S0156_1000       | orderLine_SO_S0156_1000       | 26             | 28               | 0               | false        |

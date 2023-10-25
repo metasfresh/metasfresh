@@ -1,6 +1,7 @@
 package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
@@ -9,7 +10,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Tax_Acct;
 import org.springframework.stereotype.Repository;
 
@@ -56,8 +56,9 @@ public class TaxAccountsRepository
 				.T_Credit_Acct(Account.of(AccountId.ofRepoId(record.getT_Credit_Acct()), I_C_Tax_Acct.COLUMNNAME_T_Credit_Acct))
 				.T_Receivables_Acct(Account.of(AccountId.ofRepoId(record.getT_Receivables_Acct()), I_C_Tax_Acct.COLUMNNAME_T_Receivables_Acct))
 				.T_Expense_Acct(Account.of(AccountId.ofRepoId(record.getT_Expense_Acct()), I_C_Tax_Acct.COLUMNNAME_T_Expense_Acct))
-				.T_Revenue_Acct(AccountId.optionalOfRepoId(record.getT_Revenue_Acct())
-										.map(acctId -> Account.of(acctId, I_C_Tax_Acct.COLUMNNAME_T_Revenue_Acct)))
+				.T_Revenue_Acct(Account.optionalOfRepoId(record.getT_Revenue_Acct(), I_C_Tax_Acct.COLUMNNAME_T_Revenue_Acct))
+				.T_PayDiscount_Exp_Acct(Account.optionalOfRepoId(record.getT_PayDiscount_Exp_Acct(), I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct))
+				.T_PayDiscount_Rev_Acct(Account.optionalOfRepoId(record.getT_PayDiscount_Rev_Acct(), I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct))
 				.build();
 	}
 

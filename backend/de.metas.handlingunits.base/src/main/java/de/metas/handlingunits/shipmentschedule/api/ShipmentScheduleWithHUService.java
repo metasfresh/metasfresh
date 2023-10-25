@@ -61,7 +61,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
+import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -90,6 +92,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -112,6 +115,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentScheduleWithHUService
 {
 
@@ -121,6 +125,7 @@ public class ShipmentScheduleWithHUService
 
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -130,15 +135,9 @@ public class ShipmentScheduleWithHUService
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-	private final PickingJobService pickingJobService;
-	private final HUReservationService huReservationService;
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService, @NonNull final PickingJobService pickingJobService)
-	{
-		this.pickingJobService = pickingJobService;
-		this.huReservationService = huReservationService;
-	}
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 
 	@Value
 	@Builder
@@ -641,7 +640,7 @@ public class ShipmentScheduleWithHUService
 		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
 		if (orderId != null)
 		{
-			final Optional<PickingJob> pickingJobForShipmentSchedule = pickingJobService.getByOrderId(orderId);
+			final Optional<PickingJob> pickingJobForShipmentSchedule = getPickingJobByOrderId(orderId);
 			if (pickingJobForShipmentSchedule.isPresent() && pickingJobInReview(pickingJobForShipmentSchedule.get()))
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("Skipped shipmentSchedule={}, as there's an associated picking job that's not approved", schedule.getM_ShipmentSchedule_ID());
@@ -666,6 +665,12 @@ public class ShipmentScheduleWithHUService
 		}
 
 		return unshippedHUs;
+	}
+
+	private Optional<PickingJob> getPickingJobByOrderId(@NonNull final OrderId orderId)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getDraftBySalesOrderId(orderId, loadingSupportingServices);
 	}
 
 	/**

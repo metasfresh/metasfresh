@@ -23,6 +23,7 @@ export default function applications(state = initialState, action) {
           caption: application.caption,
           iconClassNames: getIconClassNames(application.id),
           requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
+          showFilters: application.showFilters,
         };
         return acc;
       }, {});

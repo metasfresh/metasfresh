@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inventory;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -20,6 +19,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,7 +46,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -81,12 +83,13 @@ class InventoryRepositoryTest
 
 	private AttributeSetInstanceId asiId;
 
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		orgId = createOrg(orgTimeZone);
 
@@ -105,6 +108,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository = new InventoryRepository();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private OrgId createOrg(final ZoneId timeZone)
 	{
 		final I_AD_Org org = newInstance(I_AD_Org.class);

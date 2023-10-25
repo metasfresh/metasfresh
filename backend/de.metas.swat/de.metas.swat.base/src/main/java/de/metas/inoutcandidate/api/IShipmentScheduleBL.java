@@ -33,6 +33,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -49,7 +50,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -157,6 +161,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
 
+	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
+
+	boolean anyMatchByOrderId(OrderId salesOrderId);
+
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule schedule);
@@ -197,4 +205,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
 	ImmutableSet<OrderId> getOrderIds(@NonNull IQueryFilter<? extends I_M_ShipmentSchedule> filter);
+
+	ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer();
+
+	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
 }

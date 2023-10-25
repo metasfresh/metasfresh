@@ -7,6 +7,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "bpartnerId": 3,
         "repoId": 4
       },
+      "deliveryDate": "2021-11-02T07:39:16Z[Europe/London]",
       "deliveryRenderedAddress": "deliveryRenderedAddress",
       "isPickingReviewRequired": false,
       "lockedBy": 5,

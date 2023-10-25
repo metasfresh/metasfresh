@@ -1,12 +1,16 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -17,8 +21,11 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
@@ -27,6 +34,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -42,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.AdTableId;
@@ -76,8 +85,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
@@ -119,6 +130,12 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	private final CCache<ModularFlatrateTermQuery, ImmutableList<I_C_Flatrate_Term>> modularContractQuery2CachedResult = CCache.<ModularFlatrateTermQuery, ImmutableList<I_C_Flatrate_Term>>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(1000)
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableSet.of(I_C_Flatrate_Conditions.Table_Name, I_ModCntr_Settings.Table_Name))
+			.build();
 
 	private final AdTableId tableId = tableDAO.retrieveAdTableId(I_C_Flatrate_Term.Table_Name);
 
@@ -916,6 +933,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(
 			final int bPartner_ID,
 			@NonNull final Timestamp movementDate,
@@ -963,8 +981,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-					I_C_Flatrate_Data.class,
-					getTrxName(bPartner));
+														 I_C_Flatrate_Data.class,
+														 getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -974,6 +992,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
@@ -992,14 +1011,12 @@ public class FlatrateDAO implements IFlatrateDAO
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
 				.retrieveReferencing(TableRecordReference.of(contract));
 
-		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
+		return icsForCurrentTerm
 				.stream()
 				.flatMap(ic -> invoiceCandDAO.retrieveIlForIc(ic).stream())
 				.filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
 				.map(il -> il.getC_Invoice())
 				.collect(ImmutableList.toImmutableList());
-
-		return currentFlatRateTermInvoices;
 	}
 
 	@Override
@@ -1016,21 +1033,21 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
+	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
 	}
 
 	@Override
+	@Nullable
 	public I_C_Invoice_Candidate retrieveInvoiceCandidate(final I_C_Flatrate_Term term)
 	{
-		final I_C_Invoice_Candidate ic = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
 				.create()
 				.firstOnly(I_C_Invoice_Candidate.class);
-		return ic;
 	}
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
@@ -1049,6 +1066,18 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@NonNull
+	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId, @NonNull final TypeConditions typeConditions)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID, orderLineId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.create()
+				.firstOnlyOptional();
+	}
+
+	@Override
 	public boolean hasOverlappingTerms(@NonNull final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
@@ -1057,8 +1086,8 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateTermOverlapCriteria.getConditionsId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, flatrateTermOverlapCriteria.getOrgId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, flatrateTermOverlapCriteria.getProductId())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate,Operator.LESS_OR_EQUAL,flatrateTermOverlapCriteria.getDatePromised())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate,Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
 				.create()
 				.anyMatch();
 	}
@@ -1095,8 +1124,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
 				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
-						BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
-						instant);
+												  BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
+												  instant);
 
 		queryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, flatrateTerm.getC_Order_Term_ID());
 
@@ -1122,5 +1151,124 @@ public class FlatrateDAO implements IFlatrateDAO
 				.create()
 				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
 
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
+	{
+		return modularContractQuery2CachedResult.getOrLoad(modularFlatrateTermQuery, this::retrieveByModularContractQuery);
+	}
+
+	@NonNull
+	private ImmutableList<I_C_Flatrate_Term> retrieveByModularContractQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
+	{
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,
+									 buildModularContractSettingsQueryFilter(modularFlatrateTermQuery))
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+
+		if (modularFlatrateTermQuery.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
+		}
+
+		if (modularFlatrateTermQuery.getDateFromLessOrEqual() != null)
+		{
+			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, modularFlatrateTermQuery.getDateFromLessOrEqual());
+		}
+
+		if (modularFlatrateTermQuery.getDateToGreaterOrEqual() != null)
+		{
+			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, modularFlatrateTermQuery.getDateToGreaterOrEqual());
+		}
+
+		return queryBuilder.create()
+				.listImmutable();
+	}
+
+	@NonNull
+	private IQuery<I_ModCntr_Settings> buildModularContractSettingsQueryFilter(@NonNull final ModularFlatrateTermQuery request)
+	{
+		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean());
+
+		if (request.getYearId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
+		}
+
+		if (request.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId());
+		}
+
+		return queryBuilder.create();
+	}
+
+	@Override
+	public boolean isExistsModularOrInterimContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
+	{
+		return getFlatrateTermQueryBuilder(flatrateTermFilter)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice)
+				.anyMatch();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_C_Flatrate_Term> getFlatrateTermQueryBuilder(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(flatrateTermFilter);
+	}
+
+	@Override
+	public Stream<I_C_Flatrate_Term> stream(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(filter)
+				.create()
+				.iterateAndStream();
+	}
+
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull final BPartnerId bPartnerId, @NonNull final ProductCategoryId productCategoryId)
+	{
+
+		final IQuery<I_M_Product> subQuery_ProductCateg = queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bPartnerId)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
+				.subQuery(subQuery_ProductCateg)
+				.end()
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, Operator.GREATER_OR_EQUAL, SystemTime.asTimestamp())
+				.create()
+				.listImmutable(I_C_Flatrate_Term.class);
+	}
+
+	@NonNull
+	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
+				.stream();
 	}
 }

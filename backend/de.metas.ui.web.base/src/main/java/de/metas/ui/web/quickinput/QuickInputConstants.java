@@ -32,6 +32,8 @@ public class QuickInputConstants
 	private static final String SYSCONFIG_EnablePackingInstructionsField = "webui.quickinput.EnablePackingInstructionsField";
 	private static final String SYSCONFIG_EnableBestBeforePolicy = "webui.quickinput.EnableBestBeforePolicy";
 	private static final String SYSCONFIG_EnableVatCodeField = "webui.quickinput.EnableVatCodeField";
+	private static final String SYSCONFIG_EnableContractConditionsField = "webui.quickinput.EnableContractConditionsField";
+	private static final String SYSCONFIG_IsContractConditionsFieldMandatory = "webui.quickinput.IsContractConditionsFieldMandatory";
 
 	/**
 	 * Created for https://github.com/metasfresh/metasfresh/issues/14009 where we want batch entry dropdown to contain "ALL" potential matches,
@@ -55,4 +57,13 @@ public class QuickInputConstants
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableVatCodeField, false);
 	}
 
+	public static boolean isEnableContractConditionsField()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableContractConditionsField, false);
+	}
+
+	public static boolean isContractConditionsFieldMandatory()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsContractConditionsFieldMandatory, false);
+	}
 }

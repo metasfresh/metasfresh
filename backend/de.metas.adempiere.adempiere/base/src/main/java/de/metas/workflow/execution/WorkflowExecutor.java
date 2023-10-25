@@ -32,7 +32,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.WFState;
-import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -42,6 +42,8 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TrxRunnableAdapter;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,16 +59,12 @@ public class WorkflowExecutor
 
 	@Builder
 	private WorkflowExecutor(
-			@NonNull final Workflow workflow,
-			@NonNull final ClientId clientId,
-			@NonNull final String adLanguage,
+			@Nullable final ClientId clientId,
 			@NonNull final TableRecordReference documentRef,
 			@NonNull final UserId userId)
 	{
 		this.context = WorkflowExecutionContext.builder()
-				.workflow(workflow)
 				.clientId(clientId)
-				.adLanguage(adLanguage)
 				.documentRef(documentRef)
 				.userId(userId)
 				.build();
@@ -74,7 +72,7 @@ public class WorkflowExecutor
 		wfProcessRepository = context.getWfProcessRepository();
 	}
 
-	public WorkflowExecutionResult start()
+	public WorkflowExecutionResult start(@NonNull WorkflowId workflowId)
 	{
 		final HashSet<UserId> previousActiveInvokers = new HashSet<>();
 
@@ -92,7 +90,7 @@ public class WorkflowExecutor
 
 		//
 		// Start a new process
-		final WFProcess wfProcess = new WFProcess(context);
+		final WFProcess wfProcess = new WFProcess(context, workflowId);
 		final Mutable<Throwable> exceptionHolder = new Mutable<>();
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
@@ -198,7 +196,7 @@ public class WorkflowExecutor
 		return summary;
 	}
 
-	public void abort(@NonNull final WFProcess wfProcess)
+	private void abort(@NonNull final WFProcess wfProcess)
 	{
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
@@ -218,11 +216,11 @@ public class WorkflowExecutor
 
 	private List<WFProcess> getActiveProcesses()
 	{
-		final List<WFProcessId> wfProcessIds = wfProcessRepository.getActiveProcessIds(context.getDocumentRef());
+		final Set<WFProcessId> wfProcessIds = wfProcessRepository.getActiveProcessIds(context.getDocumentRef());
 		return getWFProcesses(wfProcessIds);
 	}
 
-	private List<WFProcess> getWFProcesses(final List<WFProcessId> wfProcessIds)
+	private List<WFProcess> getWFProcesses(final Collection<WFProcessId> wfProcessIds)
 	{
 		if (wfProcessIds.isEmpty())
 		{
@@ -240,4 +238,28 @@ public class WorkflowExecutor
 						wfActivityStates.get(wfProcessId)))
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public void resume()
+	{
+		getActiveProcesses().forEach(this::resume);
+	}
+
+	private void resume(@NonNull final WFProcess wfProcess)
+	{
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName)
+			{
+				wfProcess.resumeWork();
+			}
+
+			@Override
+			public void doFinally()
+			{
+				context.save(wfProcess);
+			}
+		});
+	}
+
 }

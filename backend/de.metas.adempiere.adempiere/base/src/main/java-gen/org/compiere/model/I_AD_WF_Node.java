@@ -344,6 +344,27 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
+	 * Set Approval Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setApprovalStrategy (@Nullable java.lang.String ApprovalStrategy);
+
+	/**
+	 * Get Approval Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getApprovalStrategy();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_ApprovalStrategy = new ModelColumn<>(I_AD_WF_Node.class, "ApprovalStrategy", null);
+	String COLUMNNAME_ApprovalStrategy = "ApprovalStrategy";
+
+	/**
 	 * Set Attribute Name.
 	 * Name of the Attribute
 	 *
@@ -1019,28 +1040,6 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Setup Time.
 	 * Setup time before starting Production
 	 *
@@ -1085,6 +1084,28 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SplitElement = new ModelColumn<>(I_AD_WF_Node.class, "SplitElement", null);
 	String COLUMNNAME_SplitElement = "SplitElement";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set Start Mode.

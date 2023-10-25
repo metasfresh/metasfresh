@@ -261,6 +261,18 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	}
 
 	@Override
+	public void setIsOpenItem (final boolean IsOpenItem)
+	{
+		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
+	}
+
+	@Override
+	public boolean isOpenItem() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
+	}
+
+	@Override
 	public void setIsSummary (final boolean IsSummary)
 	{
 		set_Value (COLUMNNAME_IsSummary, IsSummary);

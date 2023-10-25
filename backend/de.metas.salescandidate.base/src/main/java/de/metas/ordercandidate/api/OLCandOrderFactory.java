@@ -5,9 +5,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.auction.Auction;
+import de.metas.auction.AuctionId;
+import de.metas.auction.AuctionService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -153,6 +158,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
+	private final AuctionService auctionService = SpringContextHolder.instance.getBean(AuctionService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -315,6 +321,13 @@ class OLCandOrderFactory
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
 		order.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(candidateOfGroup)));
+		final Auction auction = auctionService.getByIdOrNull(candidateOfGroup.getAuctionId());
+		if (auction != null)
+		{
+			order.setC_Auction_ID(AuctionId.toRepoId(auction.auctionId()));
+			order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.harvestingCalendarId()));
+			order.setHarvesting_Year_ID(YearId.toRepoId(auction.harvestingYearId()));
+		}
 
 		save(order);
 		return order;
@@ -436,10 +449,10 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId))
-															.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
-															.build());
+				.orderLineIds(orderLineIds)
+				.newGroupTemplate(createNewGroupTemplate(productId))
+				.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
+				.build());
 	}
 
 	@NonNull

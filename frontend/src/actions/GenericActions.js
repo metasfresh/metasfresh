@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getQueryString } from '../utils';
 import {
   allActionsRequest,
+  getViewFieldDropdown,
   getViewFilterParameterDropdown,
   getViewFilterParameterTypeahead,
 } from '../api/view';
@@ -94,13 +95,22 @@ export function dropdownRequest({
   tabId,
   viewId,
 }) {
-  if (entity === 'documentView' && subentity === 'filter') {
-    return getViewFilterParameterDropdown({
-      windowId: docType,
-      viewId,
-      filterId: subentityId,
-      parameterName: propertyName,
-    });
+  if (entity === 'documentView') {
+    if (subentity === 'filter') {
+      return getViewFilterParameterDropdown({
+        windowId: docType,
+        viewId,
+        filterId: subentityId,
+        parameterName: propertyName,
+      });
+    } else {
+      return getViewFieldDropdown({
+        windowId: docType,
+        viewId,
+        rowId,
+        fieldName: propertyName,
+      });
+    }
   } else {
     return axios.get(`
     ${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${

@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Product',
+    ProductValue: 'Product Value',
     Locator: 'Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
@@ -21,6 +22,10 @@ const translations = {
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
+    filter: {
+      showResults: 'Show results (%(count)s)',
+      clearFilters: 'Clear filters',
+    },
   },
   login: {
     submitButton: 'Login',

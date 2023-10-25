@@ -18,6 +18,7 @@ package org.compiere.apps;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
@@ -28,10 +29,10 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -777,7 +778,7 @@ public final class ALogin extends CDialog
 
 		// Reference check
 		Ini.setProperty(Ini.P_ADEMPIERESYS, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
+		MigrationScriptFileLoggerHolder.setEnabled("Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
 
 		//
 		// Authenticate and get roles
@@ -985,8 +986,7 @@ public final class ALogin extends CDialog
 
 			//
 			final ClientId clientId = ClientId.ofRepoId(clientKNP.getKey());
-			final String clientName = clientKNP.getName();
-			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId, clientName);
+			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId);
 			final List<KeyNamePair> orgs = toOrgKeyNamePairList(orgIds);
 			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
 			// No Orgs

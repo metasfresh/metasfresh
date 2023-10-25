@@ -24,6 +24,7 @@ package org.compiere.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -41,6 +42,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
@@ -52,7 +54,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
@@ -131,7 +132,6 @@ public class DB
 		 * <p>
 		 * NOTE: avoid using this method. We introduced it just to migrate from old API.
 		 *
-		 * @param ignoreError
 		 * @return {@link OnFail} value
 		 */
 		public static OnFail valueOfIgnoreError(final boolean ignoreError)
@@ -151,14 +151,8 @@ public class DB
 	 */
 	private final Logger log = LogManager.getLogger(DB.class);
 
-	/**
-	 * SQL Statement Separator "; "
-	 */
-	public final String SQLSTATEMENT_SEPARATOR = "; ";
-
 	/**************************************************************************
 	 * Set connection.
-	 *
 	 * If the connection was already set and it's the same, this method does nothing.
 	 *
 	 * @param cc connection
@@ -387,7 +381,6 @@ public class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param readOnly
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
@@ -462,25 +455,6 @@ public class DB
 		}
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}    // prepareCall
-
-	/**************************************************************************
-	 * Prepare Statement
-	 *
-	 * @param sql
-	 * @return Prepared Statement
-	 * @deprecated
-	 */
-	@Deprecated
-	public CPreparedStatement prepareStatement(final String sql)
-	{
-		int concurrency = ResultSet.CONCUR_READ_ONLY;
-		final String upper = sql.toUpperCase();
-		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
-		{
-			concurrency = ResultSet.CONCUR_UPDATABLE;
-		}
-		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
-	}    // prepareStatement
 
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
@@ -644,7 +618,7 @@ public class DB
 		}
 		else if (param instanceof Integer)
 		{
-			pstmt.setInt(index, ((Integer)param).intValue());
+			pstmt.setInt(index, (Integer)param);
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -1073,7 +1047,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
@@ -1117,7 +1090,6 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
-	 * @throws SQLException
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
@@ -1987,6 +1959,11 @@ public class DB
 		return Database.TO_NUMBER(number, displayType);
 	}
 
+	public String TO_STRING(@Nullable final ReferenceListAwareEnum value)
+	{
+		return TO_STRING(value != null ? value.getCode() : null, 0);
+	}
+
 	/**
 	 * Package Strings for SQL command in quotes
 	 *
@@ -2052,7 +2029,6 @@ public class DB
 	}
 
 	/**
-	 * @param comment
 	 * @return SQL multiline comment
 	 */
 	public String TO_COMMENT(final String comment)
@@ -2065,6 +2041,26 @@ public class DB
 		return "/* "
 				+ comment.replace("/*", " ").replace("*/", " ")
 				+ " */";
+	}
+
+	public String TO_ARRAY(@Nullable final Collection<?> values)
+	{
+		if (values == null)
+		{
+			return "NULL";
+		}
+
+		final StringBuilder result = new StringBuilder();
+		for (final Object value : values)
+		{
+			if (result.length() > 0)
+			{
+				result.append(",");
+			}
+			result.append(TO_SQL(value));
+		}
+
+		return TO_STRING(result.insert(0, "{").append("}").toString());
 	}
 
 	/**
@@ -2088,7 +2084,6 @@ public class DB
 	/**
 	 * convenient method to close statement
 	 *
-	 * @param st
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2282,8 +2277,6 @@ public class DB
 	/**
 	 * Delete T_Selection
 	 *
-	 * @param pinstanceId
-	 * @param trxName
 	 * @return number of records that were deleted
 	 */
 	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
@@ -2337,7 +2330,6 @@ public class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it returns the string <code>"(?,?,?)"</code>, and it will copy <code>paramsIn</code> to the list <code>paramsOut</code>. Note that e.g. if we need
 	 * something like <code>AND ..._ID IN (?,?,?)</code>, then the ordering paramsIn's elements doesn't really matter.
 	 *
-	 * @param paramsIn
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
@@ -2419,7 +2411,6 @@ public class DB
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 *
-	 * @param paramsIn
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
@@ -2477,10 +2468,10 @@ public class DB
 
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+		if (MigrationScriptFileLoggerHolder.isEnabled()
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
-			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
+			log.debug("Returning 'false' for table {} because log migration scripts is enabled and this table is supposed to be logged", TableName);
 			return false;
 		}
 
@@ -2559,7 +2550,6 @@ public class DB
 	 * <li>use it only if is really needed</li>
 	 * </ul>
 	 *
-	 * @param sql
 	 * @return converted SQL
 	 */
 	public String convertSqlToNative(final String sql)

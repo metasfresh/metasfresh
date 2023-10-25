@@ -20,16 +20,16 @@ import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -100,12 +100,10 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -121,6 +119,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
@@ -180,7 +179,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
 		dimensionFactories.add(new InvoiceDimensionFactory());
@@ -404,6 +403,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
 		tax_NotFound.setValidFrom(plvDate);
 		tax_NotFound.setC_Country_ID(100);
+		tax_NotFound.setName("TaxNotFound");
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -416,6 +416,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
 		tax_Default.setValidFrom(plvDate);
 		tax_Default.setC_Country_ID(100);
+		tax_Default.setName("Default Tax");
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 
@@ -681,7 +682,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
+			assertThat(existingInvalidCandidates).as("Existing invalid invoice candidates").isFalse();
 		}
 	}
 

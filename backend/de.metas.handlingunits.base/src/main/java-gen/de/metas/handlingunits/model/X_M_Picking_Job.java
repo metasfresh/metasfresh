@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1510656831L;
+	private static final long serialVersionUID = -675362545L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -89,6 +89,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public void setDeliveryDate (final java.sql.Timestamp DeliveryDate)
+	{
+		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDeliveryDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
 	}
 
 	@Override

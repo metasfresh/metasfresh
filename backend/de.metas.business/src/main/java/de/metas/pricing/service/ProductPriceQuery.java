@@ -9,6 +9,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -85,6 +86,7 @@ public class ProductPriceQuery
 
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
+	private TaxCategoryId _taxCategoryId;
 
 	private AttributePricing _attributePricing = AttributePricing.IGNORE;
 	private I_M_AttributeSetInstance _attributePricing_asiToMatch;
@@ -112,6 +114,7 @@ public class ProductPriceQuery
 				.add("asiToMatch", _attributePricing_asiToMatch)
 				//
 				.add("scalePrice", _scalePrice)
+				.add("taxCategoryId", _taxCategoryId)
 				//
 				.add("additionalMatchers", _additionalMatchers == null || _additionalMatchers.isEmpty() ? null : _additionalMatchers)
 				.toString();
@@ -317,6 +320,14 @@ public class ProductPriceQuery
 		}
 
 		//
+		// Tax Category
+		final TaxCategoryId taxCategoryId = getTaxCategoryId();
+		if (taxCategoryId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
+		}
+
+		//
 		// Additional filters
 		final Collection<IProductPriceQueryMatcher> additionalMatchers = getAdditionalMatchers();
 		if (!additionalMatchers.isEmpty())
@@ -350,6 +361,17 @@ public class ProductPriceQuery
 	{
 		Check.assumeNotNull(_productId, "product shall be set for {}", this);
 		return _productId;
+	}
+
+	public ProductPriceQuery setTaxCategoryId(final TaxCategoryId taxCategoryId)
+	{
+		_taxCategoryId = taxCategoryId;
+		return this;
+	}
+
+	private TaxCategoryId getTaxCategoryId()
+	{
+		return _taxCategoryId;
 	}
 
 	/** Matches product price which is NOT marked as "attributed pricing" */

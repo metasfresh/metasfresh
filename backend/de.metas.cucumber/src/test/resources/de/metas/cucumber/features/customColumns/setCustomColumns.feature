@@ -52,7 +52,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
-    
+
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |
       | order                 | BPartnerName     | true           | 2022-08-05      | 2022-08-05T14:38:40.108Z | 2.1234     | null      |

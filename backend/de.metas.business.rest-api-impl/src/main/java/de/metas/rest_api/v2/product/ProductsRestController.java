@@ -82,17 +82,20 @@ public class ProductsRestController
 	private final AlbertaProductService albertaProductService;
 	private final ExternalSystemService externalSystemService;
 	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	public ProductsRestController(
 			@NonNull final ProductsServicesFacade productsServicesFacade,
 			@NonNull final AlbertaProductService albertaProductService,
 			@NonNull final ExternalSystemService externalSystemService,
-			@NonNull final ProductRestService productRestService)
+			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
 	{
 		this.productsServicesFacade = productsServicesFacade;
 		this.albertaProductService = albertaProductService;
 		this.externalSystemService = externalSystemService;
 		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 	}
 
 	@GetMapping
@@ -114,7 +117,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
-					.productRestService(productRestService)
+					.externalIdentifierResolver(externalIdentifierResolver)
 					.externalSystemType(externalSystemType)
 					.externalSystemConfigValue(externalSystemChildConfigValue)
 					.adLanguage(adLanguage)
@@ -180,7 +183,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
-					.productRestService(productRestService)
+					.externalIdentifierResolver(externalIdentifierResolver)
 					.adLanguage(adLanguage)
 					.orgCode(orgCode)
 					.productIdentifier(productIdentifier)

@@ -1205,6 +1205,29 @@ public interface I_PP_Order
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModular_Flatrate_Term_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_PP_Order.class, "Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
+
+	/**
 	 * Set MRP Allow Cleanup.
 	 * MRP is allowed to remove this document
 	 *

@@ -28,7 +28,6 @@ import com.google.common.collect.Multimaps;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,13 +48,13 @@ import java.util.List;
 @ToString
 public class ShipmentScheduleAvailableStockDetail
 {
-	@Getter(AccessLevel.PACKAGE)
+	@Getter
 	private final ProductId productId;
 
-	@Getter(AccessLevel.PACKAGE)
+	@Getter
 	private final WarehouseId warehouseId;
 
-	@Getter(AccessLevel.PACKAGE)
+	@Getter
 	private final AttributesKey storageAttributesKey;
 
 	private BigDecimal qtyOnHand;
@@ -221,8 +220,6 @@ public class ShipmentScheduleAvailableStockDetail
 		{
 			final ShipmentScheduleAvailableStockDetail lastStockDetail = stockDetails.get(stockDetails.size() - 1);
 			lastStockDetail.subtractQtyOnHand(qtyToRemoveRemaining);
-
-			qtyToRemoveRemaining = BigDecimal.ZERO;
 		}
 	}
 }

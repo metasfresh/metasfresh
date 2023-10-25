@@ -572,4 +572,18 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.postUpdate(ic);
 	}
+
+	@Override
+	public void setWarehouseId(final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setWarehouseId(ic);
+	}
+
+	@Override
+	public void setHarvestingDetails(final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setHarvestingDetails(ic);
+	}
 }

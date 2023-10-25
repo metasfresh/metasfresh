@@ -94,6 +94,10 @@ public class M_HU_Attribute
 		{
 			huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(huAttribute);
 		}
+		else if(huUniqueAttributesService.belongsToQualityWarehouse(huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()))))
+		{
+			huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(huAttribute);
+		}
 
 		else
 		{
