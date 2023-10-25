@@ -202,7 +202,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000013, SeqNo=19, Updated=now(), UpdatedBy=1
 
 -- Value: MODULAR_CONTRACT_TRANSITION_PREFIX
 -- 2023-10-24T10:31:18.636Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545355,0,TO_TIMESTAMP('2023-10-24 13:31:18.416','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Modularer Vertragsübergang','I',TO_TIMESTAMP('2023-10-24 13:31:18.416','YYYY-MM-DD HH24:MI:SS.US'),100,'MODULAR_CONTRACT_TRANSITION_PREFIX')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545355,0,TO_TIMESTAMP('2023-10-24 13:31:18.416','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Modularer Vertrag Übergangsbedingungen','I',TO_TIMESTAMP('2023-10-24 13:31:18.416','YYYY-MM-DD HH24:MI:SS.US'),100,'MODULAR_CONTRACT_TRANSITION_PREFIX')
 ;
 
 -- 2023-10-24T10:31:18.650Z
@@ -211,7 +211,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: MODULAR_CONTRACT_TRANSITION_PREFIX
 -- 2023-10-24T10:31:31.243Z
-UPDATE AD_Message_Trl SET MsgText='Modular Contract Transition',Updated=TO_TIMESTAMP('2023-10-24 13:31:31.243','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545355
+UPDATE AD_Message_Trl SET MsgText='Modular contract transition conditions',Updated=TO_TIMESTAMP('2023-10-24 13:31:31.243','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545355
 ;
 
 -- Run mode: SWING_CLIENT

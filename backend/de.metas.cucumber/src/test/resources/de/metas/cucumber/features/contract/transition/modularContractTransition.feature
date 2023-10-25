@@ -50,8 +50,8 @@ Feature: Calculation of Modular Contract Transition
     And the C_Flatrate_Conditions identified by modularContractTerm_2022 is completed
 
     And load C_Flatrate_Transition from metasfresh:
-      | C_Flatrate_Transition_ID.Identifier | Name                                       |
-      | transition_2                        | Modularer Vertragsübergang test_10242023_1 |
+      | C_Flatrate_Transition_ID.Identifier | Name                                                   |
+      | transition_2                        | Modularer Vertrag Übergangsbedingungen test_10242023_1 |
 
     And validate C_Flatrate_Transition
       | C_Flatrate_Transition_ID.Identifier | OPT.C_Calendar_Contract_ID.Identifier | OPT.EndsWithCalendarYear | OPT.TermDuration | OPT.TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.IsNotifyUserInCharge |
@@ -66,7 +66,7 @@ Feature: Calculation of Modular Contract Transition
   Create new Flatrate Conditions and complete it -> the existing transition is used, no additional transition is created
   Validate that the Modular Contract Transition is correctly set on C_Flatrate_Conditions.C_Flatrate_Transition_ID
   Create a new contract using the above mentioned Flatrate Conditions -> the Modular Contract End Date is set to the last Day of Modular Contract Settings Calendar and Year
-    
+
     Given metasfresh contains C_Calendar
       | C_Calendar_ID.Identifier | Name            |
       | calendar_1               | test_10242023_2 |
