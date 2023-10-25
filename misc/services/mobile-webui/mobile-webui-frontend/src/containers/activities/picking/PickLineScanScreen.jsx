@@ -38,7 +38,7 @@ const PickLineScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { qtyToPick, uom, qtyRejectedReasons, catchWeight, catchWeightUom } = useSelector(
+  const { qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -94,7 +94,7 @@ const PickLineScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
-      catchWeight={catchWeight}
+      catchWeight={0}
       catchWeightUom={catchWeightUom}
       //
       resolveScannedBarcode={resolveScannedBarcode}
@@ -113,8 +113,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyToPick: line.qtyToPick,
     uom: line.uom,
     qtyRejectedReasons,
-    //catchWeight:,
-    catchWeightUom: 'Kg', // FIXME HARDCODED
+    catchWeightUom: line.catchWeightUOM,
   };
 };
 
