@@ -51,7 +51,7 @@ public class JsonPickingJob
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)
-								.isAllowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+								.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 								.build())
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()

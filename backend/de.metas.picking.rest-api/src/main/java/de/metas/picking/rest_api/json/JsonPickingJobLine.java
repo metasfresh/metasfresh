@@ -47,7 +47,7 @@ public class JsonPickingJobLine
 	@NonNull BigDecimal qtyToPick;
 	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
-	boolean isAllowPickingAnyHU;
+	boolean allowPickingAnyHU;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
