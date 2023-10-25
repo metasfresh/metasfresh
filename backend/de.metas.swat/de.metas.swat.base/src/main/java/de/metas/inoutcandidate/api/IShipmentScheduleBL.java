@@ -164,8 +164,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void applyUserChangesInTrx(ShipmentScheduleUserChangeRequestsList userChanges);
 
-	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
-
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 
 	void applyShipmentScheduleChanges(ApplyShipmentScheduleChangesRequest request);

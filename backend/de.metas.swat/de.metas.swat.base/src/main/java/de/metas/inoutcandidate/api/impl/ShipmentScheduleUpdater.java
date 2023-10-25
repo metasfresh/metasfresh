@@ -549,7 +549,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				else
 				{
 					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
-								 qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
+							qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
 				}
 			}
 			//
@@ -585,7 +585,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 				logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-							 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+						olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 			}
 		}
 		else if (deliveryRule.isManual())
@@ -599,7 +599,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 			qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 			logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-						 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+					deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 		}
 		return qtyRequired;
 	}
@@ -869,17 +869,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final boolean isCatchWeight = shipmentScheduleBL.isCatchWeight(sched);
-		if (!isCatchWeight)
-		{
-			sched.setCatch_UOM_ID(-1);
-			return;
-		}
+		final UomId catchWeightUomId = sched.isCatchWeight()
+				? productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID())).orElse(null)
+				: null;
 
-		final Optional<UomId> catchUOMId = productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
-		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
-
-		sched.setCatch_UOM_ID(catchUomRepoId);
+		sched.setCatch_UOM_ID(UomId.toRepoId(catchWeightUomId));
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)

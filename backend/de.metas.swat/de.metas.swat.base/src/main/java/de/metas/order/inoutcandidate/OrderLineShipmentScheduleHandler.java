@@ -186,8 +186,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.mainLocationAdapter(shipmentSchedule)
 				.setFrom(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).toDocumentLocation());
 
-		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
-		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
+		final ProductId productId = Check.assumeNotNull(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), "{} has M_Product_ID set", orderLine);
+		shipmentSchedule.setM_Product_ID(productId.getRepoId());
+		shipmentSchedule.setIsCatchWeight(orderLineBL.isCatchWeight(orderLine));
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
 
@@ -209,7 +210,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
 		
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
