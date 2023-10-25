@@ -22,12 +22,14 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.calendar.standard.ICalendarBL;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -45,6 +47,8 @@ public class C_Flatrate_Conditions
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 	private static final AdMessageKey MSG_ERROR_INVALID_ONFLATRATE_TERM_EXTEND = AdMessageKey.of("MSG_ExtensionNotAllowed_InterimAndModularContracts");
 
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	public C_Flatrate_Conditions(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
@@ -88,6 +92,8 @@ public class C_Flatrate_Conditions
 			throw new AdempiereException(MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS)
 					.markAsUserValidationError();
 		}
+
+		calendarBL.checkCorrectCalendar(settings.getYearAndCalendarId().calendarId());
 	}
 
 	private void validateOnFlatrateTermExtend(@NonNull final String onFlatrateTermExtend)
