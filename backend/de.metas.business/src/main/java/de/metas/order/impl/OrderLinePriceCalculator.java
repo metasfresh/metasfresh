@@ -160,7 +160,7 @@ final class OrderLinePriceCalculator
 		//
 		// Prices
 		priceAndDiscount.applyTo(orderLine);
-		orderLine.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getRecordString());
+		orderLine.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM

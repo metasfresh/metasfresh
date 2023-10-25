@@ -490,7 +490,7 @@ class OLCandOrderFactory
 		//
 		// Prices
 		{
-			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getRecordString());
+			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getCode());
 
 			currentOrderLine.setIsManualPrice(candidate.isManualPrice());
 			if (candidate.isManualPrice())
