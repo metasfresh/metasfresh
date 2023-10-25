@@ -15,7 +15,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -317,7 +316,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -625,7 +623,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -933,7 +930,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1235,7 +1231,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1580,7 +1575,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1931,7 +1925,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2039,7 +2032,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2374,7 +2366,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2908,7 +2899,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3218,7 +3208,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3545,7 +3534,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3653,7 +3641,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3955,7 +3942,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -4458,7 +4444,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -4768,7 +4753,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
-            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
