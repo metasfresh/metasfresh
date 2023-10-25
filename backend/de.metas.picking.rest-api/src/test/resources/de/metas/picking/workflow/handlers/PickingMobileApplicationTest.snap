@@ -13,7 +13,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -313,7 +315,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -619,7 +623,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -925,7 +931,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1225,7 +1233,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1568,7 +1578,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -1917,7 +1929,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2023,7 +2037,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2356,7 +2372,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -2888,7 +2906,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3196,7 +3216,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3521,7 +3543,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3627,7 +3651,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -3927,7 +3953,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -4428,7 +4456,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
@@ -4736,7 +4766,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
+            "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "isAllowPickingAnyHU" : false,
             "pickingLineId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
