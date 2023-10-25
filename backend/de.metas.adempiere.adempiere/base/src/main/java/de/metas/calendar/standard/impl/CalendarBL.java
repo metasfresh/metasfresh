@@ -194,8 +194,7 @@ public class CalendarBL implements ICalendarBL
 
 	public void checkCorrectCalendar(@NonNull final CalendarId calendarId)
 	{
-		final I_C_Calendar calendar = Optional.ofNullable(calendarDAO.getById(calendarId))
-				.orElseThrow(() -> new AdempiereException("No record found for " + calendarId));
+		final I_C_Calendar calendar = calendarDAO.getById(calendarId);
 
 		checkCorrectCalendar(calendar);
 	}

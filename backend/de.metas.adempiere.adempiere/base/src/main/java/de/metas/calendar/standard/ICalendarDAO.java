@@ -77,5 +77,5 @@ public interface ICalendarDAO extends ISingletonService
 	 */
 	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
 
-	@Nullable I_C_Calendar getById(@NonNull CalendarId calendarId);
+	@NonNull I_C_Calendar getById(@NonNull CalendarId calendarId);
 }

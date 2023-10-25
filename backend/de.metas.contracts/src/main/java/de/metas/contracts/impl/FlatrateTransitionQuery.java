@@ -23,26 +23,14 @@
 package de.metas.contracts.impl;
 
 import de.metas.calendar.standard.CalendarId;
-import de.metas.contracts.FlatrateTransitionId;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-@Service
-@RequiredArgsConstructor
-public class FlatrateTransitionBL
+@Builder
+@Value
+public class FlatrateTransitionQuery
 {
-	@NonNull
-	private final FlatrateTransitionDAO flatrateTransitionDAO;
-
-	@NonNull
-	public FlatrateTransitionId getOrCreateTransition(
-			@NonNull final CalendarId calendarId,
-			@NonNull final FlatrateTransitionId flatrateTransitionTemplateId,
-			@NonNull final String namePrefix)
-	{
-		final FlatrateTransition templateFlatrateTransition = flatrateTransitionDAO.getById(flatrateTransitionTemplateId);
-
-		return flatrateTransitionDAO.getOrCreate(calendarId, templateFlatrateTransition, namePrefix);
-	}
+	@NonNull CalendarId calendarId;
+	@NonNull FlatrateTransition templateFlatrateTransition;
 }

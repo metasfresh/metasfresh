@@ -27,7 +27,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.impl.FlatrateTransitionBL;
+import de.metas.contracts.impl.FlatrateTransitionService;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -75,7 +75,7 @@ public class C_Flatrate_Conditions
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final FlatrateTransitionBL flatrateTransitionBL;
+	private final FlatrateTransitionService flatrateTransitionService;
 	@NonNull
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -185,7 +185,7 @@ public class C_Flatrate_Conditions
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
 
-		final FlatrateTransitionId effectiveFlatrateTransitionId = flatrateTransitionBL
+		final FlatrateTransitionId effectiveFlatrateTransitionId = flatrateTransitionService
 				.getOrCreateTransition(modularContractSettings.getYearAndCalendarId().calendarId(),
 									   flatrateTransitionTemplateId,
 									   msgBL.getBaseLanguageMsg(MSG_MODULAR_CONTRACT_TRANSITION_NAME_PREFIX));

@@ -41,7 +41,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class FlatrateTransitionDAO
+public class FlatrateTransitionRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
@@ -61,20 +61,21 @@ public class FlatrateTransitionDAO
 
 	@NonNull
 	public FlatrateTransitionId getOrCreate(
-			@NonNull final CalendarId calendarId,
-			@NonNull final FlatrateTransition flatrateTransition,
+			@NonNull final FlatrateTransitionQuery flatrateTransitionQuery,
 			@NonNull final String namePrefix)
 	{
-		return Optional.ofNullable(getBy(calendarId, flatrateTransition))
-				.orElseGet(() -> create(calendarId, flatrateTransition, namePrefix));
+		return Optional.ofNullable(getBy(flatrateTransitionQuery))
+				.orElseGet(() -> create(flatrateTransitionQuery, namePrefix));
 	}
 
 	@NonNull
 	private FlatrateTransitionId create(
-			@NonNull final CalendarId calendarId,
-			@NonNull final FlatrateTransition flatrateTransitionTemplate,
+			@NonNull final FlatrateTransitionQuery flatrateTransitionQuery,
 			@NonNull final String namePrefix)
 	{
+		final CalendarId calendarId = flatrateTransitionQuery.getCalendarId();
+		final FlatrateTransition flatrateTransitionTemplate = flatrateTransitionQuery.getTemplateFlatrateTransition();
+
 		final I_C_Flatrate_Transition transitionRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class);
 
 		transitionRecord.setName(namePrefix + " " + calendarDAO.getName(calendarId));
@@ -93,13 +94,13 @@ public class FlatrateTransitionDAO
 	}
 
 	@Nullable
-	private FlatrateTransitionId getBy(
-			@NonNull final CalendarId calendarId,
-			@NonNull final FlatrateTransition flatrateTransitionTemplate)
+	private FlatrateTransitionId getBy(@NonNull final FlatrateTransitionQuery flatrateTransitionQuery)
 	{
+		final FlatrateTransition flatrateTransitionTemplate = flatrateTransitionQuery.getTemplateFlatrateTransition();
+
 		final I_C_Flatrate_Transition transitionRecord = queryBL.createQueryBuilder(I_C_Flatrate_Transition.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_C_Calendar_Contract_ID, calendarId)
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_C_Calendar_Contract_ID, flatrateTransitionQuery.getCalendarId())
 				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_EndsWithCalendarYear, flatrateTransitionTemplate.getEndsWithCalendarYear())
 				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDuration, flatrateTransitionTemplate.getTermDuration())
 				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_TermDurationUnit, flatrateTransitionTemplate.getTermDurationUnit().getCode())

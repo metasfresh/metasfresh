@@ -24,13 +24,13 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -160,15 +160,8 @@ public class C_Flatrate_Term_StepDef
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
-			final String docStatus = tableRow.get("OPT." + COLUMNNAME_DocStatus);
-			if (Check.isNotBlank(docStatus))
-			{
-				contractRecord.setDocStatus(DocStatus.ofCode(docStatus).getCode());
-			}
-			else
-			{
-				contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-			}
+			final DocStatus docStatus = DocStatus.ofNullableCode(tableRow.get("OPT." + COLUMNNAME_DocStatus));
+			contractRecord.setDocStatus(CoalesceUtil.coalesceNotNull(docStatus, DocStatus.Completed).getCode());
 			
 			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_Processed);
 			Optional.ofNullable(processed)

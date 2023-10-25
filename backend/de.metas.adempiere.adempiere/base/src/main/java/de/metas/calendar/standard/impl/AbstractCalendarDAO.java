@@ -200,9 +200,16 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	}
 
 	@Override
-	@Nullable
+	@NonNull
 	public I_C_Calendar getById(@NonNull final CalendarId calendarId)
 	{
-		return load(calendarId, I_C_Calendar.class);
+		final I_C_Calendar calendarRecord = load(calendarId, I_C_Calendar.class);
+		
+		if (calendarRecord == null)
+		{
+			throw new AdempiereException("No record found for " + calendarId);
+		}
+		
+		return calendarRecord;
 	}
 }
