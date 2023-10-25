@@ -16,7 +16,7 @@ const PickLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, steps } = useSelector(
+  const { caption, allowPickingAnyHU, steps } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -52,8 +52,9 @@ const PickLineScreen = () => {
   return (
     <div className="section pt-2">
       <div className="buttons">
-        <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
-
+        {allowPickingAnyHU && (
+          <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+        )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
@@ -83,6 +84,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: lineProps?.caption,
+    allowPickingAnyHU: lineProps?.allowPickingAnyHU ?? false,
     steps: Object.values(stepsById),
   };
 };
