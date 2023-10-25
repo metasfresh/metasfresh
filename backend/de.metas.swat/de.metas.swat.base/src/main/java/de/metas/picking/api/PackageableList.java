@@ -29,6 +29,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -37,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -97,6 +99,16 @@ public final class PackageableList implements Iterable<Packageable>
 	public ProductId getSingleProductId()
 	{
 		return getSingleValue(Packageable::getProductId).orElseThrow(() -> new AdempiereException("No single product found in " + list));
+	}
+
+	public Optional<UomId> getSingleCatchWeightUomIdIfUnique()
+	{
+		final List<UomId> catchWeightUomIds = list.stream()
+				.map(Packageable::getCatchWeightUomId)
+				// don't filter out null catch UOMs
+				.distinct()
+				.collect(Collectors.toList());
+		return catchWeightUomIds.size() == 1 ? Optional.ofNullable(catchWeightUomIds.get(0)) : Optional.empty();
 	}
 
 	public OrderAndLineId getSingleSalesOrderLineId()
