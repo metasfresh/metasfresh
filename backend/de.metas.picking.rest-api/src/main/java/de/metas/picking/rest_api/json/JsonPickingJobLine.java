@@ -43,7 +43,7 @@ public class JsonPickingJobLine
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
 	@NonNull List<JsonPickingJobStep> steps;
-	boolean isAllowPickingAnyHU;
+	boolean allowPickingAnyHU;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
