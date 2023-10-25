@@ -78,7 +78,9 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				greetingRepository,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
