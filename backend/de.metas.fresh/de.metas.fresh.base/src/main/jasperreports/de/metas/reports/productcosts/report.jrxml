@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.9487171000000116"/>
 	<property name="ireport.x" value="474"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -15,9 +15,9 @@
 	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_AcctSchema_ID" class="java.math.BigDecimal"/>
-	<parameter name="Date" class="java.sql.Date"/>
+	<parameter name="DateAcct" class="java.util.Date" evaluationTime="Early"/>
 	<queryString>
-		<![CDATA[select * from report.getCostsPerDate($P{Date},
+		<![CDATA[select * from report.getCostsPerDate($P{DateAcct},
 								  $P{C_AcctSchema_ID},
                                   $P{AD_Org_ID},
                                   $P{M_Product_ID},
@@ -133,7 +133,7 @@
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{DateAcct}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="165" y="67" width="10" height="12" uuid="5d551a59-8cc4-408a-9aeb-d08c65237018"/>
@@ -244,7 +244,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{costelement}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
 				<reportElement x="702" y="5" width="100" height="12" uuid="de9ee69e-a235-4470-ab7a-d1d81e61dc50"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10" isBold="false"/>

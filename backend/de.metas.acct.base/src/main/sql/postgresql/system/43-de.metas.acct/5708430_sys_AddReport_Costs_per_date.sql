@@ -292,4 +292,16 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=1, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542123 AND AD_Tree_ID=10
 ;
 
-UPDATE AD_Process_Para set AD_Val_Rule_ID=null where ad_process_para_id=542730;
+UPDATE AD_Process_Para set AD_Val_Rule_ID=null,  defaultvalue ='1000000' where ad_process_para_id=542730;
+
+UPDATE ad_process_para
+SET name = 'Buchungsdatum', description = 'Accounting Date',
+    help         = 'The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.', ad_process_id = 585331, seqno = 10, ad_reference_id = 15, ad_reference_value_id = NULL, ad_val_rule_id = NULL, columnname = 'DateAcct', iscentrallymaintained = 'Y', fieldlength = 0, ismandatory = 'Y', isrange = 'N',
+    defaultvalue = '@Date@',  ad_element_id = 263, entitytype = 'de.metas.acct'
+WHERE ad_process_para_id = 542728
+;
+
+UPDATE ad_process_para_trl SET name = 'Date', description = null, help = null, istranslated = 'Y' WHERE ad_process_para_id = 542728 AND ad_language = 'fr_CH';
+UPDATE ad_process_para_trl SET name = 'Datum', description = null, help = null, istranslated = 'Y' WHERE ad_process_para_id = 542728 AND ad_language = 'de_CH';
+UPDATE ad_process_para_trl SET name = 'Date', description = null, help = null, istranslated = 'Y' WHERE ad_process_para_id = 542728 AND ad_language = 'en_US';
+UPDATE ad_process_para_trl SET name = 'Datum', description = null, help = null, istranslated = 'Y' WHERE ad_process_para_id = 542728 AND ad_language = 'de_DE';
