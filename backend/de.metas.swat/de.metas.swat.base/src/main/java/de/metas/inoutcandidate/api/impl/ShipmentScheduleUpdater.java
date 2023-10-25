@@ -45,7 +45,6 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -269,8 +268,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-				updateCatchUomId(sched);
 
 				updateWarehouseId(sched);
 
@@ -820,7 +817,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
-	 *                            task https://github.com/metasfresh/metasfresh/issues/298
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/298">issue 298</a>
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{
@@ -841,6 +838,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for " + olAndSched + "; \n"
 					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
+			//noinspection ThrowableNotThrown
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);
 			return BigDecimal.ONE.negate();
 		}
@@ -865,15 +863,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId.getRepoId());
-	}
-
-	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final UomId catchWeightUomId = sched.isCatchWeight()
-				? productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID())).orElse(null)
-				: null;
-
-		sched.setCatch_UOM_ID(UomId.toRepoId(catchWeightUomId));
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
