@@ -48,7 +48,7 @@ public class JsonPickingJob
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.builderFrom(line, jsonOpts)
-								.isAllowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+								.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 								.build())
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
