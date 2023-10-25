@@ -139,6 +139,10 @@ public class PickingJobPickCommand
 		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
 				? Quantitys.create(catchWeightBD, line.getCatchUomId())
 				: null;
+		if (this.catchWeight != null && !this.catchWeight.isPositive())
+		{
+			throw new AdempiereException("Catch Weight shall be positive");
+		}
 	}
 
 	private static Quantity computeQtyRejected(
