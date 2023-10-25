@@ -24,14 +24,17 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -42,11 +45,13 @@ public class JsonPickingJobLine
 	@NonNull String caption;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
+	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean isAllowPickingAnyHU;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
+			@NonNull final Function<UomId, String> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
@@ -56,6 +61,7 @@ public class JsonPickingJobLine
 				.caption(line.getProductName().translate(adLanguage))
 				.uom(line.getQtyToPick().getUOMSymbol())
 				.qtyToPick(line.getQtyToPick().toBigDecimal())
+				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()) : null)
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts))

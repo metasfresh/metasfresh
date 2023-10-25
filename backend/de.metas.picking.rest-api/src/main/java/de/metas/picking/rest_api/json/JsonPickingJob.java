@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,6 +32,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -42,12 +44,13 @@ public class JsonPickingJob
 
 	public static JsonPickingJob of(
 			@NonNull final PickingJob pickingJob,
+			@NonNull final Function<UomId, String> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
 				.lines(pickingJob.getLines()
 						.stream()
-						.map(line -> JsonPickingJobLine.builderFrom(line, jsonOpts)
+						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)
 								.isAllowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 								.build())
 						.collect(ImmutableList.toImmutableList()))
