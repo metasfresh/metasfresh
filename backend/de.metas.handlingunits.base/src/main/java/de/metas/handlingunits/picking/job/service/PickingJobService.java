@@ -263,7 +263,6 @@ public class PickingJobService
 		{
 			case PICK:
 			{
-				assert event.getQtyPicked() != null;
 				return PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
