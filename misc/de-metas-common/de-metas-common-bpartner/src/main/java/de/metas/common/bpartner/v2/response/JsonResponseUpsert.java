@@ -40,8 +40,4 @@ public class JsonResponseUpsert
 	@Singular
 	@JsonProperty("responseItems")
 	List<JsonResponseUpsertItem> responseItems;
-
-	@Singular
-	@JsonProperty("greetingResponseItems")
-	List<JsonResponseUpsertItem> responseItems;
 }
