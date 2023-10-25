@@ -24,6 +24,8 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.PickingJobRestService;
@@ -86,11 +88,11 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	}
 
 	@Nullable
-	private String getUOMSymbolById(@Nullable final UomId uomId)
+	private ITranslatableString getUOMSymbolById(@Nullable final UomId uomId)
 	{
 		if (uomId == null)
 		{
-			return null;
+			return TranslatableStrings.empty();
 		}
 		return uomDAO.getUOMSymbolById(uomId);
 	}

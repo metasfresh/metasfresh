@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
@@ -44,7 +45,7 @@ public class JsonPickingJob
 
 	public static JsonPickingJob of(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final Function<UomId, String> getUOMSymbolById,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()

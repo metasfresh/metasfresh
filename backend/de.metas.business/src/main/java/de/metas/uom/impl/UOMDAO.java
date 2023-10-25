@@ -203,9 +203,9 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public String getUOMSymbolById(@NonNull final UomId uomId)
+	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = getById(uomId);
-		return uom.getUOMSymbol();
+		return InterfaceWrapperHelper.getModelTranslationMap(uom).getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
 	}
 }

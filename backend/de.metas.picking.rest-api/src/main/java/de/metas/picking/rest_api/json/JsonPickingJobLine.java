@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
@@ -51,7 +52,7 @@ public class JsonPickingJobLine
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
-			@NonNull final Function<UomId, String> getUOMSymbolById,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
@@ -61,7 +62,7 @@ public class JsonPickingJobLine
 				.caption(line.getProductName().translate(adLanguage))
 				.uom(line.getQtyToPick().getUOMSymbol())
 				.qtyToPick(line.getQtyToPick().toBigDecimal())
-				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()) : null)
+				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts))
