@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -75,6 +76,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycleOverride (@Nullable BigDecimal CapacityPerProductionCycleOverride);
+
+	/**
+	 * Get Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCapacityPerProductionCycleOverride();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_CapacityPerProductionCycleOverride = new ModelColumn<>(I_PP_Order_Candidate.class, "CapacityPerProductionCycleOverride", null);
+	String COLUMNNAME_CapacityPerProductionCycleOverride = "CapacityPerProductionCycleOverride";
 
 	/**
 	 * Get Created.
