@@ -45,6 +45,7 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -109,7 +110,6 @@ import java.util.stream.Stream;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@VisibleForTesting
@@ -268,6 +268,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
+
+				updateCatchUomId(sched);
 
 				updateWarehouseId(sched);
 
@@ -863,6 +865,15 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId.getRepoId());
+	}
+
+	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final UomId catchUOMId = sched.isCatchWeight()
+				? productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID())).orElse(null)
+				: null;
+
+		sched.setCatch_UOM_ID(UomId.toRepoId(catchUOMId));
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
