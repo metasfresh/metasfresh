@@ -201,4 +201,11 @@ public class UOMDAO implements IUOMDAO
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
 	}
+
+	@Override
+	public String getUOMSymbolById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return uom.getUOMSymbol();
+	}
 }
