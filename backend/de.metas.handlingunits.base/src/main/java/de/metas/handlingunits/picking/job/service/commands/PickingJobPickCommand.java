@@ -37,6 +37,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -72,6 +73,7 @@ public class PickingJobPickCommand
 	@Nullable private final HUQRCode pickFromHUQRCode;
 	@NonNull private final Quantity qtyToPick;
 	@Nullable private final QtyRejectedWithReason qtyRejected;
+	@Nullable private final Quantity catchWeight;
 
 	//
 	// State
@@ -91,7 +93,8 @@ public class PickingJobPickCommand
 			final @Nullable HUQRCode pickFromHUQRCode,
 			final @NonNull BigDecimal qtyToPickBD,
 			final @Nullable BigDecimal qtyRejectedBD,
-			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode)
+			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
+			final @Nullable BigDecimal catchWeightBD)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -127,6 +130,10 @@ public class PickingJobPickCommand
 		{
 			this.qtyRejected = null;
 		}
+
+		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
+				? Quantitys.create(catchWeightBD, line.getCatchUomId())
+				: null;
 	}
 
 	private static Quantity computeQtyRejected(

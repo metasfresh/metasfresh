@@ -276,6 +276,7 @@ public class PickingJobService
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
+						.catchWeightBD(event.getCatchWeight())
 						//
 						.build().execute();
 			}

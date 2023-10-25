@@ -60,4 +60,5 @@ public class JsonPickingStepEvent
 	@Nullable BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
+	@Nullable BigDecimal catchWeight;
 }
