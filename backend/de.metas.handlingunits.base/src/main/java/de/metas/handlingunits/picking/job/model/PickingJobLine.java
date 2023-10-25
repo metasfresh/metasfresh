@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -88,7 +89,11 @@ public class PickingJobLine
 
 	Stream<ShipmentScheduleId> streamShipmentScheduleId()
 	{
-		return steps.stream().map(PickingJobStep::getShipmentScheduleId);
+		return Stream.concat(
+						Stream.of(shipmentScheduleId),
+						streamSteps().map(PickingJobStep::getShipmentScheduleId)
+				)
+				.filter(Objects::nonNull);
 	}
 
 	public Stream<PickingJobStep> streamSteps() {return steps.stream();}
