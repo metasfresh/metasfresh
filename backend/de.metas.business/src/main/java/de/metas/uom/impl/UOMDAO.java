@@ -218,4 +218,11 @@ public class UOMDAO implements IUOMDAO
 										   .create()
 										   .firstOnlyOrNull(I_C_UOM.class));
 	}
+
+	@Override
+	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return InterfaceWrapperHelper.getModelTranslationMap(uom).getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
+	}
 }

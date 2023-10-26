@@ -12,6 +12,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,6 +50,7 @@ public class PickingJobCreateRepoRequest
 		@NonNull Quantity qtyToPick;
 		@NonNull OrderAndLineId salesOrderAndLineId;
 		@Nullable ShipmentScheduleId shipmentScheduleId;
+		@Nullable UomId catchWeightUomId;
 		@Singular @NonNull ImmutableList<Step> steps;
 
 		@Builder.Default

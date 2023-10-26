@@ -59,6 +59,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -1031,4 +1032,11 @@ public class OrderLineBL implements IOrderLineBL
 		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
 		return onConsignmentAttributeService.isOnConsignment(productSI);
 	}
+
+	@Override
+	public boolean isCatchWeight(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(orderLine.getInvoicableQtyBasedOn()).isCatchWeight();
+	}
+
 }

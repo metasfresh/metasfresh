@@ -38,6 +38,10 @@ public class HUQRCodeJsonConverter
 					.setParameter("globalQRCode", globalQRCode); // avoid adding it to error message, it might be quite long
 		}
 
+		//
+		// IMPORTANT: keep in sync with huQRCodes.js
+		//
+
 		final GlobalQRCodeVersion version = globalQRCode.getVersion();
 		if (GlobalQRCodeVersion.equals(globalQRCode.getVersion(), JsonConverterV1.GLOBAL_QRCODE_VERSION))
 		{

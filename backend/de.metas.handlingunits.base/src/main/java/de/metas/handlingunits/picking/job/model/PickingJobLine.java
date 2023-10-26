@@ -31,12 +31,14 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -53,6 +55,7 @@ public class PickingJobLine
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
 
 	// computed values
@@ -66,6 +69,7 @@ public class PickingJobLine
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps)
 	{
 		this.id = id;
@@ -74,6 +78,7 @@ public class PickingJobLine
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
+		this.catchUomId = catchUomId;
 		this.steps = steps;
 
 		this.progress = computeProgress(steps);

@@ -243,7 +243,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		return getAttributeDisplayNameByValue(AttributeCode.ofString(value));
+	}
+
+	@Override
+	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final AttributeCode attributeCode)
+	{
 		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
 		return attribute != null
 				? Optional.of(attribute.getDisplayName())
@@ -706,16 +711,13 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
+	public void deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
-		final int deleteCount = queryBL
-				.createQueryBuilder(I_M_AttributeValue.class)
+		queryBL.createQueryBuilder(I_M_AttributeValue.class)
 				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
 				.create()
 				.delete();
-
-		return deleteCount > 0;
 	}
 
 	@Override
@@ -786,15 +788,6 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public boolean areAttributeSetsEqual(@NonNull final AttributeSetInstanceId firstASIId, @NonNull final AttributeSetInstanceId secondASIId)
-	{
-		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
-		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
-
-		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	@Override

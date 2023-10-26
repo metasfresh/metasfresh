@@ -349,6 +349,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.qtyPicked(json.getQtyPicked())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.catchWeight(json.getCatchWeight())
 				.build();
 	}
 

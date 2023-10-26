@@ -20,6 +20,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -100,6 +101,7 @@ class PickingJobCreateRepoHelper
 		record.setC_Order_ID(OrderAndLineId.toOrderRepoId(line.getSalesOrderAndLineId()));
 		record.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(line.getSalesOrderAndLineId()));
 		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(line.getShipmentScheduleId()));
+		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
 

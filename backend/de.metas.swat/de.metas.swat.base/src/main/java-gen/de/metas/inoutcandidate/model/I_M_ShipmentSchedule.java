@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -1028,6 +1027,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
+	 * Set Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCatchWeight (boolean IsCatchWeight);
+
+	/**
+	 * Get Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCatchWeight();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsCatchWeight = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsCatchWeight", null);
+	String COLUMNNAME_IsCatchWeight = "IsCatchWeight";
+
+	/**
 	 * Set Closed.
 	 *
 	 * <br>Type: YesNo
@@ -1258,7 +1278,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 
 	/**
-	 * Set Inoutline Handler.
+	 * Set Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
+
+	/**
+	 * Get Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Version_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Version_ID", null);
+	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
+
+	/**
+	 * Set M_IolCandHandler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1511,6 +1552,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
 	String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
+	 * Set Packbeschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackDescription (@Nullable java.lang.String PackDescription);
+
+	/**
+	 * Get Packbeschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackDescription();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
+	String COLUMNNAME_PackDescription = "PackDescription";
 
 	/**
 	 * Set Pick From Order.
@@ -1787,7 +1849,32 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Stock.
+	 * Set Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQtyItemCapacity (@Nullable BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getQtyItemCapacity();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyItemCapacity = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyItemCapacity", null);
+	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+
+	/**
+	 * Set Bestand.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity
@@ -1856,7 +1943,30 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered_Calculated = "QtyOrdered_Calculated";
 
 	/**
-	 * Set Quantity Ordered override.
+	 * Set Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_LU (BigDecimal QtyOrdered_LU);
+
+	/**
+	 * Get Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_LU();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_LU = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_LU", null);
+	String COLUMNNAME_QtyOrdered_LU = "QtyOrdered_LU";
+
+	/**
+	 * Set Bestellt abw..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2028,6 +2138,48 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_OverrideFulfilled = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver_OverrideFulfilled", null);
 	String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
+
+	/**
+	 * Set Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
+
+	/**
+	 * Get Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Calculated();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
+	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
+
+	/**
+	 * Set Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Override (@Nullable BigDecimal QtyTU_Override);
+
+	/**
+	 * Get Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Override();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Override", null);
+	String COLUMNNAME_QtyTU_Override = "QtyTU_Override";
 
 	/**
 	 * Set Record ID.

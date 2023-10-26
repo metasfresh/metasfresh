@@ -1,5 +1,9 @@
 package de.metas.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
@@ -35,6 +39,10 @@ import lombok.NonNull;
 
 public class M_HU_Report_Print_Labels extends M_HU_Report_Print_Template
 {
+	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Param(mandatory = true, parameterName = "AD_Process_ID")
 	private AdProcessId p_AD_Process_ID;
 

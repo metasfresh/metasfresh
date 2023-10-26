@@ -14,13 +14,16 @@ import { useBooleanSetting } from '../../reducers/settings';
 const GetQuantityDialog = ({
   userInfo,
   qtyTarget,
-  scaleTolerance,
+  totalQty,
+  qtyAlreadyOnScale,
   qtyCaption,
   uom,
   qtyRejectedReasons,
   scaleDevice,
-  totalQty,
-  qtyAlreadyOnScale,
+  scaleTolerance,
+  //
+  catchWeight: catchWeightParam,
+  catchWeightUom,
   //
   validateQtyEntered,
   onQtyChange,
@@ -33,8 +36,12 @@ const GetQuantityDialog = ({
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
+  const useCatchWeight = !scaleDevice && catchWeightUom;
+  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
+  const onCatchWeghtEntered = (qtyInfo) => setCatchWeight(qtyInfo);
 
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
@@ -43,7 +50,10 @@ const GetQuantityDialog = ({
       : 0;
 
   const allValid =
-    doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
+    doNotValidateQty ||
+    (qtyInfo?.isQtyValid &&
+      (qtyRejected === 0 || rejectedReason != null) &&
+      (!useCatchWeight || catchWeight?.isQtyValid));
 
   const onDialogYes = () => {
     if (allValid) {
@@ -58,6 +68,8 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
+        catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
+        catchWeightUom: useCatchWeight ? catchWeightUom : null,
       });
     }
   };
@@ -155,6 +167,18 @@ const GetQuantityDialog = ({
                     </td>
                   </tr>
                 )}
+                {useCatchWeight && (
+                  <tr>
+                    <th>Catch Weight</th>
+                    <td>
+                      <QtyInputField
+                        qty={qtyInfos.toNumberOrString(catchWeight)}
+                        uom={catchWeightUom}
+                        onQtyChange={onCatchWeghtEntered}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {qtyRejected > 0 && (
                   <>
                     <tr>
@@ -217,6 +241,8 @@ GetQuantityDialog.propTypes = {
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
   scaleTolerance: PropTypes.object,
+  catchWeight: PropTypes.number,
+  catchWeightUom: PropTypes.string,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

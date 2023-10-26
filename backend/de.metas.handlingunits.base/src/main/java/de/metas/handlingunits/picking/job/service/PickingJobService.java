@@ -285,7 +285,6 @@ public class PickingJobService
 		{
 			case PICK:
 			{
-				assert event.getQtyPicked() != null;
 				return PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
@@ -299,6 +298,7 @@ public class PickingJobService
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
+						.catchWeightBD(event.getCatchWeight())
 						//
 						.build().execute();
 			}

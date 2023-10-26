@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -185,7 +185,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("BlockedBPartner is virtual column");	}
 
 	@Override
-	public boolean isBlockedBPartner() 
+	public boolean isBlockedBPartner()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_BlockedBPartner);
 	}
@@ -259,14 +259,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner2_ID (final int C_BPartner2_ID)
 	{
-		if (C_BPartner2_ID < 1) 
+		if (C_BPartner2_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner2_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
 	}
 
 	@Override
-	public int getC_BPartner2_ID() 
+	public int getC_BPartner2_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
@@ -498,14 +498,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
-		if (C_Project_ID < 1) 
+		if (C_Project_ID < 1)
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
 	@Override
-	public int getC_Project_ID() 
+	public int getC_Project_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
@@ -863,6 +863,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setIsCatchWeight (final boolean IsCatchWeight)
+	{
+		set_Value (COLUMNNAME_IsCatchWeight, IsCatchWeight);
+	}
+
+	@Override
+	public boolean isCatchWeight()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
+	}
+
+	@Override
 	public void setIsClosed (final boolean IsClosed)
 	{
 		set_Value (COLUMNNAME_IsClosed, IsClosed);
@@ -1071,14 +1083,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
-		if (M_SectionCode_ID < 1) 
+		if (M_SectionCode_ID < 1)
 			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
 	}
 
 	@Override
-	public int getM_SectionCode_ID() 
+	public int getM_SectionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
