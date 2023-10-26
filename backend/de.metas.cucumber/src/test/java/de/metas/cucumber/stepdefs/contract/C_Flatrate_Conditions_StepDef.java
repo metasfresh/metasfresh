@@ -33,12 +33,14 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
@@ -46,6 +48,9 @@ import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Ma
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.transition.C_Flatrate_Transition_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.InvoiceRule;
@@ -57,7 +62,9 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
@@ -71,6 +78,7 @@ import java.util.Optional;
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Customer_Trade_Margin_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Transition_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_LicenseFeeSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_MediatedCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_DocStatus;
@@ -88,6 +96,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
@@ -99,6 +108,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Year_StepDefData yearTable;
 	private final M_Product_StepDefData productTable;
 	private final AD_Message_StepDefData messageTable;
+	private final C_Flatrate_Transition_StepDefData transitionTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -110,7 +120,8 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
 			@NonNull final C_Year_StepDefData yearTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final AD_Message_StepDefData messageTable)
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final C_Flatrate_Transition_StepDefData transitionTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
@@ -122,6 +133,7 @@ public class C_Flatrate_Conditions_StepDef
 		this.yearTable = yearTable;
 		this.productTable = productTable;
 		this.messageTable = messageTable;
+		this.transitionTable = transitionTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
@@ -362,4 +374,47 @@ public class C_Flatrate_Conditions_StepDef
 		assertThat(clonedModulesCounter).isEqualTo(1);
 	}
 
+	@And("^the C_Flatrate_Conditions identified by (.*) is (completed)$")
+	public void conditions_action(@NonNull final String conditionsIdentifier, @NonNull final String action)
+	{
+		final I_C_Flatrate_Conditions conditions = conditionsTable.get(conditionsIdentifier);
+
+		if (StepDefDocAction.valueOf(action) == StepDefDocAction.completed)
+		{
+			documentBL.processEx(conditions, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
+		else
+		{
+			throw new AdempiereException("Unhandled C_Flatrate_Conditions action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
+		}
+	}
+
+	@And("validate C_Flatrate_Conditions")
+	public void validate_C_Flatrate_Conditions(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validateFlatrateConditions(tableRow);
+		}
+	}
+
+	private void validateFlatrateConditions(@NonNull final Map<String, String> tableRow)
+	{
+		final String flatrateConditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Flatrate_Conditions conditionsRecord = conditionsTable.get(flatrateConditionsIdentifier);
+
+		final String transitionIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_Flatrate_Transition_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final SoftAssertions softly = new SoftAssertions();
+		if (Check.isNotBlank(transitionIdentifier))
+		{
+			final I_C_Flatrate_Transition transitionRecord = transitionTable.get(transitionIdentifier);
+
+			softly.assertThat(conditionsRecord.getC_Flatrate_Transition_ID()).as(COLUMNNAME_C_Flatrate_Transition_ID).isEqualTo(transitionRecord.getC_Flatrate_Transition_ID());
+		}
+
+		softly.assertAll();
+	}
 }
