@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:commissionContracts
+@ghActions:run_on_executor3
 Feature: Mediated commission
 
   Background:

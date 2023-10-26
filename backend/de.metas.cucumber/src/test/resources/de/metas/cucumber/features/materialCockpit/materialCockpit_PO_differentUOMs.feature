@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: purchase order interaction with material cockpit - Order Line's UOM is different than Product's UOM
 
   Background: Initial Data

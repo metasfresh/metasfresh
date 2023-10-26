@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:shipmentScheduleExport
+@ghActions:run_on_executor7
 Feature: Shipment schedule updating
   Verifies that M_ShipmentSchedule is properly updated on various cases
 

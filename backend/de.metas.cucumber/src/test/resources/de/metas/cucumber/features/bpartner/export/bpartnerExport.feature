@@ -1,3 +1,4 @@
+@ghActions:run_on_executor3
 Feature: BPartner interaction with RabbitMQ after export process was triggered
 
   Background:

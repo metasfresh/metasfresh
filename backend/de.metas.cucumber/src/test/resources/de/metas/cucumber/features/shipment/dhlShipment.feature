@@ -1,5 +1,6 @@
 @dev:runThisOne
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Dhl Shipment
 
   Background:

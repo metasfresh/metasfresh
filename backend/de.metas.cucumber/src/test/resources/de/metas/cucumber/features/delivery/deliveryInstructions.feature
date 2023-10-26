@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Generate delivery instructions from delivery plannings
 
   Background:

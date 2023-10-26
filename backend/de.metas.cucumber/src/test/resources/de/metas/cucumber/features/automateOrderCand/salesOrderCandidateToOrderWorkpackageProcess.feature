@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Enqueue order candidate in multiple workpackages for processing to order
   As a user
   I create multiple order candidates and when processing, multiple workpackages are enqueued for each order to be generated

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature:Create conversion rates via metasfresh api
 
   Background:

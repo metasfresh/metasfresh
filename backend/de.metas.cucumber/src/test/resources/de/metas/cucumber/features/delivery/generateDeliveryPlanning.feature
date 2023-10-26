@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Delivery planning automatically generated when M_ShipmentSchedule is created
 
   Background:

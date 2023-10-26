@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: effort issue interaction with effort control
 
   Background:

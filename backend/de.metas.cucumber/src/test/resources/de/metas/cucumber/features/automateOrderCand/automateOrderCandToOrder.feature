@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and validate created order
 
   Background:
