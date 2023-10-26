@@ -68,10 +68,8 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.greeting.GreetingExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
-import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -582,30 +580,6 @@ public class JsonRetrieverService
 				.stream()
 				.filter(jsonBPartnerLocation -> isBPartnerLocationMatches(orgId, jsonBPartnerLocation, bPartnerLocationExternalId))
 				.findAny());
-	}
-
-	@NonNull
-	public Optional<GreetingId> resolveExternalGreetingIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final ExternalIdentifier greetingIdentifier)
-	{
-		switch (greetingIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				final GreetingId greetingId = greetingIdentifier.asMetasfreshId().mapToRepoId(GreetingId::ofRepoId);
-				return Optional.of(greetingId);
-			case EXTERNAL_REFERENCE:
-				return externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, greetingIdentifier, GreetingExternalReferenceType.GREETING)
-						.map(JsonMetasfreshId::getValue)
-						.map(GreetingId::ofRepoId);
-			case NAME:
-				return greetingRepository.getByName(greetingIdentifier.asName())
-						.map(Greeting::getId);
-			default:
-				throw new InvalidIdentifierException("Given external identifier type is not supported!")
-						.setParameter("externalIdentifierType", greetingIdentifier.getType())
-						.setParameter("rawExternalIdentifier", greetingIdentifier.getRawValue());
-		}
 	}
 
 	/**

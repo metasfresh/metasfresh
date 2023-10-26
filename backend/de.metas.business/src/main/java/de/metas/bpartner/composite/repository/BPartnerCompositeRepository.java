@@ -13,7 +13,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.greeting.GreetingRepository;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -63,19 +62,16 @@ public class BPartnerCompositeRepository
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
-	private final GreetingRepository greetingRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
 	public BPartnerCompositeRepository(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository,
-			@NonNull final GreetingRepository greetingRepository)
+			@NonNull final UserRoleRepository userRoleRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
-		this.greetingRepository = greetingRepository;
 	}
 
 	public BPartnerComposite getById(@NonNull final BPartnerId bpartnerId)

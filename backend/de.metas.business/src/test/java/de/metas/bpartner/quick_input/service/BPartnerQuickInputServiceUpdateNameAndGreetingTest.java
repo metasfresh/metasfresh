@@ -87,12 +87,11 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
-				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository(), new GreetingRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),
-				new UserGroupRepository(),
-				new GreetingRepository());
+				new UserGroupRepository());
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);

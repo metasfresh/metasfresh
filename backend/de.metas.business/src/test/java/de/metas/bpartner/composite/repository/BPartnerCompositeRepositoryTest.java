@@ -35,12 +35,9 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
-import de.metas.greeting.GreetingStandardType;
 import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
@@ -78,8 +75,7 @@ class BPartnerCompositeRepositoryTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
-				new UserRoleRepository(),
-				new GreetingRepository());
+				new UserRoleRepository());
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -146,14 +142,7 @@ class BPartnerCompositeRepositoryTest
 						.fax("fax")
 						.mobilePhone("mobilePhone")
 						.description("description")
-						.greeting(Greeting.builder()
-						  .id(GreetingId.ofRepoId(12345))
-						  .orgId(OrgId.MAIN)
-						  .name("greetingName")
-						  .standardType(GreetingStandardType.MRS)
-						  .greeting(TranslatableStrings.constant("greeting"))
-						  .letterSalutation("letterSalutation")
-						  .build())
+						.greetingId(GreetingId.ofRepoId(12345))
 						.newsletter(true)
 						.membershipContact(true)
 						.subjectMatterContact(true)
