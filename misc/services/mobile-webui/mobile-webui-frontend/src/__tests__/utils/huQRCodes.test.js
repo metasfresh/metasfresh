@@ -60,7 +60,7 @@ describe('huQRCodes tests', () => {
     it('standard test', () => {
       const code =
         'HU#1#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
-      expect(parseQRCodeString(code)).toEqual({ code, displayable: '05650', productId: 1000001 });
+      expect(parseQRCodeString(code)).toEqual({ code, displayable: '05650', productId: '1000001' });
     });
     it('QR code with attributes', () => {
       const code =
@@ -68,7 +68,7 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         displayable: '28193',
-        productId: 2005577,
+        productId: '2005577',
         weightNet: 2427.425,
       });
     });

@@ -146,13 +146,17 @@ const parseQRCodePayload_HU_v1 = (payload) => {
     }
   }
 
-  const productId = payload?.product?.id;
-  const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === 'WeightNet');
-  //console.log('parseQRCodePayload_HU_v1', { weightNetAttribute, attributes: payload?.attributes, payload });
+  const result = { displayable };
 
-  return {
-    displayable,
-    productId,
-    weightNet: weightNetAttribute?.value != null ? 1 * weightNetAttribute?.value : undefined,
-  };
+  if (payload?.product?.id) {
+    // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
+    result['productId'] = payload?.product?.id.toString();
+  }
+  const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === 'WeightNet');
+  if (weightNetAttribute?.value != null) {
+    // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
+    result['weightNet'] = 1 * weightNetAttribute?.value;
+  }
+
+  return result;
 };
