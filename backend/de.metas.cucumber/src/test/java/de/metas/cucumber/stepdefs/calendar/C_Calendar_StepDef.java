@@ -28,12 +28,14 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class C_Calendar_StepDef
 {
@@ -46,6 +48,16 @@ public class C_Calendar_StepDef
 		this.calendarTable = calendarTable;
 	}
 
+	@And("metasfresh contains C_Calendar")
+	public void createC_Calendar(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createCalendar(tableRow);
+		}
+	}
+	
 	@And("load C_Calendar from metasfresh:")
 	public void load_C_Calendar(@NonNull final DataTable dataTable)
 	{
@@ -64,4 +76,17 @@ public class C_Calendar_StepDef
 		}
 	}
 
+	private void createCalendar(@NonNull final Map<String, String> tableRow)
+	{
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Calendar.COLUMNNAME_Name);
+		
+		final I_C_Calendar calendarRecord = InterfaceWrapperHelper.newInstance(I_C_Calendar.class);
+
+		calendarRecord.setName(name);
+		
+		saveRecord(calendarRecord);
+
+		final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Calendar.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		calendarTable.putOrReplace(calendarIdentifier, calendarRecord);
+	}
 }

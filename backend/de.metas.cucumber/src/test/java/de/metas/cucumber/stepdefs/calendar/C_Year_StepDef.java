@@ -28,6 +28,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Year_StepDef
@@ -78,5 +80,32 @@ public class C_Year_StepDef
 			final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 			yearTable.put(yearIdentifier, yearRecord);
 		}
+	}
+
+	@And("metasfresh contains C_Year")
+	public void createC_Year(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createYear(tableRow);
+		}
+	}
+	
+	private void createYear(@NonNull final Map<String, String> tableRow)
+	{
+		final String fiscalYear = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_FiscalYear);
+		final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Calendar calendarRecord = calendarTable.get(calendarIdentifier);
+
+		final I_C_Year yearRecord = InterfaceWrapperHelper.newInstance(I_C_Year.class);
+
+		yearRecord.setFiscalYear(fiscalYear);
+		yearRecord.setC_Calendar_ID(calendarRecord.getC_Calendar_ID());
+		
+		saveRecord(yearRecord);
+
+		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		yearTable.put(yearIdentifier, yearRecord);
 	}
 }

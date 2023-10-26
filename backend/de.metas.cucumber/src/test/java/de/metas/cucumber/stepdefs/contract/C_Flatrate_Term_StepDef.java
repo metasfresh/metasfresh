@@ -24,13 +24,13 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -41,6 +41,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.PInstanceId;
@@ -75,14 +76,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DocStatus;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_StartDate;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
@@ -153,11 +157,16 @@ public class C_Flatrate_Term_StepDef
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
-			contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-			contractRecord.setProcessed(true);
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
+			final DocStatus docStatus = DocStatus.ofNullableCode(tableRow.get("OPT." + COLUMNNAME_DocStatus));
+			contractRecord.setDocStatus(CoalesceUtil.coalesceNotNull(docStatus, DocStatus.Completed).getCode());
+			
+			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_Processed);
+			Optional.ofNullable(processed)
+					.ifPresentOrElse(contractRecord::setProcessed, () -> contractRecord.setProcessed(true));
+			
 			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropshipPartnerIdentifier))
 			{
@@ -198,7 +207,15 @@ public class C_Flatrate_Term_StepDef
 			else
 			{
 				contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
-				contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
+				final Timestamp endDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "EndDate");
+				if (endDate != null)
+				{
+					contractRecord.setEndDate(endDate);
+				}
+				else
+				{
+					flatrateBL.updateNoticeDateAndEndDate(contractRecord);
+				}
 			}
 
 			final String orderLineIdentifier = tableRow.get("OPT." + COLUMNNAME_C_OrderLine_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -288,6 +305,14 @@ public class C_Flatrate_Term_StepDef
 				softly.assertThat(contract.getDocStatus()).isEqualTo(docStatus);
 			}
 
+			final Timestamp endDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_EndDate);
+			if (endDate != null)
+			{
+				softly.assertThat(contract.getEndDate()).isEqualTo(endDate);
+			}
+
+			softly.assertAll();
+			
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			contractTable.putOrReplace(flatrateTermIdentifier, contract);
 		}
