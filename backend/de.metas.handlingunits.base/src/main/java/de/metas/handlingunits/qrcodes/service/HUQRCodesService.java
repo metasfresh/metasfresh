@@ -2,7 +2,6 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -62,7 +61,7 @@ public class HUQRCodesService
 				.build().execute();
 	}
 
-	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final ImmutableSet<HuId> huIds)
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final Set<HuId> huIds)
 	{
 		return newHUQRCodeGenerateForExistingHUsCommandBuilder()
 				.huIds(huIds)
@@ -93,7 +92,7 @@ public class HUQRCodesService
 	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
 	{
 		// Make sure all HUs have QR Codes assigned
-		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds)).toList();
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
 
 		return createPDF(qrCodes);
 	}
@@ -101,7 +100,7 @@ public class HUQRCodesService
 	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
 	{
 		// Make sure all HUs have QR Codes assigned
-		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds)).toList();
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
 		return createPDF(qrCodes, selectionId, qrCodeProcessId);
 	}
 
