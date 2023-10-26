@@ -12,8 +12,6 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
-import de.metas.i18n.ITranslatableString;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -25,9 +23,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,30 +33,30 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 
-	@NonNull final ImmutableSet<HuId> huIds;
+	@NonNull private final ImmutableSet<HuId> huIds;
 
-	//
-	// State
 	private HUQRCodeGenerateCommand.Cache cache = null;
-	private final HashMap<AttributeCode, String> attributeDisplayNames = new HashMap<>();
 
 	//
 	// Value Extractors
 	@FunctionalInterface
-	private interface AttributeValueExtractor
+	private interface AttributeExtractor
 	{
-		String extractValueAsString(final ImmutableAttributeSet attributes, final AttributeCode attributeCode);
+		HUQRCodeGenerateRequest.Attribute extractAttribute(final ImmutableAttributeSet attributes, final AttributeCode attributeCode);
 	}
 
-	private static final AttributeValueExtractor LOCAL_DATE_EXTRACTOR = (attributes, attributeCode) -> {
-		final LocalDate localDate = attributes.getValueAsLocalDate(attributeCode);
-		return localDate != null ? localDate.toString() : null;
-	};
-	private static final AttributeValueExtractor STRING_EXTRACTOR = ImmutableAttributeSet::getValueAsString;
-	private static final AttributeValueExtractor BIG_DECIMAL_EXTRACTOR = (attributes, attributeCode) -> {
-		final BigDecimal bd = attributes.getValueAsBigDecimal(attributeCode);
-		return bd != null ? bd.toString() : null;
-	};
+	private static final AttributeExtractor LOCAL_DATE_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueDate(attributes.getValueAsLocalDate(attributeCode))
+			.build();
+	private static final AttributeExtractor STRING_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueString(attributes.getValueAsString(attributeCode))
+			.build();
+	private static final AttributeExtractor BIG_DECIMAL_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueNumber(attributes.getValueAsBigDecimal(attributeCode))
+			.build();
 
 	@Builder
 	private HUQRCodeGenerateForExistingHUsCommand(
@@ -150,9 +145,9 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		return productId;
 	}
 
-	private ImmutableList<HUQRCodeAttribute> getHUQRCodeAttributes(final I_M_HU hu)
+	private ImmutableList<HUQRCodeGenerateRequest.Attribute> getHUQRCodeAttributes(final I_M_HU hu)
 	{
-		ImmutableList.Builder<HUQRCodeAttribute> result = ImmutableList.builder();
+		ImmutableList.Builder<HUQRCodeGenerateRequest.Attribute> result = ImmutableList.builder();
 
 		final ImmutableAttributeSet attributes = handlingUnitsBL.getImmutableAttributeSet(hu);
 
@@ -163,36 +158,13 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		return result.build();
 	}
 
-	private Optional<HUQRCodeAttribute> extractHUQRCodeAttribute(
+	private Optional<HUQRCodeGenerateRequest.Attribute> extractHUQRCodeAttribute(
 			@NonNull final ImmutableAttributeSet attributes,
 			@NonNull final AttributeCode attributeCode,
-			@NonNull final AttributeValueExtractor valueExtractor)
+			@NonNull final AttributeExtractor attributeExtractor)
 	{
-		if (!attributes.hasAttribute(attributeCode))
-		{
-			return Optional.empty();
-		}
-
-		final String value = valueExtractor.extractValueAsString(attributes, attributeCode);
-
-		return Optional.of(HUQRCodeAttribute.builder()
-				.code(attributeCode)
-				.displayName(getAttributeDisplayName(attributeCode))
-				.value(value)
-				.valueRendered(value)
-				.build());
+		return attributes.hasAttribute(attributeCode)
+				? Optional.of(attributeExtractor.extractAttribute(attributes, attributeCode))
+				: Optional.empty();
 	}
-
-	private String getAttributeDisplayName(final AttributeCode attributeCode)
-	{
-		return attributeDisplayNames.computeIfAbsent(attributeCode, this::computeAttributeDisplayName);
-	}
-
-	private String computeAttributeDisplayName(final AttributeCode attributeCode)
-	{
-		return attributeDAO.getAttributeDisplayNameByValue(attributeCode)
-				.map(ITranslatableString::getDefaultValue)
-				.orElseGet(attributeCode::getCode);
-	}
-
 }
