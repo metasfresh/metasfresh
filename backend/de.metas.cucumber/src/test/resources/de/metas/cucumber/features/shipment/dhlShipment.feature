@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 Feature: Dhl Shipment
 
@@ -87,6 +86,7 @@ Feature: Dhl Shipment
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.M_HU_PI_Item_Product_ID |
       | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 1   | 2022-01-10 | 55667                       |
 
+  @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
