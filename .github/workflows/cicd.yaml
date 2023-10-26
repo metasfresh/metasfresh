@@ -11,7 +11,7 @@ jobs:
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
-      base-version-matrix: ${{ steps.set-matrix.outputs.matrix }}
+      base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
       - name: sanitize-ref-name
@@ -36,7 +36,8 @@ jobs:
           GIT_ID: ${{ github.sha }}
         run: |
           echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
-      - id: set-base-version-matrix
+      - name: set-base-version-matrix
+        id: base-version-matrix
         env:
           MF_PROJECT: ${{ fromJson(vars.PROJECT_MAP)[github.ref_name] }}
           BASE_VERSION_MATRIX: |
@@ -46,7 +47,7 @@ jobs:
               || '{ "include": [] }'
             }}
         run: |
-          echo "base-version-matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
+          echo "matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
