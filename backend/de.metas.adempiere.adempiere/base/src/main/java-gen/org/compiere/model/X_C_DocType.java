@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1092241655L;
+	private static final long serialVersionUID = 553159637L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -149,21 +149,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocTypeShipment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeShipment_ID);
-	}
-
-	@Override
-	public void setCompletedNotification_BoilerPlate_ID (final int CompletedNotification_BoilerPlate_ID)
-	{
-		if (CompletedNotification_BoilerPlate_ID < 1) 
-			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, null);
-		else 
-			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, CompletedNotification_BoilerPlate_ID);
-	}
-
-	@Override
-	public int getCompletedNotification_BoilerPlate_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_CompletedNotification_BoilerPlate_ID);
 	}
 
 	@Override
