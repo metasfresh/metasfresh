@@ -16,6 +16,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -39,6 +40,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -54,6 +56,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -317,6 +320,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -340,6 +344,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -355,6 +360,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -624,6 +630,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -647,6 +654,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -662,6 +670,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -931,6 +940,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -954,6 +964,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -969,6 +980,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -1232,6 +1244,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -1259,6 +1272,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -1274,6 +1288,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -1576,6 +1591,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -1603,6 +1619,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -1618,6 +1635,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -1926,6 +1944,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -1949,6 +1968,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -1964,6 +1984,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -2033,6 +2054,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -2056,6 +2078,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -2071,6 +2094,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -2367,6 +2391,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -2390,6 +2415,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -2405,6 +2431,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -2900,6 +2927,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -2923,6 +2951,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -2938,6 +2967,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -3209,6 +3239,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -3232,6 +3263,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -3247,6 +3279,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -3535,6 +3568,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -3558,6 +3592,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -3573,6 +3608,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -3642,6 +3678,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -3665,6 +3702,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -3680,6 +3718,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -3943,6 +3982,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -3966,6 +4006,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -3981,6 +4022,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -4445,6 +4487,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -4468,6 +4511,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -4483,6 +4527,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"
@@ -4754,6 +4799,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "allowPickingAnyHU" : false,
             "caption" : "P1",
             "pickingLineId" : "1000000",
+            "productId" : "1000000",
             "qtyToPick" : 100.000,
             "steps" : [ {
               "mainPickFrom" : {
@@ -4777,6 +4823,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 }
               },
               "pickingStepId" : "1000000",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 75.000,
               "uom" : "Kg"
@@ -4792,6 +4839,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
+              "productId" : "1000000",
               "productName" : "P1",
               "qtyToPick" : 25.000,
               "uom" : "Kg"

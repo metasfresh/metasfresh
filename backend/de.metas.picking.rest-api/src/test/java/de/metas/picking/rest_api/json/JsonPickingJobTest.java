@@ -83,6 +83,7 @@ class JsonPickingJobTest
 	{
 		return JsonPickingJobLine.builder()
 				.pickingLineId("pickingLineId_" + UUID.randomUUID())
+				.productId("productId")
 				.caption("caption")
 				.uom("uom")
 				.qtyToPick(new BigDecimal("321.456"))
@@ -101,6 +102,7 @@ class JsonPickingJobTest
 	{
 		return JsonPickingJobStep.builder()
 				.pickingStepId("pickingStepId_" + UUID.randomUUID())
+				.productId("productId")
 				.productName("productName")
 				.uom("uom")
 				.qtyToPick(new BigDecimal("666.777"))
