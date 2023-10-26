@@ -128,7 +128,8 @@ Feature: create or update BPartner v2
         "greeting": "test_greeting_261023",
         "letterSalutation": "test_salutation_261023"
       }
-    }
+    },
+    {}
   ]
 }
 """
@@ -220,7 +221,8 @@ Feature: create or update BPartner v2
         "greeting": "test_greeting_261023_updated",
         "letterSalutation": "test_salutation_261023_updated"
       }
-    }
+    },
+    {}
   ]
 }
 """
