@@ -28,7 +28,6 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
-import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
@@ -107,7 +106,6 @@ final class BPartnerCompositesLoader
 
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
-	private final GreetingRepository greetingRepository;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -118,12 +116,10 @@ final class BPartnerCompositesLoader
 	@Builder
 	private BPartnerCompositesLoader(
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository,
-			@NonNull final GreetingRepository greetingRepository)
+			@NonNull final UserRoleRepository userRoleRepository)
 	{
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
-		this.greetingRepository = greetingRepository;
 	}
 
 	public ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -481,9 +477,7 @@ final class BPartnerCompositesLoader
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))
 				.fax(trimBlankToNull(contactRecord.getFax()))
-				.greeting(GreetingId.optionalOfRepoId(contactRecord.getC_Greeting_ID())
-									.map(greetingRepository::getById)
-									.orElse(null))
+				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.roles(roles)
 				.changeLog(changeLog)

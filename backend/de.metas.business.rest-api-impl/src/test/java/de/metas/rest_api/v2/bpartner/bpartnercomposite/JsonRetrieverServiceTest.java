@@ -37,6 +37,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.user.UserRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
@@ -98,7 +99,8 @@ class JsonRetrieverServiceTest
 				new GreetingRepository(),
 				new CurrencyRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

@@ -46,7 +46,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
-import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -124,7 +123,6 @@ public class BPartnerQuickInputService
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
 	private final UserGroupRepository userGroupRepository;
-	private final GreetingRepository greetingRepository;
 
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
@@ -502,9 +500,7 @@ public class BPartnerQuickInputService
 									 .firstName(contactTemplate.getFirstname())
 									 .lastName(contactTemplate.getLastname())
 									 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
-									 .greeting(GreetingId.optionalOfRepoId(contactTemplate.getC_Greeting_ID())
-													   .map(greetingRepository::getById)
-													   .orElse(null))
+									 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 									 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 									 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
 									 .birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))

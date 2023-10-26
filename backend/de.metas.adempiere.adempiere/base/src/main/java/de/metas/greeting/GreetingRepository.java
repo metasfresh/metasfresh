@@ -9,7 +9,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Greeting;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -90,28 +89,15 @@ public class GreetingRepository
 				.build();
 	}
 
-	public Greeting createGreeting(@NonNull final CreateGreetingRequest request)
+	public Greeting upsertGreeting(@NonNull final UpsertGreetingRequest request)
 	{
-		final I_C_Greeting record = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
+		final I_C_Greeting record = InterfaceWrapperHelper.loadOrNew(request.getGreetingId(), I_C_Greeting.class);
+
 		record.setName(request.getName());
 		record.setGreeting(request.getGreeting());
 		record.setGreetingStandardType(GreetingStandardType.toCode(request.getStandardType()));
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		InterfaceWrapperHelper.saveRecord(record);
-
-		return fromRecord(record);
-	}
-
-	@NonNull
-	public Greeting save(@NonNull final Greeting greeting)
-	{
-		final I_C_Greeting record = InterfaceWrapperHelper.loadOrNew(greeting.getId(), I_C_Greeting.class);
-
-		record.setName(greeting.getName());
-		record.setGreeting(greeting.getGreeting().translate(Env.getAD_Language()));
-		record.setGreetingStandardType(GreetingStandardType.toCode(greeting.getStandardType()));
-		record.setAD_Org_ID(greeting.getOrgId().getRepoId());
-		record.setLetter_Salutation(greeting.getLetterSalutation());
+		record.setLetter_Salutation(request.getLetterSalutation());
 
 		InterfaceWrapperHelper.saveRecord(record);
 

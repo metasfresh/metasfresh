@@ -268,7 +268,7 @@ public class BPartnerCompositeRepository
 
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL, greetingRepository);
+		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
 		saver.save(bpartnerComposite);
 	}
 }

@@ -2,7 +2,6 @@ package de.metas.greeting;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,10 +31,10 @@ import javax.annotation.Nullable;
  */
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class Greeting
 {
-	@Nullable GreetingId id;
+	@NonNull GreetingId id;
 	@NonNull OrgId orgId;
 	@NonNull String name;
 	@NonNull ITranslatableString greeting;
@@ -47,11 +46,5 @@ public class Greeting
 	public String getGreeting(@NonNull final String adLanguage)
 	{
 		return getGreeting().translate(adLanguage);
-	}
-
-	@NonNull
-	public GreetingId getIdNotNull()
-	{
-		return Check.assumeNotNull(id, "Assuming the id was set at this point!");
 	}
 }

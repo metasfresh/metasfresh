@@ -17,9 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
-import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -60,7 +58,6 @@ import org.slf4j.MDC.MDCCloseable;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isBlank;
@@ -101,7 +98,6 @@ final class BPartnerCompositeSaver
 	private final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
 
 	private final IBPartnerBL bpartnerBL;
-	private final GreetingRepository greetingRepository;
 
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
@@ -512,9 +508,7 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
-			bpartnerContactRecord.setC_Greeting_ID(saveGreeting(bpartnerContact.getGreeting())
-														   .map(GreetingId::getRepoId)
-														   .orElse(0));
+			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartnerContact.getGreetingId()));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
@@ -575,14 +569,6 @@ final class BPartnerCompositeSaver
 
 			bankAccount.setId(id);
 		}
-	}
-
-	@NonNull
-	private Optional<GreetingId> saveGreeting(@Nullable final Greeting greeting)
-	{
-		return Optional.ofNullable(greeting)
-				.map(greetingRepository::save)
-				.map(Greeting::getIdNotNull);
 	}
 
 	private void assertCanCreateOrUpdate(@NonNull final Object record)

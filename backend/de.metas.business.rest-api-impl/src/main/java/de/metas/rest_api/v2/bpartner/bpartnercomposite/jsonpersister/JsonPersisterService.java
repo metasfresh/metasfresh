@@ -53,8 +53,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
-import de.metas.common.bpartner.v2.request.JsonRequestGreeting;
-import de.metas.common.bpartner.v2.request.JsonRequestGreetingUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
@@ -85,9 +83,7 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.greeting.GreetingExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
-import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -95,6 +91,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
@@ -113,6 +110,7 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Greeting;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -127,7 +125,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
-import static de.metas.common.bpartner.v2.response.JsonResponseContact.GREETING;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
 import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
@@ -147,7 +144,7 @@ public class JsonPersisterService
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
-	private final transient GreetingRepository greetingRepository;
+	private final transient JsonGreetingService greetingService;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -163,7 +160,7 @@ public class JsonPersisterService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
-			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final JsonGreetingService greetingService,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -173,7 +170,7 @@ public class JsonPersisterService
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
-		this.greetingRepository = greetingRepository;
+		this.greetingService = greetingService;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -276,7 +273,7 @@ public class JsonPersisterService
 
 						Optional.ofNullable(jsonResponseGreetingUpsertItemsByContactIdentifier)
 								.map(greetingBuilderByContact -> greetingBuilderByContact.get(identifier))
-								.map(greetingBuilder -> greetingBuilder.resourceName(GREETING).build())
+								.map(greetingBuilder -> greetingBuilder.resourceName(I_C_Greeting.Table_Name).build())
 								.ifPresent(builder::includedResource);
 
 						return builder.build();
@@ -1264,98 +1261,15 @@ public class JsonPersisterService
 
 		if (jsonBPartnerContact.isGreetingSet())
 		{
-			final Greeting greeting = Optional.ofNullable(jsonBPartnerContact.getGreeting())
-					.map(greetingRequest -> syncJsonToGreeting(contactIdentifier, orgId, greetingRequest, parentSyncAdvise, responseItemCollector))
+			final GreetingId greetingId = Optional.ofNullable(jsonBPartnerContact.getGreeting())
+					.map(greetingRequest -> greetingService.persistGreeting(contactIdentifier, orgId, greetingRequest, parentSyncAdvise, responseItemCollector))
 					.orElse(null);
 
-			contact.setGreeting(greeting);
+			contact.setGreetingId(greetingId);
 		}
 
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
-	}
-
-	@Nullable
-	private Greeting syncJsonToGreeting(
-			@NonNull final ExternalIdentifier contactIdentifier,
-			@NonNull final OrgId orgId,
-			@NonNull final JsonRequestGreetingUpsertItem greetingUpsertItem,
-			@NonNull final SyncAdvise parentSyncAdvise,
-			@NonNull final ResponseItemCollector responseItemCollector)
-	{
-		final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(greetingUpsertItem.getSyncAdvise(), parentSyncAdvise);
-
-		final ExternalIdentifier greetingIdentifier = ExternalIdentifier.of(greetingUpsertItem.getIdentifier());
-
-		final Greeting existingGreeting = jsonRetrieverService.resolveExternalGreetingIdentifier(orgId, greetingIdentifier)
-				.map(greetingRepository::getById)
-				.orElse(null);
-
-		if (existingGreeting == null)
-		{
-			if (effectiveSyncAdvise.isFailIfNotExists() || greetingUpsertItem.getGreetingInfo() == null)
-			{
-				throw MissingResourceException.builder()
-						.resourceName("Greeting")
-						.resourceIdentifier(greetingUpsertItem.getIdentifier())
-						.build();
-			}
-		}
-		else if (!effectiveSyncAdvise.getIfExists().isUpdate())
-		{
-			responseItemCollector.collectGreeting(contactIdentifier.getRawValue(), greetingIdentifier.getRawValue(), SyncOutcome.NOTHING_DONE);
-			return existingGreeting;
-		}
-
-		final Greeting.GreetingBuilder greetingBuilder = Optional.ofNullable(existingGreeting)
-				.map(Greeting::toBuilder)
-				.orElseGet(Greeting::builder);
-
-		final JsonRequestGreeting greetingRequest = greetingUpsertItem.getGreetingInfo();
-		if (greetingUpsertItem.getGreetingInfo() == null)
-		{
-			responseItemCollector.collectGreeting(contactIdentifier.getRawValue(), greetingIdentifier.getRawValue(), SyncOutcome.NOTHING_DONE);
-			return greetingBuilder.build();
-		}
-
-		if (greetingRequest.isNameSet())
-		{
-			if (greetingRequest.getName() == null)
-			{
-				logger.debug("Ignoring property \"name\" : null ");
-			}
-			else
-			{
-				greetingBuilder.name(greetingRequest.getName());
-			}
-		}
-
-		if (greetingRequest.isGreetingSet())
-		{
-			if (greetingRequest.getGreeting() == null)
-			{
-				logger.debug("Ignoring property \"greeting\" : null ");
-			}
-			else
-			{
-				greetingBuilder.greeting(TranslatableStrings.constant(greetingRequest.getGreeting()));
-			}
-		}
-
-		if (greetingRequest.isLetterSalutationSet())
-		{
-			greetingBuilder.letterSalutation(greetingRequest.getLetterSalutation());
-		}
-
-		final Greeting greeting = greetingBuilder.build();
-
-		final SyncOutcome syncOutcome = greeting.getId() == null
-				? SyncOutcome.UPDATED
-				: SyncOutcome.CREATED;
-
-		responseItemCollector.collectGreeting(contactIdentifier.getRawValue(), greetingIdentifier.getRawValue(), syncOutcome);
-
-		return greeting;
 	}
 
 	private BPartnerContactType syncJsonToContactType(@NonNull final JsonRequestContact jsonBPartnerContact)
@@ -2056,7 +1970,7 @@ public class JsonPersisterService
 			final JsonResponseUpsertItemBuilder builder = getBuilderForContact(contactIdentifier);
 
 			Optional.ofNullable(contactIdentifier2GreetingResponseBuilder.get(contactIdentifier))
-					.map(greetingBuilder -> greetingBuilder.resourceName(GREETING).build())
+					.map(greetingBuilder -> greetingBuilder.resourceName(I_C_Greeting.Table_Name).build())
 					.ifPresent(builder::includedResource);
 
 			return builder.build();

@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 public class JsonResponseGreeting
 {
 	@NonNull JsonMetasfreshId id;
-	@NonNull JsonMetasfreshId orgId;
 	@NonNull String name;
 	@NonNull String greeting;
 

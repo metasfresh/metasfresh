@@ -9,7 +9,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.user.role.UserRole;
-import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -24,7 +23,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -146,7 +144,7 @@ public class BPartnerContact
 	private String description;
 
 	@Nullable
-	private Greeting greeting;
+	private GreetingId greetingId;
 
 	@Nullable
 	private BPartnerContactType contactType;
@@ -192,7 +190,7 @@ public class BPartnerContact
 			@Nullable final String fax,
 			@Nullable final String mobilePhone,
 			@Nullable final String description,
-			@Nullable final Greeting greeting,
+			@Nullable final GreetingId greetingId,
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
@@ -215,7 +213,7 @@ public class BPartnerContact
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.description = description;
-		this.greeting = greeting;
+		this.greetingId = greetingId;
 
 		this.contactType = contactType;
 		this.active = active != null ? active : true;
@@ -254,14 +252,6 @@ public class BPartnerContact
 	public void addHandle(@NonNull final String handle)
 	{
 		handles.add(handle);
-	}
-
-	@Nullable
-	public GreetingId getGreetingId()
-	{
-		return Optional.ofNullable(greeting)
-				.map(Greeting::getId)
-				.orElse(null);
 	}
 
 	@NonNull

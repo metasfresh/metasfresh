@@ -22,22 +22,21 @@
 
 package de.metas.greeting;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 @Value
-@Builder
-public class CreateGreetingRequest
+@Builder(toBuilder = true)
+public class UpsertGreetingRequest
 {
+	@Nullable GreetingId greetingId;
 	@NonNull String name;
 	@NonNull String greeting;
 	@Nullable GreetingStandardType standardType;
 	@NonNull OrgId orgId;
-
+	@Nullable String letterSalutation;
 }

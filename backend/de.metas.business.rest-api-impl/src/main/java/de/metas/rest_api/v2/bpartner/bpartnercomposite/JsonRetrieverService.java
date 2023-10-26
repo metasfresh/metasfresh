@@ -396,11 +396,10 @@ public class JsonRetrieverService
 				final String greetingTrl = greeting.getGreeting(ad_language);
 
 				greetingJson = JsonResponseGreeting.builder()
-						.id(JsonMetasfreshId.of(greeting.getIdNotNull().getRepoId()))
+						.id(greeting.getId().map(JsonMetasfreshId::of))
 						.greeting(greetingTrl)
 						.name(greeting.getName())
 						.letterSalutation(greeting.getLetterSalutation())
-						.orgId(JsonMetasfreshId.of(greeting.getOrgId().getRepoId()))
 						.build();
 			}
 			final List<JsonResponseContactRole> roles = contact.getRoles()
