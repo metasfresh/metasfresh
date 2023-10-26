@@ -38,7 +38,7 @@ const PickLineScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
+  const { productId, qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -58,6 +58,11 @@ const PickLineScanScreen = () => {
     const result = {};
 
     const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+    //console.log('resolveScannedBarcode', { parsedHUQRCode });
+
+    if (parsedHUQRCode.productId != null && parsedHUQRCode.productId !== productId) {
+      throw trl('activities.picking.notEligibleHUBarcode');
+    }
 
     if (parsedHUQRCode.weightNet != null) {
       result['catchWeight'] = parsedHUQRCode.weightNet;
@@ -118,6 +123,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
   return {
+    productId: line.productId,
     qtyToPick: line.qtyToPick,
     uom: line.uom,
     qtyRejectedReasons,
