@@ -669,6 +669,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -718,28 +740,6 @@ public interface I_M_ShipmentSchedule
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_ID (int C_Project_ID);
-
-	/**
-	 * Get Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_ID();
-
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Date.
@@ -1278,28 +1278,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 
 	/**
-	 * Set Packvorschrift Version.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
-
-	/**
-	 * Get Packvorschrift Version.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_HU_PI_Version_ID();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Version_ID", null);
-	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
-
-	/**
-	 * Set M_IolCandHandler.
+	 * Set Inoutline Handler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1465,7 +1444,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
-	 * Set Destination warehouse .
+	 * Set Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1476,7 +1455,7 @@ public interface I_M_ShipmentSchedule
 	void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Destination warehouse .
+	 * Get Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1554,25 +1533,25 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
 
 	/**
-	 * Set Packbeschreibung.
+	 * Set Physical Clearance Date.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPackDescription (@Nullable java.lang.String PackDescription);
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
 
 	/**
-	 * Get Packbeschreibung.
+	 * Get Physical Clearance Date.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPackDescription();
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
 
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
-	String COLUMNNAME_PackDescription = "PackDescription";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
 
 	/**
 	 * Set Pick From Order.
@@ -1621,31 +1600,6 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
-	String COLUMNNAME_PackDescription = "PackDescription";
-
-	/**
-	 * Set Physical Clearance Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
-
-	/**
-	 * Get Physical Clearance Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PhysicalClearanceDate", null);
-	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
-
 
 	/**
 	 * Set Date ready.
@@ -1849,32 +1803,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQtyItemCapacity (@Nullable BigDecimal QtyItemCapacity);
-
-	/**
-	 * Get Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	BigDecimal getQtyItemCapacity();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyItemCapacity = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyItemCapacity", null);
-	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
-
-	/**
-	 * Set Bestand.
+	 * Set Stock.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity
@@ -1943,30 +1872,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered_Calculated = "QtyOrdered_Calculated";
 
 	/**
-	 * Set Bestellte Menge (LU).
-	 * Bestellte Menge (LU)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyOrdered_LU (BigDecimal QtyOrdered_LU);
-
-	/**
-	 * Get Bestellte Menge (LU).
-	 * Bestellte Menge (LU)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyOrdered_LU();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_LU = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_LU", null);
-	String COLUMNNAME_QtyOrdered_LU = "QtyOrdered_LU";
-
-	/**
-	 * Set Bestellt abw..
+	 * Set Quantity Ordered override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2138,48 +2044,6 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_OverrideFulfilled = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver_OverrideFulfilled", null);
 	String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
-
-	/**
-	 * Set Menge TU (berechnet).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
-
-	/**
-	 * Get Menge TU (berechnet).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyTU_Calculated();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
-	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
-
-	/**
-	 * Set Menge TU (ausgewiesen).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyTU_Override (@Nullable BigDecimal QtyTU_Override);
-
-	/**
-	 * Get Menge TU (ausgewiesen).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyTU_Override();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Override", null);
-	String COLUMNNAME_QtyTU_Override = "QtyTU_Override";
 
 	/**
 	 * Set Record ID.

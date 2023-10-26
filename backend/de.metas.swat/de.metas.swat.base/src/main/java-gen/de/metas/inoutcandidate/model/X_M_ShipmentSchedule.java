@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 308078816L;
+	private static final long serialVersionUID = -2097760002L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -185,7 +185,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("BlockedBPartner is virtual column");	}
 
 	@Override
-	public boolean isBlockedBPartner()
+	public boolean isBlockedBPartner() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_BlockedBPartner);
 	}
@@ -259,14 +259,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner2_ID (final int C_BPartner2_ID)
 	{
-		if (C_BPartner2_ID < 1)
+		if (C_BPartner2_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner2_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
 	}
 
 	@Override
-	public int getC_BPartner2_ID()
+	public int getC_BPartner2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
@@ -498,14 +498,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
-		if (C_Project_ID < 1)
+		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
 	@Override
-	public int getC_Project_ID()
+	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
@@ -684,7 +684,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 
 	/** 
 	 * DocSubType AD_Reference_ID=148
-	 * Reference name: C_DocType SubTypeSO
+	 * Reference name: C_DocType SubType
 	 */
 	public static final int DOCSUBTYPE_AD_Reference_ID=148;
 	/** OnCreditOrder = WI */
@@ -787,8 +787,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
-	/** Expense Invoice = EX */
-	public static final String DOCSUBTYPE_ExpenseInvoice = "EX";
+	/** InterimInvoice = II */
+	public static final String DOCSUBTYPE_InterimInvoice = "II";
+	/** Withholding = WH */
+	public static final String DOCSUBTYPE_Withholding = "WH";
+	/** InternalVendorInvoice = IVI */
+	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
 	/** Delivery Instruction = DI */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
 	/** InventoryShortageDocument = ISD */
@@ -797,6 +801,10 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
 	/** CorrectionInvoice = CI */
 	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
+	/** Provision = PRV */
+	public static final String DOCSUBTYPE_Provision = "PRV";
+	/** ProFormaSO = PF */
+	public static final String DOCSUBTYPE_ProFormaSO = "PF";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -869,7 +877,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isCatchWeight()
+	public boolean isCatchWeight() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
@@ -955,18 +963,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
-	{
-		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPhysicalClearanceDate()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
 	}
 
 	@Override
@@ -1083,14 +1079,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
-		if (M_SectionCode_ID < 1)
+		if (M_SectionCode_ID < 1) 
 			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
 	}
 
 	@Override
-	public int getM_SectionCode_ID()
+	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
@@ -1230,6 +1226,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getNrOfOLCandsWithSamePOReference() 
 	{
 		return get_ValueAsInt(COLUMNNAME_NrOfOLCandsWithSamePOReference);
+	}
+
+	@Override
+	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
+	{
+		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPhysicalClearanceDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
 	}
 
 	@Override
