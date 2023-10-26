@@ -24,6 +24,7 @@ package de.metas.externalreference;
 
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
+import de.metas.externalreference.greeting.GreetingExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -57,6 +58,7 @@ public class ExternalReferenceTypes
 		registerType(WarehouseExternalReferenceType.WAREHOUSE);
 		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);
 		registerType(ShipperExternalReferenceType.SHIPPER);
+		registerType(GreetingExternalReferenceType.GREETING);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

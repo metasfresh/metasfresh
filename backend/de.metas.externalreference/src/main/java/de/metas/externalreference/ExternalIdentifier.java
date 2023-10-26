@@ -128,6 +128,12 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.VALUE, identifier, null);
 		}
 
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
+		if (nameMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.NAME, identifier, null);
+		}
+
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -161,10 +167,12 @@ public class ExternalIdentifier
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-		if(glnMatcher.find()){
+		if (glnMatcher.find())
+		{
 			return GLN.ofString(glnMatcher.group(1));
 		}
-		else {
+		else
+		{
 			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
 		}
 
@@ -186,6 +194,22 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
+	@NonNull
+	public String asName()
+	{
+		Check.assume(Type.NAME.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.NAME, this);
+
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
+
+		if (!nameMatcher.matches())
+		{
+			throw new AdempiereException("External identifier parsing failed. External Identifier:" + rawValue);
+		}
+
+		return nameMatcher.group(1);
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -193,7 +217,8 @@ public class ExternalIdentifier
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
 		GLN(Pattern.compile("(?:^gln)-(.+)")),
-		VALUE(Pattern.compile("(?:^val)-(.+)"));
+		VALUE(Pattern.compile("(?:^val)-(.+)")),
+		NAME(Pattern.compile("(?:^name)-(.+)"));
 
 		private final Pattern pattern;
 	}
