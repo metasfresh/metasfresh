@@ -54,6 +54,8 @@ const ScanHUAndGetQtyComponent = ({
     qtyRejectedReasons,
     scaleDevice,
     scaleTolerance,
+    catchWeight,
+    catchWeightUom,
   });
 
   useEffect(() => {
@@ -70,6 +72,8 @@ const ScanHUAndGetQtyComponent = ({
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
+      catchWeight,
+      catchWeightUom,
     });
   }, [
     userInfo,
@@ -84,6 +88,8 @@ const ScanHUAndGetQtyComponent = ({
     qtyRejectedReasons,
     scaleDevice,
     scaleTolerance,
+    catchWeight,
+    catchWeightUom,
   ]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode }) => {
@@ -197,8 +203,8 @@ const ScanHUAndGetQtyComponent = ({
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
           scaleTolerance={resolvedBarcodeData.scaleTolerance}
-          catchWeight={catchWeight}
-          catchWeightUom={catchWeightUom}
+          catchWeight={resolvedBarcodeData.catchWeight}
+          catchWeightUom={resolvedBarcodeData.catchWeightUom}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}

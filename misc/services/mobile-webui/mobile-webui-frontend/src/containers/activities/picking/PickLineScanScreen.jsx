@@ -55,8 +55,16 @@ const PickLineScanScreen = () => {
   }, []);
 
   const resolveScannedBarcode = (scannedBarcode) => {
-    const huQRCode = parseQRCodeString(scannedBarcode);
-    return { huQRCode };
+    const result = {};
+
+    const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+
+    if (parsedHUQRCode.weightNet != null) {
+      result['catchWeight'] = parsedHUQRCode.weightNet;
+    }
+
+    //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
+    return result;
   };
   const onResult = ({
     qty = 0,
