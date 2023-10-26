@@ -450,6 +450,7 @@ class PickingJobLoaderAndSaver
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.catchUomId(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()))
 				.steps(pickingJobSteps.get(pickingJobLineId)
 						.stream()
 						.map(this::loadStep)

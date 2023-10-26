@@ -23,6 +23,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -229,6 +230,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.qtyPickedAndDelivered(Quantity.of(record.getQtyPickedAndDelivered(), uom));
 		packageable.qtyPickedNotDelivered(Quantity.of(record.getQtyPickedNotDelivered(), uom));
 		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
+		packageable.catchWeightUomId(record.isCatchWeight() ? UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()) : null);
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());

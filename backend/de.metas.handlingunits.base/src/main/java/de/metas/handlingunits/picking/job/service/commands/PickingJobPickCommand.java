@@ -7,6 +7,9 @@ import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
@@ -37,6 +40,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -59,7 +64,8 @@ public class PickingJobPickCommand
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -72,6 +78,7 @@ public class PickingJobPickCommand
 	@Nullable private final HUQRCode pickFromHUQRCode;
 	@NonNull private final Quantity qtyToPick;
 	@Nullable private final QtyRejectedWithReason qtyRejected;
+	@Nullable private final Quantity catchWeight;
 
 	//
 	// State
@@ -91,7 +98,8 @@ public class PickingJobPickCommand
 			final @Nullable HUQRCode pickFromHUQRCode,
 			final @NonNull BigDecimal qtyToPickBD,
 			final @Nullable BigDecimal qtyRejectedBD,
-			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode)
+			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
+			final @Nullable BigDecimal catchWeightBD)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -126,6 +134,14 @@ public class PickingJobPickCommand
 		else
 		{
 			this.qtyRejected = null;
+		}
+
+		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
+				? Quantitys.create(catchWeightBD, line.getCatchUomId())
+				: null;
+		if (this.catchWeight != null && !this.catchWeight.isPositive())
+		{
+			throw new AdempiereException("Catch Weight shall be positive");
 		}
 	}
 
@@ -295,6 +311,8 @@ public class PickingJobPickCommand
 		else if (packedHUs.size() == 1)
 		{
 			final I_M_HU packedHU = packedHUs.get(0);
+			updateHUWeightFromCatchWeight(packedHU, huContext, productId);
+
 			return ImmutableList.of(PickedToHU.builder()
 					.pickedFromHU(pickFromHU)
 					.pickFromLocatorId(pickFromLocatorId)
@@ -305,6 +323,11 @@ public class PickingJobPickCommand
 		}
 		else
 		{
+			if (catchWeight != null)
+			{
+				throw new AdempiereException("Cannot apply catch weight when receiving more than one HU");
+			}
+
 			final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 			final ImmutableList.Builder<PickedToHU> result = ImmutableList.builder();
 			for (final I_M_HU packedHU : packedHUs)
@@ -321,6 +344,21 @@ public class PickingJobPickCommand
 
 			return result.build();
 		}
+	}
+
+	private void updateHUWeightFromCatchWeight(final I_M_HU hu, final IHUContext huContext, final ProductId productId)
+	{
+		if (catchWeight == null)
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		huAttributes.setSaveOnChange(true);
+
+		final IWeightable weightable = Weightables.wrap(huAttributes);
+		final Quantity catchWeightConv = uomConversionBL.convertQuantityTo(catchWeight, productId, weightable.getWeightNetUOM());
+		weightable.setWeightNet(catchWeightConv.toBigDecimal());
 	}
 
 	private PickingJobStep updateStepFromPickingCandidate(

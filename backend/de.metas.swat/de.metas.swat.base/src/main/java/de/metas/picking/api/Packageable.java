@@ -37,6 +37,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -78,6 +79,8 @@ public class Packageable
 	 */
 	@NonNull
 	Quantity qtyPickedPlanned;
+
+	@Nullable UomId catchWeightUomId;
 
 	@NonNull
 	BPartnerId customerId;

@@ -251,6 +251,7 @@ public class PickingJobCreateCommand
 				.qtyToPick(plan.getQtyToPick())
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
+				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
 						.map(this::createStepRequest)
 						.collect(ImmutableList.toImmutableList()))
@@ -266,6 +267,7 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
+				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.productId(items.getSingleProductId())
 				.qtyToPick(items.getQtyToPick())
 				.build();

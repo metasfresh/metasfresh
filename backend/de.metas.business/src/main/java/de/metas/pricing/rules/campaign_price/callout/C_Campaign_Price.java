@@ -125,7 +125,7 @@ public class C_Campaign_Price
 						.setFailIfNotCalculated();
 				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 				record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
-				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getRecordString());
+				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 			}
 		}
 		else {

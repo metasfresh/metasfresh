@@ -38,7 +38,7 @@ const PickLineScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { qtyToPick, uom, qtyRejectedReasons } = useSelector(
+  const { productId, qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -55,11 +55,32 @@ const PickLineScanScreen = () => {
   }, []);
 
   const resolveScannedBarcode = (scannedBarcode) => {
-    const huQRCode = parseQRCodeString(scannedBarcode);
-    return { huQRCode };
+    const result = {};
+
+    const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+    //console.log('resolveScannedBarcode', { parsedHUQRCode });
+
+    if (parsedHUQRCode.productId != null && parsedHUQRCode.productId !== productId) {
+      throw trl('activities.picking.notEligibleHUBarcode');
+    }
+
+    if (parsedHUQRCode.weightNet != null) {
+      result['catchWeight'] = parsedHUQRCode.weightNet;
+    }
+
+    //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
+    return result;
   };
-  const onResult = ({ qty = 0, qtyRejected, reason = null, scannedBarcode = null, ...others }) => {
-    console.log('onResult', { qty, reason, scannedBarcode, ...others });
+  const onResult = ({
+    qty = 0,
+    qtyRejected,
+    reason = null,
+    scannedBarcode = null,
+    catchWeight = null,
+    catchWeightUom = null,
+    ...others
+  }) => {
+    console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
 
     postStepPicked({
       wfProcessId,
@@ -70,6 +91,7 @@ const PickLineScanScreen = () => {
       qtyPicked: qty,
       qtyRejectedReasonCode: reason,
       qtyRejected,
+      catchWeight,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
@@ -85,6 +107,8 @@ const PickLineScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
+      catchWeight={0}
+      catchWeightUom={catchWeightUom}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -99,9 +123,11 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
   return {
+    productId: line.productId,
     qtyToPick: line.qtyToPick,
     uom: line.uom,
     qtyRejectedReasons,
+    catchWeightUom: line.catchWeightUOM,
   };
 };
 

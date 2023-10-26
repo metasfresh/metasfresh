@@ -173,7 +173,7 @@ public class EDIDesadvPackService
 
 		final DesadvLineWithDraftedPackItems desadvLineWithDraftedPackItems = getLineWithDraftedPackItems(desadvLineId);
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 
 		StockQtyAndUOMQty remainingQtyToAdd = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
