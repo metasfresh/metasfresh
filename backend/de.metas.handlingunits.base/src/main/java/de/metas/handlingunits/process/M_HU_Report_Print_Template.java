@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUToReport;
@@ -51,7 +50,7 @@ abstract class M_HU_Report_Print_Template extends JavaProcess implements IProces
 	private void generateQRCode(final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuId(huId));
+		huQRCodesService.generateForExistingHU(huId);
 	}
 
 	private ReportResultData createLabelReport(@NonNull final I_M_HU hu)

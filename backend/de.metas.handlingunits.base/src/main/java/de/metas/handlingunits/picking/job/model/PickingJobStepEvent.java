@@ -30,6 +30,7 @@ public class PickingJobStepEvent
 	@Nullable BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
+	@Nullable BigDecimal catchWeight;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)
 	{

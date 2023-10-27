@@ -490,7 +490,7 @@ public final class OLCand implements IProductPriceAware
 
 	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
 	{
-		return InvoicableQtyBasedOn.fromRecordString(olCandRecord.getInvoicableQtyBasedOn());
+		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(olCandRecord.getInvoicableQtyBasedOn());
 	}
 
 	public LocalDate getPresetDateInvoiced()

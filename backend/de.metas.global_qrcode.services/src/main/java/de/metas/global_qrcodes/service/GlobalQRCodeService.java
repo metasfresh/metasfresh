@@ -1,5 +1,6 @@
 package de.metas.global_qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
@@ -22,14 +23,19 @@ public class GlobalQRCodeService
 
 	public GlobalQRCodeService(@NonNull final IMassPrintingService massPrintingService) {this.massPrintingService = massPrintingService;}
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);
 	}
 
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
-			@Nullable final PInstanceId pInstanceId,
-			@NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final PInstanceId pInstanceId,
+									   @NonNull final AdProcessId qrCodeProcessId)
 	{
 		final QRCodePDFResource execute = CreatePDFCommand.builder()
 				.qrCodes(qrCodes)

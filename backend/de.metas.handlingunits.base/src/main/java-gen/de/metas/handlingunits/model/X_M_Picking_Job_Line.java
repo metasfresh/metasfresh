@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2094078722L;
+	private static final long serialVersionUID = -1890342962L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
 	@Override

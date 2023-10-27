@@ -41,6 +41,7 @@ public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;
 
+	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -68,6 +69,7 @@ public class JsonPickingJobStep
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
+				.productId(step.getProductId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
