@@ -1,31 +1,33 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(numeric,
-                                                                                          varchar)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_HU(numeric,
+                                                                   Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(p_record_id numeric,
-                                                                                  p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_HU(p_record_id numeric,
+                                                           p_language  character varying)
     RETURNS TABLE
             (
-                qtyordered   numeric,
-                name         character varying,
-                price        numeric,
-                linenetamt   numeric,
-                uomsymbol    character varying,
-                description  character varying,
-                PricePattern text
+                qtyentered                 numeric,
+                name                       character varying,
+                price                      numeric,
+                linenetamt                 numeric,
+                uomsymbol                  character varying,
+                description                character varying,
+                isprintwhenpackingmaterial character,
+                PricePattern               text
             )
     STABLE
     LANGUAGE sql
 AS
 $$
-SELECT ol.QtyOrdered,
+SELECT ol.QtyEntered,
        COALESCE(pt.Name, p.name)                         AS Name,
        ol.PriceEntered                                   AS Price,
-       ol.LineNetAmt,
+       ol.linenetamt,
        COALESCE(uom.UOMSymbol, uomt.UOMSymbol)           AS UOMSymbol,
        ol.Description,
+       p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(o.m_pricelist_id) AS PricePattern
-FROM C_OrderLine ol
+FROM c_orderline ol
          INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
     -- Product and its translation
          LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID

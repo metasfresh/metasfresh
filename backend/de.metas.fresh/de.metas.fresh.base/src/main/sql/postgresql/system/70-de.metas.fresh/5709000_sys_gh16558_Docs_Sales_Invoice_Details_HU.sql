@@ -1,20 +1,23 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(numeric,
-                                                                                            varchar)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU(numeric,
+                                                                     Character Varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(p_record_id numeric,
-                                                                                    p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU(p_record_id numeric,
+                                                             p_language  character varying)
     RETURNS TABLE
             (
-                shipped      numeric,
-                retour       numeric,
-                name         character varying,
-                price        numeric,
-                linenetamt   numeric,
-                uomsymbol    character varying,
-                rate         numeric,
-                isprinttax   character,
-                PricePattern text
+                shipped                    numeric,
+                retour                     numeric,
+                name                       character varying,
+                price                      numeric,
+                linenetamt                 numeric,
+                uomsymbol                  character varying,
+                rate                       numeric,
+                isprinttax                 character,
+                qtyentered                 numeric,
+                description                character varying,
+                isprintwhenpackingmaterial character,
+                PricePattern               text
             )
     STABLE
     LANGUAGE sql
@@ -22,11 +25,11 @@ AS
 $$
 SELECT SUM(CASE
                WHEN il.QtyEntered > 0 THEN il.QtyEntered
-                                      ELSE 0
-           END)                                          AS shipped,
+               ELSE 0
+    END)                                          AS shipped,
        SUM(CASE
                WHEN il.QtyEntered < 0 THEN il.QtyEntered * -1
-                                      ELSE 0
+               ELSE 0
            END)                                          AS retour,
        COALESCE(pt.Name, p.Name)                         AS Name,
        il.PriceEntered                                   AS Price,
@@ -34,6 +37,9 @@ SELECT SUM(CASE
        COALESCE(uom.UOMSymbol, uomt.UOMSymbol)           AS UOMSymbol,
        t.rate,
        bpg.IsPrintTax,
+       SUM(il.QtyEntered)                                AS QtyEntered,
+       il.Description,
+       p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(i.m_pricelist_id) AS PricePattern
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -55,6 +61,8 @@ GROUP BY COALESCE(pt.Name, p.Name),
          il.PriceEntered,
          t.rate,
          bpg.IsPrintTax,
+         il.Description,
+         p.IsPrintWhenPackingMaterial,
          i.m_pricelist_id
 $$
 ;

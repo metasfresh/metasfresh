@@ -1,9 +1,9 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(numeric,
-                                                                                            varchar)
+                                                                        varchar)
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(p_record_id numeric,
-                                                                                    p_language  character varying)
+                                                                p_language  character varying)
     RETURNS TABLE
             (
                 shipped      numeric,
@@ -22,11 +22,11 @@ AS
 $$
 SELECT SUM(CASE
                WHEN il.QtyEntered > 0 THEN il.QtyEntered
-                                      ELSE 0
-           END)                                          AS shipped,
+               ELSE 0
+    END)                                          AS shipped,
        SUM(CASE
                WHEN il.QtyEntered < 0 THEN il.QtyEntered * -1
-                                      ELSE 0
+               ELSE 0
            END)                                          AS retour,
        COALESCE(pt.Name, p.Name)                         AS Name,
        il.PriceEntered                                   AS Price,

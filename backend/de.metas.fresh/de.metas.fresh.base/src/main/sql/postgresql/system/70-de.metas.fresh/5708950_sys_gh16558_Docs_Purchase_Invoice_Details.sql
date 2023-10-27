@@ -1,9 +1,9 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details(numeric,
-                                                                                         varchar)
+                                                                     varchar)
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details(p_record_id numeric,
-                                                                                 p_language  character varying)
+                                                             p_language  character varying)
     RETURNS TABLE
             (
                 inouts                text,
@@ -47,8 +47,6 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL                                   AS InOuts_IsDataComplete,
        COALESCE(pc.IsHU, FALSE)                                                     AS IsHU,
        MAX(il.line)                                                                 AS line,
-       -- ts: QnD: appending the invoice line description to the product name.
-       -- TODO: create a dedicated field for it etc
        il.Description,
        il.ProductDescription,
        COALESCE(pt.name, p.name)                                                    AS Name,
@@ -56,8 +54,8 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
                CASE
                    WHEN LENGTH(att.Attributes) > 15
                        THEN att.Attributes || E'\n'
-                       ELSE att.Attributes
-               END,
+                   ELSE att.Attributes
+                   END,
                ''
        )                                                                            AS Attributes,
        SUM(il.QtyenteredTU)                                                         AS HUQty,
@@ -65,11 +63,11 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        SUM(il.QtyInvoicedInPriceUOM)                                                AS qtyinvoicedinpriceuom,
        SUM(CASE
                WHEN il.QtyEntered > 0 THEN il.QtyEntered
-                                      ELSE 0
+               ELSE 0
            END)                                                                     AS shipped,
        SUM(CASE
                WHEN il.QtyEntered < 0 THEN il.QtyEntered * -1
-                                      ELSE 0
+               ELSE 0
            END)                                                                     AS retour,
        il.PriceActual,
        il.PriceEntered,
@@ -177,12 +175,6 @@ FROM C_InvoiceLine il
                                 WHERE piv.M_HU_PI_Version_ID != 101
                                   AND iliol.C_Invoice_ID = p_record_id) pi
                           GROUP BY C_InvoiceLine_ID) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
-
-    -- Get Attributes
-    -- we join the first M_MatchInv record to get it's M_InOutLine's ASI
-    -- if there are many inoutLines with different ASIs, then we can assume that all of them have that same instance values for those attributes that are flagged with M_Attribute.IsAttrDocumentRelevant='Y'
-    -- and these are also the only M_Attributes's instance values that we show
-
          LEFT OUTER JOIN
      (SELECT DISTINCT ON (C_InvoiceLine_ID) STRING_AGG(att.ai_value, ', ' ORDER BY LENGTH(att.ai_value),att.ai_value) AS Attributes, att.M_AttributeSetInstance_ID, il.c_invoiceline_id
       FROM c_invoiceline il
@@ -199,8 +191,6 @@ GROUP BY InOuts,
          TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY'),
          COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL,
          COALESCE(pc.IsHU, FALSE),
-         -- ts: QnD: appending the invoice line description to the product name.
-         -- TODO: create a dedicated field for it etc
          il.Description,
          il.ProductDescription,
          COALESCE(pt.name, p.name),
@@ -208,8 +198,8 @@ GROUP BY InOuts,
                  CASE
                      WHEN LENGTH(att.Attributes) > 15
                          THEN att.Attributes || E'\n'
-                         ELSE att.Attributes
-                 END,
+                     ELSE att.Attributes
+                     END,
                  ''
          ),
          piip.name,

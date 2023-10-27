@@ -1,10 +1,10 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_order_details(numeric,
-                                                                                       varchar)
+                                                                   varchar)
 ;
 
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_order_details(p_record_id numeric,
-                                                                               p_language  character varying)
+                                                           p_language  character varying)
     RETURNS TABLE
             (
                 line                 numeric,
@@ -40,14 +40,14 @@ SELECT ol.line,
        CASE
            WHEN LENGTH(Attributes) > 15
                THEN Attributes || E'\n'
-               ELSE Attributes
-       END                                                    AS Attributes,
+           ELSE Attributes
+           END                                                    AS Attributes,
        ol.QtyEnteredTU                                        AS HUQty,
        CASE
            WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL
                THEN NULL
-               ELSE ip.name
-       END                                                    AS HUName,
+           ELSE ip.name
+           END                                                    AS HUName,
        ol.QtyEnteredInPriceUOM                                AS QtyEnteredInPriceUOM,
        ol.PriceEntered                                        AS PriceEntered,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOMSymbol,
@@ -56,14 +56,14 @@ SELECT ol.line,
        CASE
            WHEN ROUND(discount, 0) = discount THEN ROUND(discount, 0)
            WHEN ROUND(discount, 1) = discount THEN ROUND(discount, 1)
-                                              ELSE ROUND(discount, 2)
-       END                                                    AS discount,
+           ELSE ROUND(discount, 2)
+           END                                                    AS discount,
        bp.isDiscountPrinted,
        CASE
            WHEN ROUND(rate, 0) = rate THEN ROUND(rate, 0)
            WHEN ROUND(rate, 1) = rate THEN ROUND(rate, 1)
-                                      ELSE ROUND(rate, 2)
-       END::character varying                                 AS rate,
+           ELSE ROUND(rate, 2)
+           END::character varying                                 AS rate,
        isPrintTax,
        ol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones

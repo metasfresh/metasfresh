@@ -1,9 +1,9 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(numeric,
-                                                                                          varchar)
+                                                                      varchar)
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(p_record_id numeric,
-                                                                                  p_language  character varying)
+                                                              p_language  character varying)
     RETURNS TABLE
             (
                 qtyordered   numeric,
