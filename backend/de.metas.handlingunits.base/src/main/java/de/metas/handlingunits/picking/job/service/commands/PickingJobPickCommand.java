@@ -33,7 +33,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.ShipmentScheduleId;
@@ -75,7 +77,7 @@ public class PickingJobPickCommand
 	// Params
 	@NonNull private final PickingJobLineId lineId;
 	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
-	@Nullable private final HUQRCode pickFromHUQRCode;
+	@Nullable private final IHUQRCode pickFromHUQRCode;
 	@NonNull private final Quantity qtyToPick;
 	@Nullable private final QtyRejectedWithReason qtyRejected;
 	@Nullable private final Quantity catchWeight;
@@ -95,7 +97,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
-			final @Nullable HUQRCode pickFromHUQRCode,
+			final @Nullable IHUQRCode pickFromHUQRCode,
 			final @NonNull BigDecimal qtyToPickBD,
 			final @Nullable BigDecimal qtyRejectedBD,
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
@@ -202,7 +204,7 @@ public class PickingJobPickCommand
 		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
 
 		final PickingJobLine line = pickingJob.getLineById(lineId);
-		final HUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
 		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
 		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
 
@@ -225,6 +227,28 @@ public class PickingJobPickCommand
 		);
 
 		this.stepId = newStepId;
+	}
+
+	private HUQRCode getPickFromHUQRCode()
+	{
+		final IHUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+
+		if (pickFromHUQRCode instanceof HUQRCode)
+		{
+			return (HUQRCode)pickFromHUQRCode;
+		}
+		else if (pickFromHUQRCode instanceof LMQRCode)
+		{
+			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
+			final String lotNumber = lmQRCode.getLotNumber();
+			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lmQRCode.getLotNumber())
+					.map(huQRCodesService::getQRCodeByHuId)
+					.orElseThrow(() -> new AdempiereException("No HU associated with external lot number: " + lotNumber));
+		}
+		else
+		{
+			throw new AdempiereException("HU QR code not supported: " + pickFromHUQRCode);
+		}
 	}
 
 	private ImmutableList<PickedToHU> createAndProcessPickingCandidate()
@@ -312,6 +336,8 @@ public class PickingJobPickCommand
 		{
 			final I_M_HU packedHU = packedHUs.get(0);
 			updateHUWeightFromCatchWeight(packedHU, huContext, productId);
+
+			// TODO: make sure we subtracted the WeightNet from original HU
 
 			return ImmutableList.of(PickedToHU.builder()
 					.pickedFromHU(pickFromHU)

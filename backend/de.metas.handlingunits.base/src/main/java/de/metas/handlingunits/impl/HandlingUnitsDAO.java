@@ -92,6 +92,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -438,7 +439,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
-			@NonNull final I_M_HU_PI handlingUnit, 
+			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
@@ -609,7 +610,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 		return piVersion;
 	}
-
 
 	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
@@ -1015,5 +1015,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			hu.setIsReserved(reserved);
 			saveHU(hu);
 		}
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		// TODO search by some newly introduced ExternalLotNo attribute
+		throw new UnsupportedOperationException();
 	}
 }

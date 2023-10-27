@@ -69,6 +69,7 @@ import org.compiere.model.I_M_Transaction;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -271,6 +272,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable BPartnerId bpartnerId);
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
+
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 
 	@Builder
 	@Value

@@ -122,6 +122,8 @@ export const parseQRCodeString = (string) => {
   let payloadParsed;
   if (type === 'HU' && version === '1') {
     payloadParsed = parseQRCodePayload_HU_v1(payload);
+  } else if (type === 'LMQ' && version === '1') {
+    payloadParsed = parseQRCodePayload_LeichMehl_v1(payload);
   } else {
     throw 'Invalid global QR code(3): ' + string;
   }
@@ -156,6 +158,21 @@ const parseQRCodePayload_HU_v1 = (payload) => {
   if (weightNetAttribute?.value != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
     result['weightNet'] = 1 * weightNetAttribute?.value;
+  }
+
+  return result;
+};
+
+// NOTE to dev: keep in sync with:
+// de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeParser
+const parseQRCodePayload_LeichMehl_v1 = (payload) => {
+  const result = { displayable: payload };
+
+  const parts = payload.split('#');
+  if (parts.length >= 2 && parts[1] != null) {
+    // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
+    result['weightNet'] = 1 * parts[1] != null;
+    result['displayable'] = '' + parts[1];
   }
 
   return result;

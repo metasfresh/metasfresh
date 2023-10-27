@@ -107,6 +107,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1175,5 +1176,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 		return IHandlingUnitsBL.extractLocatorId(hu);
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
 	}
 }

@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -26,7 +26,7 @@ public class PickingJobStepEvent
 	@Nullable PickingJobStepPickFromKey pickFromKey;
 
 	@NonNull PickingJobStepEventType eventType;
-	@NonNull HUQRCode huQRCode;
+	@NonNull IHUQRCode huQRCode;
 	@Nullable BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;

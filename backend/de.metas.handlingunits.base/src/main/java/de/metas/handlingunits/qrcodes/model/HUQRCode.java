@@ -23,7 +23,7 @@ import java.util.Optional;
 @Value
 @Builder
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
-public class HUQRCode
+public class HUQRCode implements IHUQRCode
 {
 	@NonNull HUQRCodeUniqueId id;
 
@@ -41,6 +41,8 @@ public class HUQRCode
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
+
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{

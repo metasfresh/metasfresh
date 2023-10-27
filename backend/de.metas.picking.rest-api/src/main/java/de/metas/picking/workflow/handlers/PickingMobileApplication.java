@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -36,7 +37,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -315,12 +318,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
-		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
+		final IHUQRCode qrCode = toHUQRCode(json.getHuQRCode());
 
 		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
-		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null
-				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey()
+		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null && (qrCode instanceof HUQRCode)
+				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode((HUQRCode)qrCode).getPickFromKey()
 				: null;
 
 		return PickingJobStepEvent.builder()
@@ -335,6 +338,23 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 				.catchWeight(json.getCatchWeight())
 				.build();
+	}
+
+	private static IHUQRCode toHUQRCode(@NonNull final String jsonString)
+	{
+		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(jsonString);
+		if (HUQRCode.isHandled(globalQRCode))
+		{
+			return HUQRCode.fromGlobalQRCode(globalQRCode);
+		}
+		else if (LMQRCode.isHandled(globalQRCode))
+		{
+			return LMQRCode.fromGlobalQRCode(globalQRCode);
+		}
+		else
+		{
+			throw new AdempiereException("QR code is not handled: " + globalQRCode);
+		}
 	}
 
 	private static void assertPickingActivityType(
