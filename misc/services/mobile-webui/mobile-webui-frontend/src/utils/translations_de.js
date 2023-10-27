@@ -17,6 +17,7 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
+    CatchWeight: 'Gewicht',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     scanQRCode: 'QR scannen',
