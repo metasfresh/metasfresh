@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: Invoice candidate aggregation with harvesting details rule
 
   Background:

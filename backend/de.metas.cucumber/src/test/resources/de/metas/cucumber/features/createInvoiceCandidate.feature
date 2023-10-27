@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:InvoiceCandidate
+@ghActions:run_on_executor5
 Feature: create invoice candidate via API
   As a user
   I create multiple Invoice candidates and when processing, multiple workpackages are enqueued for each invoic to be generated

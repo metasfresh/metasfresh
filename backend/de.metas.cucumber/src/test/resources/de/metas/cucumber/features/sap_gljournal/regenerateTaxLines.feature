@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Regenerate tax lines for SAP GL Journal
 
   Background:

@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: Clone Modular Contract Term
 
   Background:

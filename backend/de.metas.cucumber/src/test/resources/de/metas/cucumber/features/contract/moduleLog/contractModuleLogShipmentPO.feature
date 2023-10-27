@@ -1,4 +1,5 @@
-Feature: Modular contract log from shipment
+@ghActions:run_on_executor5
+Feature: Modular contract log from shipment (PO)
 
   Background:
     Given infrastructure and metasfresh are running
