@@ -133,12 +133,14 @@ const PickStepScreen = () => {
           disabled={nothingPicked}
           onClick={onUnpickButtonClick}
         />
-        <ConfirmButton
-          caption={trl('activities.confirmButton.notFound')}
-          isDangerousAction={true}
-          isUserEditable={nothingPicked}
-          onUserConfirmed={handleNotFound}
-        />
+        {nothingPicked && (
+          <ConfirmButton
+            caption={trl('activities.confirmButton.notFound')}
+            isDangerousAction={true}
+            isUserEditable={nothingPicked}
+            onUserConfirmed={handleNotFound}
+          />
+        )}
       </div>
     </div>
   );

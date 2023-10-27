@@ -169,7 +169,7 @@ const GetQuantityDialog = ({
                 )}
                 {useCatchWeight && (
                   <tr>
-                    <th>Catch Weight</th>
+                    <th>{trl('general.CatchWeight')}</th>
                     <td>
                       <QtyInputField
                         qty={qtyInfos.toNumberOrString(catchWeight)}
