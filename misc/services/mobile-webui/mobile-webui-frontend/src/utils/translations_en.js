@@ -17,6 +17,7 @@ const translations = {
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
+    CatchWeight: 'Weight',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     scanQRCode: 'Scan QR',
