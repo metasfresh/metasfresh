@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
@@ -20,9 +21,12 @@ import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -33,16 +37,19 @@ class PickingWorkflowLaunchersProvider
 {
 	private final PickingJobRestService pickingJobRestService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	private final WorkplaceService workplaceService;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
 
 	PickingWorkflowLaunchersProvider(
 			@NonNull final PickingJobRestService pickingJobRestService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
 		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
+		this.workplaceService = workplaceService;
 	}
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
@@ -74,9 +81,17 @@ class PickingWorkflowLaunchersProvider
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
+				.map(Workplace::getWarehouseId)
+				.orElse(null);
 		//
 		// Already started launchers
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId, profile.getOnlyBPartnerIds())
+		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
+						PickingJobReferenceQuery.builder()
+								.pickerId(userId)
+								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+								.warehouseId(workplaceWarehouseId)
+								.build())
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
@@ -96,6 +111,7 @@ class PickingWorkflowLaunchersProvider
 																	 .excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
 																	 .facets(facets)
 																	 .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																	 .warehouseId(workplaceWarehouseId)
 																	 .build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
@@ -137,10 +153,14 @@ class PickingWorkflowLaunchersProvider
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
 	{
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
+				.map(Workplace::getWarehouseId)
+				.orElse(null);
 
 		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.builder()
 																					   .userId(userId)
 																					   .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																					   .warehouseId(workplaceWarehouseId)
 																					   .build());
 
 		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets);

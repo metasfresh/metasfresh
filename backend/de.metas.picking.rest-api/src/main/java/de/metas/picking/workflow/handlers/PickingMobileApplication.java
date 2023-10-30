@@ -62,6 +62,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -90,10 +91,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	public PickingMobileApplication(
 			@NonNull final PickingJobRestService pickingJobRestService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository);
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
 	}
 
 	@Override
