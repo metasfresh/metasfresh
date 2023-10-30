@@ -51,6 +51,7 @@ public class WorkplaceRepository
 		return getMap().getById(id);
 	}
 
+	@NonNull
 	public Collection<Workplace> getByIds(final Collection<WorkplaceId> ids)
 	{
 		return getMap().getByIds(ids);

@@ -39,11 +39,13 @@ public class WorkplaceService
 	@NonNull
 	private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
 
+	@NonNull
 	public Workplace getById(@NonNull final WorkplaceId id)
 	{
 		return workplaceRepository.getById(id);
 	}
 
+	@NonNull
 	public Collection<Workplace> getByIds(final Collection<WorkplaceId> ids)
 	{
 		return workplaceRepository.getByIds(ids);

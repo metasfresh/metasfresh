@@ -22,12 +22,10 @@
 
 package de.metas.workplace;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Workplace_User_Assign;
 import org.springframework.stereotype.Repository;
@@ -38,45 +36,25 @@ import java.util.Optional;
 public class WorkplaceUserAssignRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final CCache<Integer, WorkplaceIdsMap> cache = CCache.<Integer, WorkplaceIdsMap>builder()
+	private final CCache<UserId, Optional<WorkplaceId>> byUserId = CCache.<UserId, Optional<WorkplaceId>>builder()
 			.tableName(I_C_Workplace_User_Assign.Table_Name)
 			.build();
 
 	@NonNull
 	public Optional<WorkplaceId> getWorkplaceIdByUserId(@NonNull final UserId userId)
 	{
-		return getMap().getWorkplaceIdByUserId(userId);
+		return byUserId.getOrLoad(userId, this::retrieveWorkplaceIdByUserId);
 	}
 
 	@NonNull
-	private WorkplaceIdsMap getMap()
+	private Optional<WorkplaceId> retrieveWorkplaceIdByUserId(@NonNull final UserId userId)
 	{
-		return cache.getOrLoad(0, this::retrieveMap);
-	}
-
-	@NonNull
-	private WorkplaceIdsMap retrieveMap()
-	{
-		final ImmutableMap<UserId, WorkplaceId> byUserId = queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
+		return queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
 				.create()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap((record) -> UserId.ofRepoId(record.getAD_User_ID()),
-													 (record) -> WorkplaceId.ofRepoId(record.getC_Workplace_ID())));
-
-		return WorkplaceIdsMap.of(byUserId);
-	}
-
-	@Value(staticConstructor = "of")
-	private static class WorkplaceIdsMap
-	{
-		@NonNull
-		ImmutableMap<UserId, WorkplaceId> byUserId;
-
-		@NonNull
-		public Optional<WorkplaceId> getWorkplaceIdByUserId(@NonNull final UserId userId)
-		{
-			return Optional.ofNullable(byUserId.get(userId));
-		}
+				.firstOnlyOptional(I_C_Workplace_User_Assign.class)
+				.map(I_C_Workplace_User_Assign::getC_Workplace_ID)
+				.map(WorkplaceId::ofRepoId);
 	}
 }
