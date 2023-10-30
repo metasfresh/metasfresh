@@ -1,9 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(numeric,
-                                                                                            varchar)
-;
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details_HU ( IN p_record_id numeric, IN p_language Character Varying (6) );
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_invoice_details_hu(p_record_id numeric,
-                                                                                    p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details_HU( IN p_record_id numeric, IN p_language Character Varying (6) )
     RETURNS TABLE
             (
                 shipped      numeric,

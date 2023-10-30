@@ -1,9 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(numeric,
-                                                                      varchar)
-;
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric, IN ad_language Character Varying (6));
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_order_details_hu(p_record_id numeric,
-                                                              p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric, IN p_language Character Varying (6))
     RETURNS TABLE
             (
                 qtyordered   numeric,
@@ -34,7 +31,7 @@ FROM C_OrderLine ol
     -- Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl uomt ON ol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_language
-WHERE ol.C_Order_ID = p_record_id
+WHERE ol.C_Order_ID = record_id
   AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 
 $$

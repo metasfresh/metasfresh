@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(numeric,
-                                                                                      Character Varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
+                                                                                       IN p_language  Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(p_record_id numeric,
-                                                                              p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
+                                                                               IN p_language  Character Varying(6))
     RETURNS TABLE
             (
                 inouts                     text,

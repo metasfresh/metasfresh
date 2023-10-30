@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(numeric,
-                                                                  Character Varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
+                                                                                       IN p_language  Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(p_record_id numeric,
-                                                          p_language  character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
+                                                                               IN p_language  Character Varying(6))
     RETURNS TABLE
             (
                 inouts                     text,
@@ -64,8 +64,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
                CASE
                    WHEN LENGTH(att.Attributes) > 15
                        THEN att.Attributes || E'\n'
-                   ELSE att.Attributes
-                   END,
+                       ELSE att.Attributes
+               END,
                ''
        )                                                      AS Attributes,
        il.QtyenteredTU                                        AS HUQty,
@@ -74,13 +74,13 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        CASE
            WHEN il.QtyEntered > 0
                THEN il.QtyEntered
-           ELSE 0
-           END                                                    AS shipped,
+               ELSE 0
+       END                                                    AS shipped,
        CASE
            WHEN il.QtyEntered < 0
                THEN il.QtyEntered * -1
-           ELSE 0
-           END                                                    AS retour,
+               ELSE 0
+       END                                                    AS retour,
        il.PriceActual,
        il.PriceEntered,
        il.Discount,
@@ -237,11 +237,11 @@ ORDER BY io.DateFrom,
          CASE
              WHEN COALESCE(pc.IsHU, FALSE) = 't' AND dlsi.SeqNo IS NOT NULL
                  THEN dlsi.SeqNo
-             END,
+         END,
          CASE
              WHEN COALESCE(pc.IsHU, FALSE) = 't' AND dlsi.SeqNo IS NULL
                  THEN p.name
-             END,
+         END,
          miol.line,
          line
 
