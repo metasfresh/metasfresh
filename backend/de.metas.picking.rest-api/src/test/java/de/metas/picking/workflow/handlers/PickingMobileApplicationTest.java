@@ -40,6 +40,9 @@ import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.service.WFActivityHandlersRegistry;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,7 +61,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 //@ExtendWith(AdempiereTestWatcher.class)
 class PickingMobileApplicationTest
@@ -98,7 +101,8 @@ class PickingMobileApplicationTest
 
 		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository());
 		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
-		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository);
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
 
 		final WorkflowRestAPIService workflowRestAPIService = new WorkflowRestAPIService(
 				Optional.of(ImmutableList.of(pickingMobileApplication)),
