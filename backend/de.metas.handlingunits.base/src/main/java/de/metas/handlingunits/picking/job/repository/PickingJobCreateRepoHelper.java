@@ -15,9 +15,12 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -25,27 +28,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 
-class PickingJobCreateRepoCommand
+class PickingJobCreateRepoHelper
 {
-	private final PickingJobLoaderSupportingServices loadingSupportServices;
-	private final PickingJobCreateRepoRequest request;
+	private final PickingJobLoaderAndSaver loader;
 
-	private PickingJobLoaderAndSaver loader;
-
-	public PickingJobCreateRepoCommand(
-			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
-			@NonNull final PickingJobCreateRepoRequest request)
-	{
-		this.loadingSupportServices = loadingSupportServices;
-
-		this.request = request;
-	}
-
-	public PickingJob execute()
+	public PickingJobCreateRepoHelper(@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		this.loader = PickingJobLoaderAndSaver.forLoading(loadingSupportServices);
+	}
 
-		final PickingJobId pickingJobId = createPickingJobHeader();
+	public PickingJob createPickingJob(@NonNull final PickingJobCreateRepoRequest request)
+	{
+		final PickingJobId pickingJobId = createPickingJobHeader(request);
+		final OrgId orgId = request.getOrgId();
 
 		request.getLines()
 				.stream()
@@ -59,15 +54,15 @@ class PickingJobCreateRepoCommand
 								.pickingJobId(pickingJobId)
 								.build()))
 				.distinct()
-				.forEach(this::createPickFromAlternative);
+				.forEach(from -> createPickFromAlternative(from, orgId));
 
-		request.getLines().forEach(line -> createLineRecord(line, pickingJobId));
+		request.getLines().forEach(line -> createLineRecord(line, pickingJobId, orgId));
 
 		return loader.loadById(pickingJobId);
 	}
 
 	@NonNull
-	private PickingJobId createPickingJobHeader()
+	private PickingJobId createPickingJobHeader(@NonNull final PickingJobCreateRepoRequest request)
 	{
 		final I_M_Picking_Job record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job.class);
 		final OrgId orgId = request.getOrgId();
@@ -79,6 +74,7 @@ class PickingJobCreateRepoCommand
 		record.setC_BPartner_Location_ID(request.getDeliveryBPLocationId().getRepoId());
 		record.setDeliveryToAddress(request.getDeliveryRenderedAddress());
 		record.setPicking_User_ID(request.getPickerId().getRepoId());
+		record.setIsAllowPickingAnyHU(request.isAllowPickingAnyHU());
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setProcessed(false);
 		InterfaceWrapperHelper.save(record);
@@ -90,28 +86,37 @@ class PickingJobCreateRepoCommand
 
 	private void createLineRecord(
 			@NonNull final PickingJobCreateRepoRequest.Line line,
-			@NonNull final PickingJobId pickingJobId)
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final OrgId orgId)
 	{
 		final I_M_Picking_Job_Line record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setM_Product_ID(line.getProductId().getRepoId());
+		record.setQtyToPick(line.getQtyToPick().toBigDecimal());
+		record.setC_UOM_ID(line.getQtyToPick().getUomId().getRepoId());
+		record.setC_Order_ID(OrderAndLineId.toOrderRepoId(line.getSalesOrderAndLineId()));
+		record.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(line.getSalesOrderAndLineId()));
+		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(line.getShipmentScheduleId()));
+		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
 
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
-		line.getSteps().forEach(step -> createStepRecord(step, pickingJobId, pickingJobLineId));
+		line.getSteps().forEach(step -> createStepRecord(step, pickingJobId, pickingJobLineId, orgId));
 	}
 
 	private void createStepRecord(
 			@NonNull final PickingJobCreateRepoRequest.Step step,
 			@NonNull final PickingJobId pickingJobId,
-			@NonNull final PickingJobLineId pickingJobLineId)
+			@NonNull final PickingJobLineId pickingJobLineId,
+			@NonNull final OrgId orgId)
 	{
 		final I_M_Picking_Job_Step record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Step.class);
+		record.setIsDynamic(false);
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setM_Picking_Job_Line_ID(pickingJobLineId.getRepoId());
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setM_ShipmentSchedule_ID(step.getShipmentScheduleId().getRepoId());
 		record.setC_Order_ID(step.getSalesOrderLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(step.getSalesOrderLineId().getOrderLineRepoId());
@@ -163,19 +168,21 @@ class PickingJobCreateRepoCommand
 						pickFrom,
 						step.getProductId(),
 						pickingJobStepId,
-						pickingJobId));
+						pickingJobId,
+						orgId));
 	}
 
 	private void createStepHUAlternativeRecord(
 			@NonNull final PickingJobCreateRepoRequest.StepPickFrom pickFrom,
 			@NonNull final ProductId productId,
 			@NonNull final PickingJobStepId pickingJobStepId,
-			@NonNull final PickingJobId pickingJobId)
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final OrgId orgId)
 	{
 		final I_M_Picking_Job_Step_HUAlternative record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Step_HUAlternative.class);
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setM_Picking_Job_Step_ID(pickingJobStepId.getRepoId());
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setM_Picking_Job_HUAlternative_ID(loader.getPickingJobHUAlternativeId(pickingJobId, pickFrom.getPickFromHUId(), productId).getRepoId());
 		record.setPickFrom_Warehouse_ID(pickFrom.getPickFromLocatorId().getWarehouseId().getRepoId());
 		record.setPickFrom_Locator_ID(pickFrom.getPickFromLocatorId().getRepoId());
@@ -185,11 +192,13 @@ class PickingJobCreateRepoCommand
 		loader.addAlreadyLoadedFromDB(record);
 	}
 
-	private void createPickFromAlternative(@NonNull final PickFromAlternativeCreateRequest from)
+	private void createPickFromAlternative(
+			@NonNull final PickFromAlternativeCreateRequest from,
+			@NonNull final OrgId orgId)
 	{
 		final I_M_Picking_Job_HUAlternative record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_HUAlternative.class);
 		record.setM_Picking_Job_ID(from.getPickingJobId().getRepoId());
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setPickFrom_Warehouse_ID(from.getPickFromLocatorId().getWarehouseId().getRepoId());
 		record.setPickFrom_Locator_ID(from.getPickFromLocatorId().getRepoId());
 		record.setPickFrom_HU_ID(from.getPickFromHUId().getRepoId());

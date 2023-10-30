@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
@@ -49,7 +48,6 @@ public class M_HU_Report_QRCode extends JavaProcess
 	private final HUReportService huReportService = HUReportService.get();
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
-
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
 
 	@Param(parameterName = PARAM_AD_Process_ID)
@@ -66,10 +64,10 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 		final AdProcessId adProcessId = AdProcessId.ofRepoId(processId);
 
-		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,getPinstanceId(),adProcessId);
+		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes, getPinstanceId(), adProcessId);
 
 		// print preview was set by the flag IsPrintPreview
-		if(getProcessInfo().isPrintPreview())
+		if (getProcessInfo().isPrintPreview())
 		{
 			getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
 		}
@@ -83,7 +81,6 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 	private ImmutableList<HUQRCode> generateQrCodes(@NonNull final ImmutableSet<HuId> huIds)
 	{
-		return huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds))
-				.toList();
+		return huQRCodesService.generateForExistingHUs(huIds).toList();
 	}
 }

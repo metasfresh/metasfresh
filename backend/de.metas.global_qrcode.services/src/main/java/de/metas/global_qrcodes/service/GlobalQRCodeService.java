@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -20,7 +19,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -30,14 +28,19 @@ public class GlobalQRCodeService
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);
 	}
 
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
-			@Nullable final PInstanceId pInstanceId,
-			@NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final PInstanceId pInstanceId,
+									   @NonNull final AdProcessId qrCodeProcessId)
 	{
 		final QRCodePDFResource execute = CreatePDFCommand.builder()
 				.qrCodes(qrCodes)

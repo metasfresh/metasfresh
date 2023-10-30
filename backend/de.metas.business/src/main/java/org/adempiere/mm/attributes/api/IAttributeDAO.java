@@ -118,7 +118,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
-	 *
 	 * Example use case:
 	 *
 	 * <pre>
@@ -148,7 +147,9 @@ public interface IAttributeDAO extends ISingletonService
 
 	AttributeListValue changeAttributeValue(AttributeListValueChangeRequest request);
 
-	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
+	void deleteAttributeValueByCode(AttributeId attributeId, String value);
+
+	Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull AttributeCode attributeCode);
 
 	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
 
@@ -190,7 +191,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
-	 *
 	 * NOTE: it is not saving it
 	 */
 	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
@@ -220,8 +220,6 @@ public interface IAttributeDAO extends ISingletonService
 	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
-
-	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
 
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 

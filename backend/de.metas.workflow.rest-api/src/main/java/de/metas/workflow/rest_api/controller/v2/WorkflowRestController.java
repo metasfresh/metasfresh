@@ -213,7 +213,7 @@ public class WorkflowRestController
 		workflowRestAPIService.abortAllWFProcesses(loggedUserId);
 	}
 
-	private JsonWFProcess toJson(final WFProcess wfProcess)
+	public JsonWFProcess toJson(final WFProcess wfProcess)
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
 		return toJson(wfProcess, jsonOpts);

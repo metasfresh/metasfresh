@@ -1,5 +1,5 @@
 import * as types from '../../constants/PickingActionTypes';
-import { isDraft, current } from 'immer';
+import { current, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -219,6 +219,9 @@ const updateLineStatusFromSteps = ({ draftLine }) => {
 
 const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
+  if (!stepIds || stepIds.length <= 0) {
+    return CompleteStatus.NOT_STARTED;
+  }
 
   const stepStatuses = [];
   stepIds.forEach((stepId) => {
@@ -266,15 +269,20 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
 //
 
 const normalizePickingLines = (lines) => {
-  return lines.map((line) => {
-    return {
+  return lines.reduce((accum, line) => {
+    accum[line.pickingLineId] = {
       ...line,
-      steps: line.steps.reduce((accum, step) => {
-        accum[step.pickingStepId] = step;
-        return accum;
-      }, {}),
+      steps: normalizePickingSteps(line.steps),
     };
-  });
+    return accum;
+  }, {});
+};
+
+const normalizePickingSteps = (steps) => {
+  return steps.reduce((accum, step) => {
+    accum[step.pickingStepId] = step;
+    return accum;
+  }, {});
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
@@ -300,12 +308,12 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   //
   // Allocate step alternatives against the pool
   const draftLines = draftActivityDataStored.lines;
-  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
-    const draftLine = draftLines[lineIdx];
+  for (let lineId of Object.keys(draftLines)) {
+    const draftLine = draftLines[lineId];
     for (let stepId of Object.keys(draftLine.steps)) {
       allocatePickingAlternatives({
         draftActivityDataStored,
-        lineId: lineIdx,
+        lineId,
         stepId,
       });
       //
@@ -314,8 +322,8 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
 
   //
   // Update all statuses
-  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
-    const draftLine = draftLines[lineIdx];
+  for (let lineId of Object.keys(draftLines)) {
+    const draftLine = draftLines[lineId];
 
     for (let stepId of Object.keys(draftLine.steps)) {
       const draftStep = draftLine.steps[stepId];

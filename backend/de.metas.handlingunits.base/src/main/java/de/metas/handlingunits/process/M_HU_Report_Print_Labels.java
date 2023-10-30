@@ -3,9 +3,7 @@ package de.metas.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -60,7 +58,6 @@ public class M_HU_Report_Print_Labels extends JavaProcess implements IProcessPre
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 	@Param(mandatory = true, parameterName = "AD_Process_ID")
 	private int p_AD_Process_ID;
 
@@ -97,7 +94,7 @@ public class M_HU_Report_Print_Labels extends JavaProcess implements IProcessPre
 
 	private void generateQrCode(@NonNull final HuId huId)
 	{
-		huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuId(huId));
+		huQRCodesService.generateForExistingHU(huId);
 	}
 
 	private ReportResult printLabel(@NonNull final HuId huId)

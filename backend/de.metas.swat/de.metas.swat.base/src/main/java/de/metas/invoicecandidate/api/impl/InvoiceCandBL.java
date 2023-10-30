@@ -2373,7 +2373,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		iciol.setQtyDelivered(getActualDeliveredQty(inOutLine));
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(iciol.getC_Invoice_Candidate().getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(iciol.getC_Invoice_Candidate().getInvoicableQtyBasedOn());
 		if (inOutLine.getCatch_UOM_ID() > 0 && invoicableQtyBasedOn.isCatchWeight())
 		{
 			// only if the ic is about catch-weight, then we attempt to record it in the iciol.
