@@ -63,8 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 @ExtendWith(SnapshotExtension.class)

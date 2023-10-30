@@ -22,9 +22,7 @@
 
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
