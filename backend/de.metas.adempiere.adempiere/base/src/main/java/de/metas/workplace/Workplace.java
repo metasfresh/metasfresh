@@ -25,6 +25,9 @@ package de.metas.workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -32,4 +35,5 @@ public class Workplace
 {
 	@NonNull WorkplaceId id;
 	@NonNull String name;
+	@Nullable WarehouseId warehouseId;
 }

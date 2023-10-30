@@ -12,6 +12,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -168,12 +170,10 @@ public class PickingJobService
 	}
 
 	@NonNull
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(
-			@NonNull final UserId pickerId,
-			@NonNull final Set<BPartnerId> onlyCustomerIds)
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final PickingJobReferenceQuery query)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, onlyCustomerIds, loadingSupportingServices);
+		return pickingJobRepository.streamDraftPickingJobReferences(query, loadingSupportingServices);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
@@ -207,6 +207,12 @@ public class PickingJobService
 		if (!deliveryDays.isEmpty())
 		{
 			builder.deliveryDays(deliveryDays);
+		}
+		
+		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
+		if (workplaceWarehouseId != null)
+		{
+			builder.warehouseId(workplaceWarehouseId);
 		}
 
 		return builder.build();

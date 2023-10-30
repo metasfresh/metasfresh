@@ -52,7 +52,7 @@ public class WorkplaceId implements RepoIdAware
 
 	public static Optional<WorkplaceId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
-	public static int toRepoId(@Nullable final WorkplaceId WorkplaceId) {return WorkplaceId != null ? WorkplaceId.getRepoId() : -1;}
+	public static int toRepoId(@Nullable final WorkplaceId workplaceId) {return workplaceId != null ? workplaceId.getRepoId() : -1;}
 
 	@Override
 	@JsonValue
