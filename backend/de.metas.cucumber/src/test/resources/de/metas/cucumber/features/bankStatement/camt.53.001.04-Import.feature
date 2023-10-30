@@ -389,6 +389,82 @@ Feature: import bank statement in camt.53.001.04 import format
 				</NtryDtls>
 				<AddtlNtryInf>Zahlungseingang</AddtlNtryInf>
 			</Ntry>
+			<Ntry>
+				<!-- minus 226.1 CHF -->
+				<Amt Ccy="CHF">226.1</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2023-10-26</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2023-10-26</Dt>
+				</ValDt>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>ICDT</Cd>
+							<SubFmlyCd>OTHR</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>2</NbOfTxs>
+						<TtlAmt Ccy="CHF">226.1</TtlAmt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<MsgId>MsgId/2</MsgId>
+							<AcctSvcrRef>AcctSvcrRef/2/1</AcctSvcrRef>
+							<PmtInfId>PmtInfId/2/1</PmtInfId>
+							<InstrId>InstrId/2/1</InstrId>
+							<EndToEndId>EndToEndId/2/1</EndToEndId>
+						</Refs>
+						<Amt Ccy="CHF">119</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">119</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="CHF">119</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RmtInf>
+							<Ustrd>Rechnungsnummer 511004_1_PO_S0337_200</Ustrd>
+						</RmtInf>
+						<AddtlTxInf>Vergütung</AddtlTxInf>
+					</TxDtls>
+					<TxDtls>
+						<Refs>
+							<MsgId>MsgId/2</MsgId>
+							<AcctSvcrRef>AcctSvcrRef/2/2</AcctSvcrRef>
+							<PmtInfId>PmtInfId/2/2</PmtInfId>
+							<InstrId>InstrId/2/2</InstrId>
+							<EndToEndId>EndToEndId/2/2</EndToEndId>
+						</Refs>
+						<Amt Ccy="CHF">107.1</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">107.1</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="CHF">107.1</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RmtInf>
+							<Ustrd>Rechnungsnummer 511004_2_PO_S0337_200</Ustrd>
+						</RmtInf>
+						<AddtlTxInf>Vergütung</AddtlTxInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>Vergütung</AddtlNtryInf>
+			</Ntry>
 		</Stmt>
 	</BkToCstmrStmt>
 </Document>
