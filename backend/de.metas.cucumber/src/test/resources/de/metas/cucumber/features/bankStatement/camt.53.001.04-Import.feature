@@ -244,7 +244,7 @@ Feature: import bank statement in camt.53.001.04 import format
 
   @from:cucumber
   @Id:S0337_200
-  Scenario: Import two bank statements, identify org-account by IBAN and link  to a payment for an invoice that is matched via ESR-Reference
+  Scenario: Import one statement, identify org-account by IBAN and link to three invoices one of which is matched via ESR-Reference
 
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
 	# change the bankaccount of the AD_Org bpartner ("metasfresh") to be an ESR-Account
