@@ -117,6 +117,25 @@ public class C_BP_BankAccount_StepDef
 			bankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
 		}
 
+		final Boolean isEsrAccount = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, null);
+		if (isEsrAccount != null)
+		{
+			bankAccountRecord.setIsEsrAccount(isEsrAccount);
+		}
+
+		final String esrRenderedAccountNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo);
+		if (Check.isNotBlank(esrRenderedAccountNo))
+		{
+			bankAccountRecord.setESR_RenderedAccountNo(esrRenderedAccountNo);
+		}
+
+		final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+		if (Check.isNotBlank(iban))
+		{
+			bankAccountRecord.setIBAN(iban);
+		}
+
+
 		saveRecord(bankAccountRecord);
 	}
 
