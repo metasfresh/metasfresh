@@ -9,7 +9,7 @@ This folder contains resources intended to help metasfresh developers:
 * helpful sqls
 
 
-### Rabbitmq Config to reduce errors in log 
+### Rabbitmq Config for Imp_Processor to reduce connection errors in log
 
 ```sql
 UPDATE IMP_Processor 
