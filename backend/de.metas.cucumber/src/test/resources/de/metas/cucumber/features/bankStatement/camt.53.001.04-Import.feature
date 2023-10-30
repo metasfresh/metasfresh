@@ -480,9 +480,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_3_S0337_200                   | bs_1_S0337_200                | 30   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.StmtAmt | OPT.StatementLineDate | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.Processed | OPT.IsReconciled |
-      | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | EUR                        | 95.2       | 95.2        | 2023-10-24            | bpartner_1_S0337             | inv_3_S0337_200             | false         | false            |
-      | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | EUR                        | -119       | -119        | 2023-10-26            | bpartner_1_S0337             | inv_1_S0337_200             | false         | false            |
-      | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | EUR                        | -107.1     | -107.1      | 2022-09-07            | bpartner_1_S0337             | inv_2_S0337_200             | false         | false            |
-    And the C_BankStatement identified by bs_1_S0337_200 is completed
+	  | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | EUR                        | 95.2       | 95.2        | 2023-10-24            | bpartner_1_S0337             | inv_3_S0337_200             | false         | false            |
+	  | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | EUR                        | -119       | -119        | 2023-10-26            | bpartner_1_S0337             | inv_1_S0337_200             | false         | false            |
+	  | bsl_3_S0337_200                   | 2023-10-26     | 2023-10-26   | EUR                        | -107.1     | -107.1      | 2022-09-07            | bpartner_1_S0337             | inv_2_S0337_200             | false         | false            |
+	  And the C_BankStatement identified by bs_1_S0337_200 is completed
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
