@@ -1,4 +1,3 @@
-@ignore
 @from:cucumber
 Feature: import bank statement in camt53.001.02 import format
 
