@@ -135,6 +135,6 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban, CleanWhitespaceQueryFilterModifier.getInstance())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstIdOnlyOptional(BankAccountId::ofRepoId);
+				.firstIdOnlyOptional(BankAccountId::ofRepoIdOrNull);
 	}
 }
