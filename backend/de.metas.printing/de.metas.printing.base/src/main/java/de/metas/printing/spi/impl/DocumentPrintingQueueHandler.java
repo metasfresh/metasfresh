@@ -214,7 +214,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
-		//TODO: I think we should remove this (We should only support one way, override or additive)
+		//TODO: Check what to do with this, because it overrides de.metas.report.DocumentReportAdvisorUtil#getDocumentCopies()
 		final int documentCopies = partner.getDocumentCopies();
 		if (documentCopies > 0)
 		{
