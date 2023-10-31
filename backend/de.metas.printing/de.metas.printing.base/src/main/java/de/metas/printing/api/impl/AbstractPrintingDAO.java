@@ -84,8 +84,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	 */
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
-	;
 
 	@Override
 	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
@@ -278,7 +276,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			@Nullable final UserId userToPrintId,
 			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
-		final WorkplaceId workplaceId = workplaceService.getWorkplaceByUserId(userToPrintId)
+		final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
+		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
 				.map(Workplace::getId)
 				.orElse(null);
 

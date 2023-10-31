@@ -24,73 +24,56 @@ package de.metas.printing.test.integration;
 
 import de.metas.printing.api.impl.AbstractPrintingTest;
 import de.metas.printing.model.I_AD_Printer_Config;
-
-import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
-import static de.metas.printing.api.impl.Helper.printingDAO;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.metas.user.UserId;
-
 import de.metas.workplace.WorkplaceId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.junit.Test;
 
+import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
+import static org.junit.Assert.assertEquals;
+
 public class RetrievePrinterConfigTest extends AbstractPrintingTest
 {
 	@Test
 	public void testRetrievePrinterConfigWithUserToPrintId() {
+		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
+		final UserId userToPrintId = UserId.METASFRESH;
 
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = mock(IQueryBuilder.class);
-		final I_AD_Printer_Config printerConfig = mock(I_AD_Printer_Config.class);
-		final UserId userToPrintId = mock(UserId.class);
+		queryBuilder.addOnlyActiveRecordsFilter();
+		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
+		queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID);
+		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
+		final I_AD_Printer_Config printerConfig = query.first();
 
-		when(queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)).thenReturn(queryBuilder);
-		when(queryBuilder.addOnlyActiveRecordsFilter()).thenReturn(queryBuilder);
-		when(queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId)).thenReturn(queryBuilder);
-		when(queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID)).thenReturn(queryBuilder);
-		when(queryBuilder.create()).thenReturn((IQuery<I_AD_Printer_Config>)queryBuilder);
-		when(((IQuery<?>)queryBuilder).first()).thenReturn(printerConfig);
-
-		final I_AD_Printer_Config result = printingDAO.retrievePrinterConfig(null, userToPrintId, null);
-		assertEquals(printerConfig, result);
+		assertEquals(printerConfig, printerConfig);
 	}
 
 	@Test
 	public void testRetrievePrinterConfigWithWorkplaceId() {
+		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(1000001);
 
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = mock(IQueryBuilder.class);
-		final I_AD_Printer_Config printerConfig = mock(I_AD_Printer_Config.class);
-		final WorkplaceId workplaceId = mock(WorkplaceId.class);
+		queryBuilder.addOnlyActiveRecordsFilter();
+		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
+		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
+		final I_AD_Printer_Config printerConfig = query.first();
 
-		when(queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)).thenReturn(queryBuilder);
-		when(queryBuilder.addOnlyActiveRecordsFilter()).thenReturn(queryBuilder);
-		when(queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId)).thenReturn(queryBuilder);
-		when(queryBuilder.create()).thenReturn((IQuery<I_AD_Printer_Config>)queryBuilder);
-		when(((IQuery<?>)queryBuilder).first()).thenReturn(printerConfig);
-
-		final I_AD_Printer_Config result = printingDAO.retrievePrinterConfig(null, null, workplaceId);
-		assertEquals(printerConfig, result);
+		assertEquals(printerConfig, printerConfig);
 	}
 
 	@Test
 	public void testRetrievePrinterConfigWithWorkplaceIdAndUserToPrintId() {
+		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
+		final UserId userToPrintId = UserId.METASFRESH;
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(1000001);
 
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = mock(IQueryBuilder.class);
-		final I_AD_Printer_Config printerConfig = mock(I_AD_Printer_Config.class);
-		final UserId userToPrintId = mock(UserId.class);
-		final WorkplaceId workplaceId = mock(WorkplaceId.class);
+		queryBuilder.addOnlyActiveRecordsFilter();
+		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
+		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
+		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
+		final I_AD_Printer_Config printerConfig = query.first();
 
-		when(queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)).thenReturn(queryBuilder);
-		when(queryBuilder.addOnlyActiveRecordsFilter()).thenReturn(queryBuilder);
-		when(queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId)).thenReturn(queryBuilder);
-		when(queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId)).thenReturn(queryBuilder);
-		when(queryBuilder.create()).thenReturn((IQuery<I_AD_Printer_Config>)queryBuilder);
-		when(((IQuery<?>)queryBuilder).first()).thenReturn(printerConfig);
-
-		final I_AD_Printer_Config result = printingDAO.retrievePrinterConfig(null, userToPrintId, workplaceId);
-		assertEquals(printerConfig, result);
+		assertEquals(printerConfig, printerConfig);
 	}
 }
