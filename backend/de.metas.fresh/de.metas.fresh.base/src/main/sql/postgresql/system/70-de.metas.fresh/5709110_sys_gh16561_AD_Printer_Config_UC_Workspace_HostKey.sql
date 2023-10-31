@@ -1,5 +1,5 @@
 -- 2023-10-29T18:25:14.726Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540772,0,540637,TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Pro Arbeitsplatz und Hostkey ist nur ein Datensatz erlaubt','Y','Y','AD_Printer_Config_UC_Workspace_HostKey','N',TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540772,0,540637,TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Pro Arbeitsplatz und Hostkey ist nur ein aktiver Datensatz erlaubt.','Y','Y','AD_Printer_Config_UC_Workspace_HostKey','N',TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
 ;
 
 -- 2023-10-29T18:25:14.728Z
@@ -7,7 +7,7 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 ;
 
 -- 2023-10-29T18:26:58.801Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Only one record is permitted per workspace and host key', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-29 19:26:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772 AND AD_Language='en_US'
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Only one active record is permitted per workspace and host key', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-29 19:26:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772 AND AD_Language='en_US'
 ;
 
 -- 2023-10-29T18:27:52.251Z
