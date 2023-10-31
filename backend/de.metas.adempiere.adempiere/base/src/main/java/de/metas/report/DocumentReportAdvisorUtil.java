@@ -113,6 +113,7 @@ public class DocumentReportAdvisorUtil
 		// for now, preserving the legacy logic
 		return getDocumentCopies(docType, PrintCopies.ZERO)
 				.plus(getDocumentCopies(bpartner, PrintCopies.ONE));
+		// TODO: plus location copies
 	}
 
 	private static PrintCopies getDocumentCopies(
