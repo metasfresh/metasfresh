@@ -334,11 +334,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				? TableModelLoader.instance.getPO(modelRef)
 				: Evaluatees.empty();
 		final String orgName = orgDAO.retrieveOrgName(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()));
-		return modelCtx
-				.andComposeWith(InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord))
-				.andComposeWith(Evaluatees.mapBuilder()
-						.put("AD_Org.Name", orgName)
-						.build());
+		final Evaluatee orgEvaluatee = Evaluatees.mapBuilder()
+				.put("AD_Org.Name", orgName)
+				.build();
+		return orgEvaluatee.andComposeWith(modelCtx)
+				.andComposeWith(InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord));
 	}
 
 	@Value
