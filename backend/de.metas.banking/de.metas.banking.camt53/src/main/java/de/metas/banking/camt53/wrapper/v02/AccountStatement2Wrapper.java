@@ -151,7 +151,7 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	@NonNull
 	private IStatementLineWrapper buildNoBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
 	{
-		return NoBatchReportEntry2Wrapper.builder()
+		return BatchReportEntry2Wrapper.builder()
 				.currencyRepository(getCurrencyRepository())
 				.entry(reportEntry)
 				.build();
