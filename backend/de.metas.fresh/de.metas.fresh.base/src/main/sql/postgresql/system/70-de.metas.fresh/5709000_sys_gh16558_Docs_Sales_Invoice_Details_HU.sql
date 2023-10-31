@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU ( IN p_record_id numeric, IN p_language Character Varying (6) );
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU( IN p_record_id numeric, IN p_language Character Varying (6) )
-RETURNS TABLE
+    RETURNS TABLE
             (
                 shipped                    numeric,
                 retour                     numeric,
