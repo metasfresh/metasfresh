@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt53 import format
 
@@ -15,14 +14,17 @@ Feature: import bank statement in camt53 import format
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
       | ps_1       | pricing_system_name_12102022_1 | pricing_system_value_12102022_1 | pricing_system_description_12102022_1 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_29032022_2 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_sales_name_29032022_2  | null            | true  | false         | 2              | true         |
+      | pl_2       | ps_1                          | DE                        | EUR                 | price_list_vendor_name_29032022_2 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
-      | plv_1      | pl_1                      | trackedProduct-PLV_12102022_1 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                                  | ValidFrom  |
+      | plv_1      | pl_1                      | trackedProduct-PLV_12102022_1         | 2021-04-01 |
+      | plv_2      | pl_2                      | trackedProduct-PLV__vendor_12102022_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | pp_2       | plv_2                             | p_1                     | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -41,13 +43,16 @@ Feature: import bank statement in camt53 import format
     And metasfresh contains C_BP_BankAccount
       | Identifier | C_BPartner_ID.Identifier | C_Currency.ISO_Code | OPT.AccountNo | OPT.C_Bank_ID.Identifier | OPT.IBAN                    |
       | bpb_1      | bpartner_1               | EUR                 | 2234567       | b_1                      | GB33 BUKB 2020 1555 5555 55 |
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN                    |
+      | bpb_1                          | EUR                     | Y                | 2234567       | 123456789                 | GB33 BUKB 2020 1555 5555 55 |
 
   @from:cucumber
   @Id:S0203_100
-  Scenario: Import bank statement in camt53 import format, identify account by Id and link it to a payment for an invoice
+  Scenario: Import bank statement in camt53 import format, identify account by Id and link it to a payment for an invoice, matched by document no
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
-      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | 511003         |
+      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 | 511003_bksts   |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_1     | inv_1                   | p_1                     | 10          | PCE               |
@@ -100,31 +105,7 @@ Feature: import bank statement in camt53 import format
 						<Cd>CLBD</Cd>
 					</CdOrPrtry>
 				</Tp>
-				<Amt Ccy="EUR">0.00</Amt>
-				<CdtDbtInd>CRDT</CdtDbtInd>
-				<Dt>
-					<Dt>2022-05-11</Dt>
-				</Dt>
-			</Bal>
-			<Bal>
-				<Tp>
-					<CdOrPrtry>
-						<Cd>CLAV</Cd>
-					</CdOrPrtry>
-				</Tp>
-				<Amt Ccy="EUR">0.00</Amt>
-				<CdtDbtInd>CRDT</CdtDbtInd>
-				<Dt>
-					<Dt>2022-05-11</Dt>
-				</Dt>
-			</Bal>
-			<Bal>
-				<Tp>
-					<CdOrPrtry>
-						<Cd>FWAV</Cd>
-					</CdOrPrtry>
-				</Tp>
-				<Amt Ccy="EUR">0.00</Amt>
+				<Amt Ccy="EUR">>42010.00</Amt>
 				<CdtDbtInd>CRDT</CdtDbtInd>
 				<Dt>
 					<Dt>2022-05-11</Dt>
@@ -133,7 +114,7 @@ Feature: import bank statement in camt53 import format
 			<Ntry>
 				<NtryRef>00001</NtryRef>
 				<Amt Ccy="EUR">119</Amt>
-				<CdtDbtInd>DBT</CdtDbtInd>
+				<CdtDbtInd>CRDT</CdtDbtInd>
 				<Sts>BOOK</Sts>
 				<BookgDt>
 					<Dt>2022-05-11</Dt>
@@ -149,12 +130,22 @@ Feature: import bank statement in camt53 import format
 					</Prtry>
 				</BkTxCd>
 				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">119</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
 					<TxDtls>
 						<Refs>
 							<AcctSvcrRef>AAA-1111111</AcctSvcrRef>
 							<PmtInfId>AAAAAA1111:11:11AAAA2022</PmtInfId>
 						</Refs>
+						<Amt Ccy="EUR">119</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
 						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">119</Amt>
+							</InstdAmt>
 							<TxAmt>
 								<Amt Ccy="EUR">119</Amt>
 							</TxAmt>
@@ -172,39 +163,10 @@ Feature: import bank statement in camt53 import format
 							</Prtry>
 						</BkTxCd>
 						<RmtInf>
-							<Ustrd>511003</Ustrd>
+							<Ustrd>511003_bksts</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
-			</Ntry>
-			<Ntry>
-				<NtryRef>00002</NtryRef>
-				<Amt Ccy="EUR">41772.00</Amt>
-				<CdtDbtInd>CRDT</CdtDbtInd>
-				<Sts>BOOK</Sts>
-				<BookgDt>
-					<Dt>2022-09-07</Dt>
-				</BookgDt>
-				<ValDt>
-					<Dt>2022-09-07</Dt>
-				</ValDt>
-				<AcctSvcrRef>RMS-11111</AcctSvcrRef>
-				<BkTxCd>
-					<Prtry>
-						<Cd>TRF</Cd>
-						<Issr>SWIFT</Issr>
-					</Prtry>
-				</BkTxCd>
-				<NtryDtls>
-					<TxDtls>
-						<Refs>
-							<AcctSvcrRef>RMS-11111</AcctSvcrRef>
-							<InstrId>NONREF</InstrId>
-						</Refs>
-						<AddtlTxInf>OUTWARD REMITTANCE</AddtlTxInf>
-					</TxDtls>
-				</NtryDtls>
-				<AddtlNtryInf>AddtlNtryInf</AddtlNtryInf>
 			</Ntry>
 		</Stmt>
 	</BkToCstmrStmt>
@@ -245,7 +207,7 @@ Feature: import bank statement in camt53 import format
   Scenario: Import bank statement in camt53 import format, identify account by IBAN and link it to a payment for an invoice
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
-      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-09-12   | Spot                     | false   | EUR                 | 511021         |
+      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-09-12   | Spot                     | false   | EUR                 | 511021_bksts   |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_1     | inv_1                   | p_1                     | 10          | PCE               |
@@ -414,7 +376,7 @@ Feature: import bank statement in camt53 import format
   Scenario: Import bank statement in camt53 v04 import format, identify account by Id and link it to a payment for an invoice
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
-      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | 511004         |
+      | inv_1      | bpartner_1               | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | 511004_bksts   |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_1     | inv_1                   | p_1                     | 10          | PCE               |
