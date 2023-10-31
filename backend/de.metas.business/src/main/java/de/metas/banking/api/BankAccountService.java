@@ -1,9 +1,7 @@
 package de.metas.banking.api;
 
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.currency.CurrencyCode;
@@ -115,5 +113,11 @@ public class BankAccountService
 			@NonNull final String accountNo)
 	{
 		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
 }

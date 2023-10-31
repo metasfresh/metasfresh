@@ -47,6 +47,10 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.refid.api.IReferenceNoDAO;
+import de.metas.document.refid.model.I_C_ReferenceNo;
+import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -57,20 +61,25 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +110,7 @@ public class BankStatementCamt53Service
 	private static final Logger logger = LogManager.getLogger(BankStatementCamt53Service.class);
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -124,6 +134,51 @@ public class BankStatementCamt53Service
 		this.paymentAllocationService = paymentAllocationService;
 		this.moneyService = moneyService;
 		this.bankStatementImportFileLogRepository = bankStatementImportFileLogRepository;
+	}
+
+	@NonNull
+	private static Optional<Camt53Version> getCamt53Version(@NonNull final InputStream dataInputStream) throws XMLStreamException
+	{
+		final XMLStreamReader xmlStreamReader = getXMLStreamReader(dataInputStream);
+
+		return XMLStreamConstants.START_ELEMENT == xmlStreamReader.next()
+				? Optional.ofNullable(xmlStreamReader.getNamespaceURI())
+				.map(namespaceURI -> Camt53Version.ofCode(namespaceURI.substring(namespaceURI.lastIndexOf(':') + 1)))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private static XMLStreamReader getXMLStreamReader(@NonNull final InputStream data) throws XMLStreamException
+	{
+		final XMLInputFactory xif = XMLInputFactory.newInstance();
+		return xif.createXMLStreamReader(data);
+	}
+
+	@NonNull
+	private static Optional<I_C_Invoice> getSingleInvoice(
+			@NonNull final ImmutableList<I_C_Invoice> invoiceList,
+			@NonNull final IStatementLineWrapper entryWrapper)
+	{
+		if (invoiceList.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (invoiceList.size() > 1)
+		{
+			final String matchedInvoiceIds = invoiceList.stream()
+					.map(org.compiere.model.I_C_Invoice::getC_Invoice_ID)
+					.map(String::valueOf)
+					.collect(Collectors.joining(","));
+
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"Multiple invoices found for ReportEntry2={}! MatchedInvoicedIds={}", entryWrapper.getLineReference(), matchedInvoiceIds);
+
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(invoiceList.get(0));
+		}
 	}
 
 	@NonNull
@@ -340,51 +395,6 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private static Optional<Camt53Version> getCamt53Version(@NonNull final InputStream dataInputStream) throws XMLStreamException
-	{
-		final XMLStreamReader xmlStreamReader = getXMLStreamReader(dataInputStream);
-
-		return XMLStreamConstants.START_ELEMENT == xmlStreamReader.next()
-				? Optional.ofNullable(xmlStreamReader.getNamespaceURI())
-				.map(namespaceURI -> Camt53Version.ofCode(namespaceURI.substring(namespaceURI.lastIndexOf(':') + 1)))
-				: Optional.empty();
-	}
-
-	@NonNull
-	private static XMLStreamReader getXMLStreamReader(@NonNull final InputStream data) throws XMLStreamException
-	{
-		final XMLInputFactory xif = XMLInputFactory.newInstance();
-		return xif.createXMLStreamReader(data);
-	}
-
-	@NonNull
-	private static Optional<I_C_Invoice> getSingleInvoice(
-			@NonNull final ImmutableList<I_C_Invoice> invoiceList,
-			@NonNull final IStatementLineWrapper entryWrapper)
-	{
-		if (invoiceList.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else if (invoiceList.size() > 1)
-		{
-			final String matchedInvoiceIds = invoiceList.stream()
-					.map(org.compiere.model.I_C_Invoice::getC_Invoice_ID)
-					.map(String::valueOf)
-					.collect(Collectors.joining(","));
-
-			Loggables.withLogger(logger, Level.WARN).addLog(
-					"Multiple invoices found for ReportEntry2={}! MatchedInvoicedIds={}", entryWrapper.getLineReference(), matchedInvoiceIds);
-
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(invoiceList.get(0));
-		}
-	}
-
-	@NonNull
 	private UnpaidInvoiceMatchingAmtQuery buildUnpaidInvoiceMatchingAmtQuery(
 			@NonNull final ZonedDateTime statementLineDate,
 			@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest,
@@ -404,7 +414,7 @@ public class BankStatementCamt53Service
 		}
 
 		return unpaidInvoiceMatchingAmtQueryBuilder
-				.additionalFilter(getInvoiceDocOrEsrReferenceNoFilter(documentReferenceCandidates))
+				.additionalFilter(getInvoiceDocOrEsrReferenceNoFilter(documentReferenceCandidates, importBankStatementLineRequest.getOrgId()))
 				.build();
 	}
 
@@ -421,17 +431,9 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private ICompositeQueryFilter<I_C_Invoice> getInvoiceDocOrEsrReferenceNoFilter(@NonNull final ImmutableSet<String> invoiceDocOrEsrRefNoCandidates)
+	private ICompositeQueryFilter<I_C_Invoice> getInvoiceDocOrEsrReferenceNoFilter(@NonNull final ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, @NonNull OrgId orgId)
 	{
-		final IQuery<I_ESR_ImportLine> esrImportLineQuery = queryBL
-				.createQueryBuilder(I_ESR_ImportLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_ESRReferenceNumber, invoiceDocOrEsrRefNoCandidates)
-				.create();
-
-		final ICompositeQueryFilter<I_C_Invoice> invoiceEsrReferenceNumberCandidatesFilter = queryBL
-				.createCompositeQueryFilter(I_C_Invoice.class)
-				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID, esrImportLineQuery);
+		final ICompositeQueryFilter<I_C_Invoice> invoiceEsrReferenceNumberCandidatesFilter = buildEsrRefNoQueryFilter(invoiceDocOrEsrRefNoCandidates, orgId);
 
 		final ICompositeQueryFilter<I_C_Invoice> invoiceDocNumberCandidatesFilter = queryBL
 				.createCompositeQueryFilter(I_C_Invoice.class)
@@ -445,6 +447,44 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
+	private ICompositeQueryFilter<I_C_Invoice> buildEsrRefNoQueryFilter(final @NotNull ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, final @NotNull OrgId orgId)
+	{
+		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
+
+		final IQueryBuilder<I_C_ReferenceNo> esrImportLineQueryBuilder = queryBL
+				.createQueryBuilder(I_C_ReferenceNo.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID, refNoType.getC_ReferenceNo_Type_ID())
+				.addInArrayFilter(I_C_ReferenceNo_Type.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
+
+		final ICompositeQueryFilter<I_C_ReferenceNo> filter = queryBL.createCompositeQueryFilter(I_C_ReferenceNo.class);
+		invoiceDocOrEsrRefNoCandidates.forEach(
+				invoiceDocOrEsrRefNoCandidate ->
+				{
+					final String esrReferenceNoToMatch = "%" + StringUtils.trim(invoiceDocOrEsrRefNoCandidate) + "%";
+					filter.addCompareFilter(I_C_ReferenceNo.COLUMNNAME_ReferenceNo, CompareQueryFilter.Operator.STRING_LIKE, esrReferenceNoToMatch);
+					filter.setJoinOr();
+				}
+		);
+
+		final IQuery<I_C_ReferenceNo> referenceNoQuery = esrImportLineQueryBuilder
+				.filter(filter)
+				.create();
+
+		final IQuery<I_C_ReferenceNo_Doc> referenceNo_docQueryBuilderQueryBuilder = queryBL
+				.createQueryBuilder(I_C_ReferenceNo_Doc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID, referenceNoQuery)
+				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+				.create();
+
+		final ICompositeQueryFilter<I_C_Invoice> invoiceEsrReferenceNumberCandidatesFilter = queryBL
+				.createCompositeQueryFilter(I_C_Invoice.class)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID, referenceNo_docQueryBuilderQueryBuilder);
+		return invoiceEsrReferenceNumberCandidatesFilter;
+	}
+
+	@NonNull
 	private ImmutableList<IAccountStatementWrapper> getAccountStatementsV04(@NonNull final XMLStreamReader xmlStreamReader)
 	{
 		try
@@ -452,7 +492,8 @@ public class BankStatementCamt53Service
 			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_04.ObjectFactory.class);
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 
-			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document> docV04 =
+			@SuppressWarnings("unchecked")
+			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document> docV04 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
 			return NoBatchBankToCustomerStatementV04Wrapper
@@ -473,7 +514,8 @@ public class BankStatementCamt53Service
 			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_02.ObjectFactory.class);
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 
-			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
+			@SuppressWarnings("unchecked")
+			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
 			return NoBatchBankToCustomerStatementV02Wrapper

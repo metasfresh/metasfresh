@@ -72,6 +72,75 @@ public class C_BP_BankAccount_StepDef
 		}
 	}
 
+	@And("load C_BP_BankAccount:")
+	public void load_C_BP_BankAccount(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			loadBankAccount(dataTableRow);
+		}
+	}
+
+	@And("update C_BP_BankAccount:")
+	public void update_C_BP_BankAccount(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			updateBankAccount(dataTableRow);
+		}
+	}
+
+	private void updateBankAccount(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_BP_BankAccount bankAccountRecord = bpBankAccountTable.get(identifier);
+
+		final String isoCode = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
+		if (Check.isNotBlank(isoCode))
+		{
+			final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
+			bankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
+		}
+
+		final Boolean isEsrAccount = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, null);
+		if (isEsrAccount != null)
+		{
+			bankAccountRecord.setIsEsrAccount(isEsrAccount);
+		}
+
+		final String esrRenderedAccountNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo);
+		if (Check.isNotBlank(esrRenderedAccountNo))
+		{
+			bankAccountRecord.setESR_RenderedAccountNo(esrRenderedAccountNo);
+		}
+
+		final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+		if (Check.isNotBlank(iban))
+		{
+			bankAccountRecord.setIBAN(iban);
+		}
+
+
+		saveRecord(bankAccountRecord);
+	}
+
+	private void loadBankAccount(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
+
+		if (id != null)
+		{
+			final I_C_BP_BankAccount bankAccountRecord = InterfaceWrapperHelper.load(id, I_C_BP_BankAccount.class);
+
+			bpBankAccountTable.putOrReplace(identifier, bankAccountRecord);
+		}
+	}
+
 	private void create_C_BP_BankAccount(@NonNull final Map<String, String> row)
 	{
 

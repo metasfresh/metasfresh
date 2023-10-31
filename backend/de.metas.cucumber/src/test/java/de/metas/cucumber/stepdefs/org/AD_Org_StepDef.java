@@ -77,4 +77,24 @@ public class AD_Org_StepDef
 			orgTable.putOrReplace(orgIdentifier, orgRecord);
 		}
 	}
+
+	@And("load AD_Org:")
+	public void load_AD_Org(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orgCode = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_Value);
+
+			final I_AD_Org orgRecord = queryBL.createQueryBuilder(I_AD_Org.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgCode)
+					.create()
+					.firstOnlyOrNull(I_AD_Org.class);
+
+			assertThat(orgRecord).as("AD_Org for identifier=%S", orgCode).isNotNull();
+
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+			orgTable.putOrReplace(orgIdentifier, orgRecord);
+		}
+	}
 }
