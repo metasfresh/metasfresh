@@ -38,16 +38,13 @@ import org.adempiere.exceptions.AdempiereException;
 @Value(staticConstructor = "of")
 public class NoBatchBankToCustomerStatementV04Wrapper
 {
-	private static final AdMessageKey MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED = AdMessageKey.of("de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper.BatchTransactionsNotSupported");
-
 	@NonNull
 	BankToCustomerStatementV04 bankToCustomerStatementV04;
 
 	private NoBatchBankToCustomerStatementV04Wrapper(@NonNull final BankToCustomerStatementV04 bankToCustomerStatementV04)
 	{
 		bankToCustomerStatementV04
-				.getStmt()
-				.forEach(NoBatchBankToCustomerStatementV04Wrapper::validateAccountStatement4);
+				.getStmt();
 
 		this.bankToCustomerStatementV04 = bankToCustomerStatementV04;
 	}
@@ -77,35 +74,5 @@ public class NoBatchBankToCustomerStatementV04Wrapper
 				.currencyRepository(currencyRepository)
 				.msgBL(msgBL)
 				.build();
-	}
-
-	/**
-	 * Validates that the {@link AccountStatement4} contains only single transactions.
-	 */
-	private static void validateAccountStatement4(@NonNull final AccountStatement4 accountStatement4)
-	{
-		accountStatement4.getNtry().forEach(NoBatchBankToCustomerStatementV04Wrapper::validateNoBatchedTrxPresent);
-	}
-
-	private static void validateNoBatchedTrxPresent(@NonNull final ReportEntry4 reportEntry)
-	{
-		if (isBatchedTrxPresent(reportEntry))
-		{
-			throw new AdempiereException(MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED)
-					.markAsUserValidationError();
-		}
-	}
-
-	/**
-	 * Checks if there are any batched transactions within given {@link ReportEntry4};
-	 * Notes:
-	 * - there will be one {@link de.metas.banking.camt53.jaxb.camt053_001_04.EntryDetails3} for each batch of transactions included in the given {@link ReportEntry4}
-	 * - there will be one {@link EntryTransaction4} for each transaction included in a batch i.e. in a EntryDetails3
-	 */
-	private static boolean isBatchedTrxPresent(@NonNull final ReportEntry4 reportEntry)
-	{
-		return reportEntry.getNtryDtls().size() > 1
-				// dev-note: we consider batch with one trx non-batched as it doesn't make any difference
-				|| reportEntry.getNtryDtls().size() == 1 && reportEntry.getNtryDtls().get(0).getTxDtls().size() > 1;
 	}
 }
