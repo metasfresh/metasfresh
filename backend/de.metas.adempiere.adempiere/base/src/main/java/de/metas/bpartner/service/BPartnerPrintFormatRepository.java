@@ -15,6 +15,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -44,6 +46,7 @@ import lombok.NonNull;
 @Repository
 public class BPartnerPrintFormatRepository
 {
+	@Nullable
 	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
 		final I_C_BP_PrintFormat bpPrintFormatRecord = Services.get(IQueryBL.class)

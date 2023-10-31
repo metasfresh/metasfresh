@@ -23,7 +23,10 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPPrintFormat;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -48,15 +51,18 @@ public class DocumentReportAdvisorUtil
 	private final IBPartnerBL bpartnerBL;
 	private final PrintFormatRepository printFormatRepository;
 	private final DefaultPrintFormatsRepository defaultPrintFormatsRepository;
+	private final BPartnerPrintFormatRepository bPartnerPrintFormatRepository;
 
 	public DocumentReportAdvisorUtil(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PrintFormatRepository printFormatRepository,
-			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository)
+			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository,
+			@NonNull final BPartnerPrintFormatRepository bPartnerPrintFormatRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.printFormatRepository = printFormatRepository;
 		this.defaultPrintFormatsRepository = defaultPrintFormatsRepository;
+		this.bPartnerPrintFormatRepository = bPartnerPrintFormatRepository;
 	}
 
 	public Optional<BPartnerId> getBPartnerIdForModel(@NonNull final Object model)
@@ -108,12 +114,24 @@ public class DocumentReportAdvisorUtil
 
 	public PrintCopies getDocumentCopies(
 			@Nullable final I_C_BPartner bpartner,
+			@Nullable final I_C_DocType docType,
+			@Nullable final BPPrintFormatQuery bpPrintFormatQuery)
+	{
+		if(bpPrintFormatQuery != null)
+		{
+			final BPPrintFormat bpPrintFormat = bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery);
+			//TODO:return location copies if exists
+		}
+		return getDocumentCopies(bpartner, docType);
+	}
+
+	public PrintCopies getDocumentCopies(
+			@Nullable final I_C_BPartner bpartner,
 			@Nullable final I_C_DocType docType)
 	{
 		// for now, preserving the legacy logic
 		return getDocumentCopies(docType, PrintCopies.ZERO)
 				.plus(getDocumentCopies(bpartner, PrintCopies.ONE));
-		// TODO: plus location copies
 	}
 
 	private static PrintCopies getDocumentCopies(
