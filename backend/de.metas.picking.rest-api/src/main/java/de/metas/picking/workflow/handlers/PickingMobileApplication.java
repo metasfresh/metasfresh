@@ -25,6 +25,7 @@ package de.metas.picking.workflow.handlers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
@@ -49,6 +50,7 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.user.UserId;
+import de.metas.workflow.rest_api.model.CustomApplicationParameter;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -59,6 +61,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.WorkplaceSettings;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
@@ -79,15 +82,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(APPLICATION_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.showFilters(true)
-			.build();
 
 	private final PickingJobRestService pickingJobRestService;
-
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
+	private final WorkplaceService workplaceService;
 
 	public PickingMobileApplication(
 			@NonNull final PickingJobRestService pickingJobRestService,
@@ -96,15 +94,29 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		this.pickingJobRestService = pickingJobRestService;
 		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
+		this.workplaceService = workplaceService;
 	}
 
 	@Override
-	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
+	public MobileApplicationId getApplicationId()
+	{
+		return APPLICATION_ID;
+	}
 
 	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
 	{
-		return APPLICATION_INFO;
+		final WorkplaceSettings workplaceSettings = WorkplaceSettings.builder()
+				.assignedWorkplace(workplaceService.getWorkplaceByUserId(loggedUserId).orElse(null))
+				.isWorkplaceAssignmentRequired(workplaceService.isAnyWorkplaceActive())
+				.build();
+
+		return MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.showFilters(true)
+				.applicationParameters(ImmutableMap.of(CustomApplicationParameter.WORKPLACE_SETTINGS, workplaceSettings))
+				.build();
 	}
 
 	@Override
@@ -154,21 +166,21 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 		return WFProcessHeaderProperties.builder()
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
-						.value(pickingJob.getSalesOrderDocumentNo())
-						.build())
+							   .caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
+							   .value(pickingJob.getSalesOrderDocumentNo())
+							   .build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
-						.value(pickingJob.getCustomerName())
-						.build())
+							   .caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
+							   .value(pickingJob.getCustomerName())
+							   .build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("PreparationDate"))
-						.value(pickingJob.getPreparationDate())
-						.build())
+							   .caption(TranslatableStrings.adElementOrMessage("PreparationDate"))
+							   .value(pickingJob.getPreparationDate())
+							   .build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DeliveryToAddress"))
-						.value(pickingJob.getDeliveryRenderedAddress())
-						.build())
+							   .caption(TranslatableStrings.adElementOrMessage("DeliveryToAddress"))
+							   .value(pickingJob.getDeliveryRenderedAddress())
+							   .build())
 				.build();
 	}
 
@@ -223,18 +235,18 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))
 				.responsibleId(responsibleId)
 				.caption(PickingWFProcessUtils.workflowCaption()
-						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
-						.customerName(pickingJob.getCustomerName())
-						.build())
+								 .salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
+								 .customerName(pickingJob.getCustomerName())
+								 .build())
 				.document(pickingJob)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A1"))
 								.caption(ImmutableTranslatableString.builder()
-										.trl("de_DE", "Kommissionierplatz scannen")
-										.trl("de_CH", "Kommissionierplatz scannen")
-										.defaultValue("Scan picking slot")
-										.build())
+												 .trl("de_DE", "Kommissionierplatz scannen")
+												 .trl("de_CH", "Kommissionierplatz scannen")
+												 .defaultValue("Scan picking slot")
+												 .build())
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
