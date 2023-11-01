@@ -1,5 +1,5 @@
-export const apiBasePath = `${config.SERVER_URL}/api/v2`;
-export const stompUrl = `${config.SERVER_URL}/stomp`;
+export const apiBasePath = `http://localhost:8181/api/v2`; //todo cp: revert
+export const stompUrl = `http://localhost:8181/stomp`;
 
 /**
  * Used to set or not the service worker registration
