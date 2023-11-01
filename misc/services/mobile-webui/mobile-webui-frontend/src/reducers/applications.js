@@ -1,5 +1,9 @@
 import * as types from '../constants/ApplicationsActionTypes';
 
+const KNOWN_APPLICATION_PARAMETERS = {
+  workplaceSettings: 'WORKPLACE_SETTINGS',
+};
+
 const initialState = {
   availableApplications: {},
 };
@@ -24,6 +28,7 @@ export default function applications(state = initialState, action) {
           iconClassNames: getIconClassNames(application.id),
           requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
           showFilters: application.showFilters,
+          applicationParameters: application.applicationParameters,
         };
         return acc;
       }, {});
@@ -34,6 +39,11 @@ export default function applications(state = initialState, action) {
       return state;
   }
 }
+
+export const getWorkplaceSettingsForApplicationId = ({ state, applicationId }) => {
+  const applicationParameters = state.applications?.availableApplications?.[applicationId]?.applicationParameters;
+  return applicationParameters && applicationParameters[KNOWN_APPLICATION_PARAMETERS.workplaceSettings];
+};
 
 // TODO: this shall come from the backend
 const getIconClassNames = (applicationId) => {

@@ -57,6 +57,11 @@ public class WorkplaceRepository
 		return getMap().getByIds(ids);
 	}
 
+	public boolean isAnyWorkplaceActive()
+	{
+		return !getMap().isEmpty();
+	}
+
 	@NonNull
 	private WorkplacesMap getMap()
 	{
@@ -116,6 +121,11 @@ public class WorkplaceRepository
 			return ids.stream()
 					.map(this::getById)
 					.collect(ImmutableList.toImmutableList());
+		}
+
+		public boolean isEmpty()
+		{
+			return byId.isEmpty();
 		}
 	}
 }
