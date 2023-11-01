@@ -50,6 +50,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -81,6 +82,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public final class ProductsProposalRowsLoader
@@ -224,12 +226,16 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
+		final Predicate<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
+
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
+				.asiId(extractProductASI(record))
+				.asiMatcher(asiMatcher)
 				.price(extractProductProposalPrice(record))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
@@ -246,6 +252,11 @@ public final class ProductsProposalRowsLoader
 		return ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId));
 	}
 
+	private AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
+	{
+		return AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+
+	}
 	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());

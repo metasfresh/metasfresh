@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import com.google.common.base.Predicates;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -130,4 +131,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
+
+	boolean asiValuesMatchOrEmpty(@NonNull AttributeSetInstanceId asiId1, @NonNull AttributeSetInstanceId asiId2);
 }
