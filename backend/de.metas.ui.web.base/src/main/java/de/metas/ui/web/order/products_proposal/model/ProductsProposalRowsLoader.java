@@ -245,8 +245,6 @@ public final class ProductsProposalRowsLoader
 		final Predicate<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
 
 		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
-
-		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
