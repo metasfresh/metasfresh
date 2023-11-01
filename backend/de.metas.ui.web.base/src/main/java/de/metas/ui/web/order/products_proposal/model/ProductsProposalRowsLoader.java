@@ -82,7 +82,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
 public final class ProductsProposalRowsLoader
@@ -226,7 +226,7 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		final Predicate<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
+		final ToIntFunction<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.getNumberOfAttributeValuesMatched(orderLine.getAsiId(), extractProductASI(record));
 
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
