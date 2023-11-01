@@ -10,7 +10,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 
 /*
  * #%L
@@ -66,15 +66,19 @@ public class OrderLine
 
 	boolean isMatching(
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
+			@Nullable final HUPIItemProductId packingMaterialId)
 
 	{
 		return ProductId.equals(this.productId, productId)
 				&& HUPIItemProductId.equals(
 				HUPIItemProductId.nullToVirtual(this.packingMaterialId),
 				HUPIItemProductId.nullToVirtual(packingMaterialId))
-				&& asiMatcher.test(this);
+				;
+	}
+
+	int getNumberOfAttributeValuesMatched(@NonNull ToIntFunction<OrderLine> asiMatcher)
+	{
+		return asiMatcher.applyAsInt(this);
 	}
 
 }

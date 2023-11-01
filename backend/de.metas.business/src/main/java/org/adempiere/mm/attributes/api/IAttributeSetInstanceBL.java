@@ -132,5 +132,5 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
 
-	boolean asiValuesMatchOrEmpty(@NonNull AttributeSetInstanceId asiId1, @NonNull AttributeSetInstanceId asiId2);
+	int getNumberOfAttributeValuesMatched(@NonNull AttributeSetInstanceId asiId1, @NonNull AttributeSetInstanceId asiId2);
 }

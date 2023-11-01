@@ -4,6 +4,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -460,11 +461,11 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public boolean asiValuesMatchOrEmpty(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
+	public int getNumberOfAttributeValuesMatched(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
 	{
 		final List<I_M_AttributeInstance> attributeInstances1 = attributeDAO.retrieveAttributeInstances(asiId1);
 
-		boolean matches = true;
+		int matches = 0;
 
 		for (final I_M_AttributeInstance attributeInstance1 : attributeInstances1)
 		{
@@ -475,10 +476,14 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				continue;
 			}
 
-			if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+
+			if(Check.isBlank(attributeInstance1.getValue()) && Check.isBlank(attributeInstance2.getValue()))
 			{
-				matches = false;
-				break;
+				continue; // don't count empty values
+			}
+			if (Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+			{
+				matches++;
 			}
 		}
 
