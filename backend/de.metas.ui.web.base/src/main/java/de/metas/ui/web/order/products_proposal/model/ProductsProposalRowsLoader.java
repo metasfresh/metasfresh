@@ -226,7 +226,7 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		final Predicate<OrderLine> asiMatcher = orderLine -> Services.get(IAttributeSetInstanceBL.class).asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
+		final Predicate<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
 
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
