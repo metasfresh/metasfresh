@@ -1,24 +1,24 @@
--- 2023-11-01T16:59:12.419Z
-DELETE FROM AD_Index_Column WHERE AD_Index_Column_ID=541367
+-- 2023-10-29T18:25:14.726Z
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540772,0,540637,TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Pro Arbeitsplatz und Hostkey ist nur ein aktiver Datensatz erlaubt.','Y','Y','AD_Printer_Config_UC_Workspace_HostKey','N',TO_TIMESTAMP('2023-10-29 19:25:14','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
 ;
 
--- 2023-11-01T17:04:41.024Z
-UPDATE AD_Index_Table SET Name='AD_Printer_Config_UC_Workspace',Updated=TO_TIMESTAMP('2023-11-01 18:04:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772
+-- 2023-10-29T18:25:14.728Z
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540772 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
 ;
 
--- 2023-11-01T17:01:30.817Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Only one record is permitted per Workplace',Updated=TO_TIMESTAMP('2023-11-01 18:01:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772 AND AD_Language='en_US'
+-- 2023-10-29T18:26:58.801Z
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Only one active record is permitted per workspace and host key', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-29 19:26:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772 AND AD_Language='en_US'
 ;
 
--- 2023-11-01T17:01:45.694Z
-UPDATE AD_Index_Table SET ErrorMsg='Pro Arbeitsplatz ist nur ein Datensatz erlaubt',Updated=TO_TIMESTAMP('2023-11-01 18:01:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540772
+-- 2023-10-29T18:27:52.251Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587610,541366,540772,0,TO_TIMESTAMP('2023-10-29 19:27:52','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2023-10-29 19:27:52','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-11-01T16:59:18.786Z
-DROP INDEX IF EXISTS ad_printer_config_uc_workspace_hostkey
+-- 2023-10-29T18:28:10.889Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,ColumnSQL,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,551593,541367,540772,0,'COALESCE(ConfigHostKey,'''')',TO_TIMESTAMP('2023-10-29 19:28:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-10-29 19:28:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-11-01T17:04:42.787Z
-CREATE UNIQUE INDEX AD_Printer_Config_UC_Workspace ON AD_Printer_Config (C_Workplace_ID) WHERE IsActive='Y'
+-- 2023-10-29T18:29:14.047Z
+CREATE UNIQUE INDEX AD_Printer_Config_UC_Workspace_HostKey ON AD_Printer_Config (C_Workplace_ID,COALESCE(ConfigHostKey,'')) WHERE IsActive='Y'
 ;
 
