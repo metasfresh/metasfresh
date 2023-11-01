@@ -1,3 +1,4 @@
+
 @from:cucumber
 Feature: import bank statement in camt.53.001.04 import format
 
@@ -222,7 +223,6 @@ Feature: import bank statement in camt.53.001.04 import format
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
-
   @dev:runThisOne
   @from:cucumber
   @Id:S0337_200
@@ -238,7 +238,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
       | bp_bank_account_metasfresh_S0337_200 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
 
-	  # create 3 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156426010000023
+	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo        |
       | inv_1_S0337_200 | bpartner_1_S0337         | Ausgangsrechnung        | 2022-05-12   | Spot                     | true    | CHF                 | 511004_1_SO_S0337_200 |
@@ -362,7 +362,7 @@ Feature: import bank statement in camt.53.001.04 import format
 							</TxAmt>
 						</AmtDtls>
 						<RmtInf>
-							<Ustrd>ESR-Referenz 123456700102156426010000023</Ustrd>
+							<Ustrd>ESR-Referenz 123456700102156434010001795</Ustrd>
 						</RmtInf>
 						<AddtlTxInf>Incoming payment</AddtlTxInf>
 					</TxDtls>
@@ -427,18 +427,21 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_2_S0337_200                   | bs_1_S0337_200                | 20   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.StmtAmt | OPT.StatementLineDate | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.Processed | OPT.IsReconciled |
-      | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | CHF                        | 107.1      | 107.1       | 2023-10-24            |                              |                             | false         | false            |
+      | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | CHF                        | 107.1      | 107.1       | 2023-10-24            | bpartner_1_S0337             | inv_2_S0337_200             | false         | false            |
       | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | 119         | 2023-10-26            | bpartner_1_S0337             | inv_1_S0337_200             | false         | false            |
     And the C_BankStatement identified by bs_1_S0337_200 is completed
 
     And after not more than 60s, C_Payment is found
       | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
-      | p_2_S0337               | bs_1_S0337_200                    | bsl_2_S0337_200                        |
+      | p_2_1_S0337             | bs_1_S0337_200                    | bsl_2_S0337_200                       |
+      | p_2_2_S0337             | bs_1_S0337_200                    | bsl_1_S0337_200                       |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier   |
-      | p_2_S0337               | true                     | 0.00        | 119        | inv_1_S0337_200             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
+      | p_2_1_S0337             | true                     | 0.00        | 119        | inv_1_S0337_200             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
+      | p_2_2_S0337             | true                     | 0.00        | 107.1      | inv_2_S0337_200             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
+      | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true      |
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
