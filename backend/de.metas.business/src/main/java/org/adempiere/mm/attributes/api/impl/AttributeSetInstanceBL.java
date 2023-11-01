@@ -461,11 +461,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public int getNumberOfAttributeValuesMatched(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
+	public boolean asiValuesMatchOrEmpty(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
 	{
-		final List<I_M_AttributeInstance> attributeInstances1 = attributeDAO.retrieveAttributeInstances(asiId1);
+		final List<I_M_AttributeInstance> attributeInstances1 = attributeDAO.retrieveAttributeInstances(asiId1).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
+		final List<I_M_AttributeInstance> attributeInstances2 = attributeDAO.retrieveAttributeInstances(asiId2).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
 
-		int matches = 0;
+		boolean matches = true;
+
 
 		for (final I_M_AttributeInstance attributeInstance1 : attributeInstances1)
 		{
@@ -476,14 +478,30 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				continue;
 			}
 
-
-			if(Check.isBlank(attributeInstance1.getValue()) && Check.isBlank(attributeInstance2.getValue()))
+			if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
 			{
-				continue; // don't count empty values
+				matches = false;
+				break;
 			}
-			if (Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+		}
+
+		if(matches)
+		{
+			for (final I_M_AttributeInstance attributeInstance2 : attributeInstances2)
 			{
-				matches++;
+				final I_M_AttributeInstance attributeInstance1 = attributeDAO.retrieveAttributeInstance(asiId1, AttributeId.ofRepoId(attributeInstance2.getM_Attribute_ID()));
+
+				if (attributeInstance1 == null)
+				{
+					matches = false;
+					break;
+				}
+
+				if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+				{
+					matches = false;
+					break;
+				}
 			}
 		}
 

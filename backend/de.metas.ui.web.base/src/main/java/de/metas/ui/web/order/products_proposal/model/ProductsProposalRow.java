@@ -33,7 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.ToIntFunction;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -132,7 +132,7 @@ public class ProductsProposalRow implements IViewRow
 	private final AttributeSetInstanceId asiId;
 
 	@Getter
-	private final ToIntFunction<OrderLine> asiMatcher;
+	private final Predicate<OrderLine> asiMatcher;
 
 	@Getter
 	private final OrderLineId existingOrderLineId;
@@ -153,7 +153,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
 			@Nullable final AttributeSetInstanceId asiId,
-			@Nullable final ToIntFunction<OrderLine> asiMatcher,
+			@Nullable final Predicate<OrderLine> asiMatcher,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,

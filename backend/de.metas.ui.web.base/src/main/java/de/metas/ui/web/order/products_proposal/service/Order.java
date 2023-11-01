@@ -17,9 +17,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
 import java.util.Optional;
-import java.util.function.ToIntFunction;
+import java.util.function.Predicate;
+
 
 /*
  * #%L
@@ -83,14 +83,11 @@ public class Order
 	public Optional<OrderLine> getFirstMatchingOrderLine(
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull ToIntFunction<OrderLine> asiMatcher)
+			@NonNull Predicate<OrderLine> asiMatcher)
 	{
-		final Comparator<OrderLine> attributeComparator = Comparator.comparing(line -> line.getNumberOfAttributeValuesMatched(asiMatcher));
-
 		return getLines()
 				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId))
-				.sorted(attributeComparator.reversed())
+				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
 				.findFirst();
 	}
 
