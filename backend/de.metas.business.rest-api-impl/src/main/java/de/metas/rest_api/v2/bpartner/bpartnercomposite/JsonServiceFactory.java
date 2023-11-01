@@ -60,7 +60,7 @@ public class JsonServiceFactory
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 	private final SectionCodeService sectionCodeService;
 	private final IncotermsRepository incotermsRepository;
-	private final IPaymentTermRepository paymentTermRepository;
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 	private final JsonGreetingService greetingService;
 

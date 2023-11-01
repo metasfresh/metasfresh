@@ -76,7 +76,6 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
@@ -198,7 +197,6 @@ class BpartnerRestControllerTest
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Services.get(IPaymentTermRepository.class),
 				bPartnerCreditLimitRepository,
 				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 

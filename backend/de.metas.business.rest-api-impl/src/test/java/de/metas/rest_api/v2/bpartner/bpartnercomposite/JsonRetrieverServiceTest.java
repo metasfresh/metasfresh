@@ -37,7 +37,6 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -49,7 +48,6 @@ import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -111,7 +109,6 @@ class JsonRetrieverServiceTest
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Services.get(IPaymentTermRepository.class),
 				new BPartnerCreditLimitRepository(),
 				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 

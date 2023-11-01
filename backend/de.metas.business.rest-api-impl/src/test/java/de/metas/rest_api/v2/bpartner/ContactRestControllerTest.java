@@ -52,7 +52,6 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -154,7 +153,6 @@ class ContactRestControllerTest
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Services.get(IPaymentTermRepository.class),
 				new BPartnerCreditLimitRepository(),
 				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 

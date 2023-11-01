@@ -49,7 +49,6 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
 import de.metas.logging.LogManager;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -160,7 +159,6 @@ public class ProductsRestControllerTest
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				new IncotermsRepository(),
-				Services.get(IPaymentTermRepository.class),
 				new BPartnerCreditLimitRepository(),
 				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
