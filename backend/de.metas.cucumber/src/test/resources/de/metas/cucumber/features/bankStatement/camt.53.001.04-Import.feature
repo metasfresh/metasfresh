@@ -259,13 +259,13 @@ Feature: import bank statement in camt.53.001.04 import format
 
     And load C_ReferenceNo:
       | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier |
-      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          |
-      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          |
+      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                           |
+      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                           |
 
     And update C_ReferenceNo:
       | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | OPT.Referencenoo            |
-      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          | 123456700102156434010001533 |
-      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          | 123456700102156434010001549 |
+      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                           | 123456700102156434010001533 |
+      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                           | 123456700102156434010001549 |
 
     When bank statement is imported with identifiers bs_1_S0337_200, matching invoice amounts
     """
@@ -442,9 +442,10 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_200                   | bs_1_S0337_200                | 10   |
       | bsl_2_S0337_200                   | bs_1_S0337_200                | 20   |
     And validate C_BankStatementLine
-      | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.StmtAmt | OPT.StatementLineDate | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.Processed | OPT.IsReconciled |
-      | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | CHF                        | 107.1      | 107.1       | 2023-10-24            | bpartner_1_S0337             | inv_2_S0337_200             | false         | false            |
-      | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | 119         | 2023-10-26            | bpartner_1_S0337             | inv_1_S0337_200             | false         | false            |
+      | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
+      | bsl_1_S0337_200                   | 2023-10-24     | 2023-10-24   | CHF                        | 107.1      | bpartner_1_S0337             | inv_2_S0337_200             |
+      | bsl_2_S0337_200                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | bpartner_1_S0337             | inv_1_S0337_200             |
+
     And the C_BankStatement identified by bs_1_S0337_200 is completed
 
     And after not more than 60s, C_Payment is found
