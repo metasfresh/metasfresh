@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt.53.001.04 import format
 
@@ -224,6 +223,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
+  @dev:runThisOne
   @from:cucumber
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
@@ -258,12 +258,12 @@ Feature: import bank statement in camt.53.001.04 import format
     And the invoice identified by inv_2_S0337_200 is completed
 
     And load C_ReferenceNo:
-      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identfier |
+      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier |
       | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          |
       | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          |
 
     And update C_ReferenceNo:
-      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identfier | OPT.Referencenoo            |
+      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | OPT.Referencenoo            |
       | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          | 123456700102156434010001533 |
       | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          | 123456700102156434010001549 |
 

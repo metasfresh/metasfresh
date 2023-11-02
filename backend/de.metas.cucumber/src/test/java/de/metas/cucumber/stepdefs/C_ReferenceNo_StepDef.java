@@ -22,26 +22,21 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.currency.ICurrencyBL;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.organization.OrgId;
-import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
 
 import java.util.List;
 import java.util.Map;
@@ -52,13 +47,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class C_ReferenceNo_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final C_ReferenceNo_StepDefData referenceNoTable;
+	private final C_Invoice_StepDefData invoiceTable;
 
-	public C_ReferenceNo_StepDef(@NonNull final C_ReferenceNo_StepDefData referenceNoTable)
+	public C_ReferenceNo_StepDef(@NonNull final C_ReferenceNo_StepDefData referenceNoTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.referenceNoTable = referenceNoTable;
+		this.invoiceTable = invoiceTable;
 	}
 
 	@And("update C_ReferenceNo:")
@@ -99,8 +96,12 @@ public class C_ReferenceNo_StepDef
 	private void loadReferenceNo(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String recordId = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String typeId = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer recordId = invoiceTable.getOptional(recordIdentifier)
+				.map(I_C_Invoice::getC_Invoice_ID)
+				.orElseGet(() -> Integer.parseInt(recordIdentifier));
+
+		final Integer typeId = DataTableUtil.extractIntegerOrNullForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (recordId != null && typeId!=null)
 		{
