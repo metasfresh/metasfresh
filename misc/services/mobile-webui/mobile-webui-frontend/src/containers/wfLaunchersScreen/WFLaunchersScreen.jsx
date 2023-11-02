@@ -9,15 +9,22 @@ import { getApplicationLaunchers } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
-import { getApplicationInfoById } from '../../reducers/applications';
+import { getApplicationInfoById, getWorkplaceSettingsForApplicationId } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
 import WFLaunchersFilters from './WFLaunchersFilters';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
+import WorkplaceScanner from '../activities/picking/WorkplaceScanner';
+import * as api from '../../api/applications';
+import { populateApplications } from '../../actions/ApplicationsActions';
+import { toastError } from '../../utils/toast';
+import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { trl } from '../../utils/translations';
 
 const WFLaunchersScreen = () => {
   const {
+    url,
     params: { applicationId },
   } = useRouteMatch();
 
@@ -27,6 +34,29 @@ const WFLaunchersScreen = () => {
   const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
     getApplicationInfoById({ state, applicationId })
   );
+
+  const workplaceSettings = useSelector((state) => getWorkplaceSettingsForApplicationId({ state, applicationId }));
+  const workplaceName = workplaceSettings?.assignedWorkplace?.name;
+  const showWorkplaceScanner = workplaceSettings?.workplaceRequired && !workplaceName;
+
+  useEffect(() => {
+    if (!workplaceName) {
+      return;
+    }
+
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        values: [
+          {
+            caption: trl('activities.picking.Workplace'),
+            value: workplaceName,
+          },
+        ],
+      })
+    );
+  }, [url, workplaceName]);
+
   const {
     filterByQRCode: currentFilterByQRCode,
     requestTimestamp,
@@ -34,7 +64,7 @@ const WFLaunchersScreen = () => {
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
-  const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
+  const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode || !showWorkplaceScanner;
 
   //
   // Load application launchers
@@ -66,8 +96,24 @@ const WFLaunchersScreen = () => {
       onNewLaunchers({ applicationId, applicationLaunchers }),
   });
 
-  //const showQRCodeScannerEffective = currentPanel === 'scanQRCode' || !isAllowQueryingLaunchers;
+  const refreshApplicationData = () => {
+    api
+      .getApplications()
+      .then(({ applications }) => {
+        dispatch(populateApplications({ applications }));
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
 
+  if (showWorkplaceScanner) {
+    return (
+      <div className="container launchers-container">
+        <WorkplaceScanner onComplete={refreshApplicationData} />
+      </div>
+    );
+  }
+
+  //const showQRCodeScannerEffective = currentPanel === 'scanQRCode' || !isAllowQueryingLaunchers;
   return (
     <div className="container launchers-container">
       {currentPanel === 'scanQRCode' && (
