@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor3
 Feature: API Audit POST http method
 
   Background:
