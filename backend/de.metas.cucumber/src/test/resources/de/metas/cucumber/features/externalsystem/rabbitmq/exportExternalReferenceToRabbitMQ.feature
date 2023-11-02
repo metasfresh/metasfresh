@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: Validate external reference is sent to RabbitMQ
 
   Background:
