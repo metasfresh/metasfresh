@@ -59,6 +59,7 @@ class GreetingsMapTest
 					.name("greeting_withoutStandardType")
 					.orgId(OrgId.MAIN)
 					.greeting(TranslatableStrings.anyLanguage("greeting_withoutStandardType"))
+					.active(true)
 					.build();
 
 			greeting_notPartOfAComposite = Greeting.builder()
@@ -67,6 +68,7 @@ class GreetingsMapTest
 					.orgId(OrgId.MAIN)
 					.greeting(TranslatableStrings.anyLanguage("greeting_notPartOfAComposite"))
 					.standardType(GreetingStandardType.ofCode("greeting_notPartOfAComposite"))
+					.active(true)
 					.build();
 
 			greetingsMap = new GreetingsMap(Arrays.asList(
@@ -86,6 +88,7 @@ class GreetingsMapTest
 					.name(standardType.getCode())
 					.greeting(TranslatableStrings.anyLanguage(standardType.getCode()))
 					.standardType(standardType)
+					.active(true)
 					.build();
 		}
 

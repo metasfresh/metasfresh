@@ -62,13 +62,8 @@ public class JsonResponseUpsertItem
 
 	SyncOutcome syncOutcome;
 
-	@ApiModelProperty(value = "The name of the upserted record.\n"
-			+ "Generally missing, as it is only set for nested records that get upserted 'under' the root record.",//
-			position = 40, dataType = "java.lang.String")
 	String resourceName;
 
-	@ApiModelProperty(value = "The outcome of any included resources that get updated together with the root record.\n",
-			position = 40)
 	List<JsonResponseUpsertItem> includedResources;
 
 	@Builder

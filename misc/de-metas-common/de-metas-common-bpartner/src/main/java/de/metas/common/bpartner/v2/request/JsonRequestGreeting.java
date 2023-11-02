@@ -22,7 +22,6 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -32,22 +31,16 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class JsonRequestGreeting
 {
-	@ApiModelProperty(position = 10, value = "This translates to `C_Greeting.Name`.")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 20, value = "This translates to `C_Greeting.Greeting`.")
 	private String greeting;
 
-	@ApiModelProperty(hidden = true)
 	private boolean greetingSet;
 
-	@ApiModelProperty(position = 30, value = "This translates to `C_Greeting.LetterSalutation`.")
 	private String letterSalutation;
 
-	@ApiModelProperty(hidden = true)
 	private boolean letterSalutationSet;
 
 	public void setName(final String name)

@@ -368,9 +368,4 @@ public final class BPartnerComposite
 		return Check.assumeNotNull(getOrgId(), "At this point, is expected the orgId to be resolved!");
 	}
 
-	@NonNull
-	public OrgId getOrgIdNotNull()
-	{
-		return Check.assumeNotNull(orgId, "Assuming OrgId was set when calling this method!");
-	}
 }

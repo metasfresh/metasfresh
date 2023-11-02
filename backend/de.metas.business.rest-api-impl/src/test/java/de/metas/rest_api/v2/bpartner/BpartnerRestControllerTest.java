@@ -76,6 +76,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
@@ -140,8 +141,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
@@ -192,14 +192,15 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new TitleRepository(),
-				currencyRepository,
+				new CurrencyRepository(),
 				JobService.newInstanceForUnitTesting(),
 				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				Services.get(IPaymentTermRepository.class),
 				bPartnerCreditLimitRepository,
-				new JsonGreetingService(new GreetingRepository(), externalReferenceRestControllerService));
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

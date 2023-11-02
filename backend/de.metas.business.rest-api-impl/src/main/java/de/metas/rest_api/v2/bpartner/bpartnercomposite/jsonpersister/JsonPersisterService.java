@@ -75,6 +75,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -87,11 +88,11 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.greeting.GreetingExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
@@ -134,10 +135,9 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Greeting;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_CreditLimit_Type;
+import org.compiere.model.I_C_Greeting;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -462,6 +462,30 @@ public class JsonPersisterService
 		return collector
 				.collectMetasfreshId(contactIdentifier.getRawValue(), persistedContact)
 				.buildAggregatedContactResponseItem(contactIdentifier.getRawValue());
+	}
+
+	private void handleExternalReference(
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final JsonMetasfreshId metasfreshId,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		if (EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+					.id(externalIdentifier.asExternalValueAndSystem().getValue())
+					.type(externalReferenceType.getCode())
+					.build();
+
+			final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+
+			final JsonSingleExternalReferenceCreateReq externalReferenceCreateRequest = JsonSingleExternalReferenceCreateReq
+					.builder()
+					.systemName(JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem()))
+					.externalReferenceItem(externalReferenceItem)
+					.build();
+
+			externalReferenceRestControllerService.performInsertIfMissing(externalReferenceCreateRequest, null);
+		}
 	}
 
 	private Optional<BPartnerContactQuery> createContactQuery(
@@ -2214,12 +2238,26 @@ public class JsonPersisterService
 		final List<JsonResponseUpsertItem> greetingItems = resultBuilder.buildGreetingResults();
 		if (!CollectionUtils.isEmpty(greetingItems))
 		{
+			final Map<String, JsonExternalReferenceItem> greetingIdentifier2ExternalReferenceItem = requestItem
+					.getBpartnerComposite()
+					.getContactsNotNull()
+					.getRequestItems()
+					.stream()
+					.map(JsonRequestContactUpsertItem::getContact)
+					.map(JsonRequestContact::getGreeting)
+					.filter(Objects::nonNull)
+					.map(JsonExternalReferenceHelper::getExternalReferenceItem)
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
+					.collect(Collectors.toMap(
+							JsonExternalReferenceItem::getExternalReference,
+							Function.identity()));
+
 			externalReferenceCreateReqs.addAll(greetingItems
 													   .stream()
 													   .map(greetingItem -> mapToJsonRequestExternalReferenceUpsert(greetingItem,
-																													GreetingExternalReferenceType.GREETING,
-																													null,
-																													null))
+																													greetingIdentifier2ExternalReferenceItem))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));

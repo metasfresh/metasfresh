@@ -49,12 +49,14 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
 import de.metas.logging.LogManager;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.quality.attribute.ProductQualityAttributeRepository;
 import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
@@ -95,7 +97,7 @@ import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
@@ -154,11 +156,13 @@ public class ProductsRestControllerTest
 				new TitleRepository(),
 				currencyRepository,
 				JobService.newInstanceForUnitTesting(),
-				Mockito.mock(de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService.class),
+				Mockito.mock(ExternalReferenceRestControllerService.class),
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				new IncotermsRepository(),
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				new BPartnerCreditLimitRepository());
+				Services.get(IPaymentTermRepository.class),
+				new BPartnerCreditLimitRepository(),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
