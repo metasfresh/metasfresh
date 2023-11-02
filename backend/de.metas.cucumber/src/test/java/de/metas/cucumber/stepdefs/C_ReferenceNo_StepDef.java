@@ -99,10 +99,10 @@ public class C_ReferenceNo_StepDef
 	private void loadReferenceNo(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer recordId = DataTableUtil.extractIntegerOrNullForColumnName(row, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID);
-		final Integer typeId = DataTableUtil.extractIntegerOrNullForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID);
+		final String recordId = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String typeId = DataTableUtil.extractStringForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		if (identifier != null)
+		if (recordId != null && typeId!=null)
 		{
 
 			final IQuery<I_C_ReferenceNo_Doc> referenceNo_docQueryBuilderQuery = queryBL
