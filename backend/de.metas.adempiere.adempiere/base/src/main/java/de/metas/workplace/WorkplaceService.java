@@ -57,4 +57,14 @@ public class WorkplaceService
 		return workplaceUserAssignRepository.getWorkplaceIdByUserId(userId)
 				.map(workplaceRepository::getById);
 	}
+
+	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		workplaceUserAssignRepository.create(request);
+	}
+
+	public boolean isAnyWorkplaceActive()
+	{
+		return workplaceRepository.isAnyWorkplaceActive();
+	}
 }

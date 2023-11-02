@@ -22,58 +22,84 @@
 
 package de.metas.printing.test.integration;
 
+import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.impl.AbstractPrintingTest;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.workplace.WorkplaceAssignmentCreateRequest;
 import de.metas.workplace.WorkplaceId;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Before;
 import org.junit.Test;
 
-import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.junit.Assert.assertEquals;
 
 public class RetrievePrinterConfigTest extends AbstractPrintingTest
 {
+	public static final int WORKPLACE_ID = 1000001;
+	public static final String HOST_KEY = "hostKey";
+	final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
+
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	@Test
 	public void testRetrievePrinterConfigWithUserToPrintId() {
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
-		final UserId userToPrintId = UserId.METASFRESH;
 
-		queryBuilder.addOnlyActiveRecordsFilter();
-		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
-		queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID);
-		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
-		final I_AD_Printer_Config printerConfig = query.first();
+		final I_AD_Printer_Config configWithUserToPrintId = newInstance(I_AD_Printer_Config.class);
+		configWithUserToPrintId.setAD_User_PrinterMatchingConfig_ID(UserId.METASFRESH.getRepoId());
+		configWithUserToPrintId.setConfigHostKey(HOST_KEY);
+		save(configWithUserToPrintId);
 
-		assertEquals(printerConfig, printerConfig);
+		final I_AD_Printer_Config retrievePrinterConfigRecord = printingDAO.retrievePrinterConfig(HOST_KEY, UserId.METASFRESH, null);
+
+		assertEquals(configWithUserToPrintId, retrievePrinterConfigRecord);
 	}
 
 	@Test
 	public void testRetrievePrinterConfigWithWorkplaceId() {
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
-		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(1000001);
 
-		queryBuilder.addOnlyActiveRecordsFilter();
-		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
-		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
-		final I_AD_Printer_Config printerConfig = query.first();
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(WORKPLACE_ID);
+		final I_AD_Printer_Config configWithWorkplaceId = newInstance(I_AD_Printer_Config.class);
+		configWithWorkplaceId.setC_Workplace_ID(WORKPLACE_ID);
+		save(configWithWorkplaceId);
 
-		assertEquals(printerConfig, printerConfig);
+		final I_AD_Printer_Config retrievePrinterConfigRecord = printingDAO.retrievePrinterConfig(null, null, workplaceId);
+
+		assertEquals(configWithWorkplaceId, retrievePrinterConfigRecord);
 	}
 
 	@Test
 	public void testRetrievePrinterConfigWithWorkplaceIdAndUserToPrintId() {
-		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class);
-		final UserId userToPrintId = UserId.METASFRESH;
-		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(1000001);
 
-		queryBuilder.addOnlyActiveRecordsFilter();
-		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
-		queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
-		final IQuery<I_AD_Printer_Config> query = queryBuilder.create();
-		final I_AD_Printer_Config printerConfig = query.first();
+		final I_AD_Printer_Config configWithUserToPrintId = newInstance(I_AD_Printer_Config.class);
+		configWithUserToPrintId.setAD_User_PrinterMatchingConfig_ID(UserId.METASFRESH.getRepoId());
+		configWithUserToPrintId.setConfigHostKey(HOST_KEY);
+		save(configWithUserToPrintId);
 
-		assertEquals(printerConfig, printerConfig);
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(WORKPLACE_ID);
+		final I_AD_Printer_Config configWithWorkplaceId = newInstance(I_AD_Printer_Config.class);
+		configWithWorkplaceId.setC_Workplace_ID(WORKPLACE_ID);
+		save(configWithWorkplaceId);
+
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+
+		workplaceService.assignWorkplace(WorkplaceAssignmentCreateRequest.builder()
+												 .workplaceId(workplaceId)
+												 .userId(UserId.METASFRESH)
+												 .build());
+
+		final I_AD_Printer_Config retrievePrinterConfigRecord = printingDAO.retrievePrinterConfig(HOST_KEY, UserId.METASFRESH, workplaceId);
+
+		assertEquals(configWithWorkplaceId, retrievePrinterConfigRecord);
 	}
 }

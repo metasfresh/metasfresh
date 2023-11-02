@@ -222,7 +222,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				logger.debug("retrievePrinterConfig - will filter by ConfigHostKey IN ({}, NULL)", hostKey);
 				queryBuilder.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey, null); // allow "less specific" configs without hostkey
 			}
-			else
+			else if (workplaceId == null)
 			{
 				Check.errorIf(userToPrintId == null, "If the 'hostKey' param is empty, then the 'userToPrintId has to be > 0");
 			}
