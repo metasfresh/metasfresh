@@ -120,7 +120,7 @@ public class ProductPriceRepository
 	}
 
 	@NonNull
-	public I_M_ProductPrice getRecordById(@NonNull final ProductPriceId productPriceId)
+	private I_M_ProductPrice getRecordById(@NonNull final ProductPriceId productPriceId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
