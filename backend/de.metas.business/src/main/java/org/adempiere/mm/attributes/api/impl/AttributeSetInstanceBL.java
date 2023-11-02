@@ -33,8 +33,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -459,29 +457,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		return asiId;
 	}
 
-	@Override
-	public boolean asiValuesMatchOrEmpty(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
-	{
-		final List<I_M_AttributeInstance> attributeInstances1 = attributeDAO.retrieveAttributeInstances(asiId1);
 
-		boolean matches = true;
 
-		for (final I_M_AttributeInstance attributeInstance1 : attributeInstances1)
-		{
-			final I_M_AttributeInstance attributeInstance2 = attributeDAO.retrieveAttributeInstance(asiId2, AttributeId.ofRepoId(attributeInstance1.getM_Attribute_ID()));
-
-			if (attributeInstance2 == null)
-			{
-				continue;
-			}
-
-			if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
-			{
-				matches = false;
-				break;
-			}
-		}
-
-		return matches;
-	}
 }

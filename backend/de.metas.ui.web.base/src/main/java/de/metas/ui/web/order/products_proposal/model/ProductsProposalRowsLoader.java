@@ -39,7 +39,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
@@ -52,6 +51,7 @@ import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvi
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -66,7 +66,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
@@ -101,6 +100,7 @@ public final class ProductsProposalRowsLoader
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
+	private final OrderProductProposalsService orderProductProposalsService;
 	private final LookupDataSource productLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
@@ -108,17 +108,16 @@ public final class ProductsProposalRowsLoader
 	private final Order order;
 	private final BPartnerId bpartnerId;
 	private final SOTrx soTrx;
-	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
-
 	private final CurrencyId currencyId;
 	private final ImmutableSet<ProductId> productIdsToExclude;
-
 	private final Map<PriceListVersionId, CurrencyCode> currencyCodesByPriceListVersionId = new HashMap<>();
+	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
 
 	@Builder
 	private ProductsProposalRowsLoader(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
 			@Nullable final Order order,
@@ -131,6 +130,8 @@ public final class ProductsProposalRowsLoader
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
+		this.orderProductProposalsService = orderProductProposalsService;
+
 		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
@@ -201,7 +202,7 @@ public final class ProductsProposalRowsLoader
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
-						.thenComparing(ProductsProposalRow::getProductName))
+								.thenComparing(ProductsProposalRow::getProductName))
 				.filter(p -> !productBL.isDiscontinuedAt(productsRepo.getById(p.getProductId()), currentDate))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -211,45 +212,11 @@ public final class ProductsProposalRowsLoader
 		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.collect(ImmutableList.toImmutableList());
-		bestMatchingProductPriceIdToOrderLine = findBestMatchesForOrderLine(order, productPrices);
+		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLine(order, productPrices);
 		return productPrices
 				.stream()
 				.map(this::toProductsProposalRowOrNull)
 				.filter(Objects::nonNull);
-	}
-
-	private Map<ProductPriceId, OrderLine> findBestMatchesForOrderLine(final Order order, final List<I_M_ProductPrice> productPrices)
-	{
-		final Map<ProductPriceId, OrderLine> result = new HashMap<>();
-		for (final OrderLine orderline : order.getLines())
-		{
-			final Comparator<I_M_ProductPrice> comparing = Comparator.comparing(pp -> getNumberOfMatchingAttributes(orderline.getAsiId(), extractProductASI(pp)));
-			productPrices.stream()
-					.filter(pp -> orderline.isMatching(ProductId.ofRepoId(pp.getM_Product_ID()), HUPIItemProductId.ofRepoIdOrNull(pp.getM_HU_PI_Item_Product_ID())))
-					.max(comparing)
-					.map(org.compiere.model.I_M_ProductPrice::getM_ProductPrice_ID)
-					.map(ProductPriceId::ofRepoId)
-					.ifPresent(productPriceId -> result.put(productPriceId, orderline));
-		}
-		return result;
-	}
-
-	private int getNumberOfMatchingAttributes(final AttributeSetInstanceId olAsiId, final AttributeSetInstanceId productPriceAsiId)
-	{
-		final AttributesKey olAk = getAttributesKeyFor(olAsiId);
-		final AttributesKey ppAk = getAttributesKeyFor(productPriceAsiId);
-		final AttributesKey attributesKey = olAk.getIntersection(ppAk);
-		if (attributesKey.isNone())
-		{
-			return 0;
-		}
-		return attributesKey.getParts().size();
-	}
-
-	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
-	{
-		return AttributesKeys.createAttributesKeyFromASIAllAttributes(olAsiId)
-				.orElse(AttributesKey.NONE);
 	}
 
 	@Nullable
@@ -276,7 +243,7 @@ public final class ProductsProposalRowsLoader
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.asiId(extractProductASI(record))
+				.asiId(orderProductProposalsService.extractProductASI(record))
 				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
@@ -295,11 +262,6 @@ public final class ProductsProposalRowsLoader
 		return ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId));
 	}
 
-	private AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
-	{
-		return AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
-
-	}
 	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());

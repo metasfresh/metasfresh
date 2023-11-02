@@ -227,6 +227,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	private synchronized void addOrUpdateRow(@NonNull final ProductsProposalRowAddRequest request)
 	{
+
 		final ProductsProposalRow existingRow = getRowByProductAndASI(request.getProductId(), request.getAsiDescription())
 				.orElse(null);
 		if (existingRow != null)
@@ -266,7 +267,6 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 				.build();
-				// .withExistingOrderLine();
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)
