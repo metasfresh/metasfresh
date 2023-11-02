@@ -1,7 +1,6 @@
 package de.metas.printing.spi.impl;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -210,17 +209,6 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		queueItem.setBill_Location_ID(invoice.getC_BPartner_Location_ID());
 		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
-
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-
-		//TODO: Check what to do with this, because it overrides de.metas.report.DocumentReportAdvisorUtil#getDocumentCopies()
-		final int documentCopies = partner.getDocumentCopies();
-		if (documentCopies > 0)
-		{
-			// updating to the partner's preference
-			queueItem.setCopies(documentCopies);
-		}
 
 		logger.debug(
 				"Setting columns of C_Printing_Queue {} from C_Invoice {}: [Bill_BPartner_ID={}, Bill_Location_ID={}, C_BPartner_ID={}, C_BPartner_Location_ID={}, Copies={}]",

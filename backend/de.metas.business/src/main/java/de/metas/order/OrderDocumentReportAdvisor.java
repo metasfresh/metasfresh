@@ -103,7 +103,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType))
 				.documentNo(order.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

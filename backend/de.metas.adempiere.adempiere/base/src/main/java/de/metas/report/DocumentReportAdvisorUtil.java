@@ -113,42 +113,18 @@ public class DocumentReportAdvisorUtil
 	}
 
 	public PrintCopies getDocumentCopies(
-			@Nullable final I_C_BPartner bpartner,
 			@Nullable final I_C_DocType docType,
-			@Nullable final BPPrintFormatQuery bpPrintFormatQuery)
+			@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
-		if(bpPrintFormatQuery != null)
-		{
-			final BPPrintFormat bpPrintFormat = bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery);
-			//TODO:return location copies if exists
-		}
-		return getDocumentCopies(bpartner, docType);
+		final BPPrintFormat bpPrintFormat = bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery, true);
+
+		return bpPrintFormat != null ? bpPrintFormat.getPrintCopies() : getDocumentCopies(docType);
 	}
 
-	public PrintCopies getDocumentCopies(
-			@Nullable final I_C_BPartner bpartner,
-			@Nullable final I_C_DocType docType)
+	public PrintCopies getDocumentCopies(@Nullable final I_C_DocType docType)
 	{
-		// for now, preserving the legacy logic
-		return getDocumentCopies(docType, PrintCopies.ZERO)
-				.plus(getDocumentCopies(bpartner, PrintCopies.ONE));
-	}
-
-	private static PrintCopies getDocumentCopies(
-			@Nullable final I_C_BPartner bpartner,
-			@NonNull final PrintCopies defaultValue)
-	{
-		return bpartner != null && !InterfaceWrapperHelper.isNull(bpartner, I_C_BPartner.COLUMNNAME_DocumentCopies)
-				? PrintCopies.ofInt(bpartner.getDocumentCopies())
-				: defaultValue;
-	}
-
-	private static PrintCopies getDocumentCopies(
-			@Nullable final I_C_DocType docType,
-			@NonNull final PrintCopies defaultValue)
-	{
-		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_BPartner.COLUMNNAME_DocumentCopies)
+		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_DocType.COLUMNNAME_DocumentCopies)
 				? PrintCopies.ofInt(docType.getDocumentCopies())
-				: defaultValue;
+				: PrintCopies.ONE;
 	}
 }

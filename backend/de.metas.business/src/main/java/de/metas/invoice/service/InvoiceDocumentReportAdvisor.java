@@ -99,7 +99,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType))
 				.documentNo(invoice.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

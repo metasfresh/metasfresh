@@ -4,11 +4,17 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
+import de.metas.report.PrintCopies;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.table.api.AdTableId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,34 +43,35 @@ import lombok.Value;
  *
  */
 
+@Getter
 @Value
 @Builder
 public class BPPrintFormat
 {
-	@Getter
-	private final BPartnerId bpartnerId;
+	BPartnerId bpartnerId;
 
-	@Getter
-	private final int docTypeId;
+	DocTypeId docTypeId;
 
-	@Getter
-	private final int adTableId;
+	AdTableId adTableId;
 
-	@Getter
-	private final int printFormatId;
+	int printFormatId;
 
-	@Getter
-	private final int bpPrintFormatId;
+	int bpPrintFormatId;
+
+	BPartnerLocationId bPartnerLocationId;
+
+	PrintCopies printCopies;
 
 	@Builder(toBuilder = true)
-	private BPPrintFormat(@NonNull final BPartnerId bpartnerId,
-			final int docTypeId,
-			final int adTableId,
+	private BPPrintFormat(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final DocTypeId docTypeId,
+			@NonNull final AdTableId adTableId,
 			final int printFormatId,
-			final int bpPrintFormatId)
+			final int bpPrintFormatId,
+			@Nullable final BPartnerLocationId bPartnerLocationId,
+			@Nullable final PrintCopies printCopies)
 	{
-		Check.assume(docTypeId > 0, "docTypeId shall be > 0");
-		Check.assume(adTableId > 0, "adTableId shall be > 0");
 		Check.assume(printFormatId > 0, "printFormatId shall be > 0");
 
 		this.bpartnerId = bpartnerId;
@@ -72,5 +79,7 @@ public class BPPrintFormat
 		this.adTableId = adTableId;
 		this.printFormatId = printFormatId;
 		this.bpPrintFormatId = bpPrintFormatId;
+		this.bPartnerLocationId = bPartnerLocationId;
+		this.printCopies = printCopies;
 	}
 }

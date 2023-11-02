@@ -98,7 +98,7 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_PP_Order.Table_Name, manufacturingOrderId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType))
 				.documentNo(manufacturingOrder.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

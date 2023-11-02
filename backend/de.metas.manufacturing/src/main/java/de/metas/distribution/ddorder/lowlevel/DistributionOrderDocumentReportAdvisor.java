@@ -100,7 +100,7 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_DD_Order.Table_Name, ddOrderId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType))
 				.documentNo(ddOrder.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

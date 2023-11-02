@@ -23,6 +23,8 @@
 package de.metas.inout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
@@ -34,6 +36,7 @@ import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -43,6 +46,8 @@ import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Component
 public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
@@ -94,10 +99,17 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 
 		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+				.adTableId(AdTableId.ofRepoId(getTableId(I_M_InOut.class)))
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
+				.docTypeId(DocTypeId.ofRepoId(inout.getC_DocType_ID()))
+				.build();
+
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(inout.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

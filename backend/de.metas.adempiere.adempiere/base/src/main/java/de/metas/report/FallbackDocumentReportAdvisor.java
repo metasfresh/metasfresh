@@ -105,7 +105,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 		return DocumentReportInfo.builder()
 				.recordRef(recordRef)
 				.reportProcessId(reportProcessId)
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType))
 				.documentNo(documentNo)
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
