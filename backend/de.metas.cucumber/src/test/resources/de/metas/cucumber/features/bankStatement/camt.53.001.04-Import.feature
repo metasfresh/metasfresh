@@ -1,4 +1,4 @@
-
+@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt.53.001.04 import format
 
@@ -34,12 +34,6 @@ Feature: import bank statement in camt.53.001.04 import format
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1_S0337  | 0203111111111 | bpartner_1_S0337         | true                | true         |
 
-    And load C_DataImport:
-      | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
-      | di_1_S0337                 | 540009              |
-    And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name       | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
-      | b_1_S0337            | bank_S0337 | 2234567   | AAAAAAAA82A | di_1_S0337                 |
 ## Thanks to https://ssl.ibanrechner.de/sample_accounts.html for providing the IBAN
 #    And metasfresh contains C_BP_BankAccount
 #      | Identifier  | C_BPartner_ID.Identifier | C_Currency.ISO_Code | OPT.AccountNo | OPT.C_Bank_ID.Identifier |
@@ -51,6 +45,12 @@ Feature: import bank statement in camt.53.001.04 import format
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
 
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
+    And load C_DataImport:
+      | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
+      | di_1_S0337_100             | 540009              |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID.Identifier | Name       | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
+      | b_1_S0337_100        | bank_S0337 | 2234567   | AAAAAAAA82A | di_1_S0337_100             |
 	# change the bankaccount of the AD_Org bpartner ("metasfresh") to be an ESR-Account
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
@@ -223,13 +223,19 @@ Feature: import bank statement in camt.53.001.04 import format
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
-  @dev:runThisOne
+
   @from:cucumber
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
 
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
 	# change the bankaccount of the AD_Org bpartner ("metasfresh") to be an ESR-Account
+    And load C_DataImport:
+      | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
+      | di_1_S0337_200             | 540009              |
+    And metasfresh contains C_Bank:
+      | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
+      | b_1_S0337_200        | bank_S0337_200 | 2234567   | AAAAAAAA82A | di_1_S0337_200             |
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID |
       | bp_bank_account_metasfresh_S0337_200 | 2000257                 |
@@ -250,6 +256,16 @@ Feature: import bank statement in camt.53.001.04 import format
       | invl_2_S0337_200 | inv_2_S0337_200         | p_1_S0337               | 9           | PCE               |
     And the invoice identified by inv_1_S0337_200 is completed
     And the invoice identified by inv_2_S0337_200 is completed
+
+    And load C_ReferenceNo:
+      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identfier |
+      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          |
+      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          |
+
+    And update C_ReferenceNo:
+      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identfier | OPT.Referencenoo            |
+      | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                          | 123456700102156434010001533 |
+      | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                          | 123456700102156434010001549 |
 
     When bank statement is imported with identifiers bs_1_S0337_200, matching invoice amounts
     """
@@ -362,7 +378,7 @@ Feature: import bank statement in camt.53.001.04 import format
 							</TxAmt>
 						</AmtDtls>
 						<RmtInf>
-							<Ustrd>ESR-Referenz 123456700102156434010001795</Ustrd>
+							<Ustrd>ESR-Referenz 123456700102156434010001549</Ustrd>
 						</RmtInf>
 						<AddtlTxInf>Incoming payment</AddtlTxInf>
 					</TxDtls>
@@ -406,7 +422,7 @@ Feature: import bank statement in camt.53.001.04 import format
 							</TxAmt>
 						</AmtDtls>
 						<RmtInf>
-							<Ustrd>Rechnungsnummer 511004_1_SO_S0337_200</Ustrd>
+							<Ustrd>511004_1_SO_S0337_200</Ustrd>
 						</RmtInf>
 						<AddtlTxInf>Incoming payment</AddtlTxInf>
 					</TxDtls>
@@ -442,6 +458,6 @@ Feature: import bank statement in camt.53.001.04 import format
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
-      | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true      |
+      | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
