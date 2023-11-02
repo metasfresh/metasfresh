@@ -345,7 +345,7 @@ public interface IBPartnerDAO extends ISingletonService
 	{
 		public enum Type
 		{
-			BILL_TO, SHIP_TO, REMIT_TO
+			BILL_TO, SHIP_TO, REMIT_TO, BILL_TO_DEFAULT, SHIP_TO_DEFAULT
 		}
 
 		@NonNull
