@@ -261,6 +261,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
+				.asiId(request.getAsiId())
 				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 				.packingMaterialId(request.getPackingMaterialId())
 				.packingDescription(request.getPackingDescription())
