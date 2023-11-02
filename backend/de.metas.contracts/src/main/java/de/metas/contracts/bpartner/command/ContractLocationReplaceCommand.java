@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 
 @Builder
@@ -67,13 +68,13 @@ public class ContractLocationReplaceCommand
 
 	private void updateFlatrateTermColumn(final String columnName, final RepoIdAware oldLocationId, final RepoIdAware newLocationId)
 	{
+		final ICompositeQueryUpdater<I_C_Flatrate_Term> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
+				.addSetColumnValue(columnName, newLocationId);
+		
 		queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(columnName, oldLocationId)
 				.create()
-				.updateDirectly()
-				.addSetColumnValue(columnName, newLocationId)
-				.setExecuteDirectly(true) // just to be sure
-				.execute();
+				.update(queryUpdater);
 	}
 }

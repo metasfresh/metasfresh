@@ -805,21 +805,28 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@NonNull
+	@Override
 	public Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull final BPartnerId bPartnerId)
 	{
-		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
-																				  .builder()
-																				  .type(SHIP_TO_DEFAULT)
-																				  .bpartnerId(bPartnerId)
-																				  .build()));
+		return retrieveBPartnerLocation(bPartnerId, SHIP_TO_DEFAULT);
 	}
 
 	@NonNull
+	@Override
 	public Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBPartnerLocation(bPartnerId, BILL_TO_DEFAULT);
+
+	}
+	
+	@NonNull
+	private Optional<I_C_BPartner_Location> retrieveBPartnerLocation(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final IBPartnerDAO.BPartnerLocationQuery.Type type)
 	{
 		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
 																				  .builder()
-																				  .type(BILL_TO_DEFAULT)
+																				  .type(type)
 																				  .bpartnerId(bPartnerId)
 																				  .build()));
 	}
