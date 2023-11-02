@@ -18,7 +18,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -81,12 +80,11 @@ public class Order
 
 	public Optional<OrderLine> getFirstMatchingOrderLine(
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
+			@Nullable final HUPIItemProductId packingMaterialId)
 	{
 		return getLines()
 				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
+				.filter(line -> line.isMatching(productId, packingMaterialId))
 
 				.findFirst();
 	}

@@ -39,6 +39,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
@@ -65,6 +66,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
@@ -82,7 +84,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public final class ProductsProposalRowsLoader
@@ -107,6 +108,7 @@ public final class ProductsProposalRowsLoader
 	private final Order order;
 	private final BPartnerId bpartnerId;
 	private final SOTrx soTrx;
+	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
 
 	private final CurrencyId currencyId;
 	private final ImmutableSet<ProductId> productIdsToExclude;
@@ -167,11 +169,11 @@ public final class ProductsProposalRowsLoader
 			logger.debug("order!=null; -> add bpartnerName={} to headerProperties", order.getBpartnerName());
 			headerProperties
 					.group(ViewHeaderPropertiesGroup.builder()
-								   .entry(ViewHeaderProperty.builder()
-												  .caption(msgBL.translatable("C_BPartner_ID"))
-												  .value(order.getBpartnerName())
-												  .build())
-								   .build());
+							.entry(ViewHeaderProperty.builder()
+									.caption(msgBL.translatable("C_BPartner_ID"))
+									.value(order.getBpartnerName())
+									.build())
+							.build());
 		}
 
 		return ProductsProposalRowsData.builder()
@@ -199,19 +201,53 @@ public final class ProductsProposalRowsLoader
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
-								.thenComparing(ProductsProposalRow::getProductName))
+						.thenComparing(ProductsProposalRow::getProductName))
 				.filter(p -> !productBL.isDiscontinuedAt(productsRepo.getById(p.getProductId()), currentDate))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
-		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
+		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
-				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
+				.collect(ImmutableList.toImmutableList());
+		bestMatchingProductPriceIdToOrderLine = findBestMatchesForOrderLine(order, productPrices);
+		return productPrices
+				.stream()
+				.map(this::toProductsProposalRowOrNull)
 				.filter(Objects::nonNull);
 	}
 
+	private Map<ProductPriceId, OrderLine> findBestMatchesForOrderLine(final Order order, final List<I_M_ProductPrice> productPrices)
+	{
+		final Map<ProductPriceId, OrderLine> result = new HashMap<>();
+		for (final OrderLine orderline : order.getLines())
+		{
+			final Comparator<I_M_ProductPrice> comparing = Comparator.comparing(pp -> getNumberOfMatchingAttributes(orderline.getAsiId(), extractProductASI(pp)));
+			productPrices.stream()
+					.filter(pp -> orderline.isMatching(ProductId.ofRepoId(pp.getM_Product_ID()), HUPIItemProductId.ofRepoIdOrNull(pp.getM_HU_PI_Item_Product_ID())))
+					.max(comparing)
+					.map(org.compiere.model.I_M_ProductPrice::getM_ProductPrice_ID)
+					.map(ProductPriceId::ofRepoId)
+					.ifPresent(productPriceId -> result.put(productPriceId, orderline));
+		}
+		return result;
+	}
+
+	private int getNumberOfMatchingAttributes(final AttributeSetInstanceId olAsiId, final AttributeSetInstanceId productPriceAsiId)
+	{
+		final AttributesKey olAk = getAttributesKeyFor(olAsiId);
+		final AttributesKey ppAk = getAttributesKeyFor(productPriceAsiId);
+		return olAk.intersectWith(ppAk).getParts().size();
+	}
+
+	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
+	{
+		return AttributesKeys.createAttributesKeyFromASIAllAttributes(olAsiId)
+				.orElse(AttributesKey.NONE);
+	}
+
+	@Nullable
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -226,24 +262,25 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		final Predicate<OrderLine> asiMatcher = orderLine -> attributeSetInstanceBL.asiValuesMatchOrEmpty(orderLine.getAsiId(), extractProductASI(record));
+		final ProductProposalPrice currentProductProposalPrice = extractProductProposalPrice(record);
 
-		return ProductsProposalRow.builder()
+		final ProductPriceId productPriceId = ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
+		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.asiId(extractProductASI(record))
-				.asiMatcher(asiMatcher)
-				.price(extractProductProposalPrice(record))
+				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
-				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
+				.productPriceId(productPriceId);
+
+		return rowBuilder
 				.build()
 				//
-				.withExistingOrderLine(order);
+				.withExistingOrderLine(bestMatchingProductPriceIdToOrderLine.get(productPriceId));
 	}
 
 	private ProductASIDescription extractProductASIDescription(final I_M_ProductPrice record)
@@ -306,6 +343,7 @@ public final class ProductsProposalRowsLoader
 		return row.withLastShipmentDays(lastShipmentOrReceiptInDays);
 	}
 
+	@Nullable
 	private Integer calculateLastShipmentOrReceiptInDays(@Nullable final BPartnerProductStats stats)
 	{
 		if (stats == null)

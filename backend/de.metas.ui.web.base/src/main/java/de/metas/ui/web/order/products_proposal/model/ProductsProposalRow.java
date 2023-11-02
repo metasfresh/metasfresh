@@ -9,7 +9,6 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
-import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -287,22 +286,10 @@ public class ProductsProposalRow implements IViewRow
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
 	}
 
-	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
+	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
 	{
-		if (order == null)
-		{
-			return this;
-		}
 
-		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(),
-																			getPackingMaterialId(),
-																			asiMatcher).orElse(null);
-		if (existingOrderLine == null)
-		{
-			return this;
-		}
-
-		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), order.getCurrency().getCurrencyCode());
+		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), existingOrderLine.getCurrency().getCurrencyCode());
 
 		return toBuilder()
 				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()

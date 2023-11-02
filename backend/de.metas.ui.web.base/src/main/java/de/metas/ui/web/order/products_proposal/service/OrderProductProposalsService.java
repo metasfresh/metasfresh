@@ -1,15 +1,6 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.time.ZonedDateTime;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.CurrencyRepository;
@@ -27,6 +18,13 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -111,7 +109,8 @@ public class OrderProductProposalsService
 				.qtyEnteredCU(record.getQtyEntered())
 				.qtyEnteredTU(record.getQtyEnteredTU().intValue())
 				.description(record.getDescription())
-				.asiId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.currency(currencyRepo.getById(record.getC_Currency_ID()))
 				.build();
 	}
 }

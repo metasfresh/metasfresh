@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.service;
 
+import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -10,7 +11,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -50,9 +50,12 @@ public class OrderLine
 
 	@NonNull
 	BigDecimal priceActual;
-
+	
 	@NonNull
 	BigDecimal priceEntered;
+
+	@NonNull
+	Currency currency;
 
 	@NonNull
 	BigDecimal qtyEnteredCU;
@@ -64,17 +67,14 @@ public class OrderLine
 
 	String description;
 
-	boolean isMatching(
+	public boolean isMatching(
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
+			@Nullable final HUPIItemProductId packingMaterialId)
 
 	{
 		return ProductId.equals(this.productId, productId)
 				&& HUPIItemProductId.equals(
-				HUPIItemProductId.nullToVirtual(this.packingMaterialId),
-				HUPIItemProductId.nullToVirtual(packingMaterialId))
-				&& asiMatcher.test(this);
+						HUPIItemProductId.nullToVirtual(this.packingMaterialId),
+				HUPIItemProductId.nullToVirtual(packingMaterialId));
 	}
-
 }
