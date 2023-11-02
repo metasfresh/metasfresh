@@ -1,5 +1,5 @@
 @from:cucumber
-@shipments
+@ghActions:run_on_executor3
 Feature: Packing material invoice candidates: shipments
 
   Background:
