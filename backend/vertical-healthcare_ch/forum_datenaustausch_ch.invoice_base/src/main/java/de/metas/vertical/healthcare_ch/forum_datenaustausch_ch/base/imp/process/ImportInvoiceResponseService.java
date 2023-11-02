@@ -71,18 +71,38 @@ class ImportInvoiceResponseService
 			@NonNull final InvoiceRejectionDetailId invoiceRejectionDetailId,
 			@NonNull final UserId userId)
 	{
+		sendNotificationUsingMessage(responseWithTags,invoiceRejectionDetailId,userId,MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST);
+	}
+
+	// package visibility
+	void sendNotificationDefaultUserExists(
+			@NonNull final ImportedInvoiceResponse responseWithTags,
+			@NonNull final InvoiceRejectionDetailId invoiceRejectionDetailId,
+			@NonNull final List<UserId> userIds)
+	{
+		for (final UserId userId : userIds)
+		{
+			sendNotificationUsingMessage(responseWithTags, invoiceRejectionDetailId, userId, MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS);
+		}
+	}
+
+	private void sendNotificationUsingMessage(
+			@NonNull final ImportedInvoiceResponse responseWithTags,
+			@NonNull final InvoiceRejectionDetailId invoiceRejectionDetailId,
+			@NonNull final UserId userId,
+			@NonNull final AdMessageKey adMessageKey)
+	{
 		final Recipient recipient = Recipient.user(userId);
 
 		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
 		final String orgName = orgDAO.retrieveOrgName(responseWithTags.getBillerOrg());
-
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
 				.topic(INVOICE_EVENTBUS_TOPIC)
 				.recipient(recipient)
 				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 				.subjectADMessageParam(responseWithTags.getDocumentNumber())
-				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST)
+				.contentADMessage(adMessageKey)
 				.contentADMessageParam(orgName)
 				.contentADMessageParam(invoiceRef)
 				.targetAction(TargetRecordAction.of(invoiceRef))
@@ -91,35 +111,6 @@ class ImportInvoiceResponseService
 
 		notificationBL.send(userNotificationRequest);
 		log.info("Send notification to recipient={}", recipient);
-	}
-
-	// package visibility
-	void sendNotificationDefaultUserExists(
-			@NonNull final ImportedInvoiceResponse responseWithTags,
-			final InvoiceRejectionDetailId invoiceRejectionDetailId,
-			final List<UserId> userIds)
-	{
-		for (final UserId userId : userIds)
-		{
-			final Recipient recipient = Recipient.user(userId);
-
-			final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
-			final String orgName = orgDAO.retrieveOrgName(responseWithTags.getBillerOrg());
-			final UserNotificationRequest userNotificationRequest = UserNotificationRequest
-					.builder()
-					.topic(INVOICE_EVENTBUS_TOPIC)
-					.recipient(recipient)
-					.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
-					.subjectADMessageParam(responseWithTags.getDocumentNumber())
-					.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS)
-					.contentADMessageParam(orgName)
-					.contentADMessageParam(invoiceRef)
-					.targetAction(TargetRecordAction.of(invoiceRef))
-					.build();
-
-			notificationBL.send(userNotificationRequest);
-			log.info("Send notification to recipient={}", recipient);
-		}
 	}
 
 	// package visibility
