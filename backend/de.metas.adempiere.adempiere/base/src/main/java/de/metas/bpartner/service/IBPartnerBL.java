@@ -246,8 +246,15 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * extracted logic from legacy code
+	 *
 	 * @param bp
 	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull BPartnerId bPartnerId);
 }
