@@ -263,7 +263,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                           |
 
     And update C_ReferenceNo:
-      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | OPT.Referencenoo            |
+      | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | OPT.ReferenceNo            |
       | ReferenceNo_metasfresh_S0337_200_1 | inv_1_S0337_200      | 540006                           | 123456700102156434010001533 |
       | ReferenceNo_metasfresh_S0337_200_2 | inv_2_S0337_200      | 540006                           | 123456700102156434010001549 |
 

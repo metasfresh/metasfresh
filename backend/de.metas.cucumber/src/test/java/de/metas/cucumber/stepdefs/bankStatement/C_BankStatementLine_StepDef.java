@@ -111,7 +111,6 @@ public class C_BankStatementLine_StepDef
 		final int line = DataTableUtil.extractIntForColumnName(row, I_C_BankStatementLine.COLUMNNAME_Line);
 
 		final I_C_BankStatementLine bankStatementLineRecord = getBankStatementLineRecord(bankStatementRecord, line);
-
 		final String bankStatementLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bankStatementLineTable.putOrReplace(bankStatementLineIdentifier, bankStatementLineRecord);
 	}
