@@ -77,4 +77,5 @@ public class OrderLine
 						HUPIItemProductId.nullToVirtual(this.packingMaterialId),
 				HUPIItemProductId.nullToVirtual(packingMaterialId));
 	}
+
 }

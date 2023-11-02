@@ -27,6 +27,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Workplace_User_Assign;
 import org.springframework.stereotype.Repository;
 
@@ -44,6 +45,16 @@ public class WorkplaceUserAssignRepository
 	public Optional<WorkplaceId> getWorkplaceIdByUserId(@NonNull final UserId userId)
 	{
 		return byUserId.getOrLoad(userId, this::retrieveWorkplaceIdByUserId);
+	}
+
+	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		final I_C_Workplace_User_Assign record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
+
+		record.setAD_User_ID(request.getUserId().getRepoId());
+		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
+
+		InterfaceWrapperHelper.save(record);
 	}
 
 	@NonNull

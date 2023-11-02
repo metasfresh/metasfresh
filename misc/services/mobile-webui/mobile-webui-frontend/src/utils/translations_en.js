@@ -46,6 +46,7 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Scan workplace...',
     },
   },
   activities: {
@@ -65,6 +66,7 @@ const translations = {
       unPickBtn: 'Unpick',
       target: 'To Pick',
       picked: 'Picked',
+      Workplace: 'Workplace',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
