@@ -22,9 +22,14 @@
 
 package de.metas.contracts.bpartner.interceptor;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.bpartner.command.BPartnerLocationReplaceCommand;
+import de.metas.contracts.bpartner.command.ContractLocationReplaceCommand;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -32,18 +37,28 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.util.Optional;
+
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO_DEFAULT;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO_DEFAULT;
 
 @Component
 @Callout(I_C_BPartner_Location.class)
 @Interceptor(I_C_BPartner_Location.class)
 public class C_BPartner_Location
 {
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_UpdateFlatrateTerms = "Update_Flatrate_Term_Locations_Based_On_Default_Addresses";
+
 	@Init
 	public void setupCallouts()
 	{
@@ -85,8 +100,68 @@ public class C_BPartner_Location
 			throw new AdempiereException("@AddressTerminatedInThePast@")
 					.appendParametersToMessage()
 					.setParameter("C_BPartner_Location.ValidFrom", validFrom)
-					.setParameter("Env.getDate()",Env.getDate())
+					.setParameter("Env.getDate()", Env.getDate())
 					.setParameter("C_BPartner_Location", bpLocation);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, I_C_BPartner_Location.COLUMNNAME_IsBillToDefault })
+	public void updateAddresses(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		updateExistingFlatrateTerms(bpLocation);
+	}
+
+	private void updateExistingFlatrateTerms(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		if (!bpLocation.isBillToDefault() && !bpLocation.isShipToDefault())
+		{
+			return;
+		}
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID());
+
+		if (bpLocation.isBillToDefault())
+		{
+			final Optional<I_C_BPartner_Location> oldDefaultRecord = bPartnerBL.retrieveBillToDefaultLocation(bPartnerId);
+
+			if (isUpdateFlatrateTerms() && oldDefaultRecord.isPresent())
+			{
+				updateFlatrateTerms(BPartnerLocationId.ofRepoId(bPartnerId, bpLocation.getC_BPartner_Location_ID()),
+									BPartnerLocationId.ofRepoId(bPartnerId, oldDefaultRecord.get().getC_BPartner_Location_ID()),
+									BILL_TO_DEFAULT);
+			}
+		}
+
+		if (bpLocation.isShipToDefault())
+		{
+			final Optional<I_C_BPartner_Location> oldDefaultRecord = bPartnerBL.retrieveShipToDefaultLocation(bPartnerId);
+
+			if (isUpdateFlatrateTerms() && oldDefaultRecord.isPresent())
+			{
+				updateFlatrateTerms(BPartnerLocationId.ofRepoId(bPartnerId, bpLocation.getC_BPartner_Location_ID()),
+									BPartnerLocationId.ofRepoId(bPartnerId, oldDefaultRecord.get().getC_BPartner_Location_ID()),
+									SHIP_TO_DEFAULT);
+			}
+		}
+	}
+
+	private void updateFlatrateTerms(
+			@NonNull final BPartnerLocationId newBPLocationId,
+			@NonNull final BPartnerLocationId oldBPLocationId,
+			@NonNull final IBPartnerDAO.BPartnerLocationQuery.Type type)
+	{
+		ContractLocationReplaceCommand.builder()
+				.newBPLocationId(newBPLocationId)
+				.oldBPLocationId(oldBPLocationId)
+				.updateBillLocation(type == BILL_TO_DEFAULT)
+				.updateDropShipLocation(type == SHIP_TO_DEFAULT)
+				.build()
+				.execute();
+	}
+
+	private boolean isUpdateFlatrateTerms()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_UpdateFlatrateTerms, false);
 	}
 }

@@ -246,6 +246,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * extracted logic from legacy code
+	 *
 	 * @param bp
 	 * @return
 	 */
@@ -256,4 +257,10 @@ public interface IBPartnerBL extends ISingletonService
 
 	@NonNull
 	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull BPartnerId bPartnerId);
 }
