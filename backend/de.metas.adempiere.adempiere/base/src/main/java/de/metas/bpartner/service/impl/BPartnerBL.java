@@ -60,6 +60,9 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO_DEFAULT;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO_DEFAULT;
+
 @Service
 public class BPartnerBL implements IBPartnerBL
 {
@@ -758,7 +761,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -800,5 +802,25 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return bPartnerLocation;
+	}
+
+	@NonNull
+	public Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
+																				  .builder()
+																				  .type(SHIP_TO_DEFAULT)
+																				  .bpartnerId(bPartnerId)
+																				  .build()));
+	}
+
+	@NonNull
+	public Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
+																				  .builder()
+																				  .type(BILL_TO_DEFAULT)
+																				  .bpartnerId(bPartnerId)
+																				  .build()));
 	}
 }
