@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Export PP_Order to LeichMehl config
 
   Background:
