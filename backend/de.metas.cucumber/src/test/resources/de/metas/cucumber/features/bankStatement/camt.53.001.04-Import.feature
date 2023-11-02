@@ -1,3 +1,4 @@
+@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt.53.001.04 import format
 
@@ -223,7 +224,6 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
-  @dev:runThisOne
   @from:cucumber
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
