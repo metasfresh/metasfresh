@@ -40,6 +40,7 @@ Feature: create or update BPartner v2
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
+
 {
    "requestItems":[
       {
@@ -159,7 +160,15 @@ Feature: create or update BPartner v2
                         "name":"test_name_c11",
                         "email":"test_email",
                         "fax":"fax",
-                        "invoiceEmailEnabled" : false
+                        "invoiceEmailEnabled" : false,
+                        "greeting": {
+                          "greetingInfo": {
+                            "greeting": "test_greeting_261023",
+                            "letterSalutation": "test_salutation_261023",
+                            "name": "test_name_261023"
+                          },
+                          "identifier": "ext-ALBERTA-greetingTest261023"
+                        }
                      }
                   },
                   {
@@ -217,6 +226,7 @@ Feature: create or update BPartner v2
       "ifExists":"UPDATE_MERGE"
    }
 }
+
 """
     Then verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier | OPT.IsProspect | OPT.Fresh_Urproduzent |
@@ -236,11 +246,12 @@ Feature: create or update BPartner v2
       | 23.17  | true     | Insurance               | 2022-10-31   | false     | 100               |
       | 10     | false    | Insurance               | 2022-10-30   | true      | null              |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
-      | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | false                      |
-      | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | true                       |
-      | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
-      | ALBERTA        | UserID           | c22               |                              | 540000                       | true                       |
+      | ExternalSystem | Type             | ExternalReference  | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ALBERTA        | BPartner         | 001                | www.ExternalReferenceURL.com | 540000                       | false                      |
+      | ALBERTA        | BPartnerLocation | l22                |                              | 540000                       | true                       |
+      | ALBERTA        | UserID           | c11                |                              | 540000                       | true                       |
+      | ALBERTA        | UserID           | c22                |                              | 540000                       | true                       |
+      | ALBERTA        | Greeting         | greetingTest261023 |                              |                              |                            |
     And validate C_BPartner_Stats
       | C_BPartner_ID.Identifier | OPT.SOCreditStatus | OPT.SO_CreditUsed |
       | created_bpartner         | W                  | 0                 |
@@ -380,7 +391,12 @@ Feature: create or update BPartner v2
          "purchase":false,
          "purchaseDefault":false,
          "subjectMatter":false,
-         "invoiceEmailEnabled":false
+         "invoiceEmailEnabled":false,
+         "greeting": {
+           "name": "test_name_261023",
+           "greeting": "test_greeting_261023",
+           "letterSalutation": "test_salutation_261023"
+         }
       },
       {
          "active":true,
@@ -526,6 +542,7 @@ Feature: create or update BPartner v2
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
+
 {
    "requestItems":[
       {
@@ -541,7 +558,15 @@ Feature: create or update BPartner v2
                         "name":"test_name_c11_updated",
                         "email":"test_email_updated",
                         "fax":"fax_updated",
-                        "invoiceEmailEnabled" : true
+                        "invoiceEmailEnabled" : true,
+                        "greeting": {
+                          "greetingInfo": {
+                            "greeting": "test_greeting_261023_updated",
+                            "letterSalutation": "test_salutation_261023_updated",
+                            "name": "test_name_261023_updated"
+                          },
+                          "identifier": "ext-ALBERTA-greetingCPTest1"
+                        }
                      }
                   }
                ]
@@ -561,7 +586,22 @@ Feature: create or update BPartner v2
     And verify that S_ExternalReference was created
       | ExternalSystem | Type   | ExternalReference | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | UserID | c11               | false                      |
-
+    And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
+    Then the metasfresh REST-API responds with
+"""
+{
+  "contacts": [
+    {
+      "greeting": {
+        "name": "test_name_261023_updated",
+        "greeting": "test_greeting_261023_updated",
+        "letterSalutation": "test_salutation_261023_updated"
+      }
+    },
+    {}
+  ]
+}
+"""
   @Id:S0285_400
   Scenario: Update a BPartner contact record and Create another contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -726,13 +766,13 @@ Feature: create or update BPartner v2
 
   @Id:S0285_700
   Scenario: Create BPartner Account record,
-    using all supported external identifier formats:
-    - external reference
-    - iban
-    - qr_iban
-    validating:
-    - bank account creation
-    - external external reference creation
+  using all supported external identifier formats:
+  - external reference
+  - iban
+  - qr_iban
+  validating:
+  - bank account creation
+  - external external reference creation
   -> then update account records
   -> then validate retrieval
   -> then update account record with IfNotExists = FAIL & unknown identifier
@@ -962,6 +1002,47 @@ Feature: create or update BPartner v2
               "identifier": "ext-ALBERTA-BPACCT_S0285_700_MISSING",
               "iban": "DOESNT_MATTER",
               "currencyCode": "EUR"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "FAIL",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+
+  Scenario: Update a BPartner contact record with a missing greeting, expecting error
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '422' status code
+    """
+
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "bpartnerComposite": {
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11_updated",
+                "email": "test_email_updated",
+                "fax": "fax_updated",
+                "invoiceEmailEnabled": true,
+                "greeting": {
+                  "greetingInfo": {
+                    "greeting": "test_greeting_261023_updated",
+                    "letterSalutation": "test_salutation_261023_updated",
+                    "name": "test_name_261023_updated"
+                  },
+                  "identifier": "ext-ALBERTA-greetingCPTest1_missing"
+                }
+              }
             }
           ]
         }

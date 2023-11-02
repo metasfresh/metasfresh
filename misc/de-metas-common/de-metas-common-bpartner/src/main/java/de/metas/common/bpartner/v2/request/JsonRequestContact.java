@@ -185,6 +185,16 @@ public class JsonRequestContact
 	@Schema(hidden = true)
 	private boolean birthdaySet;
 
+	@ApiModelProperty(position = 240,  //
+			value = "This translates to `AD_User.C_Greeting`.")
+	private JsonRequestGreetingUpsertItem greeting;
+
+	@ApiModelProperty(hidden = true)
+	private boolean greetingSet;
+
+	@ApiModelProperty(position = 250, // shall be last
+			value = "Sync advise about this contact's individual properties.\n"
+					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	@Schema(hidden = true)
@@ -353,5 +363,11 @@ public class JsonRequestContact
 	{
 		this.phone2 = phone2;
 		this.phone2Set = true;
+	}
+
+	public void setGreeting(@Nullable final JsonRequestGreetingUpsertItem greeting)
+	{
+		this.greeting = greeting;
+		greetingSet = true;
 	}
 }

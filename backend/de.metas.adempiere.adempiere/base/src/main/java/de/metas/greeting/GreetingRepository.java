@@ -3,6 +3,7 @@ package de.metas.greeting;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,6 +50,12 @@ public class GreetingRepository
 		return getGreetingsMap().getById(id);
 	}
 
+	@NonNull
+	public Optional<Greeting> getByName(@NonNull final String name)
+	{
+		return getGreetingsMap().getByName(name);
+	}
+
 	private GreetingsMap getGreetingsMap()
 	{
 		return cache.getOrLoad(0, this::retrieveGreetingsMap);
@@ -71,6 +78,7 @@ public class GreetingRepository
 		return new GreetingsMap(list);
 	}
 
+	@NonNull
 	private static Greeting fromRecord(@NonNull final I_C_Greeting record)
 	{
 		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(record);
@@ -80,17 +88,22 @@ public class GreetingRepository
 				.name(record.getName())
 				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
 				.standardType(GreetingStandardType.ofNullableCode(record.getGreetingStandardType()))
+				.letterSalutation(record.getLetter_Salutation())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.active(record.isActive())
 				.build();
 	}
 
-	public Greeting createGreeting(@NonNull final CreateGreetingRequest request)
+	public Greeting upsertGreeting(@NonNull final UpsertGreetingRequest request)
 	{
-		final I_C_Greeting record = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
+		final I_C_Greeting record = InterfaceWrapperHelper.loadOrNew(request.getGreetingId(), I_C_Greeting.class);
+
 		record.setName(request.getName());
 		record.setGreeting(request.getGreeting());
 		record.setGreetingStandardType(GreetingStandardType.toCode(request.getStandardType()));
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setLetter_Salutation(request.getLetterSalutation());
+
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return fromRecord(record);

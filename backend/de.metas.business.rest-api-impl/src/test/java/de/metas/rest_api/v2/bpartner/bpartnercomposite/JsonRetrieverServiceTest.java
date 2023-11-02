@@ -42,6 +42,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.sectionCode.SectionCodeService;
@@ -108,7 +109,8 @@ class JsonRetrieverServiceTest
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				new BPartnerCreditLimitRepository());
+				new BPartnerCreditLimitRepository(),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

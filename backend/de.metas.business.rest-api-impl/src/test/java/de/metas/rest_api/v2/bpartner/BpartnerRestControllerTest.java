@@ -198,7 +198,8 @@ class BpartnerRestControllerTest
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
 				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				bPartnerCreditLimitRepository);
+				bPartnerCreditLimitRepository,
+				new JsonGreetingService(new GreetingRepository(), externalReferenceRestControllerService));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

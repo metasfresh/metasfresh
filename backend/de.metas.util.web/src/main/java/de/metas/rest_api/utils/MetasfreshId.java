@@ -33,6 +33,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.Function;
+
 @Value
 public class MetasfreshId
 {
@@ -76,7 +80,7 @@ public class MetasfreshId
 
 		return of(id);
 	}
-	
+
 	public static MetasfreshId of(@NonNull final RepoIdAware id)
 	{
 		return new MetasfreshId(id.getRepoId());
@@ -120,5 +124,11 @@ public class MetasfreshId
 	public static boolean equals(@Nullable final MetasfreshId id1, @Nullable final MetasfreshId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	@NonNull
+	public <T extends RepoIdAware> T mapToRepoId(@NonNull final Function<Integer, T> mappingFunction)
+	{
+		return mappingFunction.apply(value);
 	}
 }
