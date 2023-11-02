@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
 
   Background:
