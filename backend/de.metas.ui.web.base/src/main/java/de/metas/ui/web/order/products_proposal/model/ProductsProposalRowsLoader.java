@@ -180,6 +180,7 @@ public final class ProductsProposalRowsLoader
 		return ProductsProposalRowsData.builder()
 				.nextRowIdSequence(nextRowIdSequence)
 				.campaignPriceProvider(campaignPriceProvider)
+				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.singlePriceListVersionId(singlePriceListVersionId)
 				.basePriceListVersionId(basePriceListVersionId)
@@ -212,7 +213,7 @@ public final class ProductsProposalRowsLoader
 		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.collect(ImmutableList.toImmutableList());
-		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLine(order, productPrices);
+		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
 		return productPrices
 				.stream()
 				.map(this::toProductsProposalRowOrNull)

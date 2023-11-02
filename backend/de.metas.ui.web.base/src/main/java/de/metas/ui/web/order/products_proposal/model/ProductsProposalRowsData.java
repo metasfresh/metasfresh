@@ -8,6 +8,7 @@ import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
@@ -16,6 +17,8 @@ import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilte
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderLine;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.template.IEditableRowsData;
@@ -68,6 +71,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final DocumentIdIntSequence nextRowIdSequence;
 	private final CampaignPriceProvider campaignPriceProvider;
 
+	private final OrderProductProposalsService orderProductProposalsService;
+
 	private ArrayList<DocumentId> rowIdsOrderedAndFiltered;
 	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
 	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
@@ -89,12 +94,15 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Getter
 	private final ViewHeaderProperties headerProperties;
 
+	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
+
 	private ProductsProposalViewFilter filter = ProductsProposalViewFilter.ANY;
 
 	@Builder
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
@@ -109,6 +117,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
+		this.orderProductProposalsService = orderProductProposalsService;
 
 		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
 		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
@@ -222,12 +231,16 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
+		final List<ProductPriceId> productPriceIds = requests.stream()
+				.map(request -> request.getCopiedFromProductPriceId())
+				.collect(ImmutableList.toImmutableList());
+
+		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPricesId(getOrder().orElse(null), productPriceIds);
 		requests.forEach(this::addOrUpdateRow);
 	}
 
 	private synchronized void addOrUpdateRow(@NonNull final ProductsProposalRowAddRequest request)
 	{
-
 		final ProductsProposalRow existingRow = getRowByProductAndASI(request.getProductId(), request.getAsiDescription())
 				.orElse(null);
 		if (existingRow != null)
@@ -267,7 +280,9 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
-				.build();
+				.build()
+
+				.withExistingOrderLine(bestMatchingProductPriceIdToOrderLine.get(request.getCopiedFromProductPriceId()));
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)

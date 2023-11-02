@@ -120,13 +120,20 @@ public class ProductPriceRepository
 	}
 
 	@NonNull
-	private I_M_ProductPrice getRecordById(@NonNull final ProductPriceId productPriceId)
+	public I_M_ProductPrice getRecordById(@NonNull final ProductPriceId productPriceId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPriceId.getRepoId())
 				.create()
 				.firstOnlyNotNull(I_M_ProductPrice.class);
+	}
+
+	@NonNull
+	 public <T extends I_M_ProductPrice> T getRecordById(@NonNull final ProductPriceId productPriceId, @NonNull final Class<T> productPriceClass)
+	{
+
+		return InterfaceWrapperHelper.load(productPriceId, productPriceClass);
 	}
 
 	@NonNull

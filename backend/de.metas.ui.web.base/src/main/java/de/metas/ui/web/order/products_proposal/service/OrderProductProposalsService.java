@@ -17,6 +17,7 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -34,6 +35,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -66,12 +68,16 @@ public class OrderProductProposalsService
 	private final IBPartnerBL bpartnersService;
 	private final CurrencyRepository currencyRepo;
 
+	private final ProductPriceRepository productPriceRepository;
+
 	public OrderProductProposalsService(
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final CurrencyRepository currencyRepo)
+			@NonNull final CurrencyRepository currencyRepo,
+			@NonNull final ProductPriceRepository productPriceRepository)
 	{
 		this.bpartnersService = bpartnersService;
 		this.currencyRepo = currencyRepo;
+		this.productPriceRepository = productPriceRepository;
 	}
 
 	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
@@ -104,9 +110,9 @@ public class OrderProductProposalsService
 				.countryId(CountryId.ofRepoIdOrNull(priceList.getC_Country_ID()))
 				.currency(currencyRepo.getById(priceList.getC_Currency_ID()))
 				.lines(ordersRepo.retrieveOrderLines(orderId, I_C_OrderLine.class)
-						.stream()
-						.map(this::toOrderLine)
-						.collect(ImmutableList.toImmutableList()))
+							   .stream()
+							   .map(this::toOrderLine)
+							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -129,7 +135,7 @@ public class OrderProductProposalsService
 				.build();
 	}
 
-	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLine(final Order order, final List<I_M_ProductPrice> productPrices)
+	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPrices(final Order order, final List<I_M_ProductPrice> productPrices)
 	{
 		if (order == null)
 		{
@@ -149,6 +155,20 @@ public class OrderProductProposalsService
 		return result;
 	}
 
+
+	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPricesId(final Order order, final List<ProductPriceId> productPriceIds)
+	{
+		if (order == null)
+		{
+			return Collections.emptyMap();
+		}
+
+		final List<I_M_ProductPrice> productPrices = productPriceIds.stream()
+				.map(productPriceId -> productPriceRepository.getRecordById(productPriceId, I_M_ProductPrice.class))
+				.collect(Collectors.toList());
+
+		return findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+	}
 	public AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
 	{
 		return AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
