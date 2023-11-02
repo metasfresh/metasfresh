@@ -17,6 +17,7 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
+    CatchWeight: 'Gewicht',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     scanQRCode: 'QR scannen',
@@ -45,6 +46,7 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
     },
   },
   activities: {
@@ -64,6 +66,7 @@ const translations = {
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
+      Workplace: 'Arbeitsplatz',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

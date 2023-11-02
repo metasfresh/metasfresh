@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Workplace;
 import org.springframework.stereotype.Repository;
 
@@ -44,21 +45,30 @@ public class WorkplaceRepository
 			.tableName(I_C_Workplace.Table_Name)
 			.build();
 
+	@NonNull
 	public Workplace getById(@NonNull final WorkplaceId id)
 	{
 		return getMap().getById(id);
 	}
 
+	@NonNull
 	public Collection<Workplace> getByIds(final Collection<WorkplaceId> ids)
 	{
 		return getMap().getByIds(ids);
 	}
 
+	public boolean isAnyWorkplaceActive()
+	{
+		return !getMap().isEmpty();
+	}
+
+	@NonNull
 	private WorkplacesMap getMap()
 	{
 		return cache.getOrLoad(0, this::retrieveMap);
 	}
 
+	@NonNull
 	private WorkplacesMap retrieveMap()
 	{
 		final ImmutableList<Workplace> list = queryBL.createQueryBuilder(I_C_Workplace.class)
@@ -71,11 +81,13 @@ public class WorkplaceRepository
 		return new WorkplacesMap(list);
 	}
 
+	@NonNull
 	private static Workplace fromRecord(final I_C_Workplace record)
 	{
 		return Workplace.builder()
 				.id(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.name(record.getName())
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
 				.build();
 	}
 
@@ -88,6 +100,7 @@ public class WorkplaceRepository
 			this.byId = Maps.uniqueIndex(list, Workplace::getId);
 		}
 
+		@NonNull
 		public Workplace getById(final WorkplaceId id)
 		{
 			final Workplace workplace = byId.get(id);
@@ -108,6 +121,11 @@ public class WorkplaceRepository
 			return ids.stream()
 					.map(this::getById)
 					.collect(ImmutableList.toImmutableList());
+		}
+
+		public boolean isEmpty()
+		{
+			return byId.isEmpty();
 		}
 	}
 }

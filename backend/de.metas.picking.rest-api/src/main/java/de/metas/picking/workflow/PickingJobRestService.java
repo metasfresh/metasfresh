@@ -22,14 +22,13 @@
 
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
@@ -57,11 +56,10 @@ public class PickingJobRestService
 		return pickingJobService.getById(pickingJobId);
 	}
 
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(
-			@NonNull final UserId userId,
-			@NonNull final ImmutableSet<BPartnerId> onlyCustomerIds)
+	@NonNull
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final PickingJobReferenceQuery query)
 	{
-		return pickingJobService.streamDraftPickingJobReferences(userId, onlyCustomerIds);
+		return pickingJobService.streamDraftPickingJobReferences(query);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)

@@ -1,12 +1,6 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -20,6 +14,11 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -82,11 +81,13 @@ public class Order
 
 	public Optional<OrderLine> getFirstMatchingOrderLine(
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@Nullable final HUPIItemProductId packingMaterialId,
+			@NonNull Predicate<OrderLine> asiMatcher)
 	{
 		return getLines()
 				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId))
+				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
+
 				.findFirst();
 	}
 

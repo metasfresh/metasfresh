@@ -2,6 +2,7 @@ package de.metas.ui.web.order.products_proposal.service;
 
 import java.time.ZonedDateTime;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
@@ -110,6 +111,7 @@ public class OrderProductProposalsService
 				.qtyEnteredCU(record.getQtyEntered())
 				.qtyEnteredTU(record.getQtyEnteredTU().intValue())
 				.description(record.getDescription())
+				.asiId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
 				.build();
 	}
 }

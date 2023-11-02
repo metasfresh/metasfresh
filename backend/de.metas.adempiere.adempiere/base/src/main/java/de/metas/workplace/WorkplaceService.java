@@ -22,19 +22,49 @@
 
 package de.metas.workplace;
 
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class WorkplaceService
 {
-	@NonNull private final WorkplaceRepository workplaceRepository;
+	@NonNull
+	private final WorkplaceRepository workplaceRepository;
+	@NonNull
+	private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
 
-	public Workplace getById(@NonNull final WorkplaceId id) {return workplaceRepository.getById(id);}
+	@NonNull
+	public Workplace getById(@NonNull final WorkplaceId id)
+	{
+		return workplaceRepository.getById(id);
+	}
 
-	public Collection<Workplace> getByIds(final Collection<WorkplaceId> ids) {return workplaceRepository.getByIds(ids);}
+	@NonNull
+	public Collection<Workplace> getByIds(final Collection<WorkplaceId> ids)
+	{
+		return workplaceRepository.getByIds(ids);
+	}
+
+	@NonNull
+	public Optional<Workplace> getWorkplaceByUserId(@NonNull final UserId userId)
+	{
+		return workplaceUserAssignRepository.getWorkplaceIdByUserId(userId)
+				.map(workplaceRepository::getById);
+	}
+
+	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		workplaceUserAssignRepository.create(request);
+	}
+
+	public boolean isAnyWorkplaceActive()
+	{
+		return workplaceRepository.isAnyWorkplaceActive();
+	}
 }
