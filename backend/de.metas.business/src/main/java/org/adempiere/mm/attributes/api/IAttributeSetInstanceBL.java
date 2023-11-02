@@ -133,4 +133,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
 
 	String getAttributeValueOrNull(@NonNull AttributeCode attributeCode, @NonNull AttributeSetInstanceId asiId);
+
+	boolean asiValuesMatchOrEmpty(@NonNull AttributeSetInstanceId asiId1, @NonNull AttributeSetInstanceId asiId2);
 }

@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -103,7 +105,7 @@ public class ProductsProposalRow implements IViewRow
 	private final boolean isCampaignPrice;
 
 	/**
-	 * This and the following fields with {@link Displayed#FALSE} can be activated programatically via sysconfig; 
+	 * This and the following fields with {@link Displayed#FALSE} can be activated programatically via sysconfig;
 	 * see {@link de.metas.ui.web.order.products_proposal.view.OrderProductsProposalViewFactory#createViewLayout(ProductsProposalViewFactoryTemplate.ViewLayoutKey)}.
 	 */
 	public static final String FIELD_BPartner = "bpartner";
@@ -159,6 +161,12 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductProposalPrice price;
 
 	@Getter
+	private final AttributeSetInstanceId asiId;
+
+	@Getter
+	private final Predicate<OrderLine> asiMatcher;
+
+	@Getter
 	private final OrderLineId existingOrderLineId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
@@ -180,6 +188,8 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final ITranslatableString packingDescription,
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
+			@Nullable final AttributeSetInstanceId asiId,
+			@Nullable final Predicate<OrderLine> asiMatcher,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
@@ -205,6 +215,8 @@ public class ProductsProposalRow implements IViewRow
 		this.packingDescription = packingDescription;
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
+		this.asiId = asiId;
+		this.asiMatcher = asiMatcher;
 
 		this.price = price;
 		this.isCampaignPrice = price.isCampaignPriceUsed();
@@ -342,7 +354,9 @@ public class ProductsProposalRow implements IViewRow
 			return this;
 		}
 
-		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(), getPackingMaterialId()).orElse(null);
+		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(),
+																			getPackingMaterialId(),
+																			asiMatcher).orElse(null);
 		if (existingOrderLine == null)
 		{
 			return this;

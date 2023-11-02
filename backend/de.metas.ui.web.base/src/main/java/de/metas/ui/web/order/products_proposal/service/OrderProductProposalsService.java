@@ -36,6 +36,7 @@ import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
@@ -215,6 +216,7 @@ public class OrderProductProposalsService
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.description(record.getDescription())
+				.asiId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
 				.build();
 	}
 

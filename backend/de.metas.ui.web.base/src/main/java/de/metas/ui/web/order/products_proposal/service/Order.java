@@ -21,6 +21,11 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -93,11 +98,13 @@ public class Order
 
 	public Optional<OrderLine> getFirstMatchingOrderLine(
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@Nullable final HUPIItemProductId packingMaterialId,
+			@NonNull Predicate<OrderLine> asiMatcher)
 	{
 		return getLines()
 				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId))
+				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
+
 				.findFirst();
 	}
 
