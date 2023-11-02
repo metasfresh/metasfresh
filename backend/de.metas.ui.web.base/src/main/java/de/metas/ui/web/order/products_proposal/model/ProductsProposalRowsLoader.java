@@ -238,7 +238,12 @@ public final class ProductsProposalRowsLoader
 	{
 		final AttributesKey olAk = getAttributesKeyFor(olAsiId);
 		final AttributesKey ppAk = getAttributesKeyFor(productPriceAsiId);
-		return olAk.intersectWith(ppAk).getParts().size();
+		final AttributesKey attributesKey = olAk.getIntersection(ppAk);
+		if (attributesKey.isNone())
+		{
+			return 0;
+		}
+		return attributesKey.getParts().size();
 	}
 
 	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
@@ -271,6 +276,7 @@ public final class ProductsProposalRowsLoader
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
+				.asiId(extractProductASI(record))
 				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later

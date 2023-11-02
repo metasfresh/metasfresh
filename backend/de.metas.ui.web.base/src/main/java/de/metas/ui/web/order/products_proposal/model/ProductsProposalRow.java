@@ -282,7 +282,10 @@ public class ProductsProposalRow implements IViewRow
 
 	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
 	{
-
+		if(existingOrderLine == null)
+		{
+			return this;
+		}
 		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), existingOrderLine.getCurrency().getCurrencyCode());
 
 		return toBuilder()

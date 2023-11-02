@@ -115,7 +115,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public static AttributesKey ofParts(final AttributesKeyPart... partsArray)
 	{
-		if (partsArray == null | partsArray.length == 0)
+		if (partsArray == null || partsArray.length == 0)
 		{
 			return NONE;
 		}
@@ -127,7 +127,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public static AttributesKey ofParts(final Collection<AttributesKeyPart> parts)
 	{
-		if (parts == null | parts.isEmpty())
+		if (parts == null || parts.isEmpty())
 		{
 			return NONE;
 		}
@@ -232,7 +232,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 		return parts.containsAll(attributesKey.parts);
 	}
 
-	public AttributesKey intersectWith(@NonNull final AttributesKey attributesKey)
+	public AttributesKey getIntersection(@NonNull final AttributesKey attributesKey)
 	{
 		final HashSet<AttributesKeyPart> ownMutableParts = new HashSet<>(parts);
 		ownMutableParts.retainAll(attributesKey.parts);
