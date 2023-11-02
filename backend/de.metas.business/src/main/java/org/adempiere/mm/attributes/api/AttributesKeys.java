@@ -154,6 +154,16 @@ public final class AttributesKeys
 		return createAttributesKeyFromASI(attributeSetInstanceId, asiService()::isStorageRelevant);
 	}
 
+	public static Optional<AttributesKey> createAttributesKeyFromASIPricingAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		if (attributeSetInstanceId.isNone())
+		{
+			return Optional.empty();
+		}
+
+		return createAttributesKeyFromASI(attributeSetInstanceId, asiService()::isPricingRelevant);
+	}
+
 	private static Optional<AttributesKey> createAttributesKeyFromASI(
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final Predicate<? super I_M_AttributeInstance> additionalFilter)

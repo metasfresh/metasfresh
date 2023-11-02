@@ -296,7 +296,7 @@ public class ProductsProposalRow implements IViewRow
 
 		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(),
 																			getPackingMaterialId(),
-																			asiMatcher).orElse(null);
+																			getAsiId()).orElse(null);
 		if (existingOrderLine == null)
 		{
 			return this;

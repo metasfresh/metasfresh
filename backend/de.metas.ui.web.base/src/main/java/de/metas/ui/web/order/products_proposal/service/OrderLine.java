@@ -1,17 +1,18 @@
 package de.metas.ui.web.order.products_proposal.service;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.function.ToIntFunction;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -58,7 +59,7 @@ public class OrderLine
 	@NonNull
 	BigDecimal qtyEnteredCU;
 
-	@NonNull
+	@Nullable
 	AttributeSetInstanceId asiId;
 
 	int qtyEnteredTU;
@@ -68,13 +69,44 @@ public class OrderLine
 	boolean isMatching(
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull final Predicate<OrderLine> asiMatcher)
-
+			@Nullable final AttributeSetInstanceId asiId)
 	{
 		return ProductId.equals(this.productId, productId)
 				&& HUPIItemProductId.equals(
 				HUPIItemProductId.nullToVirtual(this.packingMaterialId),
 				HUPIItemProductId.nullToVirtual(packingMaterialId))
-				&& asiMatcher.test(this);
+				&& attributesMatch(asiId);
+	}
+
+	private boolean attributesMatch(@Nullable final AttributeSetInstanceId asiId)
+	{
+		if (getAsiId() == null || asiId == null)
+		{
+			return asiId == getAsiId();
+		}
+
+		final AttributesKey orderLineKey = AttributesKeys.createAttributesKeyFromASIPricingAttributes(this.asiId).orElse(AttributesKey.NONE);
+		final AttributesKey productProposalKey = AttributesKeys.createAttributesKeyFromASIPricingAttributes(asiId).orElse(AttributesKey.NONE);
+
+		final boolean orderLineCondition = orderLineKey.contains(productProposalKey);
+
+		boolean matches = orderLineCondition;
+		if (orderLineCondition)
+		{
+			if(!productProposalKey.isNone())
+			{
+				for (final AttributesKeyPart productProposalPart : productProposalKey.getParts())
+				{
+					if (!orderLineKey.getValueByAttributeId(productProposalPart.getAttributeId()).equals(productProposalPart.getValue()))
+					{
+						matches = false;
+						break;
+					}
+
+				}
+			}
+		}
+
+		return matches;
 	}
 }

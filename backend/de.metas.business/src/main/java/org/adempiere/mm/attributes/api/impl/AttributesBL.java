@@ -352,6 +352,13 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
+	public boolean isPricingRelevant(@NonNull final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return attribute.isPricingRelevant();
+	}
+
+	@Override
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
 		return attributesRepo.retrieveAttributeValueOrNull(attributeId, value);

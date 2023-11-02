@@ -14,6 +14,8 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.checkerframework.checker.units.qual.A;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -83,11 +85,11 @@ public class Order
 	public Optional<OrderLine> getFirstMatchingOrderLine(
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
+			@Nullable final AttributeSetInstanceId asiId)
 	{
 		return getLines()
 				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
+				.filter(line -> line.isMatching(productId, packingMaterialId, asiId))
 				.findFirst();
 	}
 

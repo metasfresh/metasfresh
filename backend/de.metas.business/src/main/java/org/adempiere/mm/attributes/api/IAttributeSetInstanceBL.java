@@ -118,6 +118,8 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
 
+	boolean isPricingRelevant(@NonNull I_M_AttributeInstance ai);
+
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
 	/**

@@ -96,6 +96,8 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
-	
+
+	boolean isPricingRelevant(@NonNull AttributeId attributeId);
+
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }

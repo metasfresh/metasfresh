@@ -45,6 +45,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+
 
 	@Override
 	public String buildDescription(@Nullable final I_M_AttributeSetInstance asi)
@@ -111,8 +113,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final AttributeListValue attributeValue)
 	{
-		// services
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 		final AttributeId attributeId = attributeValue.getAttributeId();
 
 		if (asiId.isNone())
@@ -221,7 +222,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void cloneASI(final Object to, final Object from)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 
 		final IAttributeSetInstanceAware toASIAware = attributeSetInstanceAwareFactoryService.createOrNull(to);
@@ -248,7 +248,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void cloneOrCreateASI(@Nullable final Object to, @Nullable final Object from)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 
 		final IAttributeSetInstanceAware toASIAware = attributeSetInstanceAwareFactoryService.createOrNull(to);
@@ -360,7 +359,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			final String stringValue = attributeSet.getValueAsString(attribute);
 			attributeInstance.setValue(stringValue);
 
-			final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, stringValue);
+			final AttributeListValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, stringValue);
 			attributeInstance.setM_AttributeValue_ID(attributeValue != null ? attributeValue.getId().getRepoId() : -1);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
@@ -380,7 +379,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			return "";
 		}
 
-		I_M_AttributeSetInstance asi = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
+		I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
 		return asi != null ? asi.getDescription() : "";
 	}
 
@@ -399,10 +398,15 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public boolean isStorageRelevant(@NonNull final I_M_AttributeInstance ai)
 	{
-		final IAttributesBL attributesService = Services.get(IAttributesBL.class);
-
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		return attributesService.isStorageRelevant(attributeId);
+	}
+
+	@Override
+	public boolean isPricingRelevant(@NonNull final I_M_AttributeInstance ai)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
+		return attributesService.isPricingRelevant(attributeId);
 	}
 
 	@Override
@@ -463,22 +467,22 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public boolean asiValuesMatchOrEmpty(@NonNull final AttributeSetInstanceId asiId1, @NonNull final AttributeSetInstanceId asiId2)
 	{
-		final List<I_M_AttributeInstance> attributeInstances1 = attributeDAO.retrieveAttributeInstances(asiId1).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
-		final List<I_M_AttributeInstance> attributeInstances2 = attributeDAO.retrieveAttributeInstances(asiId2).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
+		final List<I_M_AttributeInstance> orderlineAI = attributeDAO.retrieveAttributeInstances(asiId1).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
+		final List<I_M_AttributeInstance> productProposalAI = attributeDAO.retrieveAttributeInstances(asiId2).stream().filter(ai-> Check.isNotBlank(ai.getValue())).collect(ImmutableList.toImmutableList());
 
 		boolean matches = true;
 
 
-		for (final I_M_AttributeInstance attributeInstance1 : attributeInstances1)
+		for (final I_M_AttributeInstance olAI : orderlineAI)
 		{
-			final I_M_AttributeInstance attributeInstance2 = attributeDAO.retrieveAttributeInstance(asiId2, AttributeId.ofRepoId(attributeInstance1.getM_Attribute_ID()));
+			final I_M_AttributeInstance ppAI = attributeDAO.retrieveAttributeInstance(asiId2, AttributeId.ofRepoId(olAI.getM_Attribute_ID()));
 
-			if (attributeInstance2 == null)
+			if (ppAI == null)
 			{
 				continue;
 			}
 
-			if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+			if (!Objects.equals(olAI.getValue(), ppAI.getValue()))
 			{
 				matches = false;
 				break;
@@ -487,17 +491,17 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		if(matches)
 		{
-			for (final I_M_AttributeInstance attributeInstance2 : attributeInstances2)
+			for (final I_M_AttributeInstance ppAI : productProposalAI)
 			{
-				final I_M_AttributeInstance attributeInstance1 = attributeDAO.retrieveAttributeInstance(asiId1, AttributeId.ofRepoId(attributeInstance2.getM_Attribute_ID()));
+				final I_M_AttributeInstance olAI = attributeDAO.retrieveAttributeInstance(asiId1, AttributeId.ofRepoId(ppAI.getM_Attribute_ID()));
 
-				if (attributeInstance1 == null)
+				if (olAI == null)
 				{
 					matches = false;
 					break;
 				}
 
-				if (!Objects.equals(attributeInstance1.getValue(), attributeInstance2.getValue()))
+				if (!Objects.equals(olAI.getValue(), ppAI.getValue()))
 				{
 					matches = false;
 					break;
