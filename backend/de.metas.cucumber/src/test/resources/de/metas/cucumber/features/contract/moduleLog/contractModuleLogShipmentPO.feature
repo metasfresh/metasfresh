@@ -1,4 +1,5 @@
-Feature: Modular contract log from shipment
+@ghActions:run_on_executor5
+Feature: Modular contract log from shipment (PO)
 
   Background:
     Given infrastructure and metasfresh are running
@@ -100,7 +101,7 @@ Feature: Modular contract log from shipment
       | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | modularContract_prod_S0303_100 | po_order_S0303_100             | poLine_S0303_100                   |
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier        | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | bp_moduleLogPO              | modularContract_prod_S0303_100 | poLine_S0303_100                   | po_order_S0303_100             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | bp_moduleLogPO              | modularContract_prod_S0303_100 | poLine_S0303_100                   | po_order_S0303_100             | PCE                   | 20                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
@@ -220,7 +221,7 @@ Feature: Modular contract log from shipment
       | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | modularContract_prod_S0303_200 | po_order_S0303_200             | poLine_S0303_200                   |
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier        | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | bp_moduleLogPO              | modularContract_prod_S0303_200 | poLine_S0303_200                   | po_order_S0303_200             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | bp_moduleLogPO              | modularContract_prod_S0303_200 | poLine_S0303_200                   | po_order_S0303_200             | PCE                   | 20                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |

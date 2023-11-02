@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 453737637L;
+	private static final long serialVersionUID = 608652765L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -35,7 +35,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	/** 
-	 * createShipmentPolicy AD_Reference_ID=541839
+	 * CreateShipmentPolicy AD_Reference_ID=541839
 	 * Reference name: Create Shipment Policy
 	 */
 	public static final int CREATESHIPMENTPOLICY_AD_Reference_ID=541839;
@@ -46,15 +46,27 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	/** CREATE_AND_COMPLETE = CO */
 	public static final String CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE = "CO";
 	@Override
-	public void setCreateShipmentPolicy(final java.lang.String CreateShipmentPolicy)
+	public void setCreateShipmentPolicy (final java.lang.String CreateShipmentPolicy)
 	{
 		set_Value (COLUMNNAME_CreateShipmentPolicy, CreateShipmentPolicy);
 	}
 
 	@Override
-	public java.lang.String getCreateShipmentPolicy()
+	public java.lang.String getCreateShipmentPolicy() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreateShipmentPolicy);
+	}
+
+	@Override
+	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public boolean isAllowPickingAnyHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
 	}
 
 	@Override

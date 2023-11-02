@@ -60,12 +60,11 @@ import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_Picking_Config_V2;
 import de.metas.printing.DoNothingMassPrintingService;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
-import de.metas.test.SnapshotFunctionFactory;
+import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -91,7 +90,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -99,7 +97,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PickingJobTestHelper
 {
-	public static final Function<Object, String> snapshotSerializeFunction = SnapshotFunctionFactory.newFunction();
+	public static final MetasfreshSnapshotFunction snapshotSerializer = new MetasfreshSnapshotFunction();
 
 	//
 	// Services
@@ -142,7 +140,7 @@ public class PickingJobTestHelper
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService(DoNothingMassPrintingService.instance));
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -158,12 +156,11 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(
-								huQRCodesRepository,
-								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						huQRCodeService
 				),
 				pickingConfigRepo,
-				ShipmentService.getInstance());
+				ShipmentService.getInstance(),
+				huQRCodeService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -230,6 +227,7 @@ public class PickingJobTestHelper
 		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void createPickingConfigV2(final boolean considerAttributes)
 	{
 		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
@@ -323,11 +321,6 @@ public class PickingJobTestHelper
 		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
 	}
 
-	public HuId createVHU(final ProductId productId, final Quantity qty)
-	{
-		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
-	}
-
 	public HuId createHU(final HuPackingInstructionsId huPackingInstructionsId, final ProductId productId, final Quantity qty)
 	{
 		final IHUProducerAllocationDestination destination;
@@ -418,12 +411,12 @@ public class PickingJobTestHelper
 
 	public TestRecorder newTestRecorder()
 	{
-		return new TestRecorder(huTracer, snapshotSerializeFunction);
+		return new TestRecorder(huTracer, snapshotSerializer::toJson);
 	}
 
 	public String toJson(final Object obj)
 	{
-		return snapshotSerializeFunction.apply(obj);
+		return snapshotSerializer.toJson(obj);
 	}
 
 	public void dumpHU(final String title, final HuId huId)

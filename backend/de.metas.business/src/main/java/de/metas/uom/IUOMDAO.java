@@ -86,4 +86,6 @@ public interface IUOMDAO extends ISingletonService
 	 */
 	@NonNull
 	Optional<I_C_UOM> getBySymbol(@NonNull String uomSymbol);
+
+	ITranslatableString getUOMSymbolById(@NonNull UomId uomId);
 }

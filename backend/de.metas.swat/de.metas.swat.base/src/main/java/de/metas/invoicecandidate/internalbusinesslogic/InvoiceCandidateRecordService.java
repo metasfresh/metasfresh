@@ -106,7 +106,7 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))

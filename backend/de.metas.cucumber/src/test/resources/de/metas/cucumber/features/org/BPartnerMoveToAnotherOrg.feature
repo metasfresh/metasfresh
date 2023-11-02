@@ -1,5 +1,6 @@
 @from:cucumber
 @Id:S0288
+@ghActions:run_on_executor6
 Feature: Process C_BPartner_MoveToAnotherOrg
 
   Background:

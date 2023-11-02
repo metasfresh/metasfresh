@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -181852005L;
+	private static final long serialVersionUID = -2050160718L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -81,6 +81,21 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getBPartnerValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerValue);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
 	@Override
@@ -345,6 +360,14 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_RD = "RD";
 	/** Cost Estimate = CE */
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
+	/** Kreditoren Nachbelastung = NBK */
+	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** LS = LS */
+	public static final String DOCSUBTYPE_LS = "LS";
+	/** Payment service provider invoice = SI */
+	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
+	/** CallOrder = CAO */
+	public static final String DOCSUBTYPE_CallOrder = "CAO";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -382,6 +405,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getFreightCostRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_FreightCostRule);
+	}
+
+	@Override
+	public void setIsCatchWeight (final boolean IsCatchWeight)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsCatchWeight, IsCatchWeight);
+	}
+
+	@Override
+	public boolean isCatchWeight() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
 
 	@Override

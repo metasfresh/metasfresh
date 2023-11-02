@@ -45,6 +45,7 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -57,6 +58,7 @@ import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
+import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
@@ -1753,6 +1755,11 @@ public class DB
 	 */
 	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return POJOLookupMap.get().nextId(TableName);
+		}
+
 		final boolean useNativeSequences = DB.isUseNativeSequences(AD_Client_ID, TableName);
 		if (useNativeSequences)
 		{

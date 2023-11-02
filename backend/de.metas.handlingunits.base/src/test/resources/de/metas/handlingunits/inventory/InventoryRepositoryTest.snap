@@ -19,27 +19,15 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
             "huId": 100,
             "id": 1000000,
             "inventoryType": "PHYSICAL",
-            "qtyBook": {
-              "qty": "10",
-              "uomId": 1000000
-            },
-            "qtyCount": {
-              "qty": "1",
-              "uomId": 1000000
-            }
+            "qtyBook": "10 Ea",
+            "qtyCount": "1 Ea"
           },
           {
             "huId": 200,
             "id": 1000001,
             "inventoryType": "PHYSICAL",
-            "qtyBook": {
-              "qty": "20",
-              "uomId": 1000000
-            },
-            "qtyCount": {
-              "qty": "2",
-              "uomId": 1000000
-            }
+            "qtyBook": "20 Ea",
+            "qtyCount": "2 Ea"
           }
         ],
         "inventoryType": "PHYSICAL",
@@ -49,7 +37,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],
-    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
+    "movementDate": "2020-06-15T00:00:00-08:00",
     "orgId": 1000000
   }
 ]

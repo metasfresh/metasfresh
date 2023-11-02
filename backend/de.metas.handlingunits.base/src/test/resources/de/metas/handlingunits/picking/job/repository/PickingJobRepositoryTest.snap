@@ -2,17 +2,19 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   {
     "docStatus": "Drafted",
     "header": {
+      "allowPickingAnyHU": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
         "bpartnerId": 3,
         "repoId": 4
       },
-      "deliveryDate": "2021-11-02T07:39:16Z[Europe/London]",
+      "deliveryDate": "2021-11-02T07:39:16Z",
       "deliveryRenderedAddress": "deliveryRenderedAddress",
+      "isAllowPickingAnyHU": false,
       "isPickingReviewRequired": false,
       "lockedBy": 5,
       "pickingReviewRequired": false,
-      "preparationDate": "2021-11-02T07:39:16Z[Europe/London]",
+      "preparationDate": "2021-11-02T07:39:16Z",
       "salesOrderDocumentNo": "docno-2"
     },
     "id": 1000000,
@@ -22,18 +24,18 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       {
         "id": 1000000,
         "productId": 6,
-        "productName": {
-          "anyLanguage": true,
-          "value": "productName-6"
-        },
+        "productName": "productName-6",
         "progress": "NOT_STARTED",
-        "qtyToPick": {
-          "qty": "100",
-          "uomId": 1000000
+        "qtyToPick": "100 Ea",
+        "salesOrderAndLineId": {
+          "orderId": 2,
+          "orderLineId": 8
         },
+        "shipmentScheduleId": 7,
         "steps": [
           {
             "id": 1000000,
+            "isGeneratedOnFly": false,
             "packToSpec": {
               "tuPackingInstructionsId": 6789
             },
@@ -92,15 +94,9 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
               "qtyPickedSum": null
             },
             "productId": 6,
-            "productName": {
-              "anyLanguage": true,
-              "value": "productName-6"
-            },
+            "productName": "productName-6",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100",
-              "uomId": 1000000
-            },
+            "qtyToPick": "100 Ea",
             "salesOrderAndLineId": {
               "orderId": 2,
               "orderLineId": 8
@@ -135,10 +131,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           }
         },
         "productId": 6,
-        "qtyAvailable": {
-          "qty": "999",
-          "uomId": 1000000
-        }
+        "qtyAvailable": "999 Ea"
       }
     ],
     "pickingSlot": null,

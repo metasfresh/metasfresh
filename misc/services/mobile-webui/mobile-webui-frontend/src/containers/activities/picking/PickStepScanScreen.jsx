@@ -42,6 +42,7 @@ const PickStepScanScreen = () => {
     postStepPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       huQRCode: scannedBarcode,
       qtyPicked: qty,

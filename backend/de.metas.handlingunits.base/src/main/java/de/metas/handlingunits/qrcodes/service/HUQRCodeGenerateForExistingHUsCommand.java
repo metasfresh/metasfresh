@@ -8,6 +8,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -15,10 +16,15 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import java.util.List;
+import java.util.Optional;
 
 public class HUQRCodeGenerateForExistingHUsCommand
 {
@@ -27,27 +33,47 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 
-	@NonNull private final HUQRCodeGenerateForExistingHUsRequest request;
+	@NonNull private final ImmutableSet<HuId> huIds;
 
 	private HUQRCodeGenerateCommand.Cache cache = null;
+
+	//
+	// Value Extractors
+	@FunctionalInterface
+	private interface AttributeExtractor
+	{
+		HUQRCodeGenerateRequest.Attribute extractAttribute(final ImmutableAttributeSet attributes, final AttributeCode attributeCode);
+	}
+
+	private static final AttributeExtractor LOCAL_DATE_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueDate(attributes.getValueAsLocalDate(attributeCode))
+			.build();
+	private static final AttributeExtractor STRING_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueString(attributes.getValueAsString(attributeCode))
+			.build();
+	private static final AttributeExtractor BIG_DECIMAL_EXTRACTOR = (attributes, attributeCode) -> HUQRCodeGenerateRequest.Attribute.builder()
+			.code(attributeCode)
+			.valueNumber(attributes.getValueAsBigDecimal(attributeCode))
+			.build();
 
 	@Builder
 	private HUQRCodeGenerateForExistingHUsCommand(
 			final @NonNull IHandlingUnitsBL handlingUnitsBL,
 			final @NonNull IProductBL productBL,
 			final @NonNull IAttributeDAO attributeDAO, final @NonNull HUQRCodesRepository huQRCodesRepository,
-			final @NonNull HUQRCodeGenerateForExistingHUsRequest request)
+			final @NonNull @Singular ImmutableSet<HuId> huIds)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.productBL = productBL;
 		this.attributeDAO = attributeDAO;
 		this.huQRCodesRepository = huQRCodesRepository;
-		this.request = request;
+		this.huIds = huIds;
 	}
 
 	public HUQRCodeGenerateForExistingHUsResult execute()
 	{
-		final ImmutableSet<HuId> huIds = request.getHuIds();
 		final ImmutableSetMultimap<HuId, HUQRCode> existingQRCodesByHuId = huQRCodesRepository.getQRCodeByHuIds(huIds);
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
 
@@ -101,7 +127,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.request(HUQRCodeGenerateRequest.builder()
 						.productId(getProductId(hu))
 						.huPackingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-						.attributes(ImmutableList.of()) // TODO extract relevant attributes from HU
+						.attributes(getHUQRCodeAttributes(hu))
 						.count(requiredQRCodesCount)
 						.build())
 				.build()
@@ -117,5 +143,28 @@ public class HUQRCodeGenerateForExistingHUsCommand
 			throw new AdempiereException("Only single product storages are supported");
 		}
 		return productId;
+	}
+
+	private ImmutableList<HUQRCodeGenerateRequest.Attribute> getHUQRCodeAttributes(final I_M_HU hu)
+	{
+		ImmutableList.Builder<HUQRCodeGenerateRequest.Attribute> result = ImmutableList.builder();
+
+		final ImmutableAttributeSet attributes = handlingUnitsBL.getImmutableAttributeSet(hu);
+
+		extractHUQRCodeAttribute(attributes, AttributeConstants.ATTR_BestBeforeDate, LOCAL_DATE_EXTRACTOR).ifPresent(result::add);
+		extractHUQRCodeAttribute(attributes, AttributeConstants.ATTR_LotNumber, STRING_EXTRACTOR).ifPresent(result::add);
+		extractHUQRCodeAttribute(attributes, Weightables.ATTR_WeightNet, BIG_DECIMAL_EXTRACTOR).ifPresent(result::add);
+
+		return result.build();
+	}
+
+	private Optional<HUQRCodeGenerateRequest.Attribute> extractHUQRCodeAttribute(
+			@NonNull final ImmutableAttributeSet attributes,
+			@NonNull final AttributeCode attributeCode,
+			@NonNull final AttributeExtractor attributeExtractor)
+	{
+		return attributes.hasAttribute(attributeCode)
+				? Optional.of(attributeExtractor.extractAttribute(attributes, attributeCode))
+				: Optional.empty();
 	}
 }

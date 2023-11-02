@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 
@@ -46,7 +47,8 @@ public class HUQRCodeGenerateRequest
 	@Builder
 	public static class Attribute
 	{
-		@NonNull AttributeId attributeId;
+		@Nullable AttributeId attributeId;
+		@Nullable AttributeCode code;
 
 		@Nullable String valueString;
 		@Nullable BigDecimal valueNumber;

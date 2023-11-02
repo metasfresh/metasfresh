@@ -1,5 +1,6 @@
 @Id:S0325
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Import Invoice Candidates via DataImportRestController
 
   Background:

@@ -82,7 +82,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCreateShipmentPolicy(java.lang.String createShipmentPolicy);
+	void setCreateShipmentPolicy (java.lang.String CreateShipmentPolicy);
 
 	/**
 	 * Get Create Shipment Policy.
@@ -94,7 +94,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	java.lang.String getCreateShipmentPolicy();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_createShipmentPolicy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "createShipmentPolicy", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_CreateShipmentPolicy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "CreateShipmentPolicy", null);
 	String COLUMNNAME_CreateShipmentPolicy = "CreateShipmentPolicy";
 
 	/**
@@ -119,6 +119,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsActive = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Allow Picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
+
+	/**
+	 * Get Allow Picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickingAnyHU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
+	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
 	 * Set Mobile UI Picking Profile.

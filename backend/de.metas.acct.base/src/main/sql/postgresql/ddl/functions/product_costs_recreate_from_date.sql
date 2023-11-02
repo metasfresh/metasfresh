@@ -165,6 +165,7 @@ BEGIN
                     ad_org_id
     FROM "de_metas_acct".accountable_docs_and_lines_v
     WHERE m_product_id = ANY (v_productIds)
+      AND tablename <> 'C_Invoice'
       AND dateacct >= p_StartDateAcct
       AND ad_client_id = 1000000;
     GET DIAGNOSTICS rowcount = ROW_COUNT;

@@ -94,6 +94,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
@@ -1212,5 +1213,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final WarehouseId warehouseIdByLocatorRepoId = warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
 		Check.assumeNotNull(warehouseIdByLocatorRepoId, "Warehouse cannot be determined for hu: {}", huId);
 		return warehouseIdByLocatorRepoId;
+	}
+
+	@Override
+	public LocatorId getLocatorId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return IHandlingUnitsBL.extractLocatorId(hu);
 	}
 }

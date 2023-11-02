@@ -1,5 +1,6 @@
 @dev:runThisOne
 @from:cucumber
+@ghActions:run_on_executor3
 Feature: import bank statement in camt53 import format
 
   Background:

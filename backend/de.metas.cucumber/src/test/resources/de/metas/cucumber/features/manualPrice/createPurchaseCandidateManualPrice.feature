@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: create Purchase Candidate having manual price set
   As a user
   I want to create a Purchase Candidate record with manual price set and a product without product price

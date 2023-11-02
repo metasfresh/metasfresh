@@ -112,7 +112,6 @@ import java.util.stream.Stream;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@VisibleForTesting
@@ -825,7 +824,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
-	 *                            task https://github.com/metasfresh/metasfresh/issues/298
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/298">issue 298</a>
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{
@@ -846,6 +845,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for " + olAndSched + "; \n"
 					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
+			//noinspection ThrowableNotThrown
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);
 			return BigDecimal.ONE.negate();
 		}
@@ -874,17 +874,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final boolean isCatchWeight = shipmentScheduleBL.isCatchWeight(sched);
-		if (!isCatchWeight)
-		{
-			sched.setCatch_UOM_ID(-1);
-			return;
-		}
+		final UomId catchUOMId = sched.isCatchWeight()
+				? productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID())).orElse(null)
+				: null;
 
-		final Optional<UomId> catchUOMId = productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
-		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
-
-		sched.setCatch_UOM_ID(catchUomRepoId);
+		sched.setCatch_UOM_ID(UomId.toRepoId(catchUOMId));
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)

@@ -1,6 +1,7 @@
 @Id:S0279
 @from:cucumber
 @Topic:countryBasedDocTypeSequence
+@ghActions:run_on_executor5
 Feature: countryBasedDocTypeSequence
 
   Background:

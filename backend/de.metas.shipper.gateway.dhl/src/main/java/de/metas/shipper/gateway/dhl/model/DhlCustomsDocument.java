@@ -22,49 +22,18 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import de.metas.customs.CustomsInvoiceId;
-import de.metas.customs.CustomsInvoiceLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.List;
 
 @Value
 @Builder
 public class DhlCustomsDocument
 {
-	@NonNull
-	String exportType; // probably should be "OTHER"
-	@NonNull
-	String exportTypeDescription; // todo what export type description should i put here????
-	//	@NonNull
-	//	String placeOfCommittal; // i think it should be the destination city
-	@NonNull
-	BigDecimal additionalFee; // not sure which column inside customs invoice refers to this
-
-	@NonNull
-	String electronicExportNotification; // no clue, but i guess it should always have value "1"
-
-	@NonNull
-	String packageDescription;
-	//	@NonNull
-	//	String countryCode2Origin; // this is the source bpartner country
-	@NonNull
-	String customsTariffNumber;
-	@NonNull
-	BigInteger customsAmount; // refers to the qty inside the package
-	@NonNull
-	BigDecimal netWeightInKg; // must be less than the weight!!
-	@NonNull
-	BigDecimal customsValue; // not sure which column inside customs invoice refers to this
-
-	// todo this should be changed to NonNull when i figure out how to get the CustomsInvoice
-	@Nullable
-	CustomsInvoiceId invoiceId;
-	@Nullable
-	CustomsInvoiceLineId invoiceLineId;
-
+	@Nullable String shipperEORI;
+	@Nullable String consigneeEORI;
+	@NonNull List<DhlCustomsItem> items;
 }

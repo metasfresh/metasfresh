@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseAndSubType;
@@ -46,7 +45,7 @@ import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
 import static de.metas.handlingunits.inventory.InventoryTestHelper.createStorageFor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -145,7 +144,7 @@ class DraftInventoryLinesCreatorTest
 		new DraftInventoryLinesCreator(ctx).execute();
 
 		final Inventory result = inventoryRepo.getById(inventoryId);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect.toMatchSnapshot(result);
 	}
 
 	@Test
@@ -153,7 +152,7 @@ class DraftInventoryLinesCreatorTest
 	{
 		final Inventory result = execute_MultipleHUInventoryLineAggregator_performTest();
 
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect.toMatchSnapshot(result);
 	}
 
 	/** Verifies that the creator also works if an inventory already has some lines/HUs*/
@@ -181,7 +180,7 @@ class DraftInventoryLinesCreatorTest
 				HuId.ofRepoId(200),
 				HuId.ofRepoId(300),
 				HuId.ofRepoId(305)/*newly added*/);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect.toMatchSnapshot(result);
 	}
 
 	private Inventory execute_MultipleHUInventoryLineAggregator_performTest()

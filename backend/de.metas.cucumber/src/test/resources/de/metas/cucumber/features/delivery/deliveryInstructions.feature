@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Generate delivery instructions from delivery plannings
 
   Background:
@@ -62,7 +63,7 @@ Feature: Generate delivery instructions from delivery plannings
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstruction_SO                | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | warehouseStdLocation                          | 2023-02-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstruction_SO
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageDI               | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
@@ -83,7 +84,7 @@ Feature: Generate delivery instructions from delivery plannings
       | deliveryInstructionRegenerated_SO     | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | warehouseStdLocation                          | 2023-02-10       | CO            |
       | deliveryInstruction_SO                | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | warehouseStdLocation                          | 2023-02-10       | VO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionRegenerated_SO
-      | M_Package_ID.Identifier | M_Product_ID.Identifier |
+      | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
       | packageDI_RE            | product                 |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |

@@ -26,12 +26,18 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.stream.Stream;
 
 @Repository
 public class MobileUIPickingUserProfileRepository
@@ -50,28 +56,79 @@ public class MobileUIPickingUserProfileRepository
 	@NonNull
 	private MobileUIPickingUserProfile retrieveProfile()
 	{
-		final I_MobileUI_UserProfile_Picking profile = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnly(I_MobileUI_UserProfile_Picking.class);
-
-		if (profile == null)
+		final I_MobileUI_UserProfile_Picking profileRecord = retrieveProfileRecord();
+		if (profileRecord == null)
 		{
 			return MobileUIPickingUserProfile.DEFAULT;
 		}
 
-		final ImmutableSet<BPartnerId> onlyBPartnerIds = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profile.getMobileUI_UserProfile_Picking_ID())
-				.create()
-				.stream()
-				.map(I_MobileUI_UserProfile_Picking_BPartner::getC_BPartner_ID)
-				.map(BPartnerId::ofRepoId)
+		final ImmutableSet<BPartnerId> onlyBPartnerIds = streamProfileBPartnerRecords(profileRecord)
+				.map(MobileUIPickingUserProfileRepository::extractBPartnerId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return MobileUIPickingUserProfile.builder()
+				.name(profileRecord.getName())
 				.onlyBPartnerIds(onlyBPartnerIds)
-				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profile.getCreateShipmentPolicy()))
+				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
+				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.build();
+	}
+
+	@Nullable
+	private I_MobileUI_UserProfile_Picking retrieveProfileRecord()
+	{
+		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_MobileUI_UserProfile_Picking.class);
+	}
+
+	private Stream<I_MobileUI_UserProfile_Picking_BPartner> streamProfileBPartnerRecords(final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream();
+	}
+
+	private static BPartnerId extractBPartnerId(final I_MobileUI_UserProfile_Picking_BPartner record)
+	{
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
+	}
+
+	public void save(@NonNull final MobileUIPickingUserProfile profile)
+	{
+		I_MobileUI_UserProfile_Picking profileRecord = retrieveProfileRecord();
+		if (profileRecord == null)
+		{
+			profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
+		}
+		profileRecord.setName(profile.getName());
+		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
+		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());
+		profileRecord.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(profileRecord);
+
+		final HashMap<BPartnerId, I_MobileUI_UserProfile_Picking_BPartner> profileBPartnerRecords = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
+				.addEqualsFilter(I_MobileUI_UserProfile_Picking_BPartner.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(MobileUIPickingUserProfileRepository::extractBPartnerId));
+
+		for (final BPartnerId bpartnerId : profile.getOnlyBPartnerIds())
+		{
+			I_MobileUI_UserProfile_Picking_BPartner profileBPartnerRecord = profileBPartnerRecords.remove(bpartnerId);
+			if (profileBPartnerRecord == null)
+			{
+				profileBPartnerRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_BPartner.class);
+				profileBPartnerRecord.setMobileUI_UserProfile_Picking_ID(profileRecord.getMobileUI_UserProfile_Picking_ID());
+			}
+			profileBPartnerRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			profileBPartnerRecord.setIsActive(true);
+			InterfaceWrapperHelper.saveRecord(profileBPartnerRecord);
+		}
+
+		InterfaceWrapperHelper.deleteAll(profileBPartnerRecords.values());
 	}
 }

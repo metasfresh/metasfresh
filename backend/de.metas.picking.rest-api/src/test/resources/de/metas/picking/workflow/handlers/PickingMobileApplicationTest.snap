@@ -17,7 +17,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -42,6 +45,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -58,6 +62,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -121,17 +126,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
       "3. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -141,18 +148,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -211,15 +218,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -228,6 +229,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -262,15 +264,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -305,10 +301,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -355,7 +348,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -380,6 +376,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -396,6 +393,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -459,17 +457,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
       "6. After ABORT - PickingJob": {
         "docStatus": "Voided",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -479,18 +479,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -549,15 +549,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -566,6 +560,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -600,15 +595,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -643,10 +632,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -701,7 +687,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -726,6 +715,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -742,6 +732,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -805,17 +796,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -825,18 +818,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -895,15 +888,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -912,6 +899,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -946,15 +934,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -989,10 +971,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -1047,7 +1026,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1072,6 +1054,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -1088,6 +1071,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -1151,17 +1135,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -1171,18 +1157,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1241,15 +1227,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1258,6 +1238,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1292,15 +1273,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1335,10 +1310,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -1385,7 +1357,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1414,6 +1389,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -1430,6 +1406,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -1493,17 +1470,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "5. After pick - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -1513,18 +1492,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "DONE",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1559,21 +1538,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        },
+                        "qtyPicked": "25 Kg",
                         "qtyRejected": {
-                          "qty": {
-                            "qty": "25",
-                            "uomId": 1000000
-                          },
+                          "qty": "25 Kg",
                           "reasonCode": "damaged"
                         }
                       }
@@ -1607,42 +1577,24 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        },
+                        "qtyPicked": "25 Kg",
                         "qtyRejected": {
-                          "qty": {
-                            "qty": "50",
-                            "uomId": 1000000
-                          },
+                          "qty": "50 Kg",
                           "reasonCode": "damaged"
                         }
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "50",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "50 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1651,6 +1603,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1685,35 +1638,20 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "25 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "25",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "25 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1748,10 +1686,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -1802,7 +1737,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1831,6 +1769,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -1847,6 +1786,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -1910,17 +1850,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "8. After Complete - PickingJob": {
         "docStatus": "Completed",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -1930,18 +1872,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "DONE",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1976,21 +1918,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        },
+                        "qtyPicked": "25 Kg",
                         "qtyRejected": {
-                          "qty": {
-                            "qty": "25",
-                            "uomId": 1000000
-                          },
+                          "qty": "25 Kg",
                           "reasonCode": "damaged"
                         }
                       }
@@ -2024,42 +1957,24 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        },
+                        "qtyPicked": "25 Kg",
                         "qtyRejected": {
-                          "qty": {
-                            "qty": "50",
-                            "uomId": 1000000
-                          },
+                          "qty": "50 Kg",
                           "reasonCode": "damaged"
                         }
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "50",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "50 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -2068,6 +1983,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -2102,35 +2018,20 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "25 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "25",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "25 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -2165,10 +2066,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -2227,7 +2125,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2252,6 +2153,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -2268,6 +2170,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -2348,7 +2251,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2373,6 +2279,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -2389,6 +2296,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -2452,17 +2360,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "11. After pick 2 - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -2472,18 +2382,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "DONE",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -2542,53 +2452,32 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "75.000",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "75.000 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "75.000",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "75.000 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -2597,6 +2486,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -2631,35 +2521,20 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000018,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000003,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "25 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "25",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "25 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -2694,10 +2569,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -2749,7 +2621,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2774,6 +2649,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -2790,6 +2666,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -2853,17 +2730,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "14. After Complete - PickingJob": {
         "docStatus": "Completed",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -2873,18 +2752,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "DONE",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -2943,53 +2822,32 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "75.000",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "75.000 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "75.000",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "75.000 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -2998,6 +2856,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3032,35 +2891,20 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000018,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000003,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "25 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "25",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "25 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3095,10 +2939,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -3133,17 +2974,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -3153,18 +2996,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3223,15 +3066,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3240,6 +3077,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3274,15 +3112,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3317,10 +3149,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -3372,7 +3201,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -3397,6 +3229,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -3413,6 +3246,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -3476,17 +3310,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "5. After Scan PickingSlot - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -3496,18 +3332,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3566,15 +3402,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3583,6 +3413,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3617,15 +3448,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3660,10 +3485,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -3718,7 +3540,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -3743,6 +3568,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -3759,6 +3585,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -3822,17 +3649,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "8. After pick 1 - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -3842,18 +3671,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "IN_PROGRESS",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -3912,53 +3741,32 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "75.000",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "75.000 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "75.000",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "75.000 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -3967,6 +3775,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4001,15 +3810,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4044,10 +3847,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -4102,7 +3902,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4127,6 +3930,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -4143,6 +3947,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -4223,7 +4028,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4248,6 +4056,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -4264,6 +4073,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -4327,17 +4137,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "11. After unpick - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -4347,18 +4159,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4417,15 +4229,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4434,6 +4240,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4468,15 +4275,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4511,10 +4312,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -4561,7 +4359,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4586,6 +4387,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -4602,6 +4404,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -4665,17 +4468,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "14. After ABORT - PickingJob": {
         "docStatus": "Voided",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -4685,18 +4490,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4755,15 +4560,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4772,6 +4571,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4806,15 +4606,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4849,10 +4643,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -4884,17 +4675,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -4904,18 +4697,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -4974,15 +4767,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -4991,6 +4778,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -5025,15 +4813,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -5068,10 +4850,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -5123,7 +4902,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -5148,6 +4930,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -5164,6 +4947,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -5227,17 +5011,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "5. After Scan PickingSlot - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -5247,18 +5033,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -5317,15 +5103,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -5334,6 +5114,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -5368,15 +5149,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -5411,10 +5186,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {
@@ -5469,7 +5241,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "componentProps": {
               "lines": [
                 {
+                  "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "pickingLineId": "1000000",
+                  "productId": "1000000",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -5494,6 +5269,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                         }
                       },
                       "pickingStepId": "1000000",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 75.000,
                       "uom": "Kg"
@@ -5510,6 +5286,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                       },
                       "pickFromAlternatives": { },
                       "pickingStepId": "1000001",
+                      "productId": "1000000",
                       "productName": "P1",
                       "qtyToPick": 25.000,
                       "uom": "Kg"
@@ -5573,17 +5350,19 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "8. After pick 1 - PickingJob": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
-          "deliveryDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder01"
         },
         "id": 1000000,
@@ -5593,18 +5372,18 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "IN_PROGRESS",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -5663,53 +5442,32 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "75.000",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "75.000 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "75.000",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "75.000 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -5718,6 +5476,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -5752,15 +5511,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -5795,10 +5548,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": {

@@ -1,6 +1,7 @@
 @Id:S0178
 @from:cucumber
-Feature: Import Invoice Candidates via DataImportRestController
+@ghActions:run_on_executor5
+Feature: Import Invoice Candidates via DataImportRestController (external reference)
 
   Background:
     Given infrastructure and metasfresh are running

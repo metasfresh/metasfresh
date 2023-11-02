@@ -25,11 +25,13 @@ package de.metas.picking.workflow.handlers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
@@ -61,6 +63,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -89,10 +92,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	public PickingMobileApplication(
 			@NonNull final PickingJobRestService pickingJobRestService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository);
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
 	}
 
 	@Override
@@ -265,6 +269,13 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.build();
 	}
 
+	public WFProcess processStepEvent(
+			@NonNull final JsonPickingStepEvent event,
+			@NonNull final UserId callerId)
+	{
+		return processStepEvents(WFProcessId.ofString(event.getWfProcessId()), callerId, ImmutableSet.of(event));
+	}
+
 	public void processStepEvents(
 			@NonNull final JsonPickingEventsList eventsList,
 			@NonNull final UserId callerId)
@@ -294,12 +305,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		}
 	}
 
-	private void processStepEvents(
+	private WFProcess processStepEvents(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId,
 			@NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 	{
-		changeWFProcessById(
+		return changeWFProcessById(
 				wfProcessId,
 				wfProcess -> {
 					wfProcess.assertHasAccess(callerId);
@@ -322,12 +333,17 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
-		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
 		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
-		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
+
+		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
+		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
+		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null
+				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey()
+				: null;
 
 		return PickingJobStepEvent.builder()
 				.timestamp(SystemTime.asInstant())
+				.pickingLineId(pickingLineId)
 				.pickingStepId(pickingStepId)
 				.pickFromKey(pickFromKey)
 				.eventType(fromJson(json.getType()))
@@ -335,6 +351,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.qtyPicked(json.getQtyPicked())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.catchWeight(json.getCatchWeight())
 				.build();
 	}
 
