@@ -6,6 +6,7 @@ package de.metas.bpartner.service;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -104,11 +105,12 @@ public class BPartnerPrintFormatRepository
 	{
 		return BPPrintFormat.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bpPrinfFormatDataRecord.getC_BPartner_ID()))
-				.adTableId(AdTableId.ofRepoId(bpPrinfFormatDataRecord.getAD_Table_ID()))
-				.docTypeId(DocTypeId.ofRepoId(bpPrinfFormatDataRecord.getC_DocType_ID()))
+				.adTableId(AdTableId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getAD_Table_ID()))
+				.docTypeId(DocTypeId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getC_DocType_ID()))
 				.printFormatId(bpPrinfFormatDataRecord.getAD_PrintFormat_ID())
 				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getC_BPartner_ID(), bpPrinfFormatDataRecord.getC_BPartner_Location_ID()))
+				.printCopies(PrintCopies.ofInt(bpPrinfFormatDataRecord.getDocumentCopies_Override()))
 				.build();
 	}
 
