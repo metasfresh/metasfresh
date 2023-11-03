@@ -52,7 +52,6 @@ import de.metas.product.ProductPrice;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
-import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewHeaderProperties;
@@ -71,6 +70,8 @@ import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -259,6 +260,13 @@ public final class ProductsProposalRowsLoader
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
 				.productPriceId(productPriceId);
+
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
+				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
+
 
 		return rowBuilder
 				.build()
