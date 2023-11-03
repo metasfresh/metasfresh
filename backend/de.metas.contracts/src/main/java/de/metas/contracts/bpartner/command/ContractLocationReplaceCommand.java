@@ -30,6 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.compiere.util.Env;
 
 @Builder
 public class ContractLocationReplaceCommand
@@ -70,10 +73,22 @@ public class ContractLocationReplaceCommand
 	{
 		final ICompositeQueryUpdater<I_C_Flatrate_Term> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
 				.addSetColumnValue(columnName, newLocationId);
-		
+
+		final IQueryFilter<I_C_Flatrate_Term> filterEndDateGreaterThanToday = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, Env.getDate());
+
+		final IQueryFilter<I_C_Flatrate_Term> filterEndDateNull = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, null);
+
+		final IQueryFilter<I_C_Flatrate_Term> contractFilters = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addFilter(filterEndDateGreaterThanToday)
+				.addFilter(filterEndDateNull);
+
 		queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(columnName, oldLocationId)
+				.filter(contractFilters)
 				.create()
 				.update(queryUpdater);
 	}
