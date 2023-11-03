@@ -3,7 +3,6 @@ package de.metas.ui.web.order.products_proposal.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
@@ -19,12 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -97,7 +90,7 @@ public class Order
 	ImmutableList<OrderLine> lines;
 
 	@NonNull
-	public OrderLine getFirstMatchingOrderLine(@NonNull final ProductId productId)
+	public OrderLine getFirstMatchingQuotationLine(@NonNull final ProductId productId)
 	{
 		return getLines()
 				.stream()

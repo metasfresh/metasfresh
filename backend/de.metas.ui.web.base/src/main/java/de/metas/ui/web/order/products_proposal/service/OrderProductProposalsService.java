@@ -122,7 +122,10 @@ public class OrderProductProposalsService
 			@NonNull final ProductId productId,
 			@NonNull final CurrencyCode currencyCode)
 	{
-		final OrderLine orderLine = quotation.getFirstMatchingOrderLine(productId);
+		// Note: The order line matching does not include attribute matching. To include it, the logic in
+		// de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService.findBestMatchesForOrderLineFromProductPrices
+		// should be used for calculating quotation price
+		final OrderLine orderLine = quotation.getFirstMatchingQuotationLine(productId);
 
 		final Money quotationPriceEntered = Money.of(orderLine.getPriceEntered(), orderLine.getCurrencyId());
 
