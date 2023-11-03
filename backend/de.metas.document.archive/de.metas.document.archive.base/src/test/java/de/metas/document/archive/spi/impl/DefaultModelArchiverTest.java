@@ -101,6 +101,7 @@ class DefaultModelArchiverTest
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
 		invoice.setC_Async_Batch_ID(1);
+		invoice.setC_BPartner_Location_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
 		final ArchiveResult archiveResult = archive(invoice);
