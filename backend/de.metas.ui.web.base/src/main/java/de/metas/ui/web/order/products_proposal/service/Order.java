@@ -78,15 +78,4 @@ public class Order
 	@NonNull
 	ImmutableList<OrderLine> lines;
 
-	public Optional<OrderLine> getFirstMatchingOrderLine(
-			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId)
-	{
-		return getLines()
-				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId))
-
-				.findFirst();
-	}
-
 }
