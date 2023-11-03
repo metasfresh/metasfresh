@@ -3,6 +3,7 @@ package org.adempiere.ad.service.impl;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
@@ -10,7 +11,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -19,7 +19,7 @@ import java.util.Properties;
 
 /**
  * Developer Model BL Implementation
- * 
+ *
  * @author tsa
  * See http://dewiki908/mediawiki/index.php/02664:_Introduce_ADempiere_Developer_Mode_%282012040510000121%29
  */
@@ -82,21 +82,17 @@ public class DeveloperModeBL implements IDeveloperModeBL
 	{
 		final Properties sysCtx = Env.createSysContext(Env.getCtx());
 
-		final String logMigrationScriptsOld = Ini.getProperty(Ini.P_LOGMIGRATIONSCRIPT);
 		DB.saveConstraints();
-		try (final IAutoCloseable contextRestorer = Env.switchContext(sysCtx))
+		try (final IAutoCloseable ignored = Env.switchContext(sysCtx);
+				final IAutoCloseable ignored1 = MigrationScriptFileLoggerHolder.temporaryEnabledLoggingToNewFile())
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 			DB.getConstraints().incMaxTrx(1);
-
-			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 
 			runnable.run(sysCtx);
 		}
 		finally
 		{
-			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, logMigrationScriptsOld);
-
 			DB.restoreConstraints();
 		}
 	}

@@ -271,14 +271,14 @@ public class CoalesceUtil
 	@SafeVarargs
 	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (suppliers == null)
 		{
 			return 0;
 		}
 		for (final Supplier<Integer> supplier : suppliers)
 		{
 			final Integer value = supplier.get();
-			if (value > 0)
+			if (value != null && value > 0)
 			{
 				return value;
 			}
@@ -305,9 +305,10 @@ public class CoalesceUtil
 
 		for (final String value : values)
 		{
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
@@ -331,18 +332,32 @@ public class CoalesceUtil
 			}
 
 			final String value = valueSupplier.get();
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
 		return null;
 	}
 
+	public boolean isAllNotNulls(final Object... values)
+	{
+		for (final Object value : values)
+		{
+			if (value == null)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public int countNotNulls(@Nullable final Object... values)
 	{
-		if (values == null || values.length <= 0)
+		if (values == null || values.length == 0)
 		{
 			return 0;
 		}

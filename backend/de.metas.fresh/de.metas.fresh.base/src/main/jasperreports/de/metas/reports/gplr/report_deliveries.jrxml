@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_deliveries" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/gplr/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_deliveries" pageWidth="782" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/gplr/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -77,6 +77,15 @@ order by  GPLR_Report_Shipment_ID
 	</field>
 	<field name="warehousevalue" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="warehousevalue"/>
+	</field>
+	<field name="warehouseexternalid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehouseexternalid"/>
+	</field>
+	<field name="isb2b" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isb2b"/>
+	</field>
+	<field name="isdropship" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isdropship"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -231,7 +240,7 @@ order by  GPLR_Report_Shipment_ID
 				<textElement textAlignment="Left">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shipto_bpartnervalue}+"  "+$F{shipto_bpartnervalue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shipto_bpartnervalue}+"  "+$F{shipto_bpartnername}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-68" x="207" y="0" width="60" height="12" forecolor="#000000" uuid="7a1d7fe4-daaa-49bd-8777-dfa4a0666f6f"/>
@@ -257,7 +266,18 @@ order by  GPLR_Report_Shipment_ID
 				<textElement textAlignment="Left">
 					<font fontName="Courier New" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{warehousevalue}+" "+$F{warehousename}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{isb2b}.equals("Y") ? "XXXX" :
+(
+	($F{warehouseexternalid}!=null ?
+        (
+	        ($F{warehouseexternalid}.length() > 4 ?
+                    $F{warehouseexternalid}.substring($F{warehouseexternalid}.length() - 4)
+                    : $F{warehouseexternalid}
+            )
+        )+" "
+	 : ""
+   )    +	$F{warehousevalue}+" "+$F{warehousename}
+)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-71" x="390" y="0" width="70" height="12" forecolor="#000000" uuid="033a8a76-f451-43a0-874a-3aa3bb97c722"/>

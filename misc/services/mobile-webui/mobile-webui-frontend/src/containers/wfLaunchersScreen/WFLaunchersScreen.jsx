@@ -13,16 +13,20 @@ import { getApplicationInfoById } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
+import WFLaunchersFilters from './WFLaunchersFilters';
+import WFLaunchersFilterButton from './WFLaunchersFilterButton';
 
 const WFLaunchersScreen = () => {
   const {
     params: { applicationId },
   } = useRouteMatch();
 
-  const [showQRCodeScanner, setShowQRCodeScanner] = useState(false);
+  const [currentPanel, setCurrentPanel] = useState('default');
+  const [facets, setFacets] = useState([]);
 
-  const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
-
+  const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
+    getApplicationInfoById({ state, applicationId })
+  );
   const {
     filterByQRCode: currentFilterByQRCode,
     requestTimestamp,
@@ -30,58 +34,74 @@ const WFLaunchersScreen = () => {
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
-  const isFilterValid = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
+  const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
 
-  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
-    setShowQRCodeScanner(false);
-    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
-  };
   //
   // Load application launchers
+  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
+    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
+  };
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!isFilterValid) {
-      console.log('Skip fetching because QR Code is required but not yet scanned');
+    if (!isAllowQueryingLaunchers) {
+      console.log('Skip fetching querying launchers is prohibited');
       return;
     }
 
-    getLaunchers(applicationId, filterByQRCode).then((applicationLaunchers) => {
+    getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
       onNewLaunchers({ applicationId, applicationLaunchers });
     });
-  }, [isFilterValid, applicationId, toQRCodeString(filterByQRCode), requestTimestamp]);
+  }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
 
   //
   // Connect to WebSocket topic
   const userToken = useSelector((state) => getTokenFromState(state));
   useLaunchersWebsocket({
-    enabled: isFilterValid,
+    enabled: isAllowQueryingLaunchers,
     userToken,
     applicationId,
     filterByQRCode,
+    facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
       onNewLaunchers({ applicationId, applicationLaunchers }),
   });
 
-  const showQRCodeScannerEffective = showQRCodeScanner || !isFilterValid;
+  //const showQRCodeScannerEffective = currentPanel === 'scanQRCode' || !isAllowQueryingLaunchers;
 
   return (
     <div className="container launchers-container">
-      {showQRCodeScannerEffective && (
+      {currentPanel === 'scanQRCode' && (
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => {
             dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(scannedBarcode) }));
           }}
         />
       )}
-      {!showQRCodeScannerEffective && requiresLaunchersQRCodeFilter && (
+      {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
         <div className="mb-5">
           <ButtonWithIndicator
             caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
-            onClick={() => setShowQRCodeScanner(true)}
+            onClick={() => setCurrentPanel('scanQRCode')}
           />
         </div>
       )}
-      {!showQRCodeScannerEffective &&
+      {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
+        <>
+          <WFLaunchersFilterButton facets={facets} onClick={() => setCurrentPanel('filters')} />
+          <br />
+        </>
+      )}
+      {currentPanel === 'filters' && (
+        <WFLaunchersFilters
+          applicationId={applicationId}
+          facets={facets}
+          onDone={(facets) => {
+            setFacets(facets);
+            setCurrentPanel('default');
+          }}
+        />
+      )}
+      {currentPanel === 'default' &&
         launchers &&
         map(launchers, (launcher, index) => {
           const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;

@@ -25,14 +25,18 @@ package de.metas.contracts.flatrate.process;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.sql.Timestamp;
 
-public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
+public abstract class C_Flatrate_Term_Change_Base extends JavaProcess implements IProcessPrecondition
 {
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
@@ -64,6 +68,17 @@ public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
 
 	@Param(parameterName = PARAM_IsCloseInvoiceCandidate)
 	private boolean isCloseInvoiceCandidate;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No selection");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected String doIt()

@@ -134,6 +134,24 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null);
 		}
 
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
+		if (nameMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.NAME, identifier, null);
+		}
+
+		final Matcher ibanMatcher = Type.IBAN.pattern.matcher(identifier);
+		if (ibanMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.IBAN, identifier, null);
+		}
+
+		final Matcher qrIbanMatcher = Type.QR_IBAN.pattern.matcher(identifier);
+		if (qrIbanMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.QR_IBAN, identifier, null);
+		}
+
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -167,10 +185,12 @@ public class ExternalIdentifier
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-		if(glnMatcher.find()){
+		if (glnMatcher.find())
+		{
 			return GLN.ofString(glnMatcher.group(1));
 		}
-		else {
+		else
+		{
 			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
 		}
 
@@ -208,6 +228,54 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
+	@NonNull
+	public String asName()
+	{
+		Check.assume(Type.NAME.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.NAME, this);
+
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
+
+		if (!nameMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Name parsing failed. External Identifier:" + rawValue);
+		}
+
+		return nameMatcher.group(1);
+	}
+
+	@NonNull
+	public String asIban()
+	{
+		Check.assume(Type.IBAN.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.IBAN, this);
+
+		final Matcher ibanMatcher = Type.IBAN.pattern.matcher(rawValue);
+
+		if (!ibanMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of IBAN parsing failed. External Identifier:" + rawValue);
+		}
+
+		return ibanMatcher.group(1);
+	}
+
+	@NonNull
+	public String asQrIban()
+	{
+		Check.assume(Type.QR_IBAN.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.QR_IBAN, this);
+
+		final Matcher qrIbanMatcher = Type.QR_IBAN.pattern.matcher(rawValue);
+
+		if (!qrIbanMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of QR_IBAN parsing failed. External Identifier:" + rawValue);
+		}
+
+		return qrIbanMatcher.group(1);
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -216,7 +284,11 @@ public class ExternalIdentifier
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
 		GLN(Pattern.compile("(?:^gln)-(.+)")),
 		VALUE(Pattern.compile("(?:^val)-(.+)")),
-		INTERNAL_NAME(Pattern.compile("(?:^int)-(.+)"));
+		INTERNAL_NAME(Pattern.compile("(?:^int)-(.+)")),
+		NAME(Pattern.compile("(?:^name)-(.+)")),
+		IBAN(Pattern.compile("(?:^iban)-(.+)")),
+		QR_IBAN(Pattern.compile("(?:^qr_iban)-(.+)")),
+		;
 
 		private final Pattern pattern;
 	}

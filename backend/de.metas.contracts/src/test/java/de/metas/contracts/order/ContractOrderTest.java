@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
@@ -46,7 +46,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 						new ContractOrderService(),
 						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
 						ADReferenceService.newMocked(),
-						new GLCategoryRepository()));
+						new GLCategoryRepository()
+						));
 		SystemTime.setTimeSource(today);
 	}
 

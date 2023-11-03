@@ -36,10 +36,9 @@ public interface IAggregationKeyBuilder<ModelType> extends org.adempiere.util.ag
 {
 	/**
 	 * Build aggregation key string
-	 * 
+	 * <p> 
 	 * NOTE: this method is introduced to be able to extend {@link org.adempiere.util.agg.key.IAggregationKeyBuilder}. Please consider using {@link #buildAggregationKey(Object)}.
 	 * 
-	 * @param model
 	 * @return aggregation key string
 	 */
 	@Override
@@ -50,8 +49,6 @@ public interface IAggregationKeyBuilder<ModelType> extends org.adempiere.util.ag
 	/**
 	 * Build aggregation keys for the given items and compare them.
 	 * 
-	 * @param item1
-	 * @param item2
 	 * @return true if their aggregation keys are equal
 	 * @throws UnsupportedOperationException in case this method is not supported
 	 */

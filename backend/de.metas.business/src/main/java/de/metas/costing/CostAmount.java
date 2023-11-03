@@ -16,6 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.function.Function;
 
 /*
@@ -239,6 +240,13 @@ public final class CostAmount
 			@NonNull final CurrencyPrecision precision)
 	{
 		return divide(divisor.toBigDecimal(), precision);
+	}
+
+	public Optional<CostAmount> divideIfNotZero(
+			@NonNull final Quantity divisor,
+			@NonNull final CurrencyPrecision precision)
+	{
+		return divisor.isZero() ? Optional.empty() : Optional.of(divide(divisor, precision));
 	}
 
 	public CostAmount round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)

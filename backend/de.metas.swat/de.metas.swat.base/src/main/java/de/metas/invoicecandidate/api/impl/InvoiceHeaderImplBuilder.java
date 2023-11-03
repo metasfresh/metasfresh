@@ -1,14 +1,19 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -20,10 +25,12 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -42,7 +49,7 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
-	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
@@ -75,7 +82,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -113,7 +120,19 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_PaymentInstruction_ID;
 
+	private int auctionId;
+
+	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
+	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
+	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
+
 	private Dimension dimension;
+
+	private int C_Tax_Departure_Country_ID;
+
+	@Getter
+	private int bankAccountId;
+
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -176,8 +195,15 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+		invoiceHeader.setC_Tax_Departure_Country_ID(CountryId.ofRepoIdOrNull(getC_Tax_Departure_Country_ID()));
+		invoiceHeader.setBankAccountId(BankAccountId.ofRepoIdOrNull(getBankAccountId()));
 
 		invoiceHeader.setDimension(this.dimension);
+
+		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
+		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
+		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
+		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
 
 		return invoiceHeader;
 	}
@@ -414,7 +440,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
 		{
 			SalesRep_User_ID = salesRep_ID;
 		}
@@ -725,4 +751,79 @@ public class InvoiceHeaderImplBuilder
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
+	private int getAuctionId()
+	{
+		return auctionId;
+	}
+
+	public void setAuctionId(final int auctionId)
+	{
+		this.auctionId = checkOverrideID("C_Auction_ID", this.auctionId, auctionId);
+	}
+
+	public int getC_Harvesting_Calendar_ID()
+	{
+		return C_Harvesting_Calendar_ID;
+	}
+
+	public void setC_Harvesting_Calendar_ID(final int calendarId)
+	{
+		if (C_Harvesting_Calendar_ID == REPO_ID_UNSET_VALUE)
+		{
+			C_Harvesting_Calendar_ID = calendarId;
+		}
+		else if (calendarId != C_Harvesting_Calendar_ID)
+		{
+			C_Harvesting_Calendar_ID = -1;
+		}
+	}
+
+	public int getHarvesting_Year_ID()
+	{
+		return Harvesting_Year_ID;
+	}
+
+	public void setHarvesting_Year_ID(final int yearId)
+	{
+		if (Harvesting_Year_ID == REPO_ID_UNSET_VALUE)
+		{
+			Harvesting_Year_ID = yearId;
+		}
+		else if (yearId != Harvesting_Year_ID)
+		{
+			Harvesting_Year_ID = -1;
+		}
+	}
+
+	public int getM_Warehouse_ID()
+	{
+		return M_Warehouse_ID;
+	}
+
+	public void setM_Warehouse_ID(final int warehouseId)
+	{
+		if (M_Warehouse_ID == REPO_ID_UNSET_VALUE)
+		{
+			M_Warehouse_ID = warehouseId;
+		}
+		else if (warehouseId != M_Warehouse_ID)
+		{
+			M_Warehouse_ID = -1;
+		}
+	}
+
+	public int getC_Tax_Departure_Country_ID()
+	{
+		return C_Tax_Departure_Country_ID;
+	}
+
+	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
+	{
+		this.C_Tax_Departure_Country_ID = checkOverrideID("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	public void setBankAccountId(final int bankAccountId)
+	{
+		this.bankAccountId = checkOverrideID("C_BP_BankAccount_ID", this.bankAccountId, bankAccountId);
+	}
 }

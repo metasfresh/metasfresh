@@ -30,6 +30,7 @@ import lombok.Value;
 import org.compiere.model.I_M_MeansOfTransportation;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 public class MeansOfTransportationId implements RepoIdAware
@@ -47,6 +48,8 @@ public class MeansOfTransportationId implements RepoIdAware
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
+
+	public static Optional<MeansOfTransportationId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	private MeansOfTransportationId(final int repoId)
 	{

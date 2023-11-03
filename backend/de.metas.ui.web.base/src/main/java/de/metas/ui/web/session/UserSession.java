@@ -154,6 +154,7 @@ public class UserSession
 	/**
 	 * @return true if we are running in a webui thread (i.e. NOT a background daemon thread)
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean isWebuiThread()
 	{
 		return RequestContextHolder.getRequestAttributes() != null;
@@ -235,7 +236,7 @@ public class UserSession
 
 	public void assertLoggedIn()
 	{
-		if (!getData().isLoggedIn())
+		if (!isLoggedIn())
 		{
 			throw new NotLoggedInException();
 		}
@@ -254,7 +255,7 @@ public class UserSession
 
 	public void assertNotLoggedIn()
 	{
-		if (getData().isLoggedIn())
+		if (isLoggedIn())
 		{
 			throw new AlreadyLoggedInException();
 		}

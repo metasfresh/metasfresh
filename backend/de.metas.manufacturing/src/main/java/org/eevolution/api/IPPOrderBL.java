@@ -114,4 +114,6 @@ public interface IPPOrderBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
 
 	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
+	
+	boolean isModularOrder(@NonNull PPOrderId ppOrderId);
 }

@@ -3,8 +3,12 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.DimensionService;
@@ -44,6 +48,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.ExternalIdsUtil;
+import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -71,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -397,7 +403,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
 
-
 			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
@@ -462,10 +467,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
+			invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
+			invoice.setC_Auction_ID(AuctionId.toRepoId(invoiceHeader.getAuctionId()));
+
+			setHarvestingDetails(invoice, invoiceHeader);
+
+			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
+			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
-
-
 
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
@@ -500,9 +510,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-						aggregate, processedLines,
-						errorCandidates, errorException,
-						trxName);
+																											 aggregate, processedLines,
+																											 errorCandidates, errorException,
+																											 trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -580,9 +590,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-													final String trxName)
+				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+				final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -977,6 +987,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.bankAccountId(Optional.ofNullable(invoicingParams).map(InvoicingParams::getBankAccountId).orElse(null))
 				.build();
 	}
 
@@ -990,7 +1001,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-					aggregationResult.size(), aggregationResult);
+						  aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -1090,8 +1101,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-							.map(AdMessageId::getRepoId)
-							.orElse(-1));
+												  .map(AdMessageId::getRepoId)
+												  .orElse(-1));
 
 					note.setAD_User_ID(userId);
 
@@ -1252,5 +1263,20 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private InvoicingParams getInvoicingParams()
 	{
 		return _invoicingParams;
+	}
+
+	private void setHarvestingDetails(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final IInvoiceHeader invoiceHeader)
+	{
+		if (invoiceHeader.getCalendarId() != null)
+		{
+			invoice.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(invoiceHeader.getCalendarId()));
+		}
+
+		if (invoiceHeader.getYearId() != null)
+		{
+			invoice.setHarvesting_Year_ID(YearId.toRepoId(invoiceHeader.getYearId()));
+		}
 	}
 }

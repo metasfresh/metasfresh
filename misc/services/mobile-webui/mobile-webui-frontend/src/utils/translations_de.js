@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Produkt',
+    ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
@@ -16,11 +17,16 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
+    CatchWeight: 'Gewicht',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    filter: {
+      showResults: 'Ergebnisse anzeigen (%(count)s)',
+      clearFilters: 'Filter löschen',
+    },
   },
   login: {
     submitButton: 'Login',

@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -32,10 +33,12 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
@@ -67,11 +70,13 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -124,6 +129,8 @@ public class PP_Order_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -136,7 +143,9 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable)
+			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -149,6 +158,8 @@ public class PP_Order_StepDef
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;
+		this.contractTable = contractTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -208,11 +219,23 @@ public class PP_Order_StepDef
 
 			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final WarehouseId warehouseId;
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
+				warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
+			}
+			else
+			{
+				warehouseId = StepDefConstants.WAREHOUSE_ID;
+			}
+
 			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
 					.plantId(resourceId)
-					.warehouseId(StepDefConstants.WAREHOUSE_ID)
+					.warehouseId(warehouseId)
 					.productId(productId)
 					.qtyRequired(quantity)
 					.dateOrdered(dateOrdered)
@@ -228,6 +251,14 @@ public class PP_Order_StepDef
 
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
+
+			final String modularContractIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_Modular_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(modularContractIdentifier))
+			{
+				final I_C_Flatrate_Term modularContract = contractTable.get(modularContractIdentifier);
+				ppOrder.setModular_Flatrate_Term_ID(modularContract.getC_Flatrate_Term_ID());
+				saveRecord(ppOrder);
+			}
 
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			ppOrderTable.put(ppOrderIdentifier, ppOrder);
@@ -368,7 +399,7 @@ public class PP_Order_StepDef
 		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_PP_Order ppOrderRecord = ppOrderTable.get(ppOrderIdentifier);
 
-		final int qtyRequired = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered);
+		final BigDecimal qtyRequired = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered);
 		final boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage);
 
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());

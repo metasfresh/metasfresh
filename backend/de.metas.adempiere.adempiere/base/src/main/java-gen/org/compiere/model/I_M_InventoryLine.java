@@ -508,6 +508,29 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set Modular Contract.
+	 * A document linked to a modular contract will generate modular contract logs
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract.
+	 * A document linked to a modular contract will generate modular contract logs
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModular_Flatrate_Term_ID();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_M_InventoryLine.class, "Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo

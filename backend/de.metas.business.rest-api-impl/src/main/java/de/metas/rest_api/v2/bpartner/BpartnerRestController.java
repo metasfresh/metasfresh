@@ -518,6 +518,9 @@ public class BpartnerRestController
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
+
+		jsonRequestConsolidateService.consolidateWithIdentifier(bankAccounts);
+
 		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				orgCode,
 				bpartnerIdentifier,

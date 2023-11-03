@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: invoice payment allocation
 
   Background:
@@ -602,7 +603,7 @@ Feature: invoice payment allocation
 
     And create credit memo for C_Invoice
       | CreditMemo.Identifier | C_Invoice_ID.Identifier | CreditMemo.PriceEntered | CreditMemo.C_DocType_ID.Name |
-      | credit_memo_220       | inv_220                 | 2.00                    | Gutschrift                   |
+      | credit_memo_220       | inv_220                 | 2.00                    | Gutschrift (Lieferant)       |
     And the invoice identified by credit_memo_220 is completed
 
     And validate C_AllocationLines

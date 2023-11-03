@@ -1,13 +1,14 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
@@ -31,7 +32,8 @@ public class HUQRCodesService
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
 
-	private static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
+	@VisibleForTesting
+	static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
 	public HUQRCodesService(
 			final @NonNull HUQRCodesRepository huQRCodesRepository,
@@ -52,21 +54,27 @@ public class HUQRCodesService
 				.execute();
 	}
 
-	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final Set<HuId> huIds)
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHU(final HuId huId)
 	{
-		return generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds));
+		return newHUQRCodeGenerateForExistingHUsCommandBuilder()
+				.huId(huId)
+				.build().execute();
 	}
 
-	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final HUQRCodeGenerateForExistingHUsRequest request)
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final Set<HuId> huIds)
+	{
+		return newHUQRCodeGenerateForExistingHUsCommandBuilder()
+				.huIds(huIds)
+				.build().execute();
+	}
+
+	private HUQRCodeGenerateForExistingHUsCommand.HUQRCodeGenerateForExistingHUsCommandBuilder newHUQRCodeGenerateForExistingHUsCommandBuilder()
 	{
 		return HUQRCodeGenerateForExistingHUsCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.productBL(productBL)
 				.attributeDAO(attributeDAO)
-				.huQRCodesRepository(huQRCodesRepository)
-				.request(request)
-				.build()
-				.execute();
+				.huQRCodesRepository(huQRCodesRepository);
 	}
 
 	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId)
@@ -75,14 +83,46 @@ public class HUQRCodesService
 		return createPdfForHUIds(huIds);
 	}
 
+	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
+		return createPdfForHUIds(huIds, selectionId, qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
 	{
 		// Make sure all HUs have QR Codes assigned
-		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds)).toList();
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
 
 		return createPDF(qrCodes);
 	}
 
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		// Make sure all HUs have QR Codes assigned
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
+		return createPDF(qrCodes, selectionId, qrCodeProcessId);
+	}
+
+	/*
+	Creates PDF QR code using the given jasper process
+	 */
+	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes,
+									   @NonNull final PInstanceId pInstanceId,
+									   @NonNull final AdProcessId qrCodeProcessId)
+	{
+		return globalQRCodeService.createPDF(
+				qrCodes.stream()
+						.map(HUQRCode::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()),
+				pInstanceId,
+				qrCodeProcessId
+		);
+	}
+
+	/*
+	Creates PDF QR code using the default jasper process
+	 */
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes)
 	{
 		return globalQRCodeService.createPDF(
@@ -91,7 +131,10 @@ public class HUQRCodesService
 						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId) {globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId));}
+	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId));
+	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes) {globalQRCodeService.print(createPDF(qrCodes));}
 
@@ -123,11 +166,7 @@ public class HUQRCodesService
 		}
 		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
 		{
-			return generateForExistingHUs(
-					HUQRCodeGenerateForExistingHUsRequest.builder()
-							.huIds(ImmutableSet.of(huId))
-							.build())
-					.getSingleQRCode(huId);
+			return generateForExistingHU(huId).getSingleQRCode(huId);
 		}
 		else
 		{

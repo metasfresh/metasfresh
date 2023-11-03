@@ -4,16 +4,19 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
       "1. Created Picking Job": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder001"
         },
         "id": 1000000,
@@ -23,18 +26,18 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -93,15 +96,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -110,6 +107,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -144,15 +142,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -187,10 +179,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -225,16 +214,19 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
       "3. Picking Job after ABORT": {
         "docStatus": "Voided",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder001"
         },
         "id": 1000000,
@@ -244,18 +236,18 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -314,15 +306,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -331,6 +317,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -365,15 +352,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -408,10 +389,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -454,16 +432,19 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
       "1. Created Picking Job": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder001"
         },
         "id": 1000000,
@@ -473,18 +454,18 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -543,15 +524,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -560,6 +535,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -594,15 +570,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -637,10 +607,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -721,16 +688,19 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
       "5. Picking Job after Complete": {
         "docStatus": "Completed",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder001"
         },
         "id": 1000000,
@@ -740,18 +710,18 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "DONE",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -810,53 +780,32 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                             "actualPickedHUId": 1000012,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000000,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000014,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000001,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           },
                           {
                             "actualPickedHUId": 1000016,
                             "pickFromHUId": 1000000,
                             "pickingCandidateId": 1000002,
-                            "qtyPicked": {
-                              "qty": "25.000",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25.000 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "75.000",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "75.000 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "75.000",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "75.000 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -865,6 +814,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -899,35 +849,20 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                             "actualPickedHUId": 1000018,
                             "pickFromHUId": 1000002,
                             "pickingCandidateId": 1000003,
-                            "qtyPicked": {
-                              "qty": "25",
-                              "uomId": 1000000
-                            }
+                            "qtyPicked": "25 Kg"
                           }
                         ],
-                        "qtyPicked": {
-                          "qty": "25",
-                          "uomId": 1000000
-                        }
+                        "qtyPicked": "25 Kg"
                       }
                     }
                   },
                   "progress": "DONE",
-                  "qtyPickedSum": {
-                    "qty": "25",
-                    "uomId": 1000000
-                  }
+                  "qtyPickedSum": "25 Kg"
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "DONE",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -962,10 +897,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,
@@ -1005,16 +937,19 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
       "1. Created Picking Job": {
         "docStatus": "Drafted",
         "header": {
+          "allowPickingAnyHU": false,
           "customerName": "BPartner1",
           "deliveryBPLocationId": {
             "bpartnerId": 1000000,
             "repoId": 1000000
           },
+          "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
           "pickingReviewRequired": false,
-          "preparationDate": "2021-11-09T08:58:52Z[Europe/London]",
+          "preparationDate": "2021-11-09T08:58:52Z",
           "salesOrderDocumentNo": "salesOrder001"
         },
         "id": 1000000,
@@ -1024,18 +959,18 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
           {
             "id": 1000000,
             "productId": 1000000,
-            "productName": {
-              "anyLanguage": true,
-              "value": "P1"
-            },
+            "productName": "P1",
             "progress": "NOT_STARTED",
-            "qtyToPick": {
-              "qty": "100.000",
-              "uomId": 1000000
+            "qtyToPick": "100.000 Kg",
+            "salesOrderAndLineId": {
+              "orderId": 1000000,
+              "orderLineId": 1000000
             },
+            "shipmentScheduleId": 1000000,
             "steps": [
               {
                 "id": 1000000,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1094,15 +1029,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "75.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "75.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1111,6 +1040,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
               },
               {
                 "id": 1000001,
+                "isGeneratedOnFly": false,
                 "packToSpec": {
                   "tuPackingInstructionsId": 1000000
                 },
@@ -1145,15 +1075,9 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
                   "qtyPickedSum": null
                 },
                 "productId": 1000000,
-                "productName": {
-                  "anyLanguage": true,
-                  "value": "P1"
-                },
+                "productName": "P1",
                 "progress": "NOT_STARTED",
-                "qtyToPick": {
-                  "qty": "25.000",
-                  "uomId": 1000000
-                },
+                "qtyToPick": "25.000 Kg",
                 "salesOrderAndLineId": {
                   "orderId": 1000000,
                   "orderLineId": 1000000
@@ -1188,10 +1112,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
               }
             },
             "productId": 1000000,
-            "qtyAvailable": {
-              "qty": "225.000",
-              "uomId": 1000000
-            }
+            "qtyAvailable": "225.000 Kg"
           }
         ],
         "pickingSlot": null,

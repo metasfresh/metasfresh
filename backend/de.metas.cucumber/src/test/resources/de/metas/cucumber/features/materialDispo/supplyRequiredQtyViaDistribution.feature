@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor1
+@ghActions:run_on_executor3
 Feature: Stock shortage solved via distribution
 
   Background:

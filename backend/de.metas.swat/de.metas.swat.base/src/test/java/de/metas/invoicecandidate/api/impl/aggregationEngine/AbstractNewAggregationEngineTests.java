@@ -141,7 +141,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	protected abstract List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates);
 
 	/**
-	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterwards, the ICs will be updated/revalidated once again.
+	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterward, the ICs will be updated/revalidated once again.
 	 */
 	protected void step_updateInvoiceCandidates(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
 	{

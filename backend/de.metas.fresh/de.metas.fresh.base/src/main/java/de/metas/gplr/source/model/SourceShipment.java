@@ -17,6 +17,7 @@ public class SourceShipment
 	@NonNull LocalDateAndOrgId movementDate;
 	@NonNull SourceWarehouseInfo shipFrom;
 	@NonNull SourceBPartnerInfo shipTo;
+	boolean isBackToBack;
 	@Nullable SourceShipperInfo shipper;
 	@Nullable SourceIncotermsAndLocation incoterms;
 }

@@ -31,11 +31,9 @@ import de.metas.money.CurrencyId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MLandedCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -51,7 +49,6 @@ import java.util.List;
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
-
 	public I_C_Invoice createInvoice(String trxName)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, trxName);
@@ -113,22 +110,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	public I_C_LandedCost createLandedCost(String trxName)
 	{
 		return new MLandedCost(Env.getCtx(), 0, trxName);
-	}
-
-	@Override
-	public List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice)
-	{
-		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
-		final MInvoiceTax[] resultArray = invoicePO.getTaxes(true);
-		final List<I_C_InvoiceTax> result = new ArrayList<>();
-		for (final MInvoiceTax tax : resultArray)
-		{
-			result.add(tax);
-		}
-
-		// NOTE: make sure we are returning a read-write list because some API rely on this (doing sorting)
-
-		return result;
 	}
 
 	@Nullable

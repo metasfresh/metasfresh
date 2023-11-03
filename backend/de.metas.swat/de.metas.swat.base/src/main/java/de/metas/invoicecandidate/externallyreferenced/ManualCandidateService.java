@@ -27,14 +27,12 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
@@ -45,7 +43,6 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -68,9 +65,9 @@ public class ManualCandidateService
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
 	 */
-	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
+	public InvoiceCandidate createInvoiceCandidate(@NonNull final NewInvoiceCandidate newIC)
 	{
-		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
+		final InvoiceCandidate.InvoiceCandidateBuilder candidate = InvoiceCandidate.createBuilder(newIC);
 
 		final ProductPrice priceEnteredOverride = newIC.getPriceEnteredOverride();
 		final Percent discountOverride = newIC.getDiscountOverride();
@@ -147,17 +144,6 @@ public class ManualCandidateService
 
 		candidate.descriptionBottom(newIC.getDescriptionBottom());
 		candidate.userInChargeId(newIC.getUserInChargeId());
-
-		// payment term
-		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(newIC.getBillPartnerInfo().getBpartnerId(), newIC.getSoTrx());
-
-		final PaymentTermId paymentTermId = Services.get(IPaymentTermRepository.class)
-				.retrievePaymentTermId(paymentTermQuery)
-				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
-						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
-		candidate.paymentTermId(paymentTermId);
 
 		return candidate.build();
 

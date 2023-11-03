@@ -49,7 +49,7 @@ public class DocumentReadonly
 				.parentActive(parentDocumentReadonly.active)
 				.active(parentDocumentReadonly.active)
 				.processed(parentDocumentReadonly.processed)
-				.processed(parentDocumentReadonly.processing)
+				.processing(parentDocumentReadonly.processing)
 				.parentEnforcingReadOnly(parentDocumentReadonly.computeForceReadOnlyChildDocuments())
 				.fieldsReadonly(null) // unknown (will fallback to not-readonly)
 				.build();

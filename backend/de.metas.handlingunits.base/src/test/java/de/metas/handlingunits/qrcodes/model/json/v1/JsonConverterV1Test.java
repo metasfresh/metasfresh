@@ -20,12 +20,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.IOException;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
 class JsonConverterV1Test
 {
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	private static HUQRCode newStandardHUQRCode()
 	{
@@ -86,6 +86,6 @@ class JsonConverterV1Test
 	public void checkJsonFormatIsNotChanging()
 	{
 		final JsonHUQRCodeV1 json = JsonConverterV1.toJson(newStandardHUQRCode());
-		expect.serializer("orderedJson").toMatchSnapshot(json);
+		expect.toMatchSnapshot(json);
 	}
 }

@@ -8,6 +8,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
@@ -37,7 +38,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -100,80 +100,22 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
 		if (!existingCostDetails.isEmpty())
 		{
-			CostDetail mainCostDetail = null;
-			CostDetail costAdjustmentDetail = null;
-			CostDetail alreadyShippedDetail = null;
-			for (final CostDetail existingCostDetail : existingCostDetails)
-			{
-				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
-				switch (amtType)
-				{
-					case MAIN ->
-					{
-						if (mainCostDetail != null)
-						{
-							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
-						}
-						mainCostDetail = existingCostDetail;
-					}
-					case ADJUSTMENT ->
-					{
-						if (costAdjustmentDetail != null)
-						{
-							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
-						}
-						costAdjustmentDetail = existingCostDetail;
-					}
-					case ALREADY_SHIPPED ->
-					{
-						if (alreadyShippedDetail != null)
-						{
-							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
-						}
-						alreadyShippedDetail = existingCostDetail;
-					}
-					default -> throw new AdempiereException("Unknown type: " + amtType);
-				}
-			}
-
-			if (mainCostDetail == null)
-			{
-				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
-			}
-
 			// make sure DateAcct is up-to-date
-			utils.updateDateAcct(mainCostDetail, request.getDate());
-			if (costAdjustmentDetail != null)
-			{
-				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
-			}
-			if (alreadyShippedDetail != null)
-			{
-				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
-			}
-
-			return Optional.of(
-					utils.toCostDetailCreateResult(mainCostDetail)
-							.withAmt(CostAmountDetailed.builder()
-									.mainAmt(mainCostDetail.getAmt())
-									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
-									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
-									.build())
-			);
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
 		}
-
 		else
 		{
-			return Optional.ofNullable(createCostOrNull(request));
+			return createCost(request);
 		}
 	}
 
-	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -200,7 +142,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if(actualResourceId.isNoResource())
+			if (actualResourceId.isNoResource())
 			{
 				return null;
 			}
@@ -242,7 +184,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
-		return result;
+		return CostDetailCreateResultsList.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)

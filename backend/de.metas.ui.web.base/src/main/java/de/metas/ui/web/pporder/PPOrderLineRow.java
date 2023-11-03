@@ -31,6 +31,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -455,7 +456,7 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Nullable
-	private UomId getUomId()
+	public UomId getUomId()
 	{
 		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
 	}
@@ -476,6 +477,12 @@ public class PPOrderLineRow implements IViewRow
 
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		return uomDAO.getById(uomId);
+	}
+
+	@NonNull
+	public I_C_UOM getUomNotNull()
+	{
+		return Check.assumeNotNull(getUom(), "Expecting UOM to always be present when using this method!");
 	}
 
 	public boolean isReceipt()

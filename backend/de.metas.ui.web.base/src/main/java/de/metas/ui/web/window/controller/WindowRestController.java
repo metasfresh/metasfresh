@@ -909,6 +909,25 @@ public class WindowRestController
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
+	@GetMapping("/{windowId}/{documentId}/topActions")
+	public JSONDocumentActionsList getIncludedTabTopActions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
+		final boolean returnDisabled = false;
+
+		return getDocumentActions(
+				rootDocumentPath,
+				null,
+				selectedIncludedRecords,
+				returnDisabled,
+				DisplayPlace.IncludedTabTopActionsMenu);
+	}
+
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
 	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -932,7 +951,7 @@ public class WindowRestController
 
 	private JSONDocumentActionsList getDocumentActions(
 			@NonNull final DocumentPath documentPath,
-			final DetailId selectedTabId,
+			@Nullable final DetailId selectedTabId,
 			@NonNull final Set<TableRecordReference> selectedIncludedRecords,
 			final boolean returnDisabled,
 			@NonNull final DisplayPlace displayPlace)

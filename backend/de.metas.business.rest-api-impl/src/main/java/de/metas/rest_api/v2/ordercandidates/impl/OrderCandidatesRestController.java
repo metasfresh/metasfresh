@@ -2,6 +2,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
+import de.metas.auction.AuctionService;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
@@ -69,6 +70,7 @@ public class OrderCandidatesRestController
 	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final SectionCodeService sectionCodeService;
+	private final AuctionService auctionService;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
@@ -77,13 +79,15 @@ public class OrderCandidatesRestController
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final AuctionService auctionService)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
 		this.sectionCodeService = sectionCodeService;
+		this.auctionService = auctionService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -113,6 +117,7 @@ public class OrderCandidatesRestController
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
 					.sectionCodeService(sectionCodeService)
+					.auctionService(auctionService)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);

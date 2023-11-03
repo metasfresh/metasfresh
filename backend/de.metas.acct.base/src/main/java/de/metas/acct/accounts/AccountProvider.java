@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -22,7 +23,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.acct.Doc;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -252,8 +252,17 @@ public class AccountProvider
 			@NonNull final TaxId taxId,
 			@NonNull final TaxAcctType acctType)
 	{
-		return taxAccountsRepository.getAccounts(taxId, acctSchemaId).getAccount(acctType)
+		return getTaxAccounts(acctSchemaId, taxId)
+				.getAccount(acctType)
 				.orElseThrow(() -> new AdempiereException("Tax account not set: " + acctType + ", " + taxId + ", " + acctSchemaId));
+	}
+
+	@NonNull
+	public TaxAccounts getTaxAccounts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final TaxId taxId)
+	{
+		return taxAccountsRepository.getAccounts(taxId, acctSchemaId);
 	}
 
 	@NonNull
@@ -307,6 +316,6 @@ public class AccountProvider
 				.getAccounts(costElementId, acctSchemaId)
 				.getAccountId(acctType);
 
-		return Account.of(accountId, acctType.getColumnName());
+		return Account.of(accountId, acctType.getAccountConceptualName());
 	}
 }

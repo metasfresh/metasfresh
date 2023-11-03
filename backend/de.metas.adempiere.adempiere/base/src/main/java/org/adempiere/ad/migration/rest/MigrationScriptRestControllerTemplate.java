@@ -27,11 +27,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -76,7 +74,7 @@ public abstract class MigrationScriptRestControllerTemplate
 		try
 		{
 			final Path migrationScriptsDirectory = Files.createTempDirectory(tempDirectoryPrefix + "_migration_scripts_" + LocalDate.now() + "_");
-			MigrationScriptFileLogger.setMigrationScriptDirectory(migrationScriptsDirectory);
+			MigrationScriptFileLoggerHolder.setMigrationScriptDirectory(migrationScriptsDirectory);
 		}
 		catch (final IOException ex)
 		{
@@ -93,10 +91,10 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
+		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
 
 		return JSONMigrationScriptsInfo.builder()
-				.enabled(Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+				.enabled(MigrationScriptFileLoggerHolder.isEnabled())
 				.migrationScriptDirectory(toString(getMigrationScriptsDirectoryPath()))
 				.currentScript(toString(currentScriptPath))
 				.scripts(getMigrationScriptFileNames())
@@ -134,12 +132,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getCurrentScriptPath()
 	{
-		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
-		if (currentScriptPath == null)
-		{
-			throw new AdempiereException("No current script file found");
-		}
-		return currentScriptPath;
+		return MigrationScriptFileLoggerHolder.getCurrentScriptPath();
 	}
 
 	private List<String> getMigrationScriptFileNames()
@@ -161,7 +154,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getMigrationScriptsDirectoryPath()
 	{
-		return MigrationScriptFileLogger.getMigrationScriptDirectory();
+		return MigrationScriptFileLoggerHolder.getMigrationScriptDirectory();
 	}
 
 	@GetMapping("/enableIt")
@@ -169,8 +162,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
-		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationScriptFileLoggerHolder.setEnabled(true);
+		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
 		if (!enabled)
 		{
 			throw new AdempiereException("Failed to enable migration scripts");
@@ -182,8 +175,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false);
-		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationScriptFileLoggerHolder.setEnabled(false);
+		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
 		if (enabled)
 		{
 			throw new AdempiereException("Failed to disable migration scripts");

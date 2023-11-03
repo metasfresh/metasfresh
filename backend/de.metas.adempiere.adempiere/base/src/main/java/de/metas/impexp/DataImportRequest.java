@@ -40,30 +40,20 @@ import javax.annotation.Nullable;
 @Builder
 public class DataImportRequest
 {
-	@NonNull
-	Resource data;
-
-	@NonNull
-	DataImportConfigId dataImportConfigId;
-
-	@NonNull
-	ClientId clientId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	UserId userId;
+	@NonNull Resource data;
+	@NonNull DataImportConfigId dataImportConfigId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull UserId userId;
 
 	boolean completeDocuments;
 
-	@NonNull
-	@Default
-	IParams additionalParameters = IParams.NULL;
+	@NonNull @Default IParams additionalParameters = IParams.NULL;
 
 	boolean processImportRecordsSynchronously;
 	boolean stopOnFirstError;
 
-	@Nullable
-	Params overrideColumnValues;
+	@Nullable Params overrideColumnValues;
+
+	@Nullable ImportRecordsRequest.LogMigrationScriptsSpec logMigrationScriptsSpec;
 }

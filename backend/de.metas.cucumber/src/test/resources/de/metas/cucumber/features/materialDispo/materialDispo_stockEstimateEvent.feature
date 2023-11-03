@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:materialdispo
+@ghActions:run_on_executor6
 Feature: material-dispo updates on StockEstimateEvent events
   As a user
   I want material dispo to be updated properly if a StockEstimateEvent is processed or unprocessed
@@ -7,7 +8,7 @@ Feature: material-dispo updates on StockEstimateEvent events
 
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And no product with value 'product_value1234' exists
 
   @from:cucumber

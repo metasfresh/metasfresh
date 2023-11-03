@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getLineById } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { pickingLineScanScreenLocation } from '../../../routes/picking';
 
 const PickLineScreen = () => {
   const {
@@ -14,7 +16,7 @@ const PickLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, steps } = useSelector(
+  const { caption, allowPickingAnyHU, steps } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -36,9 +38,23 @@ const PickLineScreen = () => {
     );
   }, [url, caption]);
 
+  const history = useHistory();
+  const onScanButtonClick = () =>
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+      })
+    );
+
   return (
     <div className="section pt-2">
       <div className="buttons">
+        {allowPickingAnyHU && (
+          <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+        )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
@@ -68,6 +84,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: lineProps?.caption,
+    allowPickingAnyHU: lineProps?.allowPickingAnyHU ?? false,
     steps: Object.values(stepsById),
   };
 };

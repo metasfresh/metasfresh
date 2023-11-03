@@ -29,10 +29,12 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
@@ -54,6 +56,26 @@ public class C_AcctSchema_StepDef
 		for (final Map<String, String> row : tableRows)
 		{
 			loadAcctSchema(row);
+		}
+	}
+
+	@And("update C_AcctSchema:")
+	public void update_C_AcctSchema(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final String costingMethod = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_AcctSchema.COLUMNNAME_CostingMethod);
+
+			final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
+
+			Optional.ofNullable(costingMethod).ifPresent(acctSchema::setCostingMethod);
+
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+
+			acctSchemaTable.putOrReplace(identifier, acctSchema);
 		}
 	}
 

@@ -49,7 +49,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceTax;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -202,11 +201,11 @@ public class InvoiceToExportFactory
 	private ImmutableList<InvoiceTax> createInvoiceTax(final I_C_Invoice invoiceRecord)
 	{
 		final ImmutableList.Builder<InvoiceTax> invoiceTaxes = ImmutableList.builder();
-		final List<I_C_InvoiceTax> invoiceTaxRecords = invoiceDAO.retrieveTaxes(invoiceRecord);
+		final List<de.metas.invoice.InvoiceTax> invoiceTaxRecords = invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 
-		for (final I_C_InvoiceTax invoiceTaxRecord : invoiceTaxRecords)
+		for (final de.metas.invoice.InvoiceTax invoiceTaxRecord : invoiceTaxRecords)
 		{
-			final Tax taxById = taxDAO.getTaxById(invoiceTaxRecord.getC_Tax_ID());
+			final Tax taxById = taxDAO.getTaxById(invoiceTaxRecord.getTaxId());
 
 			final InvoiceTax invoiceTax = InvoiceTax.builder()
 					.baseAmount(invoiceTaxRecord.getTaxBaseAmt())

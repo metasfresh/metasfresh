@@ -22,12 +22,20 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -35,17 +43,25 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Message;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -53,6 +69,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Locator_ID;
@@ -63,7 +80,8 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
@@ -71,6 +89,11 @@ public class M_InOut_Line_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final M_Locator_StepDefData locatorTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
+
+	private final C_Flatrate_Term_StepDefData flatrateTermTable;
+	private final AD_Message_StepDefData messageTable;
 
 	public M_InOut_Line_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
@@ -78,7 +101,11 @@ public class M_InOut_Line_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final M_Locator_StepDefData locatorTable)
+			@NonNull final M_Locator_StepDefData locatorTable,
+			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -86,6 +113,10 @@ public class M_InOut_Line_StepDef
 		this.productTable = productTable;
 		this.projectTable = projectTable;
 		this.locatorTable = locatorTable;
+		this.flatrateTermTable = flatrateTermTable;
+		this.messageTable = messageTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@And("^validate the created (shipment|material receipt) lines$")
@@ -208,7 +239,7 @@ public class M_InOut_Line_StepDef
 			inOutLine.setMovementQty(movementQty);
 
 			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
 			assertThat(uom).isNotNull();
 
 			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
@@ -266,7 +297,8 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final SoftAssertions softly = new SoftAssertions();
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -275,16 +307,15 @@ public class M_InOut_Line_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-
 		if (Check.isNotBlank(x12de355Code))
 		{
-			final UomId uomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			softly.assertThat(shipmentLine.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(uomId.getRepoId());
 		}
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
-		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+		softly.assertThat(shipmentLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
+		softly.assertThat(shipmentLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementqty);
+		softly.assertThat(shipmentLine.isProcessed()).as("Processed").isEqualTo(processed);
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
@@ -300,7 +331,76 @@ public class M_InOut_Line_StepDef
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
-			assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+			softly.assertThat(shipmentLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered);
 		}
+
+		final String flatrateTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(flatrateTermIdentifier))
+		{
+			final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
+			softly.assertThat(shipmentLine.getC_Flatrate_Term_ID()).as(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID).isEqualTo(flatrateTermRecord.getC_Flatrate_Term_ID());
+		}
+
+		validateShipmentLine_HarvestingCalendarAndYear(shipmentLine, row, softly);
+
+		softly.assertAll();
+	}
+
+	private void validateShipmentLine_HarvestingCalendarAndYear(final @NonNull I_M_InOutLine shipmentLine, final @NonNull Map<String, String> row, final SoftAssertions softly)
+	{
+		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingCalendarIdentifier))
+		{
+			final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+			softly.assertThat(shipmentLine.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+		}
+
+		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingYearIdentifier))
+		{
+			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
+			if (harvestingYearIdentifierValue == null)
+			{
+				softly.assertThat(shipmentLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isNull();
+			}
+			else
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(shipmentLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			}
+		}
+
+		softly.assertAll();
+	}
+
+	@Given("^delete M_InOutLine identified by (.*) is expecting error$")
+	public void order_action_expecting_error(@NonNull final String inOutLineIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_InOutLine inOutLine = shipmentLineTable.get(inOutLineIdentifier);
+		Assertions.assertThat(inOutLine).isNotNull();
+
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		boolean errorThrown = false;
+
+		try
+		{
+			InterfaceWrapperHelper.delete(inOutLine);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+
+				Assertions.assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+			}
+		}
+
+		Assertions.assertThat(errorThrown).isTrue();
 	}
 }

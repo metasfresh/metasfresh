@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Create vendor invoice candidates from effort control
 
   Background:

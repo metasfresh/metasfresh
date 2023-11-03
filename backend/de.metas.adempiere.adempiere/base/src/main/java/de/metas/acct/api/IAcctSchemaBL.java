@@ -30,10 +30,17 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
+	AcctSchema getById(AcctSchemaId acctSchemaId);
+
+	List<AcctSchema> getAllByClientId(@NonNull ClientId clientId);
+
 	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	AcctSchema getPrimaryAcctSchema(@NonNull ClientId clientId);
 
 	CurrencyId getAcctCurrencyId(@NonNull ClientId clientId, @NonNull OrgId orgId);
 

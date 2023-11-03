@@ -33,9 +33,13 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.sales_region.SalesRegion;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.sales_region.SalesRegionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -43,7 +47,6 @@ import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
@@ -84,7 +87,7 @@ public class AccountBL implements IAccountBL
 				continue;
 			}
 
-			String segmentCombination = SEGMENT_COMBINATION_NA;		// not defined
+			String segmentCombination = SEGMENT_COMBINATION_NA;        // not defined
 			String segmentDescription = SEGMENT_DESCRIPTION_NA;
 
 			final AcctSchemaElementType elementType = element.getElementType();
@@ -201,11 +204,13 @@ public class AccountBL implements IAccountBL
 			}
 			else if (AcctSchemaElementType.SalesRegion.equals(elementType))
 			{
-				if (account.getC_SalesRegion_ID() > 0)
+				final SalesRegionId salesRegionId = SalesRegionId.ofRepoIdOrNull(account.getC_SalesRegion_ID());
+				if (salesRegionId != null)
 				{
-					final I_C_SalesRegion loc = account.getC_SalesRegion();
-					segmentCombination = loc.getValue();
-					segmentDescription = loc.getName();
+					final SalesRegionService salesRegionService = SpringContextHolder.instance.getBean(SalesRegionService.class);
+					final SalesRegion salesRegion = salesRegionService.getById(salesRegionId);
+					segmentCombination = salesRegion.getValue();
+					segmentDescription = salesRegion.getName();
 				}
 				else if (element.isMandatory())
 				{
@@ -333,7 +338,7 @@ public class AccountBL implements IAccountBL
 		{
 			account.setIsFullyQualified(fullyQualified);
 		}
-	}	// setValueDescription
+	}    // setValueDescription
 
 	@Override
 	public void validate(final I_C_ValidCombination account)

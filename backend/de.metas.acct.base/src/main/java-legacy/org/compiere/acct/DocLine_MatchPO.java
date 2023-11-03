@@ -76,7 +76,13 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		this.orderLine = orderDAO.getOrderLineById(orderLineId);
 
 		IInOutBL inoutBL = Services.get(IInOutBL.class);
-		final InOutLineId receiptLineId = InOutLineId.ofRepoId(matchPO.getM_InOutLine_ID());
+		final InOutLineId receiptLineId = InOutLineId.ofRepoIdOrNull(matchPO.getM_InOutLine_ID());
+		if (receiptLineId == null)
+		{
+			throw newPostingException()
+					.setDetailMessage("MatchPO cannot be posted because receipt line is not set yet")
+					.setPreserveDocumentPostedStatus();
+		}
 		this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
 		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);

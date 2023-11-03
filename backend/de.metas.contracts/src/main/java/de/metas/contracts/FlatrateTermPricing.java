@@ -74,6 +74,10 @@ public class FlatrateTermPricing
 	@NonNull
 	LocalDate priceDate;
 
+	@NonNull
+	@Builder.Default
+	SOTrx soTrx = SOTrx.SALES;
+
 	public IPricingResult computeOrThrowEx()
 	{
 		final PriceListId priceListId = retrievePriceListForTerm();
@@ -97,7 +101,7 @@ public class FlatrateTermPricing
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemIdToUse,
 				bpLocationIdToUse,
-				SOTrx.SALES);
+				soTrx);
 		if (priceListId == null)
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(billLocationId.getBpartnerLocationId());

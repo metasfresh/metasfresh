@@ -66,7 +66,7 @@ public class C_InvoiceLine
 			return;
 		}
 		// do nothing in case the invoiceline already has an M_HU_PI_Item_Product
-		if (invoiceLine.getM_HU_PI_Item_Product() != null)
+		if (invoiceLine.getM_HU_PI_Item_Product_ID() <= 0)
 		{
 			return;
 		}
@@ -75,7 +75,7 @@ public class C_InvoiceLine
 
 		if (iol != null)
 		{
-			invoiceLine.setM_HU_PI_Item_Product(iol.getM_HU_PI_Item_Product());
+			invoiceLine.setM_HU_PI_Item_Product_ID(iol.getM_HU_PI_Item_Product_ID());
 		}
 
 		// fallback to orderline
@@ -84,7 +84,7 @@ public class C_InvoiceLine
 
 		if (orderLine != null)
 		{
-			invoiceLine.setM_HU_PI_Item_Product(orderLine.getM_HU_PI_Item_Product());
+			invoiceLine.setM_HU_PI_Item_Product_ID(orderLine.getM_HU_PI_Item_Product_ID());
 		}
 	}
 

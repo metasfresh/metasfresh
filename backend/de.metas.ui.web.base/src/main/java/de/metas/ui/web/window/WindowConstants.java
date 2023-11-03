@@ -34,19 +34,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Window miscellaneous constants.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 // NOTE to dev: please keep this class in the root package (e.g. de.metas.ui.web.window) because at least the "logger" depends on this
 public final class WindowConstants
 {
 	/**
 	 * Root logger for "window" functionality.
-	 *
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
 
-	public static final WindowId WINDOWID_R_Request = WindowId.of(232); // FIXME: HARDCODED
 	public static final WindowId WINDOWID_UserProfile = WindowId.of(53100); // FIXME: HARDCODED
 
 	public static final String FIELDNAME_DocumentNo = "DocumentNo";
@@ -59,6 +56,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_IsSOTrx = "IsSOTrx";
 	public static final String FIELDNAME_Processing = "Processing";
 	public static final String FIELDNAME_Processed = "Processed";
+	public static final String FIELDNAME_IsFieldsReadOnlyInUI = "IsFieldsReadOnlyInUI";
 	public static final String FIELDNAME_C_DocType_ID = "C_DocType_ID";
 	public static final String FIELDNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	public static final String FIELDNAME_OrderType = "OrderType";
@@ -81,6 +79,9 @@ public final class WindowConstants
 	public static final String CONTEXTVAR_NextLineNo = "CtxVar_NextLineNo";
 
 	public static final String TABLENAME_AD_Ref_List = "AD_Ref_List";
+
+	public static final String SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED = "webui.documents.field.AD_Client_ID.IsDisplayed";
+	public static final String SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED = "webui.documents.field.AD_Org_ID.IsDisplayed";
 
 	private WindowConstants()
 	{

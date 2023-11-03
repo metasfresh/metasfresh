@@ -20,27 +20,30 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=716027
 /* DDL */ select AD_Element_Link_Create_Missing_Field(716027)
 ;
 
+--
+-- a feld for this column and tab was already added in backend/de.metas.business/src/main/sql/postgresql/system/20-de.metas.business/5528370_sys_gh5384-app_migration_2019-07-30_postgresql.sql
+--
 -- Field: Sales Invoice Candidates_OLD(540092,de.metas.invoicecandidate) -> Invoice Candidates(540279,de.metas.invoicecandidate) -> Invoicable quantity in price UOM
 -- Column: C_Invoice_Candidate.QtyToInvoiceInPriceUOM
 -- 2023-05-29T09:10:27.377Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568528,716028,0,540279,TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100,'',10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Invoicable quantity in price UOM',TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
+--INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568528,716028,0,540279,TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100,'',10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Invoicable quantity in price UOM',TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100)
+--;
 
 -- 2023-05-29T09:10:27.420Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=716028 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
+--INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=716028 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
 
 -- 2023-05-29T09:10:27.464Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542529) 
-;
+--/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542529) 
+--;
 
 -- 2023-05-29T09:10:27.510Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=716028
-;
+--DELETE FROM AD_Element_Link WHERE AD_Field_ID=716028
+--;
 
 -- 2023-05-29T09:10:27.551Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(716028)
-;
+--/* DDL */ select AD_Element_Link_Create_Missing_Field(716028)
+--;
 
 -- Field: Sales Invoice Candidates_OLD(540092,de.metas.invoicecandidate) -> Invoice Candidates(540279,de.metas.invoicecandidate) -> Assignment
 -- Column: C_Invoice_Candidate.UserElementString1

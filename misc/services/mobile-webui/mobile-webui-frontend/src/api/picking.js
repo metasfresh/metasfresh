@@ -2,45 +2,42 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 
-export function postStepPicked({
+export const postStepPicked = ({
   wfProcessId,
   activityId,
+  lineId,
   stepId,
   huQRCode,
   qtyPicked,
   qtyRejected,
   qtyRejectedReasonCode,
-}) {
-  return axios
-    .post(`${apiBasePath}/picking/events`, {
-      events: [
-        {
-          wfProcessId,
-          wfActivityId: activityId,
-          pickingStepId: stepId,
-          type: 'PICK',
-          huQRCode,
-          qtyPicked,
-          qtyRejectedReasonCode,
-          qtyRejected,
-        },
-      ],
-    })
-    .then((response) => unboxAxiosResponse(response));
-}
+  catchWeight,
+}) => {
+  return postEvent({
+    wfProcessId,
+    wfActivityId: activityId,
+    pickingLineId: lineId,
+    pickingStepId: stepId,
+    type: 'PICK',
+    huQRCode,
+    qtyPicked,
+    qtyRejectedReasonCode,
+    qtyRejected,
+    catchWeight,
+  });
+};
 
-export function postStepUnPicked({ wfProcessId, activityId, stepId, huQRCode }) {
-  return axios
-    .post(`${apiBasePath}/picking/events`, {
-      events: [
-        {
-          wfProcessId,
-          wfActivityId: activityId,
-          pickingStepId: stepId,
-          type: 'UNPICK',
-          huQRCode,
-        },
-      ],
-    })
-    .then((response) => unboxAxiosResponse(response));
-}
+export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQRCode }) => {
+  return postEvent({
+    wfProcessId,
+    wfActivityId: activityId,
+    pickingLineId: lineId,
+    pickingStepId: stepId,
+    type: 'UNPICK',
+    huQRCode,
+  });
+};
+
+const postEvent = (event) => {
+  return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
+};

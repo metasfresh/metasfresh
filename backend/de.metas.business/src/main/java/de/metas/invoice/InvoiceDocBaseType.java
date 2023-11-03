@@ -51,14 +51,9 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	AVInvoice(DocBaseType.InterneRechnungLieferant, SOTrx.PURCHASE, false),
 	;
 
-	@Getter
-	private final DocBaseType docBaseType;
-
-	@Getter
-	private final SOTrx soTrx;
-
-	@Getter
-	private final boolean creditMemo;
+	@NonNull @Getter private final DocBaseType docBaseType;
+	@NonNull @Getter private final SOTrx soTrx;
+	@Getter private final boolean creditMemo;
 
 	private static final ValuesIndex<InvoiceDocBaseType> index = ReferenceListAwareEnums.index(values());
 
@@ -106,6 +101,17 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	{
 		return getSoTrx().isSales();
 	}
+
+	public boolean isPurchase()
+	{
+		return getSoTrx().isPurchase();
+	}
+
+	/**
+	 * @return is Account Payable (AP), aka purchase
+	 * @see #isPurchase()
+	 */
+	public boolean isAP() {return isPurchase();}
 
 	public boolean isCustomerInvoice()
 	{

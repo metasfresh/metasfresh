@@ -22,6 +22,7 @@
 
 package de.metas.costing.methods;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -30,8 +31,10 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
@@ -43,6 +46,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.ShipmentCosts;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -52,12 +56,16 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.ShippingNotificationLineId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,6 +91,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -90,10 +99,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(AdempiereTestWatcher.class)
 public class MovingAverageInvoiceCostingMethodHandlerTest
 {
+	private MoneyService moneyService;
+	private IUOMDAO uomDAO;
 
 	private CostElementRepository costElementRepo;
 	private CurrentCostsRepository currentCostsRepo;
@@ -121,12 +131,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
 
+		final CurrencyRepository currenciesRepo = new CurrencyRepository();
+		moneyService = new MoneyService(currenciesRepo);
+		uomDAO = Services.get(IUOMDAO.class);
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
 		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
 		final CostingMethodHandlerUtils handlerUtils = new CostingMethodHandlerUtils(
-				new CurrencyRepository(),
+				currenciesRepo,
 				currentCostsRepo,
 				costDetailsService);
 
@@ -143,6 +156,57 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 
 		productId = createProduct();
+	}
+
+	CostAmountAndQtyDetailed mainAmtAndQty(String amt, String qty)
+	{
+		return CostAmountAndQtyDetailed.builder().main(amtAndQty(amt, qty)).build();
+	}
+
+	CostAmountAndQty amtAndQty(String amt, String qty)
+	{
+		return CostAmountAndQty.of(costAmount(amt), qty(qty));
+	}
+
+	CostAmount costAmount(@NonNull final String str)
+	{
+		final Splitter splitter = Splitter.on(" ").trimResults().omitEmptyStrings();
+		try
+		{
+			final List<String> parts = splitter.splitToList(str);
+			return CostAmount.of(parts.get(0), currencyId(parts.get(1)));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + str + "` to CostAmount", ex);
+		}
+	}
+
+	private CurrencyId currencyId(final String currencyCodeStr)
+	{
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
+		return moneyService.getCurrencyIdByCurrencyCode(currencyCode);
+	}
+
+	Quantity qty(@NonNull final String str)
+	{
+		final Splitter splitter = Splitter.on(" ").trimResults().omitEmptyStrings();
+		try
+		{
+			final List<String> parts = splitter.splitToList(str);
+			return Quantity.of(parts.get(0), uom(parts.get(1)));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + str + "` to Quantity", ex);
+		}
+	}
+
+	I_C_UOM uom(@NonNull final String uomSymbol)
+	{
+		return uomDAO.getBySymbol(uomSymbol)
+				.or(() -> uomDAO.getByX12DE355IfExists(X12DE355.ofCode(uomSymbol)))
+				.orElseThrow(() -> new AdempiereException("No UOM found for `" + uomSymbol + "`"));
 	}
 
 	private CostElement createMovingAverageInvoiceCostElement()
@@ -282,14 +346,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(100, euroCurrencyId))
+								.amt(costAmount("100 EUR"))
 								.explicitCostPrice(null)
-								.qty(Quantity.of(10, eachUOM))
+								.qty(qty("10 Ea"))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "10 Ea"));
 
 		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
@@ -305,15 +368,14 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(100, euroCurrencyId))
-								.qty(Quantity.of(0, eachUOM))
+								.amt(costAmount("100 EUR"))
+								.qty(qty("0 Ea"))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
-		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 	}
@@ -327,16 +389,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(0, euroCurrencyId))
-								.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
-								.qty(Quantity.of(0, eachUOM))
+								.amt(costAmount("0 EUR"))
+								.explicitCostPrice(costAmount("100 EUR"))
+								.qty(qty("0 Ea"))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
-		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("100");
 	}
@@ -351,14 +412,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("10 EUR"))
+									.qty(qty("0 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -370,14 +430,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("15 EUR"))
+									.qty(qty("0 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -395,14 +454,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("10 EUR"))
+									.qty(qty("10 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100 EUR", "10 Ea"));
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
@@ -414,16 +472,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("15 EUR"))
+									.qty(qty("0 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			// The cost price was not changed because of the existing qty
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
@@ -440,16 +497,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("10 EUR"))
+									.qty(qty("10 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100 EUR", "10 Ea"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
@@ -459,16 +515,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("15 EUR"))
+									.qty(qty("10 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150 EUR", "10 Ea"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
 			// The cost price was not changed because of the existing qty
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5");
@@ -485,14 +540,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.explicitCostPrice(costAmount("10 EUR"))
+									.qty(qty("0 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -504,16 +558,15 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
+									.amt(costAmount("0 EUR"))
+									.qty(qty("10 Ea"))
 									.build())
-					.get();
+					.getSingleResult();
 
 			// The amount is the current explicit cost multiplied by the existing qty
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100 EUR", "10 Ea"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			// The cost price was not changed because it was not explicit
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
@@ -534,14 +587,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-										.qty(Quantity.of(0, eachUOM))
+										.amt(costAmount("0 EUR"))
+										.explicitCostPrice(costAmount("10 EUR"))
+										.qty(qty("0 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -553,13 +605,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-										.qty(Quantity.of(-10, eachUOM))
+										.amt(costAmount("0 EUR")) // to be calculated
+										.qty(qty("-10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100 EUR", "-10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -571,13 +622,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
-										.qty(Quantity.of(10, eachUOM))
+										.amt(costAmount("150 EUR"))
+										.qty(qty("10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150 EUR", "10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
@@ -590,13 +640,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(+100, euroCurrencyId))
-										.qty(Quantity.of(+10, eachUOM))
+										.amt(costAmount("100 EUR"))
+										.qty(qty("10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100 EUR", "10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
@@ -615,14 +664,13 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-										.qty(Quantity.of(0, eachUOM))
+										.amt(costAmount("0 EUR"))
+										.explicitCostPrice(costAmount("10 EUR"))
+										.qty(qty("0 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "0 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -634,13 +682,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-										.qty(Quantity.of(-10, eachUOM))
+										.amt(costAmount("0 EUR")) // to be calculated
+										.qty(qty("-10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100 EUR", "-10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -653,13 +700,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(+100, euroCurrencyId))
-										.qty(Quantity.of(+10, eachUOM))
+										.amt(costAmount("100 EUR"))
+										.qty(qty("10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100 EUR", "10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
@@ -671,13 +717,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
-										.qty(Quantity.of(10, eachUOM))
+										.amt(costAmount("150 EUR"))
+										.qty(qty("10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150 EUR", "10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
@@ -696,13 +741,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-										.qty(Quantity.of(-100, eachUOM))
+										.amt(costAmount("0 EUR")) // to be calculated
+										.qty(qty("-100 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-100");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "-100 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
@@ -714,13 +758,12 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
-										.qty(Quantity.of(10, eachUOM))
+										.amt(costAmount("150 EUR"))
+										.qty(qty("10 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150 EUR", "10 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
@@ -733,17 +776,182 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.qty(Quantity.of(+100, eachUOM))
+										.amt(costAmount("0 EUR"))
+										.qty(qty("100 Ea"))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("100");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0 EUR", "100 Ea"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("110");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1.3636"); // (10x15 + 100x0) / (10 + 100) = 150 / 110 = 1.3636
+			}
+		}
+
+		@Nested
+		public class shipment_with_shipping_notification
+		{
+			CostAmountAndQty amtAndQtyNotified;
+
+			void commonScenario()
+			{
+				assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+				// Initial inventory with Price=10 and Qty=100
+				{
+					handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+									.amt(costAmount("0 EUR")) // to be calculated based on explicit cost price
+									.explicitCostPrice(costAmount("10 EUR"))
+									.qty(qty("100 Ea"))
+									.build());
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("100");
+					assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+				}
+
+				// Shipment notification
+				{
+					final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+									costDetailCreateRequest()
+											.documentRef(CostingDocumentRef.ofShippingNotificationLineId(ShippingNotificationLineId.ofRepoId(1)))
+											.amt(costAmount("0 EUR")) // to be calculated
+											.qty(qty("-20 Ea"))
+											.build())
+							.getSingleResult();
+
+					assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-200 EUR", "-20 Ea"));
+					amtAndQtyNotified = costDetailResult.getAmtAndQty(CostAmountType.MAIN).negate();
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("80");
+					assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+				}
+
+				// Receipt
+				{
+					final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+									costDetailCreateRequest()
+											.documentRef(CostingDocumentRef.ofMatchPOId(1))
+											.amt(costAmount("1600 EUR"))
+											.qty(qty("80 Ea"))
+											.build())
+							.getSingleResult();
+
+					assertThat(costDetailResult.getAmtAndQty()).usingRecursiveComparison().isEqualTo(mainAmtAndQty("1600 EUR", "80 Ea"));
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("160");
+					assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15"); // (80x10 + 1600) / (80 + 80)
+					assertThat(currentCost.getCumulatedAmt().toBigDecimal()).isEqualTo("2400"); // 160 x 15
+				}
+			}
+
+			void print(final ShipmentCosts shipmentCosts)
+			{
+				System.out.println("shippedButNotNotified: " + shipmentCosts.getShippedButNotNotified());
+				System.out.println("   shippedAndNotified: " + shipmentCosts.getShippedAndNotified());
+				System.out.println("notifiedButNotShipped: " + shipmentCosts.getNotifiedButNotShipped());
+			}
+
+			void print(final CurrentCost currentCost)
+			{
+				System.out.println("          Current Qty: " + currentCost.getCurrentQty());
+				System.out.println("    Current CostPrice: " + currentCost.getCostPrice());
+				System.out.println("Current Cumulated Amt: " + currentCost.getCumulatedAmt());
+			}
+
+			@Test
+			void shipped_less_than_notified()
+			{
+				commonScenario();
+
+				// Shipment
+				{
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+									.amt(costAmount("0 EUR")) // to be calculated
+									.qty(qty("-17 Ea"))
+									.externallyOwned(amtAndQtyNotified)
+									.build());
+
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("170 EUR", "17 Ea"))
+							.shippedButNotNotified(amtAndQty("0 EUR", "0 Ea"))
+							.notifiedButNotShipped(amtAndQty("30 EUR", "3 Ea"))
+							.build());
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					print(currentCost);
+					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("163"); // 100 - 20 + 80 + 3
+					assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("14.908"); // (160 x 15 + 30) / (160 + 3)
+					assertThat(currentCost.getCumulatedAmt().toBigDecimal()).isEqualTo("2430");
+				}
+			}
+
+			@Test
+			void shipped_as_notified()
+			{
+				commonScenario();
+
+				final CurrentCost currentCosts_beforeShipment = getCurrentCost(orgId1);
+
+				// Shipment
+				{
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+									.amt(costAmount("0 EUR")) // to be calculated
+									.qty(qty("-20 Ea"))
+									.externallyOwned(amtAndQtyNotified)
+									.build());
+
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("200 EUR", "20 Ea"))
+							.build());
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					print(currentCost);
+					assertThat(currentCost).usingRecursiveComparison().isEqualTo(currentCosts_beforeShipment);
+				}
+			}
+
+			@Test
+			void shipped_more_than_notified()
+			{
+				commonScenario();
+
+				// Shipment
+				{
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+									.amt(costAmount("0 EUR")) // to be calculated
+									.qty(qty("-30 Ea"))
+									.externallyOwned(amtAndQtyNotified)
+									.build());
+
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("200 EUR", "20 Ea"))
+							.shippedButNotNotified(amtAndQty("150 EUR", "10 Ea"))
+							.build());
+
+					final CurrentCost currentCost = getCurrentCost(orgId1);
+					print(currentCost);
+					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("150"); // 100 - 20 + 80 - 10
+					assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+					assertThat(currentCost.getCumulatedAmt().toBigDecimal()).isEqualTo("2250"); // 150 x 15
+				}
 			}
 		}
 	}
@@ -766,7 +974,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 						.date(instant("2020-08-14"))
 						.productId(productId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-						.qtyToMove(Quantity.of(100, eachUOM))
+						.qtyToMove(qty("100 Ea"))
 						//
 						.outboundOrgId(orgId1)
 						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
@@ -789,8 +997,8 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(13, euroCurrencyId))
-								.qty(Quantity.of(0, eachUOM))
+								.amt(costAmount("13 EUR"))
+								.qty(qty("0 Ea"))
 								.build());
 
 				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
@@ -800,7 +1008,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 						.date(instant("2020-08-14"))
 						.productId(productId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-						.qtyToMove(Quantity.of(100, eachUOM))
+						.qtyToMove(qty("100 Ea"))
 						//
 						.outboundOrgId(orgId1)
 						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
@@ -823,9 +1031,9 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(0, euroCurrencyId))
-								.explicitCostPrice(CostAmount.of(13, euroCurrencyId))
-								.qty(Quantity.of(0, eachUOM))
+								.amt(costAmount("0 EUR"))
+								.explicitCostPrice(costAmount("13 EUR"))
+								.qty(qty("0 Ea"))
 								.build());
 
 				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
@@ -835,7 +1043,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 						.date(instant("2020-08-14"))
 						.productId(productId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-						.qtyToMove(Quantity.of(100, eachUOM))
+						.qtyToMove(qty("100 Ea"))
 						//
 						.outboundOrgId(orgId1)
 						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))

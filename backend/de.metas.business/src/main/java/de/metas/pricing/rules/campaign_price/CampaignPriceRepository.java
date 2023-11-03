@@ -130,7 +130,7 @@ public class CampaignPriceRepository
 				.priceStd(Money.of(record.getPriceStd(), currencyId))
 				.priceUomId(extractProductPriceUomId(record))
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(record.getInvoicableQtyBasedOn()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(record.getInvoicableQtyBasedOn()))
 				//
 				.build();
 	}

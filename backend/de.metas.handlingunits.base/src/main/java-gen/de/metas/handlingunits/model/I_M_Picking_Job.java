@@ -142,6 +142,27 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Shipmentdate.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryDate (java.sql.Timestamp DeliveryDate);
+
+	/**
+	 * Get Shipmentdate.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDeliveryDate();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_Picking_Job.class, "DeliveryDate", null);
+	String COLUMNNAME_DeliveryDate = "DeliveryDate";
+
+	/**
 	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: String
@@ -205,6 +226,27 @@ public interface I_M_Picking_Job
 
 	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Allow Picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
+
+	/**
+	 * Get Allow Picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickingAnyHU();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_M_Picking_Job.class, "IsAllowPickingAnyHU", null);
+	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
 	 * Set Approved.

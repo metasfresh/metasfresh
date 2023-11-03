@@ -7,10 +7,12 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
+import org.eevolution.api.PPCostCollectorId;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -148,4 +150,9 @@ public interface IOrderDAO extends ISingletonService
 	Set<OrderId> getSalesOrderIdsByPurchaseOrderId(@NonNull OrderId purchaseOrderId);
 
 	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
+
+	Stream<I_C_Order> streamOrders(@NonNull IQueryFilter<I_C_Order> orderFilter);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
+
 }

@@ -23,7 +23,6 @@
 package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -42,6 +41,8 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,8 +50,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,14 +85,17 @@ public class WorkflowRestAPIService
 				.map(application -> application.getApplicationInfo(loggedUserId));
 	}
 
-	public WorkflowLaunchersList getLaunchers(
-			@NonNull final MobileApplicationId applicationId,
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		return getWorkflowBasedMobileApplication(applicationId)
-				.provideLaunchers(userId, filterByQRCode, getLaunchersLimit(), maxStaleAccepted);
+		return getWorkflowBasedMobileApplication(query.getApplicationId())
+				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(
+			@NonNull final MobileApplicationId applicationId,
+			@NonNull final UserId userId)
+	{
+		return getWorkflowBasedMobileApplication(applicationId).getFacets(userId);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)

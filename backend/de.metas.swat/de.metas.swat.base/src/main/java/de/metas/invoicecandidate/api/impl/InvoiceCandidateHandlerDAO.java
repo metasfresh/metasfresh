@@ -22,26 +22,26 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Env;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 {
@@ -76,6 +76,13 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 			}
 		}
 		return result;
+	}
+
+	@Override
+	@NonNull
+	public ILCandHandlerId retrieveIdForClassOneOnly(@NonNull final Class<? extends IInvoiceCandidateHandler> handlerClass)
+	{
+		return ILCandHandlerId.ofRepoId(retrieveForClassOneOnly(Env.getCtx(), handlerClass).getC_ILCandHandler_ID());
 	}
 
 	@Override

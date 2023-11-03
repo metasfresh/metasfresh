@@ -1,5 +1,6 @@
 package de.metas.acct;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
@@ -13,6 +14,8 @@ import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.acct.open_items.FAOpenItemsService;
+import de.metas.acct.open_items.updater.FactAcctOpenItemsToUpdateDBTableWatcher;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -35,7 +38,6 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
@@ -59,6 +61,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Accounting module activator
@@ -81,6 +84,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
 	private final ProductActivityProvider productActivityProvider;
+	private final FAOpenItemsService faOpenItemsService;
 
 	private final ICurrentCostsRepository currentCostsRepository;
 
@@ -90,12 +94,14 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			@NonNull final ICostElementRepository costElementRepo,
 			@NonNull final TreeNodeService treeNodeService,
 			@NonNull final ProductActivityProvider productActivityProvider,
-			@NonNull final ICurrentCostsRepository currentCostsRepository)
+			@NonNull final ICurrentCostsRepository currentCostsRepository,
+			@NonNull final FAOpenItemsService faOpenItemsService)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
 		this.productActivityProvider = productActivityProvider;
 		this.currentCostsRepository = currentCostsRepository;
+		this.faOpenItemsService = faOpenItemsService;
 	}
 
 	@Override
@@ -129,13 +135,18 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
 		}
+	}
 
-		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Log.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Summary.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_EndingBalance.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_I_ElementValue.Table_Name);
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				I_Fact_Acct.Table_Name,
+				I_Fact_Acct_Log.Table_Name,
+				I_Fact_Acct_Summary.Table_Name,
+				I_Fact_Acct_EndingBalance.Table_Name,
+				I_I_ElementValue.Table_Name
+		);
 	}
 
 	@Override
@@ -221,6 +232,11 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		runInThread(FactAcctLogDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
 				.factAcctLogBL(factAcctLogBL)
+				.build());
+
+		runInThread(FactAcctOpenItemsToUpdateDBTableWatcher.builder()
+				.sysConfigBL(sysConfigBL)
+				.faOpenItemsService(faOpenItemsService)
 				.build());
 	}
 

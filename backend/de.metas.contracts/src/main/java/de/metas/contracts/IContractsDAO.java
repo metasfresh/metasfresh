@@ -31,9 +31,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -69,6 +67,4 @@ public interface IContractsDAO extends ISingletonService
 	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	<T extends I_C_Flatrate_Conditions> T getConditionsById(ConditionsId conditionsId, Class<T> modelClass);
-
-	IQuery<I_C_Flatrate_Term> createInterimInvoiceSearchCriteria(@Nullable I_C_Flatrate_Term flatrateTerm);
 }

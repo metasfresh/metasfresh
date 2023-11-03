@@ -36,6 +36,8 @@ import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
 import lombok.NonNull;
 
+import java.sql.Timestamp;
+
 @Repository
 public class InvoiceRejectionDetailRepo
 {
@@ -64,6 +66,7 @@ public class InvoiceRejectionDetailRepo
 		rejectionDetail.setResponsiblePerson(response.getResponsiblePerson());
 		rejectionDetail.setPhone(response.getPhone());
 		rejectionDetail.setEMail(response.getEmail());
+		rejectionDetail.setDateReceived(Timestamp.from(response.getInvoiceResponse()));
 
 		final Status status = response.getStatus();
 		if (status == null)

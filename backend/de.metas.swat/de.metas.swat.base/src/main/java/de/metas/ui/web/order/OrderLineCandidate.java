@@ -24,6 +24,7 @@ package de.metas.ui.web.order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
@@ -75,4 +76,7 @@ public class OrderLineCandidate
 
 	@Nullable
 	VatCodeId vatCodeId;
+
+	@Nullable
+	ConditionsId conditionsId;
 }

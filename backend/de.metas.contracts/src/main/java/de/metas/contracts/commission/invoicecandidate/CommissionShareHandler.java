@@ -17,7 +17,6 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -29,6 +28,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -217,7 +217,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
-		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
+		icRecord.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight.getCode());
 		icRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 		icRecord.setM_PriceList_Version_ID(pricingResult.getPriceListVersionId().getRepoId());
 		icRecord.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());

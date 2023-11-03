@@ -65,4 +65,8 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer bestBeforeDate(@Nullable LocalDate bestBeforeDate);
 
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();
+
+	List<I_M_HU> receiveIndividualPlanningCUs(@NonNull Quantity qtyToReceive);
+
+	IPPOrderReceiptHUProducer withPPOrderLocatorId();
 }

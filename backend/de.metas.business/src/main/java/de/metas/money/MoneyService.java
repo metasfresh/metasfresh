@@ -291,6 +291,14 @@ public class MoneyService implements CurrencyCodeToCurrencyIdBiConverter
 		return currencyBL.getCurrencyRate(context, fromCurrencyId, targetCurrencyId);
 	}
 
+	public CurrencyRate getCurrencyRate(
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId targetCurrencyId,
+			@NonNull final CurrencyConversionContext context)
+	{
+		return currencyBL.getCurrencyRate(context, fromCurrencyId, targetCurrencyId);
+	}
+
 	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
 	{
 		return currencyBL.getCurrencyConversionTypeId(type);

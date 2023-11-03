@@ -1,10 +1,11 @@
+@ghActions:run_on_executor5
 Feature: data export audit using bpartner metasfresh api
   `When` a retrieve bpartner API call is made
   export audit data should be created
 
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
 
   Scenario: The request is good and the export audit data is created

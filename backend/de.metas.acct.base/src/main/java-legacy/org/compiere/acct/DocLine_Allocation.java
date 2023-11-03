@@ -528,7 +528,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
 
-		doc.setC_CashBook_ID(cashBookId);
+		//doc.setC_CashBook_ID(cashBookId);
 
 		return doc.getAccountProvider().getCashAccount(as.getId(), cashBookId, CashAccountType.CashTransfer);
 	}    // getCashAcct

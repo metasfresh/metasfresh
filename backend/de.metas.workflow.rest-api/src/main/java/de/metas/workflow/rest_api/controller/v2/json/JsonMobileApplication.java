@@ -17,6 +17,7 @@ public class JsonMobileApplication
 	@NonNull String id;
 	@NonNull String caption;
 	boolean requiresLaunchersQRCodeFilter;
+	boolean showFilters;
 
 	public static JsonMobileApplication of(final MobileApplicationInfo appInfo, final JsonOpts jsonOpts)
 	{
@@ -24,6 +25,7 @@ public class JsonMobileApplication
 				.id(appInfo.getId().getAsString())
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
 				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
+				.showFilters(appInfo.isShowFilters())
 				.build();
 	}
 }

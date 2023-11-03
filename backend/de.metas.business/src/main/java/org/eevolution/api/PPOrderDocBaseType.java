@@ -35,7 +35,8 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	MANUFACTURING_ORDER(DocBaseType.ManufacturingOrder),
 	QUALITY_ORDER(DocBaseType.QualityOrder),
 	MAINTENANCE_ORDER(DocBaseType.MaintenanceOrder),
-	REPAIR_ORDER(DocBaseType.ServiceRepairOrder);
+	REPAIR_ORDER(DocBaseType.ServiceRepairOrder),
+	MODULAR_ORDER(DocBaseType.ModularOrder);
 
 	private final DocBaseType docBaseType;
 

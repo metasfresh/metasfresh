@@ -382,9 +382,9 @@ public class MAllocationLine extends X_C_AllocationLine
 		}
 
 		//	Update Balance / Credit used - Counterpart of MInvoice.completeIt
-		if (invoice != null && invoice.testAllocation())
+		if (invoice != null)
 		{
-			InterfaceWrapperHelper.save(invoice);
+			invoice.testAllocation();
 		}
 
 		if (savePayment)

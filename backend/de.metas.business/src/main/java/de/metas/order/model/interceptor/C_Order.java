@@ -24,6 +24,7 @@ package de.metas.order.model.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -53,9 +54,14 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectService;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -68,6 +74,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -78,6 +85,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -86,6 +94,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
+@Component
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 public class C_Order
@@ -109,21 +118,28 @@ public class C_Order
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
+	private final ProjectService projectService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService,
+			@NonNull final ProjectService projectService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
+		this.projectService = projectService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -207,8 +223,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
 	public void updateProjectFromOrder(@NonNull final I_C_Order order)
 	{
 		if (order.getC_Project_ID() <= 0)
@@ -221,6 +236,18 @@ public class C_Order
 			orderLine.setC_Project_ID(order.getC_Project_ID());
 			orderDAO.save(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void copyFieldsFromProject(@NonNull final I_C_Order order)
+	{
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
+
+		final UserId projectManagerId = Optional.ofNullable(projectId)
+				.flatMap(projectService::getProjectManagerByProjectId)
+				.orElse(null);
+
+		order.setProjectManager_ID(UserId.toRepoId(projectManagerId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -600,6 +627,17 @@ public class C_Order
 		}
 	}
 
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_Warehouse_ID)
+	public void handleDefaultLocator(@NonNull final I_C_Order order)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		if (warehouseId != null)
+		{
+			final LocatorId defaultLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+			order.setM_Locator_ID(defaultLocatorId.getRepoId());
+		}
+	}
+
 	private void validateSupplierApprovals(final I_C_Order order)
 	{
 		if (order.isSOTrx())
@@ -738,5 +776,52 @@ public class C_Order
 
 			orderBL.save(line);
 		}
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_M_Warehouse_ID)
+	public void beforeWarehouseChange(@NonNull final I_C_Order orderRecord)
+	{
+		checkProductWarehouseAssignment(orderRecord);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void validateWarehouseAssignmentsBeforeComplete(@NonNull final I_C_Order orderRecord)
+	{
+		checkProductWarehouseAssignment(orderRecord);
+	}
+
+	private void checkProductWarehouseAssignment(@NonNull final I_C_Order orderRecord)
+	{
+		if (!productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
+		{
+			return;
+		}
+
+		final WarehouseId orderWarehouseId = WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID());
+
+		orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(orderRecord.getC_Order_ID())))
+				.forEach(line -> {
+					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+
+					if (!productBL.getProductType(productId).isItem())
+					{
+						return;
+					}
+
+					final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
+
+					if (!assignments.isWarehouseAssigned(orderWarehouseId))
+					{
+						throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+								.appendParametersToMessage()
+								.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
+								.setParameter("C_OrderLine_ID", line.getC_OrderLine_ID())
+								.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
+								.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+								.markAsUserValidationError();
+					}
+				});
 	}
 }

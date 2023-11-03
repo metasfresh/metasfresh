@@ -1,5 +1,6 @@
 package de.metas.gplr.source.model;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.currency.Amount;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -26,4 +27,6 @@ public class SourceOrderLine
 	@NonNull Amount lineNetAmtFC;
 	@NonNull Amount taxAmtFC;
 	@NonNull SourceTaxInfo tax;
+
+	@Nullable FlatrateTermId contractId;
 }

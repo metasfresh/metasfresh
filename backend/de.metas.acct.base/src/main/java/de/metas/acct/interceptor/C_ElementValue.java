@@ -116,7 +116,7 @@ public class C_ElementValue
 			return;
 		}
 
-		final ElementValue elementValue = ElementValueRepository.toElementValue(record);
+		final ElementValue elementValue = ElementValueRepository.fromRecord(record);
 		treeNodeService.updateTreeNode(elementValue);
 	}
 }

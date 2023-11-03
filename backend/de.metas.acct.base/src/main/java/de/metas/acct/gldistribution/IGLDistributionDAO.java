@@ -3,6 +3,7 @@ package de.metas.acct.gldistribution;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.acct.api.PostingType;
 import de.metas.document.DocTypeId;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
@@ -38,7 +39,7 @@ public interface IGLDistributionDAO extends ISingletonService
 	 * Retrieves those {@link I_GL_Distribution}s which are matching the given criteria.
 	 *
 	 */
-	List<I_GL_Distribution> retrieve(Properties ctx, AccountDimension dimension, String PostingType, DocTypeId C_DocType_ID);
+	List<I_GL_Distribution> retrieve(Properties ctx, AccountDimension dimension, PostingType PostingType, DocTypeId C_DocType_ID);
 
 	/**
 	 * Retrieves {@link I_GL_DistributionLine}s of given {@link I_GL_Distribution}.

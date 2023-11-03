@@ -99,6 +99,7 @@ public class JsonOLCand
 	Integer line;
 
 	JsonMetasfreshId sectionCodeId;
+	JsonMetasfreshId auctionId;
 
 	@JsonCreator
 	@Builder
@@ -129,7 +130,8 @@ public class JsonOLCand
 			@JsonProperty("jsonOrderLineGroup") final JsonOrderLineGroup jsonOrderLineGroup,
 			@JsonProperty("description") final String description,
 			@JsonProperty("line") final Integer line,
-			@JsonProperty("sectionCodeId") final JsonMetasfreshId sectionCodeId)
+			@JsonProperty("sectionCodeId") final JsonMetasfreshId sectionCodeId,
+			@JsonProperty("auctionId") final JsonMetasfreshId auctionId)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -158,6 +160,7 @@ public class JsonOLCand
 		this.description = description;
 		this.line = line;
 		this.sectionCodeId = sectionCodeId;
+		this.auctionId = auctionId;
 	}
 
 }

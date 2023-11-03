@@ -71,5 +71,11 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isInternalVendorInvoice(DocTypeId docTypeId);
 
+	boolean isProFormaSO(DocTypeId docTypeId);
+
+	boolean isDownPayment(DocTypeId docTypeId);
+
 	void save(I_C_DocType dt);
+
+	boolean isModularManufacturingOrder(@NonNull DocTypeId docTypeId);
 }

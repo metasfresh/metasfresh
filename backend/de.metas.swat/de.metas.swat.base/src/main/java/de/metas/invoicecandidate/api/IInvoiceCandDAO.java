@@ -291,17 +291,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
 
 	/**
-	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
-	 * <ul>
-	 * <li>belong to an active {@code M_InOutLine} that belongs to an active {@code C_InterimInvoice_FlatrateTerm_Line} that belongs to an active {@code C_InterimInvoice_FlatrateTerm}
-	 * that has the given {@code invoiceCandidateId} as either interim or withholding IC </li>
-	 * <li>are active</li>
-	 * <li>belong to an {@code M_InOut} record that is active</li>
-	 * </ul>
-	 */
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsViaInterimInvoice(@NonNull InvoiceCandidateId invoiceCandidateId);
-
-	/**
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
 	 *
 	 * task https://github.com/metasfresh/metasfresh/issues/13376

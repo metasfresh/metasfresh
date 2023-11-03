@@ -26,6 +26,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -38,7 +39,6 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -81,12 +81,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
+		@NonNull final UserId userId = query.getUserId();
+		@Nullable final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
+		@NonNull final QueryLimit suggestedLimit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
 	}
 

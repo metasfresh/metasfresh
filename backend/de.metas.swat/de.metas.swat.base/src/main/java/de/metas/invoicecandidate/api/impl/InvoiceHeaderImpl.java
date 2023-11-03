@@ -1,8 +1,12 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -13,6 +17,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -25,6 +30,7 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -130,12 +136,27 @@ import java.util.Optional;
 	private ActivityId activityId;
 
 	private int C_PaymentInstruction_ID;
+	private CountryId C_Tax_Departure_Country_ID;
+
+	@Nullable @Getter private BankAccountId bankAccountId;
 
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
 	@Setter @Getter @NonNull Dimension dimension;
 
-		/* package */ InvoiceHeaderImpl()
+	@Setter @Getter @Nullable
+	CalendarId calendarId;
+
+	@Setter @Getter @Nullable
+	YearId yearId;
+
+	@Setter @Getter @Nullable
+	WarehouseId warehouseId;
+
+	@Getter @Setter @Nullable
+	private AuctionId auctionId;
+
+	/* package */ InvoiceHeaderImpl()
 	{
 	}
 
@@ -514,6 +535,21 @@ import java.util.Optional;
 	public int getC_PaymentInstruction_ID()
 	{
 		return C_PaymentInstruction_ID;
+	}
+
+	public CountryId getC_Tax_Departure_Country_ID()
+	{
+		return C_Tax_Departure_Country_ID;
+	}
+
+	public void setC_Tax_Departure_Country_ID(final CountryId c_Tax_Departure_Country_ID)
+	{
+		C_Tax_Departure_Country_ID = c_Tax_Departure_Country_ID;
+	}
+
+	public void setBankAccountId(@Nullable final BankAccountId bankAccountId)
+	{
+		this.bankAccountId = bankAccountId;
 	}
 
 }

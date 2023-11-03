@@ -272,7 +272,7 @@ public class AggregationBL implements IAggregationBL
 		ic.setC_Invoice_Candidate_HeaderAggregation_Effective(null); // effective
 	}
 
-	private void setLineAggregationKey(final I_C_Invoice_Candidate ic)
+	private void setLineAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final AggregationKey lineAggregationKey = mkLineAggregationKey(ic);
 		ic.setLineAggregationKey(lineAggregationKey.getAggregationKeyString());
@@ -280,7 +280,7 @@ public class AggregationBL implements IAggregationBL
 
 	}
 
-	private void resetLineAggregationKey(final I_C_Invoice_Candidate ic)
+	private void resetLineAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		ic.setLineAggregationKey(null);
 	}

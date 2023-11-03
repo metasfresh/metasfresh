@@ -22,11 +22,13 @@
 
 package de.metas.project.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -42,11 +44,13 @@ import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.listeners.CompositeProjectStatusListener;
 import de.metas.project.service.listeners.ProjectStatusListener;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -81,6 +85,19 @@ public class ProjectService
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectStatusListeners = CompositeProjectStatusListener.ofList(projectStatusListeners.orElseGet(ImmutableList::of));
 		logger.info("projectClosedListeners: {}", projectStatusListeners);
+	}
+
+	@VisibleForTesting
+	public static ProjectService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProjectService(
+				new ProjectTypeRepository(),
+				new ProjectRepository(),
+				new ProjectLineRepository(),
+				new DocumentNoBuilderFactory(Optional.empty()),
+				Optional.empty());
+
 	}
 
 	public I_C_Project getRecordById(@NonNull final ProjectId id)
@@ -255,5 +272,11 @@ public class ProjectService
 	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId projectTypeId)
 	{
 		return projectTypeRepository.getById(projectTypeId);
+	}
+
+	public Optional<UserId> getProjectManagerByProjectId(@NonNull final ProjectId projectId)
+	{
+		final I_C_Project project = getRecordById(projectId);
+		return Optional.ofNullable(UserId.ofRepoIdOrNullIfSystem(project.getSalesRep_ID()));
 	}
 }

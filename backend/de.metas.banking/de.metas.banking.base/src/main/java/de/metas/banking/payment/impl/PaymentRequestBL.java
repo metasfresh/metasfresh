@@ -108,8 +108,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		if (requestAmount.signum() != 0)
 		{
 			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
-			final boolean creditMemoAdjusted = true;
-			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
+			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 			final BigDecimal payAmt = requestAmount.min(openAmt);
 			paySelectionLine.setPayAmt(payAmt);
 

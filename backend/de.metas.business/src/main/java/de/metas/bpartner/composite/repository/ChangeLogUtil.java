@@ -113,6 +113,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, BPartner.SAP_BPARTNER_CODE)
 			.put(I_C_BPartner.COLUMNNAME_IsSectionGroupPartner, BPartner.SECTION_GROUP_PARTNER)
 			.put(I_C_BPartner.COLUMNNAME_IsSectionPartner, BPartner.SECTION_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_Fresh_Urproduzent, BPartner.URPRODUZENT)
 			.build();
 
 	@VisibleForTesting
@@ -209,6 +210,10 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_Name, BPartnerBankAccount.NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, BPartnerBankAccount.QR_IBAN)
+			.put(I_C_BP_BankAccount.COLUMNNAME_SwiftCode, BPartnerBankAccount.SWIFT_CODE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_IsDefault, BPartnerBankAccount.IS_DEFAULT)
 			.build();
 
 	@VisibleForTesting

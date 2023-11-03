@@ -209,6 +209,7 @@ final class BPartnerCompositesLoader
 		countryIds.forEach(countryId -> allTableRecordRefs.add(TableRecordReference.of(I_C_Country.Table_Name, countryId)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = bpBankAccountDAO.getAllByBPartnerIds(bPartnerIds);
+		bpBankAccounts.values().forEach(bankAccount -> allTableRecordRefs.add(TableRecordReference.of(bankAccount)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpCreditLimits = bPartnerCreditLimitRepository.getAllByBPartnerIds(bPartnerIds);
 		bpCreditLimits.forEach((bpartnerId, bPartnerCreditLimitRecord) -> allTableRecordRefs.add(TableRecordReference.of(bPartnerCreditLimitRecord)));
@@ -373,6 +374,7 @@ final class BPartnerCompositesLoader
 				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
 				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
 				.sectionPartner(bpartnerRecord.isSectionPartner())
+				.urproduzent(bpartnerRecord.isFresh_Urproduzent())
 				.build();
 	}
 
@@ -598,6 +600,9 @@ final class BPartnerCompositesLoader
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.active(bankAccountRecord.isActive())
 				.iban(iban)
+				.qrIban(bankAccountRecord.getQR_IBAN())
+				.name(bankAccountRecord.getName())
+				.isDefault(bankAccountRecord.isDefault())
 				.swiftCode(bankAccountRecord.getSwiftCode())
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))

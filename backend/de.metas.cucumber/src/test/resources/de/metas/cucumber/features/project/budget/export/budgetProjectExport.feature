@@ -1,3 +1,4 @@
+@ghActions:run_on_executor7
 Feature: Budget Project interaction with RabbitMQ after export process was triggered
 
   Background:

@@ -228,9 +228,11 @@ public class TranslatableStrings
 		return trl != null ? trl : empty();
 	}
 
-	public ITranslatableString amount(@NonNull final Amount amount)
+	public ITranslatableString amount(@Nullable final Amount amount)
 	{
-		return builder().append(amount).build();
+		return amount != null
+				? builder().append(amount).build()
+				: empty();
 	}
 
 	public NumberTranslatableString number(final BigDecimal valueBD, final int displayType)

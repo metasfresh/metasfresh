@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
@@ -39,7 +40,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import de.metas.acct.Account;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -58,10 +58,15 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
@@ -107,7 +112,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public @NonNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	@NonNull
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
@@ -182,6 +188,32 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return schemas.get(0);
 	}
 
+	@Override
+	public void saveAcctSchemaElement(@NonNull final AcctSchemaElement acctSchemaElement)
+	{
+		final I_C_AcctSchema_Element record;
+		if (acctSchemaElement.getId() == null)
+		{
+			record = newInstance(I_C_AcctSchema_Element.class);
+		}
+		else
+		{
+			record = load(acctSchemaElement.getId(), I_C_AcctSchema_Element.class);
+		}
+		final ChartOfAccountsId chartOfAccountsId = acctSchemaElement.getChartOfAccountsId();
+
+		record.setName(acctSchemaElement.getName());
+		record.setC_AcctSchema_ID(acctSchemaElement.getAcctSchemaId().getRepoId());
+		record.setC_Element_ID(chartOfAccountsId !=null ? chartOfAccountsId.getRepoId() : -1);
+		record.setElementType(acctSchemaElement.getElementType().getCode());
+		record.setIsBalanced(acctSchemaElement.isBalanced());
+		record.setIsDisplayInEditor(acctSchemaElement.isDisplayedInEditor());
+		record.setSeqNo(acctSchemaElement.getSeqNo());
+		record.setOrg_ID(acctSchemaElement.getOrgId().getRepoId());
+		saveRecord(record);
+
+	}
+
 	private AcctSchemasMap getAcctSchemasMap()
 	{
 		return acctSchemasCache.getOrLoad(0, this::retrieveAcctSchemasMap);
@@ -189,7 +221,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemasMap retrieveAcctSchemasMap()
 	{
-		final ImmutableList<AcctSchema> acctSchemas = Services.get(IQueryBL.class)
+		final ImmutableList<AcctSchema> acctSchemas =queryBL
 				.createQueryBuilder(I_C_AcctSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -205,7 +237,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
-		final Currency acctCurrency = Services.get(ICurrencyDAO.class).getById(acctCurrencyId);
+		final Currency acctCurrency = currencyDAO.getById(acctCurrencyId);
 		final CurrencyPrecision standardPrecision = acctCurrency.getPrecision();
 		final CurrencyPrecision costingPrecision = acctCurrency.getCostingPrecision();
 
@@ -340,7 +372,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Nullable
 	public I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(final AcctSchemaId acctSchemaId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_AcctSchema_Default.class)
 				.addEqualsFilter(I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.create()
@@ -368,8 +400,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemaElementsMap retrieveAcctSchemaElementsMap(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final List<AcctSchemaElement> elements = queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_Element.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
@@ -385,6 +415,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	{
 		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
 		final AcctSchemaElement element = AcctSchemaElement.builder()
+				.id(AcctSchemaElementId.ofRepoId(record.getC_AcctSchema_Element_ID()))
 				.elementType(elementType)
 				.name(record.getName())
 				.seqNo(record.getSeqNo())
@@ -398,6 +429,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.displayedInEditor(record.isDisplayInEditor())
 				.balanced(record.isBalanced())
 				//
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
+				.OrgId(OrgId.ofRepoId(record.getOrg_ID()))
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{
@@ -495,7 +528,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Nullable
 	public I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_GL.class)
 				.addEqualsFilter(I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.create()
@@ -516,7 +548,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private ImmutableSet<CostElementId> retrievePostOnlyForCostElementIds(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_AcctSchema_CostElement.class)
 				.addEqualsFilter(I_C_AcctSchema_CostElement.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.addOnlyActiveRecordsFilter()

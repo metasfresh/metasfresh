@@ -1145,6 +1145,11 @@ body {
     margin-bottom: 1.5rem !important;
   }
 
+  .login-logo {
+    max-width: 165px !important;
+    max-height: 165px !important;
+  }
+
   .forgot-password-link {
     cursor: pointer;
     color: $brand-link-color !important;

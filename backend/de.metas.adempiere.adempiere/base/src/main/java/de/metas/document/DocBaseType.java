@@ -45,6 +45,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	GehaltsrechnungAngestellter(X_C_DocType.DOCBASETYPE_GehaltsrechnungAngestellter),
 	InterneRechnungLieferant(X_C_DocType.DOCBASETYPE_InterneRechnungLieferant),
 	ShipperTransportation(X_C_DocType.DOCBASETYPE_ShipperTransportation),
+	ShippingNotification(X_C_DocType.DOCBASETYPE_ShippingNotification),
 	CustomerContract(X_C_DocType.DOCBASETYPE_CustomerContract),
 	DunningDoc(X_C_DocType.DOCBASETYPE_DunningDoc),
 	ShipmentDeclaration(X_C_DocType.DOCBASETYPE_ShipmentDeclaration),
@@ -54,6 +55,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	RemittanceAdvice(X_C_DocType.DOCBASETYPE_RemittanceAdvice),
 	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BOMFormula),
 	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
+	ModularOrder(X_C_DocType.DOCBASETYPE_ModularOrder),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;

@@ -66,10 +66,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
 
-	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
-
-	private static final String CONFIG_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
-	private static final Duration CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue = Duration.ofHours(2);
+	/**
+	 * This is usually set by starting metasfresh with something like {@code -Ddb.postgresql.unreturnedConnectionTimeoutMillis=28800000} to e.g. set the timeout to 8h
+	 */
+	private static final String SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
+	private static final Duration SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis_DefaultValue = Duration.ofHours(2);
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -108,11 +109,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private transient ComboPooledDataSource _dataSource = null;
 	private transient volatile boolean _dataSourceInitialized = false;
 	private final Object _dataSourceLock = new Object();
-
-	/** Cached Database Name */
-	private String m_dbName = null;
-
-	// private String m_userName = null;
 
 	/** Connection String (the last one about we were asked) */
 	private String m_connectionURL;
@@ -270,10 +266,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	@Override
 	public String getCatalog()
 	{
-		if (m_dbName != null)
-		{
-			return m_dbName;
-		}
 		// log.error("Database Name not set (yet) - call getConnectionURL first");
 		return null;
 	}	// getCatalog
@@ -578,30 +570,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			cpds.setPassword(connection.getDbPwd());
 			cpds.setPreferredTestQuery(DEFAULT_CONN_TEST_SQL);
 			cpds.setIdleConnectionTestPeriod(1200);
-			// cpds.setTestConnectionOnCheckin(true);
-			// cpds.setTestConnectionOnCheckout(true);
+
 			cpds.setAcquireRetryAttempts(2);
 
-			// if (Ini.isSwingClient())
-			// {
-			// 	// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-			// 	cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
-			//
-			// 	cpds.setInitialPoolSize(1);
-			// 	cpds.setMinPoolSize(1);
-			// 	cpds.setMaxPoolSize(20);
-			// 	cpds.setMaxIdleTimeExcessConnections(1200);
-			// 	cpds.setMaxIdleTime(900);
-			// }
-			// else
-			// {
-				// these are set in c3p0.properties files
-				// cpds.setInitialPoolSize(10);
-				// cpds.setMinPoolSize(5);
-				// cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
-			// }
 
 			//
 			// Timeout unreturned connections
@@ -630,8 +603,8 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static Duration getUnreturnedConnectionTimeout()
 	{
 		return Duration.ofMillis(SystemUtils.getSystemProperty(
-				CONFIG_UnreturnedConnectionTimeoutMillis,
-				(int)CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue.toMillis()));
+				SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis,
+				(int)SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis_DefaultValue.toMillis()));
 	}
 
 	private final void closeDataSource()

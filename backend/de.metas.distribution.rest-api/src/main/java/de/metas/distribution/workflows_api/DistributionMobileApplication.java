@@ -7,7 +7,6 @@ import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
@@ -20,6 +19,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -27,8 +27,6 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -64,16 +62,15 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			final @NonNull UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			final @NonNull QueryLimit suggestedLimit,
-			final @NonNull Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		if (filterByQRCode != null)
+		if (query.getFilterByQRCode() != null)
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
+
+		@NonNull final UserId userId = query.getUserId();
+		@NonNull final QueryLimit suggestedLimit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 
 		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}

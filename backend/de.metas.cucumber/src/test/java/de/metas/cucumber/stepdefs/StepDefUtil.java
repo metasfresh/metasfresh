@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
 import io.cucumber.java.en.And;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -317,5 +319,11 @@ public class StepDefUtil
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));
+	}
+
+	@NonNull
+	public static String writeRowAsString(@NonNull final Map<String, String> row)
+	{
+		return JsonObjectMapperHolder.toJson(row);
 	}
 }

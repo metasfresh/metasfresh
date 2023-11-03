@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -17,6 +18,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -107,6 +110,8 @@ public class FlatrateBLTest extends ContractsTestBase
 		taxBL = Mockito.mock(ITaxBL.class);
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
 	}
 
 	@BeforeEach
@@ -470,6 +475,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		term.setStartDate(day(2017, 3, 15));
 		term.setEndDate(day(2017, 4, 14));
 		term.setC_Flatrate_Conditions(conditions1);
+		term.setType_Conditions(TypeConditions.CALL_ORDER.getCode());
 		term.setC_Flatrate_Data(flatrateData);
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		save(term);
@@ -480,6 +486,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		overlappingTerm.setStartDate(day(2017, 3, 14));
 		overlappingTerm.setEndDate(day(2017, 4, 13));
 		overlappingTerm.setC_Flatrate_Conditions(conditions2);
+		overlappingTerm.setType_Conditions(TypeConditions.CALL_ORDER.getCode());
 		overlappingTerm.setC_Flatrate_Data(flatrateData);
 		overlappingTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		save(overlappingTerm);
