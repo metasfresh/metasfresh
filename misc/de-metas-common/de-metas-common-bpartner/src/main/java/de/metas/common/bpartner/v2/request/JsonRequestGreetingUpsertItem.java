@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-bpartner
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,22 @@
  * #L%
  */
 
-package de.metas.greeting;
+package de.metas.common.bpartner.v2.request;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 @Value
 @Builder
-public class CreateGreetingRequest
+@Jacksonized
+public class JsonRequestGreetingUpsertItem
 {
-	@NonNull String name;
-	@NonNull String greeting;
-	@Nullable GreetingStandardType standardType;
-	@NonNull OrgId orgId;
-
+	@NonNull String identifier;
+	@Nullable JsonRequestGreeting greetingInfo;
+	@Nullable SyncAdvise syncAdvise;
 }

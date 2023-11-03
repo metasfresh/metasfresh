@@ -70,6 +70,7 @@ public class BPartnerCompositeSaverTest
 	public static final String HU_CITY = "Szolnok";
 
 	private BPartnerBL bpartnerBL;
+	private GreetingRepository greetingRepository;
 	private BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	@BeforeEach
@@ -77,7 +78,8 @@ public class BPartnerCompositeSaverTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		greetingRepository = new GreetingRepository();
+		SpringContextHolder.registerJUnitBean(greetingRepository);
 
 		bpartnerBL = new BPartnerBL(new UserRepository());
 		bPartnerCreditLimitRepository = new BPartnerCreditLimitRepository();

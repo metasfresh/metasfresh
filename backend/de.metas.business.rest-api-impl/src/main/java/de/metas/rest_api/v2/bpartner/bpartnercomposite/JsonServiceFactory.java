@@ -32,6 +32,7 @@ import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.sectionCode.SectionCodeService;
@@ -40,9 +41,11 @@ import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class JsonServiceFactory
 {
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -57,39 +60,9 @@ public class JsonServiceFactory
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 	private final SectionCodeService sectionCodeService;
 	private final IncotermsRepository incotermsRepository;
-	private final IPaymentTermRepository paymentTermRepository;
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
-
-	public JsonServiceFactory(
-			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
-			@NonNull final BPartnerQueryService bpartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPGroupRepository bpGroupRepository,
-			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final TitleRepository titleRepository,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final JobService jobService,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
-			@NonNull final SectionCodeService sectionCodeService,
-			@NonNull final IncotermsRepository incotermsRepository,
-			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
-			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
-	{
-		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
-		this.bpartnerQueryService = bpartnerQueryService;
-		this.greetingRepository = greetingRepository;
-		this.titleRepository = titleRepository;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.bpGroupRepository = bpGroupRepository;
-		this.currencyRepository = currencyRepository;
-		this.jobService = jobService;
-		this.externalReferenceService = externalReferenceService;
-		this.sectionCodeService = sectionCodeService;
-		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
-		this.incotermsRepository = incotermsRepository;
-		this.paymentTermRepository = Services.get(IPaymentTermRepository.class);
-		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
-	}
+	private final JsonGreetingService greetingService;
 
 	public JsonPersisterService createPersister()
 	{
@@ -107,6 +80,7 @@ public class JsonServiceFactory
 				sectionCodeService,
 				incotermsRepository,
 				bPartnerCreditLimitRepository,
+				greetingService,
 				identifier);
 	}
 

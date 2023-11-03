@@ -140,8 +140,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
@@ -192,13 +191,14 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new TitleRepository(),
-				currencyRepository,
+				new CurrencyRepository(),
 				JobService.newInstanceForUnitTesting(),
 				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				bPartnerCreditLimitRepository);
+				bPartnerCreditLimitRepository,
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

@@ -42,6 +42,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.sectionCode.SectionCodeService;
@@ -69,7 +70,7 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createBPartnerData;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(SnapshotExtension.class)
 class JsonRetrieverServiceTest
@@ -105,10 +106,11 @@ class JsonRetrieverServiceTest
 				new CurrencyRepository(),
 				JobService.newInstanceForUnitTesting(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				new BPartnerCreditLimitRepository());
+				new BPartnerCreditLimitRepository(),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

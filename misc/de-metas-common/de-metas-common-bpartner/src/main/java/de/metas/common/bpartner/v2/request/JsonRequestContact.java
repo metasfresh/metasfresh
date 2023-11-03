@@ -185,6 +185,10 @@ public class JsonRequestContact
 	@Schema(hidden = true)
 	private boolean birthdaySet;
 
+	private JsonRequestGreetingUpsertItem greeting;
+
+	private boolean greetingSet;
+
 	private SyncAdvise syncAdvise;
 
 	@Schema(hidden = true)
@@ -353,5 +357,11 @@ public class JsonRequestContact
 	{
 		this.phone2 = phone2;
 		this.phone2Set = true;
+	}
+
+	public void setGreeting(@Nullable final JsonRequestGreetingUpsertItem greeting)
+	{
+		this.greeting = greeting;
+		greetingSet = true;
 	}
 }

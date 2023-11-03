@@ -367,4 +367,5 @@ public final class BPartnerComposite
 	{
 		return Check.assumeNotNull(getOrgId(), "At this point, is expected the orgId to be resolved!");
 	}
+
 }
