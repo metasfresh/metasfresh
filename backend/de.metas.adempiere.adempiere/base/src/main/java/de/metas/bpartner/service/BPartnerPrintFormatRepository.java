@@ -135,9 +135,26 @@ public class BPartnerPrintFormatRepository
 		}
 
 		bpPrintFormatRecord.setC_BPartner_ID(bpPrintFormat.getBpartnerId().getRepoId());
-		bpPrintFormatRecord.setC_DocType_ID(bpPrintFormat.getDocTypeId().getRepoId());
-		bpPrintFormatRecord.setAD_Table_ID(bpPrintFormat.getAdTableId().getRepoId());
-		bpPrintFormatRecord.setAD_PrintFormat_ID(bpPrintFormat.getPrintFormatId());
+		if(bpPrintFormat.getDocTypeId() != null)
+		{
+			bpPrintFormatRecord.setC_DocType_ID(bpPrintFormat.getDocTypeId().getRepoId());
+		}
+		if(bpPrintFormat.getAdTableId() != null)
+		{
+			bpPrintFormatRecord.setAD_Table_ID(bpPrintFormat.getAdTableId().getRepoId());
+		}
+		if(bpPrintFormat.getPrintFormatId() > 0)
+		{
+			bpPrintFormatRecord.setAD_PrintFormat_ID(bpPrintFormat.getPrintFormatId());
+		}
+		if(bpPrintFormat.getBPartnerLocationId() != null)
+		{
+			bpPrintFormatRecord.setC_BPartner_Location_ID(bpPrintFormat.getBPartnerLocationId().getRepoId());
+		}
+		if(bpPrintFormat.getPrintCopies() != null && bpPrintFormat.getPrintCopies().isGreaterThanZero())
+		{
+			bpPrintFormatRecord.setDocumentCopies_Override(bpPrintFormat.getPrintCopies().toInt());
+		}
 
 		return bpPrintFormatRecord;
 	}

@@ -23,6 +23,8 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
@@ -33,11 +35,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 // @Component // IMPORTANT: don't annotate it with Component
 final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
@@ -102,10 +107,19 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 			reportProcessId = util.getReportProcessIdByPrintFormatId(printFormatId);
 		}
 
+		final Integer locationId = InterfaceWrapperHelper.getValueOrNull(record, COLUMNNAME_C_BPartner_Location_ID);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, locationId);
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+				.adTableId(recordRef.getAdTableId())
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(bPartnerLocationId)
+				.docTypeId(docTypeId)
+				.build();
+
 		return DocumentReportInfo.builder()
 				.recordRef(recordRef)
 				.reportProcessId(reportProcessId)
-				.copies(util.getDocumentCopies(docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(documentNo)
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

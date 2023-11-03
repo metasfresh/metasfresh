@@ -338,35 +338,78 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-11-02 15:25:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546568
 ;
 
--- 2023-11-02T14:35:27.627Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540776,0,540638,TO_TIMESTAMP('2023-11-02 15:35:27','YYYY-MM-DD HH24:MI:SS'),100,'D','Die Reihenfolge von aktiven Einträgen muss eindeutig sein.','Y','Y','bpartner_seqno_ux','N',TO_TIMESTAMP('2023-11-02 15:35:27','YYYY-MM-DD HH24:MI:SS'),100,'isActive = ''Y''')
+-- 2023-11-03T15:46:06.993Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,Updated,UpdatedBy) VALUES (0,582790,0,TO_TIMESTAMP('2023-11-03 16:46:06','YYYY-MM-DD HH24:MI:SS'),100,'Identifiziert die (Liefer-) Adresse des Geschäftspartners. Kann nur als Kriterium für die Anzahl von Kopien genutzt werden.','CUST','Identifiziert die Adresse des Geschäftspartners','Y','Standort','Identifiziert die (Auslieferungs-) Adresse des Geschäftspartners','Identifiziert die Adresse des Geschäftspartners','Standort','Standort','Standort',TO_TIMESTAMP('2023-11-03 16:46:06','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-11-02T14:35:27.639Z
-INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540776 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+-- 2023-11-03T15:46:07.011Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582790 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- 2023-11-02T14:35:42.616Z
-UPDATE AD_Index_Table_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-11-02 15:35:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540776 AND AD_Language='de_CH'
+-- Element: null
+-- 2023-11-03T15:46:40.151Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-11-03 16:46:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582790 AND AD_Language='de_CH'
 ;
 
--- 2023-11-02T14:35:43.925Z
-UPDATE AD_Index_Table_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-11-02 15:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540776 AND AD_Language='de_DE'
+-- 2023-11-03T15:46:40.205Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582790,'de_CH')
 ;
 
--- 2023-11-02T14:37:32.711Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Die Sequence of active records needs to be explicit.', IsTranslated='Y',Updated=TO_TIMESTAMP('2023-11-02 15:37:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540776 AND AD_Language='en_US'
+-- Element: null
+-- 2023-11-03T15:46:43.152Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-11-03 16:46:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582790 AND AD_Language='de_DE'
 ;
 
--- 2023-11-02T14:37:56.250Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,551611,541374,540776,0,TO_TIMESTAMP('2023-11-02 15:37:56','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2023-11-02 15:37:56','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2023-11-03T15:46:43.154Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582790,'de_DE')
 ;
 
--- 2023-11-02T14:38:32.409Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587626,541375,540776,0,TO_TIMESTAMP('2023-11-02 15:38:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-11-02 15:38:32','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2023-11-03T15:46:43.155Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582790,'de_DE')
 ;
 
--- 2023-11-03T07:44:00.214Z
-CREATE UNIQUE INDEX bpartner_seqno_ux ON C_BP_PrintFormat (C_BPartner_ID,SeqNo) WHERE isActive = 'Y'
+-- Element: null
+-- 2023-11-03T15:48:38.455Z
+UPDATE AD_Element_Trl SET Description='Identifies the (delivery) address of the business partner. Can only be used as a criterion for the number of copies.', Help='', Name='Location', PO_Description='', PO_Help='', PO_Name='', PO_PrintName='', PrintName='Location',Updated=TO_TIMESTAMP('2023-11-03 16:48:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582790 AND AD_Language='en_US'
+;
+
+-- 2023-11-03T15:48:38.470Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582790,'en_US')
+;
+
+-- Field: Geschäftspartner -> Druck Format -> Standort
+-- Column: C_BP_PrintFormat.C_BPartner_Location_ID
+-- Field: Geschäftspartner(123,D) -> Druck Format(540653,D) -> Standort
+-- Column: C_BP_PrintFormat.C_BPartner_Location_ID
+-- 2023-11-03T15:49:59.660Z
+UPDATE AD_Field SET AD_Name_ID=582790, Description='Identifiziert die (Liefer-) Adresse des Geschäftspartners. Kann nur als Kriterium für die Anzahl von Kopien genutzt werden.', Help='Identifiziert die Adresse des Geschäftspartners', Name='Standort',Updated=TO_TIMESTAMP('2023-11-03 16:49:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=721736
+;
+
+-- 2023-11-03T15:49:59.663Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582790)
+;
+
+-- 2023-11-03T15:49:59.680Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=721736
+;
+
+-- 2023-11-03T15:49:59.687Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(721736)
+;
+
+-- Field: Geschäftspartner -> Druck Format -> Reihenfolge
+-- Column: C_BP_PrintFormat.SeqNo
+-- Field: Geschäftspartner(123,D) -> Druck Format(540653,D) -> Reihenfolge
+-- Column: C_BP_PrintFormat.SeqNo
+-- 2023-11-03T16:08:46.778Z
+UPDATE AD_Field SET SortNo=1.000000000000,Updated=TO_TIMESTAMP('2023-11-03 17:08:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=721746
+;
+
+-- Field: Geschäftspartner -> Druck Format -> Belegart
+-- Column: C_BP_PrintFormat.C_DocType_ID
+-- Field: Geschäftspartner(123,D) -> Druck Format(540653,D) -> Belegart
+-- Column: C_BP_PrintFormat.C_DocType_ID
+-- 2023-11-03T16:10:29.837Z
+UPDATE AD_Field SET SortNo=0,Updated=TO_TIMESTAMP('2023-11-03 17:10:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555269
 ;
 

@@ -33,6 +33,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -117,11 +118,15 @@ public class DocumentReportAdvisorUtil
 			@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
 		final BPPrintFormat bpPrintFormat = bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery, true);
-
-		return bpPrintFormat != null ? bpPrintFormat.getPrintCopies() : getDocumentCopies(docType);
+		if(bpPrintFormat == null)
+		{
+			return getDocumentCopies(docType);
+		}
+		Check.assumeNotNull(bpPrintFormat.getPrintCopies(), "PrintCopies shall not be null");
+		return bpPrintFormat.getPrintCopies();
 	}
 
-	public PrintCopies getDocumentCopies(@Nullable final I_C_DocType docType)
+	private static PrintCopies getDocumentCopies(@Nullable final I_C_DocType docType)
 	{
 		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_DocType.COLUMNNAME_DocumentCopies)
 				? PrintCopies.ofInt(docType.getDocumentCopies())

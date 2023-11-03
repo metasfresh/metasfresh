@@ -37,7 +37,7 @@ public class C_BP_PrintFormat
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setNextSeqNo(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
+	public void setNextSeqNoIfNeeded(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
 	{
 		if(bpPrintFormat.getSeqNo() != 0)
 		{

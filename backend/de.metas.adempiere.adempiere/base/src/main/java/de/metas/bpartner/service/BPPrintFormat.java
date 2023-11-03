@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -48,32 +47,35 @@ import javax.annotation.Nullable;
 @Builder
 public class BPPrintFormat
 {
+	@NonNull
 	BPartnerId bpartnerId;
 
+	@Nullable
 	DocTypeId docTypeId;
 
+	@Nullable
 	AdTableId adTableId;
 
 	int printFormatId;
 
 	int bpPrintFormatId;
 
+	@Nullable
 	BPartnerLocationId bPartnerLocationId;
 
+	@Nullable
 	PrintCopies printCopies;
 
 	@Builder(toBuilder = true)
 	private BPPrintFormat(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final DocTypeId docTypeId,
-			@NonNull final AdTableId adTableId,
+			@Nullable final DocTypeId docTypeId,
+			@Nullable final AdTableId adTableId,
 			final int printFormatId,
 			final int bpPrintFormatId,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
 			@Nullable final PrintCopies printCopies)
 	{
-		Check.assume(printFormatId > 0, "printFormatId shall be > 0");
-
 		this.bpartnerId = bpartnerId;
 		this.docTypeId = docTypeId;
 		this.adTableId = adTableId;
