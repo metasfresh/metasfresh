@@ -3,22 +3,18 @@ package de.metas.ui.web.order.products_proposal.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -78,17 +74,5 @@ public class Order
 
 	@NonNull
 	ImmutableList<OrderLine> lines;
-
-	public Optional<OrderLine> getFirstMatchingOrderLine(
-			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
-	{
-		return getLines()
-				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
-
-				.findFirst();
-	}
 
 }

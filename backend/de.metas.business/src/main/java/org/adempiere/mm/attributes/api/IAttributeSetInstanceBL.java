@@ -131,6 +131,4 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
-
-	boolean asiValuesMatchOrEmpty(@NonNull AttributeSetInstanceId asiId1, @NonNull AttributeSetInstanceId asiId2);
 }
