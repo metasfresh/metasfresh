@@ -29,15 +29,17 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_BP_PrintFormat.class)
+@Component
 public class C_BP_PrintFormat
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void generateMissingSeqNo(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
+	public void setNextSeqNo(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
 	{
-		if(bpPrintFormat.getSeqNo() == 0)
+		if(bpPrintFormat.getSeqNo() != 0)
 		{
 			return;
 		}
@@ -45,7 +47,7 @@ public class C_BP_PrintFormat
 		final I_C_BP_PrintFormat existingBpPrintFormat = queryBL.createQueryBuilder(I_C_BP_PrintFormat.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormat.getC_BPartner_ID())
-				.orderBy(I_C_BP_PrintFormat.COLUMNNAME_SeqNo)
+				.orderByDescending(I_C_BP_PrintFormat.COLUMNNAME_SeqNo)
 				.create()
 				.first(I_C_BP_PrintFormat.class);
 
@@ -56,7 +58,7 @@ public class C_BP_PrintFormat
 		}
 		else
 		{
-			seqNo = ((bpPrintFormat.getSeqNo() % 10) + 1) * 10;
+			seqNo = ((existingBpPrintFormat.getSeqNo() / 10) + 1) * 10;
 		}
 		bpPrintFormat.setSeqNo(seqNo);
 	}

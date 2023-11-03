@@ -366,3 +366,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587626,541375,540776,0,TO_TIMESTAMP('2023-11-02 15:38:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2023-11-02 15:38:32','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2023-11-03T07:44:00.214Z
+CREATE UNIQUE INDEX bpartner_seqno_ux ON C_BP_PrintFormat (C_BPartner_ID,SeqNo) WHERE isActive = 'Y'
+;
+
