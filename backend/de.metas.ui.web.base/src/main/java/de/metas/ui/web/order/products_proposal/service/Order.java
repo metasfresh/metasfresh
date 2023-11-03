@@ -96,27 +96,4 @@ public class Order
 	@NonNull
 	ImmutableList<OrderLine> lines;
 
-	public Optional<OrderLine> getFirstMatchingOrderLine(
-			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			@NonNull Predicate<OrderLine> asiMatcher)
-	{
-		return getLines()
-				.stream()
-				.filter(line -> line.isMatching(productId, packingMaterialId, asiMatcher))
-
-				.findFirst();
-	}
-
-	@NonNull
-	public OrderLine getFirstMatchingOrderLine(@NonNull final ProductId productId)
-	{
-		return getLines()
-				.stream()
-				.filter(line -> line.isMatching(productId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No line found for productId !")
-						.appendParametersToMessage()
-						.setParameter("productId", productId));
-	}
 }
