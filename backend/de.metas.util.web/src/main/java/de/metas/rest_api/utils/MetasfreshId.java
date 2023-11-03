@@ -22,18 +22,17 @@
 
 package de.metas.rest_api.utils;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.Function;
 
 @Value
 public class MetasfreshId
@@ -111,5 +110,11 @@ public class MetasfreshId
 	public static boolean equals(@Nullable final MetasfreshId id1, @Nullable final MetasfreshId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	@NonNull
+	public <T extends RepoIdAware> T mapToRepoId(@NonNull final Function<Integer, T> mappingFunction)
+	{
+		return mappingFunction.apply(value);
 	}
 }
