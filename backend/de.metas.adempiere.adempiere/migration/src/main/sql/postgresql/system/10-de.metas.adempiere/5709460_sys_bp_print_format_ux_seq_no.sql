@@ -4,7 +4,7 @@ Set seqno = print_formats.seqNo,
     updatedby = 99
 FROM (SELECT
           pf.c_bp_printformat_id,
-          (row_number() OVER (PARTITION BY bpp.c_bpartner_id ORDER BY bpp.c_bp_printformat_id)) * 10 AS seqNo
+          (row_number() OVER (PARTITION BY pf.c_bpartner_id ORDER BY pf.c_bp_printformat_id)) * 10 AS seqNo
       FROM c_bp_printformat pf
      ) AS print_formats
 WHERE bpp.c_bp_printformat_id = print_formats.c_bp_printformat_id
