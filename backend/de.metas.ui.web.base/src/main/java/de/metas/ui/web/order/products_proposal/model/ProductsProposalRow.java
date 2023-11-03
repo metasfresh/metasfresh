@@ -10,7 +10,6 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
-import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -35,7 +34,6 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -164,9 +162,6 @@ public class ProductsProposalRow implements IViewRow
 	private final AttributeSetInstanceId asiId;
 
 	@Getter
-	private final Predicate<OrderLine> asiMatcher;
-
-	@Getter
 	private final OrderLineId existingOrderLineId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
@@ -189,7 +184,6 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
 			@Nullable final AttributeSetInstanceId asiId,
-			@Nullable final Predicate<OrderLine> asiMatcher,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
@@ -216,7 +210,6 @@ public class ProductsProposalRow implements IViewRow
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 		this.asiId = asiId;
-		this.asiMatcher = asiMatcher;
 
 		this.price = price;
 		this.isCampaignPrice = price.isCampaignPriceUsed();
@@ -347,22 +340,13 @@ public class ProductsProposalRow implements IViewRow
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
 	}
 
-	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
+	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
 	{
-		if (order == null)
+		if(existingOrderLine == null)
 		{
 			return this;
 		}
-
-		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(),
-																			getPackingMaterialId(),
-																			asiMatcher).orElse(null);
-		if (existingOrderLine == null)
-		{
-			return this;
-		}
-
-		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), order.getCurrency().getCurrencyCode());
+		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), existingOrderLine.getCurrency().getCurrencyCode());
 
 		return toBuilder()
 				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()

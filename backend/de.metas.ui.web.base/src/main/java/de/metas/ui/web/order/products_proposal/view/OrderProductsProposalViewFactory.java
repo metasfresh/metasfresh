@@ -164,6 +164,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.orderProductProposalsService(orderProductProposalsService)
 				.campaignPriceProvider(campaignPriceProvider)
+				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.priceListVersionId(order.getPriceListVersionId())
 				.order(order)

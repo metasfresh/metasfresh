@@ -16,8 +16,10 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -30,6 +32,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -37,6 +41,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
@@ -46,9 +51,14 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -86,12 +96,24 @@ public class OrderProductProposalsService
 	private final CurrencyRepository currencyRepo;
 	private final MoneyService moneyService;
 
+	private final ProductPriceRepository productPriceRepository;
+
 	public OrderProductProposalsService(
 			@NonNull final CurrencyRepository currencyRepo,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final ProductPriceRepository productPriceRepository)
 	{
 		this.currencyRepo = currencyRepo;
 		this.moneyService = moneyService;
+		this.productPriceRepository = productPriceRepository;
+
+	}
+
+
+	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
+	{
+		return AttributesKeys.createAttributesKeyFromASIAllAttributes(olAsiId)
+				.orElse(AttributesKey.NONE);
 	}
 
 	@NonNull
@@ -100,7 +122,10 @@ public class OrderProductProposalsService
 			@NonNull final ProductId productId,
 			@NonNull final CurrencyCode currencyCode)
 	{
-		final OrderLine orderLine = quotation.getFirstMatchingOrderLine(productId);
+		// Note: The order line matching does not include attribute matching. To include it, the logic in
+		// de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService.findBestMatchesForOrderLineFromProductPrices
+		// should be used for calculating quotation price
+		final OrderLine orderLine = quotation.getFirstMatchingQuotationLine(productId);
 
 		final Money quotationPriceEntered = Money.of(orderLine.getPriceEntered(), orderLine.getCurrencyId());
 
@@ -216,7 +241,8 @@ public class OrderProductProposalsService
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.description(record.getDescription())
-				.asiId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.currency(currencyRepo.getById(record.getC_Currency_ID()))
 				.build();
 	}
 
@@ -249,5 +275,72 @@ public class OrderProductProposalsService
 				.docStatus(DocStatus.Completed)
 				.descSortByDateOrdered(true)
 				.build();
+	}
+
+
+	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPrices(final Order order, final List<I_M_ProductPrice> productPrices)
+	{
+		if (order == null)
+		{
+			return Collections.emptyMap();
+		}
+		final Map<ProductPriceId, OrderLine> result = new HashMap<>();
+		for (final OrderLine orderline : order.getLines())
+		{
+			final Comparator<I_M_ProductPrice> comparing = Comparator.comparing(pp -> getNumberOfMatchingAttributes(orderline.getAsiId(), extractProductASI(pp)));
+			productPrices.stream()
+					.filter(pp -> orderline.isMatching(ProductId.ofRepoId(pp.getM_Product_ID()), HUPIItemProductId.ofRepoIdOrNull(pp.getM_HU_PI_Item_Product_ID())))
+					.max(comparing)
+					.map(org.compiere.model.I_M_ProductPrice::getM_ProductPrice_ID)
+					.map(ProductPriceId::ofRepoId)
+					.ifPresent(productPriceId -> result.put(productPriceId, orderline));
+		}
+		return result;
+	}
+
+
+	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPricesId(final Order order, final List<ProductPriceId> productPriceIds)
+	{
+		if (order == null)
+		{
+			return Collections.emptyMap();
+		}
+
+		final List<I_M_ProductPrice> productPrices = productPriceIds.stream()
+				.map(productPriceId -> productPriceRepository.getRecordById(productPriceId, I_M_ProductPrice.class))
+				.collect(Collectors.toList());
+
+		return findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+	}
+	public AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
+	{
+		return AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+
+	}
+
+	private int getNumberOfMatchingAttributes(final AttributeSetInstanceId olAsiId, final AttributeSetInstanceId productPriceAsiId)
+	{
+		final AttributesKey olAk = getAttributesKeyFor(olAsiId);
+		final AttributesKey ppAk = getAttributesKeyFor(productPriceAsiId);
+
+		final int ppAKSize = ppAk.getParts().size();
+		final int olAKSize = olAk.getParts().size();
+
+		if (ppAKSize > olAKSize)
+		{
+			return 0;
+		}
+
+		if (olAk.isNone() && ppAk.isNone())
+		{
+			return 1;
+		}
+
+		final AttributesKey attributesKey = olAk.getIntersection(ppAk);
+		if (attributesKey.isNone())
+		{
+			return 0;
+		}
+		return attributesKey.getParts().size();
 	}
 }
