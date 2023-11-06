@@ -254,7 +254,7 @@ public final class ProductsProposalRowsLoader
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.asiId(orderProductProposalsService.extractProductASI(record))
+				.asiId(OrderProductProposalsService.extractProductASI(record))
 				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
