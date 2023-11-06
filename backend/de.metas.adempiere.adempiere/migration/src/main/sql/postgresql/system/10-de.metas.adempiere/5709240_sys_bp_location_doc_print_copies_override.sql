@@ -108,10 +108,6 @@ INSERT INTO t_alter_column values('c_bp_printformat','DocumentCopies_Override','
 UPDATE C_BP_PrintFormat SET DocumentCopies_Override=0 WHERE DocumentCopies_Override IS NULL
 ;
 
--- 2023-11-02T11:51:13.854Z
-INSERT INTO t_alter_column values('c_bp_printformat','DocumentCopies_Override',null,'NOT NULL',null)
-;
-
 -- Field: Geschäftspartner -> Druck Format -> Standort
 -- Column: C_BP_PrintFormat.C_BPartner_Location_ID
 -- Field: Geschäftspartner(123,D) -> Druck Format(540653,D) -> Standort
