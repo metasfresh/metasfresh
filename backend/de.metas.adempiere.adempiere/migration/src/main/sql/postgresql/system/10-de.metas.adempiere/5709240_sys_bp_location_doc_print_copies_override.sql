@@ -1,5 +1,5 @@
 -- 2023-10-31T12:51:54.986Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582783,0,'DocumentCopies_Override',TO_TIMESTAMP('2023-10-31 13:51:54','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind, für gegebene Adressen.','D','Y','Kopien','Kopien',TO_TIMESTAMP('2023-10-31 13:51:54','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582783,0,'DocumentCopies_Override',TO_TIMESTAMP('2023-10-31 13:51:54','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind. (Wert 0 wird ignoriert)','D','Y','Kopien','Kopien',TO_TIMESTAMP('2023-10-31 13:51:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-10-31T12:51:55.009Z
@@ -30,7 +30,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-31 13:5
 
 -- Element: DocumentCopies_Override
 -- 2023-10-31T12:55:21.576Z
-UPDATE AD_Element_Trl SET Description='Overwrites the number of copies set in the document type for given addresses.', IsTranslated='Y', Name='Copies', PrintName='Copies',Updated=TO_TIMESTAMP('2023-10-31 13:55:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582783 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='Overwrites the number of copies set in the document type. (Value 0 is ignored)', IsTranslated='Y', Name='Copies', PrintName='Copies',Updated=TO_TIMESTAMP('2023-10-31 13:55:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582783 AND AD_Language='en_US'
 ;
 
 -- 2023-10-31T12:55:21.579Z
@@ -79,7 +79,7 @@ UPDATE AD_Column SET MandatoryLogic='',Updated=TO_TIMESTAMP('2023-11-02 10:30:28
 -- Column: C_BP_PrintFormat.DocumentCopies_Override
 -- Column: C_BP_PrintFormat.DocumentCopies_Override
 -- 2023-10-31T13:03:01.784Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MandatoryLogic,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587623,582783,0,22,540638,'DocumentCopies_Override',TO_TIMESTAMP('2023-10-31 14:03:01','YYYY-MM-DD HH24:MI:SS'),100,'N','Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind, für gegebene Adressen.','D',0,2,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','@C_BPartner_Location_ID@!0',0,'Kopien',0,0,TO_TIMESTAMP('2023-10-31 14:03:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MandatoryLogic,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587623,582783,0,22,540638,'DocumentCopies_Override',TO_TIMESTAMP('2023-10-31 14:03:01','YYYY-MM-DD HH24:MI:SS'),100,'N','Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind. (Wert 0 wird ignoriert)','D',0,2,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','@C_BPartner_Location_ID@!0',0,'Kopien',0,0,TO_TIMESTAMP('2023-10-31 14:03:01','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-10-31T13:03:01.787Z
@@ -133,7 +133,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=721736
 -- Field: Geschäftspartner(123,D) -> Druck Format(540653,D) -> Kopien
 -- Column: C_BP_PrintFormat.DocumentCopies_Override
 -- 2023-10-31T13:17:34.942Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,587623,721737,0,540653,TO_TIMESTAMP('2023-10-31 14:17:34','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind, für gegebene Adressen.',2,'D','Y','N','N','N','N','N','N','N','Kopien',TO_TIMESTAMP('2023-10-31 14:17:34','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,587623,721737,0,540653,TO_TIMESTAMP('2023-10-31 14:17:34','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind. (Wert 0 wird ignoriert)',2,'D','Y','N','N','N','N','N','N','N','Kopien',TO_TIMESTAMP('2023-10-31 14:17:34','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-10-31T13:17:34.945Z
@@ -165,7 +165,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- UI Element: Geschäftspartner(123,D) -> Druck Format(540653,D) -> main -> 10 -> default.Kopien
 -- Column: C_BP_PrintFormat.DocumentCopies_Override
 -- 2023-10-31T13:21:57.829Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,721737,0,540653,1000037,621200,'F',TO_TIMESTAMP('2023-10-31 14:21:57','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind, für gegebene Adressen.','Y','N','N','Y','N','N','N',0,'Kopien',43,0,0,TO_TIMESTAMP('2023-10-31 14:21:57','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,721737,0,540653,1000037,621200,'F',TO_TIMESTAMP('2023-10-31 14:21:57','YYYY-MM-DD HH24:MI:SS'),100,'Überschreibt die Anzahl der Kopien, die in der Belegart gesetzt sind. (Wert 0 wird ignoriert)','Y','N','N','Y','N','N','N',0,'Kopien',43,0,0,TO_TIMESTAMP('2023-10-31 14:21:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- UI Element: Geschäftspartner -> Druck Format.Standort
