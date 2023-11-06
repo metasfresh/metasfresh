@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,9 +111,9 @@ public class OrderProductProposalsService
 	}
 
 
-	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId olAsiId)
+	private static AttributesKey getAttributesKeyFor(final AttributeSetInstanceId asiId)
 	{
-		return AttributesKeys.createAttributesKeyFromASIAllAttributes(olAsiId)
+		return AttributesKeys.createAttributesKeyFromASIAllAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 	}
 
@@ -278,7 +279,7 @@ public class OrderProductProposalsService
 	}
 
 
-	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPrices(final Order order, final List<I_M_ProductPrice> productPrices)
+	public Map<ProductPriceId, OrderLine> findBestMatchesForOrderLineFromProductPrices(@Nullable final Order order, @NonNull final List<I_M_ProductPrice> productPrices)
 	{
 		if (order == null)
 		{
@@ -287,7 +288,8 @@ public class OrderProductProposalsService
 		final Map<ProductPriceId, OrderLine> result = new HashMap<>();
 		for (final OrderLine orderline : order.getLines())
 		{
-			final Comparator<I_M_ProductPrice> comparing = Comparator.comparing(pp -> getNumberOfMatchingAttributes(orderline.getAsiId(), extractProductASI(pp)));
+			final AttributesKey olAttrKey = getAttributesKeyFor(orderline.getAsiId());
+			final Comparator<I_M_ProductPrice> comparing = Comparator.comparing(pp -> getMatchingScore(olAttrKey, getAttributesKeyFor(extractProductASI(pp))));
 			productPrices.stream()
 					.filter(pp -> orderline.isMatching(ProductId.ofRepoId(pp.getM_Product_ID()), HUPIItemProductId.ofRepoIdOrNull(pp.getM_HU_PI_Item_Product_ID())))
 					.max(comparing)
@@ -312,35 +314,32 @@ public class OrderProductProposalsService
 
 		return findBestMatchesForOrderLineFromProductPrices(order, productPrices);
 	}
-	public AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
+	public static AttributeSetInstanceId extractProductASI(final I_M_ProductPrice record)
 	{
 		return AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
 	}
 
-	private int getNumberOfMatchingAttributes(final AttributeSetInstanceId olAsiId, final AttributeSetInstanceId productPriceAsiId)
+	private int getMatchingScore(@NonNull final AttributesKey orderLineAttributeKey, @NonNull final AttributesKey productPriceAttributeKey)
 	{
-		final AttributesKey olAk = getAttributesKeyFor(olAsiId);
-		final AttributesKey ppAk = getAttributesKeyFor(productPriceAsiId);
-
-		final int ppAKSize = ppAk.getParts().size();
-		final int olAKSize = olAk.getParts().size();
+		final int ppAKSize = productPriceAttributeKey.getParts().size();
+		final int olAKSize = orderLineAttributeKey.getParts().size();
 
 		if (ppAKSize > olAKSize)
 		{
 			return 0;
 		}
 
-		if (olAk.isNone() && ppAk.isNone())
+		if (orderLineAttributeKey.isNone() && productPriceAttributeKey.isNone())
 		{
-			return 1;
+			return Integer.MAX_VALUE;
 		}
 
-		final AttributesKey attributesKey = olAk.getIntersection(ppAk);
-		if (attributesKey.isNone())
+		final AttributesKey commonKeys = orderLineAttributeKey.getIntersection(productPriceAttributeKey);
+		if (commonKeys.isNone())
 		{
 			return 0;
 		}
-		return attributesKey.getParts().size();
+		return commonKeys.getParts().size();
 	}
 }
