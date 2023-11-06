@@ -62,44 +62,59 @@ CREATE OR REPLACE FUNCTION report.Fresh_PriceList_Details_ToDate_Report(
 AS
 $$
 DECLARE
-    bp_id    numeric;
-    plv_id   numeric;
-    plv_name text;
+    bp_id_num    numeric;
+    plv_id_num   numeric;
+    plv_name_var text;
 BEGIN
-    -- Iterate to find the appropriate values for bp_id and plv_id
-    FOR bp_id, plv_id, plv_name IN
-        SELECT bp.c_bpartner_id, plv.M_PriceList_Version_ID, plv.name
-        FROM c_bpartner bp
-                 INNER JOIN C_BPartner_Product bpp ON bp.c_bpartner_id = bpp.c_bpartner_id
-                 INNER JOIN M_ProductPrice pp ON pp.M_Product_ID = bpp.M_Product_ID
-                 INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID
-        WHERE bp.iscustomer = 'Y'
-          AND plv.validfrom <= p_validfrom
+
+    CREATE TEMP TABLE IF NOT EXISTS temp_price_list_details AS
+    SELECT bp.c_bpartner_id,
+           plv.M_PriceList_Version_ID,
+           plv.name
+    FROM c_bpartner bp
+             INNER JOIN C_BPartner_Product bpp ON bp.c_bpartner_id = bpp.c_bpartner_id AND bp.iscustomer = 'Y'
+             INNER JOIN M_ProductPrice pp ON pp.M_Product_ID = bpp.M_Product_ID
+             INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID
+             INNER JOIN M_PriceList pl ON plv.m_pricelist_id = pl.m_pricelist_id AND pl.issopricelist = 'Y'
+        AND plv.validfrom >= p_validfrom;
+
+    FOR bp_id_num, plv_id_num, plv_name_var IN
+        SELECT tpd.c_bpartner_id, tpd.M_PriceList_Version_ID, tpd.name
+        FROM temp_price_list_details tpd
         LOOP
-            -- Fetch and return the data for each iteration
-            RETURN QUERY (SELECT *, plv_name
-                          FROM report.fresh_PriceList_Details_Report(
-                                       bp_id,
-                                       plv_id,
-                                       NULL,
-                                       p_ad_language,
-                                       p_show_product_price_pi_flag
-                               ) d
-                          WHERE d.show_product_price_pi_flag = 'N'
 
-                          UNION ALL
+            IF p_show_product_price_pi_flag = 'N' THEN
+                RETURN QUERY (SELECT d.*, plv_name_var AS plv_name
+                              FROM report.fresh_PriceList_Details_Report(
+                                           bp_id_num,
+                                           plv_id_num,
+                                           NULL,
+                                           p_ad_language,
+                                           p_show_product_price_pi_flag
+                                   ) d);
 
-                          SELECT *, plv_name
-                          FROM report.fresh_PriceList_Details_Report_With_PP_PI(
-                                       bp_id,
-                                       plv_id,
-                                       NULL,
-                                       p_ad_language,
-                                       p_show_product_price_pi_flag
-                               ) pp
-                          WHERE pp.show_product_price_pi_flag = 'Y');
+            END IF;
+
+            IF p_show_product_price_pi_flag = 'Y' THEN
+                RETURN QUERY (SELECT pp.*, plv_name_var AS plv_name
+                              FROM report.fresh_PriceList_Details_Report_With_PP_PI(
+                                           bp_id_num,
+                                           plv_id_num,
+                                           NULL,
+                                           p_ad_language,
+                                           p_show_product_price_pi_flag
+                                   ) pp);
+
+            END IF;
+
         END LOOP;
+
+    DROP TABLE temp_price_list_details;
+
 END;
 $$
     LANGUAGE plpgsql
 ;
+
+
+

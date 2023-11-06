@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist_todate/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -14,7 +14,6 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
 	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
@@ -43,19 +42,6 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="0" y="136" width="270" height="96" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0">
-					<printWhenExpression><![CDATA[new Boolean ($P{C_BPartner_Location_ID} != null)]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="bp_loc_id">
-					<subreportParameterExpression><![CDATA[$P{C_BPartner_Location_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="395" y="136" width="200" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
@@ -66,6 +52,26 @@
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-5" x="35" y="250" width="65" height="13" uuid="8d55860f-3ddf-45ae-9aa3-f69a1ca7439c"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{validity}+" : "]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="100" y="250" width="91" height="13" uuid="e077a99a-bf44-4877-9f94-2ddd7787abcd"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_ValidFrom}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
