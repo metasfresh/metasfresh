@@ -23,6 +23,7 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPPrintFormat;
 import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
@@ -44,6 +45,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 @Component
 public class DocumentReportAdvisorUtil
@@ -74,6 +77,13 @@ public class DocumentReportAdvisorUtil
 	public I_C_BPartner getBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerBL.getById(bpartnerId);
+	}
+
+	@Nullable
+	public BPartnerLocationId getBPartnerLocationId(@Nullable final BPartnerId bPartnerId, @NonNull final Object model)
+	{
+		final Integer locationId = InterfaceWrapperHelper.getValueOrNull(model, COLUMNNAME_C_BPartner_Location_ID);
+		return BPartnerLocationId.ofRepoIdOrNull(bPartnerId, locationId);
 	}
 
 	public Optional<Language> getBPartnerLanguage(@NonNull final I_C_BPartner bpartner)
