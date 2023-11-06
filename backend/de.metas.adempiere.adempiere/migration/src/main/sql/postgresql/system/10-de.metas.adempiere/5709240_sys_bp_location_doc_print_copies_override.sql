@@ -100,6 +100,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-11-02 12:50:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587623
 ;
 
+-- 2023-11-06T07:49:21.275Z
+INSERT INTO t_alter_column values('c_bp_printformat','DocumentCopies_Override','NUMERIC(10)',null,'0')
+;
+
+-- 2023-11-06T07:49:21.286Z
+UPDATE C_BP_PrintFormat SET DocumentCopies_Override=0 WHERE DocumentCopies_Override IS NULL
+;
+
 -- 2023-11-02T11:51:13.854Z
 INSERT INTO t_alter_column values('c_bp_printformat','DocumentCopies_Override',null,'NOT NULL',null)
 ;
