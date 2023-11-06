@@ -30,6 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.compiere.util.Env;
 
 @Builder
 public class ContractLocationReplaceCommand
@@ -70,10 +73,16 @@ public class ContractLocationReplaceCommand
 	{
 		final ICompositeQueryUpdater<I_C_Flatrate_Term> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
 				.addSetColumnValue(columnName, newLocationId);
-		
+
+		final IQueryFilter<I_C_Flatrate_Term> endDateFilters = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, Env.getDate())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, null);
+
 		queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(columnName, oldLocationId)
+				.filter(endDateFilters)
 				.create()
 				.update(queryUpdater);
 	}
