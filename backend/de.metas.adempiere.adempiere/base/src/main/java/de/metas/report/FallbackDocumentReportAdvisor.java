@@ -109,11 +109,12 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 
 		final Integer locationId = InterfaceWrapperHelper.getValueOrNull(record, COLUMNNAME_C_BPartner_Location_ID);
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, locationId);
-		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+		final BPPrintFormatQuery bpPrintFormatQuery = bpartnerId == null ? null : BPPrintFormatQuery.builder()
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bPartnerLocationId)
 				.docTypeId(docTypeId)
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()

@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.report.PrintFormatId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -233,7 +234,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 			return;
 		}
 
-		final int printFormatId = importRecord.getAD_PrintFormat_ID();
+		final PrintFormatId printFormatId = PrintFormatId.ofRepoId(importRecord.getAD_PrintFormat_ID());
 		final AdTableId adTableId;
 		final DocTypeId docTypeId;
 		// for vendors we have print format for purchase order
@@ -266,7 +267,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 				.build();
 
-		BPPrintFormat bpPrintFormat = repo.getByQuery(bpPrintFormatQuery, false);
+		BPPrintFormat bpPrintFormat = repo.getByQuery(bpPrintFormatQuery);
 		if (bpPrintFormat == null)
 		{
 			bpPrintFormat = BPPrintFormat.builder()

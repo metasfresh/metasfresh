@@ -107,6 +107,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()))
 				.docTypeId(DocTypeId.ofRepoId(order.getC_DocType_ID()))
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()

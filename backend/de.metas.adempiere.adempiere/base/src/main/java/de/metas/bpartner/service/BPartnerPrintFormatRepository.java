@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
+import de.metas.report.PrintFormatId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,46 +53,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerPrintFormatRepository
 {
 	@Nullable
-	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery, final boolean onlyCopiesGreaterZero)
+	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
 		final IQueryBuilder<I_C_BP_PrintFormat> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormatQuery.getBpartnerId().getRepoId())
+				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId(), null)
+				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId(), null)
+				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null)
+				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId(), null)
 				.addOnlyActiveRecordsFilter();
 
-		if(bpPrintFormatQuery.getAdTableId() == null)
-		{
-			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, null);
-		}
-		else
-		{
-			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId().getRepoId(), null);
-		}
-
-		if(bpPrintFormatQuery.getDocTypeId() == null)
-		{
-			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, null);
-		}
-		else
-		{
-			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId().getRepoId(), null);
-		}
-
-		if(bpPrintFormatQuery.getBPartnerLocationId() == null)
-		{
-			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, null);
-		}
-		else
-		{
-			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId().getRepoId(), null);
-		}
-
-		if(bpPrintFormatQuery.getPrintFormatId() > 0)
-		{
-			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId());
-		}
-
-		if(onlyCopiesGreaterZero)
+		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
 		{
 			query.addCompareFilter(I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override, CompareQueryFilter.Operator.GREATER, 0);
 		}
@@ -104,11 +77,11 @@ public class BPartnerPrintFormatRepository
 	public BPPrintFormat toBPPrintFormat(@NonNull final I_C_BP_PrintFormat bpPrinfFormatDataRecord)
 	{
 		return BPPrintFormat.builder()
+				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
 				.bpartnerId(BPartnerId.ofRepoId(bpPrinfFormatDataRecord.getC_BPartner_ID()))
 				.adTableId(AdTableId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getAD_Table_ID()))
 				.docTypeId(DocTypeId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getC_DocType_ID()))
-				.printFormatId(bpPrinfFormatDataRecord.getAD_PrintFormat_ID())
-				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
+				.printFormatId(PrintFormatId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getAD_PrintFormat_ID()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpPrinfFormatDataRecord.getC_BPartner_ID(), bpPrinfFormatDataRecord.getC_BPartner_Location_ID()))
 				.printCopies(PrintCopies.ofInt(bpPrinfFormatDataRecord.getDocumentCopies_Override()))
 				.build();
@@ -137,26 +110,11 @@ public class BPartnerPrintFormatRepository
 		}
 
 		bpPrintFormatRecord.setC_BPartner_ID(bpPrintFormat.getBpartnerId().getRepoId());
-		if(bpPrintFormat.getDocTypeId() != null)
-		{
-			bpPrintFormatRecord.setC_DocType_ID(bpPrintFormat.getDocTypeId().getRepoId());
-		}
-		if(bpPrintFormat.getAdTableId() != null)
-		{
-			bpPrintFormatRecord.setAD_Table_ID(bpPrintFormat.getAdTableId().getRepoId());
-		}
-		if(bpPrintFormat.getPrintFormatId() > 0)
-		{
-			bpPrintFormatRecord.setAD_PrintFormat_ID(bpPrintFormat.getPrintFormatId());
-		}
-		if(bpPrintFormat.getBPartnerLocationId() != null)
-		{
-			bpPrintFormatRecord.setC_BPartner_Location_ID(bpPrintFormat.getBPartnerLocationId().getRepoId());
-		}
-		if(bpPrintFormat.getPrintCopies() != null && bpPrintFormat.getPrintCopies().isGreaterThanZero())
-		{
-			bpPrintFormatRecord.setDocumentCopies_Override(bpPrintFormat.getPrintCopies().toInt());
-		}
+		bpPrintFormatRecord.setC_DocType_ID(bpPrintFormat.getDocTypeId() == null ? 0 : bpPrintFormat.getDocTypeId().getRepoId());
+		bpPrintFormatRecord.setAD_Table_ID(bpPrintFormat.getAdTableId() == null ? 0 : bpPrintFormat.getAdTableId().getRepoId());
+		bpPrintFormatRecord.setAD_PrintFormat_ID(bpPrintFormat.getPrintFormatId() == null ? 0 : bpPrintFormat.getPrintFormatId().getRepoId());
+		bpPrintFormatRecord.setC_BPartner_Location_ID(bpPrintFormat.getBPartnerLocationId() == null ? 0 : bpPrintFormat.getBPartnerLocationId().getRepoId());
+		bpPrintFormatRecord.setDocumentCopies_Override(bpPrintFormat.getPrintCopies().toInt());
 
 		return bpPrintFormatRecord;
 	}

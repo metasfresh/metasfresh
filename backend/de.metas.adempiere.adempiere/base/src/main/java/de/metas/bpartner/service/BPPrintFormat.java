@@ -7,9 +7,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
+import de.metas.report.PrintFormatId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 
@@ -44,7 +46,8 @@ import javax.annotation.Nullable;
 
 @Getter
 @Value
-@Builder
+@Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class BPPrintFormat
 {
 	@NonNull
@@ -56,32 +59,14 @@ public class BPPrintFormat
 	@Nullable
 	AdTableId adTableId;
 
-	int printFormatId;
+	@Nullable
+	PrintFormatId printFormatId;
 
 	int bpPrintFormatId;
 
 	@Nullable
 	BPartnerLocationId bPartnerLocationId;
 
-	@Nullable
+	@NonNull
 	PrintCopies printCopies;
-
-	@Builder(toBuilder = true)
-	private BPPrintFormat(
-			@NonNull final BPartnerId bpartnerId,
-			@Nullable final DocTypeId docTypeId,
-			@Nullable final AdTableId adTableId,
-			final int printFormatId,
-			final int bpPrintFormatId,
-			@Nullable final BPartnerLocationId bPartnerLocationId,
-			@Nullable final PrintCopies printCopies)
-	{
-		this.bpartnerId = bpartnerId;
-		this.docTypeId = docTypeId;
-		this.adTableId = adTableId;
-		this.printFormatId = printFormatId;
-		this.bpPrintFormatId = bpPrintFormatId;
-		this.bPartnerLocationId = bPartnerLocationId;
-		this.printCopies = printCopies;
-	}
 }

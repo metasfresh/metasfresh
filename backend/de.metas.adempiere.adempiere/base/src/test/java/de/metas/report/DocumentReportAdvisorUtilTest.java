@@ -221,6 +221,26 @@ public class DocumentReportAdvisorUtilTest
 		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(1);
 	}
 
+	@Test
+	public void useMatchingByPartnerOnlyCopies()
+	{
+		final DocumentReportAdvisorUtil util = createUtil();
+
+		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+				.bpartnerId(bPartnerLocationId.getBpartnerId())
+				.onlyCopiesGreaterZero(true)
+				.build();
+
+		final I_C_BP_PrintFormat printFormatMatchingPartner1 = newInstance(I_C_BP_PrintFormat.class);
+		printFormatMatchingPartner1.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+		printFormatMatchingPartner1.setDocumentCopies_Override(2);
+		save(printFormatMatchingPartner1);
+
+		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
+	}
+
 	private I_C_DocType createDocType(@NonNull final String docBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
@@ -247,6 +267,7 @@ public class DocumentReportAdvisorUtilTest
 				.docTypeId(DocTypeId.ofRepoId(docTypeRecord.getC_DocType_ID()))
 				.bpartnerId(bPartnerLocationId.getBpartnerId())
 				.bPartnerLocationId(bPartnerLocationId)
+				.onlyCopiesGreaterZero(true)
 				.build();
 	}
 

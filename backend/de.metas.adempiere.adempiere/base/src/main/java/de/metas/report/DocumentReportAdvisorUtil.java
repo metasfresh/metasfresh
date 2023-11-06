@@ -115,9 +115,10 @@ public class DocumentReportAdvisorUtil
 
 	public PrintCopies getDocumentCopies(
 			@Nullable final I_C_DocType docType,
-			@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
+			@Nullable final BPPrintFormatQuery bpPrintFormatQuery)
 	{
-		final BPPrintFormat bpPrintFormat = bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery, true);
+
+		final BPPrintFormat bpPrintFormat = bpPrintFormatQuery == null ? null : bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery);
 		if(bpPrintFormat == null)
 		{
 			return getDocumentCopies(docType);

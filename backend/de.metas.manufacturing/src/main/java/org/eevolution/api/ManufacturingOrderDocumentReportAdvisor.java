@@ -94,13 +94,14 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@");
 		}
 
-		final Language language = bpartner == null? null : util.getBPartnerLanguage(bpartner).orElse(null);
+		final Language language = bpartner == null ? null : util.getBPartnerLanguage(bpartner).orElse(null);
 
-		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+		final BPPrintFormatQuery bpPrintFormatQuery = bpartnerId == null ? null : BPPrintFormatQuery.builder()
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(null)
 				.docTypeId(DocTypeId.ofRepoId(manufacturingOrder.getC_DocType_ID()))
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()

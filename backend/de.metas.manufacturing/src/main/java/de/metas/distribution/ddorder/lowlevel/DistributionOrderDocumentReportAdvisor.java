@@ -104,6 +104,7 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, ddOrder.getC_BPartner_Location_ID()))
 				.docTypeId(DocTypeId.ofRepoId(ddOrder.getC_DocType_ID()))
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()

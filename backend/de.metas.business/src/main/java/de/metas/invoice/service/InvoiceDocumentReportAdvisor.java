@@ -103,6 +103,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()))
 				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()

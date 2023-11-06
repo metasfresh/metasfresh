@@ -101,6 +101,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
 				.docTypeId(DocTypeId.ofRepoId(inout.getC_DocType_ID()))
+				.onlyCopiesGreaterZero(true)
 				.build();
 
 		return DocumentReportInfo.builder()
