@@ -238,20 +238,18 @@ public final class ProductsProposalRowsLoader
 		final ProductProposalPrice currentProductProposalPrice = extractProductProposalPrice(record);
 
 		final ProductPriceId productPriceId = ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
-		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
+		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.asiId(orderProductProposalsService.extractProductASI(record))
+				.asiId(OrderProductProposalsService.extractProductASI(record))
 				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
-				.productPriceId(productPriceId);
-
-		return rowBuilder
+				.productPriceId(productPriceId)
 				.build()
 				//
 				.withExistingOrderLine(bestMatchingProductPriceIdToOrderLine.get(productPriceId));
