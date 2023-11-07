@@ -22,9 +22,10 @@
 
 package de.metas.printing.interceptor;
 
-import de.metas.util.Services;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -35,7 +36,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_BP_PrintFormat
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final BPartnerPrintFormatRepository bPartnerPrintFormatRepository;
+
+	public C_BP_PrintFormat(final BPartnerPrintFormatRepository bPartnerPrintFormatRepository)
+	{
+		this.bPartnerPrintFormatRepository = bPartnerPrintFormatRepository;
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setNextSeqNoIfNeeded(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
 	{
@@ -44,22 +51,8 @@ public class C_BP_PrintFormat
 			return;
 		}
 
-		final I_C_BP_PrintFormat existingBpPrintFormat = queryBL.createQueryBuilder(I_C_BP_PrintFormat.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormat.getC_BPartner_ID())
-				.orderByDescending(I_C_BP_PrintFormat.COLUMNNAME_SeqNo)
-				.create()
-				.first(I_C_BP_PrintFormat.class);
+		final SeqNo seqNo = bPartnerPrintFormatRepository.getNextSeqNo(BPartnerId.ofRepoId(bpPrintFormat.getC_BPartner_ID()));
 
-		final int seqNo;
-		if(existingBpPrintFormat == null)
-		{
-			seqNo = 10;
-		}
-		else
-		{
-			seqNo = ((existingBpPrintFormat.getSeqNo() / 10) + 1) * 10;
-		}
-		bpPrintFormat.setSeqNo(seqNo);
+		bpPrintFormat.setSeqNo(seqNo.toInt());
 	}
 }

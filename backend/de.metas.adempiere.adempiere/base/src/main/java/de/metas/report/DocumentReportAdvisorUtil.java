@@ -34,7 +34,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -133,7 +132,6 @@ public class DocumentReportAdvisorUtil
 		{
 			return getDocumentCopies(docType);
 		}
-		Check.assumeNotNull(bpPrintFormat.getPrintCopies(), "PrintCopies shall not be null");
 		return bpPrintFormat.getPrintCopies();
 	}
 

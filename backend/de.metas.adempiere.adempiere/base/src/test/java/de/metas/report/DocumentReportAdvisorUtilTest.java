@@ -38,6 +38,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
@@ -57,190 +58,191 @@ public class DocumentReportAdvisorUtilTest
 		AdempiereTestHelper.get().init();
 	}
 
-	@Test
-	public void useDocTypeCopiesIfNoMatchingPrintFormat()
+	@Nested
+	class getDocumentCopies
 	{
-		final DocumentReportAdvisorUtil util = createUtil();
+		@Test
+		public void useDocTypeCopiesIfNoMatchingPrintFormat()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
 
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
 
+			final I_C_BP_PrintFormat printFormatNotMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
+			printFormatNotMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatNotMatchingLocation.setC_BPartner_Location_ID(createBPartnerLocation().getRepoId());
+			printFormatNotMatchingLocation.setDocumentCopies_Override(2);
+			save(printFormatNotMatchingLocation);
 
-		final I_C_BP_PrintFormat printFormatNotMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
-		printFormatNotMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatNotMatchingLocation.setC_BPartner_Location_ID(createBPartnerLocation().getRepoId());
-		printFormatNotMatchingLocation.setDocumentCopies_Override(2);
-		save(printFormatNotMatchingLocation);
+			final I_C_BP_PrintFormat printFormatNotMatchingTable = newInstance(I_C_BP_PrintFormat.class);
+			printFormatNotMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatNotMatchingTable.setAD_Table_ID(INVOICE_TABLE_ID.getRepoId());
+			printFormatNotMatchingTable.setDocumentCopies_Override(3);
+			save(printFormatNotMatchingTable);
 
-		final I_C_BP_PrintFormat printFormatNotMatchingTable = newInstance(I_C_BP_PrintFormat.class);
-		printFormatNotMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatNotMatchingTable.setAD_Table_ID(INVOICE_TABLE_ID.getRepoId());
-		printFormatNotMatchingTable.setDocumentCopies_Override(3);
-		save(printFormatNotMatchingTable);
+			final I_C_BP_PrintFormat printFormatNotMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
+			printFormatNotMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatNotMatchingDocType.setC_DocType_ID(createDocType(DOCBASETYPE_ARInvoice).getC_DocType_ID());
+			printFormatNotMatchingDocType.setDocumentCopies_Override(4);
+			save(printFormatNotMatchingDocType);
 
-		final I_C_BP_PrintFormat printFormatNotMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
-		printFormatNotMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatNotMatchingDocType.setC_DocType_ID(createDocType(DOCBASETYPE_ARInvoice).getC_DocType_ID());
-		printFormatNotMatchingDocType.setDocumentCopies_Override(4);
-		save(printFormatNotMatchingDocType);
+			final I_C_BP_PrintFormat printFormatNotMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
+			printFormatNotMatchingPartner.setC_BPartner_ID(createBPartnerLocation().getBpartnerId().getRepoId());
+			printFormatNotMatchingPartner.setDocumentCopies_Override(5);
+			save(printFormatNotMatchingPartner);
 
-		final I_C_BP_PrintFormat printFormatNotMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
-		printFormatNotMatchingPartner.setC_BPartner_ID(createBPartnerLocation().getBpartnerId().getRepoId());
-		printFormatNotMatchingPartner.setDocumentCopies_Override(5);
-		save(printFormatNotMatchingPartner);
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(1);
+		}
 
-		final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
-		Assertions.assertThat(printCopies.toInt()).isEqualTo(1);
+		@Test
+		public void useMatchingPrintFormatLocationCopies()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingLocation.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormatMatchingLocation.setDocumentCopies_Override(2);
+			save(printFormatMatchingLocation);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
+		}
+
+		@Test
+		public void useMatchingPrintFormatTableIdCopies()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatMatchingTable = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingTable.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormatMatchingTable.setDocumentCopies_Override(2);
+			save(printFormatMatchingTable);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
+		}
+
+		@Test
+		public void useMatchingPrintFormatDocTypeCopies()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingDocType.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormatMatchingDocType.setDocumentCopies_Override(2);
+			save(printFormatMatchingDocType);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
+		}
+
+		@Test
+		public void useMatchingPrintFormatPartnerCopies()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingPartner.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingPartner.setDocumentCopies_Override(2);
+			save(printFormatMatchingPartner);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
+		}
+
+		@Test
+		public void seqNoPriorityTest()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingLocation.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormatMatchingLocation.setDocumentCopies_Override(2);
+			printFormatMatchingLocation.setSeqNo(10);
+			save(printFormatMatchingLocation);
+
+			final I_C_BP_PrintFormat printFormatMatchingTable = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingTable.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormatMatchingTable.setDocumentCopies_Override(3);
+			printFormatMatchingTable.setSeqNo(20);
+			save(printFormatMatchingTable);
+
+			final I_C_BP_PrintFormat printFormatMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingPartner.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingPartner.setDocumentCopies_Override(4);
+			printFormatMatchingPartner.setSeqNo(30);
+			save(printFormatMatchingPartner);
+
+			final I_C_BP_PrintFormat printFormatMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingDocType.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormatMatchingDocType.setDocumentCopies_Override(5);
+			printFormatMatchingDocType.setSeqNo(40);
+			save(printFormatMatchingDocType);
+
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
+
+			delete(printFormatMatchingLocation);
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(3);
+
+			delete(printFormatMatchingTable);
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(4);
+
+			delete(printFormatMatchingPartner);
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(5);
+
+			delete(printFormatMatchingDocType);
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(1);
+		}
+
+		@Test
+		public void useMatchingByPartnerOnlyCopies()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+					.bpartnerId(bPartnerLocationId.getBpartnerId())
+					.onlyCopiesGreaterZero(true)
+					.build();
+
+			final I_C_BP_PrintFormat printFormatMatchingPartner1 = newInstance(I_C_BP_PrintFormat.class);
+			printFormatMatchingPartner1.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatMatchingPartner1.setDocumentCopies_Override(2);
+			save(printFormatMatchingPartner1);
+
+			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
+		}
 	}
-
-	@Test
-	public void useMatchingPrintFormatLocationCopies()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
-
-
-		final I_C_BP_PrintFormat printFormatMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingLocation.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
-		printFormatMatchingLocation.setDocumentCopies_Override(2);
-		save(printFormatMatchingLocation);
-
-		final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
-		Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
-	}
-
-	@Test
-	public void useMatchingPrintFormatTableIdCopies()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
-
-		final I_C_BP_PrintFormat printFormatMatchingTable = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingTable.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
-		printFormatMatchingTable.setDocumentCopies_Override(2);
-		save(printFormatMatchingTable);
-
-		final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
-		Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
-	}
-
-	@Test
-	public void useMatchingPrintFormatDocTypeCopies()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
-
-		final I_C_BP_PrintFormat printFormatMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingDocType.setC_DocType_ID(docType.getC_DocType_ID());
-		printFormatMatchingDocType.setDocumentCopies_Override(2);
-		save(printFormatMatchingDocType);
-
-		final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
-		Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
-	}
-
-	@Test
-	public void useMatchingPrintFormatPartnerCopies()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
-
-		final I_C_BP_PrintFormat printFormatMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingPartner.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingPartner.setDocumentCopies_Override(2);
-		save(printFormatMatchingPartner);
-
-		final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
-		Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
-	}
-
-	@Test
-	public void seqNoPriorityTest()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
-
-		final I_C_BP_PrintFormat printFormatMatchingLocation = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingLocation.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingLocation.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
-		printFormatMatchingLocation.setDocumentCopies_Override(2);
-		printFormatMatchingLocation.setSeqNo(10);
-		save(printFormatMatchingLocation);
-
-		final I_C_BP_PrintFormat printFormatMatchingTable = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingTable.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingTable.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
-		printFormatMatchingTable.setDocumentCopies_Override(3);
-		printFormatMatchingTable.setSeqNo(20);
-		save(printFormatMatchingTable);
-
-		final I_C_BP_PrintFormat printFormatMatchingPartner = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingPartner.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingPartner.setDocumentCopies_Override(4);
-		printFormatMatchingPartner.setSeqNo(30);
-		save(printFormatMatchingPartner);
-
-		final I_C_BP_PrintFormat printFormatMatchingDocType = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingDocType.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingDocType.setC_DocType_ID(docType.getC_DocType_ID());
-		printFormatMatchingDocType.setDocumentCopies_Override(5);
-		printFormatMatchingDocType.setSeqNo(40);
-		save(printFormatMatchingDocType);
-
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
-
-		delete(printFormatMatchingLocation);
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(3);
-
-		delete(printFormatMatchingTable);
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(4);
-
-		delete(printFormatMatchingPartner);
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(5);
-
-		delete(printFormatMatchingDocType);
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(1);
-	}
-
-	@Test
-	public void useMatchingByPartnerOnlyCopies()
-	{
-		final DocumentReportAdvisorUtil util = createUtil();
-
-		final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
-		final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
-		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
-				.bpartnerId(bPartnerLocationId.getBpartnerId())
-				.onlyCopiesGreaterZero(true)
-				.build();
-
-		final I_C_BP_PrintFormat printFormatMatchingPartner1 = newInstance(I_C_BP_PrintFormat.class);
-		printFormatMatchingPartner1.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		printFormatMatchingPartner1.setDocumentCopies_Override(2);
-		save(printFormatMatchingPartner1);
-
-		Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
-	}
-
 	private I_C_DocType createDocType(@NonNull final String docBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
@@ -250,6 +252,7 @@ public class DocumentReportAdvisorUtilTest
 		save(docType);
 		return docType;
 	}
+
 
 	private BPartnerLocationId createBPartnerLocation()
 	{

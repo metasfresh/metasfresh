@@ -9,9 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 
@@ -44,10 +42,8 @@ import javax.annotation.Nullable;
  *
  */
 
-@Getter
 @Value
 @Builder(toBuilder = true)
-@RequiredArgsConstructor
 public class BPPrintFormat
 {
 	@NonNull

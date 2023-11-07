@@ -9,6 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -52,6 +53,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class BPartnerPrintFormatRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Nullable
 	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
@@ -63,6 +66,7 @@ public class BPartnerPrintFormatRepository
 				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null)
 				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId(), null)
 				.addOnlyActiveRecordsFilter();
+
 
 		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
 		{
@@ -117,5 +121,17 @@ public class BPartnerPrintFormatRepository
 		bpPrintFormatRecord.setDocumentCopies_Override(bpPrintFormat.getPrintCopies().toInt());
 
 		return bpPrintFormatRecord;
+	}
+
+	public SeqNo getNextSeqNo(@NonNull final BPartnerId bPartnerId)
+	{
+		final int lastLineInt = queryBL.createQueryBuilder(I_C_BP_PrintFormat.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.create()
+				.maxInt(I_C_BP_PrintFormat.COLUMNNAME_SeqNo);
+
+		final SeqNo lastLineNo = SeqNo.ofInt(Math.max(lastLineInt, 10));
+		return lastLineNo.next();
 	}
 }
