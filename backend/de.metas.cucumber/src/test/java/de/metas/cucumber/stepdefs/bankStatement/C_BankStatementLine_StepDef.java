@@ -177,7 +177,7 @@ public class C_BankStatementLine_StepDef
 		if (Check.isNotBlank(invoiceIdentifier))
 		{
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord.getC_Invoice_ID(),invoiceIdentifier).isNotNull();
+			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();
 
 			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID for identifier=%s", bslIdentifier, invoiceIdentifier).isEqualTo(invoiceRecord.getC_Invoice_ID());
 		}
