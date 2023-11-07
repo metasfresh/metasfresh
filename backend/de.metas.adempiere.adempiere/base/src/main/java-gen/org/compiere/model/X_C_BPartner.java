@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated)
@@ -15,17 +15,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 
 	private static final long serialVersionUID = 1865145681L;
 
-	/** Standard Constructor */
-	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
-	{
-		super (ctx, C_BPartner_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_BPartner_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -713,18 +713,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setDocumentCopies (final int DocumentCopies)
-	{
-		set_Value (COLUMNNAME_DocumentCopies, DocumentCopies);
-	}
-
-	@Override
-	public int getDocumentCopies()
-	{
-		return get_ValueAsInt(COLUMNNAME_DocumentCopies);
-	}
-
-	@Override
 	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
 	{
 		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
@@ -1185,7 +1173,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public boolean isManuallyCreated() 
+	public boolean isManuallyCreated()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManuallyCreated);
 	}
@@ -1226,7 +1214,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
 	}
 
-	/** 
+	/**
 	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1242,7 +1230,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public java.lang.String getIsPrintLocalCurrencyInfo() 
+	public java.lang.String getIsPrintLocalCurrencyInfo()
 	{
 		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}

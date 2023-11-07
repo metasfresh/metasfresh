@@ -166,6 +166,7 @@ public class DocumentReportService
 				requestEffective.getFlavor());
 
 		requestEffective = requestEffective
+				.withPrintCopies(reportInfo.getCopies())
 				.withPrintOptionsFallback(reportInfo.getPrintOptions())
 				.withPrintOptionsFallback(documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId()).getDefaults())
 				.withReportProcessId(reportInfo.getReportProcessId())
@@ -188,16 +189,7 @@ public class DocumentReportService
 			}
 		}
 
-		if (request.getDocumentRef() != null)
-		{
-			final StandardDocumentReportType standardDocumentReportType = StandardDocumentReportType.ofTableNameOrNull(request.getDocumentRef().getTableName());
-			if (standardDocumentReportType != null)
-			{
-				return standardDocumentReportType;
-			}
-		}
-
-		return null;
+		return StandardDocumentReportType.ofTableNameOrNull(request.getDocumentRef().getTableName());
 	}
 
 	@NonNull
