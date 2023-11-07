@@ -761,7 +761,6 @@ Feature: import bank statement in camt.53.001.04 import format
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
-  @dev:runThisOne
   @Id:S0337_400
   Scenario: Import one statement, identify org-account by IBAN and link one invoice, and import one summary line, for 3 DEBIT transactions, in the same NTry, with one transaction on EUR
 
