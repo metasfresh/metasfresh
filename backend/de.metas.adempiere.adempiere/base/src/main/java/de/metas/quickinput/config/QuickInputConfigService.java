@@ -1,7 +1,5 @@
 package de.metas.quickinput.config;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -9,8 +7,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service

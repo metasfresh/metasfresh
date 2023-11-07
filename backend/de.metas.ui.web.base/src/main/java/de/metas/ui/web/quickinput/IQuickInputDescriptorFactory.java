@@ -40,6 +40,7 @@ import java.util.Set;
  * Quick input descriptor factory.
  * Implementations shall be annotated with {@link Component} and they will be automatically discovered and registered.
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public interface IQuickInputDescriptorFactory
 {
 	/**
