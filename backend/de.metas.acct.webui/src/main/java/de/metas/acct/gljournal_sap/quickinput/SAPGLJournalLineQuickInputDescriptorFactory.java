@@ -5,22 +5,27 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
-import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.quickinput.config.QuickInputConfigLayout;
+import de.metas.quickinput.config.QuickInputConfigService;
+import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -32,18 +37,23 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final SAPGLJournalLineQuickInputConfigProvider configProvider;
-	private final LookupDescriptorProviders lookupDescriptorProviders;
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final LookupDescriptorProviders lookupDescriptorProviders;
+	@NonNull private final DocumentDescriptorFactory documentDescriptorFactory;
+	@NonNull private final QuickInputConfigService quickInputConfigService;
 
-	public SAPGLJournalLineQuickInputDescriptorFactory(
-			@NonNull final SAPGLJournalLineQuickInputConfigProvider configProvider,
-			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
+	private static final QuickInputConfigLayout DEFAULT_LayoutConfig = QuickInputConfigLayout.builder()
+			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign).mandatory(true).build())
+			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID).mandatory(true).build())
+			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount).mandatory(true).build())
+			.build();
+
+	static
 	{
-		this.configProvider = configProvider;
-		this.lookupDescriptorProviders = lookupDescriptorProviders;
+		SAPGLJournalLineQuickInputConfigValidator.assertValid(DEFAULT_LayoutConfig);
 	}
 
 	@Override
@@ -59,21 +69,36 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 			final DetailId detailId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
-		final QuickInputConfigLayout layoutConfig = configProvider.getLayoutConfig();
+		final QuickInputConfigLayout layoutConfig = getLayoutConfig(documentType, documentTypeId, detailId);
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx, layoutConfig);
 		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.onlyFields(entityDescriptor, layoutConfig.getFieldNamesInOrder());
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, SAPGLJournalLineQuickInputProcessor.class);
 	}
 
-	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(final DocumentId documentTypeId, final DetailId detailId)
+	private QuickInputConfigLayout getLayoutConfig(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId)
 	{
-		return DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.QuickInput, documentTypeId)
-				.disableDefaultTableCallouts()
-				// Defaults:
-				.setDetailId(detailId)
-				.setTableName(I_SAP_GLJournalLine.Table_Name);
+		if (documentType.isWindow() && detailId != null)
+		{
+			final WindowId windowId = WindowId.of(documentTypeId);
+			final QuickInputSupportDescriptor quickInputSupport = documentDescriptorFactory.getDocumentDescriptor(windowId)
+					.getLayout()
+					.getDetail(detailId)
+					.getQuickInputSupport();
+
+			if (quickInputSupport != null && quickInputSupport.getLayout() != null)
+			{
+				return quickInputSupport.getLayout();
+			}
+		}
+
+		// Fallback to sysconfig
+		final QuickInputConfigLayout layoutConfig = quickInputConfigService.getLayoutBySysconfig(SAPGLJournalLineQuickInputConfigValidator.SYSCONFIG_LayoutConfig).orElse(DEFAULT_LayoutConfig);
+		SAPGLJournalLineQuickInputConfigValidator.assertValid(layoutConfig);
+		return layoutConfig;
 	}
 
 	private DocumentEntityDescriptor createEntityDescriptor(
@@ -82,7 +107,11 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 			@NonNull final Optional<SOTrx> soTrx,
 			@NonNull final QuickInputConfigLayout layoutConfig)
 	{
-		return createDescriptorBuilder(documentTypeId, detailId)
+		return DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.disableDefaultTableCallouts()
+				.setDetailId(detailId)
+				.setTableName(I_SAP_GLJournalLine.Table_Name)
 				.setIsSOTrx(soTrx)
 
 				// PostingSign

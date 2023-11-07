@@ -24,7 +24,7 @@ public class QuickInputConfigService
 
 		try
 		{
-			return parseLayoutFromSysconfigValue(layoutString);
+			return QuickInputConfigLayout.parse(layoutString);
 		}
 		catch (Exception ex)
 		{
@@ -32,58 +32,5 @@ public class QuickInputConfigService
 					.setParameter("sysconfigName", sysconfigName)
 					.setParameter("layoutString", layoutString);
 		}
-	}
-
-	public static Optional<QuickInputConfigLayout> parseLayoutFromSysconfigValue(@Nullable final String layoutStringParam)
-	{
-		final String layoutStringNorm = StringUtils.trimBlankToNull(layoutStringParam);
-
-		if (layoutStringNorm == null || "-".equals(layoutStringNorm))
-		{
-			return Optional.empty();
-		}
-
-		final ArrayList<QuickInputConfigLayout.Field> fields = new ArrayList<>();
-		for (final String fieldLayoutString : Splitter.on(",").splitToList(layoutStringNorm))
-		{
-			final String fieldLayoutStringNorm = StringUtils.trimBlankToNull(fieldLayoutString);
-			if (fieldLayoutStringNorm == null)
-			{
-				throw new AdempiereException("Empty field name not allowed");
-			}
-
-			final String fieldName;
-			final boolean mandatory;
-			if (fieldLayoutStringNorm.endsWith("?"))
-			{
-				mandatory = false;
-				fieldName = fieldLayoutStringNorm.substring(0, fieldLayoutStringNorm.length() - 1);
-			}
-			else
-			{
-				mandatory = true;
-				fieldName = fieldLayoutStringNorm;
-			}
-
-			if (fieldName.isEmpty())
-			{
-				throw new AdempiereException("Empty field name not allowed");
-			}
-
-			fields.add(QuickInputConfigLayout.Field.builder()
-					.fieldName(fieldName)
-					.mandatory(mandatory)
-					.build());
-		}
-
-		if (fields.isEmpty())
-		{
-			throw new AdempiereException("No fields");
-		}
-
-		return Optional.of(
-				QuickInputConfigLayout.builder()
-						.fields(ImmutableList.copyOf(fields))
-						.build());
 	}
 }

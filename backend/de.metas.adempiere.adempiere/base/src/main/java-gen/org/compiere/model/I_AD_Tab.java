@@ -1291,4 +1291,8 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_WhereClause = new ModelColumn<>(I_AD_Tab.class, "WhereClause", null);
 	String COLUMNNAME_WhereClause = "WhereClause";
+
+	// TODO add the actual column. Also add it to AD_Tab_v and AD_Tab_vt views !
+	String COLUMNNAME_QuickInputLayout = "QuickInputLayout";
+	default String getQuickInputLayout() { return null;}
 }
