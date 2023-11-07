@@ -83,8 +83,8 @@ import lombok.NonNull;
 		final AdWindowId purchaseOrderWindowId = windowDAO.getAdWindowId(I_C_OrderLine.Table_Name, SOTrx.PURCHASE, WINDOW_ID_PurchaseOrder_DEFAULT);
 
 		return ImmutableSet.of(
-				MatchingKey.includedDocument(DocumentType.Window, salesOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name),
-				MatchingKey.includedDocument(DocumentType.Window, purchaseOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name));
+				MatchingKey.includedTab(salesOrderWindowId, I_C_OrderLine.Table_Name),
+				MatchingKey.includedTab(purchaseOrderWindowId, I_C_OrderLine.Table_Name));
 	}
 
 	@Override
