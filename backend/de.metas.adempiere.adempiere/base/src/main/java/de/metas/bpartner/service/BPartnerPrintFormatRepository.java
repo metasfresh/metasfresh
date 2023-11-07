@@ -131,7 +131,7 @@ public class BPartnerPrintFormatRepository
 				.create()
 				.maxInt(I_C_BP_PrintFormat.COLUMNNAME_SeqNo);
 
-		final SeqNo lastLineNo = SeqNo.ofInt(Math.max(lastLineInt, 10));
+		final SeqNo lastLineNo = SeqNo.ofInt(Math.max(lastLineInt, 0));
 		return lastLineNo.next();
 	}
 }
