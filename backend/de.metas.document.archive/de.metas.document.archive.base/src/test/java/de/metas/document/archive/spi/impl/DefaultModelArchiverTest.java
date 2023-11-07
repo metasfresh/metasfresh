@@ -24,6 +24,7 @@ package de.metas.document.archive.spi.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
@@ -66,7 +67,7 @@ class DefaultModelArchiverTest
 		final DocumentReportAdvisorUtil util = new DocumentReportAdvisorUtil(
 				new BPartnerBL(new UserRepository()),
 				new PrintFormatRepository(),
-				new DefaultPrintFormatsRepository());
+				new DefaultPrintFormatsRepository(), new BPartnerPrintFormatRepository());
 
 		return new MockedDocumentReportService(
 				ImmutableList.of(
@@ -100,6 +101,7 @@ class DefaultModelArchiverTest
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
 		invoice.setC_Async_Batch_ID(1);
+		invoice.setC_BPartner_Location_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
 		final ArchiveResult archiveResult = archive(invoice);
