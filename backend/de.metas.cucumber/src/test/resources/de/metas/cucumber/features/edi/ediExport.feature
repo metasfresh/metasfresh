@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: EDI_cctop_invoic_v export format
 
   Background:

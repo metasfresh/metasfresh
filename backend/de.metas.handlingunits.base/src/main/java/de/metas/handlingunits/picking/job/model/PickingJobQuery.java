@@ -32,6 +32,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -45,6 +46,7 @@ public class PickingJobQuery
 	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
 	@Nullable PickingJobFacetsQuery facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	@Nullable WarehouseId warehouseId;
 
 	@NonNull
 	public Set<BPartnerId> getOnlyBPartnerIdsEffective()

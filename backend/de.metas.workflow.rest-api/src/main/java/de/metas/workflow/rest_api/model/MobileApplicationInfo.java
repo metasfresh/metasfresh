@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Map;
+
 @Value
 @Builder
 public class MobileApplicationInfo
@@ -13,4 +16,5 @@ public class MobileApplicationInfo
 	@NonNull ITranslatableString caption;
 	boolean requiresLaunchersQRCodeFilter;
 	boolean showFilters;
+	@Nullable Map<CustomApplicationParameter, Object> applicationParameters;
 }
