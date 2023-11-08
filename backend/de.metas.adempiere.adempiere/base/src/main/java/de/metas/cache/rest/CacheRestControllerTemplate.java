@@ -157,7 +157,7 @@ public abstract class CacheRestControllerTemplate
 		cacheInterface.reset();
 	}
 
-	@GetMapping("/removeCacheInvalidationTableNames")
+	@GetMapping("/remoteCacheInvalidationTableNames")
 	public Set<String> getRemoteCacheInvalidationTableNames()
 	{
 		return cacheMgt.getTableNamesToBroadcast()
@@ -166,7 +166,7 @@ public abstract class CacheRestControllerTemplate
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@GetMapping("/removeCacheInvalidationTableNames/add")
+	@GetMapping("/remoteCacheInvalidationTableNames/add")
 	public void enableRemoteCacheInvalidationForTableName(@RequestParam("tableName") final String tableName)
 	{
 		cacheMgt.enableRemoteCacheInvalidationForTableName(tableName);
