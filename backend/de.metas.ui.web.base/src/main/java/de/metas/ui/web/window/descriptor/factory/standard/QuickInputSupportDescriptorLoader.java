@@ -37,7 +37,6 @@ class QuickInputSupportDescriptorLoader
 		return QuickInputSupportDescriptor.builder()
 				.openButtonCaption(openButtonCaption)
 				.closeButtonCaption(closeButtonCaption)
-				.layout(gridTabVO.getQuickInputLayout())
 				.build();
 	}
 

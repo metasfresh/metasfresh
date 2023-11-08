@@ -20,5 +20,4 @@ public class QuickInputSupportDescriptor
 {
 	@NonNull ITranslatableString openButtonCaption;
 	@NonNull ITranslatableString closeButtonCaption;
-	@Nullable QuickInputConfigLayout layout;
 }
