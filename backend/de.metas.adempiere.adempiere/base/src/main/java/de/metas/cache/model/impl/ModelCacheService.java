@@ -40,7 +40,7 @@ import lombok.NonNull;
 
 public class ModelCacheService implements IModelCacheService
 {
-	private static final transient Logger logger = LogManager.getLogger(ModelCacheService.class);
+	private static final Logger logger = LogManager.getLogger(ModelCacheService.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -72,7 +72,7 @@ public class ModelCacheService implements IModelCacheService
 		return createTableCacheConfigBuilder(tableName);
 	}
 
-	private final ITableCacheConfig getTableCacheConfig(final String tableName)
+	private ITableCacheConfig getTableCacheConfig(final String tableName)
 	{
 		//
 		// If statistics are enabled, then create a dummy cache config (disabled) if there is no cache config
@@ -141,7 +141,7 @@ public class ModelCacheService implements IModelCacheService
 	{
 		if (!Adempiere.isUnitTestMode())
 		{
-			final POInfo poInfo = POInfo.getPOInfo(cacheConfig.getTableName());
+			final POInfo poInfo = POInfo.getPOInfoNotNull(cacheConfig.getTableName());
 			if (!poInfo.isSingleKeyColumnName())
 			{
 				logger.warn("Skip adding {} because the table does not have a single primary key", cacheConfig);
@@ -237,8 +237,6 @@ public class ModelCacheService implements IModelCacheService
 	/**
 	 * Creates a copy of orginal PO, having given <code>trxName</code>.
 	 *
-	 * @param originalPO
-	 * @param trxName
 	 * @return
 	 *         <ul>
 	 *         <li>copy of <code>originalPO</code>;
@@ -246,7 +244,7 @@ public class ModelCacheService implements IModelCacheService
 	 *         <li>if there is an error while cloning given PO, null will be returned but an warning will be logged (just to not stop the current execution)
 	 *         </ul>
 	 */
-	private static final PO copyPO(final PO originalPO, final String trxName)
+	private static PO copyPO(final PO originalPO, final String trxName)
 	{
 		if (originalPO == null)
 		{
@@ -276,7 +274,7 @@ public class ModelCacheService implements IModelCacheService
 		return cacheMapsByTrx.computeIfAbsent(NullTrxPlaceholder.boxNotNull(trx), TrxCacheMap::new);
 	}
 
-	private final PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
+	private PO retrieveObjectFromTrx(final ITableCacheConfig cacheConfig, final Properties ctx, final String tableName, final int recordId, final ITrx trx)
 	{
 		//
 		// Check if we can cache on this transaction level?
@@ -315,7 +313,8 @@ public class ModelCacheService implements IModelCacheService
 		return poCached;
 	}
 
-	private final boolean isTrxLevelEnabled(final ITableCacheConfig cacheConfig, final ITrx trx)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private boolean isTrxLevelEnabled(final ITableCacheConfig cacheConfig, final ITrx trx)
 	{
 		// If caching is not enabled in cache config, simply return false
 		if (!cacheConfig.isEnabled())
@@ -343,12 +342,6 @@ public class ModelCacheService implements IModelCacheService
 	}
 
 	/**
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param recordId
-	 * @param trxName
-	 * @param po
 	 * @return true if given PO is expired
 	 */
 	private boolean isExpired(final Properties ctx, final String tableName, final int recordId, final ITrx trx, final PO po)
