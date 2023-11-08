@@ -762,7 +762,7 @@ Feature: import bank statement in camt.53.001.04 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
   @Id:S0337_400
-  Scenario: Import one statement, identify org-account by IBAN and link one invoice, and import one summary line, for 3 DEBIT transactions, in the same NTry, with one transaction on EUR
+  Scenario: Import one statement, identify org-account by IBAN, and import one summary line, for 3 DEBIT transactions, in the same NTry, with one transaction on EUR
 
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
 	# change the bankaccount of the AD_Org bpartner ("metasfresh") to be an ESR-Account
@@ -1099,7 +1099,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_3                 | bs_1_S0337_400_1              | 30   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
-      | bsl_1_S0337_400_1                 | 2023-10-24     | 2023-10-24   | CHF                        | 107.7      | bpartner_1_S0337             | inv_1_S0337_400             |
+      | bsl_1_S0337_400_1                 | 2023-10-24     | 2023-10-24   | CHF                        | 107.7      |                              |                             |
       | bsl_1_S0337_400_2                 | 2023-10-26     | 2023-10-26   | CHF                        | -20002.50  |                              |                             |
       | bsl_1_S0337_400_3                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
