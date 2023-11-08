@@ -74,9 +74,6 @@
 			</textField>
 		</band>
 	</title>
-	<pageHeader>
-		<band height="33" splitType="Stretch"/>
-	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>
@@ -102,7 +99,7 @@
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="55" splitType="Stretch">
+		<band height="93" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-62" x="507" y="0" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
 				<box>
@@ -142,6 +139,17 @@
 				</textElement>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="1" width="595" height="87" uuid="81220660-1bb5-4a9e-9284-4f37a886800a"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</pageFooter>
 	<summary>

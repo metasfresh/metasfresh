@@ -61,53 +61,55 @@ CREATE OR REPLACE FUNCTION report.Fresh_PriceList_Details_ToDate_Report(
             )
 AS
 $$
-DECLARE
-    bp_id_num    numeric;
-    plv_id_num   numeric;
-    plv_name_var text;
 BEGIN
 
     CREATE TEMP TABLE IF NOT EXISTS temp_price_list_details AS
-    SELECT bp.c_bpartner_id,
-           plv.M_PriceList_Version_ID,
-           plv.name
+    SELECT DISTINCT bp.c_bpartner_id,
+                    plv.M_PriceList_Version_ID,
+                    plv.name
     FROM c_bpartner bp
+             INNER JOIN M_PricingSystem ps ON bp.m_pricingsystem_id = ps.m_pricingsystem_id
              INNER JOIN C_BPartner_Product bpp ON bp.c_bpartner_id = bpp.c_bpartner_id AND bp.iscustomer = 'Y'
              INNER JOIN M_ProductPrice pp ON pp.M_Product_ID = bpp.M_Product_ID
              INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID
-             INNER JOIN M_PriceList pl ON plv.m_pricelist_id = pl.m_pricelist_id AND pl.issopricelist = 'Y'
+             INNER JOIN M_PriceList pl ON plv.m_pricelist_id = pl.m_pricelist_id AND ps.m_pricingsystem_id = pl.m_pricingsystem_id AND pl.issopricelist = 'Y'
         AND plv.validfrom >= p_validfrom;
 
-    FOR bp_id_num, plv_id_num, plv_name_var IN
-        SELECT tpd.c_bpartner_id, tpd.M_PriceList_Version_ID, tpd.name
-        FROM temp_price_list_details tpd
-        LOOP
 
-            IF p_show_product_price_pi_flag = 'N' THEN
-                RETURN QUERY (SELECT d.*, plv_name_var AS plv_name
-                              FROM report.fresh_PriceList_Details_Report(
-                                           bp_id_num,
-                                           plv_id_num,
-                                           NULL,
-                                           p_ad_language,
-                                           p_show_product_price_pi_flag
-                                   ) d);
+    IF p_show_product_price_pi_flag = 'N' THEN
+        RETURN QUERY (SELECT DISTINCT d.*, tmp.name::text AS plv_name
+                      FROM temp_price_list_details tmp
+                               INNER JOIN report.fresh_PriceList_Details_Report(
+                              tmp.c_bpartner_id,
+                              tmp.M_PriceList_Version_ID,
+                              NULL,
+                              p_ad_language,
+                              p_show_product_price_pi_flag
+                                          ) d ON TRUE
+                      ORDER BY bp_value,
+                               plv_name,
+                               productcategory,
+                               m_product_id);
 
-            END IF;
+    END IF;
 
-            IF p_show_product_price_pi_flag = 'Y' THEN
-                RETURN QUERY (SELECT pp.*, plv_name_var AS plv_name
-                              FROM report.fresh_PriceList_Details_Report_With_PP_PI(
-                                           bp_id_num,
-                                           plv_id_num,
-                                           NULL,
-                                           p_ad_language,
-                                           p_show_product_price_pi_flag
-                                   ) pp);
+    IF p_show_product_price_pi_flag = 'Y' THEN
+        RETURN QUERY (SELECT pp.*, tmp.name::text AS plv_name
+                      FROM temp_price_list_details tmp
+                               INNER JOIN report.fresh_pricelist_details_report_with_pp_pi(
+                              tmp.c_bpartner_id,
+                              tmp.M_PriceList_Version_ID,
+                              NULL,
+                              p_ad_language,
+                              p_show_product_price_pi_flag
+                                          ) pp ON TRUE
+                      ORDER BY bp_value,
+                               plv_name,
+                               productcategory,
+                               m_product_id);
 
-            END IF;
+    END IF;
 
-        END LOOP;
 
     DROP TABLE temp_price_list_details;
 

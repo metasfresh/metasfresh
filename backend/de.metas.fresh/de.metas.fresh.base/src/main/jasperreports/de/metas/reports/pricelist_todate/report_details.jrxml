@@ -21,7 +21,8 @@
 	</parameter>
 	<parameter name="p_ValidFrom" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Fresh_PriceList_Details_ToDate_Report($P{ad_language}, $P{p_show_product_price_pi_flag},$P{p_ValidFrom})   ;]]>
+		<![CDATA[SELECT * FROM report.Fresh_PriceList_Details_ToDate_Report($P{ad_language}, $P{p_show_product_price_pi_flag},$P{p_ValidFrom})
+;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
@@ -120,14 +121,14 @@
 					</graphicElement>
 				</rectangle>
 				<textField>
-					<reportElement key="textField-16" x="134" y="0" width="336" height="12" forecolor="#000000" uuid="e09679c6-4919-429e-9839-ad5598a9cc6e"/>
+					<reportElement key="textField-16" x="134" y="5" width="336" height="12" forecolor="#000000" uuid="e09679c6-4919-429e-9839-ad5598a9cc6e"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_value}+" - "+$F{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-16" x="37" y="0" width="97" height="12" forecolor="#000000" uuid="72a07222-05c1-43b8-b64d-fca6fb3eda6d"/>
+					<reportElement key="textField-16" x="37" y="5" width="97" height="12" forecolor="#000000" uuid="72a07222-05c1-43b8-b64d-fca6fb3eda6d"/>
 					<textElement textAlignment="Left" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
