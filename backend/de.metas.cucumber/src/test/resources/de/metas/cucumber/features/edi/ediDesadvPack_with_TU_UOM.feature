@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM like TU or COLI
   # Note: we have no tests with M_HU_PI_Item_Product_ID = 101 (No Packing Item), 
   # because an orderline with UOM=COLI implies that the package is specified. 
