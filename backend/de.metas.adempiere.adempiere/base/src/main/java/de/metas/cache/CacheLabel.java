@@ -37,12 +37,16 @@ public class CacheLabel
 		return new CacheLabel(tableName);
 	}
 
-	String name;
+	@NonNull String name;
 
 	private CacheLabel(@NonNull final String name)
 	{
 		this.name = name;
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return getName();}
 
 	public boolean equalsByName(@Nullable final String otherName)
 	{
