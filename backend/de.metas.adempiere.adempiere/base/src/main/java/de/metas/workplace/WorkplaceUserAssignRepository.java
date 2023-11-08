@@ -55,16 +55,13 @@ public class WorkplaceUserAssignRepository
 
 	public void createOrUpdate(@NonNull final WorkplaceAssignmentCreateRequest request)
 	{
-		final Optional<WorkplaceId> workplaceId = getWorkplaceIdByUserId(request.getUserId());
-		final I_C_Workplace_User_Assign record;
-		if (workplaceId.isPresent())
-		{
-			record = InterfaceWrapperHelper.load(workplaceId.get(), I_C_Workplace_User_Assign.class);
-		}
-		else
-		{
-			record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
-		}
+		final I_C_Workplace_User_Assign record = queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, request.getUserId())
+				.orderByDescending(I_C_Workplace_User_Assign.COLUMNNAME_AD_Org_ID) // TODO have org-id in the request as we have a UC regarding it
+				.create()
+				.firstOptional(I_C_Workplace_User_Assign.class)
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class));
 
 		syncAndSave(request, record);
 	}
