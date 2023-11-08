@@ -345,7 +345,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
-			// TODO vo.quickInputLayout = QuickInputConfigLayout.parse(rs.getString(I_AD_Tab.COLUMNNAME_QuickInputLayout)).orElse(null);
+			vo.quickInputLayout = QuickInputConfigLayout.parse(rs.getString(I_AD_Tab.COLUMNNAME_QuickInputLayout)).orElse(null);
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
 			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
