@@ -130,7 +130,7 @@ public class DebugRestController
 			@RequestParam(name = CacheRestController.CACHE_RESET_PARAM_forgetNotSavedDocuments, defaultValue = "false", required = false) final boolean forgetNotSavedDocuments)
 	{
 		userSession.assertLoggedIn();
-		return cacheRestController.cacheReset(new JsonCacheResetRequest()
+		return cacheRestController.reset(new JsonCacheResetRequest()
 				.setValue(CacheRestController.CACHE_RESET_PARAM_forgetNotSavedDocuments, forgetNotSavedDocuments));
 	}
 
@@ -148,7 +148,7 @@ public class DebugRestController
 		}
 		userSession.setShowColumnNamesForCaption(showColumnNamesForCaption);
 
-		cacheRestController.cacheReset(
+		cacheRestController.reset(
 				new JsonCacheResetRequest()
 						.setValue(CacheRestController.CACHE_RESET_PARAM_forgetNotSavedDocuments, true)
 		);

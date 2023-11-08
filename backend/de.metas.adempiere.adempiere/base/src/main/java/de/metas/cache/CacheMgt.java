@@ -18,7 +18,6 @@ package de.metas.cache;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -33,8 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -86,7 +83,6 @@ public final class CacheMgt
 
 	private CacheMgt()
 	{
-		JMXRegistry.get().registerJMX(new JMXCacheMgt(), OnJMXAlreadyExistsPolicy.Replace);
 	}
 
 	/**
@@ -136,11 +132,6 @@ public final class CacheMgt
 					.map(this::getCachesGroup)
 					.forEach(cacheGroup -> cacheGroup.removeCache(cache));
 		}
-	}
-
-	public Set<CacheLabel> getCacheLabels()
-	{
-		return ImmutableSet.copyOf(cachesByLabel.keySet());
 	}
 
 	public Set<String> getTableNamesToBroadcast()

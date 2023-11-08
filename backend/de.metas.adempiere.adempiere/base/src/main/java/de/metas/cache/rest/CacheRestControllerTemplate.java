@@ -1,5 +1,6 @@
 package de.metas.cache.rest;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CCacheConfigDefaults;
 import de.metas.cache.CCacheStatsOrderBy;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Set;
 
 public abstract class CacheRestControllerTemplate
 {
@@ -37,13 +39,13 @@ public abstract class CacheRestControllerTemplate
 	}
 
 	@GetMapping("/reset")
-	public final JsonCacheResetResponse cacheReset(@NonNull final HttpServletRequest httpRequest)
+	public final JsonCacheResetResponse reset(@NonNull final HttpServletRequest httpRequest)
 	{
-		return cacheReset(JsonCacheResetRequest.extractFrom(httpRequest));
+		return reset(JsonCacheResetRequest.extractFrom(httpRequest));
 	}
 
 	@PostMapping("/reset")
-	public final JsonCacheResetResponse cacheReset(@RequestBody @NonNull final JsonCacheResetRequest request)
+	public final JsonCacheResetResponse reset(@RequestBody @NonNull final JsonCacheResetRequest request)
 	{
 		assertAuth();
 
@@ -54,7 +56,7 @@ public abstract class CacheRestControllerTemplate
 			response.addLog("CacheMgt: invalidate " + count + " items");
 		}
 		{
-			cacheResetAdditional(response, request);
+			resetAdditional(response, request);
 		}
 		{
 			Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
@@ -68,7 +70,27 @@ public abstract class CacheRestControllerTemplate
 		return response;
 	}
 
-	protected void cacheResetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request) {}
+	protected void resetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request) {}
+
+	@GetMapping("/resetByTable")
+	public JsonCacheResetResponse resetForTable(@RequestParam("tableName") final String tableName)
+	{
+		JsonCacheResetResponse response = new JsonCacheResetResponse();
+		final long count = cacheMgt.reset(tableName);
+		response.addLog("Cleared " + count + " cache entries for " + tableName);
+
+		return response;
+	}
+
+	@GetMapping("/resetByRecord")
+	public JsonCacheResetResponse resetForRecordId(@RequestParam("tableName") final String tableName, @RequestParam("recordId") final int recordId)
+	{
+		JsonCacheResetResponse response = new JsonCacheResetResponse();
+		final long count = cacheMgt.reset(tableName, recordId);
+		response.addLog("Cleared " + count + " cache entries for " + tableName + "/" + recordId);
+
+		return response;
+	}
 
 	@GetMapping("/stats")
 	public JsonGetStatsResponse getStats(
@@ -133,6 +155,21 @@ public abstract class CacheRestControllerTemplate
 				.orElseThrow(() -> new AdempiereException("No cache found by cacheId=" + cacheId));
 
 		cacheInterface.reset();
+	}
+
+	@GetMapping("/removeCacheInvalidationTableNames")
+	public Set<String> getRemoteCacheInvalidationTableNames()
+	{
+		return cacheMgt.getTableNamesToBroadcast()
+				.stream()
+				.sorted()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@GetMapping("/removeCacheInvalidationTableNames/add")
+	public void enableRemoteCacheInvalidationForTableName(@RequestParam("tableName") final String tableName)
+	{
+		cacheMgt.enableRemoteCacheInvalidationForTableName(tableName);
 	}
 
 }

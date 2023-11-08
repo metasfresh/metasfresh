@@ -34,7 +34,7 @@ public class CacheRestController extends CacheRestControllerTemplate
 	@Override
 	protected void assertAuth() {userSession.assertLoggedIn();}
 
-	protected void cacheResetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request)
+	protected void resetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request)
 	{
 		{
 			final boolean forgetNotSavedDocuments = request.getValueAsBoolean(CACHE_RESET_PARAM_forgetNotSavedDocuments);
