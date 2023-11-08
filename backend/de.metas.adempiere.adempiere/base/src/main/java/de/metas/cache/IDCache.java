@@ -1,8 +1,10 @@
 package de.metas.cache;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * An extension of {@link CCache} which is used to store models indexed by their primary key.
@@ -15,7 +17,8 @@ import de.metas.util.Check;
 public class IDCache<V> extends CCache<Object, V>
 {
 	private static final CachingKeysMapper<Object> KEYS_MAPPER = tableRecordReference -> ImmutableList.of(tableRecordReference.getRecord_ID());
-	private static final ImmutableSet<CacheLabel> ADDITIONAL_LABELS = ImmutableSet.of(CacheLabel.ofString("MODEL_CACHE"));
+	public static final CacheLabel LABEL_MODEL_CACHE = CacheLabel.ofString("MODEL_CACHE");
+	public static final CacheLabel LABEL_MODEL_CACHE_IN_TRANSACTION = CacheLabel.ofString("MODEL_CACHE_IN_TRANSACTION");
 
 	public IDCache(final String tableName,
 				   final String trxName,
@@ -27,7 +30,7 @@ public class IDCache<V> extends CCache<Object, V>
 				tableName + "#TrxName=" + trxName,
 				tableName,
 				null, // additionalTableNamesToResetFor
-				ADDITIONAL_LABELS,
+				computeAdditionalLabels(trxName),
 				initialCapacity,
 				null,
 				expireMinutes,
@@ -37,6 +40,18 @@ public class IDCache<V> extends CCache<Object, V>
 				null);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
+	}
+
+	private static Set<CacheLabel> computeAdditionalLabels(final String trxName)
+	{
+		final HashSet<CacheLabel> additionalLabels = new HashSet<>();
+		additionalLabels.add(LABEL_MODEL_CACHE);
+		if (trxName != null)
+		{
+			additionalLabels.add(LABEL_MODEL_CACHE_IN_TRANSACTION);
+		}
+
+		return additionalLabels;
 	}
 
 }
