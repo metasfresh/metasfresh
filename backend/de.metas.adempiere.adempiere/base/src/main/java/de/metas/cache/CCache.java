@@ -76,7 +76,7 @@ public class CCache<K, V> implements CacheInterface
 		return CCache.<K, V>builder()
 				.cacheName(cacheName)
 				// .tableName(null) // auto-detect tableName
-				.initialCapacity(maxSize) // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
+				.maximumSize(maxSize)
 				.expireMinutes(expireAfterMinutes)
 				.cacheMapType(CacheMapType.LRU)
 				.build();
@@ -171,7 +171,9 @@ public class CCache<K, V> implements CacheInterface
 		this(name, // cache name
 				null, // auto-detect tableName
 				null, // additionalTableNamesToResetFor
+				null, // additionalLabels
 				initialCapacity,
+				null,
 				expireMinutes,
 				null,
 				null,
@@ -184,7 +186,9 @@ public class CCache<K, V> implements CacheInterface
 			@Nullable final String cacheName,
 			@Nullable final String tableName,
 			@Nullable @Singular("additionalTableNameToResetFor") final Set<String> additionalTableNamesToResetFor,
+			@Nullable @Singular("additionalLabel") final Set<CacheLabel> additionalLabels,
 			@Nullable final Integer initialCapacity,
+			@Nullable final Integer maximumSize,
 			@Nullable final Integer expireMinutes,
 			@Nullable final CacheMapType cacheMapType,
 			@Nullable final CachingKeysMapper<K> invalidationKeysMapper,
@@ -235,7 +239,7 @@ public class CCache<K, V> implements CacheInterface
 			}
 		}
 
-		this.labels = buildCacheLabels(tableNameEffective, additionalTableNamesToResetFor);
+		this.labels = buildCacheLabels(tableNameEffective, additionalTableNamesToResetFor, additionalLabels);
 
 		final CCacheConfigDefaults configDefaults = CacheMgt.get().getConfigDefaults();
 		final CacheMapType cacheMapTypeEffective = cacheMapType != null ? cacheMapType : configDefaults.getCacheMapType();
@@ -248,11 +252,8 @@ public class CCache<K, V> implements CacheInterface
 		}
 		else if (cacheMapTypeEffective == CacheMapType.LRU)
 		{
-			// FIXME: this is confusing
-			//noinspection UnnecessaryLocalVariable
-			final Integer maximumSize = initialCapacity;
-
-			configBuilder.maximumSize(maximumSize != null && maximumSize >= 0 ? maximumSize : configDefaults.getMaximumSize());
+			final Integer maximumSizeEffective = maximumSize != null ? maximumSize : initialCapacity;
+			configBuilder.maximumSize(maximumSizeEffective != null && maximumSizeEffective >= 0 ? maximumSizeEffective : configDefaults.getMaximumSize());
 		}
 		else
 		{
@@ -332,7 +333,10 @@ public class CCache<K, V> implements CacheInterface
 	}
 
 	@NonNull
-	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, @Nullable final Set<String> additionalTableNamesToResetFor)
+	private static ImmutableSet<CacheLabel> buildCacheLabels(
+			@NonNull final String tableName,
+			@Nullable final Set<String> additionalTableNamesToResetFor,
+			@Nullable final Set<CacheLabel> additionalLabels)
 	{
 		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.builder();
 		builder.add(CacheLabel.ofTableName(tableName));
@@ -342,6 +346,11 @@ public class CCache<K, V> implements CacheInterface
 			additionalTableNamesToResetFor.stream()
 					.map(CacheLabel::ofTableName)
 					.forEach(builder::add);
+		}
+
+		if (additionalLabels != null && !additionalLabels.isEmpty())
+		{
+			builder.addAll(additionalLabels);
 		}
 
 		return builder.build();

@@ -1,67 +1,42 @@
 package de.metas.cache;
 
-import java.util.Collection;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
-import lombok.NonNull;
 
 /**
  * An extension of {@link CCache} which is used to store models indexed by their primary key.
- *
+ * <p>
  * NOTE: we use Object as cache key because in future i think we will move from Integer keys to something else (UUID, String etc).
  *
- * @author tsa
- *
  * @param <V>
+ * @author tsa
  */
 public class IDCache<V> extends CCache<Object, V>
 {
-	private static final CachingKeysMapper<Object> KEYS_MAPPER = new CachingKeysMapper<Object>()
-	{
-		@Override
-		public Collection<Object> computeCachingKeys(@NonNull final TableRecordReference tableRecordReference)
-		{
-			return ImmutableList.of(tableRecordReference.getRecord_ID());
-		}
-	};
-
-	public IDCache(final String tableName, final String trxName, final int initialCapacity, final int expireMinutes)
-	{
-		this(tableName, trxName, initialCapacity, expireMinutes, CacheMapType.HashMap);
-	}
+	private static final CachingKeysMapper<Object> KEYS_MAPPER = tableRecordReference -> ImmutableList.of(tableRecordReference.getRecord_ID());
+	private static final ImmutableSet<CacheLabel> ADDITIONAL_LABELS = ImmutableSet.of(CacheLabel.ofString("MODEL_CACHE"));
 
 	public IDCache(final String tableName,
-			final String trxName,
-			final int initialCapacity,
-			final int expireMinutes,
-			final CacheMapType cacheMapType)
+				   final String trxName,
+				   final int initialCapacity,
+				   final int expireMinutes,
+				   final CacheMapType cacheMapType)
 	{
 		super(
-				buildCacheName(tableName, trxName),
+				tableName + "#TrxName=" + trxName,
 				tableName,
 				null, // additionalTableNamesToResetFor
+				ADDITIONAL_LABELS,
 				initialCapacity,
+				null,
 				expireMinutes,
 				cacheMapType,
 				KEYS_MAPPER,
-				(CacheRemovalListener<Object, V>)null,
-				(CacheAdditionListener<Object, V>)null);
+				null,
+				null);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 	}
 
-	private static final String buildCacheName(final String tableName, final String trxName)
-	{
-		// Build cache name
-		// we use "tableName" as cacheName because we want our cache to be reseted when a record in that table is changed.
-		final String cacheName = new StringBuilder(tableName)
-				.append("#TrxName=").append(trxName)
-				.toString();
-
-		return cacheName;
-	}
 }
