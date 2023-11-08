@@ -213,7 +213,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
 
-	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate date, final boolean newIsActiveValue);
+	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @Nullable final LocalDate date, final boolean newIsActiveValue);
 
 	CurrencyId getCurrencyId(final PriceListId priceListId);
 
