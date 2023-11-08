@@ -60,7 +60,7 @@ public class WorkplaceService
 
 	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)
 	{
-		workplaceUserAssignRepository.create(request);
+		workplaceUserAssignRepository.createOrUpdate(request);
 	}
 
 	public boolean isAnyWorkplaceActive()

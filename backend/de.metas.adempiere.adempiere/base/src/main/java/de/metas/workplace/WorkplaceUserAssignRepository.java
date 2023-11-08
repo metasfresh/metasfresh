@@ -50,7 +50,27 @@ public class WorkplaceUserAssignRepository
 	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
 	{
 		final I_C_Workplace_User_Assign record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
+		syncAndSave(request, record);
+	}
 
+	public void createOrUpdate(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		final Optional<WorkplaceId> workplaceId = getWorkplaceIdByUserId(request.getUserId());
+		final I_C_Workplace_User_Assign record;
+		if (workplaceId.isPresent())
+		{
+			record = InterfaceWrapperHelper.load(workplaceId.get(), I_C_Workplace_User_Assign.class);
+		}
+		else
+		{
+			record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
+		}
+
+		syncAndSave(request, record);
+	}
+
+	private static void syncAndSave(final WorkplaceAssignmentCreateRequest request, final I_C_Workplace_User_Assign record)
+	{
 		record.setAD_User_ID(request.getUserId().getRepoId());
 		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
 
