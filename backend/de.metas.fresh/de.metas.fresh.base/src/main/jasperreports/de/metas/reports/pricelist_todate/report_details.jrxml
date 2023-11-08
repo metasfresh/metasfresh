@@ -109,12 +109,18 @@
 		<variableExpression><![CDATA[$F{hasaltprice}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
-	<group name="BPartner" isStartNewPage="true" minHeightToStartNewPage="24">
+	<group name="BPartner" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="24">
 		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
 		<groupHeader>
-			<band height="24">
+			<band height="37">
+				<rectangle>
+					<reportElement key="rectangle-1" x="37" y="23" width="486" height="13" backcolor="#808080" uuid="79209c93-6713-4b74-8fb7-c2a65519a0f7"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
 				<textField>
-					<reportElement key="textField-16" x="140" y="0" width="336" height="12" forecolor="#000000" uuid="e09679c6-4919-429e-9839-ad5598a9cc6e"/>
+					<reportElement key="textField-16" x="134" y="0" width="336" height="12" forecolor="#000000" uuid="e09679c6-4919-429e-9839-ad5598a9cc6e"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -122,10 +128,52 @@
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="37" y="0" width="97" height="12" forecolor="#000000" uuid="72a07222-05c1-43b8-b64d-fca6fb3eda6d"/>
-					<textElement textAlignment="Right" markup="none">
+					<textElement textAlignment="Left" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{BPartner}+" : "]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="37" y="23" width="45" height="12" forecolor="#FFFFFF" uuid="ee7c7343-f04f-4bd3-a596-f39e266b25b9"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="81" y="23" width="178" height="12" forecolor="#FFFFFF" uuid="6f804d23-f9d2-4d04-a133-31de9c7f6e25"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{P_Name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-13" x="259" y="23" width="73" height="12" forecolor="#FFFFFF" uuid="e3680953-10ff-49c4-a9b9-c6f09fc96866"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-17" x="333" y="23" width="107" height="12" forecolor="#FFFFFF" uuid="e25fd5d1-3066-4d32-812a-aab806057d76"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-20" x="440" y="23" width="36" height="12" forecolor="#FFFFFF" uuid="6e410470-2526-40a1-b3ea-b4fcd2f48f34"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-20" x="476" y="23" width="47" height="13" forecolor="#FFFFFF" uuid="c0f23b8e-43ad-455a-901a-61bee4a0d261"/>
+					<textElement textAlignment="Right" markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[( $R{Price})]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -136,12 +184,12 @@
 			<band height="20">
 				<textField>
 					<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="15a696c6-933c-42c3-9ce7-6440924a6bec"/>
-					<textElement textAlignment="Right" markup="none">
+					<textElement textAlignment="Left" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pricelist}+" : "]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-16" x="112" y="0" width="364" height="12" forecolor="#000000" uuid="469aa9fd-82d9-43d6-baed-733ab610d15e"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
@@ -170,62 +218,21 @@
 				</textField>
 			</band>
 		</groupHeader>
-		<groupFooter>
-			<band height="8"/>
-		</groupFooter>
 	</group>
-	<pageHeader>
-		<band height="23" splitType="Stretch">
-			<textField>
-				<reportElement key="textField-16" x="37" y="0" width="45" height="12" forecolor="#000000" uuid="4ef95306-20b2-4f43-ba5f-5961c590703f"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-13" x="259" y="0" width="73" height="12" forecolor="#000000" uuid="9a577c3e-9c95-4400-8830-18891deb0757"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-17" x="333" y="0" width="107" height="12" forecolor="#000000" uuid="70fa6b18-edb1-4cc9-9e5c-30b428399a6d"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="476" y="0" width="47" height="23" forecolor="#000000" uuid="04629a37-8ce2-463c-8fe2-cc78e8be14b0"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[( $R{Price})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="440" y="0" width="36" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-16" x="81" y="0" width="178" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{P_Name}]]></textFieldExpression>
-			</textField>
-		</band>
-	</pageHeader>
 	<detail>
 		<band height="16" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(
         $F{pricestd}.floatValue() != 0 ||
             $F{altpricestd}.floatValue() != 0
 )]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-4" x="37" y="0" width="486" height="12" backcolor="#FFFFCC" uuid="82f9ba10-01e5-4be6-8973-418786761525">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{BPartner_COUNT}.intValue()%2)==1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
@@ -322,7 +329,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{pricepattern1}]]></patternExpression>
