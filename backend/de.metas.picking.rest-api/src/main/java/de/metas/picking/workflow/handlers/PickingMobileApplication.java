@@ -38,6 +38,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -288,7 +290,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
 	}
 
-	public static PickingJobStepEventType fromJson(JsonPickingStepEvent.EventType json)
+	public static PickingJobStepEventType fromJson(final JsonPickingStepEvent.EventType json)
 	{
 		switch (json)
 		{
@@ -329,12 +331,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
-		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
+		final IHUQRCode qrCode = HUQRCodesService.toHUQRCode(json.getHuQRCode());
 
 		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
-		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null
-				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey()
+		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null && (qrCode instanceof HUQRCode)
+				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode((HUQRCode)qrCode).getPickFromKey()
 				: null;
 
 		return PickingJobStepEvent.builder()
@@ -345,6 +347,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.eventType(fromJson(json.getType()))
 				.huQRCode(qrCode)
 				.qtyPicked(json.getQtyPicked())
+				.isPickWholeTU(json.isPickWholeTU())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 				.catchWeight(json.getCatchWeight())

@@ -280,6 +280,7 @@ public class PickingJobService
 						.pickFromKey(event.getPickFromKey())
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
+						.isPickWholeTU(event.isPickWholeTU())
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						.catchWeightBD(event.getCatchWeight())

@@ -132,7 +132,6 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new AD_PrinterHW_Calibration());
 		engine.addModelValidator(new AD_PrinterHW_MediaTray());
 		engine.addModelValidator(new AD_PrinterTray_Matching());
-		engine.addModelValidator(new C_BPartner()); // task 08958
 
 		engine.addModelValidator(new C_Print_Job_Instructions());
 		engine.addModelValidator(new C_Printing_Queue());
@@ -191,7 +190,7 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// make sure that the host key is set in the context
 		if (checkPrintingEnabled())

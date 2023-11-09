@@ -165,6 +165,7 @@ const ScanHUAndGetQtyComponent = ({
       resolvedBarcodeData,
       catchWeight,
       catchWeightUom,
+      isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
     });
   };
 
@@ -205,6 +206,8 @@ const ScanHUAndGetQtyComponent = ({
           scaleTolerance={resolvedBarcodeData.scaleTolerance}
           catchWeight={resolvedBarcodeData.catchWeight}
           catchWeightUom={resolvedBarcodeData.catchWeightUom}
+          readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
+          hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
