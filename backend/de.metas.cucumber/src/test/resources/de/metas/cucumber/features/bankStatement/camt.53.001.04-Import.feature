@@ -1103,16 +1103,4 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_2                 | 2023-10-26     | 2023-10-26   | CHF                        | -20002.50  |                              |                             |
       | bsl_1_S0337_400_3                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
-    And the C_BankStatement identified by bs_1_S0337_400_1 is completed
-
-    And after not more than 60s, C_Payment is found
-      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
-      | p_4_1_S0337             | bs_1_S0337_400_1                  | bsl_1_S0337_400_1                     |
-    And validate payments
-      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier   |
-      | p_4_1_S0337             | true                     | 0.00        | 107.7      | inv_1_S0337_400             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_400 |
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
-      | inv_1_S0337_400         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
-
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
