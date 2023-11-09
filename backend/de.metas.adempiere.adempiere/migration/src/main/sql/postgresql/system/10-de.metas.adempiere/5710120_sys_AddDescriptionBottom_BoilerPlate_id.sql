@@ -120,3 +120,30 @@ UPDATE AD_UI_Element SET SeqNo=8,Updated=TO_TIMESTAMP('2023-11-09 18:24:47.252',
 -- 2023-11-09T16:24:58.340756500Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,721802,0,294,540961,621252,'F',TO_TIMESTAMP('2023-11-09 18:24:58.223','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N','Schlusstext Liste',6,0,0,TO_TIMESTAMP('2023-11-09 18:24:58.223','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
+
+-- Element: DescriptionBottom_BoilerPlate_ID
+-- 2023-11-09T16:49:27.835285100Z
+UPDATE AD_Element_Trl SET Name='Auswahl Schlusstext', PrintName='Auswahl Schlusstext',Updated=TO_TIMESTAMP('2023-11-09 18:49:27.834','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582798 AND AD_Language='de_CH'
+;
+
+-- 2023-11-09T16:49:27.841092500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582798,'de_CH') 
+;
+
+-- Element: DescriptionBottom_BoilerPlate_ID
+-- 2023-11-09T16:49:56.772592100Z
+UPDATE AD_Element_Trl SET Name='Auswahl Schlusstext', PrintName='Auswahl Schlusstext',Updated=TO_TIMESTAMP('2023-11-09 18:49:56.772','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582798 AND AD_Language='de_DE'
+;
+
+-- 2023-11-09T16:49:56.774143700Z
+UPDATE AD_Element SET Name='Auswahl Schlusstext', PrintName='Auswahl Schlusstext' WHERE AD_Element_ID=582798
+;
+
+-- 2023-11-09T16:49:57.001036700Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582798,'de_DE') 
+;
+
+-- 2023-11-09T16:49:57.002113800Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582798,'de_DE') 
+;
+
