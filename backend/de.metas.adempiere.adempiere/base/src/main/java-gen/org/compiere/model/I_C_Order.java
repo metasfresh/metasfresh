@@ -17,6 +17,8 @@ public interface I_C_Order
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
+
+
 	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
@@ -309,6 +311,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_C_Order.class, "BPartnerAddress", null);
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+
+	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_Order.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
 	 * Set Activity.
@@ -1022,6 +1045,29 @@ public interface I_C_Order
 	String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
+	 * Set Date.
+	 * Date of Order
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDateOrdered (java.sql.Timestamp DateOrdered);
+
+	/**
+	 * Get Date.
+	 * Date of Order
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDateOrdered();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DateOrdered = new ModelColumn<>(I_C_Order.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
+
+	/**
 	 * Set Date printed.
 	 * Date the document was printed.
 	 *
@@ -1043,6 +1089,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_DatePrinted = new ModelColumn<>(I_C_Order.class, "DatePrinted", null);
 	String COLUMNNAME_DatePrinted = "DatePrinted";
+
+	/**
+	 * Set Date Promised From.
+	 * Date Order was promised
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Date Promised From.
+	 * Date Order was promised
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDatePromised();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DatePromised = new ModelColumn<>(I_C_Order.class, "DatePromised", null);
+	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
 	 * Set Delivery info.
@@ -1398,6 +1467,27 @@ public interface I_C_Order
 	int getDropShip_User_ID();
 
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Order, Object> COLUMN_EMail = new ModelColumn<>(I_C_Order.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set External ID.
@@ -1847,6 +1937,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsDiscountPrinted = new ModelColumn<>(I_C_Order.class, "IsDiscountPrinted", null);
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
+
+	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip (boolean IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_Order.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set Invoiced.

@@ -214,6 +214,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName()
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
 	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -728,6 +740,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
+	{
+		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateOrdered()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
+	}
+
+	@Override
 	public void setDatePrinted (final @Nullable java.sql.Timestamp DatePrinted)
 	{
 		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
@@ -737,6 +761,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.sql.Timestamp getDatePrinted() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DatePrinted);
+	}
+
+	@Override
+	public void setDatePromised (final java.sql.Timestamp DatePromised)
+	{
+		set_Value (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
 	@Override
@@ -1055,6 +1091,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -1347,6 +1395,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isDiscountPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDiscountPrinted);
+	}
+
+	@Override
+	public void setIsDropShip (final boolean IsDropShip)
+	{
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
+	}
+
+	@Override
+	public boolean isDropShip()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
 
 	@Override
