@@ -17,18 +17,7 @@ public interface I_C_Order
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
-	/** Column name AD_BoilerPlate_ID */
-	public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 
-	/** Set Textbaustein	  */
-	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
-
-	/** Get Textbaustein	  */
-	public int getAD_BoilerPlate_ID();
-
-	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate() throws RuntimeException;
-
-	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate);
 
 	/**
 	 * Get Client.
@@ -3192,4 +3181,10 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+
+	// TODO add DB column!
+	public static final String COLUMNNAME_DescriptionBottom_BoilerPlate_ID = "DescriptionBottom_BoilerPlate_ID";
+	public void setDescriptionBottom_BoilerPlate_ID(int AD_BoilerPlate_ID);
+	public int getDescriptionBottom_BoilerPlate_ID();
 }

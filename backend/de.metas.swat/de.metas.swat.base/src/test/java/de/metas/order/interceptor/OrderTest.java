@@ -159,14 +159,13 @@ public class OrderTest
 	@Test
 	public void updateDescriptionBottomFromBoilerPlate()
 	{
-
 		final String subjectBoilerPlate = "Title boiler plate";
 		final String bodyBoilerPlate = "Some text boiler plate with variable @C_BPartner_ID@";
 
 		final I_C_BPartner partner1 = createPartner(PARTNER_NAME_1, ENGLISH);
 		final I_C_Order order = createOrder(partner1);
 		final I_AD_BoilerPlate boilerPlate = createBoilerPlate(subjectBoilerPlate, bodyBoilerPlate);
-		order.setAD_BoilerPlate_ID(boilerPlate.getAD_BoilerPlate_ID());
+		order.setDescriptionBottom_BoilerPlate_ID(boilerPlate.getAD_BoilerPlate_ID());
 
 		save(order);
 

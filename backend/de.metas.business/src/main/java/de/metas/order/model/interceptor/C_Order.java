@@ -85,7 +85,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -678,31 +677,22 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_BoilerPlate_ID })
-	public void onBoilerPlateChangeInterceptor(@NonNull final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_DescriptionBottom_BoilerPlate_ID)
+	public void onBoilerPlateChangeCallout(@NonNull final I_C_Order order)
 	{
-		onBoilerPlateChangeUpdateDescriptionBottom(order);
+		updateDescriptionBottomFromBoilerPlateIfSet(order);
 	}
 
-	private void onBoilerPlateChangeUpdateDescriptionBottom(@NonNull final I_C_Order order)
+	private void updateDescriptionBottomFromBoilerPlateIfSet(@NonNull final I_C_Order order)
 	{
-		if (order.getAD_BoilerPlate_ID() > 0)
+		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(order.getDescriptionBottom_BoilerPlate_ID());
+		if (boilerPlateId != null)
 		{
-			final I_C_BPartner bPartner = order.getC_BPartner();
-			final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
-					.orElseGet(Language::getBaseLanguage);
-
-			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(
-					BoilerPlateId.ofRepoId(order.getAD_BoilerPlate_ID()),
-					language);
-			final Evaluatee evalCtx = createEvaluationContext(order);
+			final Language language = bpartnerBL.getLanguage(BPartnerId.ofRepoId(order.getC_BPartner_ID())).orElseGet(Language::getBaseLanguage);
+			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
+			final Evaluatee evalCtx = InterfaceWrapperHelper.getEvaluatee(order);
 
 			order.setDescriptionBottom(boilerPlate.evaluateTextSnippet(evalCtx));
 		}
-	}
-
-	private Evaluatee createEvaluationContext(@NonNull final I_C_Order orderRecord)
-	{
-		return Evaluatees.compose(InterfaceWrapperHelper.getEvaluatee(orderRecord));
 	}
 }

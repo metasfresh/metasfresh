@@ -35,36 +35,23 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-
-	@Override
-	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class);
-	}
-
-	@Override
-	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class, AD_BoilerPlate);
-	}
-
 	/** Set Textbaustein.
 	 @param AD_BoilerPlate_ID Textbaustein	  */
 	@Override
-	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID)
+	public void setDescriptionBottom_BoilerPlate_ID(int AD_BoilerPlate_ID)
 	{
 		if (AD_BoilerPlate_ID < 1)
-			set_Value (COLUMNNAME_AD_BoilerPlate_ID, null);
+			set_Value (COLUMNNAME_DescriptionBottom_BoilerPlate_ID, null);
 		else
-			set_Value (COLUMNNAME_AD_BoilerPlate_ID, Integer.valueOf(AD_BoilerPlate_ID));
+			set_Value (COLUMNNAME_DescriptionBottom_BoilerPlate_ID, Integer.valueOf(AD_BoilerPlate_ID));
 	}
 
 	/** Get Textbaustein.
 	 @return Textbaustein	  */
 	@Override
-	public int getAD_BoilerPlate_ID ()
+	public int getDescriptionBottom_BoilerPlate_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_BoilerPlate_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DescriptionBottom_BoilerPlate_ID);
 		if (ii == null)
 			return 0;
 		return ii.intValue();
