@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Tab
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -275252737L;
+	private static final long serialVersionUID = -1686882839L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -730,6 +730,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public java.lang.String getQuickInput_OpenButton_Caption() 
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInput_OpenButton_Caption);
+	}
+
+	@Override
+	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
+	{
+		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
+	}
+
+	@Override
+	public java.lang.String getQuickInputLayout() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
 	}
 
 	@Override
