@@ -102,6 +102,7 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID)
