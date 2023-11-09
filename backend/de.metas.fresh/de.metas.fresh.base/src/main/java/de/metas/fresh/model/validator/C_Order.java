@@ -22,18 +22,36 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.model.I_C_Order;
+import de.metas.i18n.Language;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.model.I_C_Order;
-import de.metas.util.Services;
-
+@Component
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final BoilerPlateRepository boilerPlateRepository;
+
+	public C_Order(final BoilerPlateRepository boilerPlateRepository)
+	{
+		this.boilerPlateRepository = boilerPlateRepository;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setWarehouse(final I_C_Order order)
@@ -43,6 +61,34 @@ public class C_Order
 		{
 			order.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_BoilerPlate_ID })
+	public void onBoilerPlateChangeInterceptor(@NonNull final I_C_Order order)
+	{
+		onBoilerPlateChangeUpdateDescriptionBottom(order);
+	}
+
+	private void onBoilerPlateChangeUpdateDescriptionBottom(@NonNull final I_C_Order order)
+	{
+		if (order.getAD_BoilerPlate_ID() > 0)
+		{
+			final I_C_BPartner bPartner = order.getC_BPartner();
+			final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
+					.orElseGet(Language::getBaseLanguage);
+
+			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(
+					BoilerPlateId.ofRepoId(order.getAD_BoilerPlate_ID()),
+					language);
+			final Evaluatee evalCtx = createEvaluationContext(order);
+
+			order.setDescriptionBottom(boilerPlate.evaluateTextSnippet(evalCtx));
+		}
+	}
+
+	private Evaluatee createEvaluationContext(@NonNull final I_C_Order orderRecord)
+	{
+		return Evaluatees.compose(InterfaceWrapperHelper.getEvaluatee(orderRecord));
 	}
 
 }

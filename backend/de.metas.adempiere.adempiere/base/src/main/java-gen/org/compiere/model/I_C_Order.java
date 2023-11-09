@@ -17,6 +17,19 @@ public interface I_C_Order
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
+	/** Column name AD_BoilerPlate_ID */
+	public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
+
+	/** Set Textbaustein	  */
+	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
+
+	/** Get Textbaustein	  */
+	public int getAD_BoilerPlate_ID();
+
+	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate() throws RuntimeException;
+
+	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate);
+
 	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
