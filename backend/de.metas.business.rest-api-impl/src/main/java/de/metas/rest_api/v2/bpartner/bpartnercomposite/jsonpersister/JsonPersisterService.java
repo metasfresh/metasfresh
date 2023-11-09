@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
@@ -657,20 +658,25 @@ public class JsonPersisterService
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
-		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
+		final JsonResponseUpsertBuilder responseBuilder = JsonResponseUpsert.builder();
 		for (final JsonRequestBankAccountUpsertItem requestItem : jsonBankAccountsUpsert.getRequestItems())
 		{
-			final String iban = requestItem.getIban();
-			final BPartnerBankAccount bankAccount = shortTermIndex.extract(iban);
+			final BPartnerBankAccount bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban())
+					.orElseThrow(() -> new AdempiereException("Something went wrong! No BPBankAccount found for IBAN=" + requestItem.getIban()));
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getIban())
 					.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.getId())))
 					.build();
-			response.responseItem(responseItem);
+			responseBuilder.responseItem(responseItem);
 		}
 
-		return Optional.of(response.build());
+		final JsonResponseUpsert responseUpsert = responseBuilder.build();
+
+		getExternalReferenceUpsertRequestList(responseUpsert.getResponseItems(), jsonBankAccountsUpsert)
+				.forEach(externalRefUpsert -> externalReferenceRestControllerService.performUpsert(externalRefUpsert, orgCode));
+
+		return Optional.of(responseUpsert);
 	}
 
 	private void syncJsonToBPartnerComposite(
@@ -744,8 +750,9 @@ public class JsonPersisterService
 		for (final JsonRequestBankAccountUpsertItem requestItem : jsonRequestComposite.getBankAccountsNotNull().getRequestItems())
 		{
 			final JsonResponseUpsertItemBuilder builder = jsonResponseBankAccountUpsertItemBuilders.get(requestItem.getIban());
-			final Optional<BPartnerBankAccount> bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban());
-			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.get().getId())));
+			final BPartnerBankAccount bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban())
+					.orElseThrow(() -> new AdempiereException("No BPBankAccount found for IBAN=" + requestItem.getIban()));
+			builder.metasfreshId(JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId()));
 		}
 
 		bpartnerComposite.getCreditLimits()
@@ -1190,7 +1197,7 @@ public class JsonPersisterService
 		{
 			bpartner.setSectionPartner(jsonBPartner.isSectionPartner());
 		}
-		
+
 		if (jsonBPartner.isUrproduzentSet())
 		{
 			bpartner.setUrproduzent(jsonBPartner.isUrproduzent());
@@ -1628,60 +1635,102 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermBankAccountIndex shortTermIndex)
 	{
-		final String iban = jsonBankAccount.getIban();
-		final BPartnerBankAccount existingBankAccount = shortTermIndex.extract(iban);
+		final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
+
+		final BPartnerBankAccount existingBankAccount = jsonRetrieverService
+				.resolveBankAccountId(ExternalIdentifier.of(jsonBankAccount.getIdentifier()), shortTermIndex.getBpartnerComposite())
+				.map(shortTermIndex::extract)
+				.orElseGet(() -> shortTermIndex.extractOrNull(jsonBankAccount.getIban()));
 
 		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
-				.identifier(iban);
+				.identifier(jsonBankAccount.getIdentifier());
 
+		final SyncOutcome syncOutcome;
 		final BPartnerBankAccount bankAccount;
 		if (existingBankAccount != null)
 		{
 			bankAccount = existingBankAccount;
 			shortTermIndex.remove(existingBankAccount.getId());
-			resultBuilder.syncOutcome(SyncOutcome.UPDATED);
+
+			syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{
-			if (parentSyncAdvise.isFailIfNotExists())
+			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
-				throw MissingResourceException.builder().resourceName("bankAccount").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
-						.setParameter("parentSyncAdvise", parentSyncAdvise);
+				throw MissingResourceException.builder().resourceName("bankAccount")
+						.resourceIdentifier(jsonBankAccount.getIdentifier())
+						.parentResource(jsonBankAccount)
+						.build()
+						.setParameter("syncAdvise", effectiveSyncAdvise);
 			}
 
 			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
 			if (currencyId == null)
 			{
-				throw MissingResourceException.builder().resourceName("bankAccount.currencyId").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
-						.setParameter("parentSyncAdvise", parentSyncAdvise);
+				throw MissingResourceException.builder()
+						.resourceName("bankAccount.currencyId")
+						.resourceIdentifier(jsonBankAccount.getCurrencyCode())
+						.parentResource(jsonBankAccount)
+						.build()
+						.setParameter("syncAdvise", effectiveSyncAdvise);
 			}
 
-			bankAccount = shortTermIndex.newBankAccount(iban, currencyId);
-			resultBuilder.syncOutcome(SyncOutcome.CREATED);
+			bankAccount = shortTermIndex.newBankAccount(jsonBankAccount.getIban(), currencyId);
+			syncOutcome = SyncOutcome.CREATED;
 		}
 
-		syncJsonToBankAccount(jsonBankAccount, bankAccount);
+		if (syncOutcome != SyncOutcome.NOTHING_DONE)
+		{
+			syncJsonToBankAccount(jsonBankAccount, bankAccount);
+		}
 
-		return resultBuilder;
+		return resultBuilder.syncOutcome(syncOutcome);
 	}
 
 	private void syncJsonToBankAccount(
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
 			@NonNull final BPartnerBankAccount bankAccount)
 	{
-		// ignoring syncAdvise.isUpdateRemove because both active and currencyId can't be NULLed
+		bankAccount.setIban(bankAccount.getIban());
 
 		// active
-		if (jsonBankAccount.getActive() != null)
+		if (jsonBankAccount.isActiveSet())
 		{
-			bankAccount.setActive(jsonBankAccount.getActive());
+			bankAccount.setActive(jsonBankAccount.getIsActive());
 		}
 
-		// currency
-		final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
-		if (currencyId != null)
+		// isDefault
+		if (jsonBankAccount.isDefaultSet())
 		{
+			bankAccount.setDefault(Boolean.TRUE.equals(jsonBankAccount.getIsDefault()));
+		}
+
+
+		// currency
+		if (jsonBankAccount.isCurrencyCodeSet())
+		{
+			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+			if (currencyId == null)
+			{
+				throw new AdempiereException("CurrencyId cannot be set to null!")
+						.appendParametersToMessage()
+						.setParameter("BPBankAccountIdentifier", jsonBankAccount.getIdentifier());
+			}
+
 			bankAccount.setCurrencyId(currencyId);
+		}
+
+		// qrIban
+		if (jsonBankAccount.isQrIbanSet())
+		{
+			bankAccount.setQrIban(StringUtils.trim(jsonBankAccount.getQrIban()));
+		}
+
+		// name
+		if (jsonBankAccount.isNameSet())
+		{
+			bankAccount.setName(StringUtils.trim(jsonBankAccount.getName()));
 		}
 	}
 
@@ -1959,7 +2008,7 @@ public class JsonPersisterService
 			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
 		}
 
-		if(jsonBPartnerLocation.isSapPaymentMethodSet())
+		if (jsonBPartnerLocation.isSapPaymentMethodSet())
 		{
 			location.setSapPaymentMethod(jsonBPartnerLocation.getSapPaymentMethod());
 		}
@@ -2026,7 +2075,7 @@ public class JsonPersisterService
 	}
 
 	@NonNull
-	private Optional<JsonRequestExternalReferenceUpsert> mapToJsonRequestExternalReferenceUpsert(
+	private static Optional<JsonRequestExternalReferenceUpsert> mapToJsonRequestExternalReferenceUpsert(
 			@NonNull final JsonResponseUpsertItem responseUpsertItem,
 			@NonNull final Map<String, JsonExternalReferenceItem> externalRef2item)
 	{
@@ -2060,7 +2109,6 @@ public class JsonPersisterService
 				.build();
 
 		return Optional.of(jsonRequestExternalReferenceUpsert);
-
 	}
 
 	private void handleExternalReferenceRecords(
@@ -2127,6 +2175,9 @@ public class JsonPersisterService
 													   .collect(Collectors.toSet()));
 		}
 
+		externalReferenceCreateReqs.addAll(getExternalReferenceUpsertRequestList(result.getResponseBankAccountItems(),
+																				 requestItem.getBpartnerComposite().getBankAccountsNotNull()));
+
 		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
 		{
 			externalReferenceRestControllerService.performUpsert(request, orgCode);
@@ -2174,8 +2225,8 @@ public class JsonPersisterService
 						}
 
 						albertaBPartnerCompositeService.upsertAlbertaContact(UserId.ofRepoId(contactMetasfreshId.getValue()),
-								contactRequestItem.getJsonAlbertaContact(),
-								effectiveSyncAdvise);
+																			 contactRequestItem.getJsonAlbertaContact(),
+																			 effectiveSyncAdvise);
 					});
 		}
 	}
@@ -2363,5 +2414,35 @@ public class JsonPersisterService
 
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 		return Money.of(jsonMoney.getAmount(), currencyId);
+	}
+
+	@NonNull
+	private static ImmutableSet<JsonRequestExternalReferenceUpsert> getExternalReferenceUpsertRequestList(
+			@Nullable final List<JsonResponseUpsertItem> bankAccountItems,
+			@NonNull final JsonRequestBankAccountsUpsert bankAccountUpsertRequest)
+	{
+		if (CollectionUtils.isEmpty(bankAccountItems))
+		{
+			return ImmutableSet.of();
+		}
+
+		final Map<String, JsonExternalReferenceItem> identifier2ExternalReferenceItem = bankAccountUpsertRequest
+				.getRequestItems()
+				.stream()
+				.map(JsonExternalReferenceHelper::getExternalReferenceItem)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
+				.collect(Collectors.toMap(
+						JsonExternalReferenceItem::getExternalReference,
+						Function.identity()));
+
+		return bankAccountItems
+				.stream()
+				.map(bankAccountResponseItem -> mapToJsonRequestExternalReferenceUpsert(bankAccountResponseItem,
+																						identifier2ExternalReferenceItem))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

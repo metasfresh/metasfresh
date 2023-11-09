@@ -117,6 +117,25 @@ public class C_BP_BankAccount_StepDef
 			bankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
 		}
 
+		final Boolean isEsrAccount = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, null);
+		if (isEsrAccount != null)
+		{
+			bankAccountRecord.setIsEsrAccount(isEsrAccount);
+		}
+
+		final String esrRenderedAccountNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo);
+		if (Check.isNotBlank(esrRenderedAccountNo))
+		{
+			bankAccountRecord.setESR_RenderedAccountNo(esrRenderedAccountNo);
+		}
+
+		final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+		if (Check.isNotBlank(iban))
+		{
+			bankAccountRecord.setIBAN(iban);
+		}
+
+
 		saveRecord(bankAccountRecord);
 	}
 
@@ -254,6 +273,24 @@ public class C_BP_BankAccount_StepDef
 			{
 				final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCurrencyCode)).getId();
 				softly.assertThat(bpBankAccount.getC_Currency_ID()).as("C_Currency_ID").isEqualTo(currencyId.getRepoId());
+			}
+
+			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_Name);
+			if (Check.isNotBlank(name))
+			{
+				softly.assertThat(bpBankAccount.getName()).as("Name").isEqualTo(name);
+			}
+
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IsActive);
+			if (isActive != null)
+			{
+				softly.assertThat(bpBankAccount.isActive()).as("IsActive").isEqualTo(isActive);
+			}
+
+			final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IsDefault);
+			if (isDefault != null)
+			{
+				softly.assertThat(bpBankAccount.isDefault()).as("isDefault").isEqualTo(isDefault);
 			}
 		}
 
