@@ -58,7 +58,8 @@ public class ManualPOCTest
 		final SimulationPlanId simulationId = SimulationPlanId.ofRepoId(123);
 
 		final InMemoryPlanLoaderAndSaver planLoaderAndSaver = new InMemoryPlanLoaderAndSaver();
-		planLoaderAndSaver.saveSolution(generateProblem(simulationId));
+		//planLoaderAndSaver.saveSolution(generateProblem_X_Projects_with_Y_Steps(simulationId));
+		planLoaderAndSaver.saveSolution(generateProblem_StepHRRequirementExceedingWeeklyCapacity(simulationId));
 
 		do
 		{
@@ -87,11 +88,34 @@ public class ManualPOCTest
 		return SolverFactory.create(SimulationOptimizerConfiguration.solverConfig(null, TERMINATION_SPENT_LIMIT));
 	}
 
-	private Plan generateProblem(SimulationPlanId simulationId)
+	@NonNull
+	private static Plan createPlan(final @NonNull SimulationPlanId simulationId, final ArrayList<Step> stepsList)
+	{
+		updatePreviousAndNextStep(stepsList);
+
+		final Plan plan = Plan.newInstance();
+		plan.setSimulationId(simulationId);
+		plan.setTimeZone(SystemTime.zoneId());
+		plan.setStepsList(stepsList);
+
+		return plan;
+	}
+
+	private Plan generateProblem_X_Projects_with_Y_Steps(@NonNull final SimulationPlanId simulationId)
 	{
 		this.humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(15);
 
 		final ArrayList<Step> stepsList = new ArrayList<>();
+
+		final Step.StepBuilder stepTemplate = Step.builder()
+				//.id(nextStepId(projectId))
+				.projectPriority(InternalPriority.MEDIUM)
+				//.resource(resource(resourceIdx))
+				.humanResourceTestGroupDuration(Duration.ofHours(1))
+				.duration(Duration.ofHours(1))
+				.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
+				.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
+				.delay(0);
 
 		for (int projectIdx = 1; projectIdx <= 3; projectIdx++)
 		{
@@ -99,19 +123,7 @@ public class ManualPOCTest
 
 			for (int resourceIdx = 1; resourceIdx <= 10; resourceIdx++)
 			{
-				final Step step = Step.builder()
-						.id(StepId.builder()
-								.woProjectStepId(WOProjectStepId.ofRepoId(projectId, nextStepRepoId.getAndIncrement()))
-								.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, nextStepRepoId.get()))
-								.build())
-						.projectPriority(InternalPriority.MEDIUM)
-						.resource(resource(resourceIdx))
-						.humanResourceTestGroupDuration(Duration.ofHours(1))
-						.duration(Duration.ofHours(1))
-						.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
-						.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
-						.delay(0)
-						.build();
+				final Step step = stepTemplate.id(nextStepId(projectId)).resource(resource(resourceIdx)).build();
 
 				if (projectIdx == 1)
 				{
@@ -126,14 +138,38 @@ public class ManualPOCTest
 			}
 		}
 
-		updatePreviousAndNextStep(stepsList);
+		return createPlan(simulationId, stepsList);
+	}
 
-		final Plan plan = Plan.newInstance();
-		plan.setSimulationId(simulationId);
-		plan.setTimeZone(SystemTime.zoneId());
-		plan.setStepsList(stepsList);
+	private Plan generateProblem_StepHRRequirementExceedingWeeklyCapacity(@NonNull final SimulationPlanId simulationId)
+	{
+		this.humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(40);
 
-		return plan;
+		ProjectId P1 = projectId(1); // A
+		ProjectId P2 = projectId(2); // B
+		ProjectId P3 = projectId(3); // C
+		ProjectId P4 = projectId(4); // D
+
+		Resource R1 = resource(1); // EMV Burst  8x5
+		Resource R2 = resource(2); // Nicht-EMV 8x5
+
+		final Step.StepBuilder stepTemplate = Step.builder()
+				//.id(nextStepId(projectId))
+				//.resource(resource(resourceIdx))
+				// .duration(Duration.ofHours(1))
+				// .humanResourceTestGroupDuration(Duration.ofHours(1))
+				.startDateMin(LocalDateTime.parse("2023-11-20T00:00"))
+				.dueDate(LocalDateTime.parse("2025-12-31T23:59")) // far in the future
+				.projectPriority(InternalPriority.MEDIUM)
+				.delay(0);
+
+		final ArrayList<Step> stepsList = new ArrayList<>();
+		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).duration(Duration.ofHours(5)).humanResourceTestGroupDuration(Duration.ofHours(41)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).duration(Duration.ofHours(32)).humanResourceTestGroupDuration(Duration.ofHours(5)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P2)).resource(R1).duration(Duration.ofHours(5)).humanResourceTestGroupDuration(Duration.ofHours(5)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P3)).resource(R2).duration(Duration.ofHours(1)).humanResourceTestGroupDuration(Duration.ofHours(1)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P4)).resource(R2).duration(Duration.ofHours(41)).humanResourceTestGroupDuration(Duration.ofHours(16)).build());
+		return createPlan(simulationId, stepsList);
 	}
 
 	@NonNull
@@ -143,6 +179,15 @@ public class ManualPOCTest
 
 	@NonNull
 	private static ResourceId resourceId(final int index) {return ResourceId.ofRepoId(100 + index);}
+
+	private StepId nextStepId(final ProjectId projectId)
+	{
+		final int stepRepoId = nextStepRepoId.getAndIncrement();
+		return StepId.builder()
+				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
+				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project respource id because does not matter and we just want something unique
+				.build();
+	}
 
 	private static void updatePreviousAndNextStep(final List<Step> steps)
 	{
