@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.acct.webui
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.acct.gljournal_sap.quickinput;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -23,9 +45,9 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Tax;
@@ -45,7 +67,6 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-	@NonNull private final SAPGLJournalLineQuickInputConfigProvider configProvider;
 	@NonNull private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	@VisibleForTesting
@@ -145,7 +166,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 
 				// IsTaxIncluded
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_IsTaxIncluded, layoutConfig)
-						.setWidgetType(DocumentFieldWidgetType.YesNo))
+								  .setWidgetType(DocumentFieldWidgetType.YesNo))
 				//
 				.build();
 	}
