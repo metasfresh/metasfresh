@@ -63,6 +63,8 @@ AS
 $$
 BEGIN
 
+    DROP TABLE IF EXISTS temp_price_list_details;
+
     CREATE TEMP TABLE IF NOT EXISTS temp_price_list_details AS
     SELECT DISTINCT bp.c_bpartner_id,
                     plv.M_PriceList_Version_ID,
@@ -109,9 +111,6 @@ BEGIN
                                m_product_id);
 
     END IF;
-
-
-    DROP TABLE temp_price_list_details;
 
 END;
 $$
