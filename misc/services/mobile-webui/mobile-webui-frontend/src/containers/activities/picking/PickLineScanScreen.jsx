@@ -68,6 +68,10 @@ const PickLineScanScreen = () => {
       result['catchWeight'] = parsedHUQRCode.weightNet;
     }
 
+    if (parsedHUQRCode.isTUToBePickedAsWhole === true) {
+      result['isTUToBePickedAsWhole'] = true;
+    }
+
     //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
     return result;
   };
@@ -78,6 +82,7 @@ const PickLineScanScreen = () => {
     scannedBarcode = null,
     catchWeight = null,
     catchWeightUom = null,
+    isTUToBePickedAsWhole = false,
     ...others
   }) => {
     console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
@@ -92,6 +97,7 @@ const PickLineScanScreen = () => {
       qtyRejectedReasonCode: reason,
       qtyRejected,
       catchWeight,
+      pickWholeTU: isTUToBePickedAsWhole,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));

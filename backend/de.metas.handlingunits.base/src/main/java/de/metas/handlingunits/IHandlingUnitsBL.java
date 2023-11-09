@@ -70,6 +70,7 @@ import org.compiere.model.I_M_Transaction;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -280,6 +281,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@NonNull
 	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
 
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -437,6 +440,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
+
+	HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull I_M_HU hu);
 
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);

@@ -6,11 +6,16 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -33,7 +38,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.ShipmentScheduleId;
@@ -49,6 +56,7 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
@@ -66,6 +74,9 @@ public class PickingJobPickCommand
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -75,10 +86,11 @@ public class PickingJobPickCommand
 	// Params
 	@NonNull private final PickingJobLineId lineId;
 	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
-	@Nullable private final HUQRCode pickFromHUQRCode;
+	@Nullable private final IHUQRCode pickFromHUQRCode;
 	@NonNull private final Quantity qtyToPick;
 	@Nullable private final QtyRejectedWithReason qtyRejected;
 	@Nullable private final Quantity catchWeight;
+	private final boolean isPickWholeTU;
 
 	//
 	// State
@@ -95,13 +107,15 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
-			final @Nullable HUQRCode pickFromHUQRCode,
+			final @Nullable IHUQRCode pickFromHUQRCode,
 			final @NonNull BigDecimal qtyToPickBD,
 			final @Nullable BigDecimal qtyRejectedBD,
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
-			final @Nullable BigDecimal catchWeightBD)
+			final @Nullable BigDecimal catchWeightBD,
+			final boolean isPickWholeTU)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
+		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
@@ -121,7 +135,8 @@ public class PickingJobPickCommand
 		final PickingJobLine line = pickingJob.getLineById(lineId);
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
-		this.qtyToPick = Quantity.of(qtyToPickBD, uom);
+		this.isPickWholeTU = isPickWholeTU;
+		this.qtyToPick =  Quantity.of(qtyToPickBD, uom);
 
 		if (qtyRejectedReasonCode != null)
 		{
@@ -146,10 +161,10 @@ public class PickingJobPickCommand
 	}
 
 	private static Quantity computeQtyRejected(
-			@NonNull PickingJobLine line,
-			@Nullable PickingJobStep step,
+			@NonNull final PickingJobLine line,
+			@Nullable final PickingJobStep step,
 			@Nullable final PickingJobStepPickFromKey pickFromKey,
-			@NonNull Quantity qtyPicked)
+			@NonNull final Quantity qtyPicked)
 	{
 		if (step != null)
 		{
@@ -202,7 +217,7 @@ public class PickingJobPickCommand
 		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
 
 		final PickingJobLine line = pickingJob.getLineById(lineId);
-		final HUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
 		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
 		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
 
@@ -225,6 +240,28 @@ public class PickingJobPickCommand
 		);
 
 		this.stepId = newStepId;
+	}
+
+	private HUQRCode getPickFromHUQRCode()
+	{
+		final IHUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+
+		if (pickFromHUQRCode instanceof HUQRCode)
+		{
+			return (HUQRCode)pickFromHUQRCode;
+		}
+		else if (pickFromHUQRCode instanceof LMQRCode)
+		{
+			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
+			final String lotNumber = lmQRCode.getLotNumber();
+			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lmQRCode.getLotNumber())
+					.map(huQRCodesService::getQRCodeByHuId)
+					.orElseThrow(() -> new AdempiereException("No HU associated with external lot number: " + lotNumber));
+		}
+		else
+		{
+			throw new AdempiereException("HU QR code not supported: " + pickFromHUQRCode);
+		}
 	}
 
 	private ImmutableList<PickedToHU> createAndProcessPickingCandidate()
@@ -295,7 +332,10 @@ public class PickingJobPickCommand
 
 		trxManager.assertThreadInheritedTrxExists();
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing();
-		final List<I_M_HU> packedHUs = packToHUsProducer.packToHU(
+
+		final List<I_M_HU> packedHUs = isPickWholeTU
+				? ImmutableList.of(pickWholeTU(productId, huContext, pickFromHU.getId()))
+				: packToHUsProducer.packToHU(
 				huContext,
 				pickFromHU.getId(),
 				packToInfo,
@@ -313,13 +353,18 @@ public class PickingJobPickCommand
 			final I_M_HU packedHU = packedHUs.get(0);
 			updateHUWeightFromCatchWeight(packedHU, huContext, productId);
 
+			final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
+			final Quantity pickedQty = isPickWholeTU
+					? huStorageFactory.getStorage(packedHU).getQuantity(productId).orElseThrow(() -> new AdempiereException("Qty not found!"))
+					: qtyToPick;
+
 			return ImmutableList.of(PickedToHU.builder()
-					.pickedFromHU(pickFromHU)
-					.pickFromLocatorId(pickFromLocatorId)
-					.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-					.pickToSpecUsed(packToSpec)
-					.qtyPicked(qtyToPick)
-					.build());
+											.pickedFromHU(pickFromHU)
+											.pickFromLocatorId(pickFromLocatorId)
+											.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+											.pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
+											.qtyPicked(pickedQty)
+											.build());
 		}
 		else
 		{
@@ -334,12 +379,12 @@ public class PickingJobPickCommand
 			{
 				final Quantity qtyPicked = huStorageFactory.getStorage(packedHU).getQuantity(productId, qtyToPick.getUOM());
 				result.add(PickedToHU.builder()
-						.pickedFromHU(pickFromHU)
-						.pickFromLocatorId(pickFromLocatorId)
-						.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-						.pickToSpecUsed(packToSpec)
-						.qtyPicked(qtyPicked)
-						.build());
+								   .pickedFromHU(pickFromHU)
+								   .pickFromLocatorId(pickFromLocatorId)
+								   .actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+								   .pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
+								   .qtyPicked(qtyPicked)
+								   .build());
 			}
 
 			return result.build();
@@ -380,6 +425,43 @@ public class PickingJobPickCommand
 				.build();
 	}
 
+	private I_M_HU pickWholeTU(
+			@NonNull final ProductId productId,
+			@NonNull final IHUContext huContext,
+			@NonNull final HuId pickFromHUId)
+	{
+		Check.assume(isPickWholeTU, "isPickWholeTU must be true");
+
+		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+
+		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
+		{
+			final I_M_HU firstIncludedTU = handlingUnitsDAO.retrieveIncludedHUs(pickFromHU)
+					.stream()
+					.filter(huStatusBL::isStatusActive)
+					.filter(includedHU -> HUType.TransportUnit == HUType.ofCodeOrNull(handlingUnitsBL.getEffectivePIVersion(includedHU).getHU_UnitType()))
+					.filter(includedTU -> huContext.getHUStorageFactory().isSingleProductStorageMatching(includedTU, productId))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No included HU found for LU=" + pickFromHU.getM_HU_ID()));
+
+			final I_M_HU splitOutTURecord = huTransformService.splitOutTURecord(firstIncludedTU);
+			handlingUnitsBL.setHUStatus(splitOutTURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
+
+			return splitOutTURecord;
+		}
+		else if (HUType.TransportUnit == HUType.ofCodeOrNull(handlingUnitsBL.getEffectivePIVersion(pickFromHU).getHU_UnitType()))
+		{
+			final I_M_HU splitOutTURecord = huTransformService.splitOutTURecord(pickFromHU);
+			handlingUnitsBL.setHUStatus(splitOutTURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
+
+			return splitOutTURecord;
+		}
+		else
+		{
+			throw new AdempiereException("CUs are not supported when isPickWholeTU=true");
+		}
+	}
+
 	private static PickingJobStepPickedToHU toPickingJobStepPickedToHU(final PickedToHU pickedHU)
 	{
 		return PickingJobStepPickedToHU.builder()
@@ -397,6 +479,22 @@ public class PickingJobPickCommand
 				.map(PickedToHU::getPickingCandidateId)
 				.peek(Objects::requireNonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
+	{
+		if (catchWeightBD == null || !(pickFromHUQRCode instanceof LMQRCode))
+		{
+			return;
+		}
+
+		if (((LMQRCode)pickFromHUQRCode).getWeight().compareTo(catchWeightBD) != 0)
+		{
+			throw new AdempiereException("catchWeightBD must match the LMQRCode.Weight")
+					.appendParametersToMessage()
+					.setParameter("LMQRCode", pickFromHUQRCode)
+					.setParameter("catchWeightBD", catchWeightBD);
+		}
 	}
 
 	//

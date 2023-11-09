@@ -12,6 +12,9 @@ import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
+  readOnly = false,
+  hideQtyInput = false,
+  //
   userInfo,
   qtyTarget,
   totalQty,
@@ -50,6 +53,7 @@ const GetQuantityDialog = ({
       : 0;
 
   const allValid =
+    readOnly ||
     doNotValidateQty ||
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
@@ -134,19 +138,21 @@ const GetQuantityDialog = ({
                       <td>{item.value}</td>
                     </tr>
                   ))}
-                <tr>
-                  <th>Qty</th>
-                  <td>
-                    <QtyInputField
-                      qty={qtyInfos.toNumberOrString(qtyInfo)}
-                      uom={uom}
-                      validateQtyEntered={validateQtyEntered}
-                      readonly={useScaleDevice}
-                      onQtyChange={onQtyEntered}
-                      isRequestFocus={true}
-                    />
-                  </td>
-                </tr>
+                {!hideQtyInput && (
+                  <tr>
+                    <th>Qty</th>
+                    <td>
+                      <QtyInputField
+                        qty={qtyInfos.toNumberOrString(qtyInfo)}
+                        uom={uom}
+                        validateQtyEntered={validateQtyEntered}
+                        readonly={useScaleDevice || readOnly}
+                        onQtyChange={onQtyEntered}
+                        isRequestFocus={true}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {scaleDevice && allowManualInput && (
                   <tr>
                     <td colSpan="2">
@@ -175,6 +181,7 @@ const GetQuantityDialog = ({
                         qty={qtyInfos.toNumberOrString(catchWeight)}
                         uom={catchWeightUom}
                         onQtyChange={onCatchWeghtEntered}
+                        readonly={readOnly}
                       />
                     </td>
                   </tr>
@@ -232,6 +239,8 @@ const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) =
 
 GetQuantityDialog.propTypes = {
   // Properties
+  hideQtyInput: PropTypes.bool,
+  readOnly: PropTypes.bool,
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
   totalQty: PropTypes.number,
