@@ -74,6 +74,9 @@
 			</textField>
 		</band>
 	</title>
+	<pageHeader>
+		<band height="50"/>
+	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>

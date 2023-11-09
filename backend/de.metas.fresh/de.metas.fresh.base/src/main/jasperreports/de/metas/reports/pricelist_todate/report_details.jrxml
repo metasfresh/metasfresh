@@ -228,7 +228,7 @@
 		</groupHeader>
 	</group>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="20" splitType="Prevent">
 			<printWhenExpression><![CDATA[new Boolean(
         $F{pricestd}.floatValue() != 0 ||
             $F{altpricestd}.floatValue() != 0
