@@ -319,7 +319,9 @@ public class HandlingUnitsRestController
 
 		handlingUnitsService.assignExternalLotNumber(huId, externalLotNumber);
 
-		return getByIdSupplier(() -> huId);
+		return getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.build());
 	}
 
 	@NonNull
