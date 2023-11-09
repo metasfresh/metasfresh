@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
  * Internal translated message representation (immutable)
  */
 @ToString
-final class Message
+public final class Message
 {
 	/**
 	 * Separator between Msg and optional Tip
@@ -28,10 +28,13 @@ final class Message
 	/**
 	 * @return instance for given message text and tip
 	 */
-	public static Message ofTextAndTip(final AdMessageKey adMessage, final ImmutableTranslatableString msgText, final ImmutableTranslatableString msgTip)
+	public static Message ofTextAndTip(
+			@NonNull final AdMessageId adMessageId,
+			@NonNull final AdMessageKey adMessage,
+			@NonNull final ImmutableTranslatableString msgText,
+			@NonNull final ImmutableTranslatableString msgTip)
 	{
-		final boolean missing = false;
-		return new Message(adMessage, msgText, msgTip, missing);
+		return new Message(adMessageId, adMessage, msgText, msgTip, false);
 	}
 
 	public static Message ofMissingADMessage(@Nullable final String text)
@@ -42,12 +45,15 @@ final class Message
 			return EMPTY;
 		}
 
-		final ImmutableTranslatableString msgText = ImmutableTranslatableString.ofDefaultValue(text);
-		final ImmutableTranslatableString msgTip = null; // no tip
-		final boolean missing = true;
-		return new Message(AdMessageKey.of(textNorm), msgText, msgTip, missing);
+		return new Message(
+				null,
+				AdMessageKey.of(textNorm),
+				ImmutableTranslatableString.ofDefaultValue(text),
+				null,
+				true);
 	}
 
+	@Nullable @Getter private final AdMessageId adMessageId;
 	@NonNull @Getter private final AdMessageKey adMessage;
 	@NonNull private final ITranslatableString msgText;
 	@Nullable private final ITranslatableString msgTip;
@@ -55,11 +61,13 @@ final class Message
 	@Getter private final boolean missing;
 
 	private Message(
+			@Nullable final AdMessageId adMessageId,
 			@NonNull final AdMessageKey adMessage,
 			@NonNull final ImmutableTranslatableString msgText,
 			@Nullable final ImmutableTranslatableString msgTip,
 			final boolean missing)
 	{
+		this.adMessageId = adMessageId;
 		this.adMessage = adMessage;
 		this.msgText = msgText;
 		this.msgTip = msgTip;
@@ -82,6 +90,7 @@ final class Message
 
 	private Message()
 	{
+		this.adMessageId = null;
 		this.adMessage = EMPTY_AD_Message;
 		this.msgText = TranslatableStrings.empty();
 		this.msgTip = null;

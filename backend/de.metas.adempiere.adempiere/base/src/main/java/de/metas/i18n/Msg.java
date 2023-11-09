@@ -1,7 +1,5 @@
 package de.metas.i18n;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
@@ -13,7 +11,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_Message;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -24,9 +21,7 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -40,42 +35,23 @@ import java.util.Set;
 @Deprecated
 public final class Msg
 {
-	/**
-	 * Initial size of HashMap
-	 */
-	private static final int MAP_SIZE = 2200;
-
-	/**
-	 * Singleton
-	 */
 	private static final Msg instance = new Msg();
 
 	/**
 	 * Logger
 	 */
 	private static final Logger s_log = LogManager.getLogger(Msg.class);
+	private final MessagesMapRepository messagesMapRepository = new MessagesMapRepository();
 
-	/**
-	 * @return {@link Msg} singleton instance
-	 */
 	private static Msg get()
 	{
 		return instance;
-	}    // get
+	}
 
-	/**************************************************************************
-	 * Constructor
-	 */
 	private Msg()
 	{
 	}
 
-	private final CCache<Integer, MessagesMap> messagesCache = CCache.<Integer, MessagesMap>builder()
-			.cacheName(I_AD_Message.Table_Name + "#by#ADLanguage")
-			.tableName(I_AD_Message.Table_Name)
-			.initialCapacity(1)
-			.expireMinutes(0)
-			.build();
 	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
 
 	/**
@@ -86,89 +62,16 @@ public final class Msg
 		return Check.isBlank(adLanguage) ? Language.getBaseAD_Language() : adLanguage;
 	}
 
+	public static MessagesMap toMap() {return get().getMessagesMap();}
+
 	private MessagesMap getMessagesMap()
 	{
-		return messagesCache.getOrLoad(0, Msg::retrieveMessagesMap);
-	}
-
-	private static MessagesMap retrieveMessagesMap()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return MessagesMap.EMPTY;
-		}
-
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final String sql = "SELECT"
-				+ " m.Value, m.MsgText, m.MsgTip,"
-				+ " trl.AD_Language, trl.MsgText as trl_MsgText, trl.MsgTip as trl_MsgTip"
-				+ " FROM AD_Message m"
-				+ " LEFT OUTER JOIN AD_Message_Trl trl on trl.AD_Message_ID=m.AD_Message_ID"
-				+ " WHERE m.IsActive='Y'"
-				+ " ORDER BY m.AD_Message_ID";
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-
-			final ArrayList<Message> list = new ArrayList<>(MAP_SIZE);
-
-			AdMessageKey currentAdMessage = null;
-			ImmutableTranslatableString.ImmutableTranslatableStringBuilder msgTextBuilder = null;
-			ImmutableTranslatableString.ImmutableTranslatableStringBuilder msgTipBuilder = null;
-
-			while (rs.next())
-			{
-				final AdMessageKey adMessage = AdMessageKey.of(rs.getString("Value"));
-				if (!Objects.equals(adMessage, currentAdMessage))
-				{
-					if (currentAdMessage != null)
-					{
-						list.add(Message.ofTextAndTip(currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build()));
-						currentAdMessage = null;
-						msgTextBuilder = null;
-						msgTipBuilder = null;
-					}
-				}
-
-				if (currentAdMessage == null)
-				{
-					currentAdMessage = adMessage;
-					msgTextBuilder = ImmutableTranslatableString.builder().defaultValue(normalizeToJavaMessageFormat(rs.getString("MsgText")));
-					msgTipBuilder = ImmutableTranslatableString.builder().defaultValue(normalizeToJavaMessageFormat(rs.getString("MsgTip")));
-				}
-
-				final String adLanguage = rs.getString("AD_Language");
-				msgTextBuilder.trl(adLanguage, normalizeToJavaMessageFormat(rs.getString("trl_MsgText")));
-				msgTipBuilder.trl(adLanguage, normalizeToJavaMessageFormat(rs.getString("trl_MsgTip")));
-			}
-
-			if (currentAdMessage != null)
-			{
-				list.add(Message.ofTextAndTip(currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build()));
-			}
-
-			final MessagesMap result = new MessagesMap(list);
-			s_log.info("Loaded {} in {}", result, stopwatch);
-			return result;
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
+		return messagesMapRepository.getMap();
 	}
 
 	public void reset()
 	{
-		messagesCache.reset();
+		messagesMapRepository.cacheReset();
 		elementsByElementName.reset();
 	}
 
@@ -655,7 +558,7 @@ public final class Msg
 		while (i != -1)
 		{
 			outStr.append(inStr.substring(0, i));            // up to @
-			inStr = inStr.substring(i + 1, inStr.length());    // from first @
+			inStr = inStr.substring(i + 1);    // from first @
 
 			final int j = inStr.indexOf('@');                        // next @
 			if (j < 0)                                        // no second tag
@@ -676,51 +579,13 @@ public final class Msg
 				outStr.append(translate(adLanguage, token));            // replace context
 			}
 
-			inStr = inStr.substring(j + 1, inStr.length());    // from second @
+			inStr = inStr.substring(j + 1);    // from second @
 			i = inStr.indexOf('@');
 		}
 
 		outStr.append(inStr);                            // add remainder
 		return outStr.toString();
 	}   // parseTranslation
-
-	@VisibleForTesting
-	static String normalizeToJavaMessageFormat(@Nullable final String text)
-	{
-		if (text == null)
-		{
-			return "";
-		}
-		if (text.isEmpty())
-		{
-			return text;
-		}
-
-		int firstIdx = text.indexOf("{}");
-		if (firstIdx < 0)
-		{
-			return text;
-		}
-
-		String inStr = text;
-		int idx = firstIdx;
-		final StringBuilder outStr = new StringBuilder();
-		int nextPlaceholderIndex = 0;
-		while (idx != -1)
-		{
-			outStr.append(inStr, 0, idx);            // up to {}
-			inStr = inStr.substring(idx + 2);    // continue after current {}
-
-			final int placeholderIndex = nextPlaceholderIndex;
-			nextPlaceholderIndex++;
-			outStr.append("{").append(placeholderIndex).append("}");
-
-			idx = inStr.indexOf("{}");
-		}
-
-		outStr.append(inStr);                            // add remainder
-		return outStr.toString();
-	}
 
 	@lombok.Value
 	private static class Element
@@ -790,16 +655,12 @@ public final class Msg
 
 		public ITranslatableString getText(final String displayColumnName, final boolean isSOTrx)
 		{
-			switch (displayColumnName)
+			return switch (displayColumnName)
 			{
-				case I_AD_Element.COLUMNNAME_Description:
-					return isSOTrx ? description : poDescription;
-				case I_AD_Element.COLUMNNAME_PrintName:
-					return isSOTrx ? printName : poPrintName;
-				case I_AD_Element.COLUMNNAME_Name:
-				default:
-					return isSOTrx ? name : poName;
-			}
+				case I_AD_Element.COLUMNNAME_Description -> isSOTrx ? description : poDescription;
+				case I_AD_Element.COLUMNNAME_PrintName -> isSOTrx ? printName : poPrintName;
+				default -> isSOTrx ? name : poName;
+			};
 		}
 	}
 }    // Msg
