@@ -2237,6 +2237,19 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setVolume (final @Nullable BigDecimal Volume)
+	{
+		set_Value (COLUMNNAME_Volume, Volume);
+	}
+
+	@Override
+	public BigDecimal getVolume()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Volume);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setWeight (final @Nullable BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);

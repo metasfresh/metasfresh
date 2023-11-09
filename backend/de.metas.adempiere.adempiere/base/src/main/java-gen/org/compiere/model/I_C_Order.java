@@ -3158,6 +3158,29 @@ public interface I_C_Order
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
+	 * Set Volume.
+	 * Volume of a product
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVolume (@Nullable BigDecimal Volume);
+
+	/**
+	 * Get Volume.
+	 * Volume of a product
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getVolume();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Volume = new ModelColumn<>(I_C_Order.class, "Volume", null);
+	String COLUMNNAME_Volume = "Volume";
+
+	/**
 	 * Set Weight.
 	 * Weight of a product
 	 *
