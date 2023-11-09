@@ -1,35 +1,16 @@
 package de.metas.acct.gljournal_sap.quickinput;
 
-import de.metas.quickinput.config.QuickInputConfigService;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class SAPGLJournalLineQuickInputConfigProviderTest
+class SAPGLJournalLineQuickInputConfigValidatorTest
 {
-	private SAPGLJournalLineQuickInputConfigProvider configProvider;
-
-	@BeforeEach
-	void beforeEach()
-	{
-		AdempiereTestHelper.get().init();
-
-		configProvider = new SAPGLJournalLineQuickInputConfigProvider(new QuickInputConfigService());
-	}
-
-	@Test
-	void assertValid_DEFAULT_LayoutConfig()
-	{
-		SAPGLJournalLineQuickInputConfigProvider.assertValid(SAPGLJournalLineQuickInputConfigProvider.DEFAULT_LayoutConfig);
-	}
-
 	@Nested
-	class assertValidSysConfigValue
+	class assertValid
 	{
 		@ParameterizedTest
 		@ValueSource(strings = {
@@ -42,7 +23,7 @@ class SAPGLJournalLineQuickInputConfigProviderTest
 		})
 		void valid(final String layoutConfigString)
 		{
-			configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigProvider.SYSCONFIG_LayoutConfig, layoutConfigString);
+			QuickInputConfigLayout.parse(layoutConfigString).ifPresent(SAPGLJournalLineQuickInputConfigValidator::assertValid);
 		}
 
 		@ParameterizedTest
@@ -58,9 +39,10 @@ class SAPGLJournalLineQuickInputConfigProviderTest
 		})
 		void not_valid(final String layoutConfigString)
 		{
-			Assertions.assertThatThrownBy(() -> configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigProvider.SYSCONFIG_LayoutConfig, layoutConfigString))
+			final QuickInputConfigLayout layoutConfig = QuickInputConfigLayout.parse(layoutConfigString)
+					.orElseThrow(() -> new AdempiereException("Layout config `" + layoutConfigString + "` was expected to be not empty"));
+			Assertions.assertThatThrownBy(() -> SAPGLJournalLineQuickInputConfigValidator.assertValid(layoutConfig))
 					.isInstanceOf(AdempiereException.class);
-
 		}
 	}
 }
