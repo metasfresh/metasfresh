@@ -145,6 +145,7 @@ public class PrintingDataFactory
 				if (printingSegment != null)
 				{
 					printingData.segment(printingSegment);
+					break; // there might be multiple matching printerRoutings, but the first one is the best match
 				}
 			}
 		}
