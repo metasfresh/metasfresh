@@ -1,12 +1,12 @@
 package de.metas.acct.gljournal_sap.quickinput;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.quickinput.config.QuickInputConfigLayout;
-import de.metas.quickinput.config.QuickInputConfigService;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -42,9 +42,9 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 	@NonNull private final LookupDescriptorProviders lookupDescriptorProviders;
-	@NonNull private final QuickInputConfigService quickInputConfigService;
 
-	private static final QuickInputConfigLayout DEFAULT_LayoutConfig = QuickInputConfigLayout.builder()
+	@VisibleForTesting
+	static final QuickInputConfigLayout DEFAULT_LayoutConfig = QuickInputConfigLayout.builder()
 			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign).mandatory(true).build())
 			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID).mandatory(true).build())
 			.field(QuickInputConfigLayout.Field.builder().fieldName(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount).mandatory(true).build())
@@ -89,10 +89,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 			}
 		}
 
-		// Fallback to sysconfig
-		final QuickInputConfigLayout layoutConfig = quickInputConfigService.getLayoutBySysconfig(SAPGLJournalLineQuickInputConfigValidator.SYSCONFIG_LayoutConfig).orElse(DEFAULT_LayoutConfig);
-		SAPGLJournalLineQuickInputConfigValidator.assertValid(layoutConfig);
-		return layoutConfig;
+		return DEFAULT_LayoutConfig;
 	}
 
 	private DocumentEntityDescriptor createEntityDescriptor(

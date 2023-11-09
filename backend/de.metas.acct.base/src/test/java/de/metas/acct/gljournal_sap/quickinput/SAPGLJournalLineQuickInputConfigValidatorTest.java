@@ -2,29 +2,16 @@ package de.metas.acct.gljournal_sap.quickinput;
 
 import de.metas.quickinput.config.QuickInputConfigLayout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class SAPGLJournalLineQuickInputConfigValidatorTest
 {
-	private SAPGLJournalLineQuickInputConfigValidator configProvider;
-
-	@BeforeEach
-	void beforeEach()
-	{
-		AdempiereTestHelper.get().init();
-
-		configProvider = new SAPGLJournalLineQuickInputConfigValidator();
-	}
-
 	@Nested
-	class assertValidSysConfigValue
+	class assertValid
 	{
-
 		@ParameterizedTest
 		@ValueSource(strings = {
 				"",
@@ -36,8 +23,7 @@ class SAPGLJournalLineQuickInputConfigValidatorTest
 		})
 		void valid(final String layoutConfigString)
 		{
-			configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigValidator.SYSCONFIG_LayoutConfig, layoutConfigString);
-			QuickInputConfigLayout.parse(layoutConfigString).ifPresent(layoutConfig -> configProvider.validateTabQuickInputLayout(layoutConfig));
+			QuickInputConfigLayout.parse(layoutConfigString).ifPresent(SAPGLJournalLineQuickInputConfigValidator::assertValid);
 		}
 
 		@ParameterizedTest
@@ -53,9 +39,10 @@ class SAPGLJournalLineQuickInputConfigValidatorTest
 		})
 		void not_valid(final String layoutConfigString)
 		{
-			Assertions.assertThatThrownBy(() -> configProvider.assertValidSysConfigValue(SAPGLJournalLineQuickInputConfigValidator.SYSCONFIG_LayoutConfig, layoutConfigString))
+			final QuickInputConfigLayout layoutConfig = QuickInputConfigLayout.parse(layoutConfigString)
+					.orElseThrow(() -> new AdempiereException("Layout config `" + layoutConfigString + "` was expected to be not empty"));
+			Assertions.assertThatThrownBy(() -> SAPGLJournalLineQuickInputConfigValidator.assertValid(layoutConfig))
 					.isInstanceOf(AdempiereException.class);
-
 		}
 	}
 }
