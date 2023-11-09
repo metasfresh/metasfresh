@@ -20,20 +20,21 @@
  * #L%
  */
 
-package de.metas.banking.camt53.wrapper.v02;
+package de.metas.banking.camt53.wrapper.v04;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
-import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
-import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
-import de.metas.banking.camt53.jaxb.camt053_001_02.CurrencyExchange5;
-import de.metas.banking.camt53.jaxb.camt053_001_02.DateAndDateTimeChoice;
-import de.metas.banking.camt53.jaxb.camt053_001_02.EntryDetails1;
-import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
-import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
-import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
-import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
-import de.metas.banking.camt53.wrapper.NoBatchReportEntryWrapper;
+import de.metas.banking.camt53.jaxb.camt053_001_04.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchange3;
+import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchangeDetails3;
+import de.metas.banking.camt53.jaxb.camt053_001_04.CurrencyExchange5;
+import de.metas.banking.camt53.jaxb.camt053_001_04.DateAndDateTimeChoice;
+import de.metas.banking.camt53.jaxb.camt053_001_04.EntryDetails3;
+import de.metas.banking.camt53.jaxb.camt053_001_04.EntryTransaction4;
+import de.metas.banking.camt53.jaxb.camt053_001_04.InterestRecord1;
+import de.metas.banking.camt53.jaxb.camt053_001_04.RemittanceInformation7;
+import de.metas.banking.camt53.jaxb.camt053_001_04.ReportEntry4;
+import de.metas.banking.camt53.jaxb.camt053_001_04.TransactionInterest3;
+import de.metas.banking.camt53.wrapper.BatchReportEntryWrapper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
@@ -52,19 +53,19 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.banking.camt53.jaxb.camt053_001_02.CreditDebitCode.CRDT;
+import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
+public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 {
 	@NonNull
-	ReportEntry2 entry;
+	ReportEntry4 entry;
 
 	@Builder
-	private NoBatchReportEntry2Wrapper(
+	private BatchReportEntry4Wrapper(
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ReportEntry2 entry)
+			@NonNull final ReportEntry4 entry)
 	{
 		super(currencyRepository);
 		Check.assume(Check.isEmpty(entry.getNtryDtls()) || entry.getNtryDtls().size() == 1, "Batched transactions are not supported!");
@@ -73,12 +74,12 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	}
 
 	@NonNull
-	public Optional<EntryTransaction2> getEntryTransaction()
+	public Optional<EntryTransaction4> getEntryTransaction()
 	{
 		return Optional.of(entry.getNtryDtls())
 				.filter(list -> !list.isEmpty())
 				.map(list -> list.get(0))
-				.map(EntryDetails1::getTxDtls)
+				.map(EntryDetails3::getTxDtls)
 				.filter(list -> !list.isEmpty())
 				.map(list -> list.get(0));
 	}
@@ -97,9 +98,10 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	public Optional<Money> getInterestAmount()
 	{
 		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
+				.map(TransactionInterest3::getRcrd)
 				.filter(list -> !list.isEmpty())
 				.map(list -> list.get(0))
-				.map(TransactionInterest2::getAmt)
+				.map(InterestRecord1::getAmt)
 				.orElse(null);
 
 		if (activeOrHistoricCurrencyAndAmount == null || activeOrHistoricCurrencyAndAmount.getValue() == null)
@@ -117,7 +119,7 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	public Optional<BigDecimal> getCurrencyRate()
 	{
 		return getEntryTransaction()
-				.map(EntryTransaction2::getAmtDtls)
+				.map(EntryTransaction4::getAmtDtls)
 				.map(AmountAndCurrencyExchange3::getCntrValAmt)
 				.map(AmountAndCurrencyExchangeDetails3::getCcyXchg)
 				.map(CurrencyExchange5::getXchgRate);
@@ -144,8 +146,8 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	public String getDbtrNames()
 	{
 		return entry.getNtryDtls().stream()
-				.flatMap(entryDetails1 -> entryDetails1.getTxDtls().stream())
-				.map(EntryTransaction2::getRltdPties)
+				.flatMap(entryDetails3 -> entryDetails3.getTxDtls().stream())
+				.map(EntryTransaction4::getRltdPties)
 				.filter(party -> party != null && party.getDbtr() != null)
 				.map(party -> party.getDbtr().getNm())
 				.filter(Check::isNotBlank)
@@ -157,8 +159,8 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	public String getCdtrNames()
 	{
 		return entry.getNtryDtls().stream()
-				.flatMap(entryDetails1 -> entryDetails1.getTxDtls().stream())
-				.map(EntryTransaction2::getRltdPties)
+				.flatMap(entryDetails3 -> entryDetails3.getTxDtls().stream())
+				.map(EntryTransaction4::getRltdPties)
 				.filter(party -> party != null && party.getCdtr() != null)
 				.map(party -> party.getCdtr().getNm())
 				.filter(Check::isNotBlank)
@@ -177,8 +179,8 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
 		return String.join(delimiter, getEntryTransaction()
-				.map(EntryTransaction2::getRmtInf)
-				.map(RemittanceInformation5::getUstrd)
+				.map(EntryTransaction4::getRmtInf)
+				.map(RemittanceInformation7::getUstrd)
 				.orElseGet(ImmutableList::of));
 	}
 
@@ -187,7 +189,7 @@ public class NoBatchReportEntry2Wrapper extends NoBatchReportEntryWrapper
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
 		final String trxDetails = getEntryTransaction()
-				.map(EntryTransaction2::getAddtlTxInf)
+				.map(EntryTransaction4::getAddtlTxInf)
 				.filter(Check::isNotBlank)
 				.orElse(null);
 

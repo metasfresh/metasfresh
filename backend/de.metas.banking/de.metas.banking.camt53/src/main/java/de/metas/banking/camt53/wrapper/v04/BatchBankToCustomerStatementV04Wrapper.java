@@ -36,12 +36,12 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 @Value(staticConstructor = "of")
-public class NoBatchBankToCustomerStatementV04Wrapper
+public class BatchBankToCustomerStatementV04Wrapper
 {
 	@NonNull
 	BankToCustomerStatementV04 bankToCustomerStatementV04;
 
-	private NoBatchBankToCustomerStatementV04Wrapper(@NonNull final BankToCustomerStatementV04 bankToCustomerStatementV04)
+	private BatchBankToCustomerStatementV04Wrapper(@NonNull final BankToCustomerStatementV04 bankToCustomerStatementV04)
 	{
 		bankToCustomerStatementV04
 				.getStmt();
