@@ -52,6 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -67,6 +68,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
@@ -1020,7 +1022,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
 	{
-		// TODO search by some newly introduced ExternalLotNo attribute
-		throw new UnsupportedOperationException();
+		return createHUQueryBuilder()
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
+				.createQuery()
+				.firstIdOnlyOptional(HuId::ofRepoId);
 	}
 }

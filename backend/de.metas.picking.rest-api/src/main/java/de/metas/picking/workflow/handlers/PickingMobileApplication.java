@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -38,9 +37,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -291,7 +290,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
 	}
 
-	public static PickingJobStepEventType fromJson(JsonPickingStepEvent.EventType json)
+	public static PickingJobStepEventType fromJson(final JsonPickingStepEvent.EventType json)
 	{
 		switch (json)
 		{
@@ -332,7 +331,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
-		final IHUQRCode qrCode = toHUQRCode(json.getHuQRCode());
+		final IHUQRCode qrCode = HUQRCodesService.toHUQRCode(json.getHuQRCode());
 
 		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
@@ -348,27 +347,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.eventType(fromJson(json.getType()))
 				.huQRCode(qrCode)
 				.qtyPicked(json.getQtyPicked())
+				.isPickWholeTU(json.isPickWholeTU())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 				.catchWeight(json.getCatchWeight())
 				.build();
-	}
-
-	private static IHUQRCode toHUQRCode(@NonNull final String jsonString)
-	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(jsonString);
-		if (HUQRCode.isHandled(globalQRCode))
-		{
-			return HUQRCode.fromGlobalQRCode(globalQRCode);
-		}
-		else if (LMQRCode.isHandled(globalQRCode))
-		{
-			return LMQRCode.fromGlobalQRCode(globalQRCode);
-		}
-		else
-		{
-			throw new AdempiereException("QR code is not handled: " + globalQRCode);
-		}
 	}
 
 	private static void assertPickingActivityType(

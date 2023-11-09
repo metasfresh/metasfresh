@@ -23,15 +23,17 @@
 package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
 import de.metas.global_qrcodes.GlobalQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 /**
  * Leich und Mehl generated QR Code
@@ -44,13 +46,30 @@ public class LMQRCode implements IHUQRCode
 	@NonNull String lotNumber;
 	@NonNull BigDecimal weight;
 
-	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return LMQRCodeParser.isHandled(globalQRCode);}
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return LMQRCodeParser.isHandled(globalQRCode);
+	}
 
 	@NonNull
 	public static LMQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return LMQRCodeParser.fromGlobalQRCodeJsonString(qrCodeString);
 	}
-	public static LMQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode) {return LMQRCodeParser.fromGlobalQRCode(globalQRCode);}
 
+	public static LMQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return LMQRCodeParser.fromGlobalQRCode(globalQRCode);
+	}
+
+	@Override
+	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
+	{
+		if (HU_ExternalLotNumber.equals(attributeCode))
+		{
+			return Optional.of(lotNumber);
+		}
+
+		return Optional.empty();
+	}
 }

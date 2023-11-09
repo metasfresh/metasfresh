@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.manufacturing.rest-api
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,14 +20,17 @@
  * #L%
  */
 
-package de.metas.handlingunits.qrcodes.model;
+package de.metas.handlingunits.rest_api;
 
+import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeCode;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.Optional;
-
-public interface IHUQRCode
+@Value
+@Builder
+@Jacksonized
+public class JsonQRCode
 {
-	Optional<String> getAttributeValueAsString(@NonNull AttributeCode attributeCode);
+	@NonNull String qrCode;
 }

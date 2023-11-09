@@ -93,12 +93,7 @@ public class HUQRCode implements IHUQRCode
 		return result.toString();
 	}
 
-	private static String extractPrintableBottomText(final HUQRCode qrCode)
-	{
-		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
-	}
-
-	public Optional<String> getAttributeValueAsString(final AttributeCode attributeCode)
+	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return getAttribute(attributeCode).map(HUQRCodeAttribute::getValue);
 	}
@@ -106,5 +101,10 @@ public class HUQRCode implements IHUQRCode
 	private Optional<HUQRCodeAttribute> getAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return attributes.stream().filter(attribute -> AttributeCode.equals(attribute.getCode(), attributeCode)).findFirst();
+	}
+
+	private static String extractPrintableBottomText(final HUQRCode qrCode)
+	{
+		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 }

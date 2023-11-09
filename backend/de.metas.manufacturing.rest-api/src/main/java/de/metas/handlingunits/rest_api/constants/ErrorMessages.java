@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.manufacturing.rest-api
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,14 +20,11 @@
  * #L%
  */
 
-package de.metas.handlingunits.qrcodes.model;
+package de.metas.handlingunits.rest_api.constants;
 
-import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeCode;
+import de.metas.i18n.AdMessageKey;
 
-import java.util.Optional;
-
-public interface IHUQRCode
+public interface ErrorMessages
 {
-	Optional<String> getAttributeValueAsString(@NonNull AttributeCode attributeCode);
+	AdMessageKey ExternalLotNumber_MISSING = AdMessageKey.of("de.metas.handlingunits.rest_api.ExternalLotNumber_Missing_QRCode");
 }

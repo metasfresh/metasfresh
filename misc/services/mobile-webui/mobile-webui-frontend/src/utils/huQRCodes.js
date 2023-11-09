@@ -117,13 +117,12 @@ export const parseQRCodeString = (string) => {
     remainingString = remainingString.substring(idx + 1);
   }
 
-  const payload = JSON.parse(remainingString);
-
   let payloadParsed;
   if (type === 'HU' && version === '1') {
-    payloadParsed = parseQRCodePayload_HU_v1(payload);
+    const jsonPayload = JSON.parse(remainingString);
+    payloadParsed = parseQRCodePayload_HU_v1(jsonPayload);
   } else if (type === 'LMQ' && version === '1') {
-    payloadParsed = parseQRCodePayload_LeichMehl_v1(payload);
+    payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
     throw 'Invalid global QR code(3): ' + string;
   }
@@ -171,8 +170,9 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const parts = payload.split('#');
   if (parts.length >= 2 && parts[1] != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * parts[1] != null;
+    result['weightNet'] = 1 * parts[1];
     result['displayable'] = '' + parts[1];
+    result['isTUToBePickedAsWhole'] = true;
   }
 
   return result;

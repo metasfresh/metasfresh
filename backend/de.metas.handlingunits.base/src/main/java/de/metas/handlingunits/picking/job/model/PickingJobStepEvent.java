@@ -31,6 +31,7 @@ public class PickingJobStepEvent
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 	@Nullable BigDecimal catchWeight;
+	boolean isPickWholeTU;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)
 	{
