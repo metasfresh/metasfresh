@@ -1024,6 +1024,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return createHUQueryBuilder()
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
 				.createQuery()
 				.firstIdOnlyOptional(HuId::ofRepoId);
