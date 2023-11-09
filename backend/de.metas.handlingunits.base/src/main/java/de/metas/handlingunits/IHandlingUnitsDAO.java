@@ -54,6 +54,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -324,4 +325,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 }

@@ -111,6 +111,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -829,6 +830,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(piVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsVersionId huPackingInstructionsVersionId = Optional.ofNullable(getEffectivePIVersion(hu))
+				.map(I_M_HU_PI_Version::getM_HU_PI_Version_ID)
+				.map(HuPackingInstructionsVersionId::ofRepoId)
+				.orElse(HuPackingInstructionsVersionId.VIRTUAL);
+
+		return getPackingInstructionsId(huPackingInstructionsVersionId);
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -1220,5 +1232,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 		return IHandlingUnitsBL.extractLocatorId(hu);
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
 	}
 }

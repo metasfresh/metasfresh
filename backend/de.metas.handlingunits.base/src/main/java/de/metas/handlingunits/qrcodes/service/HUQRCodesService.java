@@ -2,12 +2,16 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -43,7 +47,7 @@ public class HUQRCodesService
 		this.globalQRCodeService = globalQRCodeService;
 	}
 
-	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
+	public List<HUQRCode> generate(final HUQRCodeGenerateRequest request)
 	{
 		return HUQRCodeGenerateCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
@@ -184,16 +188,33 @@ public class HUQRCodesService
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
 	}
 
-	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		huQRCodesRepository.assign(qrCode, huId);
 	}
 
-	public void assertQRCodeAssignedToHU(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assertQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
 		{
 			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
+		}
+	}
+
+	public static IHUQRCode toHUQRCode(@NonNull final String jsonString)
+	{
+		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(jsonString);
+		if (HUQRCode.isHandled(globalQRCode))
+		{
+			return HUQRCode.fromGlobalQRCode(globalQRCode);
+		}
+		else if (LMQRCode.isHandled(globalQRCode))
+		{
+			return LMQRCode.fromGlobalQRCode(globalQRCode);
+		}
+		else
+		{
+			throw new AdempiereException("QR code is not handled: " + globalQRCode);
 		}
 	}
 }

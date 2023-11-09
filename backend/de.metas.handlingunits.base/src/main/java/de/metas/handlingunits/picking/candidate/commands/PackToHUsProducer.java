@@ -71,7 +71,7 @@ public class PackToHUsProducer
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyPicked,
 			@NonNull final TableRecordReference documentRef,
-			boolean checkIfAlreadyPacked)
+			final boolean checkIfAlreadyPacked)
 	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
@@ -195,7 +195,7 @@ public class PackToHUsProducer
 		}
 	}
 
-	private static void setupPackToDestinationCommonOptions(@NonNull IHUProducerAllocationDestination producer, @NonNull PackToInfo packToInfo)
+	private static void setupPackToDestinationCommonOptions(@NonNull final IHUProducerAllocationDestination producer, @NonNull final PackToInfo packToInfo)
 	{
 		producer.setHUStatus(X_M_HU.HUSTATUS_Picked);
 		producer.setBPartnerAndLocationId(packToInfo.getShipToBPLocationId());
