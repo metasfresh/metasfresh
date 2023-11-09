@@ -29,6 +29,7 @@ import lombok.Setter;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -523,6 +524,11 @@ public class ProcessExecutionResult
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
+	}
+
+	public void setRecordToOpen(@Nullable final TableRecordReference record, @Nullable final AdWindowId adWindowId, @NonNull final OpenTarget target)
+	{
+		setRecordToOpen(record, adWindowId != null ? String.valueOf(adWindowId.getRepoId()) : null, target);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)

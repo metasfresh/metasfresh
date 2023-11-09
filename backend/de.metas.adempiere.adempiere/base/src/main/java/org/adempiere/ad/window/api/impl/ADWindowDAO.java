@@ -3,10 +3,12 @@ package org.adempiere.ad.window.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -27,7 +29,6 @@ import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
@@ -1273,4 +1274,12 @@ public class ADWindowDAO implements IADWindowDAO
 				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
 		return ImmutableSet.copyOf(adWindowIds);
 	}
+
+	@Override
+	public Optional<QuickInputConfigLayout> getQuickInputConfigLayout(final AdTabId adTabId)
+	{
+		final I_AD_Tab adTab = load(adTabId, I_AD_Tab.class);
+		return QuickInputConfigLayout.parse(adTab.getQuickInputLayout());
+	}
+
 }
