@@ -47,9 +47,9 @@ public class PrintingRouteBuilder extends RouteBuilder
 		from(direct(MF_GET_PRINTING_DATA_ROUTE_ID))
 				.routeId(MF_GET_PRINTING_DATA_ROUTE_ID)
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.toD("{{" + MF_PRINT_V2_BASE + "}}/getPrintingData/" + "${header." + HEADER_PRINTING_QUEUE_ID + "}")
 				.to(direct(UNPACK_V2_API_RESPONSE))
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonPrintingDataResponse.class))
-				.toD("{{" + MF_PRINT_V2_BASE + "}}/getPrintingData/" + "${header." + HEADER_PRINTING_QUEUE_ID + "}");
 
 		from(direct(MF_SET_PRINTING_RESULT_ROUTE_ID))
 				.routeId(MF_SET_PRINTING_RESULT_ROUTE_ID)
