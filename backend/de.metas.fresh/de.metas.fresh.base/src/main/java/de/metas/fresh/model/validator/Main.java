@@ -128,6 +128,7 @@ public class Main extends AbstractModuleInterceptor
 	{
 		//
 		// add model validators
+		engine.addModelValidator(new C_Order());
 		engine.addModelValidator(new C_Invoice_Candidate());
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand());
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line());
