@@ -29,7 +29,7 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextPane;
 
-import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
 
 /**
  *	Long Text (CBLOB) Editor 	

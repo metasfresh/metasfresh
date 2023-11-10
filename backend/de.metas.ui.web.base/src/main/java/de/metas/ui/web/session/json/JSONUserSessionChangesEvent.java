@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
-import de.metas.boilerplate.BoilerPlateId;
+import de.metas.letter.BoilerPlateId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;

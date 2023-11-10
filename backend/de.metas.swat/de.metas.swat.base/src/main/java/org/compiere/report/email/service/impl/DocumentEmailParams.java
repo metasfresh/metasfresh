@@ -41,7 +41,7 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
-import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
 import de.metas.process.ProcessInfo;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;

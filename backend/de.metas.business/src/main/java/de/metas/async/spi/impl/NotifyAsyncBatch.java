@@ -31,8 +31,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
-import de.metas.boilerplate.MADBoilerPlate;
-import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -76,7 +76,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by AD_SYSCONFIG_ASYNC_BOILERPLATE_ID. If there is no such
 	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
 	 *
-	 * @see MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
+	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
 	 */
 	public void sendEMail(@NonNull final I_C_Async_Batch asyncBatch)
 	{

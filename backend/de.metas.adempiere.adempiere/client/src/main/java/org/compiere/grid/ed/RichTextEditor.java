@@ -25,7 +25,7 @@ package org.compiere.grid.ed;
  * #L%
  */
 
-import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import net.sf.memoranda.ui.htmleditor.AltHTMLWriter;
 import net.sf.memoranda.ui.htmleditor.HTMLEditor;
 import org.adempiere.images.Images;

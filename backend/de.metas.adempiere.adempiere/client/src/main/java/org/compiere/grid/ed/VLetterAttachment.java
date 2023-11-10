@@ -42,7 +42,7 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
 import de.metas.letters.model.Letters;
-import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.util.Check;
 
 /**

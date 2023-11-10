@@ -43,7 +43,7 @@ import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
-import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
 
 /**
  * @author teo_sarca

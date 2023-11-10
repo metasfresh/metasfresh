@@ -1,8 +1,21 @@
+package de.metas.letter;
+
+import de.metas.i18n.Language;
+import de.metas.letters.model.I_AD_BoilerPlate;
+import lombok.NonNull;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
+
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,19 +32,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.boilerplate;
-
-import de.metas.i18n.Language;
-import de.metas.letters.model.I_AD_BoilerPlate;
-import lombok.NonNull;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 /**
  * @author metas-dev <dev@metasfresh.com>

@@ -23,7 +23,7 @@
 package de.metas.tax.api;
 
 import de.metas.common.util.StringUtils;
-import de.metas.boilerplate.BoilerPlateId;
+import de.metas.letter.BoilerPlateId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;

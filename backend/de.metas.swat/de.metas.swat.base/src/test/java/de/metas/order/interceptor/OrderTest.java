@@ -7,7 +7,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.boilerplate.BoilerPlateRepository;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;

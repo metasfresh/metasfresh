@@ -1,8 +1,13 @@
+/**
+ *
+ */
+package de.metas.letters.model;
+
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +25,6 @@
  * #L%
  */
 
-/**
- *
- */
-package de.metas.boilerplate;
-
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,16 +33,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import de.metas.letters.model.I_AD_BoilerPlate_Var;
-import de.metas.letters.model.X_AD_BoilerPlate_Var;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.cache.CCache;
-import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
-import de.metas.boilerplate.MADBoilerPlate.SourceDocument;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.util.Check;
 
 /**

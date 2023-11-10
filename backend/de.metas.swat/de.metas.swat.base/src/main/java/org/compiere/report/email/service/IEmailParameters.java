@@ -2,7 +2,7 @@ package org.compiere.report.email.service;
 
 import org.compiere.model.I_AD_User;
 
-import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
 
 public interface IEmailParameters {
 

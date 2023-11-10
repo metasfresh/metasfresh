@@ -40,9 +40,9 @@ import de.metas.email.EMail;
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.Letters;
-import de.metas.boilerplate.MADBoilerPlate;
-import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
-import de.metas.boilerplate.MADBoilerPlate.SourceDocument;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.user.api.impl.UserBL;
 import de.metas.util.Services;
 

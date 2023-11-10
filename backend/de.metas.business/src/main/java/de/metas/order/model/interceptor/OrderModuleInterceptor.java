@@ -5,7 +5,7 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.Topic;
-import de.metas.boilerplate.BoilerPlateRepository;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.impl.OrderLineDetailRepository;
