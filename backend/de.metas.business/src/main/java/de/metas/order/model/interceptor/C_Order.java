@@ -34,8 +34,12 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -80,6 +84,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -111,6 +116,7 @@ public class C_Order
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProjectService projectService;
+	private final BoilerPlateRepository boilerPlateRepository;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -121,13 +127,15 @@ public class C_Order
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final ProjectService projectService)
+			@NonNull final ProjectService projectService,
+			@NonNull final BoilerPlateRepository boilerPlateRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.projectService = projectService;
+		this.boilerPlateRepository = boilerPlateRepository;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -666,6 +674,25 @@ public class C_Order
 		if (billToLocation != null)
 		{
 			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_DescriptionBottom_BoilerPlate_ID)
+	public void onBoilerPlateChangeCallout(@NonNull final I_C_Order order)
+	{
+		updateDescriptionBottomFromBoilerPlateIfSet(order);
+	}
+
+	private void updateDescriptionBottomFromBoilerPlateIfSet(@NonNull final I_C_Order order)
+	{
+		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(order.getDescriptionBottom_BoilerPlate_ID());
+		if (boilerPlateId != null)
+		{
+			final Language language = bpartnerBL.getLanguage(BPartnerId.ofRepoId(order.getC_BPartner_ID())).orElseGet(Language::getBaseLanguage);
+			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
+			final Evaluatee evalCtx = InterfaceWrapperHelper.getEvaluatee(order);
+
+			order.setDescriptionBottom(boilerPlate.evaluateTextSnippet(evalCtx));
 		}
 	}
 }

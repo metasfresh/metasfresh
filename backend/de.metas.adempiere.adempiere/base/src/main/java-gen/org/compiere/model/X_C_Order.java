@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 162943407L;
+	private static final long serialVersionUID = -110591435L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -220,7 +220,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.lang.String getBPartnerName() 
+	public java.lang.String getBPartnerName()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
@@ -746,7 +746,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getDateOrdered() 
+	public java.sql.Timestamp getDateOrdered()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
@@ -770,7 +770,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getDatePromised() 
+	public java.sql.Timestamp getDatePromised()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
@@ -879,6 +879,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getDescriptionBottom() 
 	{
 		return get_ValueAsString(COLUMNNAME_DescriptionBottom);
+	}
+
+	@Override
+	public void setDescriptionBottom_BoilerPlate_ID (final int DescriptionBottom_BoilerPlate_ID)
+	{
+		if (DescriptionBottom_BoilerPlate_ID < 1) 
+			set_Value (COLUMNNAME_DescriptionBottom_BoilerPlate_ID, null);
+		else 
+			set_Value (COLUMNNAME_DescriptionBottom_BoilerPlate_ID, DescriptionBottom_BoilerPlate_ID);
+	}
+
+	@Override
+	public int getDescriptionBottom_BoilerPlate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DescriptionBottom_BoilerPlate_ID);
 	}
 
 	/** 
@@ -1082,7 +1097,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail() 
+	public java.lang.String getEMail()
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -1389,7 +1404,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public boolean isDropShip() 
+	public boolean isDropShip()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
@@ -2228,7 +2243,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public BigDecimal getVolume() 
+	public BigDecimal getVolume()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Volume);
 		return bd != null ? bd : BigDecimal.ZERO;
