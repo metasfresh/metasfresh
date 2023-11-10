@@ -83,10 +83,10 @@ class PlanConstraintProviderTest
 					.id(nextStepId(PROJECT_ID1))
 					.projectPriority(InternalPriority.MEDIUM)
 					.resource(resource)
-					.humanResourceTestGroupDuration(Duration.ZERO)
+					.requiredResourceCapacity(duration)
+					.requiredHumanCapacity(Duration.ZERO)
 					.startDateMin(START_DATE_MIN)
 					.dueDate(endDate) // some not null value because we don't want to fail toString()
-					.duration(duration)
 					.delay(DatabasePlanLoaderInstance.computeDelay(START_DATE_MIN, startDate))
 					.build();
 
@@ -155,10 +155,10 @@ class PlanConstraintProviderTest
 					.id(nextStepId(PROJECT_ID1))
 					.projectPriority(InternalPriority.MEDIUM)
 					.resource(RESOURCE)
-					.humanResourceTestGroupDuration(Duration.ZERO)
+					.requiredResourceCapacity(duration)
+					.requiredHumanCapacity(Duration.ZERO)
 					.startDateMin(startDate)
 					.delay(0)
-					.duration(duration)
 					.dueDate(LocalDate.parse(dueDate).atStartOfDay())
 					.build();
 
@@ -225,10 +225,10 @@ class PlanConstraintProviderTest
 					.id(nextStepId(projectId)) // needed for constraint stream forEachUnique
 					.projectPriority(priority)
 					.resource(RESOURCE)
-					.humanResourceTestGroupDuration(Duration.ZERO)
+					.requiredResourceCapacity(Duration.of(1, Plan.PLANNING_TIME_PRECISION))
+					.requiredHumanCapacity(Duration.ZERO)
 					.startDateMin(START_DATE_MIN)
 					.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
-					.duration(Duration.of(1, Plan.PLANNING_TIME_PRECISION))
 					.build();
 
 			Step prevStep = this.lastStepByProjectId.get(projectId);

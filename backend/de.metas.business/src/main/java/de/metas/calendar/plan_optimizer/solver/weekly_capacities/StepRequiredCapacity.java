@@ -35,7 +35,7 @@ public class StepRequiredCapacity
 		final StepItemRequiredCapacity capacityItem = StepItemRequiredCapacity.builder()
 				.stepId(step.getId())
 				.startDate(step.getStartDate())
-				.humanResourceDuration(step.getHumanResourceTestGroupDuration())
+				.humanResourceDuration(step.getRequiredHumanCapacity())
 				.build();
 		return new StepRequiredCapacity(resourceGroupYearWeek, capacityItem);
 	}

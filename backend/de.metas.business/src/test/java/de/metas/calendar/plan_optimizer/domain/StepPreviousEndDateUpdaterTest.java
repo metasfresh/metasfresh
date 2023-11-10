@@ -46,10 +46,10 @@ class StepPreviousEndDateUpdaterTest
 				.id(nextStepId())
 				.projectPriority(InternalPriority.MEDIUM)
 				.resource(RESOURCE)
-				.humanResourceTestGroupDuration(Duration.ZERO)
+				.requiredResourceCapacity(Duration.of(duration, Plan.PLANNING_TIME_PRECISION))
+				.requiredHumanCapacity(Duration.ZERO)
 				.startDateMin(START_DATE_MIN)
 				.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
-				.duration(Duration.of(duration, Plan.PLANNING_TIME_PRECISION))
 				.build();
 
 		if (prevStep != null)

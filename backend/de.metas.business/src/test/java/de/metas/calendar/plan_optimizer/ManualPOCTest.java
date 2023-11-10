@@ -111,8 +111,8 @@ public class ManualPOCTest
 				//.id(nextStepId(projectId))
 				.projectPriority(InternalPriority.MEDIUM)
 				//.resource(resource(resourceIdx))
-				.humanResourceTestGroupDuration(Duration.ofHours(1))
-				.duration(Duration.ofHours(1))
+				.requiredResourceCapacity(Duration.ofHours(1))
+				.requiredHumanCapacity(Duration.ofHours(1))
 				.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 				.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
 				.delay(0);
@@ -164,11 +164,11 @@ public class ManualPOCTest
 				.delay(0);
 
 		final ArrayList<Step> stepsList = new ArrayList<>();
-		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).duration(Duration.ofHours(5)).humanResourceTestGroupDuration(Duration.ofHours(41)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).duration(Duration.ofHours(32)).humanResourceTestGroupDuration(Duration.ofHours(5)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P2)).resource(R1).duration(Duration.ofHours(5)).humanResourceTestGroupDuration(Duration.ofHours(5)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P3)).resource(R2).duration(Duration.ofHours(1)).humanResourceTestGroupDuration(Duration.ofHours(1)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P4)).resource(R2).duration(Duration.ofHours(41)).humanResourceTestGroupDuration(Duration.ofHours(16)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(41)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(32)).requiredHumanCapacity(Duration.ofHours(5)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P2)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(5)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P3)).resource(R2).requiredResourceCapacity(Duration.ofHours(1)).requiredHumanCapacity(Duration.ofHours(1)).build());
+		stepsList.add(stepTemplate.id(nextStepId(P4)).resource(R2).requiredResourceCapacity(Duration.ofHours(41)).requiredHumanCapacity(Duration.ofHours(16)).build());
 		return createPlan(simulationId, stepsList);
 	}
 

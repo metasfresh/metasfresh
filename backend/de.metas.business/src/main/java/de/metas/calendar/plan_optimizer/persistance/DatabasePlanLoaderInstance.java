@@ -166,18 +166,18 @@ public class DatabasePlanLoaderInstance
 
 	@Nullable
 	private Step fromWOStepResource(
-			final WOProject woProject,
-			final WOProjectStep woStep,
-			final WOProjectResource woStepResourceOrig,
-			final Step prevStep,
-			final LocalDateTime startDateMin,
-			final LocalDateTime dueDate)
+			@NonNull final WOProject woProject,
+			@NonNull final WOProjectStep woStep,
+			@NonNull final WOProjectResource woStepResourceOrig,
+			@Nullable final Step prevStep,
+			@NonNull final LocalDateTime startDateMin,
+			@NonNull final LocalDateTime dueDate)
 	{
-		Duration duration = woStepResourceOrig.getDuration();
-		if (duration.toSeconds() <= 0)
+		Duration requiredResourceCapacity = woStepResourceOrig.getDuration();
+		if (requiredResourceCapacity.toSeconds() <= 0)
 		{
-			duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
-			logger.info("Step/resource has invalid duration. Considering it {}: {}", duration, woStepResourceOrig);
+			requiredResourceCapacity = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
+			logger.info("Step/resource has invalid duration. Considering it {}: {}", requiredResourceCapacity, woStepResourceOrig);
 		}
 
 		final WOProjectResource woStepResource = simulationPlan.applyOn(woStepResourceOrig);
@@ -198,7 +198,7 @@ public class DatabasePlanLoaderInstance
 
 		final int delay = prevStep == null ? computeDelay(startDateMin, startDate) : computeDelay(prevStep.getEndDate(), startDate);
 
-		final Duration humanResourceTestGroupDuration = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
+		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
 				.map(Duration::ofHours)
 				.orElse(Duration.ZERO);
 
@@ -209,12 +209,12 @@ public class DatabasePlanLoaderInstance
 						.build())
 				.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
 				.resource(toTimefoldResource(woStepResource))
-				.duration(duration)
+				.requiredResourceCapacity(requiredResourceCapacity)
+				.requiredHumanCapacity(requiredHumanCapacity)
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
 				.delay(delay)
 				.pinnedStartDate(pinned ? startDate : null)
-				.humanResourceTestGroupDuration(humanResourceTestGroupDuration)
 				.build();
 
 		final BooleanWithReason valid = step.checkProblemFactsValid();

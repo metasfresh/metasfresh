@@ -89,7 +89,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> step.getResource().getHumanResourceTestGroupId() != null)
-				.filter(step -> !step.getHumanResourceTestGroupDuration().isZero())
+				.filter(step -> !step.getRequiredHumanCapacity().isZero())
 				.groupBy(ConstraintCollectors.sum(
 						StepRequiredCapacity::ofStep,
 						StepRequiredCapacity.ZERO,

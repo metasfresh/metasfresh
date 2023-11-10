@@ -39,9 +39,9 @@ public class Step
 	@NonNull private InternalPriority projectPriority;
 
 	@NonNull private Resource resource;
-	@NonNull private Duration humanResourceTestGroupDuration;
+	@NonNull private Duration requiredResourceCapacity;
+	@NonNull private Duration requiredHumanCapacity;
 
-	@NonNull @Getter(AccessLevel.NONE) private Duration duration;
 	@NonNull private LocalDateTime startDateMin;
 	@NonNull private LocalDateTime dueDate;
 
@@ -71,8 +71,8 @@ public class Step
 			@Nullable final Step nextStep,
 			@NonNull final InternalPriority projectPriority,
 			@NonNull final Resource resource,
-			@NonNull final Duration humanResourceTestGroupDuration,
-			@NonNull final Duration duration,
+			@NonNull final Duration requiredResourceCapacity,
+			@NonNull final Duration requiredHumanCapacity,
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate,
 			@Nullable final Integer delay,
@@ -86,10 +86,10 @@ public class Step
 		this.nextStep = nextStep;
 		this.projectPriority = projectPriority;
 		this.resource = resource;
-		this.humanResourceTestGroupDuration = humanResourceTestGroupDuration;
-		this.duration = duration;
-		this.dueDate = dueDate;
+		this.requiredResourceCapacity = requiredResourceCapacity;
+		this.requiredHumanCapacity = requiredHumanCapacity;
 		this.startDateMin = startDateMin;
+		this.dueDate = dueDate;
 		this.delay = delay;
 		this.pinnedStartDate = pinnedStartDate;
 
@@ -139,9 +139,9 @@ public class Step
 		sb.append(resource);
 		sb.append(", P=").append(id.getProjectId().getRepoId());
 
-		if (!humanResourceTestGroupDuration.isZero())
+		if (!requiredHumanCapacity.isZero())
 		{
-			sb.append(", duration(HR)=").append(humanResourceTestGroupDuration);
+			sb.append(", duration(HR)=").append(requiredHumanCapacity);
 		}
 
 		sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
@@ -161,13 +161,13 @@ public class Step
 		{
 			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
 		}
-		if (duration.getSeconds() <= 0)
+		if (requiredResourceCapacity.getSeconds() <= 0)
 		{
 			return BooleanWithReason.falseBecause("Duration must be set and must be positive");
 		}
 
 		final Duration durationMax = Duration.between(startDateMin, dueDate);
-		if (duration.compareTo(durationMax) > 0)
+		if (requiredResourceCapacity.compareTo(durationMax) > 0)
 		{
 			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
 		}
@@ -185,7 +185,7 @@ public class Step
 	private int computeDelayMax()
 	{
 		return DurationUtils.toInt(Duration.between(startDateMin, dueDate), Plan.PLANNING_TIME_PRECISION)
-				- DurationUtils.toInt(duration, Plan.PLANNING_TIME_PRECISION);
+				- DurationUtils.toInt(requiredResourceCapacity, Plan.PLANNING_TIME_PRECISION);
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
@@ -226,7 +226,7 @@ public class Step
 
 		this.previousStepEndDate = previousStepEndDate;
 		this.startDate = computeStartDate();
-		this.endDate = this.startDate != null ? this.startDate.plus(duration) : null;
+		this.endDate = computeEndDate();
 
 		if (scoreDirector != null)
 		{
@@ -249,6 +249,11 @@ public class Step
 			final Duration delayDuration = getDelayAsDuration();
 			return previousStepEndDate.plus(delayDuration);
 		}
+	}
+
+	private LocalDateTime computeEndDate()
+	{
+		return this.startDate != null ? this.startDate.plus(requiredResourceCapacity) : null;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

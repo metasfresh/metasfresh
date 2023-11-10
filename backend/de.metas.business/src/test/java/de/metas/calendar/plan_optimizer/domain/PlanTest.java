@@ -33,10 +33,10 @@ class PlanTest
 					.id(stepId(id))
 					.projectPriority(InternalPriority.MEDIUM)
 					.resource(new Resource(ResourceId.ofRepoId(1), "R1", null))
-					.duration(Duration.ofHours(1))
+					.requiredResourceCapacity(Duration.ofHours(1))
+					.requiredHumanCapacity(Duration.ZERO)
 					.startDateMin(LocalDate.parse("2023-01-01").atStartOfDay())
 					.dueDate(LocalDate.parse("2023-12-31").atTime(LocalTime.MAX))
-					.humanResourceTestGroupDuration(Duration.ZERO)
 					.build();
 		}
 
