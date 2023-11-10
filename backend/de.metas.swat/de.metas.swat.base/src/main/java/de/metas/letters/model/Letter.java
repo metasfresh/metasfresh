@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;

@@ -29,7 +29,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.letter.BoilerPlateRepository;
+import de.metas.boilerplate.BoilerPlateRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;

@@ -24,7 +24,7 @@ package de.metas.letters.spi;
 
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_C_Letter;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
 
 /**
  * Implementations of this producer interface will be responsible of generating letters for various sources.

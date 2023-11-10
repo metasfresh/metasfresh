@@ -35,7 +35,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegist
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import de.metas.letters.api.impl.TextTemplateBL;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.logging.LogManager;

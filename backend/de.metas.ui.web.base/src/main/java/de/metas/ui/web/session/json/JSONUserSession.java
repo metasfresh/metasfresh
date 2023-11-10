@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;

@@ -3,7 +3,7 @@ package org.compiere.report.email.service.impl;
 import org.compiere.model.I_AD_User;
 import org.compiere.report.email.service.IEmailParameters;
 
-import de.metas.letters.model.MADBoilerPlate;
+import de.metas.boilerplate.MADBoilerPlate;
 
 /**
  * Default implementation. Always returns <code>null</code>.

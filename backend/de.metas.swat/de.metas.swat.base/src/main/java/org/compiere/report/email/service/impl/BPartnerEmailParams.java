@@ -8,7 +8,7 @@ import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.letters.model.MADBoilerPlate;
+import de.metas.boilerplate.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.user.api.IUserDAO;

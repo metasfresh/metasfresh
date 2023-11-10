@@ -58,10 +58,10 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_Column;
-import de.metas.letters.model.MADBoilerPlate;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.letters.model.MADBoilerPlate.SourceDocument;
-import de.metas.letters.model.MADBoilerPlateVar;
+import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
+import de.metas.boilerplate.MADBoilerPlate.SourceDocument;
+import de.metas.boilerplate.MADBoilerPlateVar;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Check;

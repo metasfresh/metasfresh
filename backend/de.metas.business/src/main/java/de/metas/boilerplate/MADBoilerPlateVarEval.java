@@ -1,13 +1,8 @@
-/**
- *
- */
-package de.metas.letters.model;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,10 +20,18 @@ package de.metas.letters.model;
  * #L%
  */
 
+/**
+ *
+ */
+package de.metas.boilerplate;
+
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.letters.model.I_AD_BoilerPlate_Var;
+import de.metas.letters.model.I_AD_BoilerPlate_Var_Eval;
+import de.metas.letters.model.X_AD_BoilerPlate_Var_Eval;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.Query;

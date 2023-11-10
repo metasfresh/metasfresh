@@ -8,7 +8,7 @@ import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
 
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
-import de.metas.letters.model.MADBoilerPlate;
+import de.metas.boilerplate.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;

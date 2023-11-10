@@ -3,7 +3,7 @@ package de.metas.ui.web.session;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

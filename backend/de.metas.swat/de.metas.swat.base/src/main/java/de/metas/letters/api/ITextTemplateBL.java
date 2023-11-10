@@ -30,7 +30,7 @@ import java.util.Properties;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.Letter;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.util.ISingletonService;
 

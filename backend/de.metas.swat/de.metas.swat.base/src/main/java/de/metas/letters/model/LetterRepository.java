@@ -7,7 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import lombok.NonNull;
 
 /*

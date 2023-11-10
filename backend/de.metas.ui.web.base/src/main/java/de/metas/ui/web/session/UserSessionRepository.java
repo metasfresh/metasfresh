@@ -2,7 +2,7 @@ package de.metas.ui.web.session;
 
 import com.google.common.base.Strings;
 import de.metas.contracts.ConditionsId;
-import de.metas.letter.BoilerPlateId;
+import de.metas.boilerplate.BoilerPlateId;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
 import de.metas.websocket.sender.WebsocketSender;

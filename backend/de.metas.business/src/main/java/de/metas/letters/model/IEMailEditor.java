@@ -29,7 +29,7 @@ package de.metas.letters.model;
 import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMail;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
 
 /**
  * @author teo_sarca

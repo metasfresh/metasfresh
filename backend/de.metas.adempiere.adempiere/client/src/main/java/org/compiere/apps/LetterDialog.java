@@ -24,8 +24,8 @@ package org.compiere.apps;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
-import de.metas.letters.model.MADBoilerPlate;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.boilerplate.MADBoilerPlate;
+import de.metas.boilerplate.MADBoilerPlate.BoilerPlateContext;
 import de.metas.util.Services;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLookup;
