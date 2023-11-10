@@ -7,15 +7,12 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.letter.BoilerPlateRepository;
-import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.project.service.ProjectService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -66,8 +63,7 @@ public class OrderTest
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		final ProjectService projectService = ProjectService.newInstanceForUnitTesting();
-		final BoilerPlateRepository boilerPlateRepository = new BoilerPlateRepository();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, projectService, boilerPlateRepository));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, projectService));
 	}
 
 	@Test
@@ -156,33 +152,4 @@ public class OrderTest
 		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
 
-	@Test
-	public void updateDescriptionBottomFromBoilerPlate()
-	{
-		final String subjectBoilerPlate = "Title boiler plate";
-		final String bodyBoilerPlate = "Some text boiler plate with variable @C_BPartner_ID@";
-
-		final I_C_BPartner partner1 = createPartner(PARTNER_NAME_1, ENGLISH);
-		final I_C_Order order = createOrder(partner1);
-		final I_AD_BoilerPlate boilerPlate = createBoilerPlate(subjectBoilerPlate, bodyBoilerPlate);
-		order.setDescriptionBottom_BoilerPlate_ID(boilerPlate.getAD_BoilerPlate_ID());
-
-		save(order);
-
-		final String bodyBoilerPlateParsed = "Some text boiler plate with variable " + partner1.getC_BPartner_ID();
-
-		Assertions.assertEquals(order.getDescriptionBottom(), bodyBoilerPlateParsed);
-	}
-
-	private I_AD_BoilerPlate createBoilerPlate(@NonNull final String subject, @NonNull final String body)
-	{
-		final I_AD_BoilerPlate boilerPlate = newInstance(I_AD_BoilerPlate.class);
-		boilerPlate.setName("BoilerPlatetest");
-		boilerPlate.setSubject(subject);
-		boilerPlate.setTextSnippet(body);
-
-		save(boilerPlate);
-
-		return boilerPlate;
-	}
 }

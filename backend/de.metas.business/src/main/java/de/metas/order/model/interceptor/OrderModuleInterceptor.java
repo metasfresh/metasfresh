@@ -28,7 +28,6 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final ProjectService projectService = SpringContextHolder.instance.getBean(ProjectService.class);
-	private final BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -39,7 +38,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, projectService, boilerPlateRepository)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, projectService)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 	}
 }

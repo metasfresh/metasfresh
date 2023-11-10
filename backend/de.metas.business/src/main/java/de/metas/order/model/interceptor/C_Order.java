@@ -34,12 +34,10 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
-import de.metas.letter.BoilerPlateRepository;
+import de.metas.letters.model.MADBoilerPlate;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -84,7 +82,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -96,6 +93,9 @@ import java.util.Optional;
 @Callout(I_C_Order.class)
 public class C_Order
 {
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -110,32 +110,24 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProjectService projectService;
-	private final BoilerPlateRepository boilerPlateRepository;
-
-	@VisibleForTesting
-	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final ProjectService projectService,
-			@NonNull final BoilerPlateRepository boilerPlateRepository)
+			@NonNull final ProjectService projectService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.projectService = projectService;
-		this.boilerPlateRepository = boilerPlateRepository;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -688,11 +680,9 @@ public class C_Order
 		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(order.getDescriptionBottom_BoilerPlate_ID());
 		if (boilerPlateId != null)
 		{
-			final Language language = bpartnerBL.getLanguage(BPartnerId.ofRepoId(order.getC_BPartner_ID())).orElseGet(Language::getBaseLanguage);
-			final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
-			final Evaluatee evalCtx = InterfaceWrapperHelper.getEvaluatee(order);
-
-			order.setDescriptionBottom(boilerPlate.evaluateTextSnippet(evalCtx));
+			final MADBoilerPlate boilerPlate = Check.assumeNotNull(MADBoilerPlate.get(Env.getCtx(), boilerPlateId.getRepoId()), "No Boilerplate found for {}", boilerPlateId);
+			final MADBoilerPlate.BoilerPlateContext evalCtx = MADBoilerPlate.createEditorContextFromObject(order);
+			order.setDescriptionBottom(boilerPlate.getTextSnippetParsed(evalCtx));
 		}
 	}
 }
