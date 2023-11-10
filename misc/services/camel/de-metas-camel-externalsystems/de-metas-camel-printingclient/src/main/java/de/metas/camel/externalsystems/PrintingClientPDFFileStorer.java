@@ -192,7 +192,8 @@ public class PrintingClientPDFFileStorer
 					{
 						path = Paths.get(baseDirectory,
 										 FileUtil.stripIllegalCharacters(printer.getName()),
-										 FileUtil.stripIllegalCharacters(tray.getNumber() + "-" + tray.getName()));
+										 FileUtil.stripIllegalCharacters(tray.getName())) // don't use the number for the path, because we want to control it entirely with the tray name
+						;
 						break;
 					}
 				}

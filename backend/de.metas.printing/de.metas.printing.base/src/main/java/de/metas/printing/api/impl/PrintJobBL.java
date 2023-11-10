@@ -519,7 +519,14 @@ public class PrintJobBL implements IPrintJobBL
 			{
 				final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
 				hostKeyToUse = ad_Printer_Config_Shared.getConfigHostKey();
-				userToPrintIdToUse = UserId.ofRepoId(ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID());
+				if(ad_Printer_Config_Shared.getC_Workplace_ID() <= 0)
+				{
+					userToPrintIdToUse = UserId.ofRepoId(ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID());
+				}
+				else
+				{
+					userToPrintIdToUse = userToPrintId;
+				}
 			}
 			else
 			{
