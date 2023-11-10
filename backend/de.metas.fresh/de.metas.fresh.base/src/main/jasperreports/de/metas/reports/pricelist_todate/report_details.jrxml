@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist_todate/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="473"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="513"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="p_ValidFrom" class="java.sql.Date"/>
+	<queryString>
+		<![CDATA[SELECT * FROM report.Fresh_PriceList_Details_ToDate_Report($P{ad_language}, $P{p_show_product_price_pi_flag},$P{p_ValidFrom})
+;]]>
+	</queryString>
+	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
+	</field>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="productcategory" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productcategory"/>
+	</field>
+	<field name="m_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="customerproductnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="customerproductnumber"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="isseasonfixedprice" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isseasonfixedprice"/>
+	</field>
+	<field name="itemproductname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="itemproductname"/>
+	</field>
+	<field name="qtycuspertu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtycuspertu"/>
+	</field>
+	<field name="packingmaterialname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="packingmaterialname"/>
+	</field>
+	<field name="pricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pricestd"/>
+	</field>
+	<field name="pricepattern1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="pricepattern1"/>
+	</field>
+	<field name="altpricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="altpricestd"/>
+	</field>
+	<field name="pricepattern2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="pricepattern2"/>
+	</field>
+	<field name="hasaltprice" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="hasaltprice"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="uom_x12de355" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom_x12de355"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="m_productprice_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_productprice_id"/>
+	</field>
+	<field name="m_attributesetinstance_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_attributesetinstance_id"/>
+	</field>
+	<field name="m_hu_pi_item_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_hu_pi_item_product_id"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="currency2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
+	</field>
+	<field name="show_product_price_pi_flag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_product_price_pi_flag"/>
+	</field>
+	<field name="plv_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="plv_name"/>
+	</field>
+	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
+		<variableExpression><![CDATA[1]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="displayaltprice" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{hasaltprice}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<group name="BPartner" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="24">
+		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
+		<groupHeader>
+			<band height="50">
+				<rectangle>
+					<reportElement key="rectangle-1" x="37" y="30" width="486" height="13" backcolor="#808080" uuid="79209c93-6713-4b74-8fb7-c2a65519a0f7"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
+				<textField>
+					<reportElement key="textField-16" x="120" y="12" width="336" height="12" forecolor="#000000" uuid="e09679c6-4919-429e-9839-ad5598a9cc6e"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_value}+" - "+$F{bp_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="37" y="12" width="83" height="12" forecolor="#000000" uuid="72a07222-05c1-43b8-b64d-fca6fb3eda6d"/>
+					<textElement textAlignment="Left" markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{BPartner}+" : "]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="37" y="30" width="45" height="12" forecolor="#FFFFFF" uuid="ee7c7343-f04f-4bd3-a596-f39e266b25b9"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="81" y="30" width="178" height="12" forecolor="#FFFFFF" uuid="6f804d23-f9d2-4d04-a133-31de9c7f6e25"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{P_Name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-13" x="259" y="30" width="73" height="12" forecolor="#FFFFFF" uuid="e3680953-10ff-49c4-a9b9-c6f09fc96866"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-17" x="333" y="30" width="107" height="12" forecolor="#FFFFFF" uuid="e25fd5d1-3066-4d32-812a-aab806057d76"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-20" x="440" y="30" width="36" height="12" forecolor="#FFFFFF" uuid="6e410470-2526-40a1-b3ea-b4fcd2f48f34"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-20" x="476" y="30" width="47" height="13" forecolor="#FFFFFF" uuid="c0f23b8e-43ad-455a-901a-61bee4a0d261"/>
+					<textElement textAlignment="Right" markup="none">
+						<font fontName="Arial" size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[( $R{Price})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="PriceList_Version">
+		<groupExpression><![CDATA[$F{plv_name}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField>
+					<reportElement key="textField-16" x="37" y="0" width="53" height="12" forecolor="#000000" uuid="15a696c6-933c-42c3-9ce7-6440924a6bec"/>
+					<textElement textAlignment="Left" markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Pricelist}+" : "]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement key="textField-16" x="90" y="0" width="364" height="12" forecolor="#000000" uuid="469aa9fd-82d9-43d6-baed-733ab610d15e"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{plv_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Kategorie" minHeightToStartNewPage="24">
+		<groupExpression><![CDATA[$F{productcategory}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+					<reportElement key="textField-24" mode="Transparent" x="125" y="0" width="363" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+					<box rightPadding="3">
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{productcategory}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-16" x="37" y="0" width="88" height="12" forecolor="#000000" uuid="3876617f-3808-46f0-a107-7c10a05b72ac"/>
+					<textElement textAlignment="Left" markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{category}+" : "]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="20" splitType="Prevent">
+			<printWhenExpression><![CDATA[new Boolean(
+        $F{pricestd}.floatValue() != 0 ||
+            $F{altpricestd}.floatValue() != 0
+)]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-4" stretchType="ContainerHeight" x="37" y="0" width="486" height="12" backcolor="#FFFFCC" uuid="82f9ba10-01e5-4be6-8973-418786761525">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{BPartner_COUNT}.intValue()%2)==1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="81" y="0" width="178" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-31" mode="Transparent" x="333" y="0" width="107" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{itemproductname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-13" x="259" y="0" width="73" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-20" x="440" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-20" x="476" y="0" width="47" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<printWhenExpression><![CDATA[new Boolean(
+    ($F{altpricestd} == null || $F{pricestd}.compareTo($F{altpricestd})==0) 
+ && $F{pricestd} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{pricepattern1}]]></patternExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="476" y="0" width="47" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<printWhenExpression><![CDATA[new Boolean( $F{altpricestd} != null
+    && $F{altpricestd}.compareTo($F{pricestd})!=0
+    && $F{pricestd}.floatValue() != 0 )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{pricepattern1}]]></patternExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
