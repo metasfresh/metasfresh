@@ -7,7 +7,6 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
@@ -66,8 +65,7 @@ public class OrderTest
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		final ProjectService projectService = ProjectService.newInstanceForUnitTesting();
-		final BoilerPlateRepository boilerPlateRepository = new BoilerPlateRepository();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, projectService, boilerPlateRepository));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, projectService));
 	}
 
 	@Test

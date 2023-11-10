@@ -29,7 +29,6 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.letter.BoilerPlateRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
@@ -140,8 +139,7 @@ class PaymentRestEndpointTest
 				new OrderLineDetailRepository(),
 				documentLocationBL,
 				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
-				ProjectService.newInstanceForUnitTesting(),
-		        new BoilerPlateRepository())
+				ProjectService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment
