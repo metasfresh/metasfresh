@@ -93,6 +93,9 @@ import java.util.Optional;
 @Callout(I_C_Order.class)
 public class C_Order
 {
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -107,16 +110,11 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProjectService projectService;
-
-	@VisibleForTesting
-	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
