@@ -16,7 +16,8 @@ const ConfirmOptionScreen = () => {
     params: { wfProcessId, activityId, optionIndex },
   } = useRouteMatch();
   const optionInfo = useSelector((state) => getOptionByIndex({ state, wfProcessId, activityId, optionIndex }));
-  const [qtyTUs, setQtyTUs] = useState(optionInfo.qtyTUs);
+  const [numberOfHUs, setNumberOfHUs] = useState(optionInfo.numberOfHUs);
+  const [numberOfCopies, setNumberOfCopies] = useState(0);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -29,17 +30,25 @@ const ConfirmOptionScreen = () => {
             value: optionInfo.caption,
           },
           {
-            caption: trl('activities.mfg.generateHUQRCodes.qtyTUs'),
-            value: qtyTUs,
+            caption: trl('activities.mfg.generateHUQRCodes.numberOfHUs'),
+            value: numberOfHUs,
           },
         ],
       })
     );
-  }, [qtyTUs]);
+  }, [numberOfHUs]);
 
-  const validateQtyEntered = (qtyTUsEntered) => {
-    if (qtyTUsEntered <= 0) {
-      return 'QtyTUs shall be greater than 0';
+  const validateQtyEntered = (numberOfHUsEntered) => {
+    if (numberOfHUsEntered <= 0) {
+      return 'numberOfHUs shall be greater than 0';
+    }
+
+    return null; // OK
+  };
+
+  const validateNumberOfCopies = (numberOfCopiesEntered) => {
+    if (numberOfCopiesEntered < 0) {
+      return 'numberOfCopies shall be equal or greater than 0';
     }
 
     return null; // OK
@@ -50,27 +59,35 @@ const ConfirmOptionScreen = () => {
     postGenerateHUQRCodes({
       wfProcessId,
       finishedGoodsReceiveLineId: optionInfo.finishedGoodsReceiveLineId,
-      tuPackingInstructionsId: optionInfo.tuPackingInstructionsId,
-      qtyTUs,
+      huPackingInstructionsId: optionInfo.packingInstructionsId,
+      numberOfHUs,
+      numberOfCopies,
     })
       .then(() => history.go(-2)) // back to wfProcess screen
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  const isValidQtyTUs = qtyTUs != null && qtyTUs > 0;
+  const isValidNumberOfHUs = numberOfHUs != null && numberOfHUs > 0;
 
   return (
     <div className="section pt-2">
       <QtyInputField
-        qty={qtyTUs}
+        qty={numberOfHUs}
         integerValuesOnly
         validateQtyEntered={validateQtyEntered}
-        onQtyChange={({ qty }) => setQtyTUs(qtyInfos.toNumberOrString(qty))}
+        onQtyChange={({ qty }) => setNumberOfHUs(qtyInfos.toNumberOrString(qty))}
+        isRequestFocus={true}
+      />
+      <QtyInputField
+        qty={numberOfCopies}
+        integerValuesOnly
+        validateQtyEntered={validateNumberOfCopies}
+        onQtyChange={({ qty }) => setNumberOfCopies(qtyInfos.toNumberOrString(qty))}
         isRequestFocus={true}
       />
       <Button
         caption={trl('activities.mfg.generateHUQRCodes.print')}
-        disabled={!isValidQtyTUs}
+        disabled={!isValidNumberOfHUs}
         onClick={onPrintClick}
       />
     </div>
