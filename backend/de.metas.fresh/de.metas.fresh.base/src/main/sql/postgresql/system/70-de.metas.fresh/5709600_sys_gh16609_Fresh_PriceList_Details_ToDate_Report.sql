@@ -70,12 +70,11 @@ BEGIN
                     plv.M_PriceList_Version_ID,
                     plv.name
     FROM c_bpartner bp
-             INNER JOIN M_PricingSystem ps ON bp.m_pricingsystem_id = ps.m_pricingsystem_id
-             INNER JOIN C_BPartner_Product bpp ON bp.c_bpartner_id = bpp.c_bpartner_id AND bp.iscustomer = 'Y'
-             INNER JOIN M_ProductPrice pp ON pp.M_Product_ID = bpp.M_Product_ID
-             INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID
-             INNER JOIN M_PriceList pl ON plv.m_pricelist_id = pl.m_pricelist_id AND ps.m_pricingsystem_id = pl.m_pricingsystem_id AND pl.issopricelist = 'Y'
-        AND plv.validfrom >= p_validfrom;
+             INNER JOIN M_PriceList pl ON bp.m_pricingsystem_id = pl.m_pricingsystem_id
+             INNER JOIN M_PriceList_Version plv ON pl.m_pricelist_id = plv.m_pricelist_id
+    WHERE bp.iscustomer = 'Y'
+      AND pl.issopricelist = 'Y'
+      AND plv.validfrom >= p_validfrom;
 
 
     IF p_show_product_price_pi_flag = 'N' THEN
