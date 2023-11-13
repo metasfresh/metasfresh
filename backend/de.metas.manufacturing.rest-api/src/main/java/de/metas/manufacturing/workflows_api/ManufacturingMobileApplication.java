@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
@@ -216,13 +217,19 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 		final List<HUQRCode> qrCodes = huQRCodesService.generate(
 				HUQRCodeGenerateRequest.builder()
-						.count(request.getQtyTUs().toInt())
-						.huPackingInstructionsId(request.getTuPackingInstructionsId())
+						.count(request.getNumberOfHUs())
+						.huPackingInstructionsId(request.getHuPackingInstructionsId())
 						.productId(finishedGoodsReceiveLine.getProductId())
 						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))
 						.build());
 
 		huQRCodesService.print(qrCodes);
+
+		if (request.getNumberOfCopies() != null)
+		{
+			IntStream.range(0, request.getNumberOfCopies())
+					.forEach((index) -> huQRCodesService.print(qrCodes));
+		}
 	}
 
 	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)

@@ -6,7 +6,9 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
@@ -43,11 +45,15 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/generateHUQRCodes");
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
-	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
+	public WFActivityType getHandledActivityType()
+	{
+		return HANDLED_ACTIVITY_TYPE;
+	}
 
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
@@ -55,39 +61,50 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
 		final BPartnerId customerId = job.getCustomerId();
 
-		final ImmutableList<JsonTUPackingInstructions> tuPackingInstructionsList = job.getActivities()
+		final ImmutableList<JsonPackingInstructions> tuPackingInstructionsList = job.getActivities()
 				.stream()
 				.filter(activity -> activity.getType() == PPRoutingActivityType.MaterialReceipt)
 				.map(ManufacturingJobActivity::getFinishedGoodsReceiveAssumingNotNull)
 				.flatMap(FinishedGoodsReceive::streamLines)
-				.flatMap(finishedGoodsReceiveLine -> getTUPackingInstructionsList(finishedGoodsReceiveLine, customerId).stream())
+				.flatMap(finishedGoodsReceiveLine -> getPackingInstructionsList(finishedGoodsReceiveLine, customerId).stream())
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
-						.valueObj("options", tuPackingInstructionsList)
-						.build())
+									.valueObj("options", tuPackingInstructionsList)
+									.build())
 				.build();
 	}
 
-	public List<JsonTUPackingInstructions> getTUPackingInstructionsList(
+	public List<JsonPackingInstructions> getPackingInstructionsList(
 			final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine,
 			final @Nullable BPartnerId customerId)
 	{
-		final ArrayList<JsonTUPackingInstructions> result = new ArrayList<>();
+		final ArrayList<JsonPackingInstructions> result = new ArrayList<>();
 
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : getTUPIItemProducts(finishedGoodsReceiveLine, customerId))
 		{
 			final HuPackingInstructionsId tuPackingInstructionsId = getTUPackingInstructionsId(tuPIItemProduct);
 			final QtyTU qtyTUs = computeQtyTUsRequired(finishedGoodsReceiveLine, tuPIItemProduct);
 
-			result.add(JsonTUPackingInstructions.builder()
-					.caption(tuPIItemProduct.getName())
-					.tuPackingInstructionsId(tuPackingInstructionsId)
-					.finishedGoodsReceiveLineId(finishedGoodsReceiveLine.getId())
-					.qtyTUs(qtyTUs)
-					.build());
+			result.add(JsonPackingInstructions.builder()
+							   .caption(tuPIItemProduct.getName())
+							   .packingInstructionsId(tuPackingInstructionsId)
+							   .finishedGoodsReceiveLineId(finishedGoodsReceiveLine.getId())
+							   .numberOfHUs(qtyTUs.toInt())
+							   .build());
+
+			handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
+					.stream()
+					.map(handlingUnitsBL::getPI)
+					.map(luPacking -> JsonPackingInstructions.builder()
+							.caption(luPacking.getName())
+							.packingInstructionsId(HuPackingInstructionsId.ofRepoId(luPacking.getM_HU_PI_ID()))
+							.finishedGoodsReceiveLineId(finishedGoodsReceiveLine.getId())
+							.numberOfHUs(1)
+							.build())
+					.forEach(result::add);
 		}
 
 		return result;
