@@ -40,7 +40,6 @@ import de.dhl.webservices.businesscustomershipping._3.LabelData;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
-import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
@@ -84,7 +83,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
@@ -311,12 +309,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					shipmentItemType.setWidthInCM(BigInteger.valueOf(packageDimensions.getWidthInCM()));
 					shipmentItemType.setWeightInKG(deliveryPosition.getGrossWeightKg());
 					shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
-					// (2.2.1.10)
-					final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();
-					//noinspection ConstantConditions
-					shipmentNotificationType.setRecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
-					shipmentDetailsTypeType.setNotification(shipmentNotificationType);
-					shipmentOrderTypeShipment.setShipmentDetails(shipmentDetailsTypeType);
 				}
 
 				{
