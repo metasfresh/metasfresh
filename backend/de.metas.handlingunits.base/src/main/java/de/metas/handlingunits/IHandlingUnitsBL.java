@@ -275,6 +275,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull I_M_HU_PI huPI,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

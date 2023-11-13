@@ -6,7 +6,6 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -45,7 +44,6 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/generateHUQRCodes");
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
@@ -95,7 +93,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 							   .numberOfHUs(qtyTUs.toInt())
 							   .build());
 
-			handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
+			handlingUnitsBL.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
 					.stream()
 					.map(handlingUnitsBL::getPI)
 					.map(luPacking -> JsonPackingInstructions.builder()

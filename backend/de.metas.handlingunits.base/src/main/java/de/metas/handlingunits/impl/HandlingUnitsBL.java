@@ -1194,4 +1194,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
 	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+	}
 }
