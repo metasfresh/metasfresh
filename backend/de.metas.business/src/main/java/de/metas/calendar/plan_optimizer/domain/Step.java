@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.YearWeek;
+import de.metas.util.time.YearWeek;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;

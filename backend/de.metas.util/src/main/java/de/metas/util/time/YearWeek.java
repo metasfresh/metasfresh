@@ -1,4 +1,4 @@
-package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
+package de.metas.util.time;
 
 import lombok.NonNull;
 import lombok.Value;
