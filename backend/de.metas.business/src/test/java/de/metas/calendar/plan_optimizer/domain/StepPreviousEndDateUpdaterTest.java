@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StepPreviousEndDateUpdaterTest
 {
 	private static final ProjectId PROJECT_ID = ProjectId.ofRepoId(1);
-	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1", null);
+	private static final Resource RESOURCE = Resource.builder().id(ResourceId.ofRepoId(1)).name("R1").build();
 
 	private AtomicInteger nextProjectStepRepoId;
 

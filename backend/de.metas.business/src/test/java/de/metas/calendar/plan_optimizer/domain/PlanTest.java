@@ -32,7 +32,7 @@ class PlanTest
 			return Step.builder()
 					.id(stepId(id))
 					.projectPriority(InternalPriority.MEDIUM)
-					.resource(new Resource(ResourceId.ofRepoId(1), "R1", null))
+					.resource(Resource.builder().id(ResourceId.ofRepoId(1)).name("R1").build())
 					.requiredResourceCapacity(Duration.ofHours(1))
 					.requiredHumanCapacity(Duration.ZERO)
 					.startDateMin(LocalDate.parse("2023-01-01").atStartOfDay())

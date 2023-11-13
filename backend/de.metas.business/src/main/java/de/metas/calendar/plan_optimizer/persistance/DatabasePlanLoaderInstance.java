@@ -21,7 +21,9 @@ import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourcesCollection;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepsCollection;
+import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -196,11 +198,13 @@ public class DatabasePlanLoaderInstance
 			pinned = false;
 		}
 
-		final int delay = prevStep == null ? computeDelay(startDateMin, startDate) : computeDelay(prevStep.getEndDate(), startDate);
+		final LocalDateTime prevEndDate = prevStep == null ? startDateMin : prevStep.getEndDate();
+		final int delay = computeDelay(prevEndDate, startDate);
+		final ResourceAvailabilityRanges scheduledRange = startDate != null && endDate != null
+				? ResourceAvailabilityRanges.ofStartAndEndDate(startDate, endDate)
+				: null;
 
-		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
-				.map(Duration::ofHours)
-				.orElse(Duration.ZERO);
+		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
 
 		final Step step = Step.builder()
 				.id(StepId.builder()
@@ -215,6 +219,7 @@ public class DatabasePlanLoaderInstance
 				.startDateMin(startDateMin)
 				.delay(delay)
 				.pinnedStartDate(pinned ? startDate : null)
+				.scheduledRange(scheduledRange)
 				.build();
 
 		final BooleanWithReason valid = step.checkProblemFactsValid();
@@ -244,7 +249,13 @@ public class DatabasePlanLoaderInstance
 	private de.metas.calendar.plan_optimizer.domain.Resource createTimefoldResource(final ResourceId resourceId)
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
-		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());
+		final ResourceType resourceType = resourceService.getResourceTypeById(resource.getResourceTypeId());
+		return de.metas.calendar.plan_optimizer.domain.Resource.builder()
+				.id(resource.getResourceId())
+				.name(resource.getName().getDefaultValue())
+				.availability(resourceType.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
+				.humanResourceTestGroupId(resource.getHumanResourceTestGroupId())
+				.build();
 	}
 
 	public static int computeDelay(@Nullable final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)

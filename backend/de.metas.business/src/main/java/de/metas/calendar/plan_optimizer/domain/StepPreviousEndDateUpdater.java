@@ -13,13 +13,23 @@ public class StepPreviousEndDateUpdater implements VariableListener<Plan, Step>
 	public void beforeEntityAdded(ScoreDirector<Plan> scoreDirector, Step step) {}
 
 	@Override
-	public void afterEntityAdded(ScoreDirector<Plan> scoreDirector, Step step) {updateStep(scoreDirector, step);}
+	public void afterEntityAdded(ScoreDirector<Plan> scoreDirector, Step step)
+	{
+		System.out.println("afterEntityAdded: " + step + " --------------------------");
+		updateStep(scoreDirector, step);
+		System.out.println("---------------------------------------------------------");
+	}
 
 	@Override
 	public void beforeVariableChanged(ScoreDirector<Plan> scoreDirector, Step step) {}
 
 	@Override
-	public void afterVariableChanged(ScoreDirector<Plan> scoreDirector, Step step) {updateStep(scoreDirector, step);}
+	public void afterVariableChanged(ScoreDirector<Plan> scoreDirector, Step step)
+	{
+		System.out.println("afterVariableChanged: " + step + " ----------------------");
+		updateStep(scoreDirector, step);
+		System.out.println("---------------------------------------------------------");
+	}
 
 	@Override
 	public void beforeEntityRemoved(ScoreDirector<Plan> scoreDirector, Step step) {}
@@ -27,14 +37,11 @@ public class StepPreviousEndDateUpdater implements VariableListener<Plan, Step>
 	@Override
 	public void afterEntityRemoved(ScoreDirector<Plan> scoreDirector, Step step) {}
 
-	public static void updateStep(@NonNull Step originalStep)
-	{
-		updateStep(null, originalStep);
-	}
+	public static void updateStep(@NonNull Step originalStep) {updateStep(null, originalStep);}
 
 	private static void updateStep(@Nullable final ScoreDirector<Plan> scoreDirector, @NonNull Step originalStep)
 	{
-		// System.out.println("Updating step: " + originalStep);
+		//System.out.println("Updating step: " + originalStep);
 		final Step firstStep = getFirstStep(originalStep);
 		firstStep.setPreviousStepEndDateAndUpdate(firstStep.getStartDateMin(), scoreDirector);
 

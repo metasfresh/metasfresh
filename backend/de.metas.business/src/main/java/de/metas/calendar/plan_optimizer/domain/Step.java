@@ -13,6 +13,7 @@ import de.metas.calendar.plan_optimizer.solver.weekly_capacities.YearWeek;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
+import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.util.time.DurationUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,7 +44,7 @@ public class Step
 	@NonNull private Duration requiredHumanCapacity;
 
 	@NonNull private LocalDateTime startDateMin;
-	@NonNull private LocalDateTime dueDate;
+	@NonNull private LocalDateTime dueDate; // aka endDateMax
 
 	@Nullable private LocalDateTime pinnedStartDate;
 
@@ -61,8 +62,7 @@ public class Step
 
 	//
 	// Computed from shadow variables
-	@Nullable private LocalDateTime startDate;
-	@Nullable private LocalDateTime endDate;
+	@Nullable private ResourceAvailabilityRanges scheduledRange;
 
 	@Builder(toBuilder = true)
 	private Step(
@@ -78,8 +78,7 @@ public class Step
 			@Nullable final Integer delay,
 			@Nullable final LocalDateTime pinnedStartDate,
 			@Nullable final LocalDateTime previousStepEndDate,
-			@Nullable final LocalDateTime startDate,
-			@Nullable final LocalDateTime endDate)
+			@Nullable final ResourceAvailabilityRanges scheduledRange)
 	{
 		this.id = id;
 		this.previousStep = previousStep;
@@ -94,8 +93,7 @@ public class Step
 		this.pinnedStartDate = pinnedStartDate;
 
 		this.previousStepEndDate = previousStepEndDate;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.scheduledRange = scheduledRange;
 	}
 
 	@Override
@@ -112,6 +110,9 @@ public class Step
 		{
 			sb.append("   ");
 		}
+
+		final LocalDateTime startDate = scheduledRange != null ? scheduledRange.getStartDate() : null;
+		final LocalDateTime endDate = scheduledRange != null ? scheduledRange.getEndDate() : null;
 
 		sb.append(startDate).append(" -> ");
 
@@ -225,8 +226,17 @@ public class Step
 		}
 
 		this.previousStepEndDate = previousStepEndDate;
-		this.startDate = computeStartDate();
-		this.endDate = computeEndDate();
+
+		final LocalDateTime startDate = computeStartDate();
+		if (startDate != null)
+		{
+			@NonNull final Duration requiredCapacityMax = requiredResourceCapacity.compareTo(requiredHumanCapacity) >= 0 ? requiredResourceCapacity : requiredHumanCapacity;
+			this.scheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredCapacityMax).orElse(null);
+		}
+		else
+		{
+			this.scheduledRange = null;
+		}
 
 		if (scoreDirector != null)
 		{
@@ -234,6 +244,7 @@ public class Step
 		}
 	}
 
+	@Nullable
 	private LocalDateTime computeStartDate()
 	{
 		if (pinnedStartDate != null)
@@ -251,16 +262,18 @@ public class Step
 		}
 	}
 
-	private LocalDateTime computeEndDate()
-	{
-		return this.startDate != null ? this.startDate.plus(requiredResourceCapacity) : null;
-	}
+	@Nullable
+	public LocalDateTime getStartDate() {return scheduledRange != null ? scheduledRange.getStartDate() : null;}
+
+	@Nullable
+	public LocalDateTime getEndDate() {return scheduledRange != null ? scheduledRange.getEndDate() : null;}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isStartDateMinRespected() {return getDurationBeforeStartDateMin().isZero();}
 
 	public Duration getDurationBeforeStartDateMin()
 	{
+		final LocalDateTime startDate = getStartDate();
 		return startDate != null && startDate.isBefore(startDateMin) ? Duration.between(startDate, startDateMin) : Duration.ZERO;
 	}
 
@@ -271,6 +284,7 @@ public class Step
 
 	public Duration getDurationAfterDue()
 	{
+		final LocalDateTime endDate = getEndDate();
 		return endDate != null && endDate.isAfter(dueDate) ? Duration.between(dueDate, endDate) : Duration.ZERO;
 	}
 
@@ -284,7 +298,11 @@ public class Step
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDueDateRespected() {return getDurationAfterDue().isZero();}
 
-	private Duration getDurationFromEndToDueDate() {return Duration.between(Objects.requireNonNull(endDate), dueDate);}
+	private Duration getDurationFromEndToDueDate()
+	{
+		final LocalDateTime endDate = getEndDate();
+		return Duration.between(Objects.requireNonNull(endDate), dueDate);
+	}
 
 	public int getDurationFromEndToDueDateInHoursAbs() {return Math.abs((int)getDurationFromEndToDueDate().toHours());}
 }
