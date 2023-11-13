@@ -17,6 +17,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonH
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
+import de.metas.report.PrintCopies;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -41,7 +42,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
-import java.util.stream.IntStream;
 
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
@@ -223,13 +223,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))
 						.build());
 
-		huQRCodesService.print(qrCodes);
+		final PrintCopies copies = request.getNumberOfCopies() != null
+				? PrintCopies.ofInt(request.getNumberOfCopies()).minimumOne()
+				: PrintCopies.ONE;
 
-		if (request.getNumberOfCopies() != null)
-		{
-			IntStream.range(0, request.getNumberOfCopies())
-					.forEach((index) -> huQRCodesService.print(qrCodes));
-		}
+		huQRCodesService.print(qrCodes, copies);
 	}
 
 	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)

@@ -13,6 +13,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -98,12 +99,22 @@ public class HUQRCodesService
 
 	public void print(@NonNull final List<HUQRCode> qrCodes)
 	{
-		print(createPDF(qrCodes));
+		print(qrCodes, PrintCopies.ONE);
+	}
+
+	public void print(@NonNull final List<HUQRCode> qrCodes, @NonNull PrintCopies copies)
+	{
+		print(createPDF(qrCodes), copies);
 	}
 
 	public void print(@NonNull final QRCodePDFResource pdf)
 	{
-		globalQRCodeService.print(pdf);
+		print(pdf, PrintCopies.ONE);
+	}
+
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
+	{
+		globalQRCodeService.print(pdf, copies);
 	}
 
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
