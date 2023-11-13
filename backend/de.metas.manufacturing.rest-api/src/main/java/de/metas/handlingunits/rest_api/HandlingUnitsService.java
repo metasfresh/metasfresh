@@ -284,7 +284,7 @@ public class HandlingUnitsService
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-					.value(counterAttribute.getAttributeCode())
+					.code(counterAttribute.getAttributeCode())
 					.caption(counterAttribute.getAttributeCode())
 					.value(counterAttribute.getCounter())
 					.build());
