@@ -110,7 +110,6 @@ class ResourceWeeklyAvailabilityTest
 							"2023-11-06T09:00", "2023-11-06T17:00",
 							"2023-11-07T09:00", "2023-11-07T10:00"))
 					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(17);
-
 		}
 	}
 

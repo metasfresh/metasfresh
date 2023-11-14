@@ -1,12 +1,16 @@
 package de.metas.resource;
 
+import com.google.common.collect.ImmutableMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
-import shadow.org.assertj.core.api.Assertions;
+import org.threeten.extra.YearWeek;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ResourceAvailabilityRangesTest
 {
@@ -31,10 +35,26 @@ class ResourceAvailabilityRangesTest
 	@Test
 	void getEndDate()
 	{
-		Assertions.assertThat(ranges("2023-11-03T00:00", "2023-11-03T10:00").getEndDate())
+		assertThat(ranges("2023-11-03T00:00", "2023-11-03T10:00").getEndDate())
 				.isEqualTo("2023-11-03T10:00");
-		Assertions.assertThat(ranges("2023-11-03T00:00", "2023-11-03T10:00",
-						"2023-11-06T17:00", "2023-11-06T18:00").getEndDate())
+		assertThat(ranges("2023-11-03T00:00", "2023-11-03T10:00",
+				"2023-11-06T17:00", "2023-11-06T18:00").getEndDate())
 				.isEqualTo("2023-11-06T18:00");
+	}
+
+	@Test
+	void getDurationByWeek()
+	{
+		assertThat(ranges(
+						"2023-11-05T23:00", "2023-11-06T01:00", // W44 - 1h, W45 - 1h
+						"2023-11-06T09:00", "2023-11-06T10:00", // W45 - 1h
+						"2023-11-12T23:00", "2023-11-13T01:00" // W45 - 1h, W46 - 1h
+				).getDurationByWeek()
+		)
+				.isEqualTo(ImmutableMap.of(
+						YearWeek.of(2023, 44), Duration.ofHours(1),
+						YearWeek.of(2023, 45), Duration.ofHours(3),
+						YearWeek.of(2023, 46), Duration.ofHours(1)
+				));
 	}
 }

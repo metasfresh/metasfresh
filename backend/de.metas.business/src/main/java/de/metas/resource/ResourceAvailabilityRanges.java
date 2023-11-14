@@ -6,11 +6,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.threeten.extra.YearWeek;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EqualsAndHashCode
 @ToString
@@ -42,5 +45,16 @@ public final class ResourceAvailabilityRanges
 	public static ResourceAvailabilityRanges ofStartAndEndDate(@NonNull final LocalDateTime startDate, @NonNull final LocalDateTime endDate)
 	{
 		return ofList(ImmutableList.of(ResourceAvailabilityRange.ofStartAndEndDate(startDate, endDate)));
+	}
+
+	public Map<YearWeek, Duration> getDurationByWeek()
+	{
+		final HashMap<YearWeek, Duration> result = new HashMap<>();
+		for (final ResourceAvailabilityRange range : this.list)
+		{
+			final Map<YearWeek, Duration> partialResult = range.getDurationByWeek();
+			partialResult.forEach((week, duration) -> result.merge(week, duration, Duration::plus));
+		}
+		return result;
 	}
 }
