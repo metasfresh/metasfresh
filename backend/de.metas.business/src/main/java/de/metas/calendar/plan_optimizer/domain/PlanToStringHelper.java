@@ -34,19 +34,19 @@ final class PlanToStringHelper
 		sb.append(nl()).append("\nsimulationId: ").append(plan.getSimulationId());
 		sb.append(nl()).append("Plan score: ").append(plan.getScore()).append(", Time spent: ").append(plan.getTimeSpent()).append(", IsFinalSolution=").append(plan.isFinalSolution());
 
-		final ArrayList<Step> stepsList = plan.getStepsList();
+		final ArrayList<StepAllocation> stepsList = plan.getStepsList();
 		if (stepsList != null && !stepsList.isEmpty())
 		{
-			final ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(stepsList, Step::getProjectId);
+			final ImmutableListMultimap<ProjectId, StepAllocation> stepsByProjectId = Multimaps.index(stepsList, StepAllocation::getProjectId);
 			for (final ProjectId projectId : stepsByProjectId.keySet())
 			{
-				final Step firstStep = stepsByProjectId.get(projectId).get(0);
+				final StepAllocation firstStep = stepsByProjectId.get(projectId).get(0);
 
 				sb.append(nl())
 						.append("P").append(projectId.getRepoId())
-						.append(" ").append(firstStep.getProjectPriority())
+						.append(" ").append(firstStep.getStepDef().getProjectPriority())
 						.append(" startDateMin=").append(firstStep.getStartDateMin())
-						.append(" dueDate=").append(firstStep.getDueDate());
+						.append(" dueDate=").append(firstStep.getStepDef().getDueDate());
 
 				stepsByProjectId.get(projectId).forEach(step -> appendStep(sb, 1, step));
 			}
@@ -66,7 +66,7 @@ final class PlanToStringHelper
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private static void appendStep(final StringBuilder sb, final int identation, final Step step)
+	private static void appendStep(final StringBuilder sb, final int identation, final StepAllocation step)
 	{
 		sb.append(nl(identation)).append(step);
 

@@ -6,8 +6,9 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
-import de.metas.calendar.plan_optimizer.domain.Step;
-import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
+import de.metas.calendar.plan_optimizer.domain.StepAllocationId;
+import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
@@ -27,11 +28,12 @@ public final class StepRequiredCapacity
 
 	@NonNull private final ImmutableListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> map;
 
-	public static StepRequiredCapacity ofStep(final Step step)
+	public static StepRequiredCapacity ofStep(final StepAllocation step)
 	{
-		final HumanResourceCapacity humanResourceCapacity = Check.assumeNotNull(step.getResource().getHumanResourceCapacity(), "humanResourceCapacity should not be null at this stage: {}", step);
-		final Duration requiredHumanCapacity = step.getRequiredHumanCapacity();
-		final StepId stepId = step.getId();
+		final StepDef stepDef = step.getStepDef();
+		final HumanResourceCapacity humanResourceCapacity = Check.assumeNotNull(stepDef.getResource().getHumanResourceCapacity(), "humanResourceCapacity should not be null at this stage: {}", step);
+		final Duration requiredHumanCapacity = stepDef.getRequiredHumanCapacity();
+		final StepAllocationId stepAllocationId = step.getId();
 
 		final ResourceAvailabilityRanges scheduleRange = Check.assumeNotNull(step.getHumanResourceScheduledRange(), "HumanResourceScheduledRange should be set for {}", step);
 		final Map<YearWeek, Duration> durationByWeek = scheduleRange.getDurationByWeek();
@@ -41,7 +43,7 @@ public final class StepRequiredCapacity
 		{
 			final ResourceGroupYearWeek resourceGroupYearWeek = ResourceGroupYearWeek.of(humanResourceCapacity, yearWeek);
 			final StepItemRequiredCapacity capacityItem = StepItemRequiredCapacity.builder()
-					.stepId(stepId)
+					.stepAllocationId(stepAllocationId)
 					.humanResourceDuration(requiredHumanCapacity)
 					.build();
 			requiredCapacities.put(resourceGroupYearWeek, capacityItem);

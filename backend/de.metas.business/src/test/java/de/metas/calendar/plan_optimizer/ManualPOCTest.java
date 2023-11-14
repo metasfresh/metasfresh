@@ -8,8 +8,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
+import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.calendar.plan_optimizer.domain.StepId;
 import de.metas.calendar.plan_optimizer.domain.StepPreviousEndDateUpdater;
 import de.metas.calendar.simulation.SimulationPlanId;
@@ -90,14 +92,16 @@ public class ManualPOCTest
 	}
 
 	@NonNull
-	private static Plan createPlan(final @NonNull SimulationPlanId simulationId, final ArrayList<Step> stepsList)
+	private static Plan createPlan(final @NonNull SimulationPlanId simulationId, final List<Project> projects)
 	{
-		updatePreviousAndNextStep(stepsList);
+		final ArrayList<StepAllocation> allocations = new ArrayList<>(Project.createAllocations(projects));
+
+		updatePreviousAndNextStep(allocations);
 
 		final Plan plan = Plan.newInstance();
 		plan.setSimulationId(simulationId);
 		plan.setTimeZone(SystemTime.zoneId());
-		plan.setStepsList(stepsList);
+		plan.setStepsList(allocations);
 
 		return plan;
 	}
@@ -107,9 +111,7 @@ public class ManualPOCTest
 	{
 		final HumanResourceCapacity humanResourceCapacity = humanResourceCapacity(15);
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
-
-		final Step.StepBuilder stepTemplate = Step.builder()
+		final StepDef.StepDefBuilder stepTemplate = StepDef.builder()
 				//.id(nextStepId(projectId))
 				.projectPriority(InternalPriority.MEDIUM)
 				//.resource(resource(resourceIdx))
@@ -117,31 +119,32 @@ public class ManualPOCTest
 				.requiredHumanCapacity(Duration.ofHours(1))
 				.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 				.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
-				.delay(0);
+				//.delay(0)
+				;
 
+		final ArrayList<Project> projects = new ArrayList<>();
 		for (int projectIdx = 1; projectIdx <= 3; projectIdx++)
 		{
 			final ProjectId projectId = projectId(projectIdx);
 
+			final ArrayList<StepDef> stepsList = new ArrayList<>();
 			for (int resourceIdx = 1; resourceIdx <= 10; resourceIdx++)
 			{
 				final Resource resource = resource(resourceIdx, ResourceWeeklyAvailability.ALWAYS_AVAILABLE, humanResourceCapacity);
-				final Step step = stepTemplate.id(nextStepId(projectId)).resource(resource).build();
-
-				if (projectIdx == 1)
-				{
-					step.setProjectPriority(InternalPriority.HIGH);
-				}
-				if (projectIdx == 1 && resourceIdx == 5)
-				{
-					step.setPinnedStartDate(LocalDateTime.parse("2023-04-02T00:00"));
-				}
+				final StepDef step = stepTemplate
+						.id(nextStepId(projectId))
+						.resource(resource)
+						.projectPriority(projectIdx == 1 ? InternalPriority.HIGH : InternalPriority.MEDIUM)
+						.pinnedStartDate(projectIdx == 1 && resourceIdx == 5 ? LocalDateTime.parse("2023-04-02T00:00") : null)
+						.build();
 
 				stepsList.add(step);
 			}
+
+			projects.add(Project.builder().steps(stepsList).build());
 		}
 
-		return createPlan(simulationId, stepsList);
+		return createPlan(simulationId, projects);
 	}
 
 	private Plan generateProblem_StepHRRequirementExceedingWeeklyCapacity(@NonNull final SimulationPlanId simulationId)
@@ -160,7 +163,7 @@ public class ManualPOCTest
 		final Resource R1 = resource(1, availability_8x5, humanResourceCapacity); // EMV Burst  8x5
 		final Resource R2 = resource(2, availability_8x5, humanResourceCapacity); // Nicht-EMV 8x5
 
-		final Step.StepBuilder stepTemplate = Step.builder()
+		final StepDef.StepDefBuilder stepTemplate = StepDef.builder()
 				//.id(nextStepId(projectId))
 				//.resource(resource(resourceIdx))
 				// .duration(Duration.ofHours(1))
@@ -168,15 +171,26 @@ public class ManualPOCTest
 				.startDateMin(LocalDateTime.parse("2023-11-20T00:00"))
 				.dueDate(LocalDateTime.parse("2025-12-31T23:59")) // far in the future
 				.projectPriority(InternalPriority.MEDIUM)
-				.delay(0);
+				//.delay(0)
+				;
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
-		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(41)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(32)).requiredHumanCapacity(Duration.ofHours(5)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P2)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(5)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P3)).resource(R2).requiredResourceCapacity(Duration.ofHours(1)).requiredHumanCapacity(Duration.ofHours(1)).build());
-		stepsList.add(stepTemplate.id(nextStepId(P4)).resource(R2).requiredResourceCapacity(Duration.ofHours(41)).requiredHumanCapacity(Duration.ofHours(16)).build());
-		return createPlan(simulationId, stepsList);
+		final ImmutableList<Project> projects = ImmutableList.of(
+				Project.builder()
+						.step(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(41)).build())
+						.step(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(32)).requiredHumanCapacity(Duration.ofHours(5)).build())
+						.build(),
+				Project.builder()
+						.step(stepTemplate.id(nextStepId(P2)).resource(R1).requiredResourceCapacity(Duration.ofHours(5)).requiredHumanCapacity(Duration.ofHours(5)).build())
+						.build(),
+				Project.builder()
+						.step(stepTemplate.id(nextStepId(P3)).resource(R2).requiredResourceCapacity(Duration.ofHours(1)).requiredHumanCapacity(Duration.ofHours(1)).build())
+						.build(),
+				Project.builder()
+						.step(stepTemplate.id(nextStepId(P4)).resource(R2).requiredResourceCapacity(Duration.ofHours(41)).requiredHumanCapacity(Duration.ofHours(16)).build())
+						.build()
+		);
+
+		return createPlan(simulationId, projects);
 	}
 
 	@NonNull
@@ -216,19 +230,19 @@ public class ManualPOCTest
 				.build();
 	}
 
-	private static void updatePreviousAndNextStep(final List<Step> steps)
+	private static void updatePreviousAndNextStep(final List<StepAllocation> steps)
 	{
-		ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(steps, Step::getProjectId);
+		ImmutableListMultimap<ProjectId, StepAllocation> stepsByProjectId = Multimaps.index(steps, StepAllocation::getProjectId);
 
 		for (final ProjectId projectId : stepsByProjectId.keySet())
 		{
-			final ImmutableList<Step> projectSteps = stepsByProjectId.get(projectId);
+			final ImmutableList<StepAllocation> projectSteps = stepsByProjectId.get(projectId);
 
 			for (int i = 0, lastIndex = projectSteps.size() - 1; i <= lastIndex; i++)
 			{
-				final Step step = projectSteps.get(i);
-				step.setPreviousStep(i == 0 ? null : projectSteps.get(i - 1));
-				step.setNextStep(i == lastIndex ? null : projectSteps.get(i + 1));
+				final StepAllocation step = projectSteps.get(i);
+				step.setPrevious(i == 0 ? null : projectSteps.get(i - 1));
+				step.setNext(i == lastIndex ? null : projectSteps.get(i + 1));
 			}
 
 			StepPreviousEndDateUpdater.updateStep(projectSteps.get(0));

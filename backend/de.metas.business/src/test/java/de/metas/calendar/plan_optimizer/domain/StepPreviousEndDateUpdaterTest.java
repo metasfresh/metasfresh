@@ -8,10 +8,10 @@ import de.metas.project.workorder.step.WOProjectStepId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +40,9 @@ class StepPreviousEndDateUpdaterTest
 				.build();
 	}
 
-	Step step(int duration, @Nullable Step prevStep)
+	StepDef.StepDefBuilder step(int duration)
 	{
-		final Step step = Step.builder()
+		return StepDef.builder()
 				.id(nextStepId())
 				.projectPriority(InternalPriority.MEDIUM)
 				.resource(RESOURCE)
@@ -50,24 +50,20 @@ class StepPreviousEndDateUpdaterTest
 				.requiredHumanCapacity(Duration.ZERO)
 				.startDateMin(START_DATE_MIN)
 				.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
-				.build();
-
-		if (prevStep != null)
-		{
-			step.setPreviousStep(prevStep);
-			prevStep.setNextStep(step);
-		}
-
-		return step;
+				;
 	}
 
 	@Test
 	void updateStep()
 	{
-		final Step step1 = step(1, null);
-		final Step step2 = step(2, step1);
+		final List<StepAllocation> allocations = Project.builder()
+				.step(step(1).startDateMin(LocalDateTime.parse("2023-09-01T00:00")).build())
+				.step(step(2).build())
+				.build()
+				.createAllocations();
+		final StepAllocation step1 = allocations.get(0);
+		final StepAllocation step2 = allocations.get(1);
 
-		step1.setStartDateMin(LocalDateTime.parse("2023-09-01T00:00"));
 		step1.setDelay(0);
 		step2.setDelay(5);
 

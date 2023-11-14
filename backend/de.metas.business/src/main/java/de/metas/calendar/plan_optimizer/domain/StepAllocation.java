@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceAvailabilityRanges;
@@ -31,23 +32,14 @@ import java.util.Objects;
 @Setter
 @Getter
 //@EqualsAndHashCode(doNotUseGetters = true) // IMPORTANT: do not use it because we have next/prev Step refs
-public class Step
+public class StepAllocation
 {
-	@PlanningId @NonNull private StepId id;
+	@PlanningId @NonNull private final StepAllocationId id;
 
-	@Nullable private Step previousStep;
-	@Nullable private Step nextStep;
+	@NonNull private final StepDef stepDef;
 
-	@NonNull private InternalPriority projectPriority;
-
-	@NonNull private Resource resource;
-	@NonNull private Duration requiredResourceCapacity;
-	@NonNull private Duration requiredHumanCapacity;
-
-	@NonNull private LocalDateTime startDateMin;
-	@NonNull private LocalDateTime dueDate; // aka endDateMax
-
-	@Nullable private LocalDateTime pinnedStartDate;
+	@Nullable private StepAllocation previous;
+	@Nullable private StepAllocation next;
 
 	/**
 	 * Delay it's the offset from previous step end. The delay is measured in {@link Plan#PLANNING_TIME_PRECISION}.
@@ -67,33 +59,21 @@ public class Step
 	@Nullable private ResourceAvailabilityRanges humanResourceScheduledRange;
 
 	@Builder(toBuilder = true)
-	private Step(
-			@NonNull final StepId id,
-			@Nullable final Step previousStep,
-			@Nullable final Step nextStep,
-			@NonNull final InternalPriority projectPriority,
-			@NonNull final Resource resource,
-			@NonNull final Duration requiredResourceCapacity,
-			@NonNull final Duration requiredHumanCapacity,
-			@NonNull final LocalDateTime startDateMin,
-			@NonNull final LocalDateTime dueDate,
+	private StepAllocation(
+			@NonNull final StepAllocationId id,
+			@NonNull final StepDef stepDef,
+			@Nullable final StepAllocation previous,
+			@Nullable final StepAllocation next,
 			@Nullable final Integer delay,
-			@Nullable final LocalDateTime pinnedStartDate,
 			@Nullable final LocalDateTime previousStepEndDate,
 			@Nullable final ResourceAvailabilityRanges resourceScheduledRange,
 			@Nullable final ResourceAvailabilityRanges humanResourceScheduledRange)
 	{
 		this.id = id;
-		this.previousStep = previousStep;
-		this.nextStep = nextStep;
-		this.projectPriority = projectPriority;
-		this.resource = resource;
-		this.requiredResourceCapacity = requiredResourceCapacity;
-		this.requiredHumanCapacity = requiredHumanCapacity;
-		this.startDateMin = startDateMin;
-		this.dueDate = dueDate;
+		this.stepDef = stepDef;
+		this.previous = previous;
+		this.next = next;
 		this.delay = delay;
-		this.pinnedStartDate = pinnedStartDate;
 
 		this.previousStepEndDate = previousStepEndDate;
 		this.resourceScheduledRange = resourceScheduledRange;
@@ -106,7 +86,7 @@ public class Step
 		// NOTE: keep it concise, important for Timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
 
-		if (pinnedStartDate != null)
+		if (stepDef.getPinnedStartDate() != null)
 		{
 			sb.append("(P)");
 		}
@@ -136,14 +116,13 @@ public class Step
 
 		sb.append(": ");
 
-		sb.append("duration=").append(requiredResourceCapacity).append("/").append(requiredHumanCapacity);
-		sb.append(", ").append(resource);
-		sb.append(", P").append(id.getProjectId().getRepoId());
-		sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
+		sb.append("duration=").append(stepDef.getRequiredResourceCapacity()).append("/").append(stepDef.getRequiredHumanCapacity());
+		sb.append(", ").append(stepDef.getResource());
+		sb.append(", ID=").append(id);
 		sb.append(", delay=").append(delay);
-		if (pinnedStartDate != null && previousStepEndDate != null)
+		if (stepDef.getPinnedStartDate() != null && previousStepEndDate != null)
 		{
-			sb.append("(").append(Duration.between(previousStepEndDate, pinnedStartDate)).append(")");
+			sb.append("(").append(Duration.between(previousStepEndDate, stepDef.getPinnedStartDate())).append(")");
 		}
 
 		return sb.toString();
@@ -151,6 +130,12 @@ public class Step
 
 	public BooleanWithReason checkProblemFactsValid()
 	{
+		final LocalDateTime startDateMin = stepDef.getStartDateMin();
+		final LocalDateTime dueDate = stepDef.getDueDate();
+		final Duration requiredResourceCapacity = stepDef.getRequiredHumanCapacity();
+		final Duration requiredHumanCapacity = stepDef.getRequiredHumanCapacity();
+		final HumanResourceCapacity humanResourceCapacity = stepDef.getHumanResourceCapacity();
+
 		if (!startDateMin.isBefore(dueDate))
 		{
 			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
@@ -166,7 +151,7 @@ public class Step
 			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
 		}
 
-		if (requiredHumanCapacity.getSeconds() > 0 && resource.getHumanResourceCapacity() == null)
+		if (requiredHumanCapacity.getSeconds() > 0 && humanResourceCapacity == null)
 		{
 			return BooleanWithReason.falseBecause("Human Resource capacity shall be specified when step requires human capacity");
 		}
@@ -177,19 +162,17 @@ public class Step
 	@ValueRangeProvider
 	public CountableValueRange<Integer> getDelayRange()
 	{
-		final int delayMax = computeDelayMax();
+		final int delayMax = stepDef.computeDelayMax();
 		return ValueRangeFactory.createIntValueRange(0, delayMax);
-	}
-
-	private int computeDelayMax()
-	{
-		return DurationUtils.toInt(Duration.between(startDateMin, dueDate), Plan.PLANNING_TIME_PRECISION)
-				- DurationUtils.toInt(requiredResourceCapacity, Plan.PLANNING_TIME_PRECISION);
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
 
-	public boolean isRequiredHumanCapacity() {return requiredHumanCapacity.getSeconds() > 0;}
+	public ResourceId getResourceId() {return getStepDef().getResourceId();}
+
+	public InternalPriority getProjectPriority() {return getStepDef().getProjectPriority();}
+
+	public boolean isRequiredHumanCapacity() {return stepDef.isRequiredHumanCapacity();}
 
 	private int getDelayAsInt() {return delay != null ? delay : 0;}
 
@@ -198,7 +181,7 @@ public class Step
 	public int getAccumulatedDelayAsInt()
 	{
 		int accumulatedDelay = 0;
-		for (Step step = this; step != null; step = step.getPreviousStep())
+		for (StepAllocation step = this; step != null; step = step.getPrevious())
 		{
 			accumulatedDelay += step.getDelayAsInt();
 		}
@@ -230,8 +213,8 @@ public class Step
 		final LocalDateTime startDate = computeStartDate();
 		if (startDate != null)
 		{
-			this.resourceScheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredResourceCapacity).orElse(null);
-			this.humanResourceScheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredHumanCapacity).orElse(null);
+			this.resourceScheduledRange = stepDef.computeResourceScheduledRange(startDate);
+			this.humanResourceScheduledRange = stepDef.computeHumanResourceScheduledRange(startDate);
 		}
 		else
 		{
@@ -248,6 +231,7 @@ public class Step
 	@Nullable
 	private LocalDateTime computeStartDate()
 	{
+		final LocalDateTime pinnedStartDate = stepDef.getPinnedStartDate();
 		if (pinnedStartDate != null)
 		{
 			return pinnedStartDate;
@@ -266,16 +250,16 @@ public class Step
 	@Nullable
 	public LocalDateTime getStartDate()
 	{
-		return resourceScheduledRange != null && humanResourceScheduledRange != null
-				? TimeUtil.minNotNull(resourceScheduledRange.getStartDate(), humanResourceScheduledRange.getStartDate())
+		return resourceScheduledRange != null && (!stepDef.isRequiredHumanCapacity() || humanResourceScheduledRange != null)
+				? TimeUtil.minOfNullables(resourceScheduledRange.getStartDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getStartDate() : null)
 				: null;
 	}
 
 	@Nullable
 	public LocalDateTime getEndDate()
 	{
-		return resourceScheduledRange != null && humanResourceScheduledRange != null
-				? TimeUtil.maxNotNull(resourceScheduledRange.getEndDate(), humanResourceScheduledRange.getEndDate())
+		return resourceScheduledRange != null && (!stepDef.isRequiredHumanCapacity() || humanResourceScheduledRange != null)
+				? TimeUtil.minOfNullables(resourceScheduledRange.getEndDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null)
 				: null;
 	}
 
@@ -295,11 +279,14 @@ public class Step
 				: null;
 	}
 
+	public LocalDateTime getStartDateMin() {return stepDef.getStartDateMin();}
+
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isStartDateMinRespected() {return getDurationBeforeStartDateMin().isZero();}
 
 	public Duration getDurationBeforeStartDateMin()
 	{
+		final LocalDateTime startDateMin = stepDef.getStartDateMin();
 		final LocalDateTime startDate = getStartDate();
 		return startDate != null && startDate.isBefore(startDateMin) ? Duration.between(startDate, startDateMin) : Duration.ZERO;
 	}
@@ -311,6 +298,7 @@ public class Step
 
 	public Duration getDurationAfterDue()
 	{
+		final LocalDateTime dueDate = stepDef.getDueDate();
 		final LocalDateTime endDate = getEndDate();
 		return endDate != null && endDate.isAfter(dueDate) ? Duration.between(dueDate, endDate) : Duration.ZERO;
 	}
@@ -327,8 +315,7 @@ public class Step
 
 	private Duration getDurationFromEndToDueDate()
 	{
-		final LocalDateTime endDate = getEndDate();
-		return Duration.between(Objects.requireNonNull(endDate), dueDate);
+		return Duration.between(Objects.requireNonNull(getEndDate()), stepDef.getDueDate());
 	}
 
 	public int getDurationFromEndToDueDateInHoursAbs() {return Math.abs((int)getDurationFromEndToDueDate().toHours());}

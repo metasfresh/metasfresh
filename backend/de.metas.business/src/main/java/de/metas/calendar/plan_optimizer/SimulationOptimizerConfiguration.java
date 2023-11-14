@@ -12,7 +12,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -74,7 +74,7 @@ public class SimulationOptimizerConfiguration extends TimefoldAutoConfiguration
 
 		final ChangeMoveSelectorConfig moveSelectorConfig = new ChangeMoveSelectorConfig();
 		final ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig();
-		valueSelectorConfig.setVariableName(Step.FIELD_delay);
+		valueSelectorConfig.setVariableName(StepAllocation.FIELD_delay);
 		moveSelectorConfig.setValueSelectorConfig(valueSelectorConfig);
 
 		final LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
@@ -83,7 +83,7 @@ public class SimulationOptimizerConfiguration extends TimefoldAutoConfiguration
 
 		SolverConfig solverConfig = new SolverConfig(classLoader)
 				.withSolutionClass(Plan.class)
-				.withEntityClasses(Step.class)
+				.withEntityClasses(StepAllocation.class)
 				.withConstraintProviderClass(PlanConstraintProvider.class)
 				.withTerminationSpentLimit(terminationSpentLimit)
 				.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);

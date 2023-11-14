@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerSupport;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
@@ -54,35 +54,35 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint resourceConflict(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEachUniquePair(
-						Step.class,
-						Joiners.equal(Step::getResource),
+						StepAllocation.class,
+						Joiners.equal(StepAllocation::getResourceId),
 						resourceScheduleOverlapping())
 				.penalize(ONE_HARD_1, PlanConstraintProvider::getOverlappingDuration)
 				.asConstraint("Resource conflict");
 	}
 
-	private static BiJoiner<Step, Step> resourceScheduleOverlapping() {return Joiners.overlapping(Step::getResourceScheduledStartDate, Step::getResourceScheduledEndDate);}
+	private static BiJoiner<StepAllocation, StepAllocation> resourceScheduleOverlapping() {return Joiners.overlapping(StepAllocation::getResourceScheduledStartDate, StepAllocation::getResourceScheduledEndDate);}
 
 	Constraint startDateMin(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
+		return constraintFactory.forEach(StepAllocation.class)
 				.filter(step -> !step.isStartDateMinRespected())
-				.penalize(ONE_HARD_1, Step::getDurationBeforeStartDateMinAsInt)
+				.penalize(ONE_HARD_1, StepAllocation::getDurationBeforeStartDateMinAsInt)
 				.asConstraint("StartDateMin not respected");
 	}
 
 	Constraint dueDate(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
-				.filter(Step::isDueDateNotRespected)
-				.penalize(ONE_HARD_1, Step::getDurationAfterDueAsInt)
+		return constraintFactory.forEach(StepAllocation.class)
+				.filter(StepAllocation::isDueDateNotRespected)
+				.penalize(ONE_HARD_1, StepAllocation::getDurationAfterDueAsInt)
 				.asConstraint("DueDate not respected");
 	}
 
 	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
-				.filter(Step::isRequiredHumanCapacity)
+		return constraintFactory.forEach(StepAllocation.class)
+				.filter(StepAllocation::isRequiredHumanCapacity)
 				.groupBy(ConstraintCollectors.sum(
 						StepRequiredCapacity::ofStep,
 						StepRequiredCapacity.ZERO,
@@ -101,7 +101,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEachIncludingNullVars(Step.class)
+		return constraintFactory.forEachIncludingNullVars(StepAllocation.class)
 				.filter(step -> step.getDelay() == null || step.getEndDate() == null)
 				.penalize(ONE_SOFT_1, step -> step.getProjectPriority().toIntMinorToUrgent() * step.getProjectPriority().toIntMinorToUrgent())
 				.asConstraint("nullable delay");
@@ -109,16 +109,16 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
-				.penalize(ONE_SOFT_2, Step::getAccumulatedDelayAsInt)
+		return constraintFactory.forEach(StepAllocation.class)
+				.penalize(ONE_SOFT_2, StepAllocation::getAccumulatedDelayAsInt)
 				.asConstraint("Delay is minimum");
 	}
 
 	// select from the solution set S the solution s for which the minimum amount |tdi-tei| is maximum
 	Constraint minDurationFromEndToDueDateIsMaximum(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
-				.groupBy(ConstraintCollectors.min(Step::getDurationFromEndToDueDateInHoursAbs))
+		return constraintFactory.forEach(StepAllocation.class)
+				.groupBy(ConstraintCollectors.min(StepAllocation::getDurationFromEndToDueDateInHoursAbs))
 				.reward(ONE_SOFT_3, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
 				.asConstraint("solution for which the minimum of |tdi-tei| is maximum");
 	}
@@ -126,8 +126,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 	// Choose from Z the solution where the sum of | tdi- tei | is maximum
 	Constraint sumOfDurationFromEndToDueDateIsMaximum(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(Step.class)
-				.groupBy(ConstraintCollectors.sum(Step::getDurationFromEndToDueDateInHoursAbs))
+		return constraintFactory.forEach(StepAllocation.class)
+				.groupBy(ConstraintCollectors.sum(StepAllocation::getDurationFromEndToDueDateInHoursAbs))
 				.reward(ONE_SOFT_4, sum -> sum)
 				.asConstraint("solution for which sum of |tdi-tei| is maximum");
 	}
@@ -135,21 +135,21 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint stepsNotRespectingProjectPriority(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEachUniquePair(
-						Step.class,
-						Joiners.equal(Step::getResource),
+						StepAllocation.class,
+						Joiners.equal(StepAllocation::getResourceId),
 						stepsNotRespectingProjectPriority())
 				.penalize(ONE_SOFT_2, PlanConstraintProvider::computePenaltyWeight_StepsNotRespectingProjectPriority)
 				.asConstraint("Steps not respecting project priority");
 	}
 
-	private static BiJoiner<Step, Step> stepsNotRespectingProjectPriority() {return JoinerSupport.getJoinerService().newBiJoiner(PlanConstraintProvider::stepsNotRespectingProjectPriority);}
+	private static BiJoiner<StepAllocation, StepAllocation> stepsNotRespectingProjectPriority() {return JoinerSupport.getJoinerService().newBiJoiner(PlanConstraintProvider::stepsNotRespectingProjectPriority);}
 
-	static boolean stepsNotRespectingProjectPriority(final Step step1, final Step step2)
+	static boolean stepsNotRespectingProjectPriority(final StepAllocation step1, final StepAllocation step2)
 	{
 		return computePenaltyWeight_StepsNotRespectingProjectPriority(step1, step2) > 0;
 	}
 
-	static int computePenaltyWeight_StepsNotRespectingProjectPriority(final Step step1, final Step step2)
+	static int computePenaltyWeight_StepsNotRespectingProjectPriority(final StepAllocation step1, final StepAllocation step2)
 	{
 		final InternalPriority prio1 = step1.getProjectPriority();
 		final InternalPriority prio2 = step2.getProjectPriority();
@@ -175,7 +175,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 		}
 	}
 
-	private static int getOverlappingDuration(final Step step1, final Step step2)
+	private static int getOverlappingDuration(final StepAllocation step1, final StepAllocation step2)
 	{
 		final LocalDateTime step1Start = step1.getStartDate();
 		final LocalDateTime step1End = step1.getEndDate();

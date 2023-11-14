@@ -2,7 +2,7 @@ package de.metas.calendar.plan_optimizer.persistance;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.logging.LogManager;
@@ -77,7 +77,7 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 
 		final ImmutableSet<ProjectId> projectIds = solution.getStepsList()
 				.stream()
-				.map(Step::getProjectId)
+				.map(StepAllocation::getProjectId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (projectIds.isEmpty())
 		{
@@ -94,7 +94,7 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
 				.build();
 
-		for (final Step step : solution.getStepsList())
+		for (final StepAllocation step : solution.getStepsList())
 		{
 			if (step.getStartDate() == null || step.getEndDate() == null)
 			{

@@ -2,6 +2,7 @@ package de.metas.calendar.plan_optimizer.domain;
 
 import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
+import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
 import org.junit.jupiter.api.Nested;
@@ -11,25 +12,29 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PlanTest
 {
+	private static final ProjectId PROJECT_ID = ProjectId.ofRepoId(1);
+
 	@Nested
 	class copy
 	{
 		StepId stepId(int id)
 		{
 			return StepId.builder()
-					.woProjectStepId(WOProjectStepId.ofRepoId(1, id))
-					.woProjectResourceId(WOProjectResourceId.ofRepoId(1, 1))
+					.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID, id))
+					.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID, 1))
 					.build();
 		}
 
-		Step step(int id)
+		StepDef step(int id)
 		{
-			return Step.builder()
+			return StepDef.builder()
 					.id(stepId(id))
 					.projectPriority(InternalPriority.MEDIUM)
 					.resource(Resource.builder().id(ResourceId.ofRepoId(1)).name("R1").build())
@@ -40,32 +45,21 @@ class PlanTest
 					.build();
 		}
 
-		public ArrayList<Step> steps(final int count)
+		public Project project(final int count)
 		{
-			final ArrayList<Step> result = new ArrayList<>(count);
-
-			Step prevStep = null;
-			for (int id = 1; id <= count; id++)
-			{
-				final Step step = step(id);
-				result.add(step);
-				if (prevStep != null)
-				{
-					prevStep.setNextStep(step);
-					step.setPreviousStep(prevStep);
-				}
-
-				prevStep = step;
-			}
-
-			return result;
+			return Project.builder()
+					.steps(IntStream.rangeClosed(1, count)
+							.mapToObj(this::step)
+							.collect(Collectors.toList()))
+					.build();
 		}
 
 		@Test
 		void assert_prev_next_are_correctly_linked()
 		{
-			final Plan plan = Plan.newInstance();
-			plan.setStepsList(steps(4));
+			final Plan plan = Plan.builder()
+					.stepsList(new ArrayList<>(project(4).createAllocations()))
+					.build();
 
 			final Plan newPlan = plan.copy();
 
@@ -79,17 +73,17 @@ class PlanTest
 				assertThat(newPlan.getStepsList().get(i).getId()).isSameAs(plan.getStepsList().get(i).getId());
 			}
 
-			assertThat(newPlan.getStepsList().get(0).getPreviousStep()).isNull();
-			assertThat(newPlan.getStepsList().get(0).getNextStep()).isEqualTo(newPlan.getStepsList().get(1));
+			assertThat(newPlan.getStepsList().get(0).getPrevious()).isNull();
+			assertThat(newPlan.getStepsList().get(0).getNext()).isEqualTo(newPlan.getStepsList().get(1));
 
-			assertThat(newPlan.getStepsList().get(1).getPreviousStep()).isEqualTo(newPlan.getStepsList().get(0));
-			assertThat(newPlan.getStepsList().get(1).getNextStep()).isEqualTo(newPlan.getStepsList().get(2));
+			assertThat(newPlan.getStepsList().get(1).getPrevious()).isEqualTo(newPlan.getStepsList().get(0));
+			assertThat(newPlan.getStepsList().get(1).getNext()).isEqualTo(newPlan.getStepsList().get(2));
 
-			assertThat(newPlan.getStepsList().get(2).getPreviousStep()).isEqualTo(newPlan.getStepsList().get(1));
-			assertThat(newPlan.getStepsList().get(2).getNextStep()).isEqualTo(newPlan.getStepsList().get(3));
+			assertThat(newPlan.getStepsList().get(2).getPrevious()).isEqualTo(newPlan.getStepsList().get(1));
+			assertThat(newPlan.getStepsList().get(2).getNext()).isEqualTo(newPlan.getStepsList().get(3));
 
-			assertThat(newPlan.getStepsList().get(3).getPreviousStep()).isEqualTo(newPlan.getStepsList().get(2));
-			assertThat(newPlan.getStepsList().get(3).getNextStep()).isNull();
+			assertThat(newPlan.getStepsList().get(3).getPrevious()).isEqualTo(newPlan.getStepsList().get(2));
+			assertThat(newPlan.getStepsList().get(3).getNext()).isNull();
 		}
 	}
 }

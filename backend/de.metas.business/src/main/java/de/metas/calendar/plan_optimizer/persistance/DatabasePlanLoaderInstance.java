@@ -3,8 +3,9 @@ package de.metas.calendar.plan_optimizer.persistance;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.calendar.plan_optimizer.domain.StepId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.CoalesceUtil;
@@ -25,7 +26,6 @@ import de.metas.project.workorder.step.WOProjectStepsCollection;
 import de.metas.resource.HumanResourceTestGroup;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.HumanResourceTestGroupService;
-import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceWeeklyAvailability;
@@ -97,27 +97,28 @@ public class DatabasePlanLoaderInstance
 		this.timeZone = orgDAO.getTimeZone(woProjects.get(0).getOrgId()); // use the time zone of the first project
 		this.simulationPlan = woProjectSimulationService.getSimulationPlanById(simulationId);
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
+		final ArrayList<Project> projects = new ArrayList<>();
 		for (final WOProject woProject : woProjects)
 		{
-			stepsList.addAll(loadStepsFromWOProject(woProject));
+			final Project project = Project.builder()
+					.steps(loadStepsFromWOProject(woProject))
+					.build();
+			projects.add(project);
 		}
 
 		final Plan plan = Plan.newInstance();
 		plan.setSimulationId(simulationId);
 		plan.setTimeZone(timeZone);
-		plan.setStepsList(stepsList);
+		plan.setStepsList(new ArrayList<>(Project.createAllocations(projects)));
 
 		return plan;
 	}
 
-	private List<Step> loadStepsFromWOProject(final WOProject woProject)
+	private List<StepDef> loadStepsFromWOProject(final WOProject woProject)
 	{
 		final LocalDateTime projectStartDate = extractProjectStartDate(woProject);
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
-		Step prevStep = null;
-
+		final ArrayList<StepDef> stepsList = new ArrayList<>();
 		for (WOProjectStep woStep : stepsByProjectId.getByProjectId(woProject.getProjectId()).toOrderedList())
 		{
 			final LocalDateTime startDateMin = Optional.ofNullable(woStep.getDeliveryDate())
@@ -140,20 +141,13 @@ public class DatabasePlanLoaderInstance
 
 			for (final WOProjectResource woStepResourceOrig : resources.getByStepId(woStep.getWoProjectStepId()))
 			{
-				final Step step = fromWOStepResource(woProject, woStep, woStepResourceOrig, prevStep, startDateMin, dueDate);
+				final StepDef step = fromWOStepResource(woProject, woStep, woStepResourceOrig, startDateMin, dueDate);
 				if (step == null)
 				{
 					continue;
 				}
 
-				if (prevStep != null)
-				{
-					prevStep.setNextStep(step);
-				}
-
 				stepsList.add(step);
-
-				prevStep = step;
 			}
 		}
 
@@ -175,11 +169,10 @@ public class DatabasePlanLoaderInstance
 	}
 
 	@Nullable
-	private Step fromWOStepResource(
+	private StepDef fromWOStepResource(
 			@NonNull final WOProject woProject,
 			@NonNull final WOProjectStep woStep,
 			@NonNull final WOProjectResource woStepResourceOrig,
-			@Nullable final Step prevStep,
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate)
 	{
@@ -206,15 +199,9 @@ public class DatabasePlanLoaderInstance
 			pinned = false;
 		}
 
-		final LocalDateTime prevEndDate = prevStep == null ? startDateMin : prevStep.getEndDate();
-		final int delay = computeDelay(prevEndDate, startDate);
-		final ResourceAvailabilityRanges scheduledRange = startDate != null && endDate != null
-				? ResourceAvailabilityRanges.ofStartAndEndDate(startDate, endDate)
-				: null;
-
 		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
 
-		final Step step = Step.builder()
+		final StepDef stepDef = StepDef.builder()
 				.id(StepId.builder()
 						.woProjectStepId(woStepResource.getWoProjectStepId())
 						.woProjectResourceId(woStepResource.getWoProjectResourceId())
@@ -225,28 +212,21 @@ public class DatabasePlanLoaderInstance
 				.requiredHumanCapacity(requiredHumanCapacity)
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
-				.delay(delay)
 				.pinnedStartDate(pinned ? startDate : null)
-				.resourceScheduledRange(scheduledRange)
-				.humanResourceScheduledRange(scheduledRange)
+				//
+				.initialStartDate(startDate)
+				.initialEndDate(endDate)
+				//
 				.build();
 
-		final BooleanWithReason valid = step.checkProblemFactsValid();
+		final BooleanWithReason valid = stepDef.checkProblemFactsValid();
 		if (valid.isFalse())
 		{
 			logger.info("Skip invalid woStep because `{}`: {}", valid.getReasonAsString(), woStep);
 			return null;
 		}
 
-		if (prevStep != null)
-		{
-			prevStep.setNextStep(step);
-			step.setPreviousStep(prevStep);
-		}
-
-		step.setPreviousStepEndDateAndUpdate(prevStep != null ? prevStep.getEndDate() : startDateMin);
-
-		return step;
+		return stepDef;
 	}
 
 	@NonNull
@@ -282,12 +262,4 @@ public class DatabasePlanLoaderInstance
 				.weeklyCapacity(group.getWeeklyCapacity())
 				.build();
 	}
-
-	public static int computeDelay(@Nullable final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)
-	{
-		return lastStepEndDate != null && thisStepStartDate != null && thisStepStartDate.isAfter(lastStepEndDate)
-				? (int)Plan.PLANNING_TIME_PRECISION.between(lastStepEndDate, thisStepStartDate)
-				: 0;
-	}
-
 }

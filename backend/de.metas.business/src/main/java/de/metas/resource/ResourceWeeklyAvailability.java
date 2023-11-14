@@ -131,6 +131,11 @@ public class ResourceWeeklyAvailability
 			@NonNull final LocalDateTime startDateTime,
 			@NonNull final Duration duration)
 	{
+		if (duration.isZero() || duration.isNegative())
+		{
+			return Optional.empty();
+		}
+
 		Duration remainingDurationToAllocate = duration;
 		LocalDateTime date = startDateTime;
 		final ArrayList<ResourceAvailabilityRange> ranges = new ArrayList<>();

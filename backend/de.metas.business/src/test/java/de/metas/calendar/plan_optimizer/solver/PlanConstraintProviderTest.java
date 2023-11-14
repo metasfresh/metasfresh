@@ -2,11 +2,11 @@ package de.metas.calendar.plan_optimizer.solver;
 
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
+import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.calendar.plan_optimizer.domain.StepId;
-import de.metas.calendar.plan_optimizer.domain.StepPreviousEndDateUpdater;
-import de.metas.calendar.plan_optimizer.persistance.DatabasePlanLoaderInstance;
 import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +44,7 @@ class PlanConstraintProviderTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new DatabaseHumanResourceTestGroupRepository()));
-		constraintVerifier = ConstraintVerifier.build(new PlanConstraintProvider(), Plan.class, Step.class);
+		constraintVerifier = ConstraintVerifier.build(new PlanConstraintProvider(), Plan.class, StepAllocation.class);
 	}
 
 	@BeforeEach
@@ -63,46 +62,44 @@ class PlanConstraintProviderTest
 				.build();
 	}
 
-	void updateShadowVars(final Step step)
-	{
-		StepPreviousEndDateUpdater.updateStep(step);
-	}
-
 	@Nested
 	class resourceConflict
 	{
 		LocalDateTime START_DATE_MIN = LocalDate.parse("2023-04-01").atStartOfDay();
 
-		Step step(final Resource resource, final String startDateStr, final String endDateStr)
+		StepAllocation step(final ProjectId projectId, final Resource resource, final String startDateStr, final String endDateStr)
 		{
 			final LocalDateTime startDate = LocalDate.parse(startDateStr).atStartOfDay();
 			final LocalDateTime endDate = LocalDate.parse(endDateStr).atStartOfDay();
-			final Duration duration = Duration.between(startDate, endDate);
 
-			final Step step = Step.builder()
-					.id(nextStepId(PROJECT_ID1))
-					.projectPriority(InternalPriority.MEDIUM)
-					.resource(resource)
-					.requiredResourceCapacity(duration)
-					.requiredHumanCapacity(Duration.ZERO)
-					.startDateMin(START_DATE_MIN)
-					.dueDate(endDate) // some not null value because we don't want to fail toString()
-					.delay(DatabasePlanLoaderInstance.computeDelay(START_DATE_MIN, startDate))
-					.build();
+			final StepAllocation allocation = Project.builder()
+					.step(StepDef.builder()
+							.id(nextStepId(projectId))
+							.projectPriority(InternalPriority.MEDIUM)
+							.resource(resource)
+							.requiredResourceCapacity(Duration.between(startDate, endDate))
+							.requiredHumanCapacity(Duration.ZERO)
+							.startDateMin(START_DATE_MIN)
+							.dueDate(endDate) // some not null value because we don't want to fail toString()
+							.initialStartDate(startDate)
+							.initialEndDate(endDate)
+							//.delay(DatabasePlanLoaderInstance.computeDelay(START_DATE_MIN, startDate))
+							.build())
+					.build()
+					.createAllocations()
+					.get(0);
 
-			updateShadowVars(step);
+			assertThat(allocation.getStartDate()).isEqualTo(startDate);
+			assertThat(allocation.getEndDate()).isEqualTo(endDate);
 
-			assertThat(step.getStartDate()).isEqualTo(startDate);
-			assertThat(step.getEndDate()).isEqualTo(endDate);
-
-			return step;
+			return allocation;
 		}
 
 		@Test
 		void sameResource_overlapping()
 		{
-			final Step step1 = step(RESOURCE, "2023-04-01", "2023-04-05");
-			final Step step2 = step(RESOURCE, "2023-04-04", "2023-04-10");
+			final StepAllocation step1 = step(PROJECT_ID1, RESOURCE, "2023-04-01", "2023-04-05");
+			final StepAllocation step2 = step(PROJECT_ID2, RESOURCE, "2023-04-04", "2023-04-10");
 
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict).given(step1, step2).penalizesBy(24); // 24h=1day
 		}
@@ -112,8 +109,8 @@ class PlanConstraintProviderTest
 		{
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
 					.given(
-							step(RESOURCE, "2023-04-01", "2023-04-05"),
-							step(RESOURCE, "2023-04-05", "2023-04-10")
+							step(PROJECT_ID1, RESOURCE, "2023-04-01", "2023-04-05"),
+							step(PROJECT_ID2, RESOURCE, "2023-04-05", "2023-04-10")
 					)
 					.penalizesBy(0);
 		}
@@ -123,8 +120,8 @@ class PlanConstraintProviderTest
 		{
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
 					.given(
-							step(RESOURCE, "2023-04-01", "2023-04-05"),
-							step(RESOURCE, "2023-04-06", "2023-04-10")
+							step(PROJECT_ID1, RESOURCE, "2023-04-01", "2023-04-05"),
+							step(PROJECT_ID2, RESOURCE, "2023-04-06", "2023-04-10")
 					)
 					.penalizesBy(0);
 		}
@@ -134,8 +131,8 @@ class PlanConstraintProviderTest
 		{
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict)
 					.given(
-							step(RESOURCE, "2023-04-01", "2023-04-05"),
-							step(RESOURCE2, "2023-04-04", "2023-04-10")
+							step(PROJECT_ID1, RESOURCE, "2023-04-01", "2023-04-05"),
+							step(PROJECT_ID2, RESOURCE2, "2023-04-04", "2023-04-10")
 					)
 					.penalizesBy(0);
 		}
@@ -145,26 +142,27 @@ class PlanConstraintProviderTest
 	class dueDate
 	{
 		@SuppressWarnings("SameParameterValue")
-		Step step(final String endDateStr, final String dueDate)
+		StepAllocation step(final String endDateStr, final String dueDate)
 		{
 			final LocalDateTime endDate = LocalDate.parse(endDateStr).atStartOfDay();
 			final Duration duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
 			final LocalDateTime startDate = endDate.minus(duration);
 
-			Step step = Step.builder()
-					.id(nextStepId(PROJECT_ID1))
-					.projectPriority(InternalPriority.MEDIUM)
-					.resource(RESOURCE)
-					.requiredResourceCapacity(duration)
-					.requiredHumanCapacity(Duration.ZERO)
-					.startDateMin(startDate)
-					.delay(0)
-					.dueDate(LocalDate.parse(dueDate).atStartOfDay())
-					.build();
-
-			updateShadowVars(step);
-
-			return step;
+			return Project.builder()
+					.step(StepDef.builder()
+							.id(nextStepId(PROJECT_ID1))
+							.projectPriority(InternalPriority.MEDIUM)
+							.resource(RESOURCE)
+							.requiredResourceCapacity(duration)
+							.requiredHumanCapacity(Duration.ZERO)
+							.startDateMin(startDate)
+							.dueDate(LocalDate.parse(dueDate).atStartOfDay())
+							.initialStartDate(startDate)
+							.initialEndDate(endDate)
+							.build())
+					.build()
+					.createAllocations()
+					.get(0);
 		}
 
 		@Test
@@ -186,7 +184,7 @@ class PlanConstraintProviderTest
 		@Test
 		void endDate_after_dueDate_with_24h()
 		{
-			//assertThat(step("2023-04-27", "2023-04-26").isDueDateNotRespected()).isTrue();
+			assertThat(step("2023-04-27", "2023-04-26").isDueDateNotRespected()).isTrue();
 
 			constraintVerifier.verifyThat(PlanConstraintProvider::dueDate)
 					.given(step("2023-04-27", "2023-04-26"))
@@ -209,53 +207,34 @@ class PlanConstraintProviderTest
 	class stepsNotRespectingProjectPriority
 	{
 		LocalDateTime START_DATE_MIN = LocalDate.parse("2023-04-25").atStartOfDay();
-		private HashMap<ProjectId, Step> lastStepByProjectId;
 
-		@BeforeEach
-		void beforeEach()
-		{
-			lastStepByProjectId = new HashMap<>();
-		}
-
-		Step step(final ProjectId projectId, final String startDateStr, InternalPriority priority)
+		StepAllocation step(final ProjectId projectId, final String startDateStr, InternalPriority priority)
 		{
 			final LocalDateTime startDate = LocalDate.parse(startDateStr).atStartOfDay();
+			final Duration duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
 
-			final Step step = Step.builder()
-					.id(nextStepId(projectId)) // needed for constraint stream forEachUnique
-					.projectPriority(priority)
-					.resource(RESOURCE)
-					.requiredResourceCapacity(Duration.of(1, Plan.PLANNING_TIME_PRECISION))
-					.requiredHumanCapacity(Duration.ZERO)
-					.startDateMin(START_DATE_MIN)
-					.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
-					.build();
-
-			Step prevStep = this.lastStepByProjectId.get(projectId);
-			if (prevStep != null)
-			{
-				step.setPreviousStep(prevStep);
-				prevStep.setNextStep(step);
-
-				step.setDelay(DatabasePlanLoaderInstance.computeDelay(prevStep.getEndDate(), startDate));
-			}
-			else
-			{
-				step.setDelay(DatabasePlanLoaderInstance.computeDelay(step.getStartDateMin(), startDate));
-			}
-
-			updateShadowVars(step);
-
-			this.lastStepByProjectId.put(projectId, step);
-
-			return step;
+			return Project.builder()
+					.step(StepDef.builder()
+							.id(nextStepId(projectId)) // needed for constraint stream forEachUnique
+							.projectPriority(priority)
+							.resource(RESOURCE)
+							.requiredResourceCapacity(duration)
+							.requiredHumanCapacity(Duration.ZERO)
+							.startDateMin(START_DATE_MIN)
+							.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
+							.initialStartDate(startDate)
+							.initialEndDate(startDate.plus(duration))
+							.build())
+					.build()
+					.createAllocations()
+					.get(0);
 		}
 
 		@Test
 		void sameStep()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
-			final Step step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.MEDIUM);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.MEDIUM);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isFalse();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(0);
 		}
@@ -263,8 +242,8 @@ class PlanConstraintProviderTest
 		@Test
 		void descendingDates_samePrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
-			final Step step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.MEDIUM);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.MEDIUM);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isFalse();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(0);
 		}
@@ -272,8 +251,8 @@ class PlanConstraintProviderTest
 		@Test
 		void sameDates_highToLowPrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.HIGH);
-			final Step step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.LOW);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.HIGH);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.LOW);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isTrue();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(1);
 		}
@@ -281,8 +260,8 @@ class PlanConstraintProviderTest
 		@Test
 		void sameDates_lowToHighPrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.LOW);
-			final Step step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.HIGH);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.LOW);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-25", InternalPriority.HIGH);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isTrue();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(1);
 		}
@@ -290,8 +269,8 @@ class PlanConstraintProviderTest
 		@Test
 		void ascendingDates_samePrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
-			final Step step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.MEDIUM);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.MEDIUM);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.MEDIUM);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isFalse();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(0);
 		}
@@ -299,8 +278,8 @@ class PlanConstraintProviderTest
 		@Test
 		void ascendingDates_highToLowPrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.HIGH);
-			final Step step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.LOW);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.HIGH);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.LOW);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isFalse();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(0);
 		}
@@ -308,8 +287,8 @@ class PlanConstraintProviderTest
 		@Test
 		void ascendingDates_lowToHighPrio()
 		{
-			final Step step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.LOW);
-			final Step step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.HIGH);
+			final StepAllocation step1 = step(PROJECT_ID1, "2023-04-25", InternalPriority.LOW);
+			final StepAllocation step2 = step(PROJECT_ID2, "2023-04-26", InternalPriority.HIGH);
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isTrue();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(25);
 		}

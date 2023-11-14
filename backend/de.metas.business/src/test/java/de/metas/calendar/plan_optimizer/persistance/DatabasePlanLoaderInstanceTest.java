@@ -1,8 +1,9 @@
 package de.metas.calendar.plan_optimizer.persistance;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.calendar.conflicts.CalendarConflictEventsDispatcher;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.common.util.time.SystemTime;
@@ -25,6 +26,7 @@ import de.metas.resource.DatabaseHumanResourceTestGroupRepository;
 import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceTypeId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
@@ -36,8 +38,10 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Step;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +66,7 @@ class DatabasePlanLoaderInstanceTest
 	private static final ZoneId TIME_ZONE = ZoneId.of("Europe/Berlin");
 	private static final SimulationPlanId simulationId = SimulationPlanId.ofRepoId(111);
 
+	private I_C_UOM uomHour;
 	private ResourceTypeId resourceTypeId;
 	private final HashMap<String, ResourceId> resourceIdsByName = new HashMap<>();
 
@@ -72,6 +77,8 @@ class DatabasePlanLoaderInstanceTest
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 		SystemTime.setFixedTimeSource(LocalDate.parse("2023-10-01").atStartOfDay().atZone(TIME_ZONE));
 
+		this.uomHour = BusinessTestHelper.createUOM(X12DE355.HOUR.getCode(), X_C_UOM.UOMTYPE_Time, 0);
+
 		this.resourceTypeId = createResourceType();
 	}
 
@@ -80,6 +87,8 @@ class DatabasePlanLoaderInstanceTest
 		final I_S_ResourceType record = InterfaceWrapperHelper.newInstance(I_S_ResourceType.class);
 		record.setValue("resource type");
 		record.setName("resource type");
+		record.setC_UOM_ID(uomHour.getC_UOM_ID());
+		record.setM_Product_Category_ID(1);
 		InterfaceWrapperHelper.saveRecord(record);
 		return ResourceTypeId.ofRepoId(record.getS_ResourceType_ID());
 	}
@@ -208,26 +217,26 @@ class DatabasePlanLoaderInstanceTest
 		final Plan plan = loader.load();
 		System.out.println(plan);
 
-		final ArrayList<Step> steps = plan.getStepsList();
+		final ArrayList<StepAllocation> steps = plan.getStepsList();
 		assertThat(steps).hasSize(3);
 
 		assertThat(steps.get(0).getStartDate()).isEqualTo("2023-10-05T10:00");
 		assertThat(steps.get(0).getEndDate()).isEqualTo("2023-10-05T11:00");
-		assertThat(steps.get(0).getPinnedStartDate()).isNull();
-		assertThat(steps.get(0).getPreviousStep()).isNull();
-		assertThat(steps.get(0).getNextStep()).isSameAs(steps.get(1));
+		assertThat(steps.get(0).getStepDef().getPinnedStartDate()).isNull();
+		assertThat(steps.get(0).getPrevious()).isNull();
+		assertThat(steps.get(0).getNext()).isSameAs(steps.get(1));
 
 		assertThat(steps.get(1).getStartDate()).isEqualTo("2023-10-05T13:00");
 		assertThat(steps.get(1).getEndDate()).isEqualTo("2023-10-05T14:00");
-		assertThat(steps.get(1).getPinnedStartDate()).isNull();
-		assertThat(steps.get(1).getPreviousStep()).isSameAs(steps.get(0));
-		assertThat(steps.get(1).getNextStep()).isSameAs(steps.get(2));
+		assertThat(steps.get(1).getStepDef().getPinnedStartDate()).isNull();
+		assertThat(steps.get(1).getPrevious()).isSameAs(steps.get(0));
+		assertThat(steps.get(1).getNext()).isSameAs(steps.get(2));
 
 		assertThat(steps.get(2).getStartDate()).isEqualTo("2023-10-05T22:00");
 		assertThat(steps.get(2).getEndDate()).isEqualTo("2023-10-05T23:00");
-		assertThat(steps.get(2).getPinnedStartDate()).isEqualTo(steps.get(2).getStartDate());
-		assertThat(steps.get(2).getPreviousStep()).isSameAs(steps.get(1));
-		assertThat(steps.get(2).getNextStep()).isNull();
+		assertThat(steps.get(2).getStepDef().getPinnedStartDate()).isEqualTo(steps.get(2).getStartDate());
+		assertThat(steps.get(2).getPrevious()).isSameAs(steps.get(1));
+		assertThat(steps.get(2).getNext()).isNull();
 
 	}
 }

@@ -23,26 +23,25 @@
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
 import com.google.common.base.MoreObjects;
-import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.calendar.plan_optimizer.domain.StepAllocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 @Value
 @Builder
 public class StepItemRequiredCapacity
 {
-	@NonNull StepId stepId;
+	@NonNull StepAllocationId stepAllocationId;
 	@NonNull Duration humanResourceDuration;
 
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("projectId", stepId.getWoProjectStepId().getProjectId().getRepoId())
-				.add("stepId", stepId.getWoProjectStepId().getRepoId())
+				.add("projectId", stepAllocationId.getWoProjectStepId().getProjectId().getRepoId())
+				.add("stepAllocationId", stepAllocationId.getWoProjectStepId().getRepoId())
 				.addValue(humanResourceDuration)
 				.toString();
 	}
