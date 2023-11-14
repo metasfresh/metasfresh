@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_ModCntr_Log
  *  @author metasfresh (generated) 
@@ -70,28 +71,6 @@ public interface I_I_ModCntr_Log
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Table.
-	 * Database Table information
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get Table.
-	 * Database Table information
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Table_ID();
-
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set Amount.
@@ -179,6 +158,54 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_BPartnerValue = new ModelColumn<>(I_I_ModCntr_Log.class, "BPartnerValue", null);
 	String COLUMNNAME_BPartnerValue = "BPartnerValue";
+
+	/**
+	 * Set Calendar name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCalendarName (@Nullable java.lang.String CalendarName);
+
+	/**
+	 * Get Calendar name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCalendarName();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CalendarName = new ModelColumn<>(I_I_ModCntr_Log.class, "CalendarName", null);
+	String COLUMNNAME_CalendarName = "CalendarName";
+
+	/**
+	 * Set Calendar.
+	 * Accounting Calendar Name
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Calendar_ID (int C_Calendar_ID);
+
+	/**
+	 * Get Calendar.
+	 * Accounting Calendar Name
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Calendar();
+
+	void setC_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Calendar);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
 
 	/**
 	 * Set Currency.
@@ -317,27 +344,6 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CollectionPointValue = new ModelColumn<>(I_I_ModCntr_Log.class, "CollectionPointValue", null);
 	String COLUMNNAME_CollectionPointValue = "CollectionPointValue";
-
-	/**
-	 * Set Contract Module Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setContractModuleName (@Nullable java.lang.String ContractModuleName);
-
-	/**
-	 * Get Contract Module Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getContractModuleName();
-
-	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ContractModuleName = new ModelColumn<>(I_I_ModCntr_Log.class, "ContractModuleName", null);
-	String COLUMNNAME_ContractModuleName = "ContractModuleName";
 
 	/**
 	 * Get Created.
@@ -747,27 +753,6 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
 
 	/**
-	 * Set Contract Module Log.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setModCntr_Log_ID (int ModCntr_Log_ID);
-
-	/**
-	 * Get Contract Module Log.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getModCntr_Log_ID();
-
-	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", null);
-	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
-
-	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: TableDir
@@ -920,6 +905,27 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Processing = new ModelColumn<>(I_I_ModCntr_Log.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
+
+	/**
 	 * Set Producer.
 	 *
 	 * <br>Type: Table
@@ -986,29 +992,6 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Qty = new ModelColumn<>(I_I_ModCntr_Log.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
-
-	/**
-	 * Set Record ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setRecord_ID (int Record_ID);
-
-	/**
-	 * Get Record ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getRecord_ID();
-
-	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "Record_ID", null);
-	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set UOM Symbol.

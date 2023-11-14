@@ -9,12 +9,13 @@ SELECT modcntr_log.modcntr_log_id           AS contractmodulelog,
        modcntr_log.issotrx                  AS sotrx,
        contract.documentno                  AS contractdocumentnumber,
        product.value                        AS productvalue,
-       gr.name                              as invoicinggroupname,
+       gr.name                              AS invoicinggroupname,
        modcntr_log.qty                      AS qty,
        uom.uomsymbol                        AS uom,
        modcntr_log.amount                   AS amount,
        currency.iso_code                    AS currencycode,
        year.fiscalyear                      AS fiscalyear,
+       cal.name                             AS calendarname,
        module.name                          AS contractmodule,
        producerBPartner.value               AS businesspartner,
        invoiceBPartner.value                AS invoicepartner,
@@ -26,6 +27,7 @@ SELECT modcntr_log.modcntr_log_id           AS contractmodulelog,
        priceuom.uomsymbol                   AS priceuom
 FROM modcntr_log
          INNER JOIN c_year year ON year.c_year_id = modcntr_log.harvesting_year_id
+         INNER JOIN c_calendar cal ON cal.c_calendar_id = year.c_calendar_id
          LEFT JOIN c_flatrate_term contract ON contract.c_flatrate_term_id = modcntr_log.c_flatrate_term_id
          LEFT JOIN m_product product ON product.m_product_id = modcntr_log.m_product_id
          LEFT JOIN c_uom uom ON uom.c_uom_id = modcntr_log.c_uom_id

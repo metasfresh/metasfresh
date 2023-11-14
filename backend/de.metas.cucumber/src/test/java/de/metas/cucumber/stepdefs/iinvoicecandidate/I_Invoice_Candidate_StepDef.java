@@ -137,10 +137,10 @@ public class I_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("metasfresh initially has no I_Invoice_Candidate data")
-	public void delete_I_Invoice_Candidate_data()
+	@And("^metasfresh initially has no (I_.*) import data$")
+	public void delete_I_Invoice_Candidate_data(@NonNull final String tableName)
 	{
-		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM I_Invoice_Candidate cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM "+tableName+" cascade", ITrx.TRXNAME_None);
 	}
 
 	private void validateCreatedIInvoiceCandidate(@NonNull final Map<String, String> row) throws InterruptedException
