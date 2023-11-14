@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -15,9 +16,10 @@ import java.util.List;
 @ToString
 public final class ResourceAvailabilityRanges
 {
-	@Getter private final LocalDateTime startDate;
-	@Getter private final LocalDateTime endDate;
-	private final ImmutableList<ResourceAvailabilityRange> list;
+	@NonNull private final ImmutableList<ResourceAvailabilityRange> list;
+	@NonNull @Getter private final LocalDateTime startDate;
+	@NonNull @Getter private final LocalDateTime endDate;
+	@NonNull @Getter private final Duration duration;
 
 	private ResourceAvailabilityRanges(final List<ResourceAvailabilityRange> list)
 	{
@@ -27,6 +29,9 @@ public final class ResourceAvailabilityRanges
 				.collect(ImmutableList.toImmutableList());
 		this.startDate = this.list.get(0).getStartDate();
 		this.endDate = this.list.get(list.size() - 1).getEndDate();
+		this.duration = list.stream()
+				.map(ResourceAvailabilityRange::getDuration)
+				.reduce(Duration.ZERO, Duration::plus);
 	}
 
 	public static ResourceAvailabilityRanges ofList(@NonNull final List<ResourceAvailabilityRange> list)

@@ -2,6 +2,7 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableSet;
 import org.adempiere.exceptions.AdempiereException;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -48,11 +49,14 @@ class ResourceWeeklyAvailabilityTest
 					.build();
 
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T10:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"));
+					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T16:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T16:00", "2023-11-03T18:00"));
+					.contains(ranges("2023-11-03T16:00", "2023-11-03T18:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T23:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T23:00", "2023-11-04T01:00"));
+					.contains(ranges("2023-11-03T23:00", "2023-11-04T01:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 		}
 
 		@Test
@@ -63,13 +67,16 @@ class ResourceWeeklyAvailabilityTest
 					.build();
 
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T10:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"));
+					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T16:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T16:00", "2023-11-03T18:00"));
+					.contains(ranges("2023-11-03T16:00", "2023-11-03T18:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T23:00"), Duration.ofHours(2)))
 					.contains(ranges(
 							"2023-11-03T23:00", "2023-11-04T00:00",
-							"2023-11-06T00:00", "2023-11-06T01:00"));
+							"2023-11-06T00:00", "2023-11-06T01:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 		}
 
 		@Test
@@ -81,15 +88,18 @@ class ResourceWeeklyAvailabilityTest
 					.build();
 
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T10:00"), Duration.ofHours(2)))
-					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"));
+					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T16:00"), Duration.ofHours(2)))
 					.contains(ranges(
 							"2023-11-03T16:00", "2023-11-03T17:00",
-							"2023-11-06T09:00", "2023-11-06T10:00"));
+							"2023-11-06T09:00", "2023-11-06T10:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(2);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T00:00"), Duration.ofHours(10)))
 					.contains(ranges(
 							"2023-11-03T09:00", "2023-11-03T17:00",
-							"2023-11-06T09:00", "2023-11-06T11:00"));
+							"2023-11-06T09:00", "2023-11-06T11:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(10);
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T00:00"), Duration.ofHours(16)))
 					.contains(ranges(
 							"2023-11-03T09:00", "2023-11-03T17:00",
@@ -98,7 +108,9 @@ class ResourceWeeklyAvailabilityTest
 					.contains(ranges(
 							"2023-11-03T09:00", "2023-11-03T17:00",
 							"2023-11-06T09:00", "2023-11-06T17:00",
-							"2023-11-07T09:00", "2023-11-07T10:00"));
+							"2023-11-07T09:00", "2023-11-07T10:00"))
+					.get().extracting(ResourceAvailabilityRanges::getDuration, InstanceOfAssertFactories.DURATION).hasHours(17);
+
 		}
 	}
 

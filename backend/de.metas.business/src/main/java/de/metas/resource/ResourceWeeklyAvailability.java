@@ -123,15 +123,6 @@ public class ResourceWeeklyAvailability
 				.intValueExact();
 	}
 
-	public LocalDateTime computeEndDateTime(
-			@NonNull final LocalDateTime startDateTime,
-			@NonNull final Duration duration)
-	{
-		return computeAvailabilityRanges(startDateTime, duration)
-				.map(ResourceAvailabilityRanges::getEndDate)
-				.orElse(startDateTime);
-	}
-
 	public Optional<ResourceAvailabilityRanges> computeAvailabilityRanges(
 			@NonNull final LocalDateTime startDateTime,
 			@NonNull final Duration duration)

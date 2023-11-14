@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Value(staticConstructor = "ofStartAndEndDate")
@@ -22,4 +23,6 @@ public class ResourceAvailabilityRange
 		this.startDate = startDate;
 		this.endDate = endDate;
 	}
+
+	public Duration getDuration() {return Duration.between(startDate, endDate);}
 }
