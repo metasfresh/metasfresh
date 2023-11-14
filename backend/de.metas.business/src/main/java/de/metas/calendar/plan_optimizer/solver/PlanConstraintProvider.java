@@ -13,13 +13,9 @@ import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
-import de.metas.resource.HumanResourceTestGroupId;
-import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
-import org.compiere.SpringContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 // TODO handle pinned steps!
 
@@ -34,8 +30,6 @@ public class PlanConstraintProvider implements ConstraintProvider
 	private static final BendableScore ONE_SOFT_2 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 1, 1);
 	private static final BendableScore ONE_SOFT_3 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 2, 1);
 	private static final BendableScore ONE_SOFT_4 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 3, 1);
-
-	private final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
 
 	@Override
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
@@ -62,12 +56,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 		return constraintFactory.forEachUniquePair(
 						Step.class,
 						Joiners.equal(Step::getResource),
-						stepsOverlapping())
+						resourceScheduleOverlapping())
 				.penalize(ONE_HARD_1, PlanConstraintProvider::getOverlappingDuration)
 				.asConstraint("Resource conflict");
 	}
 
-	private static BiJoiner<Step, Step> stepsOverlapping() {return Joiners.overlapping(Step::getStartDate, Step::getEndDate);}
+	private static BiJoiner<Step, Step> resourceScheduleOverlapping() {return Joiners.overlapping(Step::getResourceScheduledStartDate, Step::getResourceScheduledEndDate);}
 
 	Constraint startDateMin(final ConstraintFactory constraintFactory)
 	{
@@ -88,8 +82,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
-				.filter(step -> step.getResource().getHumanResourceTestGroupId() != null)
-				.filter(step -> !step.getRequiredHumanCapacity().isZero())
+				.filter(Step::isRequiredHumanCapacity)
 				.groupBy(ConstraintCollectors.sum(
 						StepRequiredCapacity::ofStep,
 						StepRequiredCapacity.ZERO,
@@ -101,8 +94,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
 	{
-		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getGroupIds();
-		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
+		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(requiredCapacity.getCapacities());
 		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
 		return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
 	}

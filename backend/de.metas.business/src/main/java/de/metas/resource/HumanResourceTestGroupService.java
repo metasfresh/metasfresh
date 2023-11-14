@@ -20,6 +20,12 @@ public class HumanResourceTestGroupService
 	}
 
 	@NonNull
+	public HumanResourceTestGroup getById(@NonNull final HumanResourceTestGroupId id)
+	{
+		return humanResourceTestGroupRepository.getById(id);
+	}
+
+	@NonNull
 	public ImmutableList<HumanResourceTestGroup> getByIds(@NonNull final Set<HumanResourceTestGroupId> ids)
 	{
 		return humanResourceTestGroupRepository.getByIds(ids);

@@ -26,9 +26,9 @@ public class StepPreviousEndDateUpdater implements VariableListener<Plan, Step>
 	@Override
 	public void afterVariableChanged(ScoreDirector<Plan> scoreDirector, Step step)
 	{
-		System.out.println("afterVariableChanged: " + step + " ----------------------");
+		//System.out.println("afterVariableChanged: " + step + " ----------------------");
 		updateStep(scoreDirector, step);
-		System.out.println("---------------------------------------------------------");
+		//System.out.println("---------------------------------------------------------");
 	}
 
 	@Override

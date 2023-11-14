@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -46,6 +47,10 @@ public final class ResourceAvailabilityRanges
 	{
 		return ofList(ImmutableList.of(ResourceAvailabilityRange.ofStartAndEndDate(startDate, endDate)));
 	}
+
+	public List<ResourceAvailabilityRange> toList() {return list;}
+
+	public Stream<ResourceAvailabilityRange> stream() {return list.stream();}
 
 	public Map<YearWeek, Duration> getDurationByWeek()
 	{

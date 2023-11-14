@@ -8,6 +8,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_HumanResourceTestGroup;
 import org.springframework.stereotype.Repository;
 
@@ -34,9 +35,16 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 
 	@Override
 	@NonNull
+	public HumanResourceTestGroup getById(@NonNull final HumanResourceTestGroupId id)
+	{
+		return getMap().getById(id);
+	}
+
+	@Override
+	@NonNull
 	public ImmutableList<HumanResourceTestGroup> getByIds(@NonNull final Set<HumanResourceTestGroupId> ids)
 	{
-		return (ImmutableList<HumanResourceTestGroup>)getMap().getByIds(ids);
+		return getMap().getByIds(ids);
 	}
 
 	@NonNull
@@ -95,7 +103,18 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 		}
 
 		@NonNull
-		public List<HumanResourceTestGroup> getByIds(final Set<HumanResourceTestGroupId> ids)
+		public HumanResourceTestGroup getById(@NonNull final HumanResourceTestGroupId id)
+		{
+			final HumanResourceTestGroup group = byId.get(id);
+			if (group == null)
+			{
+				throw new AdempiereException("No group found for " + id);
+			}
+			return group;
+		}
+
+		@NonNull
+		public ImmutableList<HumanResourceTestGroup> getByIds(final Set<HumanResourceTestGroupId> ids)
 		{
 			return ids.stream()
 					.map(byId::get)

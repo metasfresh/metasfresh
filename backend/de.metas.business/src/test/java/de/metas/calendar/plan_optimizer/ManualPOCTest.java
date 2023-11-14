@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
@@ -20,11 +21,11 @@ import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.HumanResourceTestGroupId;
-import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceWeeklyAvailability;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.I_S_HumanResourceTestGroup;
 import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
@@ -45,16 +46,12 @@ public class ManualPOCTest
 	public static void main(String[] args) {new ManualPOCTest().start();}
 
 	public static final Duration TERMINATION_SPENT_LIMIT = Duration.ofMinutes(5);
-	private final InMemoryHumanResourceTestGroupRepository humanResourceTestGroupRepository;
 	private final AtomicInteger nextStepRepoId = new AtomicInteger(1);
 
 	ManualPOCTest()
 	{
 		LogManager.setLoggerLevel(SimulationOptimizerTask.class, Level.DEBUG);
 		Adempiere.enableUnitTestMode();
-
-		this.humanResourceTestGroupRepository = new InMemoryHumanResourceTestGroupRepository();
-		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(humanResourceTestGroupRepository));
 	}
 
 	void start()
@@ -105,9 +102,10 @@ public class ManualPOCTest
 		return plan;
 	}
 
+	@SuppressWarnings("unused")
 	private Plan generateProblem_X_Projects_with_Y_Steps(@NonNull final SimulationPlanId simulationId)
 	{
-		final HumanResourceTestGroupId humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(15);
+		final HumanResourceCapacity humanResourceCapacity = humanResourceCapacity(15);
 
 		final ArrayList<Step> stepsList = new ArrayList<>();
 
@@ -127,7 +125,7 @@ public class ManualPOCTest
 
 			for (int resourceIdx = 1; resourceIdx <= 10; resourceIdx++)
 			{
-				final Resource resource = resource(resourceIdx, ResourceWeeklyAvailability.ALWAYS_AVAILABLE, humanResourceTestGroupId);
+				final Resource resource = resource(resourceIdx, ResourceWeeklyAvailability.ALWAYS_AVAILABLE, humanResourceCapacity);
 				final Step step = stepTemplate.id(nextStepId(projectId)).resource(resource).build();
 
 				if (projectIdx == 1)
@@ -153,14 +151,14 @@ public class ManualPOCTest
 		final ProjectId P3 = projectId(3); // C
 		final ProjectId P4 = projectId(4); // D
 
-		final HumanResourceTestGroupId humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(40);
+		final HumanResourceCapacity humanResourceCapacity = humanResourceCapacity(40);
 		final ResourceWeeklyAvailability availability_8x5 = ResourceWeeklyAvailability.builder()
 				.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
 				.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
 				.build()
 				.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION);
-		final Resource R1 = resource(1, availability_8x5, humanResourceTestGroupId); // EMV Burst  8x5
-		final Resource R2 = resource(2, availability_8x5, humanResourceTestGroupId); // Nicht-EMV 8x5
+		final Resource R1 = resource(1, availability_8x5, humanResourceCapacity); // EMV Burst  8x5
+		final Resource R2 = resource(2, availability_8x5, humanResourceCapacity); // Nicht-EMV 8x5
 
 		final Step.StepBuilder stepTemplate = Step.builder()
 				//.id(nextStepId(projectId))
@@ -184,16 +182,25 @@ public class ManualPOCTest
 	@NonNull
 	private static ProjectId projectId(final int index) {return ProjectId.ofRepoId(index);}
 
+	private static HumanResourceCapacity humanResourceCapacity(final int weeklyCapacityInHours)
+	{
+		return HumanResourceCapacity.builder()
+				.id(HumanResourceTestGroupId.ofRepoId(POJOLookupMap.get().nextId(I_S_HumanResourceTestGroup.Table_Name)))
+				.weeklyCapacity(Duration.ofHours(weeklyCapacityInHours))
+				.build();
+	}
+
 	private Resource resource(
 			int index,
 			@NonNull ResourceWeeklyAvailability resourceAvailability,
-			@Nullable HumanResourceTestGroupId humanResourceTestGroupId)
+			@Nullable HumanResourceCapacity humanResourceCapacity)
 	{
 		return Resource.builder()
 				.id(resourceId(index))
 				.name("R" + index)
 				.availability(resourceAvailability)
-				.humanResourceTestGroupId(humanResourceTestGroupId)
+				.humanResourceAvailability(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
+				.humanResourceCapacity(humanResourceCapacity)
 				.build();
 	}
 

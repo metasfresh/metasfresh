@@ -1,61 +1,75 @@
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Step;
-import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
-import org.apache.commons.collections4.ListUtils;
 import org.threeten.extra.YearWeek;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 
-@Value(staticConstructor = "of")
-public class StepRequiredCapacity
+@EqualsAndHashCode
+public final class StepRequiredCapacity
 {
-	public static StepRequiredCapacity ZERO = new StepRequiredCapacity(ImmutableMap.of());
+	public static final StepRequiredCapacity ZERO = new StepRequiredCapacity(ImmutableListMultimap.of());
 
-	@NonNull ImmutableMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map;
+	@NonNull private final ImmutableListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> map;
 
 	public static StepRequiredCapacity ofStep(final Step step)
 	{
-		final HumanResourceTestGroupId humanResourceTestGroupId = Check.assumeNotNull(step.getResource().getHumanResourceTestGroupId(), "humanResourceTestGroupId should not be null at this stage!");
+		final HumanResourceCapacity humanResourceCapacity = Check.assumeNotNull(step.getResource().getHumanResourceCapacity(), "humanResourceCapacity should not be null at this stage: {}", step);
+		final Duration requiredHumanCapacity = step.getRequiredHumanCapacity();
+		final StepId stepId = step.getId();
 
-		final ResourceGroupYearWeek resourceGroupYearWeek = ResourceGroupYearWeek.of(humanResourceTestGroupId, YearWeek.from(step.getStartDate()));
+		final ResourceAvailabilityRanges scheduleRange = Check.assumeNotNull(step.getHumanResourceScheduledRange(), "HumanResourceScheduledRange should be set for {}", step);
+		final Map<YearWeek, Duration> durationByWeek = scheduleRange.getDurationByWeek();
 
-		final StepItemRequiredCapacity capacityItem = StepItemRequiredCapacity.builder()
-				.stepId(step.getId())
-				.startDate(step.getStartDate())
-				.humanResourceDuration(step.getRequiredHumanCapacity())
-				.build();
-		return new StepRequiredCapacity(resourceGroupYearWeek, capacityItem);
+		final ArrayListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> requiredCapacities = ArrayListMultimap.create();
+		for (final YearWeek yearWeek : durationByWeek.keySet())
+		{
+			final ResourceGroupYearWeek resourceGroupYearWeek = ResourceGroupYearWeek.of(humanResourceCapacity, yearWeek);
+			final StepItemRequiredCapacity capacityItem = StepItemRequiredCapacity.builder()
+					.stepId(stepId)
+					.humanResourceDuration(requiredHumanCapacity)
+					.build();
+			requiredCapacities.put(resourceGroupYearWeek, capacityItem);
+		}
+
+		return ofMultimap(requiredCapacities);
 	}
 
-	private StepRequiredCapacity(@NonNull final Map<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map)
+	public static StepRequiredCapacity ofMultimap(@NonNull final ListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> multimap)
 	{
-		this.map = ImmutableMap.copyOf(map);
+		if (multimap.isEmpty())
+		{
+			return ZERO;
+		}
+
+		return new StepRequiredCapacity(ImmutableListMultimap.copyOf(multimap));
 	}
 
-	private StepRequiredCapacity(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek, @NonNull final StepItemRequiredCapacity capacityItem)
+	private StepRequiredCapacity(@NonNull final ImmutableListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> multimap)
 	{
-		this.map = ImmutableMap.of(resourceGroupYearWeek, ImmutableList.of(capacityItem));
+		this.map = multimap;
 	}
 
 	@Override
 	public String toString()
 	{
 		final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
-		map.forEach((groupYearWeek, items) -> {
+		map.asMap().forEach((groupYearWeek, items) -> {
 			final Duration requiredDuration = items.stream()
 					.map(StepItemRequiredCapacity::getHumanResourceDuration)
 					.reduce(Duration.ZERO, Duration::plus);
@@ -67,34 +81,58 @@ public class StepRequiredCapacity
 
 	public StepRequiredCapacity add(final StepRequiredCapacity other)
 	{
-		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
-		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
-				capacityItems,
-				(existingItems, newItems) -> Stream.concat(existingItems.stream(), newItems.stream()).toList()));
-
-		return new StepRequiredCapacity(map);
+		if (other.map.isEmpty())
+		{
+			return this;
+		}
+		else if (this.map.isEmpty())
+		{
+			return other;
+		}
+		else
+		{
+			final ImmutableListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> mapNew = ImmutableListMultimap.<ResourceGroupYearWeek, StepItemRequiredCapacity>builder()
+					.putAll(this.map)
+					.putAll(other.map)
+					.build();
+			return ofMultimap(mapNew);
+		}
 	}
 
 	public StepRequiredCapacity subtract(final StepRequiredCapacity other)
 	{
-		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
-		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
-				capacityItems,
-				ListUtils::subtract));
+		if (other.map.isEmpty())
+		{
+			return this;
+		}
+		else if (this.map.isEmpty())
+		{
+			return ZERO;
+		}
+		else
+		{
+			final ArrayListMultimap<ResourceGroupYearWeek, StepItemRequiredCapacity> mapNew = ArrayListMultimap.create(this.map);
+			other.map.forEach(mapNew::remove);
 
-		return new StepRequiredCapacity(map);
+			if (mapNew.size() == this.map.size())
+			{
+				return this; // no changes
+			}
+
+			return ofMultimap(mapNew);
+		}
 	}
 
-	public void forEach(final BiConsumer<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> consumer)
+	public void forEach(final BiConsumer<ResourceGroupYearWeek, Collection<StepItemRequiredCapacity>> consumer)
 	{
-		this.map.forEach(consumer);
+		this.map.asMap().forEach(consumer);
 	}
 
-	public Set<HumanResourceTestGroupId> getGroupIds()
+	public Set<HumanResourceCapacity> getCapacities()
 	{
 		return map.keySet()
 				.stream()
-				.map(ResourceGroupYearWeek::getGroupId)
+				.map(ResourceGroupYearWeek::getCapacity)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

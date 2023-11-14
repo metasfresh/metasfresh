@@ -21,6 +21,8 @@ import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStepRepository;
+import de.metas.resource.DatabaseHumanResourceTestGroupRepository;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.Services;
@@ -189,6 +191,7 @@ class DatabasePlanLoaderInstanceTest
 				.woProjectService(woProjectService)
 				.woProjectSimulationService(woProjectSimulationService)
 				.resourceService(ResourceService.newInstanceForJUnitTesting())
+				.humanResourceTestGroupService(new HumanResourceTestGroupService(new DatabaseHumanResourceTestGroupRepository()))
 				.simulationId(simulationId)
 				.build();
 	}

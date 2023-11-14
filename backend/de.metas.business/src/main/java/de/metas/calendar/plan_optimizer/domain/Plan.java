@@ -5,14 +5,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.solver.PlanCloner;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.project.InternalPriority;
-import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,34 +41,7 @@ public class Plan
 	public static Plan newInstance() {return builder().build();}
 
 	@Override
-	public String toString()
-	{
-		// NOTE: keep it concise, important for timefold troubleshooting
-		final StringBuilder sb = new StringBuilder();
-		sb.append("\nsimulationId: ").append(simulationId);
-		sb.append("\nPlan score: ").append(score).append(", Time spent: ").append(timeSpent).append(", IsFinalSolution=").append(isFinalSolution);
-		if (stepsList != null && !stepsList.isEmpty())
-		{
-			final ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(stepsList, Step::getProjectId);
-			final ImmutableSetMultimap<ProjectId, InternalPriority> priorityByProjectId = stepsList.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(Step::getProjectId, Step::getProjectPriority));
-			for (final ProjectId projectId : stepsByProjectId.keySet())
-			{
-				sb.append("\n").append(projectId).append(" (").append(priorityByProjectId.get(projectId)).append(")");
-				stepsByProjectId.get(projectId).forEach(step -> sb.append("\n\t").append(step));
-			}
-		}
-		else
-		{
-			sb.append("\n\t(No steps)");
-		}
-
-		if (scoreExplanation != null)
-		{
-			sb.append("\n").append(scoreExplanation.getSummary());
-		}
-
-		return sb.toString();
-	}
+	public String toString() {return PlanToStringHelper.of(this).toString();}
 
 	public Plan copy()
 	{

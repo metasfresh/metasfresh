@@ -1,34 +1,32 @@
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.resource.HumanResourceTestGroup;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.util.time.DurationUtils;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 public class HumanResourceAvailableCapacity
 {
-	private final ImmutableMap<HumanResourceTestGroupId, HumanResourceTestGroup> groupsById;
+	private final ImmutableMap<HumanResourceTestGroupId, HumanResourceCapacity> capacitiesById;
 	private final HashMap<ResourceGroupYearWeek, Reservation> reservations = new HashMap<>();
 
-	private HumanResourceAvailableCapacity(final ImmutableList<HumanResourceTestGroup> groups)
+	private HumanResourceAvailableCapacity(@NonNull final Set<HumanResourceCapacity> capacities)
 	{
-		this.groupsById = Maps.uniqueIndex(groups, HumanResourceTestGroup::getId);
+		this.capacitiesById = Maps.uniqueIndex(capacities, HumanResourceCapacity::getId);
 	}
 
-	public static HumanResourceAvailableCapacity of(final ImmutableList<HumanResourceTestGroup> groups)
+	public static HumanResourceAvailableCapacity of(@NonNull final Set<HumanResourceCapacity> capacities)
 	{
-		return new HumanResourceAvailableCapacity(groups);
+		return new HumanResourceAvailableCapacity(capacities);
 	}
 
 	public void reserveCapacity(final StepRequiredCapacity requiredCapacity)
@@ -46,7 +44,7 @@ public class HumanResourceAvailableCapacity
 
 	private void reserveCapacity(
 			@NonNull final ResourceGroupYearWeek resourceGroupYearWeek,
-			@NonNull final List<StepItemRequiredCapacity> capacityItems)
+			@NonNull final Collection<StepItemRequiredCapacity> capacityItems)
 	{
 		getReservation(resourceGroupYearWeek).reserve(capacityItems);
 	}
@@ -60,12 +58,9 @@ public class HumanResourceAvailableCapacity
 	@NonNull
 	private Reservation createEmptyReservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek)
 	{
-		final HumanResourceTestGroup group = groupsById.get(resourceGroupYearWeek.getGroupId());
-		final Duration groupWeeklyCapacity = Optional.ofNullable(group)
-				.map(HumanResourceTestGroup::getWeeklyCapacity)
-				.orElse(Duration.ZERO);
-
-		return new Reservation(groupWeeklyCapacity);
+		final HumanResourceCapacity capacity = capacitiesById.get(resourceGroupYearWeek.getCapacity().getId()); // TODO improve this logic!
+		final Duration weeklyCapacity = capacity != null ? capacity.getWeeklyCapacity() : Duration.ZERO;
+		return Reservation.ofTotalCapacity(weeklyCapacity);
 	}
 
 	//
@@ -74,14 +69,17 @@ public class HumanResourceAvailableCapacity
 	//
 	//
 
-	@RequiredArgsConstructor
 	private static class Reservation
 	{
 		@NonNull private final Duration totalCapacity;
 		@NonNull private Duration reservedCapacity = Duration.ZERO;
 		@Getter private long overReservedCapacityPenalty = 0;
 
-		public void reserve(@NonNull final List<StepItemRequiredCapacity> requiredCapacityItems)
+		private Reservation(@NonNull final Duration totalCapacity) {this.totalCapacity = totalCapacity;}
+
+		public static Reservation ofTotalCapacity(@NonNull final Duration totalCapacity) {return new Reservation(totalCapacity);}
+
+		public void reserve(@NonNull final Collection<StepItemRequiredCapacity> requiredCapacityItems)
 		{
 			requiredCapacityItems.forEach(item -> {
 				this.reservedCapacity = this.reservedCapacity.plus(item.getHumanResourceDuration());

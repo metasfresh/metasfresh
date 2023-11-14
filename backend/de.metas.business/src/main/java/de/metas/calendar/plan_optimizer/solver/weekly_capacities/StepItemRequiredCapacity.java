@@ -36,7 +36,6 @@ import java.time.LocalDateTime;
 public class StepItemRequiredCapacity
 {
 	@NonNull StepId stepId;
-	@NonNull LocalDateTime startDate;
 	@NonNull Duration humanResourceDuration;
 
 	public String toString()
@@ -44,7 +43,6 @@ public class StepItemRequiredCapacity
 		return MoreObjects.toStringHelper(this)
 				.add("projectId", stepId.getWoProjectStepId().getProjectId().getRepoId())
 				.add("stepId", stepId.getWoProjectStepId().getRepoId())
-				//.add("startTime", startDate)
 				.addValue(humanResourceDuration)
 				.toString();
 	}

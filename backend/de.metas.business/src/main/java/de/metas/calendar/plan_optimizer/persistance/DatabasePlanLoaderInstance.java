@@ -1,6 +1,7 @@
 package de.metas.calendar.plan_optimizer.persistance;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
@@ -21,9 +22,13 @@ import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourcesCollection;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepsCollection;
+import de.metas.resource.HumanResourceTestGroup;
+import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceAvailabilityRanges;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
+import de.metas.resource.ResourceWeeklyAvailability;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -47,6 +52,7 @@ public class DatabasePlanLoaderInstance
 	private final WOProjectService woProjectService;
 	private final WOProjectSimulationService woProjectSimulationService;
 	private final ResourceService resourceService;
+	private final HumanResourceTestGroupService humanResourceTestGroupService;
 
 	//
 	// Params
@@ -66,6 +72,7 @@ public class DatabasePlanLoaderInstance
 			final @NonNull WOProjectService woProjectService,
 			final @NonNull WOProjectSimulationService woProjectSimulationService,
 			final @NonNull ResourceService resourceService,
+			final @NonNull HumanResourceTestGroupService humanResourceTestGroupService,
 			//
 			final @NonNull SimulationPlanId simulationId)
 	{
@@ -73,6 +80,7 @@ public class DatabasePlanLoaderInstance
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
 		this.resourceService = resourceService;
+		this.humanResourceTestGroupService = humanResourceTestGroupService;
 		this.simulationId = simulationId;
 	}
 
@@ -219,7 +227,8 @@ public class DatabasePlanLoaderInstance
 				.startDateMin(startDateMin)
 				.delay(delay)
 				.pinnedStartDate(pinned ? startDate : null)
-				.scheduledRange(scheduledRange)
+				.resourceScheduledRange(scheduledRange)
+				.humanResourceScheduledRange(scheduledRange)
 				.build();
 
 		final BooleanWithReason valid = step.checkProblemFactsValid();
@@ -254,7 +263,23 @@ public class DatabasePlanLoaderInstance
 				.id(resource.getResourceId())
 				.name(resource.getName().getDefaultValue())
 				.availability(resourceType.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
-				.humanResourceTestGroupId(resource.getHumanResourceTestGroupId())
+				.humanResourceAvailability(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
+				.humanResourceCapacity(getHumanResourceCapacity(resource.getHumanResourceTestGroupId()))
+				.build();
+	}
+
+	@Nullable
+	private HumanResourceCapacity getHumanResourceCapacity(@Nullable final HumanResourceTestGroupId groupId)
+	{
+		if (groupId == null)
+		{
+			return null;
+		}
+
+		final HumanResourceTestGroup group = humanResourceTestGroupService.getById(groupId);
+		return HumanResourceCapacity.builder()
+				.id(group.getId())
+				.weeklyCapacity(group.getWeeklyCapacity())
 				.build();
 	}
 

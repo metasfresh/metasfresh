@@ -82,10 +82,7 @@ class ResourceWeeklyAvailabilityTest
 		@Test
 		void MondayToFriday_09To17()
 		{
-			var availability = ResourceWeeklyAvailability.builder()
-					.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
-					.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
-					.build();
+			var availability = ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17;
 
 			assertThat(availability.computeAvailabilityRanges(LocalDateTime.parse("2023-11-03T10:00"), Duration.ofHours(2)))
 					.contains(ranges("2023-11-03T10:00", "2023-11-03T12:00"))
@@ -142,10 +139,7 @@ class ResourceWeeklyAvailabilityTest
 		@Test
 		void MondayToFriday_09To17()
 		{
-			var availability = ResourceWeeklyAvailability.builder()
-					.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
-					.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
-					.build();
+			var availability = ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17;
 
 			assertThat(availability.findNextSlotStart(LocalDateTime.parse("2023-11-02T23:00"))).isEqualTo("2023-11-03T09:00");
 			assertThat(availability.findNextSlotStart(LocalDateTime.parse("2023-11-03T00:00"))).isEqualTo("2023-11-03T09:00");
@@ -185,10 +179,7 @@ class ResourceWeeklyAvailabilityTest
 		@Test
 		void MondayToFriday_09To17()
 		{
-			var availability = ResourceWeeklyAvailability.builder()
-					.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
-					.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
-					.build();
+			var availability = ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17;
 
 			assertThatThrownBy(() -> availability.findNextSlotEnd(LocalDateTime.parse("2023-11-03T08:59"))).hasMessageStartingWith("Expected 2023-11-03T08:59 to be in an available slot");
 			assertThat(availability.findNextSlotEnd(LocalDateTime.parse("2023-11-03T09:00"))).isEqualTo("2023-11-03T17:00");

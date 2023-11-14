@@ -31,5 +31,7 @@ public interface HumanResourceTestGroupRepository
 {
 	@NonNull ImmutableList<HumanResourceTestGroup> getAll();
 
+	@NonNull HumanResourceTestGroup getById(@NonNull HumanResourceTestGroupId id);
+
 	@NonNull ImmutableList<HumanResourceTestGroup> getByIds(@NonNull Set<HumanResourceTestGroupId> ids);
 }

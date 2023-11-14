@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.compiere.util.TimeUtil;
 import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
@@ -62,7 +63,8 @@ public class Step
 
 	//
 	// Computed from shadow variables
-	@Nullable private ResourceAvailabilityRanges scheduledRange;
+	@Nullable private ResourceAvailabilityRanges resourceScheduledRange;
+	@Nullable private ResourceAvailabilityRanges humanResourceScheduledRange;
 
 	@Builder(toBuilder = true)
 	private Step(
@@ -78,7 +80,8 @@ public class Step
 			@Nullable final Integer delay,
 			@Nullable final LocalDateTime pinnedStartDate,
 			@Nullable final LocalDateTime previousStepEndDate,
-			@Nullable final ResourceAvailabilityRanges scheduledRange)
+			@Nullable final ResourceAvailabilityRanges resourceScheduledRange,
+			@Nullable final ResourceAvailabilityRanges humanResourceScheduledRange)
 	{
 		this.id = id;
 		this.previousStep = previousStep;
@@ -93,7 +96,8 @@ public class Step
 		this.pinnedStartDate = pinnedStartDate;
 
 		this.previousStepEndDate = previousStepEndDate;
-		this.scheduledRange = scheduledRange;
+		this.resourceScheduledRange = resourceScheduledRange;
+		this.humanResourceScheduledRange = humanResourceScheduledRange != null ? humanResourceScheduledRange : resourceScheduledRange;
 	}
 
 	@Override
@@ -111,8 +115,8 @@ public class Step
 			sb.append("   ");
 		}
 
-		final LocalDateTime startDate = scheduledRange != null ? scheduledRange.getStartDate() : null;
-		final LocalDateTime endDate = scheduledRange != null ? scheduledRange.getEndDate() : null;
+		final LocalDateTime startDate = getStartDate();
+		final LocalDateTime endDate = getEndDate();
 
 		sb.append(startDate).append(" -> ");
 
@@ -129,24 +133,13 @@ public class Step
 		{
 			sb.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")");
 		}
-		//sb.append(" (").append(duration).append(")");
 
 		sb.append(": ");
 
-		// + ": dueDate=" + dueDate
-		// + ", startDateMin=" + startDateMin
-		// + ", delay=" + getDelayAsDuration() + "(max. " + computeDelayMax() + ")"
-
-		sb.append(resource);
-		sb.append(", P=").append(id.getProjectId().getRepoId());
-
-		if (!requiredHumanCapacity.isZero())
-		{
-			sb.append(", duration(HR)=").append(requiredHumanCapacity);
-		}
-
+		sb.append("duration=").append(requiredResourceCapacity).append("/").append(requiredHumanCapacity);
+		sb.append(", ").append(resource);
+		sb.append(", P").append(id.getProjectId().getRepoId());
 		sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
-
 		sb.append(", delay=").append(delay);
 		if (pinnedStartDate != null && previousStepEndDate != null)
 		{
@@ -162,15 +155,20 @@ public class Step
 		{
 			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
 		}
+		final Duration durationMax = Duration.between(startDateMin, dueDate);
+
 		if (requiredResourceCapacity.getSeconds() <= 0)
 		{
 			return BooleanWithReason.falseBecause("Duration must be set and must be positive");
 		}
-
-		final Duration durationMax = Duration.between(startDateMin, dueDate);
 		if (requiredResourceCapacity.compareTo(durationMax) > 0)
 		{
 			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
+		}
+
+		if (requiredHumanCapacity.getSeconds() > 0 && resource.getHumanResourceCapacity() == null)
+		{
+			return BooleanWithReason.falseBecause("Human Resource capacity shall be specified when step requires human capacity");
 		}
 
 		return BooleanWithReason.TRUE;
@@ -190,6 +188,8 @@ public class Step
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
+
+	public boolean isRequiredHumanCapacity() {return requiredHumanCapacity.getSeconds() > 0;}
 
 	private int getDelayAsInt() {return delay != null ? delay : 0;}
 
@@ -230,12 +230,13 @@ public class Step
 		final LocalDateTime startDate = computeStartDate();
 		if (startDate != null)
 		{
-			@NonNull final Duration requiredCapacityMax = requiredResourceCapacity.compareTo(requiredHumanCapacity) >= 0 ? requiredResourceCapacity : requiredHumanCapacity;
-			this.scheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredCapacityMax).orElse(null);
+			this.resourceScheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredResourceCapacity).orElse(null);
+			this.humanResourceScheduledRange = resource.getAvailability().computeAvailabilityRanges(startDate, requiredHumanCapacity).orElse(null);
 		}
 		else
 		{
-			this.scheduledRange = null;
+			this.resourceScheduledRange = null;
+			this.humanResourceScheduledRange = null;
 		}
 
 		if (scoreDirector != null)
@@ -263,10 +264,36 @@ public class Step
 	}
 
 	@Nullable
-	public LocalDateTime getStartDate() {return scheduledRange != null ? scheduledRange.getStartDate() : null;}
+	public LocalDateTime getStartDate()
+	{
+		return resourceScheduledRange != null && humanResourceScheduledRange != null
+				? TimeUtil.minNotNull(resourceScheduledRange.getStartDate(), humanResourceScheduledRange.getStartDate())
+				: null;
+	}
 
 	@Nullable
-	public LocalDateTime getEndDate() {return scheduledRange != null ? scheduledRange.getEndDate() : null;}
+	public LocalDateTime getEndDate()
+	{
+		return resourceScheduledRange != null && humanResourceScheduledRange != null
+				? TimeUtil.maxNotNull(resourceScheduledRange.getEndDate(), humanResourceScheduledRange.getEndDate())
+				: null;
+	}
+
+	@Nullable
+	public LocalDateTime getResourceScheduledStartDate()
+	{
+		return resourceScheduledRange != null && humanResourceScheduledRange != null
+				? resourceScheduledRange.getStartDate()
+				: null;
+	}
+
+	@Nullable
+	public LocalDateTime getResourceScheduledEndDate()
+	{
+		return resourceScheduledRange != null && humanResourceScheduledRange != null
+				? resourceScheduledRange.getEndDate()
+				: null;
+	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isStartDateMinRespected() {return getDurationBeforeStartDateMin().isZero();}

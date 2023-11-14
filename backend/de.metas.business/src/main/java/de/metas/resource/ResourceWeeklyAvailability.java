@@ -30,6 +30,10 @@ import java.util.Optional;
 public class ResourceWeeklyAvailability
 {
 	public static ResourceWeeklyAvailability ALWAYS_AVAILABLE = builder().availableDaysOfWeek(ImmutableSet.copyOf(DayOfWeek.values())).build();
+	public static ResourceWeeklyAvailability MONDAY_TO_FRIDAY_09_TO_17 = ResourceWeeklyAvailability.builder()
+			.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
+			.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
+			.build();
 
 	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<DayOfWeek> availableDaysOfWeek;
 	boolean timeSlot;
