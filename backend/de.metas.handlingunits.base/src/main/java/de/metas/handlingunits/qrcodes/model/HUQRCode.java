@@ -23,7 +23,7 @@ import java.util.Optional;
 @Value
 @Builder
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
-public class HUQRCode
+public class HUQRCode implements IHUQRCode
 {
 	@NonNull HUQRCodeUniqueId id;
 
@@ -41,6 +41,8 @@ public class HUQRCode
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
+
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -91,12 +93,7 @@ public class HUQRCode
 		return result.toString();
 	}
 
-	private static String extractPrintableBottomText(final HUQRCode qrCode)
-	{
-		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
-	}
-
-	public Optional<String> getAttributeValueAsString(final AttributeCode attributeCode)
+	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return getAttribute(attributeCode).map(HUQRCodeAttribute::getValue);
 	}
@@ -104,5 +101,10 @@ public class HUQRCode
 	private Optional<HUQRCodeAttribute> getAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return attributes.stream().filter(attribute -> AttributeCode.equals(attribute.getCode(), attributeCode)).findFirst();
+	}
+
+	private static String extractPrintableBottomText(final HUQRCode qrCode)
+	{
+		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 }

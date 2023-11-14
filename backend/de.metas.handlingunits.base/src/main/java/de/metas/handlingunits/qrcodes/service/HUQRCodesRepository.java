@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class HUQRCodesRepository
@@ -148,5 +149,16 @@ public class HUQRCodesRepository
 	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)
 	{
 		return HUQRCode.fromGlobalQRCodeJsonString(record.getRenderedQRCode());
+	}
+
+	public Stream<HUQRCode> streamQRCodesLike(@NonNull final String like)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_M_HU_QRCode.COLUMNNAME_RenderedQRCode, like, false)
+				.orderBy(I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCode);
 	}
 }

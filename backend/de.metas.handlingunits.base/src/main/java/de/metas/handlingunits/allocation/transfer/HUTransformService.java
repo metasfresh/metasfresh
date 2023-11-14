@@ -187,7 +187,7 @@ public class HUTransformService
 	 */
 	@Builder(builderClassName = "BuilderForHUcontext", builderMethodName = "builderForHUcontext")
 	private HUTransformService(@NonNull final IHUContext huContext,
-							   @Nullable final List<TableRecordReference> referencedObjects)
+			@Nullable final List<TableRecordReference> referencedObjects)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 
@@ -210,11 +210,11 @@ public class HUTransformService
 		//
 		// Create allocation request for the quantity user entered
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
-				cuProductId,
-				qtyCU,
-				SystemTime.asZonedDateTime(),
-				null, // referenced model
-				forceAllocation);
+																					  cuProductId,
+																					  qtyCU,
+																					  SystemTime.asZonedDateTime(),
+																					  null, // referenced model
+																					  forceAllocation);
 
 		if (allocationRequest.isZeroQty())
 		{
@@ -402,9 +402,9 @@ public class HUTransformService
 					.huContextInitital(huContext)
 					.huToSplit(sourceCuHU)
 					.requestProvider(huContext -> createCUAllocationRequest(huContext,
-							singleProductStorage.getProductId(),
-							qtyCU,
-							true /* forceAllocation */))
+																			singleProductStorage.getProductId(),
+																			qtyCU,
+																			true /* forceAllocation */))
 					.destination(destination)
 					.build()
 					.withPropagateHUValues()
@@ -571,17 +571,17 @@ public class HUTransformService
 			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 
 			setParent(tuToAttach,
-					parentItem,
-					true,
-					localHuContext -> {
-						// before
-						final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(oldParentLU, tuToAttach, null, null, true, localHuContext);
-					},
-					localHuContext -> {
-						final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
-					});
+					  parentItem,
+					  true,
+					  localHuContext -> {
+						  // before
+						  final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
+						  updateAllocation(oldParentLU, tuToAttach, null, null, true, localHuContext);
+					  },
+					  localHuContext -> {
+						  final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
+						  updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
+					  });
 		});
 
 		return tuHUsToAttachToLU;
@@ -673,8 +673,8 @@ public class HUTransformService
 		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from it's parent, we still need to split it.
 
 		return tuToTopLevelHUs(sourceTuHU, qtyTU,
-				null, // luPIItem is null => top level HU is a TU
-				false // newPackingMaterialsAreOurOwn doesn't matter because no new packaging material is required
+							   null, // luPIItem is null => top level HU is a TU
+							   false // newPackingMaterialsAreOurOwn doesn't matter because no new packaging material is required
 		);
 	}
 
@@ -871,12 +871,12 @@ public class HUTransformService
 
 							// Take it out from its parent
 							huTrxBL.setParentHU(IHUTrxBL.ChangeParentHURequest.builder()
-									.huContext(localHuContext)
-									.parentHUItem(parentItem) // might be null
-									.hu(childHU)
-									.destroyOldParentIfEmptyStorage(true)
-									.failIfAggregateTU(failIfAggregatedTU)
-									.build());
+														.huContext(localHuContext)
+														.parentHUItem(parentItem) // might be null
+														.hu(childHU)
+														.destroyOldParentIfEmptyStorage(true)
+														.failIfAggregateTU(failIfAggregatedTU)
+														.build());
 
 							afterParentChange.accept(localHuContext);
 
@@ -925,7 +925,7 @@ public class HUTransformService
 					// get the existing HA-item from newLuHU
 					newParentItemOfSourceTuHU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
 					Check.errorUnless(X_M_HU_Item.ITEMTYPE_HUAggregate.equals(handlingUnitsBL.getItemType(newParentItemOfSourceTuHU)),
-							"newLuHU's first M_HU_Item is not aggregate; newLuHU={}; first M_HU_Item={}", newLuHU, newParentItemOfSourceTuHU);
+									  "newLuHU's first M_HU_Item is not aggregate; newLuHU={}; first M_HU_Item={}", newLuHU, newParentItemOfSourceTuHU);
 				}
 				else
 				{
@@ -949,16 +949,16 @@ public class HUTransformService
 
 			// assign sourceTuHU to newLuHU
 			setParent(sourceTuHU,
-					newParentItemOfSourceTuHU,
-					false, // sourceTuHU might be an aggregated HU, so don't fail
-					localHuContext -> {
-						final I_M_HU oldParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
-						updateAllocation(oldParentLu, sourceTuHU, null, null, true, localHuContext);
-					},
-					localHuContext -> {
-						final I_M_HU newParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
-						updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
-					});
+					  newParentItemOfSourceTuHU,
+					  false, // sourceTuHU might be an aggregated HU, so don't fail
+					  localHuContext -> {
+						  final I_M_HU oldParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
+						  updateAllocation(oldParentLu, sourceTuHU, null, null, true, localHuContext);
+					  },
+					  localHuContext -> {
+						  final I_M_HU newParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
+						  updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
+					  });
 
 			// update the huItemOfLU if needed
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
@@ -1192,7 +1192,7 @@ public class HUTransformService
 
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			final HuId extractedTUId = splitOutTUFromAggregated(hu);
+			final HuId extractedTUId = splitOutTU(hu);
 			huQRCodesService.get().assign(huQRCode, extractedTUId);
 
 			return extractedTUId;
@@ -1385,21 +1385,21 @@ public class HUTransformService
 
 		// iterate the child CUs and set their parent item
 		childCUs.forEach(childCU -> setParent(childCU,
-				tuMaterialItem,
-				true,
-				// before the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-					updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
-				},
+											  tuMaterialItem,
+											  true,
+											  // before the newChildCU's parent item is set,
+											  localHuContext -> {
+												  final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
+												  final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+												  updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
+											  },
 
-				// after the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-					updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
-				}));
+											  // after the newChildCU's parent item is set,
+											  localHuContext -> {
+												  final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
+												  final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+												  updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
+											  }));
 	}
 
 	@NonNull
@@ -1414,7 +1414,7 @@ public class HUTransformService
 		}
 		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			final HuId extractedTUId = splitOutTUFromAggregated(hu);
+			final HuId extractedTUId = splitOutTU(hu);
 			huQRCodesService.get().assign(huQRCode, extractedTUId);
 
 			return extractedTUId;
@@ -1427,12 +1427,19 @@ public class HUTransformService
 	}
 
 	@NonNull
-	private HuId splitOutTUFromAggregated(@NonNull final I_M_HU hu)
+	public HuId splitOutTU(@NonNull final I_M_HU hu)
 	{
-		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
-		final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
+		final I_M_HU extractedTU = splitOutTURecord(hu);
 		return HuId.ofRepoId(extractedTU.getM_HU_ID());
 	}
+
+	@NonNull
+	public I_M_HU splitOutTURecord(@NonNull final I_M_HU hu)
+	{
+		final List<I_M_HU> extractedTUs = tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
+		return CollectionUtils.singleElement(extractedTUs);
+	}
+
 
 	public HuId tusToNewLU(
 			@NonNull final List<I_M_HU> tusOrVhus,

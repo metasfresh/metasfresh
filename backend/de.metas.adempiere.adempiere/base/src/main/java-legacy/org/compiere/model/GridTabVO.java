@@ -26,6 +26,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -344,6 +345,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
+			vo.quickInputLayout = QuickInputConfigLayout.parse(rs.getString(I_AD_Tab.COLUMNNAME_QuickInputLayout)).orElse(null);
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
 			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
@@ -588,6 +590,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
+	@Getter @Nullable QuickInputConfigLayout quickInputLayout;
 
 	@Getter
 	private String includedTabNewRecordInputMode;
@@ -791,6 +794,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
+		clone.quickInputLayout = quickInputLayout;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 		clone.queryIfNoFilters = queryIfNoFilters;

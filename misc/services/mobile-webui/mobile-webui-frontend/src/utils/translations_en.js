@@ -48,6 +48,14 @@ const translations = {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
     },
+    huManager: {
+      action: {
+        assignExternalLotNumber: {
+          buttonCaption: 'Associate external LotNo',
+          scanTarget: 'Associate external LotNo',
+        },
+      },
+    },
   },
   activities: {
     scanBarcode: {

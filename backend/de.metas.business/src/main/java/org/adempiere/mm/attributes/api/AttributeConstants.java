@@ -80,4 +80,6 @@ public class AttributeConstants
 
 	public static final AttributeCode OnConsignment = AttributeCode.ofString("OnConsignment");
 
+
+	public static final AttributeCode HU_ExternalLotNumber = AttributeCode.ofString("ExternalLotNumber");
 }
