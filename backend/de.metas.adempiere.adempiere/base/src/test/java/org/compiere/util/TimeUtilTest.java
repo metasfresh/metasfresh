@@ -96,69 +96,134 @@ public class TimeUtilTest
 		Assertions.assertEquals(isValid, isValidActual, message);
 	}
 
+	@Nested
+	class min_with_JUL_Date
+	{
+		private void assertDateMin(final Date dateExpected, final Date date1, final Date date2)
+		{
+			final Date dateMin = TimeUtil.min(date1, date2);
+			Assertions.assertSame(dateExpected, dateMin, "Invalid minimum date: date1=" + date1 + ", date2=" + date2);
+		}
+
+		@Test
+		public void test()
+		{
+			final Timestamp date1 = createTimestamp(2014, 1, 1);
+			final Timestamp date1_copy = createTimestamp(2014, 1, 1);
+			final Timestamp date2 = createTimestamp(2014, 1, 2);
+			final Timestamp date3 = createTimestamp(2014, 1, 3);
+
+			// NULLs check
+			assertDateMin(null, null, null);
+			assertDateMin(date1, date1, null);
+			assertDateMin(date1, null, date1);
+
+			// Same (reference) value check
+			assertDateMin(date1, date1, date1);
+
+			// Same (value) check
+			assertDateMin(date1, date1, date1_copy);
+
+			assertDateMin(date1, date1, date2);
+			assertDateMin(date1, date2, date1);
+			assertDateMin(date2, date2, date3);
+			assertDateMin(date2, date3, date2);
+		}
+	}
+
+	@Nested
+	class min_with_ZonedDateTime
+	{
+		@Test
+		void null_params()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(null, (ZonedDateTime)null)).isEqualTo((ZonedDateTime)null);
+			assertThat(TimeUtil.min(date1, null)).isSameAs(date1);
+			assertThat(TimeUtil.min(null, date1)).isSameAs(date1);
+		}
+
+		@Test
+		void same_values()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date1)).isSameAs(date1);
+		}
+
+		@Test
+		void equal_values()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+			final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date1_copy)).isEqualTo(date1);
+		}
+
+		@Test
+		void standardCases()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+			final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date2)).isSameAs(date1);
+			assertThat(TimeUtil.min(date2, date1)).isSameAs(date1);
+		}
+	}
+
+	@Nested
+	public class max_with_LocalDate
+	{
+		@Test
+		public void maxOfNullables()
+		{
+			assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10"))).isEqualTo(LocalDate.parse("2021-02-10"));
+			assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null)).isEqualTo(LocalDate.parse("2021-02-10"));
+		}
+
+		@Test
+		public void max()
+		{
+			assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11"))).isEqualTo(LocalDate.parse("2021-02-11"));
+			assertThat(TimeUtil.max(LocalDate.parse("2021-02-12"), LocalDate.parse("2021-02-11"))).isEqualTo(LocalDate.parse("2021-02-12"));
+		}
+	}
+
 	@Test
-	public void testDateMin()
+	public void max_with_LocalDate()
 	{
-		final Timestamp date1 = createTimestamp(2014, 1, 1);
-		final Timestamp date1_copy = createTimestamp(2014, 1, 1);
-		final Timestamp date2 = createTimestamp(2014, 1, 2);
-		final Timestamp date3 = createTimestamp(2014, 1, 3);
-
-		// NULLs check
-		assertDateMin(null, null, null);
-		assertDateMin(date1, date1, null);
-		assertDateMin(date1, null, date1);
-
-		// Same (reference) value check
-		assertDateMin(date1, date1, date1);
-
-		// Same (value) check
-		assertDateMin(date1, date1, date1_copy);
-
-		assertDateMin(date1, date1, date2);
-		assertDateMin(date1, date2, date1);
-		assertDateMin(date2, date2, date3);
-		assertDateMin(date2, date3, date2);
+		assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10")))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
+				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
-	private void assertDateMin(final Date dateExpected, final Date date1, final Date date2)
+	@Nested
+	class max_with_Duration
 	{
-		final Date dateMin = TimeUtil.min(date1, date2);
+		private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
+		{
+			final Duration actual = TimeUtil.max(duration1, duration2);
+			assertThat(actual).isEqualTo(expected);
+		}
 
-		Assertions.assertSame(dateExpected, dateMin, "Invalid minimum date: date1=" + date1 + ", date2=" + date2);
-	}
-
-	@Test
-	public void testZonedDateTimeMin()
-	{
-		final ZoneId zone = ZoneId.systemDefault();
-		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
-		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
-
-		// NULLs check
-		assertZonedDateTimeMin(null, null, null);
-		assertZonedDateTimeMin(date1, date1, null);
-		assertZonedDateTimeMin(date1, null, date1);
-
-		// Same (reference) value check
-		assertZonedDateTimeMin(date1, date1, date1);
-
-		// Same (value) check
-		assertZonedDateTimeMin(date1, date1, date1_copy);
-
-		assertZonedDateTimeMin(date1, date1, date2);
-		assertZonedDateTimeMin(date1, date2, date1);
-		assertZonedDateTimeMin(date2, date2, date3);
-		assertZonedDateTimeMin(date2, date3, date2);
-	}
-
-	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
-	{
-		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
-
-		Assertions.assertSame(dateExpected, dateMin, "Invalid minimum date: date1=" + date1 + ", date2=" + date2);
+		@Test
+		public void test()
+		{
+			testMaxDuration(null, null, null);
+			testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
+			testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
+			testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
+			testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
+			testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
+		}
 	}
 
 	@Test
@@ -274,23 +339,6 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void testMaxDuration()
-	{
-		testMaxDuration(null, null, null);
-		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
-		testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
-		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
-		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
-		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
-	}
-
-	private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
-	{
-		final Duration actual = TimeUtil.max(duration1, duration2);
-		assertThat(actual).isEqualTo(expected);
-	}
-
-	@Test
 	public void test_isLastDayOfMonth()
 	{
 		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 1));
@@ -339,17 +387,6 @@ public class TimeUtilTest
 		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
-	}
-
-	@Test
-	public void testMaxLocalDate()
-	{
-		assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10")))
-				.isEqualTo(LocalDate.parse("2021-02-10"));
-		assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null))
-				.isEqualTo(LocalDate.parse("2021-02-10"));
-		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
-				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
 	@Nested
