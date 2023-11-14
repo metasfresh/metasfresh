@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
@@ -36,8 +37,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
@@ -83,7 +85,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	{
 		final ArrayList<JsonPackingInstructions> result = new ArrayList<>();
 
-		final LinkedHashMap<HuPackingInstructionsItemId, I_M_HU_PI_Item> luPIItems = new LinkedHashMap<>();
+		final HashSet<HuPackingInstructionsVersionId> huPackingInstructionsVersionIds = new HashSet<>();
 
 		//
 		// TU packing instructions
@@ -100,14 +102,18 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 					.build());
 
 			handlingUnitsBL.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
-					.forEach(luPIItem -> luPIItems.put(HuPackingInstructionsItemId.ofRepoId(luPIItem.getM_HU_PI_Item_ID()), luPIItem));
+					.stream()
+					.map(I_M_HU_PI_Item::getM_HU_PI_Version_ID)
+					.map(HuPackingInstructionsVersionId::ofRepoId)
+					.forEach(huPackingInstructionsVersionIds::add);
 		}
 
 		//
 		// LU packing instructions
-		luPIItems.values()
-				.stream()
+		huPackingInstructionsVersionIds.stream()
 				.map(handlingUnitsBL::getPI)
+				.collect(Collectors.toSet())
+				.stream()
 				.map(luPacking -> JsonPackingInstructions.builder()
 						.caption(luPacking.getName())
 						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(luPacking.getM_HU_PI_ID()))
