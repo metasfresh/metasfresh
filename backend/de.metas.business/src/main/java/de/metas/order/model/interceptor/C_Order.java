@@ -104,6 +104,8 @@ public class C_Order
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
+	
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -124,11 +126,6 @@ public class C_Order
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 	private final ProjectService projectService;
-
-	@VisibleForTesting
-	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
-	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
