@@ -16,7 +16,7 @@ const PickLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, allowPickingAnyHU, steps } = useSelector(
+  const { caption, allowPickingAnyHU, steps, catchWeightUOM } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -66,6 +66,7 @@ const PickLineScreen = () => {
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
                 pickFromAlternatives={stepItem.pickFromAlternatives}
+                catchWeightUOM={catchWeightUOM}
                 //
                 uom={stepItem.uom}
                 qtyToPick={stepItem.qtyToPick}
@@ -86,6 +87,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: lineProps?.caption,
     allowPickingAnyHU: lineProps?.allowPickingAnyHU ?? false,
     steps: Object.values(stepsById),
+    catchWeightUOM: lineProps.catchWeightUOM,
   };
 };
 

@@ -483,9 +483,17 @@ public class PickingJobPickCommand
 
 	private static void validateCatchWeight(final @Nullable BigDecimal catchWeightBD, @Nullable final IHUQRCode pickFromHUQRCode)
 	{
-		if (catchWeightBD == null || !(pickFromHUQRCode instanceof LMQRCode))
+		if (!(pickFromHUQRCode instanceof LMQRCode))
 		{
 			return;
+		}
+
+		if (catchWeightBD == null)
+		{
+			throw new AdempiereException("catchWeightBD must be present when picking via LMQRCode")
+					.appendParametersToMessage()
+					.setParameter("LMQRCode", pickFromHUQRCode)
+					.setParameter("catchWeightBD", catchWeightBD);
 		}
 
 		if (((LMQRCode)pickFromHUQRCode).getWeight().compareTo(catchWeightBD) != 0)
