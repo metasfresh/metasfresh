@@ -17,7 +17,7 @@ const ConfirmOptionScreen = () => {
   } = useRouteMatch();
   const optionInfo = useSelector((state) => getOptionByIndex({ state, wfProcessId, activityId, optionIndex }));
   const [numberOfHUs, setNumberOfHUs] = useState(optionInfo.numberOfHUs);
-  const [numberOfCopies, setNumberOfCopies] = useState(0);
+  const [numberOfCopies, setNumberOfCopies] = useState(1);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -28,10 +28,6 @@ const ConfirmOptionScreen = () => {
           {
             caption: trl('activities.mfg.generateHUQRCodes.packing'),
             value: optionInfo.caption,
-          },
-          {
-            caption: trl('activities.mfg.generateHUQRCodes.numberOfHUs'),
-            value: numberOfHUs,
           },
         ],
       })
@@ -47,8 +43,8 @@ const ConfirmOptionScreen = () => {
   };
 
   const validateNumberOfCopies = (numberOfCopiesEntered) => {
-    if (numberOfCopiesEntered < 0) {
-      return 'numberOfCopies shall be equal or greater than 0';
+    if (numberOfCopiesEntered <= 0) {
+      return 'numberOfCopies shall be greater than 0';
     }
 
     return null; // OK
@@ -70,27 +66,43 @@ const ConfirmOptionScreen = () => {
   const isValidNumberOfHUs = numberOfHUs != null && numberOfHUs > 0;
 
   return (
-    <div className="section pt-2">
-      <QtyInputField
-        qty={numberOfHUs}
-        integerValuesOnly
-        validateQtyEntered={validateQtyEntered}
-        onQtyChange={({ qty }) => setNumberOfHUs(qtyInfos.toNumberOrString(qty))}
-        isRequestFocus={true}
-      />
-      <QtyInputField
-        qty={numberOfCopies}
-        integerValuesOnly
-        validateQtyEntered={validateNumberOfCopies}
-        onQtyChange={({ qty }) => setNumberOfCopies(qtyInfos.toNumberOrString(qty))}
-        isRequestFocus={true}
-      />
-      <Button
-        caption={trl('activities.mfg.generateHUQRCodes.print')}
-        disabled={!isValidNumberOfHUs}
-        onClick={onPrintClick}
-      />
-    </div>
+    <>
+      <table className="table view-header is-size-6">
+        <tbody>
+          <tr className="with-border-top">
+            <th>{trl('activities.mfg.generateHUQRCodes.numberOfHUs')}</th>
+            <td>
+              <QtyInputField
+                qty={numberOfHUs}
+                integerValuesOnly
+                validateQtyEntered={validateQtyEntered}
+                onQtyChange={({ qty }) => setNumberOfHUs(qtyInfos.toNumberOrString(qty))}
+                isRequestFocus={true}
+              />
+            </td>
+          </tr>
+          <tr>
+            <th>{trl('activities.mfg.generateHUQRCodes.numberOfCopies')}</th>
+            <td>
+              <QtyInputField
+                qty={numberOfCopies}
+                integerValuesOnly
+                validateQtyEntered={validateNumberOfCopies}
+                onQtyChange={({ qty }) => setNumberOfCopies(qtyInfos.toNumberOrString(qty))}
+                isRequestFocus={true}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="section pt-2">
+        <Button
+          caption={trl('activities.mfg.generateHUQRCodes.print')}
+          disabled={!isValidNumberOfHUs}
+          onClick={onPrintClick}
+        />
+      </div>
+    </>
   );
 };
 

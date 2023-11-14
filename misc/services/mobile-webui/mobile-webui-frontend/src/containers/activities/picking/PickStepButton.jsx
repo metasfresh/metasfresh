@@ -8,6 +8,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import { useHistory } from 'react-router-dom';
 import { parseQRCodeString } from '../../../utils/huQRCodes';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 
 const PickStepButton = ({
   applicationId,
@@ -30,7 +31,8 @@ const PickStepButton = ({
   const isAlternative = !!altStepId;
   const completeStatus = computePickFromStatus(pickFrom);
   const catchWeight = catchWeightUOM && parseQRCodeString(pickFrom.huQRCode.code)?.weightNet;
-  const captionToUse = (catchWeight ? catchWeight + catchWeightUOM : undefined) || pickFrom.locatorName;
+  const catchWeightCaption = catchWeight && formatQtyToHumanReadableStr({ qty: catchWeight, uom: catchWeightUOM });
+  const captionToUse = catchWeightCaption || pickFrom.locatorName;
 
   return (
     <>

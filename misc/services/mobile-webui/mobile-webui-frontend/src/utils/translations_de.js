@@ -103,6 +103,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',
