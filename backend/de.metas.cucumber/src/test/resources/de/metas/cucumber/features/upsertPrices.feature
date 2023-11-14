@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Create or update using prices API
   Using default ad_orgId 1000000
 
