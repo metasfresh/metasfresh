@@ -30,7 +30,7 @@ public class JsonFinishGoodsReceiveQRCodesGenerateRequest
 			final @Nullable Integer numberOfCopies)
 	{
 		Check.assume(numberOfHUs > 0, "numberOfHUs is positive");
-		Check.assume(numberOfCopies == null ||  numberOfCopies >= 0, "numberOfCopies is missing or >= 0");
+		Check.assume(numberOfCopies == null ||  numberOfCopies > 0, "numberOfCopies is missing or positive");
 
 		this.wfProcessId = wfProcessId;
 		this.finishedGoodsReceiveLineId = finishedGoodsReceiveLineId;

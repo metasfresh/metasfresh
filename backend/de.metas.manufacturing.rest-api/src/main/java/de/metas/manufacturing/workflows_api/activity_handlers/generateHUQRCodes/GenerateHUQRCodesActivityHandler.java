@@ -39,7 +39,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
@@ -112,8 +111,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 		// LU packing instructions
 		huPackingInstructionsVersionIds.stream()
 				.map(handlingUnitsBL::getPI)
-				.collect(Collectors.toSet())
-				.stream()
+				.distinct()
 				.map(luPacking -> JsonPackingInstructions.builder()
 						.caption(luPacking.getName())
 						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(luPacking.getM_HU_PI_ID()))
