@@ -275,6 +275,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull I_M_HU_PI huPI,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -454,6 +459,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsVersionId piVersionId);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
