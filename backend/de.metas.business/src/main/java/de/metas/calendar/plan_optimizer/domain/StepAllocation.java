@@ -279,12 +279,12 @@ public class StepAllocation
 				: null;
 	}
 
-	public LocalDateTime getStartDateMin() {return stepDef.getStartDateMin();}
+	LocalDateTime getStartDateMin() {return stepDef.getStartDateMin();}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isStartDateMinRespected() {return getDurationBeforeStartDateMin().isZero();}
 
-	public Duration getDurationBeforeStartDateMin()
+	private Duration getDurationBeforeStartDateMin()
 	{
 		final LocalDateTime startDateMin = stepDef.getStartDateMin();
 		final LocalDateTime startDate = getStartDate();
@@ -296,7 +296,7 @@ public class StepAllocation
 		return DurationUtils.toInt(getDurationBeforeStartDateMin(), Plan.PLANNING_TIME_PRECISION);
 	}
 
-	public Duration getDurationAfterDue()
+	private Duration getDurationAfterDue()
 	{
 		final LocalDateTime dueDate = stepDef.getDueDate();
 		final LocalDateTime endDate = getEndDate();
