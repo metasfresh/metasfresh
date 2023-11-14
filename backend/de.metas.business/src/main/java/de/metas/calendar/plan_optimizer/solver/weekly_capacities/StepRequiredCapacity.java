@@ -7,10 +7,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.util.Check;
-import de.metas.util.time.YearWeek;
 import lombok.NonNull;
 import lombok.Value;
 import org.apache.commons.collections4.ListUtils;
+import org.threeten.extra.YearWeek;
 
 import java.time.Duration;
 import java.util.HashMap;

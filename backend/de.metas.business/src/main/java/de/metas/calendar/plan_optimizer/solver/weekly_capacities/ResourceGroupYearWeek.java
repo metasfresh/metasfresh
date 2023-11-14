@@ -2,9 +2,9 @@ package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
 import com.google.common.base.MoreObjects;
 import de.metas.resource.HumanResourceTestGroupId;
-import de.metas.util.time.YearWeek;
 import lombok.NonNull;
 import lombok.Value;
+import org.threeten.extra.YearWeek;
 
 @Value(staticConstructor = "of")
 public class ResourceGroupYearWeek
