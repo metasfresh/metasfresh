@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 @Value
 @Builder
+@ToString(exclude = { "previous", "next" })
 public class StepDef
 {
 	@NonNull StepId id;

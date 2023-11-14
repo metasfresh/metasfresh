@@ -6,6 +6,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
+import java.util.ArrayDeque;
 
 public class StepPreviousEndDateUpdater implements VariableListener<Plan, StepAllocation>
 {
@@ -41,21 +42,48 @@ public class StepPreviousEndDateUpdater implements VariableListener<Plan, StepAl
 
 	private static void updateStep(@Nullable final ScoreDirector<Plan> scoreDirector, @NonNull StepAllocation originalStep)
 	{
-		//System.out.println("Updating step: " + originalStep);
-		final StepAllocation firstStep = getFirstStep(originalStep);
-		firstStep.setPreviousStepEndDateAndUpdate(firstStep.getStartDateMin(), scoreDirector);
+		final ArrayDeque<StepAllocation> uncheckedSuccessorQueue = new ArrayDeque<>();
 
-		LocalDateTime previousEndDate = firstStep.getEndDate();
-		for (StepAllocation currentStep = firstStep.getNext(); currentStep != null; currentStep = currentStep.getNext())
+		if (originalStep.getNext() != null)
 		{
-			currentStep.setPreviousStepEndDateAndUpdate(previousEndDate, scoreDirector);
-			previousEndDate = currentStep.getEndDate();
+			uncheckedSuccessorQueue.add(originalStep.getNext());
 		}
 
-		// for (Step s = firstStep; s != null; s = s.getNextStep())
+		while (!uncheckedSuccessorQueue.isEmpty())
+		{
+			StepAllocation allocation = uncheckedSuccessorQueue.remove();
+			boolean updated = updatePreviousEndDate(scoreDirector, allocation);
+			if (updated && allocation.getNext() != null)
+			{
+				uncheckedSuccessorQueue.add(allocation.getNext());
+			}
+		}
+	}
+
+	private static boolean updatePreviousEndDate(final @Nullable ScoreDirector<Plan> scoreDirector, final StepAllocation step)
+	{
+		final LocalDateTime previousEndDate = step.getPrevious() == null ? step.getStartDateMin() : step.getPrevious().getEndDate();
+
+		// if (Objects.equals(step.getPreviousStepEndDate(), previousEndDate))
 		// {
-		// 	System.out.println("\t" + s);
+		// 	return false; // no change
 		// }
+
+		if (scoreDirector != null)
+		{
+			scoreDirector.beforeVariableChanged(step, StepAllocation.FIELD_PreviousStepEndDate);
+			//System.out.println("beforeVariableChanged: " + StepAllocation.FIELD_PreviousStepEndDate + "=" + step.getPreviousStepEndDate() + " -- " + step.getId());
+		}
+
+		step.setPreviousStepEndDateAndUpdate(previousEndDate);
+
+		if (scoreDirector != null)
+		{
+			scoreDirector.afterVariableChanged(step, StepAllocation.FIELD_PreviousStepEndDate);
+			//System.out.println("afterVariableChanged: " + StepAllocation.FIELD_PreviousStepEndDate + "=" + step.getPreviousStepEndDate() + " -- " + step.getId());
+		}
+
+		return true;
 	}
 
 	private static StepAllocation getFirstStep(@NonNull final StepAllocation step)

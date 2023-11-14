@@ -71,11 +71,35 @@ public class Project
 
 	private static StepAllocation createAllocation(@NonNull final StepDef stepDef, @Nullable final StepAllocation previous)
 	{
-		final LocalDateTime startDate = stepDef.getInitialStartDate();
-		final LocalDateTime endDate = stepDef.getInitialEndDate();
-
 		final LocalDateTime previousEndDate = previous == null ? stepDef.getStartDateMin() : previous.getEndDate();
-		final int delay = computeStepDelay(previousEndDate, startDate);
+
+		final int delay;
+		final LocalDateTime startDate;
+		if (stepDef.getInitialStartDate() != null)
+		{
+			startDate = stepDef.getInitialStartDate();
+			delay = Math.max(computeStepDelay(previousEndDate, startDate), 0);
+		}
+		else
+		{
+			startDate = previousEndDate;
+			delay = 0;
+		}
+
+		final LocalDateTime endDate;
+		if (stepDef.getInitialEndDate() != null)
+		{
+			endDate = stepDef.getInitialEndDate();
+		}
+		else if (startDate != null)
+		{
+			endDate = startDate.plus(stepDef.getRequiredResourceCapacity());
+		}
+		else
+		{
+			endDate = null;
+		}
+
 		final ResourceAvailabilityRanges scheduledRange = startDate != null && endDate != null
 				? ResourceAvailabilityRanges.ofStartAndEndDate(startDate, endDate)
 				: null;

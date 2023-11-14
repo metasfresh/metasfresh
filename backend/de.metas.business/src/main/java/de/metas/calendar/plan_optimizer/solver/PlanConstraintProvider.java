@@ -82,7 +82,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(StepAllocation.class)
-				.filter(StepAllocation::isRequiredHumanCapacity)
+				.filter(StepAllocation::isHumanResourceScheduled)
 				.groupBy(ConstraintCollectors.sum(
 						StepRequiredCapacity::ofStep,
 						StepRequiredCapacity.ZERO,
@@ -118,6 +118,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint minDurationFromEndToDueDateIsMaximum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(StepAllocation.class)
+				.filter(StepAllocation::isScheduled)
 				.groupBy(ConstraintCollectors.min(StepAllocation::getDurationFromEndToDueDateInHoursAbs))
 				.reward(ONE_SOFT_3, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
 				.asConstraint("solution for which the minimum of |tdi-tei| is maximum");
@@ -127,6 +128,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint sumOfDurationFromEndToDueDateIsMaximum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(StepAllocation.class)
+				.filter(StepAllocation::isScheduled)
 				.groupBy(ConstraintCollectors.sum(StepAllocation::getDurationFromEndToDueDateInHoursAbs))
 				.reward(ONE_SOFT_4, sum -> sum)
 				.asConstraint("solution for which sum of |tdi-tei| is maximum");

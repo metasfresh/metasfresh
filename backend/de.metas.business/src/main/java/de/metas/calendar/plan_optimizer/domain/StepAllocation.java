@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.product.ResourceId;
@@ -31,7 +30,7 @@ import java.util.Objects;
 @PlanningEntity
 @Setter
 @Getter
-//@EqualsAndHashCode(doNotUseGetters = true) // IMPORTANT: do not use it because we have next/prev Step refs
+//@EqualsAndHashCode(doNotUseGetters = true) // IMPORTANT: do not use it because we have next/previous references
 public class StepAllocation
 {
 	@PlanningId @NonNull private final StepAllocationId id;
@@ -50,11 +49,12 @@ public class StepAllocation
 
 	//
 	// Shadow variables
-	private static final String FIELD_PreviousStepEndDate = "previousStepEndDate";
+	public static final String FIELD_PreviousStepEndDate = "previousStepEndDate";
 	@Nullable @Setter(AccessLevel.NONE) private LocalDateTime previousStepEndDate;
 
 	//
 	// Computed from shadow variables
+	private boolean variablesComputed;
 	@Nullable private ResourceAvailabilityRanges resourceScheduledRange;
 	@Nullable private ResourceAvailabilityRanges humanResourceScheduledRange;
 
@@ -76,8 +76,12 @@ public class StepAllocation
 		this.delay = delay;
 
 		this.previousStepEndDate = previousStepEndDate;
+
 		this.resourceScheduledRange = resourceScheduledRange;
-		this.humanResourceScheduledRange = humanResourceScheduledRange != null ? humanResourceScheduledRange : resourceScheduledRange;
+		this.humanResourceScheduledRange = humanResourceScheduledRange;
+		this.variablesComputed = this.resourceScheduledRange != null || this.humanResourceScheduledRange != null;
+
+		//System.out.println("ctor: " + FIELD_PreviousStepEndDate + "=" + this.previousStepEndDate + " -- " + id + " -- " + Trace.toOneLineStackTraceString());
 	}
 
 	@Override
@@ -172,7 +176,7 @@ public class StepAllocation
 
 	public InternalPriority getProjectPriority() {return getStepDef().getProjectPriority();}
 
-	public boolean isRequiredHumanCapacity() {return stepDef.isRequiredHumanCapacity();}
+	public boolean isHumanResourceScheduled() {return stepDef.isRequiredHumanCapacity() && humanResourceScheduledRange != null;}
 
 	private int getDelayAsInt() {return delay != null ? delay : 0;}
 
@@ -198,18 +202,19 @@ public class StepAllocation
 
 	public void setPreviousStepEndDateAndUpdate(@Nullable final LocalDateTime previousStepEndDate)
 	{
-		setPreviousStepEndDateAndUpdate(previousStepEndDate, null);
+		this.previousStepEndDate = previousStepEndDate;
+		invalidateComputedVariables();
 	}
 
-	public void setPreviousStepEndDateAndUpdate(@Nullable final LocalDateTime previousStepEndDate, @Nullable final ScoreDirector<Plan> scoreDirector)
+	private void invalidateComputedVariables()
 	{
-		if (scoreDirector != null)
-		{
-			scoreDirector.beforeVariableChanged(this, FIELD_PreviousStepEndDate);
-		}
+		this.variablesComputed = false;
+		this.resourceScheduledRange = null;
+		this.humanResourceScheduledRange = null;
+	}
 
-		this.previousStepEndDate = previousStepEndDate;
-
+	public void computeVariablesIfNeeded()
+	{
 		final LocalDateTime startDate = computeStartDate();
 		if (startDate != null)
 		{
@@ -222,10 +227,7 @@ public class StepAllocation
 			this.humanResourceScheduledRange = null;
 		}
 
-		if (scoreDirector != null)
-		{
-			scoreDirector.afterVariableChanged(this, FIELD_PreviousStepEndDate);
-		}
+		this.variablesComputed = true;
 	}
 
 	@Nullable
@@ -242,15 +244,21 @@ public class StepAllocation
 		}
 		else
 		{
-			final Duration delayDuration = getDelayAsDuration();
-			return previousStepEndDate.plus(delayDuration);
+			return previousStepEndDate.plus(getDelayAsDuration());
 		}
+	}
+
+	public boolean isScheduled()
+	{
+		computeVariablesIfNeeded();
+		return resourceScheduledRange != null && (!stepDef.isRequiredHumanCapacity() || humanResourceScheduledRange != null);
 	}
 
 	@Nullable
 	public LocalDateTime getStartDate()
 	{
-		return resourceScheduledRange != null && (!stepDef.isRequiredHumanCapacity() || humanResourceScheduledRange != null)
+		computeVariablesIfNeeded();
+		return isScheduled()
 				? TimeUtil.minOfNullables(resourceScheduledRange.getStartDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getStartDate() : null)
 				: null;
 	}
@@ -258,14 +266,16 @@ public class StepAllocation
 	@Nullable
 	public LocalDateTime getEndDate()
 	{
-		return resourceScheduledRange != null && (!stepDef.isRequiredHumanCapacity() || humanResourceScheduledRange != null)
-				? TimeUtil.minOfNullables(resourceScheduledRange.getEndDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null)
+		computeVariablesIfNeeded();
+		return isScheduled()
+				? TimeUtil.maxOfNullables(resourceScheduledRange.getEndDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null)
 				: null;
 	}
 
 	@Nullable
 	public LocalDateTime getResourceScheduledStartDate()
 	{
+		computeVariablesIfNeeded();
 		return resourceScheduledRange != null && humanResourceScheduledRange != null
 				? resourceScheduledRange.getStartDate()
 				: null;
@@ -274,6 +284,7 @@ public class StepAllocation
 	@Nullable
 	public LocalDateTime getResourceScheduledEndDate()
 	{
+		computeVariablesIfNeeded();
 		return resourceScheduledRange != null && humanResourceScheduledRange != null
 				? resourceScheduledRange.getEndDate()
 				: null;

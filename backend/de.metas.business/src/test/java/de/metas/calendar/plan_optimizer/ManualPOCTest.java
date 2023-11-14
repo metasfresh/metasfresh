@@ -3,9 +3,7 @@ package de.metas.calendar.plan_optimizer;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Project;
@@ -13,7 +11,6 @@ import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.calendar.plan_optimizer.domain.StepId;
-import de.metas.calendar.plan_optimizer.domain.StepPreviousEndDateUpdater;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
@@ -95,8 +92,6 @@ public class ManualPOCTest
 	private static Plan createPlan(final @NonNull SimulationPlanId simulationId, final List<Project> projects)
 	{
 		final ArrayList<StepAllocation> allocations = new ArrayList<>(Project.createAllocations(projects));
-
-		updatePreviousAndNextStep(allocations);
 
 		final Plan plan = Plan.newInstance();
 		plan.setSimulationId(simulationId);
@@ -228,24 +223,5 @@ public class ManualPOCTest
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
 				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project respource id because does not matter and we just want something unique
 				.build();
-	}
-
-	private static void updatePreviousAndNextStep(final List<StepAllocation> steps)
-	{
-		ImmutableListMultimap<ProjectId, StepAllocation> stepsByProjectId = Multimaps.index(steps, StepAllocation::getProjectId);
-
-		for (final ProjectId projectId : stepsByProjectId.keySet())
-		{
-			final ImmutableList<StepAllocation> projectSteps = stepsByProjectId.get(projectId);
-
-			for (int i = 0, lastIndex = projectSteps.size() - 1; i <= lastIndex; i++)
-			{
-				final StepAllocation step = projectSteps.get(i);
-				step.setPrevious(i == 0 ? null : projectSteps.get(i - 1));
-				step.setNext(i == lastIndex ? null : projectSteps.get(i + 1));
-			}
-
-			StepPreviousEndDateUpdater.updateStep(projectSteps.get(0));
-		}
 	}
 }
