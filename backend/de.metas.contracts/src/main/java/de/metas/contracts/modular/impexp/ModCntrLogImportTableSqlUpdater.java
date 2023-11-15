@@ -74,6 +74,7 @@ import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_M_Warehouse_ID
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroupName;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType;
+import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_PriceUOM;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_Price_UOM_ID;
@@ -273,6 +274,7 @@ public class ModCntrLogImportTableSqlUpdater
 	{
 		// DocumentType = ImportLog
 		updateNonImportTypedLogs(selection);
+		updateAlreadyExistingLogs(selection);
 
 		// DateTrx
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
@@ -376,6 +378,16 @@ public class ModCntrLogImportTableSqlUpdater
 
 		// Qty
 		updateQtyErrormessage(selection);
+	}
+
+	private static void updateAlreadyExistingLogs(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + targetTableName + " i " +
+				" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Existing modular contract logs shall not be re-imported.'" +
+				" WHERE i." + COLUMNNAME_ModCntr_Log_ID + " IS NOT NULL " +
+				" AND i." + COLUMNNAME_I_IsImported + "<>'Y'" +
+				selection.toSqlWhereClause("i");
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void updateNonImportTypedLogs(@NonNull final ImportRecordsSelection selection)

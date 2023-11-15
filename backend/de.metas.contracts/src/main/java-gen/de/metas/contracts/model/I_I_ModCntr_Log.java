@@ -73,6 +73,28 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
 	 * Set Amount.
 	 * Amount in a defined currency
 	 *
@@ -163,19 +185,19 @@ public interface I_I_ModCntr_Log
 	 * Set Calendar name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCalendarName (@Nullable java.lang.String CalendarName);
+	void setCalendarName (java.lang.String CalendarName);
 
 	/**
 	 * Get Calendar name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCalendarName();
+	java.lang.String getCalendarName();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CalendarName = new ModelColumn<>(I_I_ModCntr_Log.class, "CalendarName", null);
 	String COLUMNNAME_CalendarName = "CalendarName";
@@ -753,6 +775,31 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
 
 	/**
+	 * Set Contract Module Log.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_ID (int ModCntr_Log_ID);
+
+	/**
+	 * Get Contract Module Log.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Log_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Log getModCntr_Log();
+
+	void setModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log ModCntr_Log);
+
+	ModelColumn<I_I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Log> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
+	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+
+	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: TableDir
@@ -992,6 +1039,29 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Qty = new ModelColumn<>(I_I_ModCntr_Log.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set UOM Symbol.

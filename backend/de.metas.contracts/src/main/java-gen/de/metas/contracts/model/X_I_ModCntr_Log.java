@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1026383993L;
+	private static final long serialVersionUID = 2015526995L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -48,6 +48,21 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setAD_Table_ID (final int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
+	}
+
+	@Override
+	public int getAD_Table_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
@@ -103,7 +118,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setCalendarName (final @Nullable java.lang.String CalendarName)
+	public void setCalendarName (final java.lang.String CalendarName)
 	{
 		set_Value (COLUMNNAME_CalendarName, CalendarName);
 	}
@@ -549,6 +564,33 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
+	public de.metas.contracts.model.I_ModCntr_Log getModCntr_Log()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
+	}
+
+	@Override
+	public void setModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log ModCntr_Log)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, ModCntr_Log);
+	}
+
+	@Override
+	public void setModCntr_Log_ID (final int ModCntr_Log_ID)
+	{
+		if (ModCntr_Log_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Log_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Log_ID, ModCntr_Log_ID);
+	}
+
+	@Override
+	public int getModCntr_Log_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
+	}
+
+	@Override
 	public de.metas.contracts.model.I_ModCntr_Module getModCntr_Module()
 	{
 		return get_ValueAsPO(COLUMNNAME_ModCntr_Module_ID, de.metas.contracts.model.I_ModCntr_Module.class);
@@ -707,6 +749,21 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRecord_ID (final int Record_ID)
+	{
+		if (Record_ID < 0) 
+			set_Value (COLUMNNAME_Record_ID, null);
+		else 
+			set_Value (COLUMNNAME_Record_ID, Record_ID);
+	}
+
+	@Override
+	public int getRecord_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
 	@Override
