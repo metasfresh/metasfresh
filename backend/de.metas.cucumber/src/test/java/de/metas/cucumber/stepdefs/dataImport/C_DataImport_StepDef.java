@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.dataImport;
 
+import com.google.common.base.Joiner;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
@@ -336,7 +337,7 @@ public class C_DataImport_StepDef
 
 			final I_C_Flatrate_Term contract = contractsTable.get(contractDocumentIdentifier);
 
-			//keep in sync with /window/189/540092
+			//keep in sync with Import Format defined by /window/189/540092
 			final String payload = "ModCntr_Log_ID;"
 					+ "TableID;"
 					+ "RecordId;"

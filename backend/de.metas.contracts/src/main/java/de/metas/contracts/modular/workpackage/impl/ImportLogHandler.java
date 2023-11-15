@@ -95,7 +95,7 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 	}
 
 	@Nullable
-	private ProductPrice getPriceActual(@NonNull final I_I_ModCntr_Log importRecord)
+	private static ProductPrice getPriceActual(@NonNull final I_I_ModCntr_Log importRecord)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
@@ -118,7 +118,7 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 		final I_I_ModCntr_Log record = createLogRequest.getHandleLogsRequest().getModel();
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
 
-		if (Objects.isNull(harvestingYearId))
+		if (harvestingYearId == null)
 		{
 			throw new AdempiereException("No Contract Config (Contract Settings / Contract Module) Match");
 		}

@@ -56,7 +56,7 @@ public class ImportLogModularContractHandler implements IModularContractTypeHand
 	@Override
 	public boolean applies(final @NonNull I_I_ModCntr_Log model)
 	{
-		return !Check.isNotBlank(model.getI_ErrorMsg()) &&
+		return Check.isBlank(model.getI_ErrorMsg()) &&
 				!Objects.equals(X_I_ModCntr_Log.I_ISIMPORTED_ImportFailed, model.getI_IsImported()) ||
 				CalendarId.ofRepoIdOrNull(model.getC_Calendar_ID()) != null &&
 						YearId.ofRepoIdOrNull(model.getHarvesting_Year_ID()) != null &&
