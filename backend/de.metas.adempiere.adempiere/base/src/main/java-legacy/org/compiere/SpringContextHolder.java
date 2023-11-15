@@ -309,7 +309,7 @@ public final class SpringContextHolder
 			}
 
 			// If there is no JVM System Property then go and check environment variables
-			return Optional.ofNullable(System.getenv(name));
+			return StringUtils.trimBlankToOptional(System.getenv(name));
 		}
 
 		return Optional.empty();
