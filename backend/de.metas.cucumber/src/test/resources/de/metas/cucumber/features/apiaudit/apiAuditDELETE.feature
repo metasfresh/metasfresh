@@ -1,5 +1,5 @@
 @from:cucumber
-@tag1
+@ghActions:run_on_executor3
 Feature: API Audit DELETE http method
 
   Background:
