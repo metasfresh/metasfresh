@@ -280,11 +280,11 @@ public class ModCntrLogImportTableSqlUpdater
 				.mandatoryColumnName(COLUMNNAME_DateTrx)
 				.errorMessage(COLUMNNAME_DateTrx + " is Mandatory !")
 				.build());
-		// Harvesting_Year_ID
+		// C_Calendar_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
 				.selection(selection)
 				.mandatoryColumnName(COLUMNNAME_C_Calendar_ID)
-				.errorMessage(COLUMNNAME_Harvesting_Year_ID + " No Calendar Match!")
+				.errorMessage(COLUMNNAME_C_Calendar_ID + " No Calendar Match!")
 				.build());
 
 		// Harvesting_Year_ID

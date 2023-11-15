@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.dataImport;
 
-import com.google.common.base.Joiner;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
@@ -42,8 +41,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -51,6 +52,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,6 +61,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -226,7 +229,7 @@ public class C_DataImport_StepDef
 			final String internalName = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_InternalName);
 
 			final I_C_DataImport record = CoalesceUtil
-					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_C_DataImport.class)
+					.coalesceSuppliersNotNull(() -> queryBL.createQueryBuilder(I_C_DataImport.class)
 									.addOnlyActiveRecordsFilter()
 									.addStringLikeFilter(I_C_DataImport.COLUMNNAME_InternalName, internalName, false)
 									.create()
@@ -311,7 +314,7 @@ public class C_DataImport_StepDef
 	}
 
 	@And("store modular contract DataImport String requestBody in context")
-	public void store_business_partner_string_requestBody_in_context11111(@NonNull final DataTable dataTable)
+	public void store_modular_contract_string_requestBody_in_context(@NonNull final DataTable dataTable)
 	{
 		final StringBuilder payloadBuilder = new StringBuilder();
 		for (final Map<String, String> row : dataTable.asMaps())
@@ -366,4 +369,34 @@ public class C_DataImport_StepDef
 		testContext.setRequestPayload(new String(payloadBuilder.toString().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
 	}
 
+	@And("load C_DataImport:")
+	public void load_C_DataImport(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			loadDataImport(row);
+		}
+	}
+
+	private void loadDataImport(@NonNull final Map<String, String> row)
+	{
+		final String dataImportIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_C_DataImport.COLUMNNAME_C_DataImport_ID);
+
+		if (id != null)
+		{
+			final I_C_DataImport dataImportRecord = InterfaceWrapperHelper.load(id, I_C_DataImport.class);
+			Assertions.assertThat(dataImportRecord).isNotNull();
+
+			dataImportTable.putOrReplace(dataImportIdentifier, dataImportRecord);
+		}
+	}
+
+
+	@And("^metasfresh initially has no (I_.*) import data$")
+	public void delete_I_Invoice_Candidate_data(@NonNull final String tableName)
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM "+tableName+" cascade", ITrx.TRXNAME_None);
+	}
 }

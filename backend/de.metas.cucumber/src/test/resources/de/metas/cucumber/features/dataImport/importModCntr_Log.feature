@@ -1,4 +1,4 @@
-@Id:11111
+@Id:S0346
 @from:cucumber
 Feature: Import Modular Contract Logs via DataImportRestController
 
@@ -95,7 +95,7 @@ Feature: Import Modular Contract Logs via DataImportRestController
       | po_orderLine         | C_OrderLine | SP               |
 
   @from:cucumber
-  @Id:11111_1
+  @Id:S0346_10
   Scenario: Import sales I_ModCntr_Log from csv
     And metasfresh initially has no I_ModCntr_Log import data
     And add HTTP header
@@ -105,7 +105,7 @@ Feature: Import Modular Contract Logs via DataImportRestController
     And store modular contract DataImport String requestBody in context
       | ModCntr_Log_DocumentType | IsSOTrx | C_Flatrate_Term_ID.Identifier | ProductValue | OPT.Qty | OPT.UOMSymbol | OPT.PriceActual | OPT.PriceUOM | OPT.Amount | ISO_Code | FiscalYear | CalendarName          | ContractModuleName | BPartnerValue | Bill_BPartner_Value | CollectionPointValue | DateTrx    | WarehouseName |
       | ImportLog                | N       | moduleLogContract_1           | Fee1         | 2       | Stk           | 22              | Stk          | 44         | EUR      | 2022       | Buchführungs-Kalender |                    | importLog BP  | importLog BP        | importLog BP         | 2023-01-01 | Hauptlager    |
-      | ImportLog                | N       | moduleLogContract_1           | Bonus1       | 1       | Stk           | 15               | Stk          | 15         | EUR      | 2022       | Buchführungs-Kalender |                    | importLog BP  | importLog BP        | importLog BP         | 2023-01-01 | Hauptlager    |
+      | ImportLog                | N       | moduleLogContract_1           | Bonus1       | 1       | Stk           | 15              | Stk          | 15         | EUR      | 2022       | Buchführungs-Kalender |                    | importLog BP  | importLog BP        | importLog BP         | 2023-01-01 | Hauptlager    |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=ImportModularContractLog&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
     And after no more than 30s, I_ModCntr_Log are found by product
