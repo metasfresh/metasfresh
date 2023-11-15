@@ -341,9 +341,9 @@ public class C_DataImport_StepDef
 			final I_C_Flatrate_Term contract = contractsTable.get(contractDocumentIdentifier);
 
 			//keep in sync with Import Format defined by /window/189/540092
-			final String payload = "ModCntr_Log_ID;"
-					+ "TableID;"
-					+ "RecordId;"
+			final String payload = ";"//ModCntr_Log_ID
+					+ ";"//TableID
+					+ ";"//RecordId
 					+ documentType + ";"
 					+ soTrx + ";"
 					+ contract.getDocumentNo() + ";"
@@ -357,7 +357,7 @@ public class C_DataImport_StepDef
 					+ isoCurrencyCode + ";"
 					+ year + ";"
 					+ calendar + ";"
-					+ "ContractModuleName;"
+					+ ";"//ContractModuleName
 					+ bpartnerValue + ";"
 					+ billBpartnerValue + ";"
 					+ collectionPointValue + ";"
