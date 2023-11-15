@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Locked HUs can not be issued to production order
 
   Background:
