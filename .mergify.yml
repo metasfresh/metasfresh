@@ -31,6 +31,7 @@ pull_request_rules:
               - base=koala_yawn_uat
               - base=mad_orange_uat
               - base=magic_oak_uat
+              - base=majestic_kangaroo_uat
               - base=massive_entropy_uat
               - base=modified_carbon_uat
               - base=neon_underwear_uat
