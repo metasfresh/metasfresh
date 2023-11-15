@@ -4,7 +4,6 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
 import de.metas.resource.ResourceAvailabilityRanges;
-import de.metas.util.time.DurationUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -12,6 +11,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -70,10 +70,14 @@ public class StepDef
 	@Nullable
 	public HumanResourceId getHumanResourceId() {return resource.getHumanResourceId();}
 
-	public int computeDelayMax()
+	public Duration computeDelayMax()
 	{
-		return DurationUtils.toInt(Duration.between(startDateMin, dueDate), Plan.PLANNING_TIME_PRECISION)
-				- DurationUtils.toInt(requiredResourceCapacity, Plan.PLANNING_TIME_PRECISION);
+		// Estimate how much a step could take at least
+		// i.e. the maxium of resource capacity and human capacity required
+		final Duration minStepDuration = TimeUtil.maxNotNull(requiredResourceCapacity, requiredHumanCapacity);
+
+		final Duration maxAllowedStepDuration = Duration.between(startDateMin, dueDate);
+		return maxAllowedStepDuration.minus(minStepDuration);
 	}
 
 	public boolean isRequiredHumanCapacity() {return requiredHumanCapacity.getSeconds() > 0;}

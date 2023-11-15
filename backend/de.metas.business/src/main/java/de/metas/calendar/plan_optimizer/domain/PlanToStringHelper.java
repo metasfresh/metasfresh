@@ -8,7 +8,11 @@ import de.metas.project.ProjectId;
 import de.metas.resource.ResourceAvailabilityRange;
 import de.metas.resource.ResourceAvailabilityRanges;
 import lombok.NonNull;
+import org.threeten.extra.YearWeek;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -31,8 +35,12 @@ final class PlanToStringHelper
 	{
 		// NOTE: keep it concise, important for timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
-		sb.append(nl()).append("\nsimulationId: ").append(plan.getSimulationId());
-		sb.append(nl()).append("Plan score: ").append(plan.getScore()).append(", Time spent: ").append(plan.getTimeSpent()).append(", IsFinalSolution=").append(plan.isFinalSolution());
+		sb.append(nl())
+				.append("simulationId: ").append(plan.getSimulationId())
+				.append(nl())
+				.append("Plan score: ").append(plan.getScore())
+				.append(", Time spent: ").append(toString(plan.getTimeSpent()))
+				.append(", IsFinalSolution=").append(plan.isFinalSolution());
 
 		final ArrayList<StepAllocation> stepsList = plan.getStepsList();
 		if (stepsList != null && !stepsList.isEmpty())
@@ -66,9 +74,9 @@ final class PlanToStringHelper
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private static void appendStep(final StringBuilder sb, final int identation, final StepAllocation step)
+	private static void appendStep(final StringBuilder sb, final int indentation, final StepAllocation step)
 	{
-		sb.append(nl(identation)).append(step);
+		sb.append(nl(indentation)).append(step);
 
 		final String resourcePrefix = rightAlign(step.getStepDef().getResource().toString(), 6) + " ";
 		final String hrPrefix = rightAlign("HR" + step.getHumanResourceId(), 6) + " ";
@@ -76,28 +84,31 @@ final class PlanToStringHelper
 		Optional.ofNullable(step.getResourceScheduledRange())
 				.stream()
 				.flatMap(ResourceAvailabilityRanges::stream)
-				.forEach(range -> appendRange(sb, identation + 1, resourcePrefix, range));
+				.forEach(range -> appendRange(sb, indentation + 1, resourcePrefix, range));
 
 		Optional.ofNullable(step.getHumanResourceScheduledRange())
 				.stream()
 				.flatMap(ResourceAvailabilityRanges::stream)
-				.forEach(range -> appendRange(sb, identation + 1, hrPrefix, range));
+				.forEach(range -> appendRange(sb, indentation + 1, hrPrefix, range));
 	}
 
-	private static void appendRange(final StringBuilder sb, final int identation, final String prefix, final ResourceAvailabilityRange range)
+	private static void appendRange(final StringBuilder sb, final int indentation, final String prefix, final ResourceAvailabilityRange range)
 	{
-		sb.append(nl(identation)).append(prefix)
-				.append(range.getStartDate())
-				.append(" - ")
-				.append(range.getEndDate())
+		final LocalDateTime startDate = range.getStartDate();
+		final LocalDateTime endDate = range.getEndDate();
+		final Duration duration = range.getDuration();
+
+		sb.append(nl(indentation)).append(prefix)
+				.append(toString(startDate, endDate))
+				.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")")
 				.append(": ")
-				.append("duration=").append(range.getDuration())
+				.append("duration=").append(toString(duration))
 		;
 	}
 
 	private static String nl() {return nl(0);}
 
-	private static String nl(final int identation) {return "\n" + "    ".repeat(identation);}
+	private static String nl(final int indentation) {return "\n" + "    ".repeat(indentation);}
 
 	@SuppressWarnings("SameParameterValue")
 	private static String rightAlign(@NonNull final String string, final int resultLength)
@@ -109,5 +120,61 @@ final class PlanToStringHelper
 		}
 
 		return " ".repeat(resultLength - length) + string;
+	}
+
+	public static String toString(@Nullable LocalDateTime startDate, @Nullable LocalDateTime endDate)
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append(startDate).append(" -> ");
+
+		if (startDate != null && endDate != null && startDate.toLocalDate().equals(endDate.toLocalDate()))
+		{
+			sb.append(endDate.toLocalTime());
+		}
+		else
+		{
+			sb.append(endDate);
+		}
+
+		return sb.toString();
+	}
+
+	public static String toString(@NonNull final Duration duration)
+	{
+		long seconds = duration.toSeconds();
+
+		long minutes = seconds / 60;
+		seconds -= minutes * 60;
+
+		long hours = minutes / 60;
+		minutes -= hours * 60;
+
+		long days = hours / 24;
+		hours -= days * 24;
+
+		StringBuilder sb = new StringBuilder();
+		if (days != 0)
+		{
+			sb.append(days).append("d");
+		}
+		if (hours != 0)
+		{
+			sb.append(hours).append("h");
+		}
+		if (minutes != 0)
+		{
+			sb.append(minutes).append("min");
+		}
+		if (seconds != 0)
+		{
+			sb.append(seconds).append("s");
+		}
+
+		if (sb.isEmpty())
+		{
+			sb.append("0");
+		}
+
+		return sb.toString();
 	}
 }

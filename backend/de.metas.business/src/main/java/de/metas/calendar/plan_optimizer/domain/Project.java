@@ -100,12 +100,12 @@ public class Project
 			endDate = null;
 		}
 
-		final ResourceAvailabilityRanges scheduledRange = startDate != null && endDate != null
+		final ResourceAvailabilityRanges scheduledRange = startDate != null
 				? ResourceAvailabilityRanges.ofStartAndEndDate(startDate, endDate)
 				: null;
 
 		return StepAllocation.builder()
-				.id(StepAllocationId.of(stepDef.getId(), StepAllocationType.MACHINE))
+				.id(StepAllocationId.of(stepDef.getId()))
 				.stepDef(stepDef)
 				.delay(delay)
 				.previousStepEndDate(previousEndDate)

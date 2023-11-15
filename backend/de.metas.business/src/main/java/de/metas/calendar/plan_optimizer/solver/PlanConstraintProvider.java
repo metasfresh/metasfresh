@@ -44,9 +44,10 @@ public class PlanConstraintProvider implements ConstraintProvider
 				// Soft:
 				penalizeNullableDelay(constraintFactory),
 				stepsNotRespectingProjectPriority(constraintFactory),
-				delayIsMinimum(constraintFactory),
-				minDurationFromEndToDueDateIsMaximum(constraintFactory),
-				sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
+				firstStepDelayIsMinimum(constraintFactory),
+				//delayIsMinimum(constraintFactory),
+				//minDurationFromEndToDueDateIsMaximum(constraintFactory),
+				//sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
 		};
 	}
 
@@ -86,26 +87,6 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("Human Resource conflict");
 	}
 
-	// Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
-	// {
-	// 	return constraintFactory.forEach(StepAllocation.class)
-	// 			.filter(StepAllocation::isHumanResourceScheduled)
-	// 			.groupBy(ConstraintCollectors.sum(
-	// 					StepRequiredCapacity::ofStep,
-	// 					StepRequiredCapacity.ZERO,
-	// 					StepRequiredCapacity::add,
-	// 					StepRequiredCapacity::subtract))
-	// 			.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
-	// 			.asConstraint("Available human resource test group capacity");
-	// }
-	//
-	// private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
-	// {
-	// 	final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(requiredCapacity.getCapacities());
-	// 	humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
-	// 	return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
-	// }
-
 	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEachIncludingNullVars(StepAllocation.class)
@@ -114,10 +95,18 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("nullable delay");
 	}
 
+	Constraint firstStepDelayIsMinimum(final ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEach(StepAllocation.class)
+				.filter(StepAllocation::isFirstStep)
+				.penalize(ONE_SOFT_2, StepAllocation::getDelayAsInt)
+				.asConstraint("Delay of project first step is minimum");
+	}
+
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(StepAllocation.class)
-				.penalize(ONE_SOFT_2, StepAllocation::getAccumulatedDelayAsInt)
+				.penalize(ONE_SOFT_3, StepAllocation::getDelayAsInt)
 				.asConstraint("Delay is minimum");
 	}
 
@@ -190,6 +179,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 		final LocalDateTime step1End = step1.getEndDate();
 		final LocalDateTime step2Start = step2.getStartDate();
 		final LocalDateTime step2End = step2.getEndDate();
+
+		if (step1Start == null || step1End == null || step2Start == null || step2End == null)
+		{
+			return 0;
+		}
+
 		final LocalDateTime overlappingStart = (step1Start.isAfter(step2Start)) ? step1Start : step2Start; // MAX
 		final LocalDateTime overlappingEnd = (step1End.isBefore(step2End)) ? step1End : step2End; // MIN
 		return (int)Math.abs(Plan.PLANNING_TIME_PRECISION.between(overlappingStart, overlappingEnd));

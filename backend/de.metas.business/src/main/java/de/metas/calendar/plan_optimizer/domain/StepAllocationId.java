@@ -11,26 +11,18 @@ public class StepAllocationId
 		implements Comparable<StepAllocationId> // IMPORTANT: Comparable is required by Timefold
 {
 	@NonNull StepId stepId;
-	@NonNull StepAllocationType type;
 
 	@Override
 	public String toString()
 	{
 		return "P" + stepId.getProjectId().getRepoId()
-				+ "-S" + stepId.getWoProjectResourceId().getRepoId()
-				+ "-" + type;
+				+ "-S" + stepId.getWoProjectResourceId().getRepoId();
 	}
 
 	@Override
 	public int compareTo(@NonNull final StepAllocationId other)
 	{
-		final int c = stepId.compareTo(other.stepId);
-		if (c != 0)
-		{
-			return c;
-		}
-
-		return type.compareTo(other.type);
+		return stepId.compareTo(other.stepId);
 	}
 
 	public ProjectId getProjectId() {return stepId.getProjectId();}

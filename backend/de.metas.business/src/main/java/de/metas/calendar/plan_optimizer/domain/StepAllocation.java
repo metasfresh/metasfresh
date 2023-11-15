@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.util.TimeUtil;
-import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -99,31 +98,17 @@ public class StepAllocation
 			sb.append("   ");
 		}
 
-		final LocalDateTime startDate = getStartDate();
-		final LocalDateTime endDate = getEndDate();
-
-		sb.append(startDate).append(" -> ");
-
-		if (startDate != null && endDate != null && startDate.toLocalDate().equals(endDate.toLocalDate()))
-		{
-			sb.append(endDate.toLocalTime());
-		}
-		else
-		{
-			sb.append(endDate);
-		}
-
-		if (startDate != null)
-		{
-			sb.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")");
-		}
-
+		sb.append(PlanToStringHelper.toString(getStartDate(), getEndDate()));
 		sb.append(": ");
 
-		sb.append("duration=").append(stepDef.getRequiredResourceCapacity()).append("/").append(stepDef.getRequiredHumanCapacity());
-		sb.append(", ").append(stepDef.getResource());
+		sb.append(stepDef.getResource()).append("=").append(PlanToStringHelper.toString(stepDef.getRequiredResourceCapacity()));
+		if (stepDef.getHumanResourceId() != null)
+		{
+			sb.append(", HR").append(stepDef.getHumanResourceId()).append("=").append(PlanToStringHelper.toString(stepDef.getRequiredHumanCapacity()));
+		}
 		sb.append(", ID=").append(id);
-		sb.append(", delay=").append(delay);
+		sb.append(", delay=").append(delay != null ? PlanToStringHelper.toString(Duration.of(delay, Plan.PLANNING_TIME_PRECISION)) : null)
+				.append("<").append(PlanToStringHelper.toString(stepDef.computeDelayMax().truncatedTo(Plan.PLANNING_TIME_PRECISION)));
 		if (stepDef.getPinnedStartDate() != null && previousStepEndDate != null)
 		{
 			sb.append("(").append(Duration.between(previousStepEndDate, stepDef.getPinnedStartDate())).append(")");
@@ -137,8 +122,8 @@ public class StepAllocation
 	@ValueRangeProvider
 	public CountableValueRange<Integer> getDelayRange()
 	{
-		final int delayMax = stepDef.computeDelayMax();
-		return ValueRangeFactory.createIntValueRange(0, delayMax);
+		final int delayMaxInt = DurationUtils.toInt(stepDef.computeDelayMax(), Plan.PLANNING_TIME_PRECISION);
+		return ValueRangeFactory.createIntValueRange(0, delayMaxInt);
 	}
 
 	public ProjectId getProjectId() {return getId().getProjectId();}
@@ -150,7 +135,9 @@ public class StepAllocation
 
 	public InternalPriority getProjectPriority() {return getStepDef().getProjectPriority();}
 
-	private int getDelayAsInt() {return delay != null ? delay : 0;}
+	public boolean isFirstStep() {return previous == null;}
+
+	public int getDelayAsInt() {return delay != null ? delay : 0;}
 
 	private Duration getDelayAsDuration() {return Duration.of(getDelayAsInt(), Plan.PLANNING_TIME_PRECISION);}
 
