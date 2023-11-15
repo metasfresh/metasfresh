@@ -2114,6 +2114,15 @@ public class TimeUtil
 		{
 			return duration1;
 		}
+		else
+		{
+			return maxNotNull(duration1, duration2);
+		}
+	}
+
+	@NonNull
+	public static Duration maxNotNull(@NonNull final Duration duration1, @NonNull final Duration duration2)
+	{
 		if (duration1 == duration2)
 		{
 			return duration1;

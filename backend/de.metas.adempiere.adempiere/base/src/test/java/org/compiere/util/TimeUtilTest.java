@@ -103,21 +103,21 @@ public class TimeUtilTest
 	@Nested
 	class max_with_Duration
 	{
-		private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
-		{
-			final Duration actual = TimeUtil.max(duration1, duration2);
-			assertThat(actual).isEqualTo(expected);
-		}
-
 		@Test
 		public void test()
 		{
-			testMaxDuration(null, null, null);
-			testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
-			testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
-			testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
-			testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
-			testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
+			final Duration min = Duration.ofMinutes(1);
+			final Duration max = Duration.ofMinutes(2);
+
+			//noinspection ConstantValue
+			assertThat(TimeUtil.max((Duration)null, null)).isNull();
+
+			assertThat(TimeUtil.max(min, null)).isSameAs(min);
+			assertThat(TimeUtil.max(null, min)).isSameAs(min);
+			assertThat(TimeUtil.max(min, min)).isSameAs(min);
+			assertThat(TimeUtil.max(max, max)).isSameAs(max);
+			assertThat(TimeUtil.max(min, max)).isSameAs(max);
+			assertThat(TimeUtil.max(max, min)).isSameAs(max);
 		}
 	}
 
