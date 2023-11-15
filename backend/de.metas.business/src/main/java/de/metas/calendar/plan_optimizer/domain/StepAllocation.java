@@ -276,18 +276,14 @@ public class StepAllocation
 	public LocalDateTime getResourceScheduledStartDate()
 	{
 		computeVariablesIfNeeded();
-		return resourceScheduledRange != null && humanResourceScheduledRange != null
-				? resourceScheduledRange.getStartDate()
-				: null;
+		return resourceScheduledRange != null ? resourceScheduledRange.getStartDate() : null;
 	}
 
 	@Nullable
 	public LocalDateTime getResourceScheduledEndDate()
 	{
 		computeVariablesIfNeeded();
-		return resourceScheduledRange != null && humanResourceScheduledRange != null
-				? resourceScheduledRange.getEndDate()
-				: null;
+		return resourceScheduledRange != null ? resourceScheduledRange.getEndDate() : null;
 	}
 
 	LocalDateTime getStartDateMin() {return stepDef.getStartDateMin();}

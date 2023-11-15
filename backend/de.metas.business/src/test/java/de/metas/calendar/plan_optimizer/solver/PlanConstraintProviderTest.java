@@ -83,7 +83,6 @@ class PlanConstraintProviderTest
 							.dueDate(endDate) // some not null value because we don't want to fail toString()
 							.initialStartDate(startDate)
 							.initialEndDate(endDate)
-							//.delay(DatabasePlanLoaderInstance.computeDelay(START_DATE_MIN, startDate))
 							.build())
 					.build()
 					.createAllocations()
