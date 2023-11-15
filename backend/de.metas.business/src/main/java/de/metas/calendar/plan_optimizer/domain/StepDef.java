@@ -57,7 +57,7 @@ public class StepDef
 			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
 		}
 
-		if (requiredHumanCapacity.getSeconds() > 0 && resource.getHumanResourceCapacity() == null)
+		if (requiredHumanCapacity.getSeconds() > 0 && resource.getHumanResource() == null)
 		{
 			return BooleanWithReason.falseBecause("Human Resource capacity shall be specified when step requires human capacity");
 		}
@@ -67,7 +67,8 @@ public class StepDef
 
 	public ResourceId getResourceId() {return resource.getId();}
 
-	public HumanResourceCapacity getHumanResourceCapacity() {return resource.getHumanResourceCapacity();}
+	@Nullable
+	public HumanResourceId getHumanResourceId() {return resource.getHumanResourceId();}
 
 	public int computeDelayMax()
 	{
@@ -86,6 +87,9 @@ public class StepDef
 	@Nullable
 	public ResourceAvailabilityRanges computeHumanResourceScheduledRange(@NonNull final LocalDateTime startDate)
 	{
-		return resource.getHumanResourceAvailability().computeAvailabilityRanges(startDate, requiredHumanCapacity).orElse(null);
+		final HumanResource humanResource = resource.getHumanResource();
+		return humanResource != null
+				? humanResource.getAvailability().computeAvailabilityRanges(startDate, requiredHumanCapacity).orElse(null)
+				: null;
 	}
 }

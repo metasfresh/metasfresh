@@ -1,7 +1,8 @@
 package de.metas.calendar.plan_optimizer.persistance;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
+import de.metas.calendar.plan_optimizer.domain.HumanResource;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceId;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
@@ -243,13 +244,12 @@ public class DatabasePlanLoaderInstance
 				.id(resource.getResourceId())
 				.name(resource.getName().getDefaultValue())
 				.availability(resourceType.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
-				.humanResourceAvailability(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
-				.humanResourceCapacity(getHumanResourceCapacity(resource.getHumanResourceTestGroupId()))
+				.humanResource(getHumanResourceCapacity(resource.getHumanResourceTestGroupId()))
 				.build();
 	}
 
 	@Nullable
-	private HumanResourceCapacity getHumanResourceCapacity(@Nullable final HumanResourceTestGroupId groupId)
+	private HumanResource getHumanResourceCapacity(@Nullable final HumanResourceTestGroupId groupId)
 	{
 		if (groupId == null)
 		{
@@ -257,9 +257,11 @@ public class DatabasePlanLoaderInstance
 		}
 
 		final HumanResourceTestGroup group = humanResourceTestGroupService.getById(groupId);
-		return HumanResourceCapacity.builder()
-				.id(group.getId())
-				.weeklyCapacity(group.getWeeklyCapacity())
+		final ResourceWeeklyAvailability availability = ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION);
+
+		return HumanResource.builder()
+				.id(HumanResourceId.of(group.getId()))
+				.availability(availability)
 				.build();
 	}
 }

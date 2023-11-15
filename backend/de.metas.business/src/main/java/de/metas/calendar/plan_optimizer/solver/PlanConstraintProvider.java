@@ -10,8 +10,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerSupport;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.StepAllocation;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
 import de.metas.util.Check;
 
@@ -40,7 +38,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
-				humanResourceAvailableCapacity(constraintFactory),
+				//humanResourceAvailableCapacity(constraintFactory),
+				humanResourceConflict(constraintFactory),
 				//
 				// Soft:
 				penalizeNullableDelay(constraintFactory),
@@ -56,12 +55,10 @@ public class PlanConstraintProvider implements ConstraintProvider
 		return constraintFactory.forEachUniquePair(
 						StepAllocation.class,
 						Joiners.equal(StepAllocation::getResourceId),
-						resourceScheduleOverlapping())
+						Joiners.overlapping(StepAllocation::getResourceScheduledStartDate, StepAllocation::getResourceScheduledEndDate))
 				.penalize(ONE_HARD_1, PlanConstraintProvider::getOverlappingDuration)
 				.asConstraint("Resource conflict");
 	}
-
-	private static BiJoiner<StepAllocation, StepAllocation> resourceScheduleOverlapping() {return Joiners.overlapping(StepAllocation::getResourceScheduledStartDate, StepAllocation::getResourceScheduledEndDate);}
 
 	Constraint startDateMin(final ConstraintFactory constraintFactory)
 	{
@@ -79,25 +76,35 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("DueDate not respected");
 	}
 
-	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
+	Constraint humanResourceConflict(final ConstraintFactory constraintFactory)
 	{
-		return constraintFactory.forEach(StepAllocation.class)
-				.filter(StepAllocation::isHumanResourceScheduled)
-				.groupBy(ConstraintCollectors.sum(
-						StepRequiredCapacity::ofStep,
-						StepRequiredCapacity.ZERO,
-						StepRequiredCapacity::add,
-						StepRequiredCapacity::subtract))
-				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
-				.asConstraint("Available human resource test group capacity");
+		return constraintFactory.forEachUniquePair(
+						StepAllocation.class,
+						Joiners.equal(StepAllocation::getHumanResourceId),
+						Joiners.overlapping(StepAllocation::getHumanResourceScheduledStartDate, StepAllocation::getHumanResourceScheduledEndDate))
+				.penalize(ONE_HARD_2, PlanConstraintProvider::getOverlappingDuration)
+				.asConstraint("Human Resource conflict");
 	}
 
-	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
-	{
-		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(requiredCapacity.getCapacities());
-		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
-		return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
-	}
+	// Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
+	// {
+	// 	return constraintFactory.forEach(StepAllocation.class)
+	// 			.filter(StepAllocation::isHumanResourceScheduled)
+	// 			.groupBy(ConstraintCollectors.sum(
+	// 					StepRequiredCapacity::ofStep,
+	// 					StepRequiredCapacity.ZERO,
+	// 					StepRequiredCapacity::add,
+	// 					StepRequiredCapacity::subtract))
+	// 			.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
+	// 			.asConstraint("Available human resource test group capacity");
+	// }
+	//
+	// private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
+	// {
+	// 	final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(requiredCapacity.getCapacities());
+	// 	humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
+	// 	return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
+	// }
 
 	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
 	{

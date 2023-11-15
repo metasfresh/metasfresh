@@ -4,7 +4,8 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.calendar.plan_optimizer.domain.HumanResourceCapacity;
+import de.metas.calendar.plan_optimizer.domain.HumanResource;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceId;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
@@ -22,9 +23,7 @@ import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.ResourceWeeklyAvailability;
 import lombok.NonNull;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.Adempiere;
-import org.compiere.model.I_S_HumanResourceTestGroup;
 import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
@@ -46,6 +45,7 @@ public class ManualPOCTest
 
 	public static final Duration TERMINATION_SPENT_LIMIT = Duration.ofMinutes(5);
 	private final AtomicInteger nextStepRepoId = new AtomicInteger(1);
+	private final AtomicInteger nextHumanResourceId = new AtomicInteger(1);
 
 	ManualPOCTest()
 	{
@@ -104,7 +104,7 @@ public class ManualPOCTest
 	@SuppressWarnings("unused")
 	private Plan generateProblem_X_Projects_with_Y_Steps(@NonNull final SimulationPlanId simulationId)
 	{
-		final HumanResourceCapacity humanResourceCapacity = humanResourceCapacity(15);
+		final HumanResource humanResourceCapacity = humanResource(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17);
 
 		final StepDef.StepDefBuilder stepTemplate = StepDef.builder()
 				//.id(nextStepId(projectId))
@@ -149,7 +149,7 @@ public class ManualPOCTest
 		final ProjectId P3 = projectId(3); // C
 		final ProjectId P4 = projectId(4); // D
 
-		final HumanResourceCapacity humanResourceCapacity = humanResourceCapacity(40);
+		final HumanResource humanResourceCapacity = humanResource(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17);
 		final ResourceWeeklyAvailability availability_8x5 = ResourceWeeklyAvailability.builder()
 				.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
 				.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
@@ -191,25 +191,24 @@ public class ManualPOCTest
 	@NonNull
 	private static ProjectId projectId(final int index) {return ProjectId.ofRepoId(index);}
 
-	private static HumanResourceCapacity humanResourceCapacity(final int weeklyCapacityInHours)
+	private HumanResource humanResource(@NonNull ResourceWeeklyAvailability availability)
 	{
-		return HumanResourceCapacity.builder()
-				.id(HumanResourceTestGroupId.ofRepoId(POJOLookupMap.get().nextId(I_S_HumanResourceTestGroup.Table_Name)))
-				.weeklyCapacity(Duration.ofHours(weeklyCapacityInHours))
+		return HumanResource.builder()
+				.id(HumanResourceId.of(HumanResourceTestGroupId.ofRepoId(nextHumanResourceId.getAndIncrement())))
+				.availability(availability.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
 				.build();
 	}
 
 	private Resource resource(
 			int index,
-			@NonNull ResourceWeeklyAvailability resourceAvailability,
-			@Nullable HumanResourceCapacity humanResourceCapacity)
+			@NonNull ResourceWeeklyAvailability availability,
+			@Nullable HumanResource humanResourceCapacity)
 	{
 		return Resource.builder()
 				.id(resourceId(index))
 				.name("R" + index)
-				.availability(resourceAvailability)
-				.humanResourceAvailability(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
-				.humanResourceCapacity(humanResourceCapacity)
+				.availability(availability.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
+				.humanResource(humanResourceCapacity)
 				.build();
 	}
 
@@ -221,7 +220,7 @@ public class ManualPOCTest
 		final int stepRepoId = nextStepRepoId.getAndIncrement();
 		return StepId.builder()
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project respource id because does not matter and we just want something unique
+				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project resource id because does not matter, and we just want something unique
 				.build();
 	}
 }

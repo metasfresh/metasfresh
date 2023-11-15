@@ -15,12 +15,12 @@ public class Resource
 {
 	@PlanningId @NonNull ResourceId id;
 	@NonNull String name;
-
 	@NonNull @Builder.Default ResourceWeeklyAvailability availability = ResourceWeeklyAvailability.ALWAYS_AVAILABLE;
-
-	@NonNull @Builder.Default ResourceWeeklyAvailability humanResourceAvailability = ResourceWeeklyAvailability.ALWAYS_AVAILABLE;
-	@Nullable HumanResourceCapacity humanResourceCapacity;
+	@Nullable HumanResource humanResource;
 
 	@Override
 	public String toString() {return name;}
+
+	@Nullable
+	public HumanResourceId getHumanResourceId() {return humanResource != null ? humanResource.getId() : null;}
 }

@@ -132,36 +132,7 @@ public class StepAllocation
 		return sb.toString();
 	}
 
-	public BooleanWithReason checkProblemFactsValid()
-	{
-		final LocalDateTime startDateMin = stepDef.getStartDateMin();
-		final LocalDateTime dueDate = stepDef.getDueDate();
-		final Duration requiredResourceCapacity = stepDef.getRequiredHumanCapacity();
-		final Duration requiredHumanCapacity = stepDef.getRequiredHumanCapacity();
-		final HumanResourceCapacity humanResourceCapacity = stepDef.getHumanResourceCapacity();
-
-		if (!startDateMin.isBefore(dueDate))
-		{
-			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
-		}
-		final Duration durationMax = Duration.between(startDateMin, dueDate);
-
-		if (requiredResourceCapacity.getSeconds() <= 0)
-		{
-			return BooleanWithReason.falseBecause("Duration must be set and must be positive");
-		}
-		if (requiredResourceCapacity.compareTo(durationMax) > 0)
-		{
-			return BooleanWithReason.falseBecause("Duration does not fit into StartDateMin/DueDate interval");
-		}
-
-		if (requiredHumanCapacity.getSeconds() > 0 && humanResourceCapacity == null)
-		{
-			return BooleanWithReason.falseBecause("Human Resource capacity shall be specified when step requires human capacity");
-		}
-
-		return BooleanWithReason.TRUE;
-	}
+	public BooleanWithReason checkProblemFactsValid() {return stepDef.checkProblemFactsValid();}
 
 	@ValueRangeProvider
 	public CountableValueRange<Integer> getDelayRange()
@@ -174,9 +145,10 @@ public class StepAllocation
 
 	public ResourceId getResourceId() {return getStepDef().getResourceId();}
 
-	public InternalPriority getProjectPriority() {return getStepDef().getProjectPriority();}
+	@Nullable
+	public HumanResourceId getHumanResourceId() {return getStepDef().getHumanResourceId();}
 
-	public boolean isHumanResourceScheduled() {return stepDef.isRequiredHumanCapacity() && humanResourceScheduledRange != null;}
+	public InternalPriority getProjectPriority() {return getStepDef().getProjectPriority();}
 
 	private int getDelayAsInt() {return delay != null ? delay : 0;}
 
@@ -284,6 +256,20 @@ public class StepAllocation
 	{
 		computeVariablesIfNeeded();
 		return resourceScheduledRange != null ? resourceScheduledRange.getEndDate() : null;
+	}
+
+	@Nullable
+	public LocalDateTime getHumanResourceScheduledStartDate()
+	{
+		computeVariablesIfNeeded();
+		return humanResourceScheduledRange != null ? humanResourceScheduledRange.getStartDate() : null;
+	}
+
+	@Nullable
+	public LocalDateTime getHumanResourceScheduledEndDate()
+	{
+		computeVariablesIfNeeded();
+		return humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null;
 	}
 
 	LocalDateTime getStartDateMin() {return stepDef.getStartDateMin();}

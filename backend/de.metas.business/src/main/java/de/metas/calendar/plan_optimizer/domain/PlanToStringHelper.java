@@ -70,15 +70,18 @@ final class PlanToStringHelper
 	{
 		sb.append(nl(identation)).append(step);
 
+		final String resourcePrefix = rightAlign(step.getStepDef().getResource().toString(), 6) + " ";
+		final String hrPrefix = rightAlign("HR" + step.getHumanResourceId(), 6) + " ";
+
 		Optional.ofNullable(step.getResourceScheduledRange())
 				.stream()
 				.flatMap(ResourceAvailabilityRanges::stream)
-				.forEach(range -> appendRange(sb, identation + 1, " M ", range));
+				.forEach(range -> appendRange(sb, identation + 1, resourcePrefix, range));
 
 		Optional.ofNullable(step.getHumanResourceScheduledRange())
 				.stream()
 				.flatMap(ResourceAvailabilityRanges::stream)
-				.forEach(range -> appendRange(sb, identation + 1, "HR ", range));
+				.forEach(range -> appendRange(sb, identation + 1, hrPrefix, range));
 	}
 
 	private static void appendRange(final StringBuilder sb, final int identation, final String prefix, final ResourceAvailabilityRange range)
@@ -95,4 +98,16 @@ final class PlanToStringHelper
 	private static String nl() {return nl(0);}
 
 	private static String nl(final int identation) {return "\n" + "    ".repeat(identation);}
+
+	@SuppressWarnings("SameParameterValue")
+	private static String rightAlign(@NonNull final String string, final int resultLength)
+	{
+		final int length = string.length();
+		if (length >= resultLength)
+		{
+			return string;
+		}
+
+		return " ".repeat(resultLength - length) + string;
+	}
 }
