@@ -7,6 +7,7 @@ import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRules;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRulesRepository;
@@ -14,6 +15,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -29,6 +31,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
@@ -36,6 +39,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AllocationBL implements IAllocationBL
 {
@@ -297,7 +301,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if(request.isUseInvoiceDate())
+		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();
@@ -333,4 +337,19 @@ public class AllocationBL implements IAllocationBL
 				//
 				.create(true); // complete=true
 	}
+
+	@Override
+	public Optional<InvoiceId> getInvoiceId(@NonNull final PaymentAllocationLineId lineId)
+	{
+		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
+		return InvoiceId.optionalOfRepoId(line.getC_Invoice_ID());
+	}
+
+	@Override
+	public Optional<PaymentId> getPaymentId(@NonNull final PaymentAllocationLineId lineId)
+	{
+		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
+		return PaymentId.optionalOfRepoId(line.getC_Payment_ID());
+	}
+
 }

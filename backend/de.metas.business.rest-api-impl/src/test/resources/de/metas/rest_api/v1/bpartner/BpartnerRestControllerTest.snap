@@ -103,6 +103,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "sectionPartner": false,
       "storageWarehouse": false,
       "url": "bPartner.url",
+      "urproduzent": false,
       "value": "code",
       "vatId": "bPartner.vatId",
       "vendor": false
@@ -305,11 +306,13 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -343,6 +346,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -504,11 +508,13 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -542,6 +548,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -665,11 +672,13 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -703,6 +712,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -826,11 +836,13 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -864,6 +876,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true

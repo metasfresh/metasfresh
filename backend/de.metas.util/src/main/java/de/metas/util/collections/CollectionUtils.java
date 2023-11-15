@@ -169,11 +169,43 @@ public final class CollectionUtils
 		return result.get(0);
 	}
 
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection)
+	{
+		return singleElementOrEmpty(collection, e -> true);
+	}
+
 	/**
 	 * @param filter filter used to match the element
 	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
 	 */
 	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		T singleElement = null;
+		boolean singleElementSet = false;
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				if (singleElementSet)
+				{
+					// We already have an element => return empty
+					return Optional.empty();
+				}
+				else
+				{
+					singleElementSet = true;
+					singleElement = e;
+				}
+			}
+		}
+
+		return singleElementSet
+				? Optional.of(singleElement)
+				: Optional.empty();
+	}
+
+	public static <T> Optional<T> singleElementOrEmptyIfNotFound(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
 	{
 		final List<T> result = new ArrayList<>();
 
@@ -185,13 +217,17 @@ public final class CollectionUtils
 			}
 		}
 
-		if (result.size() == 1)
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (result.size() == 1)
 		{
 			return Optional.of(result.get(0));
 		}
 		else
 		{
-			return Optional.empty();
+			throw Check.mkEx("Only one matching element was expected but we got more: " + result);
 		}
 	}
 
@@ -304,6 +340,7 @@ public final class CollectionUtils
 		return collection
 				.stream()
 				.map(extractFunction)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -333,9 +370,15 @@ public final class CollectionUtils
 		for (final T item : collection)
 		{
 			final R changedItem = mappingFunction.apply(item);
-			result.add(changedItem);
-
-			if (!hasChanges && !Objects.equals(item, changedItem))
+			if (changedItem != null)
+			{
+				result.add(changedItem);
+				if (!hasChanges && !Objects.equals(item, changedItem))
+				{
+					hasChanges = true;
+				}
+			}
+			else
 			{
 				hasChanges = true;
 			}
@@ -492,6 +535,46 @@ public final class CollectionUtils
 
 		//
 		return values;
+	}
+
+	public static <K, V> Map<K, V> getAllOrLoadReturningMap(
+			@NonNull final Map<K, V> map,
+			@NonNull final Collection<K> keys,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final HashMap<K, V> result = new HashMap<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = map.get(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				result.put(key, value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			map.putAll(valuesLoaded); // add loaded values to cache
+			result.putAll(valuesLoaded); // add loaded values to the map we will return
+		}
+
+		//
+		return result;
 	}
 
 	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -71,10 +72,84 @@ class CollectionUtilsTest
 	}
 
 	@Nested
+	class singleElementOrEmpty
+	{
+		@Test
+		void empty()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void oneElement()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> item == 2);
+			assertThat(result).contains(2);
+		}
+
+		@Test
+		void twoIdenticalElements()
+		{
+			// NOTE: checking if elements are distinct is not the job of this method
+			ImmutableList<Integer> list = ImmutableList.of(1, 1);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void moreElements()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+	}
+
+	@Nested
+	class singleElementOrEmptyIfNotFound
+	{
+		@Test
+		void empty()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void oneElement()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> item == 2);
+			assertThat(result).contains(2);
+		}
+
+		@Test
+		void twoIdenticalElements()
+		{
+			// NOTE: checking if elements are distinct is not the job of this method
+			ImmutableList<Integer> list = ImmutableList.of(1, 1);
+			assertThatThrownBy(() -> CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true))
+					.hasMessageStartingWith("Only one matching element was expected but we got more");
+		}
+
+		@Test
+		void moreElements()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			assertThatThrownBy(() -> CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true))
+					.hasMessageStartingWith("Only one matching element was expected but we got more");
+		}
+	}
+
+	@Nested
 	class mergeElementToMap
 	{
 		@SafeVarargs
-		private final ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
+		private ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
 				final ImmutableMapEntry<String, String>... entries
 		)
 		{
@@ -179,6 +254,33 @@ class CollectionUtilsTest
 			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
 			assertThat(CollectionUtils.filter(list, item -> item == 6)).containsExactly(6);
 		}
+	}
 
+	@Nested
+	class map
+	{
+		@Test
+		void noChange()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item);
+			assertThat(listChanged).isSameAs(list);
+		}
+
+		@Test
+		void oneElementChanged()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? "99" : item);
+			assertThat(listChanged).containsExactly("1", "99", "3");
+		}
+
+		@Test
+		void oneElementRemoved()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? null : item);
+			assertThat(listChanged).containsExactly("1", "3");
+		}
 	}
 }

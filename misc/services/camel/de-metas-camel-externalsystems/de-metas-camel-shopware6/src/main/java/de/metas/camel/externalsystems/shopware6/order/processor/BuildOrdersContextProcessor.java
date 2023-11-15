@@ -27,18 +27,17 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
-import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonOrderProcessingConfig;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
@@ -129,6 +128,9 @@ public class BuildOrdersContextProcessor implements Processor
 		final String productLookup = request.getParameters().get(ExternalSystemConstants.PARAM_PRODUCT_LOOKUP);
 
 		Check.assumeNotNull(productLookup, "JsonExternalSystemRequest.parameters[ProductLookup] can't be missing");
+		final String orderProcessing = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_PROCESSING);
+
+		Check.assumeNotNull(orderProcessing, "JsonExternalSystemRequest.parameters[OrderProcessing] can't be missing");
 
 		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
@@ -150,6 +152,7 @@ public class BuildOrdersContextProcessor implements Processor
 				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.ordersResponsePageIndex(1)
 				.pageLimit(pageLimit)
+				.orderProcessingConfig(JsonOrderProcessingConfig.ofCode(orderProcessing))
 				.build();
 	}
 

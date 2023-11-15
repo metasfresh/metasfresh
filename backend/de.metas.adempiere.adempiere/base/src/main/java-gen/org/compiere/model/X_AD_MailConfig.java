@@ -1,138 +1,106 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_MailConfig
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailConfig, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -78905219L;
+	private static final long serialVersionUID = 877247377L;
 
     /** Standard Constructor */
-    public X_AD_MailConfig (Properties ctx, int AD_MailConfig_ID, String trxName)
+    public X_AD_MailConfig (final Properties ctx, final int AD_MailConfig_ID, @Nullable final String trxName)
     {
       super (ctx, AD_MailConfig_ID, trxName);
-      /** if (AD_MailConfig_ID == 0)
-        {
-			setAD_MailBox_ID (0);
-			setAD_MailConfig_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_MailConfig (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_MailConfig (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_MailBox getAD_MailBox() throws RuntimeException
+	public org.compiere.model.I_AD_MailBox getAD_MailBox()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_MailBox_ID, org.compiere.model.I_AD_MailBox.class);
 	}
 
 	@Override
-	public void setAD_MailBox(org.compiere.model.I_AD_MailBox AD_MailBox)
+	public void setAD_MailBox(final org.compiere.model.I_AD_MailBox AD_MailBox)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_MailBox_ID, org.compiere.model.I_AD_MailBox.class, AD_MailBox);
 	}
 
-	/** Set Mail Box.
-		@param AD_MailBox_ID Mail Box	  */
 	@Override
-	public void setAD_MailBox_ID (int AD_MailBox_ID)
+	public void setAD_MailBox_ID (final int AD_MailBox_ID)
 	{
 		if (AD_MailBox_ID < 1) 
 			set_Value (COLUMNNAME_AD_MailBox_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_MailBox_ID, Integer.valueOf(AD_MailBox_ID));
+			set_Value (COLUMNNAME_AD_MailBox_ID, AD_MailBox_ID);
 	}
 
-	/** Get Mail Box.
-		@return Mail Box	  */
 	@Override
-	public int getAD_MailBox_ID () 
+	public int getAD_MailBox_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MailBox_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_MailBox_ID);
 	}
 
-	/** Set Mail Configuration.
-		@param AD_MailConfig_ID Mail Configuration	  */
 	@Override
-	public void setAD_MailConfig_ID (int AD_MailConfig_ID)
+	public void setAD_MailConfig_ID (final int AD_MailConfig_ID)
 	{
 		if (AD_MailConfig_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_MailConfig_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_MailConfig_ID, Integer.valueOf(AD_MailConfig_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_MailConfig_ID, AD_MailConfig_ID);
 	}
 
-	/** Get Mail Configuration.
-		@return Mail Configuration	  */
 	@Override
-	public int getAD_MailConfig_ID () 
+	public int getAD_MailConfig_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MailConfig_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_MailConfig_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Prozess oder Bericht
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Prozess oder Bericht
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
 	/** 
@@ -140,25 +108,20 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	 * Reference name: AD_User choices
 	 */
 	public static final int COLUMNUSERTO_AD_Reference_ID=540662;
-	/** AD_User_ID = U */
-	public static final String COLUMNUSERTO_AD_User_ID = "U";
-	/** Bill_User_ID = BU */
-	public static final String COLUMNUSERTO_Bill_User_ID = "BU";
-	/** Set Column User To.
-		@param ColumnUserTo Column User To	  */
+	/** AD_User_ID = AD_User_ID */
+	public static final String COLUMNUSERTO_AD_User_ID = "AD_User_ID";
+	/** Bill_User_ID = Bill_User_ID */
+	public static final String COLUMNUSERTO_Bill_User_ID = "Bill_User_ID";
 	@Override
-	public void setColumnUserTo (java.lang.String ColumnUserTo)
+	public void setColumnUserTo (final @Nullable java.lang.String ColumnUserTo)
 	{
-
 		set_Value (COLUMNNAME_ColumnUserTo, ColumnUserTo);
 	}
 
-	/** Get Column User To.
-		@return Column User To	  */
 	@Override
-	public java.lang.String getColumnUserTo () 
+	public java.lang.String getColumnUserTo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColumnUserTo);
+		return get_ValueAsString(COLUMNNAME_ColumnUserTo);
 	}
 
 	/** 
@@ -168,21 +131,18 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final int CUSTOMTYPE_AD_Reference_ID=540142;
 	/** org.compiere.util.Login = L */
 	public static final String CUSTOMTYPE_OrgCompiereUtilLogin = "L";
-	/** Set Custom Type.
-		@param CustomType Custom Type	  */
+	/** InvoiceRejection = InvRej */
+	public static final String CUSTOMTYPE_InvoiceRejection = "InvRej";
 	@Override
-	public void setCustomType (java.lang.String CustomType)
+	public void setCustomType (final @Nullable java.lang.String CustomType)
 	{
-
 		set_Value (COLUMNNAME_CustomType, CustomType);
 	}
 
-	/** Get Custom Type.
-		@return Custom Type	  */
 	@Override
-	public java.lang.String getCustomType () 
+	public java.lang.String getCustomType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomType);
+		return get_ValueAsString(COLUMNNAME_CustomType);
 	}
 
 	/** 
@@ -228,8 +188,6 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final String DOCBASETYPE_CashJournal = "CMC";
 	/** PaymentAllocation = CMA */
 	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
-	/** MaterialProduction = MMP */
-	public static final String DOCBASETYPE_MaterialProduction = "MMP";
 	/** MatchInvoice = MXI */
 	public static final String DOCBASETYPE_MatchInvoice = "MXI";
 	/** MatchPO = MXP */
@@ -256,24 +214,30 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
-	/** Set Document BaseType.
-		@param DocBaseType 
-		Logical type of document
-	  */
+	/** DunningDoc = DUN */
+	public static final String DOCBASETYPE_DunningDoc = "DUN";
+	/** Shipment Declaration = SDD */
+	public static final String DOCBASETYPE_ShipmentDeclaration = "SDD";
+	/** Shipment Declaration Correction = SDC */
+	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
+	/** Customs Invoice = CUI */
+	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
+	/** ServiceRepairOrder = MRO */
+	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	@Override
-	public void setDocBaseType (java.lang.String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
-
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Document BaseType.
-		@return Logical type of document
-	  */
 	@Override
-	public java.lang.String getDocBaseType () 
+	public java.lang.String getDocBaseType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
+		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
 
 	/** 
@@ -297,22 +261,20 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final String DOCSUBTYPE_ReturnMaterial = "RM";
 	/** PrepayOrder = PR */
 	public static final String DOCSUBTYPE_PrepayOrder = "PR";
-	/** Auftrag (Vorkasse) zur Disposition = PM */
-	public static final String DOCSUBTYPE_AuftragVorkasseZurDisposition = "PM";
 	/** Provisionskorrektur = CC */
 	public static final String DOCSUBTYPE_Provisionskorrektur = "CC";
-	/** Provisionsberechnung = CA */
-	public static final String DOCSUBTYPE_Provisionsberechnung = "CA";
+	/** CommissionSettlement = CA */
+	public static final String DOCSUBTYPE_CommissionSettlement = "CA";
 	/** FlatFee = FF */
 	public static final String DOCSUBTYPE_FlatFee = "FF";
 	/** HoldingFee = HF */
 	public static final String DOCSUBTYPE_HoldingFee = "HF";
 	/** Subscription = SU */
 	public static final String DOCSUBTYPE_Subscription = "SU";
-	/** NB - Mengendifferenz = AQ */
-	public static final String DOCSUBTYPE_NB_Mengendifferenz = "AQ";
-	/** NB - Preisdifferenz = AP */
-	public static final String DOCSUBTYPE_NB_Preisdifferenz = "AP";
+	/** AQ = AQ */
+	public static final String DOCSUBTYPE_AQ = "AQ";
+	/** AP = AP */
+	public static final String DOCSUBTYPE_AP = "AP";
 	/** GS - Lieferdifferenz = CQ */
 	public static final String DOCSUBTYPE_GS_Lieferdifferenz = "CQ";
 	/** GS - Preisdifferenz = CR */
@@ -335,23 +297,63 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Saldokorektur = EC */
 	public static final String DOCSUBTYPE_Saldokorektur = "EC";
-	/** Set Doc Sub Type.
-		@param DocSubType 
-		Document Sub Type
-	  */
+	/** Internal Use Inventory = IUI */
+	public static final String DOCSUBTYPE_InternalUseInventory = "IUI";
+	/** Rückvergütungsrechnung = RI */
+	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
+	/** Rückvergütungsgutschrift = RC */
+	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
+	/** Healthcare_CH-GM = GM */
+	public static final String DOCSUBTYPE_Healthcare_CH_GM = "GM";
+	/** Healthcare_CH-EA = EA */
+	public static final String DOCSUBTYPE_Healthcare_CH_EA = "EA";
+	/** Healthcare_CH-KV = KV */
+	public static final String DOCSUBTYPE_Healthcare_CH_KV = "KV";
+	/** Healthcare_CH-KT = KT */
+	public static final String DOCSUBTYPE_Healthcare_CH_KT = "KT";
+	/** AggregatedHUInventory = IAH */
+	public static final String DOCSUBTYPE_AggregatedHUInventory = "IAH";
+	/** SingleHUInventory = ISH */
+	public static final String DOCSUBTYPE_SingleHUInventory = "ISH";
+	/** NAR = NAR */
+	public static final String DOCSUBTYPE_NAR = "NAR";
+	/** Cashbook = CB */
+	public static final String DOCSUBTYPE_Cashbook = "CB";
+	/** Bankstatement = BS */
+	public static final String DOCSUBTYPE_Bankstatement = "BS";
+	/** Virtual inventory = VIY */
+	public static final String DOCSUBTYPE_VirtualInventory = "VIY";
+	/** SR = SR */
+	public static final String DOCSUBTYPE_SR = "SR";
+	/** Requisition = REQ */
+	public static final String DOCSUBTYPE_Requisition = "REQ";
+	/** Frame Agrement = FA */
+	public static final String DOCSUBTYPE_FrameAgrement = "FA";
+	/** Order Call = OC */
+	public static final String DOCSUBTYPE_OrderCall = "OC";
+	/** Mediated = MED */
+	public static final String DOCSUBTYPE_Mediated = "MED";
+	/** RD = RD */
+	public static final String DOCSUBTYPE_RD = "RD";
+	/** Cost Estimate = CE */
+	public static final String DOCSUBTYPE_CostEstimate = "CE";
+	/** Kreditoren Nachbelastung = NBK */
+	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** LS = LS */
+	public static final String DOCSUBTYPE_LS = "LS";
+	/** Payment service provider invoice = SI */
+	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
+	/** CallOrder = CAO */
+	public static final String DOCSUBTYPE_CallOrder = "CAO";
 	@Override
-	public void setDocSubType (java.lang.String DocSubType)
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
-
 		set_Value (COLUMNNAME_DocSubType, DocSubType);
 	}
 
-	/** Get Doc Sub Type.
-		@return Document Sub Type
-	  */
 	@Override
-	public java.lang.String getDocSubType () 
+	public java.lang.String getDocSubType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocSubType);
+		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
 }

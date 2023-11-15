@@ -27,10 +27,18 @@ package de.metas.invoicecandidate.process;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.form.IClientUI;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.GetBPBankAccountQuery;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.forex.ForexContractService;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
@@ -41,8 +49,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -60,6 +68,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -72,6 +81,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
@@ -82,12 +93,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
+	private static final AdMessageKey CANNOT_ENQUEUE_CANDIDATES_FROM_MULTIPLE_BPs = AdMessageKey
+			.of("de.metas.invoicecandidate.process.C_Invoice_Candidate_EnqueueSelectionForInvoicing.MoreThanOneBPSelected");
 
 	//
 	// Services
@@ -98,6 +112,10 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final LookupDataSource bankAccountLookupSource = LookupDataSourceFactory.sharedInstance()
+			.searchInTableLookup(I_C_BP_BankAccount.Table_Name);
 
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
@@ -188,6 +206,32 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				: LookupValuesList.EMPTY;
 	}
 
+	@ProcessParamLookupValuesProvider(parameterName = InvoicingParams.PARA_BP_BankAccountId, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	public LookupValuesList getAvailableBankAccountIds(@NonNull final LookupDataSourceContext context)
+	{
+		final ImmutableSet<BPartnerId> bPartnerIdsInvolved = getBPartnerIds();
+
+		if (bPartnerIdsInvolved.size() > 1)
+		{
+			throw new AdempiereException(CANNOT_ENQUEUE_CANDIDATES_FROM_MULTIPLE_BPs);
+		}
+
+		if (bPartnerIdsInvolved.isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final ImmutableSet<BankAccountId> accountIds = bankAccountDAO.listByQuery(GetBPBankAccountQuery.builder()
+																						  .bPartnerIds(explodeWithSectionGroupPartners(bPartnerIdsInvolved))
+																						  .searchTerm(context.getFilter())
+																						  .build())
+				.stream()
+				.map(BankAccount::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return bankAccountLookupSource.findByIdsOrdered(accountIds);
+	}
+
 	@Override
 	@RunOutOfTrx
 	protected void prepare()
@@ -224,6 +268,12 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		{
 			return;
 		}
+
+		if (getInvoicingParams().isInvoicingSingleBPartner())
+		{
+			throw new AdempiereException(CANNOT_ENQUEUE_CANDIDATES_FROM_MULTIPLE_BPs);
+		}
+
 		final boolean performEnqueuing;
 		if (Ini.isSwingClient())
 		{
@@ -245,7 +295,10 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		}
 	}
 
-	private InvoicingParams getInvoicingParams() {return InvoicingParams.ofParams(getParameterAsIParams());}
+	private InvoicingParams getInvoicingParams()
+	{
+		return InvoicingParams.ofParams(getParameterAsIParams());
+	}
 
 	@Override
 	protected String doIt()
@@ -286,11 +339,35 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	private int countBPartners()
 	{
+		return getBPartnerIds().size();
+
+	}
+
+	@NonNull
+	private ImmutableSet<BPartnerId> getBPartnerIds()
+	{
 		return createICQueryBuilder()
 				.create()
-				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
-				.size();
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, Integer.class)
+				.stream()
+				.map(BPartnerId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
+	@NonNull
+	private ImmutableSet<BPartnerId> explodeWithSectionGroupPartners(@NonNull final ImmutableSet<BPartnerId> bPartnerIds)
+	{
+		final ImmutableSet.Builder<BPartnerId> collector = ImmutableSet.builder();
+		collector.addAll(bPartnerIds);
+
+		partnerDAO.retrieveByIds(bPartnerIds)
+				.stream()
+				.map(I_C_BPartner::getSection_Group_Partner_ID)
+				.map(BPartnerId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.forEach(collector::add);
+
+		return collector.build();
 	}
 
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()

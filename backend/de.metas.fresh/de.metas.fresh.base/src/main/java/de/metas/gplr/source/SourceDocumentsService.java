@@ -7,10 +7,15 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.MeansOfTransportation;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -25,6 +30,7 @@ import de.metas.gplr.source.model.SourceCurrencyInfo;
 import de.metas.gplr.source.model.SourceDocuments;
 import de.metas.gplr.source.model.SourceIncotermsAndLocation;
 import de.metas.gplr.source.model.SourceInvoice;
+import de.metas.gplr.source.model.SourceInvoiceLine;
 import de.metas.gplr.source.model.SourceOrder;
 import de.metas.gplr.source.model.SourceOrderCost;
 import de.metas.gplr.source.model.SourceOrderLine;
@@ -42,6 +48,7 @@ import de.metas.inout.location.adapter.DocumentLocationAdapter;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -61,6 +68,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsId;
+import de.metas.payment.paymentinstructions.PaymentInstructionsService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
@@ -87,6 +96,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -97,8 +107,10 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class SourceDocumentsService
@@ -116,9 +128,11 @@ public class SourceDocumentsService
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final PaymentInstructionsService paymentInstructionsService;
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	@NonNull final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@NonNull private final SectionCodeService sectionCodeService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -126,21 +140,26 @@ public class SourceDocumentsService
 	@NonNull private final OrderCostService orderCostService;
 	@NonNull private final IncotermsRepository incotermsRepository;
 	@NonNull private final ForexContractService forexContractService;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	public SourceDocumentsService(
+			@NonNull final PaymentInstructionsService paymentInstructionsService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final MoneyService moneyService,
 			@NonNull final OrderCostService orderCostService,
 			@NonNull final IncotermsRepository incotermsRepository,
-			@NonNull final ForexContractService forexContractService)
+			@NonNull final ForexContractService forexContractService,
+			@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
+		this.paymentInstructionsService = paymentInstructionsService;
 		this.sectionCodeService = sectionCodeService;
 		this.documentLocationBL = documentLocationBL;
 		this.moneyService = moneyService;
 		this.orderCostService = orderCostService;
 		this.incotermsRepository = incotermsRepository;
 		this.forexContractService = forexContractService;
+		this.deliveryPlanningService = deliveryPlanningService;
 	}
 
 	public BooleanWithReason checkEligible(final InvoiceId invoiceId)
@@ -150,6 +169,11 @@ public class SourceDocumentsService
 
 	private static BooleanWithReason checkEligible(final I_C_Invoice invoice)
 	{
+		if (!invoice.isSOTrx())
+		{
+			return BooleanWithReason.falseBecause("Invoice shall be a sales invoice");
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
 		if (!docStatus.isCompleted() && !docStatus.isReversed())
 		{
@@ -164,8 +188,14 @@ public class SourceDocumentsService
 		final SourceInvoice salesInvoice = getSalesInvoice(invoiceId);
 		final OrderId salesOrderId = salesInvoice.getOrderId();
 		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
-		final Set<OrderId> purchaseOrderIds = orderBL.getPurchaseOrderIdsBySalesOrderId(salesOrderId);
-		final List<I_C_Order> purchaseOrders = orderBL.getByIds(purchaseOrderIds);
+		final List<I_C_Order> purchaseOrders = orderBL.getPurchaseOrdersBySalesOrderId(salesOrderId)
+				.stream()
+				.filter(purchaseOrder -> DocStatus.ofNullableCodeOrUnknown(purchaseOrder.getDocStatus()).isCompleted())
+				.collect(Collectors.toList());
+		final Set<OrderId> purchaseOrderIds = purchaseOrders.stream()
+				.map(purchaseOrder -> OrderId.ofRepoId(purchaseOrder.getC_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final boolean isBackToBack = !purchaseOrderIds.isEmpty();
 
 		final HashSet<OrderId> allOrderIds = new HashSet<>();
 		allOrderIds.add(salesOrderId);
@@ -191,12 +221,15 @@ public class SourceDocumentsService
 			return SourceOrder.builder()
 					.documentNo(order.getDocumentNo())
 					.bpartner(getBPartnerInfo(order))
-					.frameContractNo(extractFrameContractNo(order))
+					.frameContractNo(extractFrameContractNo(linesByOrderId.get(orderId)))
 					.sectionCode(SectionCodeId.optionalOfRepoId(order.getM_SectionCode_ID()).map(sectionCodeService::getById))
 					.currencyInfo(extractCurrencyInfo(order))
 					.dateOrdered(order.getDateOrdered().toInstant())
 					.poReference(StringUtils.trimBlankToNull(order.getPOReference()))
 					.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID())))
+					.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(order.getC_PaymentInstruction_ID())
+							.map(paymentInstructionsService::getById)
+							.orElse(null))
 					.incotermsAndLocation(extractIncotermsAndLocation(order))
 					.lines(linesByOrderId.get(orderId))
 					.orderCosts(orderCostsByOrderId.get(orderId))
@@ -206,7 +239,7 @@ public class SourceDocumentsService
 		return SourceDocuments.builder()
 				.salesInvoice(salesInvoice)
 				.salesOrder(toOrderAndLines.apply(salesOrder))
-				.shipments(getSourceShipments(salesOrderId))
+				.shipments(getSourceShipments(salesOrderId, isBackToBack))
 				.purchaseOrders(purchaseOrders.stream()
 						.map(toOrderAndLines)
 						.collect(ImmutableList.toImmutableList()))
@@ -265,15 +298,20 @@ public class SourceDocumentsService
 	}
 
 	@Nullable
-	private String extractFrameContractNo(final I_C_Order order)
+	private String extractFrameContractNo(final List<SourceOrderLine> orderLines)
 	{
-		final OrderId frameAgreementOrderId = OrderId.ofRepoIdOrNull(order.getC_FrameAgreement_Order_ID());
-		if (frameAgreementOrderId == null)
+		final Set<FlatrateTermId> contractIds = orderLines.stream()
+				.map(SourceOrderLine::getContractId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (contractIds.size() != 1)
 		{
 			return null;
 		}
 
-		return orderBL.getById(frameAgreementOrderId).getDocumentNo();
+		final FlatrateTermId contractId = contractIds.iterator().next();
+
+		return flatrateBL.getById(contractId).getDocumentNo();
 	}
 
 	private SourceBPartnerInfo getBPartnerInfo(final I_C_Order order)
@@ -305,12 +343,18 @@ public class SourceDocumentsService
 				.lineNetAmtFC(Amount.of(orderLine.getLineNetAmt(), currency))
 				.taxAmtFC(Amount.of(orderLine.getTaxAmtInfo(), currency))
 				.tax(extractSourceTaxInfo(orderLine))
+				.contractId(FlatrateTermId.ofRepoIdOrNull(orderLine.getC_Flatrate_Term_ID()))
 				.build();
 	}
 
 	private SourceTaxInfo extractSourceTaxInfo(final I_C_OrderLine orderLine)
 	{
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
+		return getSourceTaxInfo(taxId);
+	}
+
+	private SourceTaxInfo getSourceTaxInfo(final TaxId taxId)
+	{
 		final Tax tax = taxBL.getTaxById(taxId);
 		return SourceTaxInfo.builder()
 				.vatCode(tax.getTaxCode())
@@ -351,50 +395,8 @@ public class SourceDocumentsService
 
 	private SourceInvoice getSalesInvoice(final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		checkEligible(invoice).assertTrue();
-
-		final I_C_Invoice salesInvoice;
-		if (invoice.isSOTrx())
-		{
-			salesInvoice = invoice;
-		}
-		else
-		{
-			final OrderId purchaseOrderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-			if (purchaseOrderId == null)
-			{
-				throw new AdempiereException("Cannot determine purchase order");
-			}
-
-			//
-			// Determine Sales Order
-			final Set<OrderId> salesOrderIds = orderBL.getSalesOrderIdsByPurchaseOrderId(purchaseOrderId);
-			if (salesOrderIds.isEmpty())
-			{
-				throw new AdempiereException("No Sales Order found");
-			}
-			else if (salesOrderIds.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Order found");
-			}
-			final OrderId salesOrderId = salesOrderIds.iterator().next();
-
-			//
-			// Determine Sales Invoice
-			final List<? extends I_C_Invoice> salesInvoices = invoiceBL.getByOrderId(salesOrderId);
-			if (salesInvoices.isEmpty())
-			{
-				throw new AdempiereException("No Sales Invoice found for " + salesOrderId);
-			}
-			else if (salesInvoices.size() != 1)
-			{
-				throw new AdempiereException("More than one Sales Invoice found for " + salesOrderId);
-			}
-			salesInvoice = salesInvoices.iterator().next();
-		}
-
-		//
+		final I_C_Invoice salesInvoice = invoiceBL.getById(invoiceId);
+		checkEligible(salesInvoice).assertTrue();
 		return toSourceInvoice(salesInvoice);
 	}
 
@@ -418,10 +420,29 @@ public class SourceDocumentsService
 				.dateInvoiced(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), orgId, orgDAO::getTimeZone))
 				.sapProductHierarchy(getSapProductHierarchy(invoiceId))
 				.paymentTerm(paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID())))
+				.paymentInstructions(PaymentInstructionsId.optionalOfRepoId(invoice.getC_PaymentInstruction_ID())
+						.map(paymentInstructionsService::getById)
+						.orElse(null))
 				.dueDate(LocalDateAndOrgId.ofNullableTimestamp(invoice.getDueDate(), orgId, orgDAO::getTimeZone))
-				.descriptionBottom(StringUtils.trimBlankToNull(invoice.getDescriptionBottom()))
+				.invoiceAdditionalText(StringUtils.trimBlankToNull(invoice.getInvoiceAdditionalText()))
 				.linesNetAmtFC(Amount.of(invoice.getTotalLines(), currencyCode))
 				.taxAmtFC(Amount.of(invoice.getGrandTotal().subtract(invoice.getTotalLines()), currencyCode))
+				.lines(invoiceBL.getLines(invoiceId)
+						.stream()
+						.map(invoiceLine -> toSourceInvoiceLine(invoiceLine, currencyCode))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private SourceInvoiceLine toSourceInvoiceLine(final I_C_InvoiceLine invoiceLine, final CurrencyCode currencyCode)
+	{
+		return SourceInvoiceLine.builder()
+				.id(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.priceFC(Amount.of(invoiceLine.getPriceActual(), currencyCode))
+				.lineNetAmtFC(Amount.of(invoiceLine.getLineNetAmt(), currencyCode))
+				.taxAmtFC(Amount.of(invoiceLine.getTaxAmtInfo(), currencyCode))
+				.tax(getSourceTaxInfo(TaxId.ofRepoId(invoiceLine.getC_Tax_ID())))
+				.orderLineId(OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID()))
 				.build();
 	}
 
@@ -513,15 +534,16 @@ public class SourceDocumentsService
 				.build();
 	}
 
-	private ImmutableList<SourceShipment> getSourceShipments(final OrderId salesOrderId)
+	private ImmutableList<SourceShipment> getSourceShipments(final OrderId salesOrderId, final boolean isBackToBack)
 	{
 		return inOutBL.getByOrderId(salesOrderId)
 				.stream()
-				.map(this::toSourceShipment)
+				.filter(shipment -> DocStatus.ofNullableCodeOrUnknown(shipment.getDocStatus()).isCompletedOrClosed())
+				.map(shipment -> toSourceShipment(shipment, isBackToBack))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private SourceShipment toSourceShipment(final I_M_InOut shipment)
+	private SourceShipment toSourceShipment(final I_M_InOut shipment, final boolean isBackToBack)
 	{
 		final OrgId orgId = OrgId.ofRepoId(shipment.getAD_Org_ID());
 
@@ -531,8 +553,9 @@ public class SourceDocumentsService
 				.movementDate(LocalDateAndOrgId.ofTimestamp(shipment.getMovementDate(), orgId, orgDAO::getTimeZone))
 				.shipFrom(getWarehouseInfo(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID())))
 				.shipTo(getShipTo(shipment))
+				.isBackToBack(isBackToBack)
 				.incoterms(extractIncotermsAndLocation(shipment))
-				.shipper(extractShipperIdAndName(shipment))
+				.shipper(extractShipperInfo(shipment))
 				.build();
 	}
 
@@ -544,6 +567,7 @@ public class SourceDocumentsService
 				.warehouseId(warehouseId)
 				.warehouseCode(warehouse.getValue())
 				.warehouseName(warehouse.getName())
+				.warehouseExternalId(warehouse.getExternalId())
 				.build();
 	}
 
@@ -563,18 +587,27 @@ public class SourceDocumentsService
 	}
 
 	@Nullable
-	private SourceShipperInfo extractShipperIdAndName(final I_M_InOut shipment)
+	private SourceShipperInfo extractShipperInfo(final I_M_InOut shipment)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
 		if (shipperId != null)
 		{
 			return SourceShipperInfo.builder()
-					.shipperId(shipperId)
 					.name(shipperDAO.getShipperName(shipperId))
 					.build();
 		}
 
-		// TODO get the M_MeansOfTransportation_ID (via M_Delivery_Planning.M_MeansOfTransportation_ID? ask Ruxi)
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(shipment.getM_Delivery_Planning_ID());
+		if (deliveryPlanningId != null)
+		{
+			final MeansOfTransportation meansOfTransportation = deliveryPlanningService.getMeansOfTransportationByDeliveryPlanningId(deliveryPlanningId).orElse(null);
+			if (meansOfTransportation != null)
+			{
+				return SourceShipperInfo.builder()
+						.name(meansOfTransportation.toDisplayableString())
+						.build();
+			}
+		}
 
 		return null;
 	}
@@ -583,7 +616,8 @@ public class SourceDocumentsService
 	{
 		final DocumentDeliveryLocationAdapter deliveryLocationAdapter = InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(shipment);
 		final DocumentLocation documentLocation;
-		if (deliveryLocationAdapter.isDropShip())
+		final boolean isDropShip = deliveryLocationAdapter.isDropShip();
+		if (isDropShip)
 		{
 			documentLocation = deliveryLocationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(null);
 		}
@@ -598,7 +632,8 @@ public class SourceDocumentsService
 			throw new AdempiereException("Failed extracting Ship To location from " + shipment);
 		}
 
-		return toBPartnerInfo(documentLocation);
+		return toBPartnerInfo(documentLocation)
+				.withDropShip(isDropShip);
 	}
 
 	private SourceBPartnerInfo toBPartnerInfo(final DocumentLocation documentLocation)
@@ -609,8 +644,11 @@ public class SourceDocumentsService
 			throw new AdempiereException("No location set for " + documentLocation);
 		}
 
+		final String vatId = Optional.ofNullable(documentLocation.getBpartnerLocationId()).flatMap(bpartnerBL::getVATTaxId).orElse(null);
+
 		return prepareBPartnerInfo(documentLocation.getBpartnerId())
 				.countryCode(locationBL.getCountryCodeByLocationId(locationId))
+				.vatId(vatId)
 				.build();
 	}
 
@@ -619,8 +657,7 @@ public class SourceDocumentsService
 		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
 		return SourceBPartnerInfo.builder()
 				.code(bpartner.getValue())
-				.name(bpartner.getName())
-				.vatId(bpartner.getVATaxID());
+				.name(bpartner.getName());
 	}
 
 	private SourceUserInfo getUserInfo(final int userRepoId)

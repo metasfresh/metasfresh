@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
@@ -74,27 +52,6 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Java Class.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setClassname (@Nullable java.lang.String Classname);
-
-	/**
-	 * Get Java Class.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getClassname();
-
-	ModelColumn<I_ModCntr_Type, Object> COLUMN_Classname = new ModelColumn<>(I_ModCntr_Type.class, "Classname", null);
-	String COLUMNNAME_Classname = "Classname";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -126,7 +83,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription (@Nullable String Description);
 
 	/**
 	 * Get Description.
@@ -135,7 +92,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	@Nullable String getDescription();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Type.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -185,13 +142,34 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**
+	 * Set Modular Contract Handler Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModularContractHandlerType (@Nullable String ModularContractHandlerType);
+
+	/**
+	 * Get Modular Contract Handler Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getModularContractHandlerType();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
+	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setName (String Name);
 
 	/**
 	 * Get Name.
@@ -200,7 +178,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	String getName();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Type.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -238,7 +216,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (java.lang.String Value);
+	void setValue (String Value);
 
 	/**
 	 * Get Search Key.
@@ -248,7 +226,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getValue();
+	String getValue();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Value = new ModelColumn<>(I_ModCntr_Type.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

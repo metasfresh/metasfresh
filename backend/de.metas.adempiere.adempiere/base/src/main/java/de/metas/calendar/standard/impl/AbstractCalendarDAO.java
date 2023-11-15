@@ -51,6 +51,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
 	private final CCache<CalendarId, CalendarNonBusinessDays> nonBusinessDaysByCalendarId = CCache.newCache(I_C_NonBusinessDay.Table_Name, 10, CCache.EXPIREMINUTES_Never);
@@ -195,5 +197,19 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 		}
 
 		return calendarNames.get(0);
+	}
+
+	@Override
+	@NonNull
+	public I_C_Calendar getById(@NonNull final CalendarId calendarId)
+	{
+		final I_C_Calendar calendarRecord = load(calendarId, I_C_Calendar.class);
+		
+		if (calendarRecord == null)
+		{
+			throw new AdempiereException("No record found for " + calendarId);
+		}
+		
+		return calendarRecord;
 	}
 }

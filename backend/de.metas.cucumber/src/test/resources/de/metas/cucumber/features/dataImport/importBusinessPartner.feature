@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Import Business Partner via DataImportRestController
 
   Background:

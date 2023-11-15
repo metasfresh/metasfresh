@@ -33,7 +33,7 @@ import java.util.UUID;
 @ExtendWith(SnapshotExtension.class)
 class HUQRCodeGenerateCommandTest
 {
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -141,6 +141,6 @@ class HUQRCodeGenerateCommandTest
 				.build()
 				.execute();
 
-		expect.serializer("orderedJson").toMatchSnapshot(qrCodes);
+		expect.toMatchSnapshot(qrCodes);
 	}
 }

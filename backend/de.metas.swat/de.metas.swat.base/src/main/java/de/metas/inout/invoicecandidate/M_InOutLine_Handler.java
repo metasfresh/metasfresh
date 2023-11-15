@@ -44,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -436,6 +437,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
 
+		setWarehouseId(icRecord);
+		setHarvestingDetails(icRecord);
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
 		invoiceCandBL.setPaymentTermIfMissing(icRecord);
@@ -1059,5 +1062,32 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_AD_Note note = null; // we don't have a note
 		Services.get(IInvoiceCandBL.class).setError(ic, ex.getLocalizedMessage(), note, askForDeleteRegeneration);
+	}
+
+	@Override
+	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = ic.getC_Order();
+		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
+	}
+
+	@Override
+	public void setHarvestingDetails(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = ic.getC_Order();
+		ic.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		ic.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 	}
 }

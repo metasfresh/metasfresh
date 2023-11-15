@@ -354,7 +354,11 @@ public class MatchInvBuilder
 
 		//
 		final StockQtyAndUOMQty qtyMatched;
-		if (qtyInvoicedNotMatchedSignum > 0)
+		if(qtyInvoicedNotMatchedSignum == 0)
+		{
+			qtyMatched = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(_invoiceLine.getM_Product_ID()), UomId.ofRepoId(_invoiceLine.getC_UOM_ID()));
+		}
+		else if (qtyInvoicedNotMatchedSignum > 0)
 		{
 			if (qtyMovedNotMatchedSignum > 0 || isAllowQtysOfOppositeSigns())
 			{

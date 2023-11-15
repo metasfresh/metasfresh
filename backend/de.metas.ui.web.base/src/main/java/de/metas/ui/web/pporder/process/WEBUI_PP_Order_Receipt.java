@@ -23,7 +23,6 @@
 package de.metas.ui.web.pporder.process;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -37,6 +36,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -45,6 +45,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -75,6 +76,13 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
 	private BigDecimal p_QtyLU;
 
+	private final static String PARAM_NumberOfCUs = "NumberOfCUs";
+	@Param(parameterName = PARAM_NumberOfCUs)
+	private int p_NumberOfCUs;
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_IsReceiveIndividualCUs)
+	private boolean isReceiveIndividualCUs;
+
 	private transient PackingInfoProcessParams _packingInfoParams;
 
 	/**
@@ -87,6 +95,7 @@ public class WEBUI_PP_Order_Receipt
 			_packingInfoParams = PackingInfoProcessParams.builder()
 					.defaultLUTUConfigManager(createDefaultLUTUConfigManager(getSingleSelectedRow()))
 					.enforcePhysicalTU(false) // allow to to produce just the CU, without a TU etc..maybe later we'll add a sysconfig for this
+					.selectedRow(getSingleSelectedRow())
 					.build();
 		}
 
@@ -204,14 +213,20 @@ public class WEBUI_PP_Order_Receipt
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		// Calculate and set the LU/TU config from packing info params and defaults
-		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
+		final IPPOrderReceiptHUProducer producer = newReceiptCandidatesProducer();
 
-		newReceiptCandidatesProducer()
-				.packUsingLUTUConfiguration(lutuConfig)
-				.createDraftReceiptCandidatesAndPlanningHUs();
+		if (isReceiveIndividualCUs)
+		{
+			producer.withPPOrderLocatorId()
+					.receiveIndividualPlanningCUs(getIndividualCUsCount());
+		}
+		else
+		{
+			producer.packUsingLUTUConfiguration(getPackingInfoParams().createAndSaveNewLUTUConfig())
+					.createDraftReceiptCandidatesAndPlanningHUs();
+		}
 
 		return MSG_OK;
 	}
@@ -245,5 +260,16 @@ public class WEBUI_PP_Order_Receipt
 		{
 			throw new AdempiereException("Receiving is not allowed");
 		}
+	}
+
+	@NonNull
+	private Quantity getIndividualCUsCount()
+	{
+		if (p_NumberOfCUs <= 0)
+		{
+			throw new FillMandatoryException(PARAM_NumberOfCUs);
+		}
+
+		return Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull());
 	}
 }

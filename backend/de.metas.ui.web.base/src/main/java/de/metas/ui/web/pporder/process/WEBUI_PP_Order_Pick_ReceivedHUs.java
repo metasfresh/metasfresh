@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -42,7 +44,6 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.util.HURow;
-import de.metas.ui.web.pporder.util.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -50,6 +51,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -58,6 +60,7 @@ import java.util.Set;
 
 public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -152,18 +155,18 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 					.pickingSlotId(pickingSlotId)
 					.build();
 
-			WEBUI_PP_Order_ProcessHelper.pickHU(pickRequest);
+			pickingCandidateService.pickHU(pickRequest);
 
 			huIds.add(huId);
 			qtyLeftToPick = qtyLeftToPick.subtract(qtyToPick);
 
 		}
 
-		WEBUI_PP_Order_ProcessHelper.processHUs(ProcessPickingRequest.builder()
+		pickingCandidateService.processForHUIds(ProcessPickingRequest.builder()
 														.huIds(ImmutableSet.copyOf(huIds))
 														.shipmentScheduleId(shipmentScheduleId)
 														.ppOrderId(ppOrderId)
-														.isTakeWholeHU(isTakeWholeHU)
+														.shouldSplitHUIfOverDelivery(!isTakeWholeHU)
 														.build());
 	}
 

@@ -23,6 +23,8 @@
 package de.metas.util.web.filter;
 
 import de.metas.Profiles;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.audit.ApiAuditService;
 import de.metas.util.web.github.GithubIssueFilter;
@@ -43,6 +45,8 @@ import static de.metas.common.rest_api.v2.APIConstants.GITHUB_ISSUE_CONTROLLER_S
 @Configuration
 public class FilterRegistrationConfig
 {
+	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+
 	// NOTE: we are using standard spring CORS filter
 	// @Bean
 	// public FilterRegistrationBean<CORSFilter> corsFilter()
@@ -80,7 +84,7 @@ public class FilterRegistrationConfig
 			@NonNull final UserAuthTokenFilterConfiguration configuration)
 	{
 		final FilterRegistrationBean<UserAuthTokenFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService, configuration));
+		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService, configuration, languageDAO));
 		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
 		registrationBean.setOrder(2);
 		return registrationBean;

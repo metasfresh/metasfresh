@@ -1,8 +1,8 @@
 package de.metas.handlingunits.inventory;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
+import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -20,6 +20,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,7 +47,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -69,7 +72,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class InventoryRepositoryTest
 {
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
@@ -81,16 +84,17 @@ class InventoryRepositoryTest
 
 	private AttributeSetInstanceId asiId;
 
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		orgId = createOrg(orgTimeZone);
 
-		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord = BusinessTestHelper.createUomEach();
 		saveRecord(uomRecord);
 
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
@@ -105,6 +109,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository = new InventoryRepository();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private OrgId createOrg(final ZoneId timeZone)
 	{
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -199,7 +204,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
-		expect.serializer("orderedJson").toMatchSnapshot(reloadedResult);
+		expect.toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

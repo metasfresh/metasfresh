@@ -26,7 +26,7 @@ import java.io.PrintStream;
 
 final class ConsoleLoggable implements ILoggable
 {
-	public static final transient ConsoleLoggable instance = new ConsoleLoggable();
+	public static final ConsoleLoggable instance = new ConsoleLoggable();
 
 	private final PrintStream out;
 

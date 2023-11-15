@@ -50,6 +50,8 @@ import java.util.List;
  */
 public class Doc_Cash extends Doc<DocLine_Cash>
 {
+	private int m_C_CashBook_ID = -1;
+
 	public Doc_Cash(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.CashJournal);
@@ -249,4 +251,23 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 		final int cashBookId = getC_CashBook_ID();
 		return getAccountProvider().getCashAccount(as.getId(), cashBookId, acctType);
 	}
+
+	protected final int getC_CashBook_ID()
+	{
+		if (m_C_CashBook_ID == -1)
+		{
+			m_C_CashBook_ID = getValueAsIntOrZero("C_CashBook_ID");
+			if (m_C_CashBook_ID <= 0)
+			{
+				m_C_CashBook_ID = 0;
+			}
+		}
+		return m_C_CashBook_ID;
+	}
+
+	protected final void setC_CashBook_ID(final int C_CashBook_ID)
+	{
+		m_C_CashBook_ID = C_CashBook_ID;
+	}
+
 }   // Doc_Cash

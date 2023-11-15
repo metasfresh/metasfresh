@@ -82,6 +82,12 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		return RenderedAddressAndCapturedLocation.of(renderedAddress, locationId);
 	}
 
+	@Override
+	public String computeRenderedAddressString(@NonNull final DocumentLocation location)
+	{
+		return computeRenderedAddress(location).getRenderedAddress();
+	}
+
 	private DocumentLocation withUpdatedLocationId(final DocumentLocation location)
 	{
 		final BPartnerLocationId bpLocationId = location.getBpartnerLocationId();

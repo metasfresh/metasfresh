@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:invoiceAddress
+@ghActions:run_on_executor5
 Feature: Compensation Group
 
   Background:

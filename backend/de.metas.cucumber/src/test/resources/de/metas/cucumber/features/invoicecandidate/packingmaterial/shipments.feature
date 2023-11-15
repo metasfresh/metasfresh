@@ -650,7 +650,7 @@ Feature: Packing material invoice candidates: shipments
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | IP        |
-    # note that the nexts step *first* waits for the ICs to be updated
+    # note that the next step *first* waits for the ICs to be updated
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
       | invoiceCand_1                     | o_1                       | ol_1                          | 0                | 0            | salesProduct                |
@@ -1391,8 +1391,7 @@ Feature: Packing material invoice candidates: shipments
       | invoiceCandShipmentLine_2                  | invoiceCand_2                         | shipmentLine_2                | 15               |
 
     When the shipment identified by shipment_1 is reversed
-
-
+    
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | RE        |

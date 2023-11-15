@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -87,7 +88,7 @@ public class CreatePickingPlanCommand
 
 	//
 	// Params
-	private final ImmutableList<Packageable> packageables;
+	private final PackageableList packageables;
 
 	//
 	// State
@@ -141,13 +142,6 @@ public class CreatePickingPlanCommand
 
 	private static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
 	{
-		final Quantity qtyToAllocateTarget = packageable.getQtyToDeliver()
-				.subtract(packageable.getQtyPickedNotDelivered())
-				// IMPORTANT: don't subtract the Qty PickedPlanned
-				// because we will also allocate existing DRAFT picking candidates
-				// .subtract(packageable.getQtyPickedPlanned())
-				.toZeroIfNegative();
-
 		return AllocablePackageable.builder()
 				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
 				.customerId(packageable.getCustomerId())
@@ -156,7 +150,7 @@ public class CreatePickingPlanCommand
 				.bestBeforePolicy(packageable.getBestBeforePolicy())
 				.warehouseId(packageable.getWarehouseId())
 				.pickFromOrderId(packageable.getPickFromOrderId())
-				.qtyToAllocateTarget(qtyToAllocateTarget)
+				.qtyToAllocateTarget(packageable.getQtyToPick())
 				.build();
 	}
 

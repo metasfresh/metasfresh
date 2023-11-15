@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.externalsystem
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
@@ -53,22 +75,22 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base-URL.
+	 * Set Base URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setBaseURL (String BaseURL);
+	void setBaseURL (java.lang.String BaseURL);
 
 	/**
-	 * Get Base-URL.
+	 * Get Base URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getBaseURL();
+	java.lang.String getBaseURL();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_BaseURL = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "BaseURL", null);
 	String COLUMNNAME_BaseURL = "BaseURL";
@@ -80,7 +102,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setClient_Id (String Client_Id);
+	void setClient_Id (java.lang.String Client_Id);
 
 	/**
 	 * Get Access key ID.
@@ -89,7 +111,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getClient_Id();
+	java.lang.String getClient_Id();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_Client_Id = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "Client_Id", null);
 	String COLUMNNAME_Client_Id = "Client_Id";
@@ -101,7 +123,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setClient_Secret (String Client_Secret);
+	void setClient_Secret (java.lang.String Client_Secret);
 
 	/**
 	 * Get Secret access key.
@@ -110,7 +132,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getClient_Secret();
+	java.lang.String getClient_Secret();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_Client_Secret = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "Client_Secret", null);
 	String COLUMNNAME_Client_Secret = "Client_Secret";
@@ -158,11 +180,11 @@ public interface I_ExternalSystem_Config_Shopware6
 	 */
 	int getExternalSystem_Config_ID();
 
-	I_ExternalSystem_Config getExternalSystem_Config();
+	de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config();
 
-	void setExternalSystem_Config(I_ExternalSystem_Config ExternalSystem_Config);
+	void setExternalSystem_Config(de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config);
 
-	ModelColumn<I_ExternalSystem_Config_Shopware6, I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystem_Config_ID", I_ExternalSystem_Config.class);
+	ModelColumn<I_ExternalSystem_Config_Shopware6, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
@@ -193,7 +215,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (String ExternalSystemValue);
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
 
 	/**
 	 * Get Value.
@@ -202,7 +224,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getExternalSystemValue();
+	java.lang.String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
@@ -215,7 +237,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFreightCost_NormalVAT_Rates (@Nullable String FreightCost_NormalVAT_Rates);
+	void setFreightCost_NormalVAT_Rates (@Nullable java.lang.String FreightCost_NormalVAT_Rates);
 
 	/**
 	 * Get Normal VAT rates.
@@ -225,7 +247,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getFreightCost_NormalVAT_Rates();
+	@Nullable java.lang.String getFreightCost_NormalVAT_Rates();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_NormalVAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_NormalVAT_Rates", null);
 	String COLUMNNAME_FreightCost_NormalVAT_Rates = "FreightCost_NormalVAT_Rates";
@@ -238,7 +260,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFreightCost_Reduced_VAT_Rates (@Nullable String FreightCost_Reduced_VAT_Rates);
+	void setFreightCost_Reduced_VAT_Rates (@Nullable java.lang.String FreightCost_Reduced_VAT_Rates);
 
 	/**
 	 * Get Reduced VAT rates.
@@ -248,7 +270,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getFreightCost_Reduced_VAT_Rates();
+	@Nullable java.lang.String getFreightCost_Reduced_VAT_Rates();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_Reduced_VAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_Reduced_VAT_Rates", null);
 	String COLUMNNAME_FreightCost_Reduced_VAT_Rates = "FreightCost_Reduced_VAT_Rates";
@@ -307,7 +329,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setJSONPathConstantBPartnerLocationID (@Nullable String JSONPathConstantBPartnerLocationID);
+	void setJSONPathConstantBPartnerLocationID (@Nullable java.lang.String JSONPathConstantBPartnerLocationID);
 
 	/**
 	 * Get Address JSON-path.
@@ -317,7 +339,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getJSONPathConstantBPartnerLocationID();
+	@Nullable java.lang.String getJSONPathConstantBPartnerLocationID();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerLocationID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerLocationID", null);
 	String COLUMNNAME_JSONPathConstantBPartnerLocationID = "JSONPathConstantBPartnerLocationID";
@@ -330,7 +352,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setJSONPathEmail (@Nullable String JSONPathEmail);
+	void setJSONPathEmail (@Nullable java.lang.String JSONPathEmail);
 
 	/**
 	 * Get Recipient EMail JSON Path.
@@ -340,7 +362,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getJSONPathEmail();
+	@Nullable java.lang.String getJSONPathEmail();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathEmail = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathEmail", null);
 	String COLUMNNAME_JSONPathEmail = "JSONPathEmail";
@@ -353,7 +375,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setJSONPathMetasfreshID (@Nullable String JSONPathMetasfreshID);
+	void setJSONPathMetasfreshID (@Nullable java.lang.String JSONPathMetasfreshID);
 
 	/**
 	 * Get Business partner mapping - metasfresh-ID JSON-Path.
@@ -363,7 +385,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getJSONPathMetasfreshID();
+	@Nullable java.lang.String getJSONPathMetasfreshID();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathMetasfreshID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathMetasfreshID", null);
 	String COLUMNNAME_JSONPathMetasfreshID = "JSONPathMetasfreshID";
@@ -376,7 +398,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setJSONPathSalesRepID (@Nullable String JSONPathSalesRepID);
+	void setJSONPathSalesRepID (@Nullable java.lang.String JSONPathSalesRepID);
 
 	/**
 	 * Get Sales rep JSON-path.
@@ -386,7 +408,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getJSONPathSalesRepID();
+	@Nullable java.lang.String getJSONPathSalesRepID();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathSalesRepID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathSalesRepID", null);
 	String COLUMNNAME_JSONPathSalesRepID = "JSONPathSalesRepID";
@@ -399,7 +421,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setJSONPathShopwareID (@Nullable String JSONPathShopwareID);
+	void setJSONPathShopwareID (@Nullable java.lang.String JSONPathShopwareID);
 
 	/**
 	 * Get Business partner mapping - Shopware6-ID JSON-Path.
@@ -409,7 +431,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getJSONPathShopwareID();
+	@Nullable java.lang.String getJSONPathShopwareID();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathShopwareID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathShopwareID", null);
 	String COLUMNNAME_JSONPathShopwareID = "JSONPathShopwareID";
@@ -481,6 +503,27 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
+	 * Set Order Processing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOrderProcessing (java.lang.String OrderProcessing);
+
+	/**
+	 * Get Order Processing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getOrderProcessing();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_OrderProcessing = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "OrderProcessing", null);
+	String COLUMNNAME_OrderProcessing = "OrderProcessing";
+
+	/**
 	 * Set Percentage deduction.
 	 * Percentage that is subtracted from the actual available for sales before it is transferred to Shopware. For example, with 25% only three quarters of the actually available for sales is reported to the shop.
 	 *
@@ -511,7 +554,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProductLookup (String ProductLookup);
+	void setProductLookup (java.lang.String ProductLookup);
 
 	/**
 	 * Get Product Lookup.
@@ -521,7 +564,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getProductLookup();
+	java.lang.String getProductLookup();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ProductLookup = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ProductLookup", null);
 	String COLUMNNAME_ProductLookup = "ProductLookup";

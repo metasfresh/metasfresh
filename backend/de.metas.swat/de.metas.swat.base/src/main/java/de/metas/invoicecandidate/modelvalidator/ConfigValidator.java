@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.listeners.AggregationListenerAdapter;
 import de.metas.aggregation.listeners.IAggregationListener;
@@ -41,10 +42,10 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.callout.C_Invoice_Candidate_TabCallout;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
@@ -56,16 +57,18 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Main Invoice Candidates validator
  *
  * @author tsa
- *
  */
 public class ConfigValidator extends AbstractModuleInterceptor
 {
-	/** Listens on {@link I_C_Aggregation} changes and invalidates matching {@link I_C_Invoice_Candidate}s */
+	/**
+	 * Listens on {@link I_C_Aggregation} changes and invalidates matching {@link I_C_Invoice_Candidate}s
+	 */
 	private static final IAggregationListener aggregationListener = new AggregationListenerAdapter()
 	{
 		@Override
@@ -91,11 +94,6 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new C_Invoice_Candidate_GridTabSummaryInfoProvider());
 
 		setupAggregations();
-
-		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains
-		// are inserts into the table, if an embedded async processor is running somewhere in the background
-		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-		migrationLogger.addTableToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
 
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
@@ -171,5 +169,17 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_C_Invoice_Candidate.Table_Name);
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains
+				// are inserts into the table, if an embedded async processor is running somewhere in the background
+				I_C_Invoice_Candidate_Recompute.Table_Name,
+
+				I_I_Invoice_Candidate.Table_Name
+		);
 	}
 }

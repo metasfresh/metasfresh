@@ -24,6 +24,7 @@ package de.metas.marketing.base;
 
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.SyncDirection;
 import de.metas.marketing.base.sync.CampaignSyncService;
@@ -31,6 +32,8 @@ import de.metas.marketing.base.sync.ContactPersonSyncService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class PlatformSyncService
@@ -83,4 +86,13 @@ public class PlatformSyncService
 			throw new AdempiereException("Invalid sync direction: " + syncDirection);
 		}
 	}
+
+	public void syncContactsLocalToRemote(
+			@NonNull final CampaignId campaignId,
+			@NonNull final List<ContactPerson> contactsToSync)
+	{
+		final Campaign campaign = campaignSyncService.syncCampaignLocalToRemoteIfRemoteIdMissing(campaignId);
+		contactPersonSyncService.syncLocalToRemote(campaign, contactsToSync);
+	}
+
 }

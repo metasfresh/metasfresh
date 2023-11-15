@@ -1,6 +1,7 @@
 package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
@@ -10,7 +11,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.compiere.model.I_M_Product_Acct;
 import org.springframework.stereotype.Repository;
 
@@ -91,6 +91,7 @@ public class ProductAccountsRepository
 				.P_OutsideProcessing_Acct(Account.of(AccountId.ofRepoId(record.getP_OutsideProcessing_Acct()), I_M_Product_Acct.COLUMNNAME_P_OutsideProcessing_Acct))
 				.P_Overhead_Acct(Account.of(AccountId.ofRepoId(record.getP_Overhead_Acct()), I_M_Product_Acct.COLUMNNAME_P_Overhead_Acct))
 				.P_Scrap_Acct(Account.of(AccountId.ofRepoId(record.getP_Scrap_Acct()), I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct))
+				.P_ExternallyOwnedStock_Acct(Account.of(AccountId.ofRepoId(record.getP_ExternallyOwnedStock_Acct()), I_M_Product_Acct.COLUMNNAME_P_ExternallyOwnedStock_Acct))
 				.build();
 	}
 }

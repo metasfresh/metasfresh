@@ -1,5 +1,6 @@
 @from:cucumber
 @ignore #fixme: will get un-commented with a next commit
+@ghActions:run_on_executor6
 Feature: sales order interaction with material cockpit - no product planning
 
   Background: Initial Data

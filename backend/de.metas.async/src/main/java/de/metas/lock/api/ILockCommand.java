@@ -23,6 +23,7 @@ package de.metas.lock.api;
  */
 
 import de.metas.process.PInstanceId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -131,6 +132,11 @@ public interface ILockCommand
 	ILockCommand setRecordByModel(final Object model);
 
 	ILockCommand setRecordByTableRecordId(final int tableId, final int recordId);
+
+	default ILockCommand setRecordByRecordReference(@NonNull final TableRecordReference recordReference)
+	{
+		return setRecordByTableRecordId(recordReference.getAD_Table_ID(), recordReference.getRecord_ID());
+	}
 
 	ILockCommand addRecord(TableRecordReference record);
 

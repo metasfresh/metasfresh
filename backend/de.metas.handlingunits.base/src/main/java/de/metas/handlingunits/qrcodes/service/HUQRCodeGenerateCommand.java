@@ -119,8 +119,22 @@ class HUQRCodeGenerateCommand
 
 	private HUQRCodeAttribute toHUQRCodeAttribute(final HUQRCodeGenerateRequest.Attribute request)
 	{
-		final AttributeId attributeId = request.getAttributeId();
-		final I_M_Attribute attribute = attributeDAO.getAttributeById(attributeId);
+		final AttributeId attributeId;
+		final I_M_Attribute attribute;
+		if (request.getAttributeId() != null)
+		{
+			attributeId = request.getAttributeId();
+			attribute = attributeDAO.getAttributeById(attributeId);
+		}
+		else if (request.getCode() != null)
+		{
+			attribute = attributeDAO.retrieveAttributeByValue(request.getCode());
+			attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot find M_Attribute_ID by " + request);
+		}
 
 		final String value;
 		final String valueRendered;

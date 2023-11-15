@@ -30,7 +30,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_API_KEY = "APIKey";
 	public static final String PARAM_BASE_PATH = "BasePath";
 	public static final String PARAM_TENANT = "Tenant";
-	public static final String PARAM_BPARTNER_GROUP = "BPartnerGroup";
+
 	public static final String PARAM_UPDATED_AFTER = "UpdatedAfter";
 	public static final String PARAM_UPDATE_AFTER_DOCUMENT = "UpdatedAfterDocument";
 	public static final String PARAM_UPDATE_AFTER_ATTACHMENT = "UpdatedAfterAttachment";
@@ -40,7 +40,6 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_JSON_PATH_CONSTANT_METASFRESH_ID = "JSONPathConstantMetasfreshID";
 	public static final String PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID = "JSONPathConstantShopwareID";
-	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
 	public static final String PARAM_JSON_PATH_EMAIL = "JSONPathEmail";
@@ -62,6 +61,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*
 	public static final String PARAM_ORDER_ID = "OrderId"; // if set, then this shall override PARAM_UPDATED_AFTER*
+
+	public static final String PARAM_ORDER_PROCESSING = "OrderProcessing";
 	public static final String PARAM_ROOT_BPARTNER_ID_FOR_USERS = "RootBPartnerID";
 
 	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
@@ -175,5 +176,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_SAP_ApiVersion = "SAP_ApiVersion";
 
 	public static final String PARAM_SAP_BPARTNER_IMPORT_SETTINGS = "SAP_BPartner_Import_Settings";
+
+	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
+	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
 }
 

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -48,12 +49,15 @@ import java.util.stream.Stream;
  * It creates one VHU for each receipt schedule, using it's remaining quantity to move.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @implSpec <a href="https://github.com/metasfresh/metasfresh-webui/issues/182">task</a>
+ * https://github.com/metasfresh/metasfresh-webui/issues/182
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
 {
+
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available

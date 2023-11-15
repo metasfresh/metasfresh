@@ -18,6 +18,7 @@ import java.util.List;
 public class JsonRawMaterialsIssueLine
 {
 	@NonNull String productName;
+	@NonNull String productValue;
 	@NonNull String uom;
 	@NonNull List<JsonHazardSymbol> hazardSymbols;
 	@NonNull List<JsonAllergen> allergens;
@@ -39,6 +40,7 @@ public class JsonRawMaterialsIssueLine
 	{
 		return builder()
 				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
+				.productValue(from.getProductValue())
 				.uom(from.getQtyToIssue().getUOMSymbol())
 				.isWeightable(from.isWeightable())
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())

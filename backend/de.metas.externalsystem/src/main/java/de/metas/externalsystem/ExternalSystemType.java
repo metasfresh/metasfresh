@@ -55,7 +55,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
 	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName()),
 	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName()),
-	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName())
+	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName()),
+	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
 	;
 
 	@Getter
@@ -67,7 +68,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	@Getter
 	private final String externalSystemProcessClassName;
 
-	ExternalSystemType(@NonNull final String code, final String name, final String externalSystemProcessClassName)
+	ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
 	{
 		this.code = code;
 		this.name = name;

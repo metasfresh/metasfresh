@@ -3,6 +3,7 @@ package de.metas.i18n.impl;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
@@ -94,7 +95,7 @@ public class MsgBL implements IMsgBL
 	@Override
 	public ITranslatableString translatable(final String text)
 	{
-		if (Check.isEmpty(text, true))
+		if (Check.isBlank(text))
 		{
 			return TranslatableStrings.constant(text);
 		}
@@ -123,5 +124,12 @@ public class MsgBL implements IMsgBL
 	public void cacheReset()
 	{
 		Msg.cacheReset();
+	}
+
+	@Override
+	public String getBaseLanguageMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return TranslatableStrings.adMessage(adMessage, msgParameters)
+				.translate(Language.getBaseAD_Language());
 	}
 }

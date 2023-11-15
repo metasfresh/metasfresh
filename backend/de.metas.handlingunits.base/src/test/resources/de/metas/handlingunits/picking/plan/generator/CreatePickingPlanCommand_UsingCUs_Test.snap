@@ -3,10 +3,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "alternatives": {
       "pickFroms": [
         {
-          "availableQty": {
-            "qty": "960.000",
-            "uomId": 1000000
-          },
+          "availableQty": "960.000 Kg",
           "key": {
             "huId": 1000002,
             "locatorId": "1000000_1000001",
@@ -33,10 +30,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "topLevelHUId": 1000003
         },
         "productId": 1000000,
-        "qty": {
-          "qty": "1.000",
-          "uomId": 1000000
-        },
+        "qty": "1.000 Kg",
         "sourceDocumentInfo": {
           "packToSpec": {
             "genericPackingInstructionsId": 101
@@ -66,10 +60,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "topLevelHUId": 1000000
         },
         "productId": 1000000,
-        "qty": {
-          "qty": "30.000",
-          "uomId": 1000000
-        },
+        "qty": "30.000 Kg",
         "sourceDocumentInfo": {
           "packToSpec": {
             "genericPackingInstructionsId": 101
@@ -99,10 +90,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "topLevelHUId": 1000001
         },
         "productId": 1000000,
-        "qty": {
-          "qty": "30.000",
-          "uomId": 1000000
-        },
+        "qty": "30.000 Kg",
         "sourceDocumentInfo": {
           "packToSpec": {
             "genericPackingInstructionsId": 101
@@ -126,10 +114,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "topLevelHUId": 1000002
         },
         "productId": 1000000,
-        "qty": {
-          "qty": "39.000",
-          "uomId": 1000000
-        },
+        "qty": "39.000 Kg",
         "sourceDocumentInfo": {
           "packToSpec": {
             "genericPackingInstructionsId": 101

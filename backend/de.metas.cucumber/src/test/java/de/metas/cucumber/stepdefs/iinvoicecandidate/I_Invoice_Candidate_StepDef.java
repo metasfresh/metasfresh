@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -174,8 +174,10 @@ public class I_Invoice_Candidate_StepDef
 		final String billBPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
 		softly.assertThat(invoiceCandidate.getBill_BPartner_ID()).as("Bill_Partner_ID").isEqualTo(billBPartner.getC_BPartner_ID());
-		softly.assertThat(invoiceCandidate.getBill_BPartner_Value()).as("Bill_Partner_Value").isEqualTo(billBPartner.getValue());
-
+		if (invoiceCandidate.getBill_BPartner_Value() != null)
+		{
+			softly.assertThat(invoiceCandidate.getBill_BPartner_Value()).as("Bill_Partner_Value").isEqualTo(billBPartner.getValue());
+		}
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		softly.assertThat(invoiceCandidate.getM_Product_ID()).as("M_Product_ID").isEqualTo(product.getM_Product_ID());

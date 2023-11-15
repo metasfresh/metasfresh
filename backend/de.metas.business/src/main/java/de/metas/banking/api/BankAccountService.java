@@ -108,4 +108,38 @@ public class BankAccountService
 	{
 		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
+
+	@NonNull
+	public BankAccount upsertBankAccount(@NonNull final UpsertBPBankAccountRequest request)
+	{
+		final BankAccount updatedExistingAcct = Optional.ofNullable(request.getIban())
+				.flatMap(bankAccountDAO::getBankAccountByIBAN)
+				.map(bpAccount -> bpAccount.toBuilder()
+						.name(request.getName())
+						.accountNo(request.getAccountNo())
+						.routingNo(request.getRoutingNo())
+						.IBAN(request.getIban())
+						.bPartnerId(request.getBPartnerId())
+						.currencyId(request.getCurrencyId())
+						.orgId(request.getOrgId())
+						.build())
+				.orElse(null);
+
+		if (updatedExistingAcct != null)
+		{
+			return bankAccountDAO.update(updatedExistingAcct);
+		}
+
+		final CreateBPBankAccountRequest createBPBankAccountRequest = CreateBPBankAccountRequest.builder()
+				.name(request.getName())
+				.accountNo(request.getAccountNo())
+				.routingNo(request.getRoutingNo())
+				.iban(request.getIban())
+				.bPartnerId(request.getBPartnerId())
+				.currencyId(request.getCurrencyId())
+				.orgId(request.getOrgId())
+				.build();
+
+		return bankAccountDAO.create(createBPBankAccountRequest);
+	}
 }

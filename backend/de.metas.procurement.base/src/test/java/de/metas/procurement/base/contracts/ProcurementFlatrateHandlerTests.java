@@ -1,22 +1,23 @@
 package de.metas.procurement.base.contracts;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.procurement.base.PMMContractBuilder;
+import lombok.Getter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Period;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Period;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.PMMContractBuilder;
-import lombok.Getter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -49,7 +50,7 @@ public class ProcurementFlatrateHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		procurementFlatrateHandler = new ProcurementFlatrateHandler()
 		{
 			@Override

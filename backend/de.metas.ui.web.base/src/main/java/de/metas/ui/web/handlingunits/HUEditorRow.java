@@ -53,6 +53,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 import java.util.function.Function;
 
 /*
@@ -660,6 +661,30 @@ public final class HUEditorRow implements IViewRow
 		final String stringFilterNorm = normalizer.apply(stringFilter);
 
 		return rowDisplayNameNorm.contains(stringFilterNorm);
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> getAllHuIds()
+	{
+		final ImmutableSet.Builder<HuId> huIdCollector = ImmutableSet.builder();
+		huIdCollector.add(getHuId());
+
+		final Stack<HUEditorRow> rowsToProcess = new Stack<>();
+		if (includedRows != null)
+		{
+			includedRows.forEach(rowsToProcess::push);
+		}
+
+		while (!rowsToProcess.isEmpty())
+		{
+			final HUEditorRow currentRow = rowsToProcess.pop();
+			huIdCollector.add(currentRow.getHuId());
+
+			Optional.ofNullable(currentRow.getIncludedRows())
+					.ifPresent(inclRows -> inclRows.forEach(rowsToProcess::push));
+		}
+
+		return huIdCollector.build();
 	}
 
 	//

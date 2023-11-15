@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor6
 Feature: Process order candidate and automatically generate shipment and invoice for it, using a product without product price
   As a user
   I create an order candidate, using a product without product price
@@ -518,8 +519,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | olCand_1               |
 
     And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                    |
-      | olCand_1               | Product is not on PriceList |
+      | C_OLCand_ID.Identifier | ErrorMsg                             |
+      | olCand_1               | Produkt ist nicht auf der Preisliste |
 
   @from:cucumber
   @topic:orderCandidate
@@ -576,5 +577,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | olCand_1               |
 
     And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                    |
-      | olCand_1               | Product is not on PriceList |
+      | C_OLCand_ID.Identifier | ErrorMsg                             |
+      | olCand_1               | Produkt ist nicht auf der Preisliste |

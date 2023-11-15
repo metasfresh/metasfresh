@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1137477833L;
+	private static final long serialVersionUID = -1041809730L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -311,6 +311,27 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public int getAD_Workflow_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
+	}
+
+	/** 
+	 * ApprovalStrategy AD_Reference_ID=541818
+	 * Reference name: ApprovalStrategy
+	 */
+	public static final int APPROVALSTRATEGY_AD_Reference_ID=541818;
+	/** Standard = STD */
+	public static final String APPROVALSTRATEGY_Standard = "STD";
+	/** Requestor Hierarcy / Project Manager + CTO = RH+PM+CTO */
+	public static final String APPROVALSTRATEGY_RequestorHierarcyProjectManagerPlusCTO = "RH+PM+CTO";
+	@Override
+	public void setApprovalStrategy (final @Nullable java.lang.String ApprovalStrategy)
+	{
+		set_Value (COLUMNNAME_ApprovalStrategy, ApprovalStrategy);
+	}
+
+	@Override
+	public java.lang.String getApprovalStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_ApprovalStrategy);
 	}
 
 	@Override
@@ -782,21 +803,6 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
 	public void setSetupTime (final int SetupTime)
 	{
 		set_Value (COLUMNNAME_SetupTime, SetupTime);
@@ -827,6 +833,21 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public java.lang.String getSplitElement() 
 	{
 		return get_ValueAsString(COLUMNNAME_SplitElement);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	/** 

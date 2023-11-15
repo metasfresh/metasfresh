@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder;
 
+import de.metas.i18n.AdMessageKey;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 /**
@@ -20,6 +22,11 @@ public class LiberoException extends AdempiereException
 		super(message);
 	}
 
+	public LiberoException(@NonNull final AdMessageKey messageKey)
+	{
+		super(messageKey);
+	}
+	
 	public LiberoException(Throwable cause)
 	{
 		super(cause);

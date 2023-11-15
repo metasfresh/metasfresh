@@ -22,6 +22,7 @@
 
 package org.eevolution.document;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.organization.InstantAndOrgId;
@@ -63,13 +64,13 @@ public class PP_Product_BOM_DocHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_PP_Product_BOM productBomRecord = extractProductBom(docFields);
 
 		productBomRecord.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
 		productBomRecord.setProcessed(true);
-		return X_PP_Product_BOM.DOCSTATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override

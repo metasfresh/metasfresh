@@ -58,7 +58,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -237,22 +236,8 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 
-		// metas: tsa: us025b: end
-		// @Trifon - CashPayments
-		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Cash Book Is mandatory
-			if (getC_CashBook_ID() <= 0)
-			{
-				throw new FillMandatoryException("C_CashBook_ID");
-			}
-		}
-
-		// end @Trifon - CashPayments
-
 		// We have a charge
-		if (getC_Charge_ID() != 0)
+		if (getC_Charge_ID() > 0)
 		{
 			if (newRecord || is_ValueChanged("C_Charge_ID"))
 			{
@@ -1293,55 +1278,6 @@ public final class MPayment extends X_C_Payment
 		{
 			m_processMsg += " @CounterDoc@: @C_Payment_ID@=" + counter.getDocumentNo();
 		}
-
-		// @Trifon - CashPayments
-		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Create Cash Book entry
-			if (getC_CashBook_ID() <= 0)
-			{
-				throw new FillMandatoryException("C_CashBook_ID");
-				// m_processMsg = "@NoCashBook@";
-				// return DocAction.STATUS_Invalid;
-			}
-			final MCash cash = MCash.get(getCtx(), getAD_Org_ID(), getDateAcct(), getC_Currency_ID(), get_TrxName());
-			if (cash == null || cash.get_ID() == 0)
-			{
-				m_processMsg = "@NoCashBook@";
-				return DocStatus.Invalid.getCode();
-			}
-			final MCashLine cl = new MCashLine(cash);
-			cl.setCashType(X_C_CashLine.CASHTYPE_GeneralReceipts);
-			cl.setDescription("Generated From Payment #" + getDocumentNo());
-			cl.setC_Currency_ID(getC_Currency_ID());
-			cl.setC_Payment_ID(getC_Payment_ID()); // Set Reference to payment.
-			final StringBuffer info = new StringBuffer();
-			info.append("Cash journal ( ")
-					.append(cash.getDocumentNo()).append(" )");
-			m_processMsg = info.toString();
-			// Amount
-			final BigDecimal amt = this.getPayAmt();
-			/*
-			 * MDocType dt = MDocType.get(getCtx(), invoice.getC_DocType_ID()); if (MDocType.DOCBASETYPE_APInvoice.equals( dt.getDocBaseType() ) || MDocType.DOCBASETYPE_ARCreditMemo.equals(
-			 * dt.getDocBaseType() ) ) { amt = amt.negate(); }
-			 */
-			cl.setAmount(amt);
-			//
-			cl.setDiscountAmt(BigDecimal.ZERO);
-			cl.setWriteOffAmt(BigDecimal.ZERO);
-			cl.setIsGenerated(true);
-
-			if (!cl.save(get_TrxName()))
-			{
-				m_processMsg = "Could not save Cash Journal Line";
-				return DocStatus.Invalid.getCode();
-			}
-		}
-		// End Trifon - CashPayments
-		// metas: begin: CashPayments
-		// NOTE: cash as payment is handled in de.metas.banking module. See de.metas.banking.payment.modelvalidator.C_Payment.createCashStatementLineIfNeeded(I_C_Payment).
-		// metas: end: CashPayments
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);

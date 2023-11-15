@@ -105,6 +105,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public HandlingUnitsDAO()
 	{

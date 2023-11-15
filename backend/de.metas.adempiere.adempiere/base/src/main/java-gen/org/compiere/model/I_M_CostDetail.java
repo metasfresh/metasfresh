@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_CostDetail
  *  @author metasfresh (generated) 
@@ -715,6 +714,27 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipping Notification Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipping_NotificationLine_ID (int M_Shipping_NotificationLine_ID);
+
+	/**
+	 * Get Shipping Notification Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipping_NotificationLine_ID();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_M_Shipping_NotificationLine_ID = new ModelColumn<>(I_M_CostDetail.class, "M_Shipping_NotificationLine_ID", null);
+	String COLUMNNAME_M_Shipping_NotificationLine_ID = "M_Shipping_NotificationLine_ID";
+
+	/**
 	 * Set Manufacturing Cost Collector.
 	 *
 	 * <br>Type: Search
@@ -916,27 +936,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set Source Currency.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSource_Currency_ID (int Source_Currency_ID);
-
-	/**
-	 * Get Source Currency.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSource_Currency_ID();
-
-	String COLUMNNAME_Source_Currency_ID = "Source_Currency_ID";
-
-	/**
-	 * Set Source Amount.
+	 * Set Amount in document currency.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -945,7 +945,7 @@ public interface I_M_CostDetail
 	void setSourceAmt (@Nullable BigDecimal SourceAmt);
 
 	/**
-	 * Get Source Amount.
+	 * Get Amount in document currency.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -955,6 +955,26 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, Object> COLUMN_SourceAmt = new ModelColumn<>(I_M_CostDetail.class, "SourceAmt", null);
 	String COLUMNNAME_SourceAmt = "SourceAmt";
+
+	/**
+	 * Set Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource_Currency_ID (int Source_Currency_ID);
+
+	/**
+	 * Get Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSource_Currency_ID();
+
+	String COLUMNNAME_Source_Currency_ID = "Source_Currency_ID";
 
 	/**
 	 * Get Updated.

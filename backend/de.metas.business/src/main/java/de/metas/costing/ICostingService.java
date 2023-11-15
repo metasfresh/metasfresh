@@ -31,13 +31,13 @@ public interface ICostingService
 {
 	CostElement getCostElementById(@NonNull CostElementId costElementId);
 
-	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
+	CostDetailCreateResultsList createCostDetail(CostDetailCreateRequest request);
 
-	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+	ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
 
-	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
+	CostDetailCreateResultsList createReversalCostDetails(CostDetailReverseRequest request);
 
-	ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
+	ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
 
 	MoveCostsResult moveCosts(MoveCostsRequest request);
 

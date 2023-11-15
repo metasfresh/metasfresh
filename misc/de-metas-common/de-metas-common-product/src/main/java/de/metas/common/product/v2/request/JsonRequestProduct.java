@@ -161,6 +161,9 @@ public class JsonRequestProduct
 	@Schema
 	private JsonRequestUpsertQualityAttribute qualityAttributes;
 
+	@Schema
+	private JsonRequestProductWarehouseAssignmentSave warehouseAssignments;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -281,6 +284,11 @@ public class JsonRequestProduct
 	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
 	{
 		this.qualityAttributes = qualityAttribute;
+	}
+
+	public void setWarehouseAssignments(final JsonRequestProductWarehouseAssignmentSave warehouseAssignments)
+	{
+		this.warehouseAssignments = warehouseAssignments;
 	}
 
 	@AllArgsConstructor

@@ -1,9 +1,10 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.util.Check;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product_Acct;
 
@@ -31,7 +32,8 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Getter
 public enum ProductAcctType
 {
 	P_Revenue_Acct(I_M_Product_Acct.COLUMNNAME_P_Revenue_Acct),
@@ -55,12 +57,19 @@ public enum ProductAcctType
 	P_Burden_Acct(I_M_Product_Acct.COLUMNNAME_P_Burden_Acct),
 	P_OutsideProcessing_Acct(I_M_Product_Acct.COLUMNNAME_P_OutsideProcessing_Acct),
 	P_Overhead_Acct(I_M_Product_Acct.COLUMNNAME_P_Overhead_Acct),
-	P_Scrap_Acct(I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct)
-
+	P_Scrap_Acct(I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct),
+	P_ExternallyOwnedStock_Acct(I_M_Product_Acct.COLUMNNAME_P_ExternallyOwnedStock_Acct),
 	//
 	;
 
-	@Getter @NonNull private final String columnName;
+	@NonNull private final String columnName;
+	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+
+	ProductAcctType(@NonNull final String columnName)
+	{
+		this.columnName = columnName;
+		this.accountConceptualName = AccountConceptualName.ofString(columnName);
+	}
 
 	@Nullable
 	public static ProductAcctType ofName(@Nullable final String name)
@@ -79,4 +88,6 @@ public enum ProductAcctType
 			throw new AdempiereException("No " + ProductAcctType.class + " found for name: " + name);
 		}
 	}
+
+	public boolean isCOGS() {return P_COGS_Acct.equals(this);}
 }

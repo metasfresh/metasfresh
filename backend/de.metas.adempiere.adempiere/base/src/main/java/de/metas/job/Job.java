@@ -25,12 +25,18 @@ package de.metas.job;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 @Value
 @Builder
 public class Job
 {
+	private static final String NAME_CTO = "CTO";
+
 	@NonNull JobId id;
 	@NonNull String name;
 	boolean isActive;
+	@NonNull ClientId clientId;
+
+	public boolean isCTO() {return NAME_CTO.equals(name);}
 }

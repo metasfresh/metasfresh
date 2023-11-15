@@ -1,6 +1,5 @@
 package de.metas.document.engine;
 
-import de.metas.logging.LogManager;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -11,7 +10,6 @@ import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -26,8 +24,6 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		return new DocumentWrapper(docActionModel, handler);
 	}
 
-	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
-
 	private final DocumentTableFields model;
 	private final DocumentHandler handler;
 
@@ -40,7 +36,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		this.handler = handler;
 	}
 
-	private final void fireDocValidateEvent(final int timing)
+	private void fireDocValidateEvent(final int timing)
 	{
 		if (POJOWrapper.isHandled(model))
 		{
@@ -103,12 +99,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public String prepareIt()
 	{
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_PREPARE);
-		final String newDocStatus = handler.prepareIt(model);
+		final DocStatus newDocStatus = handler.prepareIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_PREPARE);
 
-		justPrepared = STATUS_InProgress.equals(newDocStatus);
+		justPrepared = newDocStatus.isInProgress();
 
-		return newDocStatus;
+		return newDocStatus.getCode();
 	}
 
 	@Override
@@ -125,10 +121,10 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		}
 
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_COMPLETE);
-		final String newDocStatus = handler.completeIt(model);
+		final DocStatus newDocStatus = handler.completeIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_COMPLETE);
 		model.setProcessed(true);
-		return newDocStatus;
+		return newDocStatus.getCode();
 	}
 
 	@Override
@@ -282,9 +278,9 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
-	public Logger get_Logger()
+	public final String get_TableName()
 	{
-		return logger;
+		return InterfaceWrapperHelper.getModelTableName(model);
 	}
 
 	@Override

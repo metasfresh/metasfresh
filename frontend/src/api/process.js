@@ -62,5 +62,10 @@ export const getProcessData = ({
   return axios.post(`${config.API_URL}/process/${processId}`, payload);
 };
 
-export const getProcessFileUrl = ({ processId, pinstanceId, filename }) =>
-  `${config.API_URL}/process/${processId}/${pinstanceId}/print/${filename}`;
+export const getProcessFileUrl = ({ processId, pinstanceId, filename }) => {
+  let filenameNorm = filename ? filename : 'report.pdf';
+  filenameNorm = filenameNorm.replace(/[/\\?%*:|"<>]/g, '-');
+  filenameNorm = encodeURIComponent(filenameNorm);
+
+  return `${config.API_URL}/process/${processId}/${pinstanceId}/print/${filenameNorm}`;
+};

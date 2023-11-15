@@ -1,5 +1,6 @@
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_Update_BPartner_Name_Insert_Location=[
   {
+    "bankAccounts": [ ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -20,6 +21,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "vendor": false
     },
     "contacts": [ ],
@@ -112,6 +114,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "sectionPartner": false,
       "storageWarehouse": true,
       "url": "bPartner.url",
+      "urproduzent": false,
       "vatId": "bPartner.vatId",
       "vendor": false,
       "vendorPaymentTermId": 1000003
@@ -343,11 +346,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -388,6 +393,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -579,11 +585,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -624,6 +632,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -812,11 +821,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -857,6 +868,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -1010,11 +1022,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "tableName": "C_BP_BankAccount"
         },
         "currencyId": 1000000,
+        "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
           "repoId": 50
         },
+        "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1"
       }
     ],
@@ -1055,6 +1069,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -1397,6 +1412,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1424,6 +1458,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1495,6 +1530,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1522,6 +1576,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1593,6 +1648,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeInfo": {
+          "createdBy": 30,
+          "createdMillis": 1561133544,
+          "lastUpdatedBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "changeLogs": [ ]
+        },
+        "currencyId": 1000000,
+        "iban": "INITIAL-IBAN-1",
+        "isDefault": false,
+        "swiftCode": "INITIAL-SWIFTCODE-1",
+        "default": false,
+        "metasfreshBPartnerId": 20,
+        "metasfreshId": 50
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeInfo": {
@@ -1620,6 +1694,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1712,6 +1787,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "changeInfo": {
+              "createdBy": 30,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 30,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "default": false,
+            "metasfreshBPartnerId": 20,
+            "metasfreshId": 50
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -1739,6 +1833,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID",
           "vendor": true,
           "vendorPaymentTermId": 1000001
@@ -1806,6 +1901,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ]
       },
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "changeInfo": {
+              "createdBy": 31,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 31,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "default": false,
+            "metasfreshBPartnerId": 21,
+            "metasfreshId": 51
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -1833,6 +1947,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_1",
           "vendor": true,
           "vendorPaymentTermId": 1000003
@@ -1913,6 +2028,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "changeInfo": {
+              "createdBy": 32,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 32,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "default": false,
+            "metasfreshBPartnerId": 22,
+            "metasfreshId": 52
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -1940,6 +2074,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_2",
           "vendor": true,
           "vendorPaymentTermId": 1000005
@@ -2007,6 +2142,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ]
       },
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "changeInfo": {
+              "createdBy": 33,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 33,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "default": false,
+            "metasfreshBPartnerId": 23,
+            "metasfreshId": 53
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -2034,6 +2188,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_3",
           "vendor": true,
           "vendorPaymentTermId": 1000007
@@ -2114,6 +2269,25 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     "errors": [ ],
     "items": [
       {
+        "bankAccounts": [
+          {
+            "active": true,
+            "changeInfo": {
+              "createdBy": 34,
+              "createdMillis": 1561133544,
+              "lastUpdatedBy": 34,
+              "lastUpdatedMillis": 1561133544,
+              "changeLogs": [ ]
+            },
+            "currencyId": 1000000,
+            "iban": "INITIAL-IBAN-1",
+            "isDefault": false,
+            "swiftCode": "INITIAL-SWIFTCODE-1",
+            "default": false,
+            "metasfreshBPartnerId": 24,
+            "metasfreshId": 54
+          }
+        ],
         "bpartner": {
           "active": true,
           "changeInfo": {
@@ -2141,6 +2315,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_4",
           "vendor": true,
           "vendorPaymentTermId": 1000009

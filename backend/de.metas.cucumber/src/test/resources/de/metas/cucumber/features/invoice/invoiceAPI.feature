@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: create invoices using invoice API
 
   Background:
@@ -393,8 +394,8 @@ Feature: create invoices using invoice API
 """
 
     And validate invoice-api response error message
-      | JsonErrorItem.message       |
-      | Product is not on PriceList |
+      | JsonErrorItem.message                |
+      | Produkt ist nicht auf der Preisliste |
 
 
   @from:cucumber

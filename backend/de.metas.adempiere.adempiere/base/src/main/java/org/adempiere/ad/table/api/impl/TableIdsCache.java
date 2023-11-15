@@ -57,7 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TableIdsCache
 {
-	public static final transient TableIdsCache instance = new TableIdsCache();
+	public static final TableIdsCache instance = new TableIdsCache();
 
 	private static final Logger logger = LogManager.getLogger(TableIdsCache.class);
 
@@ -200,8 +200,8 @@ public class TableIdsCache
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String sql = "SELECT AD_Table_ID, TableName, EntityType, TooltipType FROM AD_Table";
-		final PreparedStatement pstmt;
-		final ResultSet rs;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
@@ -210,12 +210,7 @@ public class TableIdsCache
 			final ArrayList<TableInfo> tableInfos = new ArrayList<>();
 			while (rs.next())
 			{
-				tableInfos.add(TableInfo.builder()
-						.adTableId(AdTableId.ofRepoId(rs.getInt("AD_Table_ID")))
-						.tableName(rs.getString("TableName"))
-						.entityType(rs.getString("EntityType"))
-						.tooltipType(TooltipType.ofCode(rs.getString("TooltipType")))
-						.build());
+				tableInfos.add(retrieveTableInfo(rs));
 			}
 
 			final TableInfoMap result = new TableInfoMap(tableInfos);
@@ -229,6 +224,20 @@ public class TableIdsCache
 		{
 			throw new DBException(ex, sql);
 		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private static TableInfo retrieveTableInfo(final ResultSet rs) throws SQLException
+	{
+		return TableInfo.builder()
+				.adTableId(AdTableId.ofRepoId(rs.getInt("AD_Table_ID")))
+				.tableName(rs.getString("TableName"))
+				.entityType(rs.getString("EntityType"))
+				.tooltipType(TooltipType.ofCode(rs.getString("TooltipType")))
+				.build();
 	}
 
 	// ignoring case, because in DLM we also deal with all-lowercase table names, and it should not matter anyways

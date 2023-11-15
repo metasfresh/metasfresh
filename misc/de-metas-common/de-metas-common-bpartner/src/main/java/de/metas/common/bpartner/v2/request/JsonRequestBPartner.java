@@ -259,6 +259,12 @@ public class JsonRequestBPartner
 	@Schema(hidden = true)
 	private boolean sectionPartnerSet;
 
+	@Schema(description = "This translates to `C_BPartner.Fresh_Urproduzent`.")
+	private boolean urproduzent;
+
+	@Schema(hidden = true)
+	private boolean urproduzentSet;
+
 	@Schema(description = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -501,5 +507,11 @@ public class JsonRequestBPartner
 	{
 		this.sectionPartner = sectionPartner;
 		this.sectionPartnerSet = true;
+	}
+
+	public void setUrproduzent(final boolean urproduzent)
+	{
+		this.urproduzent = urproduzent;
+		this.urproduzentSet = true;
 	}
 }

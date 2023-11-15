@@ -17,12 +17,14 @@ public class GPLRReportShipment
 
 	// 018 - Ship To - Customer code, customer name of ship-to, if no different ship-to, print business partner
 	@NonNull GPLRBPartnerName shipTo;
+	boolean isDropShip;
 
 	// 019 - Dest - 2 digit ISO code of ship-to country
 	@Nullable CountryCode shipToCountry;
 
 	// 020 - Warehouse - last 4 digits SAP Warehouse No and warehouse name, for back to back print XXXX
 	@NonNull GPLRWarehouseName warehouse;
+	boolean isBackToBack;
 
 	// 021 - GI Date - Goods issue date
 	@NonNull LocalDateAndOrgId movementDate;

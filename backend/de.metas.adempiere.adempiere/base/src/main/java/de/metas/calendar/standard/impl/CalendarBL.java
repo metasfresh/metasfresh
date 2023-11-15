@@ -36,6 +36,7 @@ import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -50,6 +51,7 @@ import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -57,6 +59,7 @@ public class CalendarBL implements ICalendarBL
 {
 
 	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
+	public static final AdMessageKey MSG_YEAR_HAS_NO_PERIOD = AdMessageKey.of("de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -70,6 +73,13 @@ public class CalendarBL implements ICalendarBL
 		final List<I_C_Period> periodsOfTheYear = Services.get(ICalendarDAO.class).retrievePeriods(ctx, year, trxName);
 
 		final int numberOfPeriods = periodsOfTheYear.size();
+
+		if (numberOfPeriods == 0)
+		{
+			throw new AdempiereException(MSG_YEAR_HAS_NO_PERIOD)
+					.appendParametersToMessage()
+					.setParameter("C_Year_ID", year.getC_Year_ID());
+		}
 
 		final Timestamp firstDate = periodsOfTheYear.get(0).getStartDate();
 		final Timestamp lastDate = periodsOfTheYear.get(numberOfPeriods - 1).getEndDate();
@@ -180,6 +190,13 @@ public class CalendarBL implements ICalendarBL
 			Check.errorUnless(isLengthOneYear(year), "{} doesn't have the length 1 year", year);
 		}
 
+	}
+
+	public void checkCorrectCalendar(@NonNull final CalendarId calendarId)
+	{
+		final I_C_Calendar calendar = calendarDAO.getById(calendarId);
+
+		checkCorrectCalendar(calendar);
 	}
 
 	private List<I_C_Period> getPeriodsOfCalendar(final I_C_Calendar calendar)

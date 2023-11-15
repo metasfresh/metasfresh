@@ -31,6 +31,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Inventory;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -75,4 +76,6 @@ public interface ICalendarDAO extends ISingletonService
 	 * @throws AdempiereException if no default calendar is found
 	 */
 	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
+
+	@NonNull I_C_Calendar getById(@NonNull CalendarId calendarId);
 }

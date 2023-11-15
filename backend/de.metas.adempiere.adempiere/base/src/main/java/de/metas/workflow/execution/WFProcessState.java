@@ -26,6 +26,7 @@ import de.metas.error.AdIssueId;
 import de.metas.user.UserId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
+import de.metas.workflow.WorkflowId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -37,28 +38,19 @@ import javax.annotation.Nullable;
 @Builder
 class WFProcessState
 {
-	@Nullable
-	WFProcessId wfProcessId;
-
-	@NonNull
-	final TableRecordReference documentRef;
-
+	@Nullable WFProcessId wfProcessId;
+	@NonNull final WorkflowId workflowId;
+	@NonNull final TableRecordReference documentRef;
 	final int priority;
 
-	@NonNull
-	WFState wfState;
+	@NonNull WFState wfState;
 
 	boolean processed;
 
-	@NonNull
-	final WFResponsibleId wfResponsibleId;
-	@NonNull
-	final UserId initialUserId;
-	@Nullable
-	final UserId userId;
+	@NonNull final WFResponsibleId wfResponsibleId;
+	@NonNull final UserId initialUserId;
+	@Nullable final UserId userId;
 
-	@Nullable
-	String textMsg;
-	@Nullable
-	AdIssueId issueId;
+	@Nullable String textMsg;
+	@Nullable AdIssueId issueId;
 }

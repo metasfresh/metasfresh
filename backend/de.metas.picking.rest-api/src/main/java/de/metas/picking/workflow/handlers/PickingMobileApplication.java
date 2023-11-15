@@ -25,12 +25,13 @@ package de.metas.picking.workflow.handlers;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
@@ -39,6 +40,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.PickingJobRestService;
@@ -57,15 +59,15 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
 
@@ -81,6 +83,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.showFilters(true)
 			.build();
 
 	private final PickingJobRestService pickingJobRestService;
@@ -88,10 +91,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 
 	public PickingMobileApplication(
-			@NonNull final PickingJobRestService pickingJobRestService)
+			@NonNull final PickingJobRestService pickingJobRestService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService);
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
 	}
 
 	@Override
@@ -104,18 +109,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		if (filterByQRCode != null)
+		if (query.getFilterByQRCode() != null)
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
 
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(query);
+	}
+
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+	{
+		return wfLaunchersProvider.getFacets(userId);
 	}
 
 	@NonNull
@@ -262,6 +269,13 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.build();
 	}
 
+	public WFProcess processStepEvent(
+			@NonNull final JsonPickingStepEvent event,
+			@NonNull final UserId callerId)
+	{
+		return processStepEvents(WFProcessId.ofString(event.getWfProcessId()), callerId, ImmutableSet.of(event));
+	}
+
 	public void processStepEvents(
 			@NonNull final JsonPickingEventsList eventsList,
 			@NonNull final UserId callerId)
@@ -291,12 +305,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		}
 	}
 
-	private void processStepEvents(
+	private WFProcess processStepEvents(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId,
 			@NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 	{
-		changeWFProcessById(
+		return changeWFProcessById(
 				wfProcessId,
 				wfProcess -> {
 					wfProcess.assertHasAccess(callerId);
@@ -319,12 +333,17 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
-		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
 		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
-		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
+
+		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
+		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
+		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null
+				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey()
+				: null;
 
 		return PickingJobStepEvent.builder()
 				.timestamp(SystemTime.asInstant())
+				.pickingLineId(pickingLineId)
 				.pickingStepId(pickingStepId)
 				.pickFromKey(pickFromKey)
 				.eventType(fromJson(json.getType()))
@@ -332,6 +351,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.qtyPicked(json.getQtyPicked())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.catchWeight(json.getCatchWeight())
 				.build();
 	}
 

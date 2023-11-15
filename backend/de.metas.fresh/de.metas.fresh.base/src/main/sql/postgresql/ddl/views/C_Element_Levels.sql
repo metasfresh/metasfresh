@@ -33,15 +33,8 @@ CREATE OR REPLACE VIEW C_Element_levels AS
 		END) AS Label
 		, acctBalance(COALESCE(ev5.C_ElementValue_ID, ev4.C_ElementValue_ID, ev3.C_ElementValue_ID, ev2.C_ElementValue_ID, ev1.C_ElementValue_ID), 1::numeric, 0::numeric) AS Multiplicator
 FROM C_ElementValue ev1
-JOIN C_Element e ON e.C_Element_ID = ev1.C_Element_ID AND e.isActive='Y'
-JOIN AD_TreeNode tn1 ON tn1.AD_Tree_ID = e.AD_Tree_ID AND tn1.Node_ID = ev1.C_ElementValue_ID AND (tn1.Parent_ID IS NULL OR tn1.Parent_ID = 0::numeric)
-LEFT JOIN AD_TreeNode tn2 ON tn2.AD_Tree_ID = e.AD_Tree_ID AND tn2.Parent_ID = tn1.Node_ID
-LEFT JOIN C_ElementValue ev2 ON ev2.C_ElementValue_ID = tn2.Node_ID
-LEFT JOIN AD_TreeNode tn3 ON tn3.AD_Tree_ID = e.AD_Tree_ID AND tn3.Parent_ID = tn2.Node_ID
-LEFT JOIN C_ElementValue ev3 ON ev3.C_ElementValue_ID = tn3.Node_ID
-LEFT JOIN AD_TreeNode tn4 ON tn4.AD_Tree_ID = e.AD_Tree_ID AND tn4.Parent_ID = tn3.Node_ID
-LEFT JOIN C_ElementValue ev4 ON ev4.C_ElementValue_ID = tn4.Node_ID
-LEFT JOIN AD_TreeNode tn5 ON tn5.AD_Tree_ID = e.AD_Tree_ID AND tn5.Parent_ID = tn4.Node_ID
-LEFT JOIN C_ElementValue ev5 ON ev5.C_ElementValue_ID = tn5.Node_ID;
-
-
+LEFT JOIN C_ElementValue ev2 ON ev2.Parent_ID = ev1.C_ElementValue_ID
+LEFT JOIN C_ElementValue ev3 ON ev3.Parent_ID = ev2.C_ElementValue_ID
+LEFT JOIN C_ElementValue ev4 ON ev4.Parent_ID = ev3.C_ElementValue_ID
+LEFT JOIN C_ElementValue ev5 ON ev5.Parent_ID = ev4.C_ElementValue_ID
+;

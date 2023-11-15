@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor3
 Feature:credit limit delete using metasfresh api
 
   Background:

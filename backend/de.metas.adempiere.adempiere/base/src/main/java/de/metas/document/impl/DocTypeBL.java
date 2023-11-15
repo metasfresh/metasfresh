@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -169,7 +169,7 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean isInternalVendorInvoice(final DocTypeId docTypeId)
+	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
@@ -178,8 +178,34 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isProFormaSO(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocSubType())
+				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+	}
+
+	@Override
+	public boolean isDownPayment(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
+	}
+
+	@Override
 	public void save(@NonNull final I_C_DocType dt)
 	{
 		docTypesRepo.save(dt);
+	}
+
+	@Override
+	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
 	}
 }

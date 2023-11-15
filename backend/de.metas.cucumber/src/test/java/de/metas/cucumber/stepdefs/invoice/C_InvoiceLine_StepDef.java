@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,13 +25,17 @@ package de.metas.cucumber.stepdefs.invoice;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -41,14 +45,18 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -80,28 +88,37 @@ public class C_InvoiceLine_StepDef
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
+	private final M_InOutLine_StepDefData inOutLineTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
+			@NonNull final M_InOutLine_StepDefData inOutLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
+		this.inOutLineTable = inOutLineTable;
 		this.productTable = productTable;
 		this.taxTable = taxTable;
 		this.taxCategoryTable = taxCategoryTable;
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@And("metasfresh contains C_InvoiceLines")
@@ -131,11 +148,21 @@ public class C_InvoiceLine_StepDef
 
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
-			//dev-note: we assume the tests are not using the same product and qty on different lines
-			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+			//dev-note: we assume the tests are generally not using the same product and qty on different lines...
+			final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced);
+
+			// ...or if they do, they have different inoutlines
+			final String inoutLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(inoutLineIdentifier))
+			{
+				final I_M_InOutLine inOutLineRecord = inOutLineTable.get(inoutLineIdentifier);
+				queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineRecord.getM_InOutLine_ID());
+			}
+
+			final I_C_InvoiceLine invoiceLineRecord = queryBuilder
 					.create()
 					.firstOnlyNotNull(I_C_InvoiceLine.class);
 
@@ -349,7 +376,34 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getDescription()).isEqualTo(description);
 		}
 
+		validateInvoiceLine_HarvestingCalendarAndYear(invoiceLine, row, softly);
+
 		softly.assertAll();
+	}
+
+	private void validateInvoiceLine_HarvestingCalendarAndYear(final @NonNull I_C_InvoiceLine invoiceLine, final @NonNull Map<String, String> row, final SoftAssertions softly)
+	{
+		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(harvestingCalendarIdentifier))
+		{
+			final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+			softly.assertThat(invoiceLine.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+		}
+
+		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(harvestingYearIdentifier))
+		{
+			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
+			if (harvestingYearIdentifierValue == null)
+			{
+				softly.assertThat(invoiceLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isNull();
+			}
+			else
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(invoiceLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			}
+		}
 	}
 
 	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)

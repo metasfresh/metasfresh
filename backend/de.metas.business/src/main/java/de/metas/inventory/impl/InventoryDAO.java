@@ -9,6 +9,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -18,10 +19,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 
 /*
  * #%L
@@ -47,7 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class InventoryDAO implements IInventoryDAO
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
@@ -142,5 +143,14 @@ public class InventoryDAO implements IInventoryDAO
 	public void save(I_M_InventoryLine inventoryLine)
 	{
 		saveRecord(inventoryLine);
+	}
+
+	@Override
+	public Stream<I_M_Inventory> stream(@NonNull final IQueryFilter<I_M_Inventory> inventoryFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.filter(inventoryFilter)
+				.create()
+				.iterateAndStream();
 	}
 }

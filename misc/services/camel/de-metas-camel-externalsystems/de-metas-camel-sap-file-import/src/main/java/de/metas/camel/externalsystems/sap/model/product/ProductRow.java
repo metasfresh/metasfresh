@@ -51,6 +51,9 @@ public class ProductRow
 	@DataField(pos = 13)
 	private String materialType;
 
+	@DataField(pos = 14)
+	private String warehouseName;
+
 	@DataField(pos = 17)
 	private String materialGroup;
 }

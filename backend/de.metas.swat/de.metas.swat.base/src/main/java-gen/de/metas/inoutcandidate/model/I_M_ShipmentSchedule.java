@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -670,6 +669,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -719,28 +740,6 @@ public interface I_M_ShipmentSchedule
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_ID (int C_Project_ID);
-
-	/**
-	 * Get Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_ID();
-
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Date.
@@ -1026,6 +1025,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsBPartnerAddress_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsBPartnerAddress_Override", null);
 	String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
+
+	/**
+	 * Set Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCatchWeight (boolean IsCatchWeight);
+
+	/**
+	 * Get Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCatchWeight();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsCatchWeight = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsCatchWeight", null);
+	String COLUMNNAME_IsCatchWeight = "IsCatchWeight";
 
 	/**
 	 * Set Closed.
@@ -1424,7 +1444,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
-	 * Set Destination warehouse .
+	 * Set Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1435,7 +1455,7 @@ public interface I_M_ShipmentSchedule
 	void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Destination warehouse .
+	 * Get Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1511,6 +1531,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
 	String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
+	 * Set Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+
+	/**
+	 * Get Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
 
 	/**
 	 * Set Pick From Order.

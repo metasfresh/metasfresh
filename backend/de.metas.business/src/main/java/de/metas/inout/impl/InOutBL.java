@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaBL;
@@ -17,6 +18,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.forex.ForexContractRef;
+import de.metas.forex.ForexContractService;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -24,6 +26,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutLineQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
@@ -44,6 +47,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -51,6 +55,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -63,6 +68,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -91,6 +97,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -131,6 +138,8 @@ public class InOutBL implements IInOutBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final SpringContextHolder.Lazy<ForexContractService> forexContractServiceLoader =
+			SpringContextHolder.lazyBean(ForexContractService.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -188,6 +197,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public Stream<I_M_InOutLine> streamLines(@NonNull final InOutLineQuery query)
+	{
+		return inOutDAO.stream(query);
+	}
+
+	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final I_M_InOut inOut = inOutLine.getM_InOut();
@@ -199,7 +214,7 @@ public class InOutBL implements IInOutBL
 				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
 				bpLocationId.getBpartnerId(),
-				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
+				getQtyEntered(inOutLine),
 				soTrx);
 
 		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, soTrx);
@@ -254,6 +269,19 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public Quantity getQtyEntered(@NonNull final I_M_InOutLine inoutLine)
+	{
+		return Quantitys.create(inoutLine.getQtyEntered(), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+	}
+
+	@Override
+	public Quantity getMovementQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		return Quantitys.create(inoutLine.getMovementQty(), productId);
+	}
+
+	@Override
 	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final UomId catchUomIdOrNull;
@@ -278,13 +306,11 @@ public class InOutBL implements IInOutBL
 	@Override
 	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final I_M_InOutLine inoutLine)
 	{
-		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
-		return StockQtyAndUOMQtys.create(
-				inoutLine.getMovementQty(),
-				productId,
-				inoutLine.getQtyEntered(),
-				uomId);
+		return StockQtyAndUOMQty.builder()
+				.productId(ProductId.ofRepoId(inoutLine.getM_Product_ID()))
+				.stockQty(getMovementQty(inoutLine))
+				.uomQty(getQtyEntered(inoutLine))
+				.build();
 	}
 
 	@Override
@@ -739,6 +765,10 @@ public class InOutBL implements IInOutBL
 		final ForexContractRef forexContractRef = InOutDAO.extractForeignContractRef(inout);
 		if (forexContractRef != null)
 		{
+			Optional.ofNullable(forexContractRef.getForexContractId())
+					.map(id -> forexContractServiceLoader.get().getById(id))
+					.ifPresent(forexContract -> forexContract.validateSectionCode(SectionCodeId.ofRepoIdOrNull(inout.getM_SectionCode_ID())));
+
 			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
@@ -766,7 +796,7 @@ public class InOutBL implements IInOutBL
 				.stream()
 				.map(inoutAndLineId -> FactAcctQuery.builder()
 						.acctSchemaId(acctSchemaId)
-						.accountConceptualName(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct)
+						.accountConceptualName(AccountConceptualName.ofString(I_M_Product_Acct.COLUMNNAME_P_COGS_Acct))
 						.tableName(I_M_InOut.Table_Name)
 						.recordId(inoutAndLineId.getInOutId().getRepoId())
 						.lineId(inoutAndLineId.getInOutLineId().getRepoId())

@@ -1,7 +1,11 @@
 package de.metas.invoicecandidate.api;
 
+import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -9,6 +13,7 @@ import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -17,6 +22,7 @@ import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -127,4 +133,22 @@ public interface IInvoiceHeader
 
 	@NonNull
 	Dimension getDimension();
+
+	@Nullable
+	CountryId getC_Tax_Departure_Country_ID();
+
+	@Nullable
+	BankAccountId getBankAccountId();
+
+	@Nullable
+	CalendarId getCalendarId();
+
+	@Nullable
+	YearId getYearId();
+
+	@Nullable
+	WarehouseId getWarehouseId();
+
+	@Nullable
+	AuctionId getAuctionId();
 }

@@ -29,34 +29,46 @@ import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Comparator;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
 public class JsonWorkflowLaunchersList
 {
-	@Singular
-	@NonNull ImmutableList<JsonWorkflowLauncher> launchers;
+	int count;
+	@Nullable ImmutableList<JsonWorkflowLauncher> launchers;
 	@Nullable JsonDisplayableQRCode filterByQRCode;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
-			@NonNull final WorkflowLaunchersList list,
+			@NonNull final WorkflowLaunchersList result,
+			@NonNull final JsonLaunchersQuery query,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		return builder()
-				.launchers(list.stream()
-						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
-						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
-						.collect(ImmutableList.toImmutableList()))
-				.filterByQRCode(list.getFilterByQRCode() != null ? list.getFilterByQRCode().toJsonDisplayableQRCode() : null)
-				.computedTime(list.getTimestamp())
-				.build();
+		return of(result, query.isCountOnly(), jsonOpts);
+	}
+
+	public static JsonWorkflowLaunchersList of(
+			@NonNull final WorkflowLaunchersList result,
+			final boolean countOnly,
+			@NonNull final JsonOpts jsonOpts)
+	{
+		final JsonWorkflowLaunchersListBuilder builder = builder()
+				.count(result.size())
+				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJsonDisplayableQRCode() : null)
+				.computedTime(result.getTimestamp());
+
+		if (!countOnly)
+		{
+			builder.launchers(result.stream()
+					.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
+					.collect(ImmutableList.toImmutableList()));
+		}
+
+		return builder.build();
 	}
 }

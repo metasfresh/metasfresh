@@ -35,6 +35,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -197,8 +198,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.mainLocationAdapter(shipmentSchedule)
 				.setFrom(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).toDocumentLocation());
 
-		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
-		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
+		final ProductId productId = Check.assumeNotNull(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), "{} has M_Product_ID set", orderLine);
+		shipmentSchedule.setM_Product_ID(productId.getRepoId());
+
+		final boolean isCatchWeight = orderLineBL.isCatchWeight(orderLine);
+		final UomId catchWeightUomId = isCatchWeight
+				? productBL.getCatchUOMId(productId).orElse(null)
+				: null;
+		shipmentSchedule.setIsCatchWeight(isCatchWeight);
+		shipmentSchedule.setCatch_UOM_ID(UomId.toRepoId(catchWeightUomId));
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
 
@@ -220,7 +228,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
 
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));

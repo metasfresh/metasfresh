@@ -6,6 +6,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -16,6 +17,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -184,7 +186,7 @@ public class GLDistributionBuilder
 		// Calculate Qty
 		{
 			final BigDecimal qtyToDistribute = getQtyToDistribute();
-			final BigDecimal qty = qtyToDistribute.multiply(percent).divide(Env.ONEHUNDRED, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal qty = qtyToDistribute.multiply(percent).divide(Env.ONEHUNDRED, RoundingMode.HALF_UP);
 			resultLine.setQty(qty);
 		}
 
@@ -226,7 +228,7 @@ public class GLDistributionBuilder
 		}
 		if (line.isOverwriteSalesRegion())
 		{
-			builder.setC_SalesRegion_ID(line.getC_SalesRegion_ID());
+			builder.setC_SalesRegion_ID(SalesRegionId.ofRepoIdOrNull(line.getC_SalesRegion_ID()));
 		}
 		if (line.isOverwriteProject())
 		{

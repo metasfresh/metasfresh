@@ -87,51 +87,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private static final long serialVersionUID = 4264055057724565805L;
 
 	/**
-	 * Get Invoice Line referencing InOut Line
-	 *
-	 * @param sLine shipment line
-	 * @return (first) invoice line
-	 */
-	public static MInvoiceLine getOfInOutLine(MInOutLine sLine)
-	{
-		if (sLine == null)
-		{
-			return null;
-		}
-
-		MInvoiceLine retValue = null;
-		final String sql = "SELECT * FROM C_InvoiceLine WHERE M_InOutLine_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, sLine.get_TrxName());
-			pstmt.setInt(1, sLine.getM_InOutLine_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = new MInvoiceLine(sLine.getCtx(), rs, sLine.get_TrxName());
-				if (rs.next())
-				{
-					// metas-tsa: If there were more then one invoice line found, it's better to return null then to return randomly one of them.
-					s_log.warn("More than one C_InvoiceLine of " + sLine + ". Returning null.");
-					return null;
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-		return retValue;
-	}    // getOfInOutLine
-
-	/**
 	 * Static Logger
 	 */
 	private static final Logger s_log = LogManager.getLogger(MInvoiceLine.class);

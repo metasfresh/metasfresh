@@ -20,6 +20,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -160,6 +161,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		{
 			record.setM_MatchPO_ID(recordId);
 		}
+		else if (CostingDocumentRef.TABLE_NAME_M_Shipping_NotificationLine.equals(tableName))
+		{
+			record.setM_Shipping_NotificationLine_ID(recordId);
+		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(tableName))
 		{
 			record.setM_InOutLine_ID(recordId);
@@ -243,6 +248,13 @@ public class CostDetailRepository implements ICostDetailRepository
 			{
 				queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_IsSOTrx, documentRef.getOutboundTrx());
 			}
+		}
+
+		// AmtType
+		final CostAmountType amtType = query.getAmtType();
+		if (amtType != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostDetail_Type, amtType.getCode());
 		}
 
 		// Product
@@ -362,6 +374,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (record.getM_MatchInv_ID() > 0)
 		{
 			return CostingDocumentRef.ofMatchInvoiceId(record.getM_MatchInv_ID());
+		}
+		else if (record.getM_Shipping_NotificationLine_ID() > 0)
+		{
+			return CostingDocumentRef.ofShippingNotificationLineId(ShippingNotificationLineId.ofRepoId(record.getM_Shipping_NotificationLine_ID()));
 		}
 		else if (record.getM_InOutLine_ID() > 0)
 		{

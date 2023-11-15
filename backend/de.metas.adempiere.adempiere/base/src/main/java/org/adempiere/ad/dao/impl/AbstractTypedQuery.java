@@ -75,6 +75,10 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 
 	@NonNull
 	@Override
+	public final T firstOnlyNotNull() {return firstOnlyNotNull(getModelClass());}
+
+	@NonNull
+	@Override
 	public final <ET extends T> ET firstOnlyNotNull(final Class<ET> clazz) throws DBException
 	{
 		final boolean throwExIfMoreThenOneFound = true;

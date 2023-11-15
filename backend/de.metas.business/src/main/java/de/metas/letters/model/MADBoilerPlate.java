@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.email.EMail;
@@ -14,10 +16,12 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
@@ -70,10 +74,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -766,6 +772,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final BoilerPlateContext.Builder attributesBuilder = BoilerPlateContext.builder();
 		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
 		attributesBuilder.setSourceDocument(sourceDocument);
+		attributesBuilder.setAD_Language(Env.getAD_Language(ctx));
 
 		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
@@ -773,69 +780,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			attributesBuilder.setSalesRep(salesRep);
 		}
 
-		int C_BPartner_ID = -1;
-		int C_BPartner_Location_ID = -1;
-		I_AD_User user = null;
-		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
-		String email = null;
-		//
-		if (AD_User_ID > 0)
-		{
-			user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
-			attributesBuilder.setUser(user);
-			if (Services.get(IUserBL.class).isEMailValid(user))
-			{
-				email = user.getEMail();
-				attributesBuilder.setEmail(email);
-			}
-			C_BPartner_ID = user.getC_BPartner_ID();
-			C_BPartner_Location_ID = user.getC_BPartner_Location_ID();
-		}
-		if (C_BPartner_ID <= 0)
-		{
-			C_BPartner_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("C_BPartner_ID", -1) : -1;
-		}
-		if (C_BPartner_ID > 0)
-		{
-			attributesBuilder.setC_BPartner_ID(C_BPartner_ID);
-
-			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
-			if (email == null)
-			{
-				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
-				if (contact != null)
-				{
-					attributesBuilder.setUser(contact);
-					if (Services.get(IUserBL.class).isEMailValid(contact))
-					{
-						email = contact.getEMail();
-						attributesBuilder.setEmail(email);
-					}
-				}
-			}
-		}
-
-		if (C_BPartner_Location_ID <= 0)
-		{
-			C_BPartner_Location_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("C_BPartner_Location_ID", -1) : -1;
-		}
-		if (C_BPartner_Location_ID > 0)
-		{
-			attributesBuilder.setC_BPartner_Location_ID(C_BPartner_Location_ID);
-		}
-
-		//
-		// Language
-		String AD_Language = Env.getAD_Language(ctx);
-		if (C_BPartner_ID > 0)
-		{
-			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
-			if (bp != null)
-			{
-				AD_Language = bp.getAD_Language();
-			}
-		}
-		attributesBuilder.setAD_Language(AD_Language);
+		setBPartnerInfo(sourceDocument, attributesBuilder);
 
 		int adOrgId = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_Org_ID", -1) : -1;
 		if (adOrgId < 0)
@@ -947,6 +892,83 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		DB.executeUpdateAndThrowExceptionOnFail(sql,
 												new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
 												trxName);
+	}
+
+	private static void setBPartnerInfo(
+			@Nullable final SourceDocument sourceDocument,
+			@NonNull final BoilerPlateContext.Builder attributesBuilder)
+	{
+		if (sourceDocument == null)
+		{
+			//nothing to do
+			return;
+		}
+
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+		final IUserBL userBL = Services.get(IUserBL.class);
+
+		I_AD_User user = Optional.ofNullable(sourceDocument.getFieldValueAsRepoId("AD_User_ID", UserId::ofRepoIdOrNull))
+				.map(userBL::getById)
+				.orElse(null);
+
+		final BPartnerId bPartnerId = getBPartnerId(sourceDocument, user);
+
+		BPartnerLocationId bPartnerLocationId = getBPartnerLocationId(sourceDocument, bPartnerId, user);
+
+		if (bPartnerId != null)
+		{
+			final I_C_BPartner bp = bPartnerDAO.getById(bPartnerId);
+			attributesBuilder.setC_BPartner_ID(bp.getC_BPartner_ID());
+			attributesBuilder.setAD_Language(bp.getAD_Language());
+
+			if (user == null)
+			{
+				user = getDefaultContactOrFirstWithValidEMail(bp);
+			}
+		}
+
+		if (user != null)
+		{
+			attributesBuilder.setUser(user);
+
+			if (userBL.isEMailValid(user))
+			{
+				attributesBuilder.setEmail(user.getEMail());
+			}
+
+			if (bPartnerLocationId == null)
+			{
+				bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, user.getC_BPartner_Location_ID());
+			}
+		}
+
+		if (bPartnerLocationId != null)
+		{
+			//dev-note: making sure bpartnerLocationId is consistent
+			Optional.ofNullable(bPartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId))
+					.ifPresent(bpLocation -> attributesBuilder.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID()));
+		}
+	}
+
+	@Nullable
+	private static BPartnerId getBPartnerId(@NonNull final SourceDocument sourceDocument, @Nullable final I_AD_User user)
+	{
+		return Optional.ofNullable(user)
+				.map(u -> BPartnerId.ofRepoIdOrNull(u.getC_BPartner_ID()))
+				.orElseGet(() -> sourceDocument.getFieldValueAsRepoId("C_BPartner_ID", BPartnerId::ofRepoIdOrNull));
+	}
+
+	@Nullable
+	private static BPartnerLocationId getBPartnerLocationId(
+			@NonNull final SourceDocument sourceDocument,
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final I_AD_User user)
+	{
+		return Optional.ofNullable(user)
+				.map(I_AD_User::getC_BPartner_Location_ID)
+				.map(bpLocationId -> BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpLocationId))
+				.orElseGet(() -> sourceDocument.getFieldValueAsRepoId("C_BPartner_Location_ID",
+																	  (bpLocationRepoId) -> BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpLocationRepoId)));
 	}
 
 	@ToString
@@ -1202,6 +1224,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			final Object value = getFieldValue(fieldName);
 			return value != null ? (int)value : defaultValue;
+		}
+
+		@Nullable
+		default <T extends RepoIdAware> T getFieldValueAsRepoId(final String fieldName, final Function<Integer, T> idMapper)
+		{
+			final int id = getFieldValueAsInt(fieldName, -1);
+
+			if (id > 0)
+			{
+				return idMapper.apply(id);
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		static SourceDocument toSourceDocumentOrNull(final Object obj)

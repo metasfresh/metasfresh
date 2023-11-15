@@ -78,7 +78,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_SAP_GLJournal glJournalRecord = extractRecord(docFields);
 
@@ -90,11 +90,12 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 					glJournal.assertHasLines();
 					glJournal.updateLineAcctAmounts(glJournalService.getCurrencyConverter());
 					glJournal.assertTotalsBalanced();
+					glJournal.setProcessed(true);
 				}
 		);
 
 		glJournalRecord.setDocAction(IDocument.ACTION_None);
-		return DocStatus.Completed.getCode();
+		return DocStatus.Completed;
 	}
 
 	private static void assertPeriodOpen(final I_SAP_GLJournal glJournalRecord)
@@ -107,6 +108,11 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	{
 		final I_SAP_GLJournal glJournalRecord = extractRecord(docFields);
 		assertPeriodOpen(glJournalRecord);
+		glJournalService.updateWhileSaving(
+				glJournalRecord,
+				glJournal -> glJournal.setProcessed(false)
+		);
+
 		factAcctDAO.deleteForDocumentModel(glJournalRecord);
 		glJournalRecord.setPosted(false);
 		glJournalRecord.setProcessed(false);

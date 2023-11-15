@@ -16,6 +16,7 @@ import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 import { isBlank } from '../../../utils';
+import { getViewFieldTypeahead } from '../../../api/view';
 
 const KEY_None = null;
 const KEY_New = 'NEW';
@@ -320,6 +321,7 @@ export class RawLookup extends Component {
       windowType,
       dataId,
       filterWidget,
+      attribute,
       parameterName,
       tabId,
       rowId,
@@ -351,14 +353,22 @@ export class RawLookup extends Component {
         subentity,
         subentityId,
       });
-    } else if (entity === 'documentView' && !filterWidget) {
+    } else if (entity === 'documentView' && attribute) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
         dataId,
         mainProperty.field,
-        inputValue
+        typeaheadParams.query
       );
+    } else if (entity === 'documentView' && !attribute) {
+      typeaheadRequest = getViewFieldTypeahead({
+        windowId: windowType,
+        viewId,
+        rowId,
+        fieldName: mainProperty.field,
+        query: typeaheadParams.query,
+      });
     } else if (viewId && !filterWidget) {
       typeaheadRequest = autocompleteModalRequest({
         ...typeaheadParams,
@@ -668,6 +678,7 @@ RawLookup.propTypes = {
   forceHeight: PropTypes.number,
   mainProperty: PropTypes.object,
   filterWidget: PropTypes.bool,
+  attribute: PropTypes.bool, // is view attribute?
   lookupEmpty: PropTypes.bool,
   localClearing: PropTypes.any,
   fireDropdownList: PropTypes.bool,

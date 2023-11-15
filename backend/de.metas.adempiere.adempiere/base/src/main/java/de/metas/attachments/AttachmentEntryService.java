@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -96,6 +97,13 @@ public class AttachmentEntryService
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
+	}
+
+	public AttachmentEntry createNewAttachment(
+			@NonNull final Object referencedRecord,
+			@NonNull final Path path)
+	{
+		return createNewAttachment(referencedRecord, path.toFile());
 	}
 
 	public AttachmentEntry createNewAttachment(
@@ -408,8 +416,8 @@ public class AttachmentEntryService
 		if (attachmentEntries.size() > 1)
 		{
 			throw new AdempiereException(MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF,
-										 recordReference.getTableName(),
-										 recordReference.getRecord_ID());
+					recordReference.getTableName(),
+					recordReference.getRecord_ID());
 		}
 
 		return Optional.of(attachmentEntries)

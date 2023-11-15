@@ -143,29 +143,25 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Interim Invoice Settings.
+	 * Set Hierarchy commission settings.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Interim_Invoice_Settings_ID (int C_Interim_Invoice_Settings_ID);
+	void setC_HierarchyCommissionSettings_ID(int C_HierarchyCommissionSettings_ID);
 
 	/**
-	 * Get Interim Invoice Settings.
+	 * Get Hierarchy commission settings.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Interim_Invoice_Settings_ID();
+	int getC_HierarchyCommissionSettings_ID();
 
-	@Nullable org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings();
-
-	void setC_Interim_Invoice_Settings(@Nullable org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings);
-
-	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Interim_Invoice_Settings> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Interim_Invoice_Settings_ID", org.compiere.model.I_C_Interim_Invoice_Settings.class);
-	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_HierarchyCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_HierarchyCommissionSettings_ID", null);
+	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
 
 	/**
 	 * Set Clearing Base.
@@ -174,7 +170,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setClearingAmtBaseOn (@Nullable java.lang.String ClearingAmtBaseOn);
+	void setClearingAmtBaseOn(@Nullable java.lang.String ClearingAmtBaseOn);
 
 	/**
 	 * Get Clearing Base.
@@ -256,16 +252,16 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Subscription Discount.
+	 * Set Abo-Rabatt.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+	void setC_SubscrDiscount_ID(int C_SubscrDiscount_ID);
 
 	/**
-	 * Get Subscription Discount.
+	 * Get Abo-Rabatt.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -288,7 +284,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID(int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -301,6 +297,28 @@ public interface I_C_Flatrate_Conditions
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription(@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getDescription();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Description = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Process Batch.
@@ -673,7 +691,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_Flatrate_ID (int M_Product_Flatrate_ID);
+	void setM_Product_Flatrate_ID(int M_Product_Flatrate_ID);
 
 	/**
 	 * Get Flatrate Product.
@@ -685,6 +703,27 @@ public interface I_C_Flatrate_Conditions
 	int getM_Product_Flatrate_ID();
 
 	String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
+
+	/**
+	 * Set Quality Inspection Conference.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_QualityInsp_LagerKonf_ID(int M_QualityInsp_LagerKonf_ID);
+
+	/**
+	 * Get Quality Inspection Conference.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_QualityInsp_LagerKonf_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_M_QualityInsp_LagerKonf_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "M_QualityInsp_LagerKonf_ID", null);
+	String COLUMNNAME_M_QualityInsp_LagerKonf_ID = "M_QualityInsp_LagerKonf_ID";
 
 	/**
 	 * Set Name.

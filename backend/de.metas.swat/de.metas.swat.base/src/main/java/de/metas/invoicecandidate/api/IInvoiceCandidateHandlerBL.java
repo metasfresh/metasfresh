@@ -102,4 +102,8 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setIsInEffect(I_C_Invoice_Candidate ic);
 
 	void postUpdate(I_C_Invoice_Candidate ic);
+
+	void setWarehouseId(I_C_Invoice_Candidate ic);
+
+	void setHarvestingDetails(I_C_Invoice_Candidate ic);
 }

@@ -10,6 +10,7 @@ import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.inout.InOutId;
@@ -123,7 +124,7 @@ public class DeliveryPlanningRelatedDocumentsProvider implements IRelatedDocumen
 								.internalName(I_C_Order.Table_Name)
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(windowId))
 								.priority(Priority.HIGHEST)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(adWindowDAO.retrieveWindowName(windowId))
 								.documentsCountSupplier(permissions -> 1)
 								.build()
@@ -149,7 +150,7 @@ public class DeliveryPlanningRelatedDocumentsProvider implements IRelatedDocumen
 								.internalName(I_M_InOut.Table_Name)
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(windowId))
 								.priority(Priority.HIGHEST)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(adWindowDAO.retrieveWindowName(windowId))
 								.documentsCountSupplier(permissions -> 1)
 								.build()

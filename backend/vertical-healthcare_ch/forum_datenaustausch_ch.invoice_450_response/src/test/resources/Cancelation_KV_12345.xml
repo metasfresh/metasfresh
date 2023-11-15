@@ -8,7 +8,7 @@
 		</invoice:transport>
 	</invoice:processing>
 	<invoice:payload copy="false" response_timestamp="1537300879" storno="false" type="invoice">
-		<invoice:invoice request_date="2018-09-03T00:00:00" request_id="KV_12345" request_timestamp="1535971639" />
+		<invoice:invoice request_date="2018-09-03T00:00:00" request_id="KV_12345" request_timestamp="1537300879" />
 		<invoice:body>
 			<invoice:prolog>
 				<invoice:package name="Sumex II" version="310" />

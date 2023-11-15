@@ -291,12 +291,13 @@ public class Money implements Comparable<Money>
 		}
 	}
 
-	public void assertCurrencyId(@NonNull final CurrencyId expectedCurrencyId)
+	public Money assertCurrencyId(@NonNull final CurrencyId expectedCurrencyId)
 	{
 		if (!Objects.equals(currencyId, expectedCurrencyId))
 		{
 			throw new AdempiereException("Amount has invalid currencyId: " + this + ". Expected: " + expectedCurrencyId);
 		}
+		return this;
 	}
 
 	@Override

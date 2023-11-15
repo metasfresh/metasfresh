@@ -3,17 +3,24 @@ package de.metas.handlingunits.picking.job.service.commands;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
+import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+
+import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY;
 
 public class PickingJobCompleteCommand
 {
@@ -22,12 +29,14 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
-	@NonNull  private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IShipmentService shipmentService;
+
+	@NonNull private final PickingJob initialPickingJob;
+	@NonNull private final CreateShipmentPolicy createShipmentPolicy;
+	private final boolean approveIfReadyToReview;
 
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
-
-	private final PickingJob initialPickingJob;
-	private final boolean approveIfReadyToReview;
 
 	@Builder
 	private PickingJobCompleteCommand(
@@ -35,17 +44,26 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
+			final @NonNull IShipmentService shipmentService,
 			//
 			final @NonNull PickingJob pickingJob,
-			final boolean approveIfReadyToReview)
+			final boolean approveIfReadyToReview,
+			final @Nullable CreateShipmentPolicy createShipmentPolicy)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
+		this.shipmentService = shipmentService;
 
 		this.initialPickingJob = pickingJob;
 		this.approveIfReadyToReview = approveIfReadyToReview;
+		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
+	}
+
+	public static class PickingJobCompleteCommandBuilder
+	{
+		public PickingJob execute() {return build().execute();}
 	}
 
 	public PickingJob execute()
@@ -85,6 +103,21 @@ public class PickingJobCompleteCommand
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 
+		createShipmentIfNeeded(pickingJob);
+
 		return pickingJob;
+	}
+
+	private void createShipmentIfNeeded(final PickingJob pickingJob)
+	{
+		if (createShipmentPolicy.isCreateShipment())
+		{
+			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
+					.scheduleIds(pickingJob.getShipmentScheduleIds())
+					.quantityTypeToUse(TYPE_PICKED_QTY)
+					.onTheFlyPickToPackingInstructions(true)
+					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
+					.build());
+		}
 	}
 }

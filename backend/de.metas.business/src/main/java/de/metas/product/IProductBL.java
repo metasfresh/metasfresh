@@ -43,10 +43,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
@@ -144,6 +140,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
+	I_C_UOM getWeightUOM(I_M_Product product);
+
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
@@ -211,4 +209,6 @@ public interface IProductBL extends ISingletonService
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
 }

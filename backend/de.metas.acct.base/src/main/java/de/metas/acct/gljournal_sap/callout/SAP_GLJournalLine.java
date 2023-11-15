@@ -9,6 +9,7 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.money.Money;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -26,7 +27,11 @@ public class SAP_GLJournalLine implements ITabCallout
 {
 	private final SAPGLJournalService glJournalService;
 
-	public SAP_GLJournalLine(final SAPGLJournalService glJournalService) {this.glJournalService = glJournalService;}
+	public SAP_GLJournalLine(
+			@NonNull final SAPGLJournalService glJournalService)
+	{
+		this.glJournalService = glJournalService;
+	}
 
 	@PostConstruct
 	public void postConstruct()
@@ -47,6 +52,12 @@ public class SAP_GLJournalLine implements ITabCallout
 	public void onPostingSign(final I_SAP_GLJournalLine glJournalLine)
 	{
 		updateAmtAcct(glJournalLine);
+	}
+
+	@CalloutMethod(columnNames = I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID)
+	public void onC_ValidCombination_ID(final I_SAP_GLJournalLine glJournalLine)
+	{
+		glJournalService.updateTrxInfo(glJournalLine);
 	}
 
 	@CalloutMethod(columnNames = I_SAP_GLJournalLine.COLUMNNAME_Amount)

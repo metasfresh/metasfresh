@@ -7,6 +7,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
@@ -32,8 +33,12 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -101,6 +106,15 @@ public class CostingMethodHandlerUtils
 		return uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 	}
 
+	@NonNull
+	public UnaryOperator<Quantity> convertQuantityToUOM(
+			@NonNull final UomId targetUomId,
+			@NonNull final ProductId productId
+	)
+	{
+		return qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
+	}
+
 	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemaRepo.getById(acctSchemaId);
@@ -140,14 +154,21 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
+	public CostDetailCreateResultsList toCostDetailCreateResultsList(final Collection<CostDetail> costDetails)
+	{
+		return costDetailsService.toCostDetailCreateResultsList(costDetails);
+	}
+
 	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
-	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	public List<CostDetail> updateDateAcct(@NonNull final Collection<CostDetail> costDetails, @NonNull final Instant newDateAcct)
 	{
-		return costDetailsService.updateDateAcct(costDetail, newDateAcct);
+		return costDetails.stream()
+				.map(costDetail -> costDetailsService.updateDateAcct(costDetail, newDateAcct))
+				.collect(Collectors.toList());
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -219,17 +240,12 @@ public class CostingMethodHandlerUtils
 	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
 		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
-		if (currencyConversionContext != null)
-		{
-			return currencyConversionContext;
-		}
-		else
-		{
-			return currencyBL.createCurrencyConversionContext(
-					request.getDate(),
-					(CurrencyConversionTypeId)null,
-					request.getClientId(),
-					request.getOrgId());
-		}
+		return Objects.requireNonNullElseGet(
+				currencyConversionContext,
+				() -> currencyBL.createCurrencyConversionContext(
+						request.getDate(),
+						(CurrencyConversionTypeId)null,
+						request.getClientId(),
+						request.getOrgId()));
 	}
 }

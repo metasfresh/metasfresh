@@ -1,5 +1,6 @@
 package de.metas.customs.document;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -60,13 +61,13 @@ public class CustomsInvoiceDocumentHandler  implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(DocumentTableFields docFields)
+	public DocStatus completeIt(DocumentTableFields docFields)
 	{
 		final I_C_Customs_Invoice shipmentDeclaration = extractCustomsInvoice(docFields);
 		shipmentDeclaration.setProcessed(true);
 		shipmentDeclaration.setDocAction(IDocument.ACTION_ReActivate);
 
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override

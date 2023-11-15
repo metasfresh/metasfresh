@@ -1,5 +1,6 @@
 @from:cucumber
 @Topic:InvoiceReview
+@ghActions:run_on_executor5
 Feature: invoice review
   As a REST-API invoker
   I want to push invoice review status changes to metasfresh

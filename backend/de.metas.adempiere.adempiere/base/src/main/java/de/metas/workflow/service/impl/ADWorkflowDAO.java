@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
@@ -34,11 +35,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.WFDurationUnit;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
@@ -59,11 +60,11 @@ import de.metas.workflow.service.IADWorkflowDAO;
 import de.metas.workflow.service.WFNodeCreateRequest;
 import de.metas.workflow.service.WFNodeLayoutChangeRequest;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -98,15 +99,6 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 	private static final Logger log = LogManager.getLogger(ADWorkflowDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Value(staticConstructor = "of")
-	private static class DocValueWorkflowKey
-	{
-		@NonNull
-		ClientId clientId;
-		@NonNull
-		AdTableId adTableId;
-	}
-
 	private final CCache<WorkflowId, Workflow> workflowsById = CCache.<WorkflowId, Workflow>builder()
 			.tableName(I_AD_Workflow.Table_Name)
 			.additionalTableNameToResetFor(I_AD_WF_Node.Table_Name)
@@ -114,6 +106,8 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 			.additionalTableNameToResetFor(I_AD_WF_NextCondition.Table_Name)
 			.additionalTableNameToResetFor(I_AD_WF_Node_Para.Table_Name)
 			.build();
+
+	private record DocValueWorkflowKey(@NonNull ClientId clientId, @NonNull AdTableId adTableId) {}
 
 	private static final CCache<Integer, ImmutableSetMultimap<DocValueWorkflowKey, WorkflowId>> docValueWorkflowsCache = CCache.<Integer, ImmutableSetMultimap<DocValueWorkflowKey, WorkflowId>>builder()
 			.tableName(I_AD_Workflow.Table_Name)
@@ -151,7 +145,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		return workflowRecords.stream()
 				.map(this::toWorkflow)
 				.collect(ImmutableMap.toImmutableMap(
-						workflow -> workflow.getId(),
+						Workflow::getId,
 						workflow -> workflow));
 	}
 
@@ -161,7 +155,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 			@NonNull final AdTableId adTableId)
 	{
 		final ImmutableSet<WorkflowId> workflowIds = getDocValueWorkflowIds()
-				.get(DocValueWorkflowKey.of(clientId, adTableId));
+				.get(new DocValueWorkflowKey(clientId, adTableId));
 		if (workflowIds.isEmpty())
 		{
 			return ImmutableList.of();
@@ -186,13 +180,13 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.create()
 				.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						workflow -> extractDocValueWorkflowKey(workflow),
+						ADWorkflowDAO::extractDocValueWorkflowKey,
 						workflow -> WorkflowId.ofRepoId(workflow.getAD_Workflow_ID())));
 	}
 
 	private static DocValueWorkflowKey extractDocValueWorkflowKey(final I_AD_Workflow workflow)
 	{
-		return DocValueWorkflowKey.of(
+		return new DocValueWorkflowKey(
 				ClientId.ofRepoId(workflow.getAD_Client_ID()),
 				AdTableId.ofRepoId(workflow.getAD_Table_ID()));
 	}
@@ -214,7 +208,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.validFrom(TimeUtil.asInstant(workflowRecord.getValidFrom()))
 				.validTo(TimeUtil.asInstant(workflowRecord.getValidTo()))
 				//
-				.responsibleId(WFResponsibleId.ofRepoIdOrNull(workflowRecord.getAD_WF_Responsible_ID()))
+				.responsibleId(WFResponsibleId.optionalOfRepoId(workflowRecord.getAD_WF_Responsible_ID()).orElse(WFResponsibleId.Invoker))
 				//
 				.firstNodeId(WFNodeId.ofRepoId(workflowRecord.getAD_WF_Node_ID()))
 				.nodes(retrieveNodes(workflowId, durationPerOneUnit))
@@ -363,7 +357,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.orderBy(I_AD_WF_NextCondition.COLUMNNAME_AD_WF_NextCondition_ID)
 				.create()
 				.stream()
-				.map(record -> toWFTransitionConditionOrNull(record))
+				.map(ADWorkflowDAO::toWFTransitionConditionOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -397,7 +391,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.create()
 				.list(I_AD_WF_Node_Para.class)
 				.stream()
-				.map(record -> toWFNodeParameter(record))
+				.map(ADWorkflowDAO::toWFNodeParameter)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -408,6 +402,10 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		if (Check.isBlank(attributeName) && adProcessPara != null)
 		{
 			attributeName = adProcessPara.getColumnName();
+		}
+		if (attributeName == null)
+		{
+			throw new AdempiereException("Cannot determine attribute name for " + record);
 		}
 
 		return WFNodeParameter.builder()
@@ -501,9 +499,10 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		}
 
 		final WFNodeAction action = WFNodeAction.ofCode(wfNodeRecord.getAction());
+		//noinspection StatementWithEmptyBody
 		if (action == WFNodeAction.WaitSleep)
 		{
-			;
+			// do nothing
 		}
 		else if (action == WFNodeAction.AppsProcess || action == WFNodeAction.AppsReport)
 		{
@@ -521,7 +520,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		}
 		else if (action == WFNodeAction.DocumentAction)
 		{
-			if (wfNodeRecord.getDocAction() == null || wfNodeRecord.getDocAction().length() == 0)
+			if (StringUtils.trimBlankToNull(wfNodeRecord.getDocAction()) == null)
 			{
 				throw new FillMandatoryException("DocAction");
 			}

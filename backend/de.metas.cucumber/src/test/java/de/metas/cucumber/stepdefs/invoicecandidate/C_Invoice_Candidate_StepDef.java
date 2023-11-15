@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -41,7 +42,11 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -50,6 +55,7 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.serviceIssue.S_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -95,14 +101,18 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -130,6 +140,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Departure_Country_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -145,6 +156,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_L
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceActual;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Processed;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
@@ -195,6 +207,11 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
+	private final C_Country_StepDefData countryTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
+	private final C_Aggregation_StepDefData aggregationTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -216,7 +233,12 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final S_Issue_StepDefData issueTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable)
+			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable,
+			@NonNull final C_Country_StepDefData countryTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final C_Aggregation_StepDefData aggregationTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -238,6 +260,11 @@ public class C_Invoice_Candidate_StepDef
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
 		this.invoiceCandidateListTable = invoiceCandidateListTable;
+		this.countryTable = countryTable;
+		this.warehouseTable = warehouseTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
+		this.aggregationTable = aggregationTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -336,15 +363,25 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setApprovalForInvoicing(approvalForInvoicing);
 			}
 
+			final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(taxDepartureCountryIdentifier))
+			{
+				final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+				invoiceCandidate.setC_Tax_Departure_Country_ID(taxDepartureCountry.getC_Country_ID());
+			}
+
 			saveRecord(invoiceCandidate);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
 	}
 
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
-	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
+	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier) throws InterruptedException
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		// give IC handlers some time
+		Thread.sleep(1000);
 
 		final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
@@ -353,6 +390,24 @@ public class C_Invoice_Candidate_StepDef
 		Assertions.assertThat(candidate).isNull();
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(order);
+		Assertions.assertThat(invoiceCandidates).isEmpty();
+	}
+
+	@And("^there is no C_Invoice_Candidate for M_InOutLine (.*)$")
+	public void validate_no_C_Invoice_Candidate_created_for_InOutLine(@NonNull final String inOutLineIdentifier) throws InterruptedException
+	{
+		final I_M_InOutLine inOutLineRecord = inoutLineTable.get(inOutLineIdentifier);
+
+		// give IC handlers some time
+		Thread.sleep(1000);
+
+		final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, inOutLineRecord.getM_InOut_ID())
+				.create()
+				.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+		Assertions.assertThat(candidate).isNull();
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(inOutLineRecord);
 		Assertions.assertThat(invoiceCandidates).isEmpty();
 	}
 
@@ -766,6 +821,53 @@ public class C_Invoice_Candidate_StepDef
 					}
 				}
 
+				final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(warehouseIdentifier))
+				{
+					final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseRecord.getM_Warehouse_ID());
+				}
+
+				final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(harvestingCalendarIdentifier))
+				{
+					final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+				}
+
+				final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(harvestingYearIdentifier))
+				{
+					final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+				}
+
+				final String aggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKeyBuilder_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(aggregationIdentifier))
+				{
+					final I_C_Aggregation aggregationRecord = aggregationTable.get(aggregationIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getHeaderAggregationKeyBuilder_ID()).as("HeaderAggregationKeyBuilder_ID").isEqualTo(aggregationRecord.getC_Aggregation_ID());
+				}
+
+				final Boolean soTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
+				if (soTrx != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isSOTrx()).as("IsSOTrx").isEqualTo(soTrx);
+				}
+
+				final Boolean isInterimInvoice = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsInterimInvoice);
+				if (isInterimInvoice != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isInterimInvoice()).as("IsInterimInvoice").isEqualTo(isInterimInvoice);
+				}
+
+				final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceActual);
+
+				if (priceActual != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
+				}
+
 				softly.assertAll();
 			}
 			catch (final Throwable e)
@@ -1024,7 +1126,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	/**
- 	 * Does not just find the IC, but also makes sure the IC is up2date.
+	 * Does not just find the IC, but also makes sure the IC is up2date.
 	 */
 	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
 	{
@@ -1333,6 +1435,13 @@ public class C_Invoice_Candidate_StepDef
 		if (isInEffect != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInEffect, isInEffect);
+		}
+
+		final String taxDepartureCountryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Departure_Country_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxDepartureCountryIdentifier))
+		{
+			final I_C_Country taxDepartureCountry = countryTable.get(taxDepartureCountryIdentifier);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Tax_Departure_Country_ID, taxDepartureCountry.getC_Country_ID());
 		}
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()

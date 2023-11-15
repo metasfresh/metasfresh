@@ -13,17 +13,17 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
+import org.compiere.acct.FactLine;
 import org.compiere.acct.PostingStatus;
-import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
  *
  * @author tsa
  */
-@SuppressWarnings("serial")
 public final class PostingException extends AdempiereException
 {
 	@Nullable
@@ -32,7 +32,7 @@ public final class PostingException extends AdempiereException
 	private PostingStatus _postingStatus;
 	private AcctSchema _acctSchema;
 	private Fact _fact;
-	private I_Fact_Acct _factLine;
+	private FactLine _factLine;
 	private ITranslatableString _detailMessage = TranslatableStrings.empty();
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
@@ -77,12 +77,12 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Posting Status
-		final PostingStatus postingStatus = getPostingStatus();
+		final PostingStatus postingStatus = _postingStatus;
 		if (postingStatus != null)
 		{
 			message.append("\n ").appendADElement("Posted").append(": ")
-					.appendADMessage(postingStatus.getAD_Message())
-					.append(" (").append(postingStatus.toString()).append(")");
+					.appendADMessage(postingStatus.getAdMessage())
+					.append(" (").append(postingStatus.name()).append(")");
 		}
 
 		// Document
@@ -104,7 +104,7 @@ public final class PostingException extends AdempiereException
 			message.append("\n Fact: ").append(fact.toString());
 		}
 
-		final I_Fact_Acct factLine = getFactLine();
+		final FactLine factLine = getFactLine();
 		if (factLine != null)
 		{
 			message.append("\n @Fact_Acct_ID@: ").append(factLine.toString());
@@ -143,21 +143,9 @@ public final class PostingException extends AdempiereException
 		return _document;
 	}
 
-	public PostingStatus getPostingStatus()
-	{
-		return _postingStatus;
-	}
+	public Optional<PostingStatus> getPostingStatus() {return Optional.ofNullable(_postingStatus);}
 
-	public PostingStatus getPostingStatus(final PostingStatus defaultStatus)
-	{
-		if (_postingStatus == null)
-		{
-			return defaultStatus;
-		}
-		return _postingStatus;
-	}
-
-	public PostingException setPostingStatus(final PostingStatus postingStatus)
+	public PostingException setPostingStatus(@Nullable final PostingStatus postingStatus)
 	{
 		_postingStatus = postingStatus;
 		resetMessageBuilt();
@@ -251,12 +239,12 @@ public final class PostingException extends AdempiereException
 		return _fact;
 	}
 
-	public I_Fact_Acct getFactLine()
+	private FactLine getFactLine()
 	{
 		return _factLine;
 	}
 
-	public PostingException setFactLine(final I_Fact_Acct factLine)
+	public PostingException setFactLine(final FactLine factLine)
 	{
 		this._factLine = factLine;
 		resetMessageBuilt();
@@ -293,6 +281,7 @@ public final class PostingException extends AdempiereException
 		return _docLine;
 	}
 
+	@SuppressWarnings("unused")
 	public PostingException setLogLevel(@NonNull final Level logLevel)
 	{
 		this._logLevel = logLevel;

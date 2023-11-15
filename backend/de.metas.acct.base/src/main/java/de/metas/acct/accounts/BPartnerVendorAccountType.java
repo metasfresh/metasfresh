@@ -1,11 +1,10 @@
 package de.metas.acct.accounts;
 
-import lombok.AllArgsConstructor;
+import de.metas.acct.AccountConceptualName;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_Vendor_Acct;
 
-@AllArgsConstructor
 public enum BPartnerVendorAccountType
 {
 	/**
@@ -24,5 +23,10 @@ public enum BPartnerVendorAccountType
 
 	;
 
-	@Getter @NonNull private final String columnName;
+	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+
+	BPartnerVendorAccountType(final @NonNull String columnName)
+	{
+		this.accountConceptualName = AccountConceptualName.ofString(columnName);
+	}
 }

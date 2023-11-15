@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctLogIterable;
 import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
@@ -58,8 +57,11 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 {
 	private static final Logger logger = LogManager.getLogger(FactAcctLogDAO.class);
 
-	/** Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance} */
-	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
+	private static final String DB_SCHEMA = "de_metas_acct";
+	/**
+	 * Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance}
+	 */
+	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
 
 	@Override
 	public IFactAcctLogIterable tagAndRetrieve(final Properties ctx, final QueryLimit limit)
@@ -70,14 +72,14 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		return new FactAcctLogIterable(ctx, processingTag);
 	}
 
-	private int releaseTag(final Properties ctx, final String processingTag)
+	private void releaseTag(final Properties ctx, final String processingTag)
 	{
-		return updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, QueryLimit.NO_LIMIT);
+		updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, QueryLimit.NO_LIMIT);
 	}
 
-	private int updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final QueryLimit limit)
+	private void updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final QueryLimit limit)
 	{
-		return retrieveForTagQuery(ctx, processingTagOld)
+		retrieveForTagQuery(ctx, processingTagOld)
 				.setLimit(limit)
 				//
 				.create()
@@ -120,9 +122,9 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				.iterate(I_Fact_Acct_Log.class);
 	}
 
-	private int deleteAllForTag(final Properties ctx, final String processingTag)
+	private void deleteAllForTag(final Properties ctx, final String processingTag)
 	{
-		return retrieveForTagQuery(ctx, processingTag)
+		retrieveForTagQuery(ctx, processingTag)
 				//
 				.create()
 				.deleteDirectly();
@@ -135,12 +137,12 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_Account_ID, key.getC_ElementValue_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_AcctSchema_ID, key.getC_AcctSchema_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_PostingType, key.getPostingType())
-				// .addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_Period_ID, key.getC_Period_ID()) // note: don't enforce it because we are not enfocing the dates
+				// .addEqualsFilter(I_Fact_Acct_Summary.COLUMN_C_Period_ID, key.getC_Period_ID()) // note: don't enforce it because we are not enforcing the dates
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Client_ID, key.getAD_Client_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_AD_Org_ID, key.getAD_Org_ID())
 				.addEqualsFilter(I_Fact_Acct_Summary.COLUMN_PA_ReportCube_ID, key.getPA_ReportCube_ID() <= 0 ? null : key.getPA_ReportCube_ID())
-		//
-		;
+				//
+				;
 	}
 
 	@Override

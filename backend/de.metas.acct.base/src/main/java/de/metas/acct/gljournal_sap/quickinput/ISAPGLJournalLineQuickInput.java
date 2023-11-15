@@ -16,6 +16,9 @@ public interface ISAPGLJournalLineQuickInput
 
 	String COLUMNNAME_Amount = "Amount";
 
+	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+	boolean isTaxIncluded();
+
 	BigDecimal getAmount();
 
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
@@ -37,6 +40,7 @@ public interface ISAPGLJournalLineQuickInput
 			COLUMNNAME_Amount,
 			COLUMNNAME_M_SectionCode_ID,
 			COLUMNNAME_C_Activity_ID,
-			COLUMNNAME_C_Tax_ID
+			COLUMNNAME_C_Tax_ID,
+			COLUMNNAME_IsTaxIncluded
 	);
 }
