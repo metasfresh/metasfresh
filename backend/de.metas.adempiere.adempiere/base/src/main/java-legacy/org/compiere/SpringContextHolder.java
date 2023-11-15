@@ -307,6 +307,9 @@ public final class SpringContextHolder
 				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", name, systemPropertyValue);
 				return Optional.of(systemPropertyValue);
 			}
+
+			// If there is no JVM System Property then go and check environment variables
+			return Optional.ofNullable(System.getenv(name));
 		}
 
 		return Optional.empty();
