@@ -107,7 +107,7 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	{
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(importRecord.getHarvesting_Year_ID());
 
-		return !Objects.isNull(harvestingYearId) && Objects.equals(importRecord.getModCntr_Log_DocumentType(), X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog)
+		return harvestingYearId != null && Objects.equals(importRecord.getModCntr_Log_DocumentType(), X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog)
 				&& Objects.equals(importRecord.getI_IsImported(), "N");
 
 	}
