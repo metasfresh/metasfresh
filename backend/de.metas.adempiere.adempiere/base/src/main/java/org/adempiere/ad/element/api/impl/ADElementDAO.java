@@ -20,7 +20,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_Window;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -77,13 +76,6 @@ public class ADElementDAO implements IADElementDAO
 				.list(I_AD_Column.class);
 	}
 
-	private I_AD_Element getADElementByColumnName(@NonNull final String columnName)
-	{
-		return queryADElementByColumnName(columnName)
-				.create()
-				.firstOnly(I_AD_Element.class);
-	}
-
 	@Override
 	public AdElementId getADElementIdByColumnNameOrNull(@NonNull final String columnName)
 	{
@@ -97,30 +89,6 @@ public class ADElementDAO implements IADElementDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Element.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Element.COLUMNNAME_ColumnName, columnName, UpperCaseQueryFilterModifier.instance);
-	}
-
-	@Override
-	public List<I_AD_Field> retrieveFields(@NonNull final String columnName)
-	{
-		final List<I_AD_Field> fields = new ArrayList<>();
-
-		final I_AD_Element element = getADElementByColumnName(columnName);
-		if (element != null)
-		{
-			final List<I_AD_Column> columns = retrieveColumns(element.getAD_Element_ID());
-
-			for (final I_AD_Column c : columns)
-			{
-				final List<I_AD_Field> list = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_AD_Field.COLUMN_AD_Column_ID, c.getAD_Column_ID())
-						.orderBy().addColumn(I_AD_Field.COLUMNNAME_Name).endOrderBy()
-						.create()
-						.list(I_AD_Field.class);
-				fields.addAll(list);
-			}
-		}
-		return fields;
 	}
 
 	@Override

@@ -285,7 +285,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+			return ImmutableTranslatableString.ofMap(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 		}
 	}
 
@@ -297,7 +297,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, defaultValue);
+			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
 		}
 	}
 
