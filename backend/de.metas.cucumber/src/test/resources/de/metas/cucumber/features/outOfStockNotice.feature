@@ -1,3 +1,4 @@
+@ghActions:run_on_executor6
 Feature: warehouse out of stock notice
 
   Background:
