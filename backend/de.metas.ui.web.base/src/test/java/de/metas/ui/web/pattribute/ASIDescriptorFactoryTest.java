@@ -1,7 +1,7 @@
 package de.metas.ui.web.pattribute;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cache.CCache;
+import de.metas.cache.CCacheStats;
 import de.metas.handlingunits.attribute.storage.impl.AIWithHUPIAttributeValue;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -274,7 +274,7 @@ class ASIDescriptorFactoryTest
 		}
 
 		@Override
-		public List<CCache.CCacheStats> getCacheStats()
+		public List<CCacheStats> getCacheStats()
 		{
 			return ImmutableList.of();
 		}
