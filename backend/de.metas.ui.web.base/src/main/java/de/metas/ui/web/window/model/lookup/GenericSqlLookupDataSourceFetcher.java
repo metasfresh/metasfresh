@@ -25,7 +25,6 @@ package de.metas.ui.web.window.model.lookup;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.cache.CCache.CCacheStats;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -70,7 +69,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Getter @NonNull private final Optional<WindowId> zoomIntoWindowId;
 	@NonNull private final TooltipType tooltipType;
 
-	@Nullable private final int pageLength;
+	private final int pageLength;
 
 	//
 	// Computed:
@@ -133,12 +132,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Override
 	public void cacheInvalidate()
 	{
-	}
-
-	@Override
-	public List<CCacheStats> getCacheStats()
-	{
-		return ImmutableList.of();
 	}
 
 	@Override
