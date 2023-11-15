@@ -45,7 +45,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				penalizeNullableDelay(constraintFactory),
 				stepsNotRespectingProjectPriority(constraintFactory),
 				firstStepDelayIsMinimum(constraintFactory),
-				//delayIsMinimum(constraintFactory),
+				delayIsMinimum(constraintFactory),
 				//minDurationFromEndToDueDateIsMaximum(constraintFactory),
 				//sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
 		};
@@ -106,6 +106,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(StepAllocation.class)
+				.filter(stepAlloc -> !stepAlloc.isFirstStep()) // exclude those which are considered by firstStepDelayIsMinimum
 				.penalize(ONE_SOFT_3, StepAllocation::getDelayAsInt)
 				.asConstraint("Delay is minimum");
 	}
