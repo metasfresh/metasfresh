@@ -53,6 +53,7 @@ import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.testcontainers.shaded.com.google.common.base.Joiner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -340,31 +341,31 @@ public class C_DataImport_StepDef
 
 			final I_C_Flatrate_Term contract = contractsTable.get(contractDocumentIdentifier);
 
-			//keep in sync with Import Format defined by /window/189/540092
-			final String payload = ";"//ModCntr_Log_ID
-					+ ";"//TableID
-					+ ";"//RecordId
-					+ documentType + ";"
-					+ soTrx + ";"
-					+ contract.getDocumentNo() + ";"
-					+ productValue + ";"
-					+ modCntr_InvoicingGroupName + ";"
-					+ quantity + ";"
-					+ uomSymbol + ";"
-					+ priceActual + ";"
-					+ priceUom + ";"
-					+ amount + ";"
-					+ isoCurrencyCode + ";"
-					+ year + ";"
-					+ calendar + ";"
-					+ ";"//ContractModuleName
-					+ bpartnerValue + ";"
-					+ billBpartnerValue + ";"
-					+ collectionPointValue + ";"
-					+ dateTrx + ";"
-					+ warehouseName;
-			payloadBuilder.append("\n"); // do this for the first row because the import format ignores the first row/file header
-			payloadBuilder.append(payload.replaceAll("null", ""));
+
+			payloadBuilder.append("\n") // do this for the first row because the import format ignores the first row/file header
+					//keep in sync with Import Format defined by /window/189/540092
+					.append(Joiner.on(";").useForNull("").join(null,//ModCntr_Log_ID
+							null,//TableID
+							null,//RecordId
+							documentType,
+							soTrx,
+							contract.getDocumentNo(),
+							productValue,
+							modCntr_InvoicingGroupName,
+							quantity,
+							uomSymbol,
+							priceActual,
+							priceUom,
+							amount,
+							isoCurrencyCode,
+							year,
+							calendar,
+							null,//ContractModuleName
+							bpartnerValue,
+							billBpartnerValue,
+							collectionPointValue,
+							dateTrx,
+							warehouseName));
 		}
 		testContext.setRequestPayload(new String(payloadBuilder.toString().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
 	}
@@ -393,10 +394,9 @@ public class C_DataImport_StepDef
 		}
 	}
 
-
 	@And("^metasfresh initially has no (I_.*) import data$")
 	public void delete_I_Invoice_Candidate_data(@NonNull final String tableName)
 	{
-		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM "+tableName+" cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + tableName + " cascade", ITrx.TRXNAME_None);
 	}
 }
