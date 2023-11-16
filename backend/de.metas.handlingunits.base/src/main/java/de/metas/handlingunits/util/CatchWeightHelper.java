@@ -1,10 +1,6 @@
 package de.metas.handlingunits.util;
 
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -12,6 +8,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -25,6 +22,11 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -51,6 +53,36 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CatchWeightHelper
 {
+	@Nullable
+	public StockQtyAndUOMQty extractQtysOrNull(
+			final ProductId productId,
+			final HuId huId)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		return extractQtysOrNull(huContext, productId, handlingUnitsBL.getById(huId));
+	}
+
+	@Nullable
+	public StockQtyAndUOMQty extractQtysOrNull(
+			final IHUContext huContext,
+			final ProductId productId,
+			final I_M_HU huRecord)
+	{
+		final IHUProductStorage storage = huContext
+				.getHUStorageFactory()
+				.getStorage(huRecord)
+				.getProductStorageOrNull(productId);
+
+		if (storage == null)
+		{
+			return null;
+		}
+
+		return extractQtys(huContext, productId, storage.getQty(), huRecord);
+	}
+
 	public StockQtyAndUOMQty extractQtys(
 			final ProductId productId,
 			final I_M_HU huRecord)
@@ -62,7 +94,9 @@ public class CatchWeightHelper
 		return extractQtys(huContext, productId, huRecord);
 	}
 
-	/** Use if your calling code has a {@code huContext}, because there might be not-yet-flushed-to-DB stuff stuff that we would miss when not using that {@code huContext}. */
+	/**
+	 * Use if your calling code has a {@code huContext}, because there might be not-yet-flushed-to-DB stuff stuff that we would miss when not using that {@code huContext}.
+	 */
 	public StockQtyAndUOMQty extractQtys(
 			final IHUContext huContext,
 			final ProductId productId,

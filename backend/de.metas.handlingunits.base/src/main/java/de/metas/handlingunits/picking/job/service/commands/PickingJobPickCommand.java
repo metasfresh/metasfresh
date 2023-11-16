@@ -185,13 +185,13 @@ public class PickingJobPickCommand
 		}
 	}
 
-	public PickingJob execute()
+	public void execute()
 	{
 		pickingJob.assertNotProcessed();
-		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+		trxManager.runInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private PickingJob executeInTrx()
+	private void executeInTrx()
 	{
 		createStepIfNeeded();
 
@@ -203,8 +203,6 @@ public class PickingJobPickCommand
 				step -> updateStepFromPickingCandidate(step, pickedHUs));
 
 		pickingJobRepository.save(pickingJob);
-
-		return pickingJob;
 	}
 
 	private void createStepIfNeeded()
@@ -410,11 +408,11 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStep step,
 			@NonNull final ImmutableList<PickedToHU> pickedHUs)
 	{
-		final PickingJobStepPickedTo picked = toPickingJobStepPickedTo(pickedHUs);
+		final PickingJobStepPickedTo picked = toPickingJobStepPickedTo(pickedHUs, step.getProductId());
 		return step.reduceWithPickedEvent(stepPickFromKey, picked);
 	}
 
-	private PickingJobStepPickedTo toPickingJobStepPickedTo(@NonNull final ImmutableList<PickedToHU> pickedHUs)
+	private PickingJobStepPickedTo toPickingJobStepPickedTo(@NonNull final ImmutableList<PickedToHU> pickedHUs, @NonNull final ProductId pickedProductId)
 	{
 		return PickingJobStepPickedTo.builder()
 				.qtyRejected(qtyRejected)
@@ -422,6 +420,7 @@ public class PickingJobPickCommand
 						.map(PickingJobPickCommand::toPickingJobStepPickedToHU)
 						.collect(ImmutableList.toImmutableList())
 				)
+				.productId(pickedProductId)
 				.build();
 	}
 
