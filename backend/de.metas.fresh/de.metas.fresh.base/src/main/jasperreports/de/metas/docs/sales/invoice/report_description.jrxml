@@ -111,7 +111,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="363" y="151" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="424" y="151" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -139,7 +139,7 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="423" y="151" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
+				<reportElement key="textField-3" x="484" y="151" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -204,7 +204,7 @@
 				<textFieldExpression><![CDATA[$R{VAT_ID}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="201" width="477" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
+				<reportElement x="37" y="201" width="538" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
