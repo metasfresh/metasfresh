@@ -42,11 +42,12 @@ public class C_Order
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	/**
+	 * Invalidate the invoice candidates on complete, for cases where the order was re-activated, the user changed things in it (e.g.the product) and now is completed again 
+	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_CLOSE,
-			ModelValidator.TIMING_AFTER_VOID })
+			ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void invalidateInvoiceCandidates(@NonNull final I_C_Order order)
 	{
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
