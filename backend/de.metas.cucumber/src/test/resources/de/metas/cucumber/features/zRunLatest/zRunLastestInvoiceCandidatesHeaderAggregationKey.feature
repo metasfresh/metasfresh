@@ -7,7 +7,7 @@ Feature: ZInvoice candidate separation based on header aggregation key
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2023-03-30T13:30:13+01:00[Europe/Berlin]
 
-    And  metasfresh initially has no I_Invoice_Candidate data
+    And metasfresh initially has no I_Invoice_Candidate import data
     And metasfresh contains M_PricingSystems
       | Identifier    | Name                       | Value       | OPT.IsActive |
       | ps_1_29032023 | PricingSystemName_29032023 | ps_29032023 | true         |
