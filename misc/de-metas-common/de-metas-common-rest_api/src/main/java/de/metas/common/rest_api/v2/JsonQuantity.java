@@ -42,8 +42,7 @@ public class JsonQuantity
 			description = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	String uomCode;
 
-	@ApiModelProperty(position = 30,
-			value = "Unit of measurement symbol; this translates to `C_UOM.UOMSymbol`.")
+	@Schema(description = "Unit of measurement symbol; this translates to `C_UOM.UOMSymbol`.")
 	String uomSymbol;
 
 	@JsonCreator
