@@ -11,8 +11,6 @@ import {
 import TableCellWidget from './TableCellWidget';
 import WidgetWrapper from '../../containers/WidgetWrapper';
 import WidgetTooltip from '../widget/WidgetTooltip';
-import { getSettingFromStateAsBoolean } from '../../utils/settings';
-import { connect } from 'react-redux';
 
 /**
  * @file Class based component.
@@ -334,14 +332,4 @@ TableCell.propTypes = {
   tableId: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = (state) => {
-  return {
-    isShowComments: getSettingFromStateAsBoolean(
-      state,
-      'view.showCommentsMarker',
-      false
-    ),
-  };
-};
-
-export default connect(mapStateToProps, null)(TableCell);
+export default TableCell;
