@@ -40,7 +40,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -50,7 +49,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -135,12 +133,6 @@ public class I_Invoice_Candidate_StepDef
 			final String iInvoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
 			iInvoiceCandidateListTable.putOrReplace(iInvoiceCandidateIdentifier, importInvoiceCandidates);
 		}
-	}
-
-	@And("metasfresh initially has no I_Invoice_Candidate data")
-	public void delete_I_Invoice_Candidate_data()
-	{
-		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM I_Invoice_Candidate cascade", ITrx.TRXNAME_None);
 	}
 
 	private void validateCreatedIInvoiceCandidate(@NonNull final Map<String, String> row) throws InterruptedException
