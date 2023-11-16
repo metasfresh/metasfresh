@@ -103,6 +103,8 @@ const translations = {
         packing: 'Packing',
         qtyTUs: 'TUs',
         print: 'Print',
+        numberOfHUs: 'HUs',
+        numberOfCopies: 'Copies',
       },
       issues: {
         target: 'To issue',

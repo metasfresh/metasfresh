@@ -5,6 +5,7 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DocumentReportFlavor;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,7 +52,7 @@ public class GlobalQRCodeService
 		return execute;
 	}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 				.trxName(ITrx.TRXNAME_ThreadInherited)
@@ -74,6 +75,8 @@ public class GlobalQRCodeService
 
 		archiveRecord.setIsDirectEnqueue(true);
 		archiveRecord.setIsDirectProcessQueueItem(true);
+		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archiveRecord, copies);
+		
 		InterfaceWrapperHelper.save(archiveRecord);
 	}
 

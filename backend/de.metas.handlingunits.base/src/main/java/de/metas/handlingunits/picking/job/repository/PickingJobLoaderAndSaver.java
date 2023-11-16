@@ -476,7 +476,7 @@ class PickingJobLoaderAndSaver
 
 		pickingJobStepAlternatives.get(pickingJobStepId)
 				.stream()
-				.map(this::loadPickFrom)
+				.map(alternativeHU -> loadPickFrom(productId, alternativeHU))
 				.forEach(pickFroms::add);
 
 		return PickingJobStep.builder()
@@ -518,7 +518,9 @@ class PickingJobLoaderAndSaver
 				.build();
 	}
 
-	private PickingJobStepPickFrom loadPickFrom(final I_M_Picking_Job_Step_HUAlternative record)
+	private PickingJobStepPickFrom loadPickFrom(
+			final ProductId pickedProductId,
+			final I_M_Picking_Job_Step_HUAlternative record)
 	{
 		final PickingJobPickFromAlternativeId alternativeId = extractAlternativeId(record);
 
@@ -535,7 +537,7 @@ class PickingJobLoaderAndSaver
 						.id(pickFromHUId)
 						.qrCode(getQRCode(pickFromHUId))
 						.build())
-				.pickedTo(loadPickedTo(record))
+				.pickedTo(loadPickedTo(pickedProductId, record))
 				.build();
 	}
 
@@ -561,6 +563,7 @@ class PickingJobLoaderAndSaver
 			return PickingJobStepPickedTo.builder()
 					.qtyRejected(qtyRejected)
 					.actualPickedHUs(pickedHUs)
+					.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 					.build();
 		}
 		else
@@ -606,7 +609,9 @@ class PickingJobLoaderAndSaver
 	}
 
 	@Nullable
-	private PickingJobStepPickedTo loadPickedTo(final I_M_Picking_Job_Step_HUAlternative record)
+	private PickingJobStepPickedTo loadPickedTo(
+			@NonNull final ProductId pickedProductId,
+			@NonNull final I_M_Picking_Job_Step_HUAlternative record)
 	{
 		final PickingJobStepId pickingJobStepId = extractPickingJobStepId(record);
 		final PickingJobPickFromAlternativeId alternativeId = extractAlternativeId(record);
@@ -617,6 +622,7 @@ class PickingJobLoaderAndSaver
 			return PickingJobStepPickedTo.builder()
 					.qtyRejected(qtyRejected)
 					.actualPickedHUs(pickedHUs)
+					.productId(pickedProductId)
 					.build();
 		}
 		else

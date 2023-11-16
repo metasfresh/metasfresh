@@ -67,7 +67,7 @@ public class JsonPickingJobLine
 				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
 				.steps(line.getSteps()
 						.stream()
-						.map(step -> JsonPickingJobStep.of(step, jsonOpts))
+						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()));
 	}
 }
