@@ -38,7 +38,7 @@
 	<title>
 		<band height="188" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-5" x="336" y="154" width="87" height="13" uuid="e360a0db-a81f-4ffc-a7c9-2aed99bafaea"/>
+				<reportElement key="textField-5" x="381" y="154" width="87" height="13" uuid="e360a0db-a81f-4ffc-a7c9-2aed99bafaea"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
@@ -89,7 +89,7 @@
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="423" y="154" width="91" height="13" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
+				<reportElement key="textField-3" x="468" y="154" width="91" height="13" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
