@@ -103,7 +103,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="56" y="153" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
+				<reportElement key="subreport-7" x="37" y="153" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
