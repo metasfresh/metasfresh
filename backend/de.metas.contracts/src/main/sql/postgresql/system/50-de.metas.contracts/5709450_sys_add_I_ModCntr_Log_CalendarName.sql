@@ -1,4 +1,4 @@
--- Run mode: SWING_CLIENT
+TRUNCATE table i_modcntr_log;
 
 -- Column: I_ModCntr_Log.C_Calendar_ID
 -- 2023-11-03T11:49:36.075Z
