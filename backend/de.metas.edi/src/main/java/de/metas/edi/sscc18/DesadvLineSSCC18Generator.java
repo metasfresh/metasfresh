@@ -115,7 +115,7 @@ public class DesadvLineSSCC18Generator
 				// Subtract the "LU" of this SSCC from total QtyCUs remaining
 				totalQtyCUsRemaining.subtractLU()
 						.setQtyTUsPerLU(desadvPack.getQtyTU())
-						.setQtyCUsPerTU(desadvPack.getQtyCU())
+						.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
 						.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
 						.build();
 
@@ -192,6 +192,8 @@ public class DesadvLineSSCC18Generator
 		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
+		TODO: convert qtys to invoice-UOM
+		
 		// Create SSCC record
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest
 				.builder()

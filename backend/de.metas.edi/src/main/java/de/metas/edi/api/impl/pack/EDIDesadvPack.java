@@ -79,10 +79,10 @@ public class EDIDesadvPack
 	}
 
 	@NonNull
-	public BigDecimal getQtyCU()
+	public BigDecimal getQtyCUsPerTU()
 	{
 		return ediDesadvPackItems.stream()
-				.map(EDIDesadvPackItem::getQtyCu)
+				.map(EDIDesadvPackItem::getQtyCUsPerTU)
 				.filter(Objects::nonNull)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
@@ -125,7 +125,7 @@ public class EDIDesadvPack
 		Integer qtyTu;
 
 		@Nullable
-		BigDecimal qtyCu;
+		BigDecimal qtyCUsPerTU;
 
 		@Nullable
 		BigDecimal qtyCUsPerLU;

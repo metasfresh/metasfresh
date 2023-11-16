@@ -104,8 +104,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | p_1_S0317_010                 | true                | null                   | huPackagingCode_1_S0317_010             | gtinPiItemProduct           |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0317_010                     | p_1_S0317_010                 | 40              | 10        | 40              | 10                  | 4         | s_1_S0317_010             | shipmentLine_1_S0317_010      | huPackagingCode_2_S0317_010             | bPartnerProductGTIN         |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0317_010                     | p_1_S0317_010                 | 40              | 10              | 40              | 10                  | 4         | s_1_S0317_010             | shipmentLine_1_S0317_010      | huPackagingCode_2_S0317_010             | bPartnerProductGTIN         |
 
     And the shipment identified by s_1_S0317_010 is reversed
 
@@ -283,9 +283,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | p_2_S0317_020                 | true                | createdLU_S0317_020    | huPackagingCode_1_S0317_020             | bPartnerProductGTIN_LU      |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0317_020                     | p_1_S0317_020                 | 95              | 10        | 95              | 10                  | 10        | 2021-04-20         | lotNumber     | huPackagingCode_2_S0317_020             | bPartnerProductGTIN         |
-      | pi_2_S0317_020                     | p_2_S0317_020                 | 5               | 5         | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0317_020             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0317_020                     | p_1_S0317_020                 | 95              | 10              | 95              | 10                  | 10        | 2021-04-20         | lotNumber     | huPackagingCode_2_S0317_020             | bPartnerProductGTIN         |
+      | pi_2_S0317_020                     | p_2_S0317_020                 | 5               | 5               | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0317_020             | bPartnerProductGTIN_TU      |
 
     And EDI_Desadv_Pack records are updated
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18       |

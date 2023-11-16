@@ -144,8 +144,10 @@ public class EDI_Desadv_Pack_Item_StepDef
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID).append(" : ").append(itemRecord.getM_InOut_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID).append(" : ").append(itemRecord.getM_InOutLine_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty).append(" : ").append(itemRecord.getMovementQty()).append(" ; ")
-						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU).append(" : ").append(itemRecord.getQtyCU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU).append(" : ").append(itemRecord.getQtyCUsPerTU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerTU_InInvoiceUOM()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU).append(" : ").append(itemRecord.getQtyCUsPerLU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerLU_InInvoiceUOM()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity).append(" : ").append(itemRecord.getQtyItemCapacity()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU).append(" : ").append(itemRecord.getQtyTU()).append(" ; ")
 						.append("\n"));
@@ -174,8 +176,10 @@ public class EDI_Desadv_Pack_Item_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, packItemFound, () -> logCurrentContext(packID));
 
 		final BigDecimal movementQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
-		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU);
+		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU);
+		final BigDecimal qtyCUsPerTU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM);
 		final BigDecimal qtyCUsPerLU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU);
+		final BigDecimal qtyCUsPerLU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM);
 		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity);
 		final Integer qtyTu = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU);
 
@@ -184,8 +188,10 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(desadvPackItemRecord.getMovementQty()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - MovementQty", packIdentifier, packItemId).isEqualByComparingTo(movementQty);
-		softly.assertThat(desadvPackItemRecord.getQtyCU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCU", packIdentifier, packItemId).isEqualByComparingTo(qtyCU);
+		softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU);
+		softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU_InInvoiceUOM);
 		softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU);
+		softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU_InInvoiceUOM);
 		softly.assertThat(desadvPackItemRecord.getQtyItemCapacity()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyItemCapacity", packIdentifier, packItemId).isEqualByComparingTo(qtyItemCapacity);
 		softly.assertThat(desadvPackItemRecord.getQtyTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyTU", packIdentifier, packItemId).isEqualByComparingTo(qtyTu);
 

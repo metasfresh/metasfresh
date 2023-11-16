@@ -12,7 +12,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
   @Id:S0316_010
   Scenario: S0316_010 - 1 Pack from 1 line with no HU & no packing item.
-  There are no packing-infos to go with, so it assumes one LU, one TU and all CUs within that TU.  
+  There are no packing-infos to go with, so it assumes one LU, one TU and all CUs within that TU.
   in:
   C_OrderLine:
   - QtyEntered = 10
@@ -75,8 +75,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_010                 | true                | null                   | null                                    | null                        |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_010                     | p_1_S0316_010                 | 10              | 10        | 10              | 0                   | 1         | s_1_S0316_010             | shipmentLine_1_S0316_010      | null               | null          | null                                    | null                        |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0316_010                     | p_1_S0316_010                 | 10              | 10              | 10                           | 1               | 1                            | 1                   | 1         | s_1_S0316_010             | shipmentLine_1_S0316_010      | null               | null          | null                                    | null                        |
 
     And the shipment identified by s_1_S0316_010 is reversed
 
@@ -86,7 +86,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
   @Id:S0316_020
   Scenario: S0316_020 - 1 Pack from 1 line with no HU & 1 packing item.
-  The packing-info with a capacity of 10 is created within the test and assigned to the order-line, so we expect the ordered qty to be distributed among 10 TUs.  
+  The packing-info with a capacity of 10 is created within the test and assigned to the order-line, so we expect the ordered qty to be distributed among 10 TUs.
   in:
   C_OrderLine:
   - QtyEntered = 100
@@ -190,8 +190,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_020                 | true                | null                   | huPackagingCode_1_S0316_020             | gtinPiItemProduct           |
 
     And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_020                     | p_1_S0316_020                 | 100             | 10        | 100             | 10                  | 10        | s_1_S0316_020             | shipmentLine_1_S0316_020      | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_020             | bPartnerProductGTIN         |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0316_020                     | p_1_S0316_020                 | 100             | 10              | 10                           | 100             | 100                          | 10                  | 10        | s_1_S0316_020             | shipmentLine_1_S0316_020      | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_020             | bPartnerProductGTIN         |
 
     And the shipment identified by s_1_S0316_020 is reversed
 
@@ -202,7 +202,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
   @Id:S0316_030
   Scenario: S0316_030 - 1 Pack from 1 line with HU for entire qty.
-  There are no packing-infos to go with, but an actual HU is picked, so we use the qtys from that HU.  
+  There are no packing-infos to go with, but an actual HU is picked, so we use the qtys from that HU.
   in:
   C_OrderLine:
   - QtyEntered = 10
@@ -343,8 +343,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_030                 | true                | createdLU_S0316_030    | huPackagingCode_1_S0316_030             | bPartnerProductGTIN_LU      |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_030                     | p_1_S0316_030                 | 10              | 10        | 10              | 10                  | 1         | s_1_S0316_030             | shipmentLine_1_S0316_030      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_030             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0316_030                     | p_1_S0316_030                 | 10              | 10              | 10              | 10                  | 1         | s_1_S0316_030             | shipmentLine_1_S0316_030      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_030             | bPartnerProductGTIN_TU      |
 
     And EDI_Desadv_Pack records are updated
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18     |
@@ -364,7 +364,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
   @Id:S0316_040
   Scenario: S0316_040 - 2 Packs from 1 line with HU for partial qty & 1 packing item.
-  The packing-info with a capacity of 10 is created within the test and assigned to the order-line, but then an HU with qty=5 is picked, before a shipment with the complete qty=10 is created. so we expect one "generic" EDI_Desadv_Pack_Item the is created from the packing-info and another one that reflects the actual HU.  
+  The packing-info with a capacity of 10 is created within the test and assigned to the order-line, but then an HU with qty=5 is picked, before a shipment with the complete qty=10 is created. so we expect one "generic" EDI_Desadv_Pack_Item the is created from the packing-info and another one that reflects the actual HU.
   in:
   C_OrderLine:
   - QtyEntered = 10
@@ -530,9 +530,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_2_S0316_040                 | true                | createdLU_S0316_040    | huPackagingCode_1_S0316_040             | bPartnerProductGTIN_LU      |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_040                     | p_1_S0316_040                 | 5               | 10        | 5               | 10                  | 1         | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_040             | bPartnerProductGTIN         |
-      | pi_2_S0316_040                     | p_2_S0316_040                 | 5               | 5         | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_040             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
+      | pi_1_S0316_040                     | p_1_S0316_040                 | 5               | 10              | 5               | 10                  | 1         | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_040             | bPartnerProductGTIN         |
+      | pi_2_S0316_040                     | p_2_S0316_040                 | 5               | 5               | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_040             | bPartnerProductGTIN_TU      |
 
     And EDI_Desadv_Pack records are updated
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18       |
