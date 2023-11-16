@@ -5,9 +5,7 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
-import de.metas.report.DocumentReportFlavor;
 import de.metas.report.PrintCopies;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,6 +53,7 @@ public class GlobalQRCodeService
 		final ArchiveInfo archiveInfo = new ArchiveInfo(pdf.getFilename(), recordRef);
 		archiveInfo.setProcessId(pdf.getProcessId());
 		archiveInfo.setPInstanceId(pdf.getPinstanceId());
+		archiveInfo.setCopies(copies);
 
 		massPrintingService.print(pdf, archiveInfo);
 	}
