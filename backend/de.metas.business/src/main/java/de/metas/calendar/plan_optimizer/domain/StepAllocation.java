@@ -101,14 +101,14 @@ public class StepAllocation
 		sb.append(PlanToStringHelper.toString(getStartDate(), getEndDate()));
 		sb.append(": ");
 
-		sb.append(stepDef.getResource()).append("=").append(PlanToStringHelper.toString(stepDef.getRequiredResourceCapacity()));
+		sb.append(stepDef.getResource()).append("=").append(PlanToStringHelper.toHoursString(stepDef.getRequiredResourceCapacity()));
 		if (stepDef.getHumanResourceId() != null)
 		{
-			sb.append(", HR").append(stepDef.getHumanResourceId()).append("=").append(PlanToStringHelper.toString(stepDef.getRequiredHumanCapacity()));
+			sb.append(", HR").append(stepDef.getHumanResourceId()).append("=").append(PlanToStringHelper.toHoursString(stepDef.getRequiredHumanCapacity()));
 		}
 		sb.append(", ID=").append(id);
-		sb.append(", delay=").append(delay != null ? PlanToStringHelper.toString(Duration.of(delay, Plan.PLANNING_TIME_PRECISION)) : null)
-				.append("<").append(PlanToStringHelper.toString(stepDef.computeDelayMax().truncatedTo(Plan.PLANNING_TIME_PRECISION)));
+		sb.append(", delay=").append(delay != null ? PlanToStringHelper.toHoursString(Duration.of(delay, Plan.PLANNING_TIME_PRECISION)) : null)
+				.append("<").append(PlanToStringHelper.toHoursString(stepDef.computeDelayMax().truncatedTo(Plan.PLANNING_TIME_PRECISION)));
 		if (stepDef.getPinnedStartDate() != null && previousStepEndDate != null)
 		{
 			sb.append("(").append(Duration.between(previousStepEndDate, stepDef.getPinnedStartDate())).append(")");

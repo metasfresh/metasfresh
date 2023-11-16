@@ -39,7 +39,7 @@ final class PlanToStringHelper
 				.append("simulationId: ").append(plan.getSimulationId())
 				.append(nl())
 				.append("Plan score: ").append(plan.getScore())
-				.append(", Time spent: ").append(toString(plan.getTimeSpent()))
+				.append(", Time spent: ").append(plan.getTimeSpent() != null ? toString(plan.getTimeSpent()) : null)
 				.append(", IsFinalSolution=").append(plan.isFinalSolution());
 
 		final ArrayList<StepAllocation> stepsList = plan.getStepsList();
@@ -102,7 +102,7 @@ final class PlanToStringHelper
 				.append(toString(startDate, endDate))
 				.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")")
 				.append(": ")
-				.append("duration=").append(toString(duration))
+				.append("duration=").append(toHoursString(duration))
 		;
 	}
 
@@ -137,6 +137,11 @@ final class PlanToStringHelper
 		}
 
 		return sb.toString();
+	}
+
+	public static String toHoursString(@NonNull final Duration duration)
+	{
+		return duration.toHours() + "h";
 	}
 
 	public static String toString(@NonNull final Duration duration)
