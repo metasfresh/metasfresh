@@ -35,6 +35,8 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
+import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroup;
+import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.leichmehl.TargetFieldType;
@@ -49,6 +51,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -63,7 +66,6 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
@@ -77,6 +79,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -863,46 +866,60 @@ public class ExternalSystemConfigRepo
 				.tcpPort(config.getTCP_PortNumber())
 				.tcpHost(config.getTCP_Host())
 				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
-				.productMappings(getExternalSystemLeichMehlConfigProductMappings(id))
-				.pluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(id))
 				.build();
 	}
 
 	@NonNull
-	private List<ExternalSystemLeichMehlConfigProductMapping> getExternalSystemLeichMehlConfigProductMappings(@NonNull final ExternalSystemLeichMehlConfigId externalSystemLeichMehlConfigId)
+	public Optional<ExternalSystemLeichMehlConfigProductMapping> getExternalSystemLeichMehlConfigProductMappings(@NonNull final ProductId productId, @Nullable final BPartnerId bPartnerId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, externalSystemLeichMehlConfigId.getRepoId())
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_M_Product_ID, productId)
+				.addInArrayFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID, bPartnerId, null)
+				.orderBy(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_C_BPartner_ID)
 				.create()
-				.stream()
-				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlConfigProductMapping)
-				.collect(ImmutableList.toImmutableList());
+				.firstOptional(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
+				.map(this::toExternalSystemLeichMehlConfigProductMapping);
 	}
 
 	@NonNull
-	private static ExternalSystemLeichMehlConfigProductMapping toExternalSystemLeichMehlConfigProductMapping(@NonNull final I_ExternalSystem_Config_LeichMehl_ProductMapping record)
+	private ExternalSystemLeichMehlConfigProductMapping toExternalSystemLeichMehlConfigProductMapping(@NonNull final I_ExternalSystem_Config_LeichMehl_ProductMapping record)
 	{
-		final ExternalSystemLeichMehlConfigId configId = ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID());
-
-		final ExternalSystemLeichMehlConfigProductMappingId productMappingId = ExternalSystemLeichMehlConfigProductMappingId.ofRepoId(configId, record.getExternalSystem_Config_LeichMehl_ProductMapping_ID());
-
 		return ExternalSystemLeichMehlConfigProductMapping.builder()
-				.id(productMappingId)
-				.seqNo(record.getSeqNo())
+				.id(ExternalSystemLeichMehlConfigProductMappingId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ProductMapping_ID()))
 				.pluFile(record.getPLU_File())
-				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
-				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.leichMehlPluFileConfigGroup(getLeichMehlPluFileConfigGroup(LeichMehlPluFileConfigGroupId.ofRepoId(record.getLeichMehl_PluFile_ConfigGroup_ID())))
 				.build();
 	}
 
 	@NonNull
-	private List<ExternalSystemLeichMehlPluFileConfig> getExternalSystemLeichMehlPluFileConfigs(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId)
+	private LeichMehlPluFileConfigGroup getLeichMehlPluFileConfigGroup(@NonNull final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId)
+	{
+		return toLeichMehlPluFileConfigGroup(queryBL.createQueryBuilder(I_LeichMehl_PluFile_ConfigGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_LeichMehl_PluFile_ConfigGroup.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, leichMehlPluFileConfigGroupId)
+				.create()
+				.firstNotNull(I_LeichMehl_PluFile_ConfigGroup.class));
+	}
+
+	private LeichMehlPluFileConfigGroup toLeichMehlPluFileConfigGroup(@NonNull final I_LeichMehl_PluFile_ConfigGroup leichMehlPluFileConfigGroup)
+	{
+		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(leichMehlPluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
+		return LeichMehlPluFileConfigGroup.builder()
+				.id(leichMehlPluFileConfigGroupId)
+				.name(leichMehlPluFileConfigGroup.getName())
+				.externalSystemLeichMehlPluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(leichMehlPluFileConfigGroupId))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlPluFileConfig> getExternalSystemLeichMehlPluFileConfigs(@NonNull final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId)
 	{
 		return queryBL.createQueryBuilder(I_LeichMehl_PluFile_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMN_ExternalSystem_Config_LeichMehl_ID, leichMehlConfigId)
+				.addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, leichMehlPluFileConfigGroupId)
 				.create()
 				.stream()
 				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlPluFileConfig)
@@ -914,7 +931,7 @@ public class ExternalSystemConfigRepo
 	{
 		return ExternalSystemLeichMehlPluFileConfig.builder()
 				.id(ExternalSystemLeichMehlPluFileConfigId.ofRepoId(record.getLeichMehl_PluFile_Config_ID()))
-				.leichMehlConfigId(ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID()))
+				.leichMehlPluFileConfigGroupId(LeichMehlPluFileConfigGroupId.ofRepoId(record.getLeichMehl_PluFile_ConfigGroup_ID()))
 				.targetFieldName(record.getTargetFieldName())
 				.targetFieldType(TargetFieldType.ofCode(record.getTargetFieldType()))
 				.replacement(record.getReplacement())
