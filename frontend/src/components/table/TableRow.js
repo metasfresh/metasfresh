@@ -511,6 +511,7 @@ class TableRow extends PureComponent {
       changeListenOnTrue,
       changeListenOnFalse,
       fieldsByName,
+      isShowComments,
     } = this.props;
     const {
       edited,
@@ -605,7 +606,7 @@ class TableRow extends PureComponent {
                   }
                 }}
                 colIndex={idx}
-                hasComments={!!(hasComments && idx === 0)}
+                hasComments={isShowComments && !!hasComments && idx === 0}
                 cellExtended={cellsExtended}
                 key={`${property}-${idx}`}
                 isRowSelected={isSelected}
@@ -782,6 +783,7 @@ TableRow.propTypes = {
   updatePropertyValue: PropTypes.func,
   onFastInlineEdit: PropTypes.func,
   navigationActive: PropTypes.bool,
+  isShowComments: PropTypes.bool,
 };
 
 export default TableRow;

@@ -31,6 +31,7 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import { isShowCommentsMarker } from '../../utils/tableHelpers';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -572,6 +573,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      isShowComments,
       hasComments,
     } = this.props;
 
@@ -630,7 +632,7 @@ class Header extends PureComponent {
                   )}
                 >
                   <i className="position-relative meta-icon-more">
-                    {hasComments && (
+                    {isShowComments && hasComments && (
                       <span
                         className="notification-number size-sm"
                         title={counterpart.translate('window.comments.caption')}
@@ -955,6 +957,7 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
 };
 
@@ -972,6 +975,7 @@ const mapStateToProps = (state) => {
     indicator: state.windowHandler.indicator,
     docStatus: docActionElement,
     docSummaryData,
+    isShowComments: isShowCommentsMarker(state),
   };
 };
 
