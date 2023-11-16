@@ -55,7 +55,7 @@ SELECT iol.line,
                 ELSE COALESCE(uomt.UOMSymbol, uom.UOMSymbol)
         END)                                                                                           AS UOMSymbol,
        uom.stdPrecision,
-       report.Get_QtyPattern(uom.StdPrecision)                                          AS QtyPattern,
+       report.getQtyPattern(uom.StdPrecision)                                          AS QtyPattern,
        COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE(multiplyrate, 1) AS linenetamt,
        COALESCE(ic.Discount_Override, ic.Discount)                                                     AS Discount,
        bp.isDiscountPrinted,

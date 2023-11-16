@@ -58,7 +58,7 @@ SELECT ol.line,
        ol.PriceEntered                                        AS PriceEntered,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOMSymbol,
        uom.StdPrecision,
-       report.Get_QtyPattern(uom.StdPrecision) AS QtyPattern,
+       report.getQtyPattern(uom.StdPrecision) AS QtyPattern,
        ol.linenetamt                                          AS linenetamt,
        CASE
            WHEN ROUND(discount, 0) = discount THEN ROUND(discount, 0)

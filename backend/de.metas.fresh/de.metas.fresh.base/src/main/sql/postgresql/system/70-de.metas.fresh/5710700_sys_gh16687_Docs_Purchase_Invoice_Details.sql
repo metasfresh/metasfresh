@@ -75,7 +75,7 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                      AS UOM,
        COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                                    AS PriceUOM,
        puom.StdPrecision,
-       report.Get_QtyPattern(puom.StdPrecision)                      AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                      AS QtyPattern,
        SUM(il.linenetamt)                                                           AS linenetamt,
        t.rate,
        bpg.IsPrintTax,

@@ -20,10 +20,10 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS report.Get_QtyPattern(numeric)
+DROP FUNCTION IF EXISTS report.getQtyPattern(numeric)
 ;
 
-CREATE FUNCTION report.Get_QtyPattern(UOM_StdPrecision numeric) RETURNS text
+CREATE FUNCTION report.getQtyPattern(UOM_StdPrecision numeric) RETURNS text
     LANGUAGE plpgsql
 AS
 $$
