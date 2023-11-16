@@ -1484,3 +1484,35 @@ UPDATE AD_UI_Element SET SeqNo=90,Updated=TO_TIMESTAMP('2023-11-15 20:22:39.407'
 
 
 
+
+
+-- Tab: Approval Requests(541730,D) -> Dokumente
+-- Table: AD_AttachmentEntry_ReferencedRecord_v
+-- 2023-11-16T17:51:19.222089300Z
+UPDATE AD_Tab SET Parent_Column_ID=587361,Updated=TO_TIMESTAMP('2023-11-16 19:51:19.222','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547277
+;
+
+-- Tab: Approval Requests(541730,D) -> Dokumente
+-- Table: AD_AttachmentEntry_ReferencedRecord_v
+-- 2023-11-16T18:07:00.035472800Z
+UPDATE AD_Tab SET AllowQuickInput='N',Updated=TO_TIMESTAMP('2023-11-16 20:07:00.035','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547277
+;
+
+-- Tab: Approval Requests(541730,D) -> Dokumente
+-- Table: AD_AttachmentEntry_ReferencedRecord_v
+-- 2023-11-16T18:07:29.633763400Z
+UPDATE AD_Tab SET WhereClause='AD_AttachmentEntry_ReferencedRecord_v.AD_Table_ID=259 /*C_Order*/',Updated=TO_TIMESTAMP('2023-11-16 20:07:29.633','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547277
+;
+
+-- Tab: Meine Zulassungen(541736,D) -> Dokumente
+-- Table: AD_AttachmentEntry_ReferencedRecord_v
+-- 2023-11-16T18:08:45.518121700Z
+UPDATE AD_Tab SET WhereClause='AD_AttachmentEntry_ReferencedRecord_v.AD_Table_ID=259 /*C_Order*/',Updated=TO_TIMESTAMP('2023-11-16 20:08:45.518','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547282
+;
+
+-- Tab: Meine Zulassungen(541736,D) -> Dokumente
+-- Table: AD_AttachmentEntry_ReferencedRecord_v
+-- 2023-11-16T18:09:51.540854200Z
+UPDATE AD_Tab SET Parent_Column_ID=587361,Updated=TO_TIMESTAMP('2023-11-16 20:09:51.54','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547282
+;
+
