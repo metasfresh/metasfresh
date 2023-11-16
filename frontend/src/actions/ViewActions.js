@@ -36,7 +36,12 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { createGridTable, updateGridTable, deleteTable, partialUpdateGridTableRows } from './TableActions';
+import {
+  createGridTable,
+  updateGridTable,
+  deleteTable,
+  partialUpdateGridTableRows,
+} from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { fetchQuickActions, deleteQuickActions } from './Actions';
 import { setRawModalTitle } from './WindowActions';
