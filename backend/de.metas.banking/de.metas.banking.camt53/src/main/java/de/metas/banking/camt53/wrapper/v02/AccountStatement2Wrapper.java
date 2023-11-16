@@ -114,7 +114,7 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	{
 		return accountStatement2.getNtry()
 				.stream()
-				.map(this::buildNoBatchReportEntryWrapper)
+				.map(this::buildBatchReportEntryWrapper)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -149,9 +149,9 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	}
 
 	@NonNull
-	private IStatementLineWrapper buildNoBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
+	private IStatementLineWrapper buildBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
 	{
-		return NoBatchReportEntry2Wrapper.builder()
+		return BatchReportEntry2Wrapper.builder()
 				.currencyRepository(getCurrencyRepository())
 				.entry(reportEntry)
 				.build();

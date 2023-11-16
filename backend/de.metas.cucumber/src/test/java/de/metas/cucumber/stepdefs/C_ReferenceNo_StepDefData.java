@@ -1,13 +1,8 @@
-package de.metas.ui.web.window.datatypes;
-
-import lombok.Getter;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,23 +20,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum DocumentType
+package de.metas.cucumber.stepdefs;
+
+import de.metas.document.refid.model.I_C_ReferenceNo;
+
+public class C_ReferenceNo_StepDefData extends StepDefData<I_C_ReferenceNo>
 {
-	Window("W"), //
-	Process("P"), //
-	ProductAttributes("ASI"), //
-	ViewRecordAttributes("VRA"), //
-	Address("ADDR"), //
-	QuickInput("QI") //
-	;
-
-	@Getter
-	private final String symbol;
-
-	DocumentType(@NonNull final String symbol)
+	public C_ReferenceNo_StepDefData()
 	{
-		this.symbol = symbol;
+		super(I_C_ReferenceNo.class);
 	}
-
-	public boolean isWindow() {return Window.equals(this);}
 }

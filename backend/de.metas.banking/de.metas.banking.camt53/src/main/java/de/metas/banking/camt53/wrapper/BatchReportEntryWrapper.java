@@ -37,11 +37,11 @@ import java.util.Optional;
 
 @NonFinal
 @Value
-public abstract class NoBatchReportEntryWrapper implements IStatementLineWrapper
+public abstract class BatchReportEntryWrapper implements IStatementLineWrapper
 {
 	@NonNull CurrencyRepository currencyRepository;
 
-	protected NoBatchReportEntryWrapper(@NonNull final CurrencyRepository currencyRepository)
+	protected BatchReportEntryWrapper(@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.currencyRepository = currencyRepository;
 	}

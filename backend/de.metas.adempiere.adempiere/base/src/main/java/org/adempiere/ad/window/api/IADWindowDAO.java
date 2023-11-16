@@ -3,6 +3,7 @@ package org.adempiere.ad.window.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -22,6 +23,7 @@ import org.compiere.model.I_AD_Window;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -112,4 +114,6 @@ public interface IADWindowDAO extends ISingletonService
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
 
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
+
+	Optional<QuickInputConfigLayout> getQuickInputConfigLayout(AdTabId adTabId);
 }

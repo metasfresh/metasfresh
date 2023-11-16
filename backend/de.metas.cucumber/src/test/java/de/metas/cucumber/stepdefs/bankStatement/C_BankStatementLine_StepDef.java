@@ -111,7 +111,6 @@ public class C_BankStatementLine_StepDef
 		final int line = DataTableUtil.extractIntForColumnName(row, I_C_BankStatementLine.COLUMNNAME_Line);
 
 		final I_C_BankStatementLine bankStatementLineRecord = getBankStatementLineRecord(bankStatementRecord, line);
-
 		final String bankStatementLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bankStatementLineTable.putOrReplace(bankStatementLineIdentifier, bankStatementLineRecord);
 	}
@@ -178,7 +177,7 @@ public class C_BankStatementLine_StepDef
 		if (Check.isNotBlank(invoiceIdentifier))
 		{
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record for identifier=%s", bslIdentifier, invoiceIdentifier).isNotNull();
+			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();
 
 			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID for identifier=%s", bslIdentifier, invoiceIdentifier).isEqualTo(invoiceRecord.getC_Invoice_ID());
 		}
