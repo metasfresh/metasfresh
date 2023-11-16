@@ -17,8 +17,8 @@
 	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="p_ValidFrom" class="java.sql.Date"/>
-	<parameter name="p_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ValidFrom" class="java.sql.Timestamp"/>
+	<parameter name="p_Org_ID" class="java.math.BigDecimal" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT
 	$P{p_Org_ID} AS AD_Org_ID, 'Y' AS IsSOPriceList
@@ -70,7 +70,7 @@
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{p_ValidFrom}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{ValidFrom}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -90,8 +90,8 @@
 				<subreportParameter name="p_show_product_price_pi_flag">
 					<subreportParameterExpression><![CDATA[$P{p_show_product_price_pi_flag}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="p_ValidFrom">
-					<subreportParameterExpression><![CDATA[$P{p_ValidFrom}]]></subreportParameterExpression>
+				<subreportParameter name="ValidFrom">
+					<subreportParameterExpression><![CDATA[$P{ValidFrom}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/pricelist_todate/report_details.jasper"]]></subreportExpression>

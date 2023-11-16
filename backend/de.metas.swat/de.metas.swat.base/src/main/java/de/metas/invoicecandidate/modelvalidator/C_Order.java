@@ -21,6 +21,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -67,9 +68,7 @@ public class C_Order
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_CLOSE,
-			ModelValidator.TIMING_AFTER_VOID })
+			ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);

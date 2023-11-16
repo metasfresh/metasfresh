@@ -90,9 +90,7 @@ BEGIN
                       ORDER BY bp_value,
                                plv_name,
                                productcategory,
-                               ProductName,
-                               attributes,
-                               ItemProductName);
+                               m_product_id);
 
     END IF;
 
@@ -109,9 +107,7 @@ BEGIN
                       ORDER BY bp_value,
                                plv_name,
                                productcategory,
-                               ProductName,
-                               attributes,
-                               ItemProductName);
+                               m_product_id);
 
     END IF;
 

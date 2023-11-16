@@ -5,6 +5,9 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
+import de.metas.report.DocumentReportFlavor;
+import de.metas.report.PrintCopies;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -46,7 +49,7 @@ public class GlobalQRCodeService
 		return execute;
 	}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
 		final TableRecordReference recordRef = TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId());
 		final ArchiveInfo archiveInfo = new ArchiveInfo(pdf.getFilename(), recordRef);
