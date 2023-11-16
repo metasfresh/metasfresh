@@ -43,7 +43,7 @@ import {
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
-import { createView } from './ViewActions';
+import { createView, patchViewAction } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import {
@@ -848,9 +848,9 @@ export const patchWindow = ({
  * @todo TODO: This should return a promise
  */
 export function patch(
-  entity,
-  windowType,
-  id = 'NEW',
+  entity, // type, e.g. documentView
+  windowType, // aka windowId
+  id = 'NEW', // documentId
   tabId,
   rowId,
   property,
@@ -861,6 +861,16 @@ export function patch(
   isEdit,
   disconnected
 ) {
+  if (entity === 'documentView' && isModal) {
+    return patchViewAction({
+      windowId: windowType,
+      viewId,
+      rowId,
+      fieldName: property,
+      value,
+    });
+  }
+
   return async (dispatch) => {
     const symbol = Symbol();
 

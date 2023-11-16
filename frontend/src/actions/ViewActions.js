@@ -36,10 +36,11 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { createGridTable, updateGridTable, deleteTable, partialUpdateGridTableRows } from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { fetchQuickActions, deleteQuickActions } from './Actions';
 import { setRawModalTitle } from './WindowActions';
+import { patchModalView } from '../api/view';
 
 /**
  * @method resetView
@@ -274,6 +275,9 @@ export function setIncludedView({
 /**
  * @method unsetIncludedView
  * @summary reset included view's id in the store
+ * @param windowId
+ * @param viewId
+ * @param forceClose if true then it clears the includedView state even if the windowId and viewId not matching
  */
 export function unsetIncludedView({
   windowId,
@@ -297,10 +301,11 @@ export function unsetIncludedView({
  * @param {number} page
  * @param {number} pageLength
  * @param {*} orderBy
- * @param {bool} isModal - flag defining if the view is in modal or not.
+ * @param {boolean} isModal - flag defining if the view is in modal or not.
  * Set to `true` for modals because otherwise if using `windowId` we would have a collision
  * with the underlaying window (as they both have the same `windowId`) so we store modal
  * views in `modals` instead of regular `views`
+ * @param {boolean} websocketRefresh
  */
 export function fetchDocument({
   windowId,
@@ -624,5 +629,20 @@ export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
 
         return Promise.reject(error);
       });
+  };
+}
+
+export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
+  return (dispatch) => {
+    patchModalView({ windowId, viewId, rowId, fieldName, value }).then(
+      (row) => {
+        dispatch(
+          partialUpdateGridTableRows({
+            tableId: getTableId({ windowId, viewId }),
+            rowsToUpdate: [row],
+          })
+        );
+      }
+    );
   };
 }
