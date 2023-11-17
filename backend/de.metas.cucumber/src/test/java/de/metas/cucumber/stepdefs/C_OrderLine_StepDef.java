@@ -35,7 +35,6 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -56,7 +55,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -72,7 +70,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
@@ -80,7 +78,6 @@ public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_Product_StepDefData productTable;
@@ -192,12 +189,6 @@ public class C_OrderLine_StepDef
 				orderLine.setQtyEnteredTU(qtyEnteredTU);
 			}
 
-			final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
-			if (qtyItemCapacity != null)
-			{
-				orderLine.setQtyItemCapacity(qtyItemCapacity);
-			}
-
 			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(warehouseIdentifier))
 			{
@@ -205,18 +196,6 @@ public class C_OrderLine_StepDef
 				assertThat(warehouse).isNotNull();
 
 				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-			}
-
-			final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
-			if (Check.isNotBlank(uomX12DE355))
-			{
-				final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
-						.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.firstIdOnly(UomId::ofRepoIdOrNull);
-				assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
-				orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 			}
 
 			saveRecord(orderLine);
