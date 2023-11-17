@@ -40,7 +40,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE LeichMehl_PluFile_Config ADD CONSTRAINT LeichMehlPluFileConfigGroup_LeichMehlPluFileConfig FOREIGN KEY (LeichMehl_PluFile_ConfigGroup_ID) REFERENCES public.LeichMehl_PluFile_ConfigGroup DEFERRABLE INITIALLY DEFERRED
 ;
 
-CREATE UNIQUE INDEX IF NOT EXISTS LeichMehl_PluFile_ConfigGroup_ID_TargetFieldName_AD_Org_ID_UX
+CREATE UNIQUE INDEX IF NOT EXISTS LeichMehl_PluFile_ConfigGroup_ID_TargetFieldName_UX
     ON LeichMehl_PLUFile_Config (leichmehl_plufile_configgroup_id, targetfieldname)
     WHERE isActive = 'Y'
 ;
