@@ -84,7 +84,12 @@ ALTER TABLE ExternalSystem_Config_LeichMehl_ProductMapping ADD CONSTRAINT LeichM
 
 CREATE UNIQUE INDEX IF NOT EXISTS M_Product_ID_C_BPartner_ID_UX
     ON ExternalSystem_Config_LeichMehl_ProductMapping (M_Product_ID, C_BPartner_ID)
-    WHERE isActive = 'Y'
+    WHERE isActive = 'Y' AND C_BPartner_ID IS NOT NULL
+;
+
+CREATE UNIQUE INDEX IF NOT EXISTS M_Product_ID_C_BPartner_ID_NULL_UX
+    ON ExternalSystem_Config_LeichMehl_ProductMapping (M_Product_ID)
+    WHERE isActive = 'Y' AND C_BPartner_ID IS NULL
 ;
 
 -- Element: ExternalSystem_Config_LeichMehl_ProductMapping_ID
