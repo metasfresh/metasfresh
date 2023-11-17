@@ -5,7 +5,7 @@ RETURNS TABLE
 (
 	nonhulines numeric,
 	grandtotal numeric,
-	iso_code character varying,
+	iso_code character,
 	isprinttax character(1),
 	ishuline boolean,
 	taxbaseamt numeric,
