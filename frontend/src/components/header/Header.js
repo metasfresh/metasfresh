@@ -1,40 +1,41 @@
-import counterpart from 'counterpart';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import classnames from 'classnames';
+import counterpart from "counterpart";
+import PropTypes from "prop-types";
+import React, { PureComponent } from "react";
+import { connect } from "react-redux";
+import classnames from "classnames";
 
-import history from '../../services/History';
-import { getPrintingOptions } from '../../api/window';
-import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import history from "../../services/History";
+import { getPrintingOptions } from "../../api/window";
+import { deleteRequest } from "../../api";
+import { duplicateRequest, openFile } from "../../actions/GenericActions";
 import {
   openModal,
-  setPrintingOptions,
   resetPrintingOptions,
-} from '../../actions/WindowActions';
-import { setBreadcrumb } from '../../actions/MenuActions';
+  setPrintingOptions,
+} from "../../actions/WindowActions";
+import { setBreadcrumb } from "../../actions/MenuActions";
 
-import keymap from '../../shortcuts/keymap';
-import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
+import keymap from "../../shortcuts/keymap";
+import GlobalContextShortcuts from "../keyshortcuts/GlobalContextShortcuts";
 
-import WidgetWrapper from '../../containers/WidgetWrapper';
-import Indicator from '../app/Indicator';
-import Prompt from '../app/Prompt';
-import NewEmail from '../email/NewEmail';
-import Inbox from '../inbox/Inbox';
-import NewLetter from '../letter/NewLetter';
-import Tooltips from '../tooltips/Tooltips';
-import Breadcrumb from './Breadcrumb';
-import SideList from './SideList';
-import Subheader from './SubHeader';
-import UserDropdown from './UserDropdown';
+import WidgetWrapper from "../../containers/WidgetWrapper";
+import Indicator from "../app/Indicator";
+import Prompt from "../app/Prompt";
+import NewEmail from "../email/NewEmail";
+import Inbox from "../inbox/Inbox";
+import NewLetter from "../letter/NewLetter";
+import Tooltips from "../tooltips/Tooltips";
+import Breadcrumb from "./Breadcrumb";
+import SideList from "./SideList";
+import Subheader from "./SubHeader";
+import UserDropdown from "./UserDropdown";
 
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
 import {
   getDocActionElementFromState,
   getDocSummaryDataFromState,
-} from '../../reducers/windowHandlerUtils';
+} from "../../reducers/windowHandlerUtils";
+import { isShowCommentsMarker } from "../../utils/tableHelpers";
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -576,6 +577,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      isShowComments,
       hasComments,
     } = this.props;
 
@@ -634,7 +636,7 @@ class Header extends PureComponent {
                   )}
                 >
                   <i className="position-relative meta-icon-more">
-                    {hasComments && (
+                    {isShowComments && hasComments && (
                       <span
                         className="notification-number size-sm"
                         title={counterpart.translate('window.comments.caption')}
@@ -959,6 +961,7 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
 };
 
@@ -970,6 +973,7 @@ const mapStateToProps = (state) => {
     indicator: state.windowHandler.indicator,
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
+    isShowComments: isShowCommentsMarker(state),
   };
 };
 
