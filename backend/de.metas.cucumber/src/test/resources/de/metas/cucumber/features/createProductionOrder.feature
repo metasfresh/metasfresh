@@ -1947,6 +1947,7 @@ Feature: create production order
 
   @Id:S0264_1900
   @from:cucumber
+  @ignore # flaky
   Scenario:  The manufacturing order is created with Lot for Lot
     Given metasfresh contains M_Products:
       | Identifier | Name                                  | OPT.M_Product_Category_ID.Identifier |

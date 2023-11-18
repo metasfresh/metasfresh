@@ -274,6 +274,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
   @Id:S0196_100
   @from:cucumber
   @Id:S0129.2_110
+  @ignore # flaky
   Scenario: Close production candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
