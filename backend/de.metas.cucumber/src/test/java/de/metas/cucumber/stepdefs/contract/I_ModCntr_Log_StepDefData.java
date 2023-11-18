@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,17 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.contract;
 
-import org.compiere.model.I_C_DataImport;
+import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.cucumber.stepdefs.StepDefData;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_DataImport_StepDefData extends StepDefData<I_C_DataImport>
+public class I_ModCntr_Log_StepDefData extends StepDefData<I_I_ModCntr_Log>
 {
-	public C_DataImport_StepDefData()
+	public I_ModCntr_Log_StepDefData()
 	{
-		super(I_C_DataImport.class);
+		super(I_I_ModCntr_Log.class);
 	}
 }
