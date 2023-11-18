@@ -581,4 +581,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(Table);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  Table
+);
