@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,12 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 				.routeId(SEND_TO_TCP_ROUTE_ID)
 				.log("Route invoked!")
 				.log(LoggingLevel.DEBUG, "exchange body: ${body}")
-				.process(this::sendToTcpSocket);
+				.doTry()
+					.process(this::sendToTcpSocket)
+				.endDoTry()
+				.doCatch(RuntimeException.class)
+					.to(direct(MF_ERROR_ROUTE_ID));
+
 		//@formatter:on
 	}
 
@@ -70,6 +76,10 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 				final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream()))
 		{
 			sendContent(request.getPayload(), dataOutputStream);
+		}
+		catch (final IOException e)
+		{
+			throw new RuntimeException("Error on sending data to scale", e);
 		}
 	}
 
