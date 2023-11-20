@@ -366,7 +366,6 @@ class Header extends PureComponent {
 
         // in case there are no options we directly print and reset the printing options in the store
         if (!options) {
-          console.log('AAAAAAAAAAAAAA');
           printDocument({
             windowId,
             documentId: docId,
