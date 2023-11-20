@@ -72,3 +72,14 @@ UPDATE AD_Table_Process SET WEBUI_DocumentAction='Y',Updated=TO_TIMESTAMP('2023-
 UPDATE AD_Table_Process SET WEBUI_DocumentAction='N',Updated=TO_TIMESTAMP('2023-11-16 20:50:10.025','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=541445
 ;
 
+
+
+-- Process: AD_WF_My_Approvals_Download_File(de.metas.workflow.process.AD_WF_Approval_Request_Download_File)
+-- Table: AD_WF_Approval_Request
+-- Tab: Meine Freigaben(541736,D) -> Dokumente(547282,D)
+-- Window: Meine Freigaben(541736,D)
+-- EntityType: D
+-- 2023-11-20T14:49:03.374098Z
+UPDATE AD_Table_Process SET WEBUI_DocumentAction='N',Updated=TO_TIMESTAMP('2023-11-20 16:49:03.373','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=541446
+;
+
