@@ -26,11 +26,11 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.JavaProcess;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry_ReferencedRecord_v;
 import org.springframework.core.io.ByteArrayResource;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 
 public class AD_WF_Approval_Request_Download_File extends JavaProcess
@@ -54,6 +54,7 @@ public class AD_WF_Approval_Request_Download_File extends JavaProcess
 		return MSG_OK;
 	}
 
+	@Nullable
 	protected final I_AD_AttachmentEntry_ReferencedRecord_v getFirstSelectedLine()
 	{
 		return getSelectedIncludedRecords(I_AD_AttachmentEntry_ReferencedRecord_v.class)
