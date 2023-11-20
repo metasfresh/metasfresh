@@ -1,4 +1,4 @@
-import { post, get, delete as del } from 'axios';
+import axios, { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
@@ -162,4 +162,18 @@ export function getPrintUrl({ windowId, documentId, filename, options }) {
 
 export function getPrintFile({ windowId, documentId, filename, options }) {
   return get(getPrintUrl({ windowId, documentId, filename, options }));
+}
+
+export function getAttachments({ windowId, documentId }) {
+  return axios.get(
+    `${config.API_URL}/window/${windowId}/${documentId}/attachments`
+  );
+}
+
+export function getAttachmentUrl({ windowId, documentId, attachmentEntryId }) {
+  return `${config.API_URL}/window/${windowId}/${documentId}/attachments/${attachmentEntryId}`;
+}
+
+export function deleteAttachment({ windowId, documentId, attachmentEntryId }) {
+  return del(getAttachmentUrl({ windowId, documentId, attachmentEntryId }));
 }
