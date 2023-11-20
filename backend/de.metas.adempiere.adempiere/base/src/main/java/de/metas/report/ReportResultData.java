@@ -48,11 +48,9 @@ import java.nio.file.StandardCopyOption;
 @Value
 public class ReportResultData
 {
-	Resource reportData;
-
-	String reportFilename;
-
-	String reportContentType;
+	@NonNull Resource reportData;
+	@NonNull String reportFilename;
+	@NonNull String reportContentType;
 
 	@Builder
 	private ReportResultData(
