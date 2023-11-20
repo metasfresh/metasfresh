@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -355,6 +356,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 					assert destinationDirPathStr != null;
 					final Path destinationPath = Paths.get(destinationDirPathStr, reportTempFile.getFile().getName());
 					Files.move(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+					Loggables.addLog("The report file is saved to this directory: {}", destinationDirPathStr);
 				}
 				catch (final IOException e)
 				{
