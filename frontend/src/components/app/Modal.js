@@ -500,7 +500,6 @@ class Modal extends Component {
       docId,
       'print',
       `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`,
-      options,
       extraParams
     );
     this.handleClose();

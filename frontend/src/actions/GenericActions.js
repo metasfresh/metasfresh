@@ -211,30 +211,16 @@ export function processNewRecord(entity, docType, docId) {
   );
 }
 
-export function openFile(entity, docType, docId, fileType, fileId, options,extraParams) {
+export function openFile(entity, docType, docId, fileType, fileId, options) {
   let filenameNorm = fileId.replace(/[/\\?%*:|"<>]/g, '-');
   filenameNorm = encodeURIComponent(filenameNorm);
-  let isAlsoSendToBrowser = false;
 
   let url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${filenameNorm}`;
-  if (extraParams) {
-    url += '?' + extraParams;
-  }
-
-  options.map((item) => {
-    if (
-      item.internalName === 'PRINTER_OPTS_IsAlsoSendToBrowser' &&
-      item.value === true
-    ) {
-      isAlsoSendToBrowser = true;
+  if (options) {
+    url += '?' + options;
     }
-  });
 
-  if (isAlsoSendToBrowser) {
     window.open(url, '_blank');
-  } else {
-    axios.get(url);
-  }
 }
 
 export function getRequest() {
