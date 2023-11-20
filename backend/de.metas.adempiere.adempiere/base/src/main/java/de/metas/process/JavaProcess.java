@@ -19,7 +19,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -121,9 +120,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
-
-	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
-	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	protected JavaProcess()
 	{
@@ -336,9 +332,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			return;
 		}
 
-		final ReportResultDataTarget reportResultDataTarget = pi.getReportResultDataTarget()
-				.forwardingToUserBrowser(isAlsoSendToBrowser());
-
+		final ReportResultDataTarget reportResultDataTarget = pi.getReportResultDataTarget();
 		if (reportResultDataTarget.isSaveToServerDirectory())
 		{
 			final Path targetFile = reportData.writeToDirectory(reportResultDataTarget.getServerTargetDirectoryNotNull());
@@ -348,21 +342,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			pi.getResult().setReportData((ReportResultData)null);
 		}
-	}
-
-	private OptionalBoolean isAlsoSendToBrowser()
-	{
-		final IRangeAwareParams params = getParameterAsIParams();
-		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
-		{
-			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
-		}
-		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
-		{
-			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
-		}
-
-		return OptionalBoolean.UNKNOWN;
 	}
 
 	/**

@@ -259,13 +259,16 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
-	@NonNull @Getter private final ReportResultDataTarget reportResultDataTarget;
+	@NonNull private final ReportResultDataTarget reportResultDataTarget;
 
 	/**
 	 * Process result
 	 */
 	@Getter
 	private final ProcessExecutionResult result;
+
+	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
+	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	@Override
 	public String toString()
@@ -750,6 +753,27 @@ public final class ProcessInfo implements Serializable
 		}
 		return _processClassInfo;
 	}
+
+	public ReportResultDataTarget getReportResultDataTarget()
+	{
+		return reportResultDataTarget.forwardingToUserBrowser(isAlsoSendToBrowser());
+	}
+
+	private OptionalBoolean isAlsoSendToBrowser()
+	{
+		final IRangeAwareParams params = getParameterAsIParams();
+		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
+		}
+		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
+		}
+
+		return OptionalBoolean.UNKNOWN;
+	}
+
 
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
