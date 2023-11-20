@@ -1053,9 +1053,9 @@ public interface I_AD_Process
 	String COLUMNNAME_StoreProcessResultFileOn = "StoreProcessResultFileOn";
 
 	// FIXME make sure they get generated!
-	String STOREPROCESSRESULTFILEON_Server = null;
-	String STOREPROCESSRESULTFILEON_Browser = null;
-	String STOREPROCESSRESULTFILEON_Both = null;
+	String STOREPROCESSRESULTFILEON_Server = "S";
+	String STOREPROCESSRESULTFILEON_Browser = "D";
+	String STOREPROCESSRESULTFILEON_Both = "B";
 
 	/**
 	 * Set Process Result Storing File Path.
