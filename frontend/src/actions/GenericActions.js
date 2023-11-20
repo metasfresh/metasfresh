@@ -218,9 +218,9 @@ export function openFile(entity, docType, docId, fileType, fileId, options) {
   let url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${filenameNorm}`;
   if (options) {
     url += '?' + options;
-    }
+  }
 
-    window.open(url, '_blank');
+  window.open(url, '_blank');
 }
 
 export function getRequest() {
