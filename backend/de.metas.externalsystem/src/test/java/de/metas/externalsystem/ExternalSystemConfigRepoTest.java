@@ -23,26 +23,18 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
-import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
-import de.metas.externalsystem.leichmehl.ReplacementSource;
-import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -52,7 +44,6 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
-import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.AfterAll;
@@ -897,116 +888,5 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isEmpty();
 	}
-	@Test
-	void getExternalSystemLeichMehlConfigProductMappings_whenConfigWithAndWithoutPartnerExists_getPartnerOne()
-	{
-		// given
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(1);
-		final ProductId productId = ProductId.ofRepoId(1);
-		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
-
-		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
-		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-		pluFileConfigGroup.setName("testGroupName");
-
-		saveRecord(pluFileConfigGroup);
-
-		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
-		pluFileConfig.setLeichMehl_PluFile_Config_ID(1);
-		pluFileConfig.setLeichMehl_PluFile_ConfigGroup_ID(pluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
-		pluFileConfig.setTargetFieldName("targetFileName");
-		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
-		pluFileConfig.setReplacement("replacement");
-		pluFileConfig.setReplaceRegExp("replacePattern");
-		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
-
-		saveRecord(pluFileConfig);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord.setExternalSystem_Config_LeichMehl_ProductMapping_ID(1);
-		productMappingRecord.setM_Product_ID(productId.getRepoId());
-		productMappingRecord.setPLU_File("pluFile");
-		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
-		saveRecord(productMappingRecord);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord2.setExternalSystem_Config_LeichMehl_ProductMapping_ID(2);
-		productMappingRecord2.setM_Product_ID(productId.getRepoId());
-		productMappingRecord2.setC_BPartner_ID(bPartnerId.getRepoId());
-		productMappingRecord2.setPLU_File("pluFilePartner");
-		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
-		saveRecord(productMappingRecord2);
-
-		// when
-		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemConfigRepo.getExternalSystemLeichMehlConfigProductMappings(productId, bPartnerId);
-
-		// then
-		assertThat(result).isPresent();
-		expect(result.get()).toMatchSnapshot();
-	}
-
-	@Test
-	void getExternalSystemLeichMehlConfigProductMappings_emptyIfNotMatching()
-	{
-		// given
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(1);
-		final BPartnerId bPartnerIdNotMatching = BPartnerId.ofRepoId(2);
-		final ProductId productId = ProductId.ofRepoId(1);
-		final ProductId productIdNotMatching = ProductId.ofRepoId(2);
-		final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId = LeichMehlPluFileConfigGroupId.ofRepoId(1);
-
-		final I_LeichMehl_PluFile_ConfigGroup pluFileConfigGroup = newInstance(I_LeichMehl_PluFile_ConfigGroup.class);
-		pluFileConfigGroup.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-		pluFileConfigGroup.setName("testGroupName");
-
-		saveRecord(pluFileConfigGroup);
-
-		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
-		pluFileConfig.setLeichMehl_PluFile_Config_ID(1);
-		pluFileConfig.setLeichMehl_PluFile_ConfigGroup_ID(pluFileConfigGroup.getLeichMehl_PluFile_ConfigGroup_ID());
-		pluFileConfig.setTargetFieldName("targetFileName");
-		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
-		pluFileConfig.setReplacement("replacement");
-		pluFileConfig.setReplaceRegExp("replacePattern");
-		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
-
-		saveRecord(pluFileConfig);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord.setExternalSystem_Config_LeichMehl_ProductMapping_ID(1);
-		productMappingRecord.setM_Product_ID(productIdNotMatching.getRepoId());
-		productMappingRecord.setPLU_File("pluFile");
-		productMappingRecord.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
-		saveRecord(productMappingRecord);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord2 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord2.setExternalSystem_Config_LeichMehl_ProductMapping_ID(2);
-		productMappingRecord2.setM_Product_ID(productId.getRepoId());
-		productMappingRecord2.setC_BPartner_ID(bPartnerIdNotMatching.getRepoId());
-		productMappingRecord2.setPLU_File("pluFile");
-		productMappingRecord2.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-
-		saveRecord(productMappingRecord2);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord3 = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord3.setExternalSystem_Config_LeichMehl_ProductMapping_ID(3);
-		productMappingRecord3.setM_Product_ID(productId.getRepoId());
-		productMappingRecord3.setC_BPartner_ID(bPartnerId.getRepoId());
-		productMappingRecord3.setPLU_File("pluFile");
-		productMappingRecord3.setLeichMehl_PluFile_ConfigGroup_ID(leichMehlPluFileConfigGroupId.getRepoId());
-		productMappingRecord3.setIsActive(false);
-
-		saveRecord(productMappingRecord3);
-
-		// when
-		final Optional<ExternalSystemLeichMehlConfigProductMapping> result = externalSystemConfigRepo.getExternalSystemLeichMehlConfigProductMappings(productId, bPartnerId);
-
-		// then
-		assertThat(result).isEmpty();
-	}
-
 }
 

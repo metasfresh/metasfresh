@@ -37,6 +37,7 @@ import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
+import de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
@@ -65,15 +66,18 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 	private static final AdMessageKey MISSING_PLU_CONFIG_GROUP_ENTRIES = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingConfigsInPLUConfigGroup");
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ExternalSystemLeichMehlConfigProductMappingRepository externalSystemLeichMehlConfigProductMappingRepository;
 
 	protected ExportPPOrderToLeichMehlService(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
 			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
-			final @NonNull ExternalSystemConfigService externalSystemConfigService)
+			final @NonNull ExternalSystemConfigService externalSystemConfigService,
+			final @NonNull ExternalSystemLeichMehlConfigProductMappingRepository externalSystemLeichMehlConfigProductMappingRepository)
 	{
 		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalSystemConfigService);
+		this.externalSystemLeichMehlConfigProductMappingRepository = externalSystemLeichMehlConfigProductMappingRepository;
 	}
 
 	@Override
@@ -133,7 +137,7 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
 
-		return externalSystemConfigRepo.getExternalSystemLeichMehlConfigProductMappings(ppOrderProductId, bPartnerId);
+		return externalSystemLeichMehlConfigProductMappingRepository.getByProductIdAndPartnerId(ppOrderProductId, bPartnerId);
 	}
 
 	@NonNull
