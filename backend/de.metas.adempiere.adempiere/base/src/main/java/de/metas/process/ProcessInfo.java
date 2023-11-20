@@ -112,6 +112,9 @@ public final class ProcessInfo implements Serializable
 
 		title = builder.getTitle();
 
+		storeProcessResultFileOn = builder.getStoreProcessResultFileOn();
+		storeProcessResultFilePath = builder.getStoreProcessResultFilePath();
+
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
@@ -170,6 +173,10 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final AdProcessId adProcessId;
 
+	@Getter
+	private final String storeProcessResultFileOn;
+	@Getter
+	private final String storeProcessResultFilePath;
 	/**
 	 * Table ID if the Process
 	 */
@@ -278,6 +285,8 @@ public final class ProcessInfo implements Serializable
 				.add("reportLanguage", reportLanguage)
 				.add("jrDesiredOutputType", jrDesiredOutputType)
 				.add("JSONPath", jsonPath)
+				.add("storeProcessResultFilePath", storeProcessResultFilePath)
+				.add("storeProcessResultFileOn", storeProcessResultFileOn)
 				.add("type", type)
 				.toString();
 	}
@@ -770,6 +779,10 @@ public final class ProcessInfo implements Serializable
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
+
+		private String storeProcessResultFilePath = null;
+		private String StoreProcessResultFileOn = null;
+
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
@@ -1065,6 +1078,20 @@ public final class ProcessInfo implements Serializable
 		{
 			this.title = title;
 			return this;
+		}
+
+		@Nullable
+		private String getStoreProcessResultFileOn()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			return process == null ? null : process.getStoreProcessResultFileOn();
+		}
+
+		@Nullable
+		private String getStoreProcessResultFilePath()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			return process == null ? null : process.getStoreProcessResultFilePath();
 		}
 
 		private I_AD_PInstance getAD_PInstanceOrNull()

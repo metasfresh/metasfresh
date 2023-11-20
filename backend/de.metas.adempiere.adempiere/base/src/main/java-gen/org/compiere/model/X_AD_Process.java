@@ -632,4 +632,28 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
 	}
 
+	@Override
+	public void setStoreProcessResultFileOn (final @Nullable java.lang.String StoreProcessResultFileOn)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFileOn, StoreProcessResultFileOn);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFileOn()
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFileOn);
+	}
+
+	@Override
+	public void setStoreProcessResultFilePath (final @Nullable java.lang.String StoreProcessResultFilePath)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFilePath, StoreProcessResultFilePath);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFilePath()
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFilePath);
+	}
+
 }

@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.report.ReportResultData;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -33,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
@@ -47,10 +49,18 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -87,6 +97,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	private static final ThreadLocal<Object> currentInstanceHolder = new ThreadLocal<>();
 
+	private static final String SYSCONFIG_DefaultStoringFileServerPath = "de.metas.process.DefaultStoringFileServerPath";
+
 	private Properties _ctx;
 	private ProcessInfo _processInfo;
 
@@ -97,9 +109,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Process Main transaction
 	 */
-	@Nullable private ITrx m_trx = ITrx.TRX_None;
+	@Nullable
+	private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
-	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
+	@Nullable
+	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
 	/**
 	 * Transaction name prefix (in case of local transaction)
@@ -135,7 +149,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public static <T extends JavaProcess> T currentInstance()
 	{
-		@SuppressWarnings("unchecked") final T currentInstances = (T)currentInstanceHolder.get();
+		@SuppressWarnings("unchecked")
+		final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -170,8 +185,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (!overrideCurrentInstance && previousInstance != null && !Util.same(previousInstance, instance))
 		{
 			throw new AdempiereException("Changed current instance not allowed when there is a currently active one"
-					+ "\n Current active: " + previousInstance
-					+ "\n New: " + instance);
+												 + "\n Current active: " + previousInstance
+												 + "\n New: " + instance);
 		}
 
 		//
@@ -214,9 +229,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				if (!Objects.equal(currentInstanceFound, instance))
 				{
 					slogger.warn("Invalid current process instance found while restoring the current instance"
-							+ "\n Current instance found: {}"
-							+ "\n Current instance expected: {}"
-							+ "\n => Current instance restored: {}", currentInstanceFound, instance, currentInstanceHolder.get());
+										 + "\n Current instance found: {}"
+										 + "\n Current instance expected: {}"
+										 + "\n => Current instance restored: {}", currentInstanceFound, instance, currentInstanceHolder.get());
 				}
 			}
 		};
@@ -313,6 +328,41 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 			// NOTE: we shall check again the result because it might be changed by postProcess()
 			getResult().propagateErrorIfAny();
+
+			final String storeProcessResultFileOn = pi.getStoreProcessResultFileOn();
+
+			if (pi.isReportingProcess() && (storeProcessResultFileOn.equals("S") || storeProcessResultFileOn.equals("B")))
+			{
+				final ReportResultData reportData = pi.getResult().getReportData();
+				assert reportData != null;
+				final File report = reportData.writeToTemporaryFile("report_");
+				final Resource reportTempFile = new FileSystemResource(report);
+				final String destinationDirPathStr;
+
+				if (!pi.getStoreProcessResultFilePath().isBlank())
+				{
+					destinationDirPathStr = pi.getStoreProcessResultFilePath();
+				}
+				else
+				{
+					final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+					destinationDirPathStr = sysConfigBL.getValue(SYSCONFIG_DefaultStoringFileServerPath);
+				}
+
+				try
+				{
+					final Path sourcePath = reportTempFile.getFile().toPath();
+					assert destinationDirPathStr != null;
+					final Path destinationPath = Paths.get(destinationDirPathStr, reportTempFile.getFile().getName());
+					Files.move(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+				}
+				catch (final IOException e)
+				{
+					log.error("Error moving the report file to the specified directory: {}", destinationDirPathStr, e);
+				}
+
+			}
+
 		}   // startProcess
 	}
 
@@ -429,15 +479,15 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (!trxManager.isNull(trx))
 		{
 			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are already in transaction."
-					+ "\n Process: " + getClass()
-					+ "\n Trx: " + trx);
+													+ "\n Process: " + getClass()
+													+ "\n Trx: " + trx);
 		}
 		final String threadInheritedTrxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isNull(threadInheritedTrxName))
 		{
 			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are running in a thread inherited transaction."
-					+ "\n Process: " + getClass()
-					+ "\n Thread inherited transaction: " + threadInheritedTrxName);
+													+ "\n Process: " + getClass()
+													+ "\n Thread inherited transaction: " + threadInheritedTrxName);
 		}
 	}
 
@@ -838,7 +888,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	protected final <T> Integer getSingleSelectedIncludedRecordIds(final Class<T> modelClass)
 	{
 		final Set<Integer> selectedIncludedRecordIds = getSelectedIncludedRecordIds(modelClass);
@@ -959,7 +1008,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		addLog(id, date, number,  msg, null);
+		addLog(id, date, number, msg, null);
 	}
 
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
@@ -1068,7 +1117,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return retrieveSelectedRecordsQueryBuilder(modelClass, false);
 	}
-	
+
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
 	 * <p>
