@@ -487,7 +487,6 @@ class Modal extends Component {
       this.props;
     const documentId = dataId;
     const documentNo = modalViewDocumentIds[0] ?? documentId;
-    console.log('handlePrinting', { printingOptions });
 
     const options = printingOptions.options.reduce((acc, item) => {
       acc[item.internalName] = item.value;
