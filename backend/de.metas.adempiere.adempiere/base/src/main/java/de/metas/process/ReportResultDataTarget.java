@@ -2,6 +2,7 @@ package de.metas.process;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,9 +44,13 @@ public class ReportResultDataTarget
 	@JsonIgnore
 	public Path getServerTargetDirectoryNotNull() {return Check.assumeNotNull(serverTargetDirectory, "targetDir is set for {}", this);}
 
+	public ReportResultDataTarget forwardingToUserBrowser(final OptionalBoolean forward)
+	{
+		return forward.isPresent() ? forwardingToUserBrowser(forward.isTrue()) : this;
+	}
+
 	public ReportResultDataTarget forwardingToUserBrowser(final boolean forward)
 	{
-
 		return withTargetType(targetType.forwardingToUserBrowser(forward));
 	}
 }

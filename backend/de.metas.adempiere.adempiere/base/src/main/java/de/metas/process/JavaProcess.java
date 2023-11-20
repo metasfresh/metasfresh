@@ -19,6 +19,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -349,15 +350,19 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}
 	}
 
-	private boolean isAlsoSendToBrowser()
+	private OptionalBoolean isAlsoSendToBrowser()
 	{
 		final IRangeAwareParams params = getParameterAsIParams();
 		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
 		{
-			params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser);
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
+		}
+		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
 		}
 
-		return params.getParameterAsBool(PARA_IsAlsoSendToBrowser);
+		return OptionalBoolean.UNKNOWN;
 	}
 
 	/**
