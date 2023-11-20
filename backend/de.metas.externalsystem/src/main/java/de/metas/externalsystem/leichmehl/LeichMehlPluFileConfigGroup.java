@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,30 +22,22 @@
 
 package de.metas.externalsystem.leichmehl;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-public class ExternalSystemLeichMehlConfigProductMapping
+public class LeichMehlPluFileConfigGroup
 {
 	@NonNull
-	ExternalSystemLeichMehlConfigProductMappingId id;
+	LeichMehlPluFileConfigGroupId id;
 
 	@NonNull
-	String pluFile;
+	String name;
 
 	@NonNull
-	ProductId productId;
-
-	@Nullable
-	BPartnerId bPartnerId;
-
-	@NonNull
-	LeichMehlPluFileConfigGroup leichMehlPluFileConfigGroup;
+	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigs;
 }

@@ -2,19 +2,17 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-
 /** Generated Interface for ExternalSystem_Config_LeichMehl
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_LeichMehl 
+public interface I_ExternalSystem_Config_LeichMehl
 {
 
 	String Table_Name = "ExternalSystem_Config_LeichMehl";
 
-//	/** AD_Table_ID=542129 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=542129 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -217,20 +215,20 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 * IP-address or hostname of the Leich + Mehl device
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTCP_Host (@Nullable java.lang.String TCP_Host);
+	void setTCP_Host (java.lang.String TCP_Host);
 
 	/**
 	 * Get LANScale Address.
 	 * IP-address or hostname of the Leich + Mehl device
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getTCP_Host();
+	java.lang.String getTCP_Host();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_TCP_Host = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "TCP_Host", null);
 	String COLUMNNAME_TCP_Host = "TCP_Host";
