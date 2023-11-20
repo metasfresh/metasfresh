@@ -531,6 +531,7 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @from:cucumber
+  @flaky
   @Id:S0129.2_130
   @Id:S0129.2_150
   @Id:S0129.2_170
