@@ -644,6 +644,12 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return get_ValueAsString(COLUMNNAME_StoreProcessResultFileOn);
 	}
 
+	// FIXME make sure they get generated!
+	public static final String STOREPROCESSRESULTFILEON_Server = "S";
+	public static final String STOREPROCESSRESULTFILEON_Browser = "D";
+	public static final String STOREPROCESSRESULTFILEON_Both = "B";
+
+
 	@Override
 	public void setStoreProcessResultFilePath (final @Nullable java.lang.String StoreProcessResultFilePath)
 	{

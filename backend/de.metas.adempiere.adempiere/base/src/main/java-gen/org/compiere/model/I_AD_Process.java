@@ -1052,11 +1052,6 @@ public interface I_AD_Process
 	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFileOn = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFileOn", null);
 	String COLUMNNAME_StoreProcessResultFileOn = "StoreProcessResultFileOn";
 
-	// FIXME make sure they get generated!
-	String STOREPROCESSRESULTFILEON_Server = "S";
-	String STOREPROCESSRESULTFILEON_Browser = "D";
-	String STOREPROCESSRESULTFILEON_Both = "B";
-
 	/**
 	 * Set Process Result Storing File Path.
 	 *
