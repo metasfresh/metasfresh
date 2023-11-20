@@ -77,7 +77,7 @@ public class WebuiDocumentPrintService
 		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 	}
 
-	public ReportResultData createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
+	public Optional<ReportResultData> createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
 	{
 		final DocumentPath documentPath = request.getDocumentPath();
 		final Document document = documentCollection.getDocumentReadonly(documentPath);
@@ -101,7 +101,7 @@ public class WebuiDocumentPrintService
 																					   //.setJRDesiredOutputType(OutputType.PDF)
 																					   .build());
 
-		return result.getReportResultData();
+		return Optional.ofNullable(result.getReportResultData());
 	}
 
 	public JSONDocumentPrintingOptions getPrintingOptions(
