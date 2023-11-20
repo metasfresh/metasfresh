@@ -43,7 +43,9 @@ public class ReportResultDataTarget
 	@JsonIgnore
 	public Path getServerTargetDirectoryNotNull() {return Check.assumeNotNull(serverTargetDirectory, "targetDir is set for {}", this);}
 
-	public ReportResultDataTarget forwardingToUserBrowserToo() {return withTargetType(targetType.forwardingToUserBrowserToo());}
+	public ReportResultDataTarget forwardingToUserBrowser(final boolean forward)
+	{
 
-	public ReportResultDataTarget forwardingToUserBrowserTooIfTrue(boolean condition) {return condition ? forwardingToUserBrowserToo() : this;}
+		return withTargetType(targetType.forwardingToUserBrowser(forward));
+	}
 }

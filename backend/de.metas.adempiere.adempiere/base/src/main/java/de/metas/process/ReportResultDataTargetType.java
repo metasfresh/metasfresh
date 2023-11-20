@@ -17,6 +17,7 @@ public enum ReportResultDataTargetType implements ReferenceListAwareEnum
 	SaveToServerDirectory(X_AD_Process.STOREPROCESSRESULTFILEON_Server),
 	ForwardToUserBrowser(X_AD_Process.STOREPROCESSRESULTFILEON_Browser),
 	Both(X_AD_Process.STOREPROCESSRESULTFILEON_Both),
+	None("N"),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ReportResultDataTargetType> index = ReferenceListAwareEnums.index(values());
@@ -31,14 +32,28 @@ public enum ReportResultDataTargetType implements ReferenceListAwareEnum
 
 	public boolean isForwardToUserBrowser() {return this.equals(Both) || this.equals(ForwardToUserBrowser);}
 
-	public ReportResultDataTargetType forwardingToUserBrowserToo()
+	public ReportResultDataTargetType forwardingToUserBrowser(final boolean forward)
 	{
-		return switch (this)
+		if (forward)
 		{
-			case SaveToServerDirectory -> Both;
-			case ForwardToUserBrowser -> ForwardToUserBrowser;
-			case Both -> Both;
-		};
+			return switch (this)
+			{
+				case SaveToServerDirectory -> Both;
+				case ForwardToUserBrowser -> ForwardToUserBrowser;
+				case Both -> Both;
+				case None -> ForwardToUserBrowser;
+			};
+		}
+		else
+		{
+			return switch (this)
+			{
+				case SaveToServerDirectory -> SaveToServerDirectory;
+				case ForwardToUserBrowser -> None;
+				case Both -> SaveToServerDirectory;
+				case None -> None;
+			};
+		}
 	}
 
 }

@@ -122,6 +122,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected static final String MSG_Error = "@Error@";
 
 	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
+	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	protected JavaProcess()
 	{
@@ -335,7 +336,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}
 
 		final ReportResultDataTarget reportResultDataTarget = pi.getReportResultDataTarget()
-				.forwardingToUserBrowserTooIfTrue(getParameterAsIParams().getParameterAsBool(PARA_IsAlsoSendToBrowser));
+				.forwardingToUserBrowser(isAlsoSendToBrowser());
 
 		if (reportResultDataTarget.isSaveToServerDirectory())
 		{
@@ -346,6 +347,17 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			pi.getResult().setReportData((ReportResultData)null);
 		}
+	}
+
+	private boolean isAlsoSendToBrowser()
+	{
+		final IRangeAwareParams params = getParameterAsIParams();
+		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
+		{
+			params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser);
+		}
+
+		return params.getParameterAsBool(PARA_IsAlsoSendToBrowser);
 	}
 
 	/**
