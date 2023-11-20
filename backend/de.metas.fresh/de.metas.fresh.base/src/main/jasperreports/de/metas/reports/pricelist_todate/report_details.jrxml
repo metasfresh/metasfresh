@@ -19,9 +19,9 @@
 	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="p_ValidFrom" class="java.sql.Date"/>
+	<parameter name="ValidFrom" class="java.sql.Timestamp"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Fresh_PriceList_Details_ToDate_Report($P{ad_language}, $P{p_show_product_price_pi_flag},$P{p_ValidFrom})
+		<![CDATA[SELECT * FROM report.Fresh_PriceList_Details_ToDate_Report($P{ad_language}, $P{p_show_product_price_pi_flag},$P{ValidFrom})
 ;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String">

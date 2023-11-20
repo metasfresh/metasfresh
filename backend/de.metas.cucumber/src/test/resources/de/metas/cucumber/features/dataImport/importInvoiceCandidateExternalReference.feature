@@ -8,7 +8,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has current date and time
-    And metasfresh initially has no I_Invoice_Candidate data
+    And metasfresh initially has no I_Invoice_Candidate import data
     And load AD_ImpFormat:
       | AD_ImpFormat_ID.Identifier | Name                                        |
       | importFormat               | Import Invoice Candidate External Reference |
@@ -113,7 +113,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   @from:cucumber
   @Id:S0325_100
   Scenario: Import sales I_Invoice_Candidate from csv
-    Given metasfresh initially has no I_Invoice_Candidate data
+    Given metasfresh initially has no I_Invoice_Candidate import data
     And add HTTP header
       | Key          | Value      |
       | Content-Type | text/plain |

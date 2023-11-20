@@ -22,13 +22,17 @@
 
 package de.metas.cucumber.stepdefs.dataImport;
 
+import com.google.common.base.Joiner;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.importFormat.AD_ImpFormat_StepDefData;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Check;
@@ -38,8 +42,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -47,6 +53,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,6 +61,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -68,6 +77,7 @@ public class C_DataImport_StepDef
 	private final AD_User_StepDefData contactTable;
 	private final C_DataImport_StepDefData dataImportTable;
 	private final AD_ImpFormat_StepDefData impFormatTable;
+	private final C_Flatrate_Term_StepDefData contractsTable;
 
 	private final TestContext testContext;
 
@@ -80,6 +90,7 @@ public class C_DataImport_StepDef
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final C_DataImport_StepDefData dataImportTable,
 			@NonNull final AD_ImpFormat_StepDefData impFormatTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractsTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
@@ -88,6 +99,7 @@ public class C_DataImport_StepDef
 		this.contactTable = contactTable;
 		this.dataImportTable = dataImportTable;
 		this.impFormatTable = impFormatTable;
+		this.contractsTable = contractsTable;
 		this.testContext = testContext;
 	}
 
@@ -218,12 +230,12 @@ public class C_DataImport_StepDef
 			final String internalName = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_InternalName);
 
 			final I_C_DataImport record = CoalesceUtil
-					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_C_DataImport.class)
-											   .addOnlyActiveRecordsFilter()
-											   .addStringLikeFilter(I_C_DataImport.COLUMNNAME_InternalName, internalName, false)
-											   .create()
-											   .firstOnlyOrNull(I_C_DataImport.class),
-									   () -> InterfaceWrapperHelper.newInstance(I_C_DataImport.class));
+					.coalesceSuppliersNotNull(() -> queryBL.createQueryBuilder(I_C_DataImport.class)
+									.addOnlyActiveRecordsFilter()
+									.addStringLikeFilter(I_C_DataImport.COLUMNNAME_InternalName, internalName, false)
+									.create()
+									.firstOnlyOrNull(I_C_DataImport.class),
+							() -> InterfaceWrapperHelper.newInstance(I_C_DataImport.class));
 
 			final String impFormatIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_ImpFormat.COLUMNNAME_AD_ImpFormat_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_AD_ImpFormat importFormat = impFormatTable.getOptional(impFormatIdentifier)
@@ -300,5 +312,92 @@ public class C_DataImport_StepDef
 
 			testContext.setRequestPayload(payload.replaceAll("null", ""));
 		}
+	}
+
+	@And("store modular contract DataImport String requestBody in context")
+	public void store_modular_contract_string_requestBody_in_context(@NonNull final DataTable dataTable)
+	{
+		final StringBuilder payloadBuilder = new StringBuilder();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String documentType = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType);
+			final String soTrx = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_IsSOTrx);
+			final String contractDocumentIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productValue = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_ProductValue);
+			final String modCntr_InvoicingGroupName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroupName);
+			final String quantity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_Qty);
+			final String uomSymbol = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_UOMSymbol);
+			final String priceActual = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_PriceActual);
+			final String priceUom = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_PriceUOM);
+			final String amount = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_ModCntr_Log.COLUMNNAME_Amount);
+			final String isoCurrencyCode = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_ISO_Code);
+			final String year = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_FiscalYear);
+			final String calendar = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_CalendarName);
+			final String bpartnerValue = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_BPartnerValue);
+			final String billBpartnerValue = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_Bill_BPartner_Value);
+			final String collectionPointValue = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_CollectionPointValue);
+			final LocalDate dateTrx = DataTableUtil.extractLocalDateForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_DateTrx);
+			final String warehouseName = DataTableUtil.extractStringOrNullForColumnName(row, I_I_ModCntr_Log.COLUMNNAME_WarehouseName);
+
+			final I_C_Flatrate_Term contract = contractsTable.get(contractDocumentIdentifier);
+
+			payloadBuilder.append("\n"); // do this for the first row because the import format ignores the first row/file header
+			//keep in sync with Import Format defined by /window/189/540092
+			payloadBuilder.append(Joiner.on(";")
+					.useForNull("")
+					.join(null,//ModCntr_Log_ID
+							null,//TableID
+							null,//RecordId
+							documentType,
+							soTrx,
+							contract.getDocumentNo(),
+							productValue,
+							modCntr_InvoicingGroupName,
+							quantity,
+							uomSymbol,
+							priceActual,
+							priceUom,
+							amount,
+							isoCurrencyCode,
+							year,
+							calendar,
+							null,//ContractModuleName
+							bpartnerValue,
+							billBpartnerValue,
+							collectionPointValue,
+							dateTrx,
+							warehouseName));
+		}
+		testContext.setRequestPayload(new String(payloadBuilder.toString().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+	}
+
+	@And("load C_DataImport:")
+	public void load_C_DataImport(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			loadDataImport(row);
+		}
+	}
+
+	private void loadDataImport(@NonNull final Map<String, String> row)
+	{
+		final String dataImportIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DataImport.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_C_DataImport.COLUMNNAME_C_DataImport_ID);
+
+		if (id != null)
+		{
+			final I_C_DataImport dataImportRecord = InterfaceWrapperHelper.load(id, I_C_DataImport.class);
+			Assertions.assertThat(dataImportRecord).isNotNull();
+
+			dataImportTable.putOrReplace(dataImportIdentifier, dataImportRecord);
+		}
+	}
+
+	@And("^metasfresh initially has no (I_.*) import data$")
+	public void delete_I_Invoice_Candidate_data(@NonNull final String tableName)
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + tableName + " cascade", ITrx.TRXNAME_None);
 	}
 }

@@ -67,9 +67,7 @@ public class C_Order
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_CLOSE,
-			ModelValidator.TIMING_AFTER_VOID })
+			ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);

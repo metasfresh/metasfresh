@@ -10,8 +10,8 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import {
   openModal,
-  setPrintingOptions,
   resetPrintingOptions,
+  setPrintingOptions,
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -35,6 +35,7 @@ import {
   getDocActionElementFromState,
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
+import { isShowCommentsMarker } from '../../utils/tableHelpers';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -576,6 +577,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      isShowComments,
       hasComments,
     } = this.props;
 
@@ -634,7 +636,7 @@ class Header extends PureComponent {
                   )}
                 >
                   <i className="position-relative meta-icon-more">
-                    {hasComments && (
+                    {isShowComments && hasComments && (
                       <span
                         className="notification-number size-sm"
                         title={counterpart.translate('window.comments.caption')}
@@ -959,6 +961,7 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
 };
 
@@ -970,6 +973,7 @@ const mapStateToProps = (state) => {
     indicator: state.windowHandler.indicator,
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
+    isShowComments: isShowCommentsMarker(state),
   };
 };
 

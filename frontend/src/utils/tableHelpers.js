@@ -17,6 +17,7 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
+import { getSettingFromStateAsBoolean } from './settings';
 
 export const containerPropTypes = {
   // from <DocumentList>
@@ -574,3 +575,6 @@ export const computeNumberOfPages = (size, pageLength) => {
     return size ? 1 : 0;
   }
 };
+
+export const isShowCommentsMarker = (state) =>
+  getSettingFromStateAsBoolean(state, 'view.showCommentsMarker', true);
