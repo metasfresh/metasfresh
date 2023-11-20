@@ -62,6 +62,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,8 +114,7 @@ public final class ProcessInfo implements Serializable
 
 		title = builder.getTitle();
 
-		storeProcessResultFileOn = builder.getStoreProcessResultFileOn();
-		storeProcessResultFilePath = builder.getStoreProcessResultFilePath();
+		reportResultDataTarget = builder.getReportResultDataTarget();
 
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
@@ -168,15 +169,9 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
-	@Getter
-	private final String storeProcessResultFileOn;
-	@Getter
-	private final String storeProcessResultFilePath;
 	/**
 	 * Table ID if the Process
 	 */
@@ -264,6 +259,8 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
+	@NonNull @Getter private final ReportResultDataTarget reportResultDataTarget;
+
 	/**
 	 * Process result
 	 */
@@ -285,8 +282,6 @@ public final class ProcessInfo implements Serializable
 				.add("reportLanguage", reportLanguage)
 				.add("jrDesiredOutputType", jrDesiredOutputType)
 				.add("JSONPath", jsonPath)
-				.add("storeProcessResultFilePath", storeProcessResultFilePath)
-				.add("storeProcessResultFileOn", storeProcessResultFileOn)
 				.add("type", type)
 				.toString();
 	}
@@ -769,6 +764,7 @@ public final class ProcessInfo implements Serializable
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_DefaultStoringFileServerPath = "de.metas.process.DefaultStoringFileServerPath";
 
 		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -779,9 +775,6 @@ public final class ProcessInfo implements Serializable
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
-
-		private String storeProcessResultFilePath = null;
-		private String StoreProcessResultFileOn = null;
 
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
@@ -921,7 +914,7 @@ public final class ProcessInfo implements Serializable
 			{
 				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
 			}
-			
+
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -1080,18 +1073,36 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		@Nullable
-		private String getStoreProcessResultFileOn()
+		@NonNull
+		private ReportResultDataTarget getReportResultDataTarget()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
-			return process == null ? null : process.getStoreProcessResultFileOn();
+			if (process == null)
+			{
+				return ReportResultDataTarget.ForwardToUserBrowser;
+			}
+
+			final ReportResultDataTargetType targetType = ReportResultDataTargetType.optionalOfNullableCode(process.getStoreProcessResultFileOn()).orElse(ReportResultDataTargetType.ForwardToUserBrowser);
+
+			Path serverTargetDirectory = null;
+			if (targetType.isSaveToServerDirectory())
+			{
+				serverTargetDirectory = StringUtils.trimBlankToOptional(process.getStoreProcessResultFilePath())
+						.or(ProcessInfoBuilder::getDefaultStoringFileServerPath)
+						.map(Paths::get)
+						.orElse(null);
+			}
+
+			return ReportResultDataTarget.builder()
+					.targetType(targetType)
+					.serverTargetDirectory(serverTargetDirectory)
+					.build();
 		}
 
-		@Nullable
-		private String getStoreProcessResultFilePath()
+		private static Optional<String> getDefaultStoringFileServerPath()
 		{
-			final I_AD_Process process = getAD_ProcessOrNull();
-			return process == null ? null : process.getStoreProcessResultFilePath();
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			return StringUtils.trimBlankToOptional(sysConfigBL.getValue(SYSCONFIG_DefaultStoringFileServerPath));
 		}
 
 		private I_AD_PInstance getAD_PInstanceOrNull()
@@ -1667,18 +1678,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}

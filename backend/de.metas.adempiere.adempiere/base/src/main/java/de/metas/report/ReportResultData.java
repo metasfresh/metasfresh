@@ -16,6 +16,9 @@ import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /*
  * #%L
@@ -115,6 +118,20 @@ public class ReportResultData
 		catch (final IOException ex)
 		{
 			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
+		}
+	}
+
+	public Path writeToDirectory(@NonNull final Path directory)
+	{
+		final Path file = directory.resolve(getReportFilename());
+		try
+		{
+			Files.copy(reportData.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
+			return file;
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file, ex);
 		}
 	}
 
