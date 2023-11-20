@@ -2,7 +2,7 @@ import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery } from '../utils';
+import { formatSortingQuery, getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -146,4 +146,20 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
       (rowId ? '/' + rowId : '') +
       '/printingOptions'
   );
+}
+
+export function getPrintUrl({ windowId, documentId, filename, options }) {
+  let filenameNorm = filename.replace(/[/\\?%*:|"<>]/g, '-');
+  filenameNorm = encodeURIComponent(filenameNorm);
+
+  let url = `${config.API_URL}/window/${windowId}/${documentId}/print/${filenameNorm}`;
+  if (options) {
+    const optionsStr = getQueryString(options);
+    url += '?' + optionsStr;
+  }
+  return url;
+}
+
+export function getPrintFile({ windowId, documentId, filename, options }) {
+  return get(getPrintUrl({ windowId, documentId, filename, options }));
 }
