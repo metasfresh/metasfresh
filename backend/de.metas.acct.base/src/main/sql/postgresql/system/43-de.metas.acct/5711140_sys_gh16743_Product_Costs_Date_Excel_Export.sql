@@ -7,8 +7,8 @@ INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowPr
 
 -- Value: Auswertung Produktkosten (Excel)
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
--- 2023-11-21T09:16:50.255Z
-UPDATE AD_Process SET SQLStatement='SELECT Date,@AD_Org_ID@ AS param_organization,@C_AcctSchema_ID@ AS param_acctSchema,ProductCategory,Product,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/null@, @M_Product_Category_ID/null@) order by productcategory, product',Updated=TO_TIMESTAMP('2023-11-21 10:16:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585339
+-- 2023-11-21T12:02:54.722Z
+UPDATE AD_Process SET SQLStatement='SELECT Date,param_organization AS AD_Org_ID, param_acctSchema AS C_AcctSchema_ID,ProductCategory,Product,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/null@, @M_Product_Category_ID/null@) order by productcategory, product',Updated=TO_TIMESTAMP('2023-11-21 13:02:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585339
 ;
 
 -- 2023-11-20T18:44:33.683Z
@@ -125,40 +125,6 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=2, Updated=now(), UpdatedBy=100
 -- Node name: `Auswertung Produktkosten (Excel)`
 -- 2023-11-20T19:05:21.343Z
 UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542130 AND AD_Tree_ID=10
-;
-
--- 2023-11-21T08:53:12.920Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582814,0,'param_organization',TO_TIMESTAMP('2023-11-21 09:53:12','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Sektion','Sektion',TO_TIMESTAMP('2023-11-21 09:53:12','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-11-21T08:53:13.088Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582814 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Element: param_organization
--- 2023-11-21T08:53:47.324Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Organisation', PrintName='Organisation',Updated=TO_TIMESTAMP('2023-11-21 09:53:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582814 AND AD_Language='en_US'
-;
-
--- 2023-11-21T08:53:47.462Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582814,'en_US')
-;
-
--- 2023-11-21T08:54:41.268Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582815,0,'param_acctSchema',TO_TIMESTAMP('2023-11-21 09:54:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Buchführungs-Schema','Buchführungs-Schema',TO_TIMESTAMP('2023-11-21 09:54:40','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-11-21T08:54:41.599Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582815 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Element: param_acctSchema
--- 2023-11-21T08:55:04.189Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Accounting Schema', PrintName='Accounting Schema',Updated=TO_TIMESTAMP('2023-11-21 09:55:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582815 AND AD_Language='en_US'
-;
-
--- 2023-11-21T08:55:04.298Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582815,'en_US')
 ;
 
 -- 2023-11-21T08:58:10.840Z
