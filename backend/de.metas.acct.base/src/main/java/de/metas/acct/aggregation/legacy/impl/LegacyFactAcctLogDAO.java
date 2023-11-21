@@ -56,9 +56,9 @@ import java.util.UUID;
  * #L%
  */
 
-public class LegacyLegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
+public class LegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
 {
-	private static final Logger logger = LogManager.getLogger(LegacyLegacyFactAcctLogDAO.class);
+	private static final Logger logger = LogManager.getLogger(LegacyFactAcctLogDAO.class);
 
 	/** Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance} */
 	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";

@@ -25,9 +25,9 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class PlainLegacyLegacyFactAcctLogDAO extends LegacyLegacyFactAcctLogDAO
+public class PlainLegacyFactAcctLogDAO extends LegacyFactAcctLogDAO
 {
-	private static final Logger logger = LogManager.getLogger(PlainLegacyLegacyFactAcctLogDAO.class);
+	private static final Logger logger = LogManager.getLogger(PlainLegacyFactAcctLogDAO.class);
 
 	@Override
 	public void updateFactAcctEndingBalanceForTag(final String processingTag)

@@ -27,7 +27,7 @@ import de.metas.acct.aggregation.legacy.FactAcctLogProcessResult;
 import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
 import de.metas.acct.aggregation.legacy.impl.FactAcctLogBLTestHelper;
 import de.metas.acct.aggregation.legacy.impl.Fact_Acct_Log_Builder;
-import de.metas.acct.aggregation.legacy.impl.LegacyLegacyFactAcctLogDAO;
+import de.metas.acct.aggregation.legacy.impl.LegacyFactAcctLogDAO;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.X_Fact_Acct_Log;
@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class FactAcctLogDBTableWatcherTest
 {
-	private LegacyLegacyFactAcctLogDAO legacyFactAcctLogDAO;
+	private LegacyFactAcctLogDAO legacyFactAcctLogDAO;
 	private ISysConfigBL sysConfigBL;
 	private FactAcctLogDBTableWatcher watcher;
 
@@ -66,7 +66,7 @@ class FactAcctLogDBTableWatcherTest
 
 		//
 		// Services + service under test
-		legacyFactAcctLogDAO = (LegacyLegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
+		legacyFactAcctLogDAO = (LegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
 		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		watcher = FactAcctLogDBTableWatcher.builder()

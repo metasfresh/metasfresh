@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.*;
 public class LegacyFactAcctLogProcessorTest
 {
 	// services
-	private LegacyLegacyFactAcctLogDAO legacyFactAcctLogDAO;
+	private LegacyFactAcctLogDAO legacyFactAcctLogDAO;
 
 	private static final AcctSchemaId C_AcctSchema_ID1 = AcctSchemaId.ofRepoId(1);
 	private final ElementValueId C_ElementValue_ID1 = ElementValueId.ofRepoId(1);
@@ -65,7 +65,7 @@ public class LegacyFactAcctLogProcessorTest
 		AdempiereTestHelper.get().init();
 		Env.setClientId(Env.getCtx(), ClientId.ofRepoId(10));
 
-		legacyFactAcctLogDAO = (LegacyLegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
+		legacyFactAcctLogDAO = (LegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
 
 		// Master data:
 		final I_C_Year year2014 = FactAcctLogBLTestHelper.createYear(2014);
