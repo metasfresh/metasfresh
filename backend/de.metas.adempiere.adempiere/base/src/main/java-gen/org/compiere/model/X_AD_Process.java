@@ -644,9 +644,16 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return get_ValueAsString(COLUMNNAME_StoreProcessResultFileOn);
 	}
 
-	// FIXME make sure they get generated!
+	/**
+	 * StoreProcessResultFileOn AD_Reference_ID=541841
+	 * Reference name: AD_Process_StoreProcessResultFileOn
+	 */
+	public static final int STOREPROCESSRESULTFILEON_AD_Reference_ID=541841;
+	/** Server = S */
 	public static final String STOREPROCESSRESULTFILEON_Server = "S";
+	/** Browser = D */
 	public static final String STOREPROCESSRESULTFILEON_Browser = "D";
+	/** Both = B */
 	public static final String STOREPROCESSRESULTFILEON_Both = "B";
 
 
