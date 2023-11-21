@@ -103,7 +103,7 @@
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="411" y="127" width="134" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
+				<reportElement key="textField-3" x="441" y="127" width="134" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -131,7 +131,7 @@
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="323" y="127" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="353" y="127" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -185,7 +185,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="323" y="113" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
+				<reportElement key="textField-5" x="353" y="113" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
 					<printWhenExpression><![CDATA[new Boolean($F{reference} != null || !$F{reference}.equals( "" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -200,7 +200,7 @@
 				<textFieldExpression><![CDATA[$R{POReference}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="359" y="113" width="186" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576">
+				<reportElement key="textField-3" x="389" y="113" width="186" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576">
 					<printWhenExpression><![CDATA[new Boolean($F{reference} != null || !$F{reference}.equals( "" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -213,36 +213,6 @@
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="323" y="141" width="89" height="13" uuid="3895a9b9-24d9-4c70-a436-5fca1448097e">
-					<printWhenExpression><![CDATA[new Boolean($R{show_datepromised}.equals( "Y" ) && $F{datepromised} != null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{DatePromised}]]></textFieldExpression>
-			</textField>
-			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="411" y="141" width="134" height="13" uuid="d5e47a77-884a-4032-a9b2-f19773e2dca2">
-					<printWhenExpression><![CDATA[new Boolean($R{show_datepromised}.equals( "Y" ) && $F{datepromised} != null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{datepromised}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-11" x="37" y="143" width="133" height="13" uuid="e19938ac-946e-4df9-a29e-2278a3b5d207">
