@@ -51,12 +51,12 @@ public class GlobalQRCode
 	}
 
 	@Nullable
+	@JsonCreator
 	public static GlobalQRCode ofNullableString(@Nullable final String string)
 	{
 		return StringUtils.trimBlankToNullAndMap(string, GlobalQRCode::ofString);
 	}
 
-	@JsonCreator
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
 		return parse(string).orThrow();

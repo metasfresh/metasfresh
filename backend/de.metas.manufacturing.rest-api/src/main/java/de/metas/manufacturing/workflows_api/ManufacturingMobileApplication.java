@@ -17,6 +17,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonH
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
+import de.metas.report.PrintCopies;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -26,6 +27,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -38,7 +40,6 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -81,12 +82,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
+		@NonNull final UserId userId = query.getUserId();
+		@Nullable final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
+		@NonNull final QueryLimit suggestedLimit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
 	}
 
@@ -217,13 +217,17 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 		final List<HUQRCode> qrCodes = huQRCodesService.generate(
 				HUQRCodeGenerateRequest.builder()
-						.count(request.getQtyTUs().toInt())
-						.huPackingInstructionsId(request.getTuPackingInstructionsId())
+						.count(request.getNumberOfHUs())
+						.huPackingInstructionsId(request.getHuPackingInstructionsId())
 						.productId(finishedGoodsReceiveLine.getProductId())
 						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))
 						.build());
 
-		huQRCodesService.print(qrCodes);
+		final PrintCopies copies = request.getNumberOfCopies() != null
+				? PrintCopies.ofInt(request.getNumberOfCopies()).minimumOne()
+				: PrintCopies.ONE;
+
+		huQRCodesService.print(qrCodes, copies);
 	}
 
 	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)

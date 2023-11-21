@@ -8,19 +8,15 @@ import { pickingLineScreenLocation } from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 
 const computeLineQuantities = (line) => {
-  let picked = 0;
-  let toPick = 0;
-  let uom = '';
+  let qtyPicked = 0;
+  let qtyToPick = line.qtyToPick;
+  let uom = line.uom;
 
   forEach(line.steps, (step) => {
-    const { qtyToPick, uom: stepUom } = step;
-
-    picked += computeStepQtyPickedTotal(step);
-    toPick += qtyToPick;
-    uom = stepUom;
+    qtyPicked += computeStepQtyPickedTotal(step);
   });
 
-  return { picked, toPick, uom };
+  return { uom, qtyToPick, qtyPicked };
 };
 
 const computeStepQtyPickedTotal = (step) => {
@@ -44,8 +40,9 @@ const computeStepQtyPickedTotal = (step) => {
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
   const {
-    dataStored: { lines, completeStatus, isUserEditable },
+    dataStored: { lines: linesById, completeStatus, isUserEditable },
   } = activityState;
+  const lines = Object.values(linesById);
 
   const history = useHistory();
   const onButtonClick = ({ lineId }) => {
@@ -55,9 +52,9 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   return (
     <div className="mt-5">
       {lines && lines.length > 0
-        ? lines.map((lineItem, lineIndex) => {
-            const lineId = '' + lineIndex;
-            const { picked, toPick, uom } = computeLineQuantities(lineItem);
+        ? lines.map((lineItem) => {
+            const lineId = lineItem.pickingLineId;
+            const { uom, qtyToPick, qtyPicked } = computeLineQuantities(lineItem);
 
             return (
               <ButtonWithIndicator
@@ -67,7 +64,12 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                 disabled={!isUserEditable}
                 onClick={() => onButtonClick({ lineId })}
               >
-                <ButtonQuantityProp qtyCurrent={picked} qtyTarget={toPick} uom={uom} applicationId={applicationId} />
+                <ButtonQuantityProp
+                  qtyCurrent={qtyPicked}
+                  qtyTarget={qtyToPick}
+                  uom={uom}
+                  applicationId={applicationId}
+                />
               </ButtonWithIndicator>
             );
           })

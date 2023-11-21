@@ -12,11 +12,24 @@ FROM db as init
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
 RUN /usr/local/bin/docker-entrypoint.sh postgres
 
-FROM db as final
+FROM postgres:15.1 as final
 
+RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
+
+# thx to https://stackoverflow.com/a/48311129/1012103
+RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV LC_ALL="en_US.UTF-8"
+ENV LC_CTYPE="en_US.UTF-8"
 # changing pgdata location to avoid existing volume so we are able to commit post cucumber data later on
 ENV PGDATA /var/lib/postgresql/customdata
+
 # grabed from official postgres image: this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
 
-COPY --from=init /var/lib/postgresql/data $PGDATA
+COPY --chmod=700 docker-builds/db/init-preloaded/custom-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["custom-entrypoint.sh"]
+
+COPY --from=init /var/lib/postgresql/data /var/lib/postgresql/initdata

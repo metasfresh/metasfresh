@@ -8,29 +8,43 @@ import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
-import { formatQtyToHumanReadable } from '../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
+  readOnly = false,
+  hideQtyInput = false,
+  //
   userInfo,
   qtyTarget,
+  totalQty,
+  qtyAlreadyOnScale,
   qtyCaption,
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  scaleTolerance,
+  //
+  catchWeight: catchWeightParam,
+  catchWeightUom,
   //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
+  const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
+  const useCatchWeight = !scaleDevice && catchWeightUom;
+  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
+  const onCatchWeghtEntered = (qtyInfo) => setCatchWeight(qtyInfo);
 
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
@@ -38,14 +52,28 @@ const GetQuantityDialog = ({
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
       : 0;
 
-  const allValid = qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null);
+  const allValid =
+    readOnly ||
+    doNotValidateQty ||
+    (qtyInfo?.isQtyValid &&
+      (qtyRejected === 0 || rejectedReason != null) &&
+      (!useCatchWeight || catchWeight?.isQtyValid));
 
   const onDialogYes = () => {
     if (allValid) {
+      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+
+      let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
+      if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
+        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
+      }
+
       onQtyChange({
-        qtyEnteredAndValidated: qtyInfos.toNumberOrString(qtyInfo),
+        qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
+        catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
+        catchWeightUom: useCatchWeight ? catchWeightUom : null,
       });
     }
   };
@@ -60,8 +88,23 @@ const GetQuantityDialog = ({
           onWebsocketMessage: (message) => {
             if (useScaleDevice) {
               const { value } = JSON.parse(message.body);
-              setQtyInfo(qtyInfos.invalidOfNumber(value));
+
+              const newQtyCandidate = qtyInfos.invalidOfNumber(value);
+
+              setQtyInfo((prev) => {
+                if (!prev || newQtyCandidate.qty !== prev.qty) {
+                  return newQtyCandidate;
+                }
+
+                return prev;
+              });
             }
+          },
+          headers: {
+            qtyTarget: totalQty || '0',
+            positiveTolerance: scaleTolerance?.positiveTolerance || '0',
+            negativeTolerance: scaleTolerance?.negativeTolerance || '0',
+            uom: uom,
           },
         });
       }
@@ -85,7 +128,7 @@ const GetQuantityDialog = ({
                 {qtyCaption && (
                   <tr>
                     <th>{qtyCaption}</th>
-                    <td>{formatQtyToHumanReadable({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                    <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                   </tr>
                 )}
                 {userInfo &&
@@ -95,19 +138,21 @@ const GetQuantityDialog = ({
                       <td>{item.value}</td>
                     </tr>
                   ))}
-                <tr>
-                  <th>Qty</th>
-                  <td>
-                    <QtyInputField
-                      qty={qtyInfos.toNumberOrString(qtyInfo)}
-                      uom={uom}
-                      validateQtyEntered={validateQtyEntered}
-                      readonly={useScaleDevice}
-                      onQtyChange={onQtyEntered}
-                      isRequestFocus={true}
-                    />
-                  </td>
-                </tr>
+                {!hideQtyInput && (
+                  <tr>
+                    <th>Qty</th>
+                    <td>
+                      <QtyInputField
+                        qty={qtyInfos.toNumberOrString(qtyInfo)}
+                        uom={uom}
+                        validateQtyEntered={validateQtyEntered}
+                        readonly={useScaleDevice || readOnly}
+                        onQtyChange={onQtyEntered}
+                        isRequestFocus={true}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {scaleDevice && allowManualInput && (
                   <tr>
                     <td colSpan="2">
@@ -128,11 +173,24 @@ const GetQuantityDialog = ({
                     </td>
                   </tr>
                 )}
+                {useCatchWeight && (
+                  <tr>
+                    <th>{trl('general.CatchWeight')}</th>
+                    <td>
+                      <QtyInputField
+                        qty={qtyInfos.toNumberOrString(catchWeight)}
+                        uom={catchWeightUom}
+                        onQtyChange={onCatchWeghtEntered}
+                        readonly={readOnly}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {qtyRejected > 0 && (
                   <>
                     <tr>
                       <th>{trl('general.QtyRejected')}</th>
-                      <td>{formatQtyToHumanReadable({ qty: qtyRejected, uom })}</td>
+                      <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
                     </tr>
                     <tr>
                       <td colSpan={2}>
@@ -181,12 +239,19 @@ const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) =
 
 GetQuantityDialog.propTypes = {
   // Properties
+  hideQtyInput: PropTypes.bool,
+  readOnly: PropTypes.bool,
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  totalQty: PropTypes.number,
+  qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
+  scaleTolerance: PropTypes.object,
+  catchWeight: PropTypes.number,
+  catchWeightUom: PropTypes.string,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

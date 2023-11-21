@@ -24,12 +24,16 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -37,6 +41,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -98,11 +103,18 @@ public final class PickingJob
 
 	public ZonedDateTime getPreparationDate() {return header.getPreparationDate();}
 
+	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
+
+	public BPartnerId getCustomerId() {return header.getDeliveryBPLocationId().getBpartnerId();}
+
 	public String getCustomerName() {return header.getCustomerName();}
 
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
 
 	public String getDeliveryRenderedAddress() {return header.getDeliveryRenderedAddress();}
+
+	@JsonIgnore
+	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
 
 	public UserId getLockedBy() {return header.getLockedBy();}
 
@@ -146,9 +158,17 @@ public final class PickingJob
 		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
+	public PickingJobLine getLineById(@NonNull final PickingJobLineId lineId)
+	{
+		return lines.stream()
+				.filter(line -> PickingJobLineId.equals(line.getId(), lineId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
+	}
+
 	public Stream<PickingJobStep> streamSteps() {return lines.stream().flatMap(PickingJobLine::streamSteps);}
 
-	public PickingJobStep getStepById(final PickingJobStepId stepId)
+	public PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
 	{
 		return lines.stream()
 				.flatMap(PickingJobLine::streamSteps)
@@ -172,6 +192,11 @@ public final class PickingJob
 				: toBuilder().lines(changedLines).build();
 	}
 
+	public PickingJob withChangedLine(@NonNull final PickingJobLineId lineId, final UnaryOperator<PickingJobLine> lineMapper)
+	{
+		return withChangedLines(line -> PickingJobLineId.equals(line.getId(), lineId) ? lineMapper.apply(line) : line);
+	}
+
 	public PickingJob withChangedStep(
 			@NonNull final PickingJobStepId stepId,
 			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
@@ -191,8 +216,21 @@ public final class PickingJob
 		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
 	}
 
-	public PickingJob withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	@Value
+	@Builder
+	public static class AddStepRequest
 	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+		boolean isGeneratedOnFly;
+		@NonNull PickingJobStepId newStepId;
+		@NonNull PickingJobLineId lineId;
+		@NonNull Quantity qtyToPick;
+		@NonNull LocatorInfo pickFromLocator;
+		@NonNull HUInfo pickFromHU;
+		@NonNull PackToSpec packToSpec;
+	}
+
+	public PickingJob withNewStep(@NonNull final AddStepRequest request)
+	{
+		return withChangedLine(request.getLineId(), line -> line.withNewStep(request));
 	}
 }

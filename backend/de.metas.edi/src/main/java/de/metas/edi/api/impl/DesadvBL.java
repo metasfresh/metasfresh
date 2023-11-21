@@ -337,7 +337,7 @@ public class DesadvBL implements IDesadvBL
 
 		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
@@ -382,7 +382,7 @@ public class DesadvBL implements IDesadvBL
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(
 				inOutLineRecord,
-				InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn()));
+				InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn()));
 
 		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null/*orderLine*/, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);

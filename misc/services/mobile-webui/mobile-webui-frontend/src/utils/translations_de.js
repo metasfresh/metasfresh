@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Produkt',
+    ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
@@ -16,11 +17,16 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
+    CatchWeight: 'Gewicht',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    filter: {
+      showResults: 'Ergebnisse anzeigen (%(count)s)',
+      clearFilters: 'Filter löschen',
+    },
   },
   login: {
     submitButton: 'Login',
@@ -40,6 +46,15 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
+    },
+    huManager: {
+      action: {
+        assignExternalLotNumber: {
+          buttonCaption: 'Assoziierte Externe Lot Nummer',
+          scanTarget: 'Assoziierte Externe Lot Nummer',
+        },
+      },
     },
   },
   activities: {
@@ -59,6 +74,7 @@ const translations = {
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
+      Workplace: 'Arbeitsplatz',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -87,6 +103,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',

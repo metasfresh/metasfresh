@@ -7,3 +7,14 @@ This folder contains resources intended to help metasfresh developers:
 * docker-compose files to run "infrastructure" (postgresql, rabbitmq, elk-stask etc)
 * a maven `settings.xml` file to access a maven repo with 3rd-party libs that are not found in maven-central
 * helpful sqls
+
+
+### Rabbitmq Config for Imp_Processor to reduce connection errors in log
+
+```sql
+UPDATE IMP_Processor 
+SET port = 5672, -- or port from used env-file
+    account = 'guest', 
+    passwordinfo = 'guest' 
+WHERE TRUE;
+```

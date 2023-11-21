@@ -69,6 +69,7 @@ import org.compiere.model.I_M_Transaction;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -202,7 +203,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
-	 *
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
 	 *
 	 * @return true if given HU was fully destroyed now or it was already destroyed
@@ -272,6 +272,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable BPartnerId bpartnerId);
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
+
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull I_M_HU_PI huPI,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
 
 	@Builder
 	@Value
@@ -429,6 +436,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
 
+	HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull I_M_HU hu);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
@@ -450,6 +459,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsVersionId piVersionId);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
@@ -493,6 +504,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
 	}
+
+	LocatorId getLocatorId(HuId huId);
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{

@@ -153,22 +153,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	@Override
 	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull StockQtyAndUOMQty qtyPicked,
-			@NonNull HuId tuOrVHUId,
-			@NonNull final IHUContext huContext)
-	{
-		Check.assume(qtyPicked.signum() > 0, "qtyPicked needs to be positive; qtyPicked={}", qtyPicked);
-
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleDAO.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final I_M_HU tuOrVHU = handlingUnitsBL.getById(tuOrVHUId);
-
-		final boolean anonymousHuPickedOnTheFly = false;
-		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
-	}
-
-	@Override
-	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,

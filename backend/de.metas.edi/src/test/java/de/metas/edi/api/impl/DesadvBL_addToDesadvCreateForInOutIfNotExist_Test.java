@@ -13,7 +13,6 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
-import de.metas.esb.edi.model.X_EDI_DesadvLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
@@ -36,6 +35,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
@@ -71,7 +71,8 @@ import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -183,7 +184,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		desadvLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		desadvLine.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
 		desadvLine.setQtyDeliveredInStockingUOM(new BigDecimal("2")); // initial quantity in stock-UOM..we don't care from where it came..
-		desadvLine.setInvoicableQtyBasedOn(X_EDI_DesadvLine.INVOICABLEQTYBASEDON_CatchWeight); // the code should fall back to "nominal" if the respecive inOutLine doesn't have catch weight data.
+		desadvLine.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight.getCode()); // the code should fall back to "nominal" if the respecive inOutLine doesn't have catch weight data.
 		saveRecord(desadvLine);
 
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
