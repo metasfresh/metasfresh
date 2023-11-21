@@ -38,20 +38,16 @@ public enum ReportResultDataTargetType implements ReferenceListAwareEnum
 		{
 			return switch (this)
 			{
-				case SaveToServerDirectory -> Both;
-				case ForwardToUserBrowser -> ForwardToUserBrowser;
-				case Both -> Both;
-				case None -> ForwardToUserBrowser;
+				case SaveToServerDirectory, Both -> Both;
+				case ForwardToUserBrowser, None -> ForwardToUserBrowser;
 			};
 		}
 		else
 		{
 			return switch (this)
 			{
-				case SaveToServerDirectory -> SaveToServerDirectory;
-				case ForwardToUserBrowser -> None;
-				case Both -> SaveToServerDirectory;
-				case None -> None;
+				case SaveToServerDirectory, Both -> SaveToServerDirectory;
+				case ForwardToUserBrowser, None -> None;
 			};
 		}
 	}
