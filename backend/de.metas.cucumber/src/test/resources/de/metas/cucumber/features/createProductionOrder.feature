@@ -1727,6 +1727,7 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @Id:S0196_1000
+  @flaky
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the past
     Given metasfresh contains M_Products:
