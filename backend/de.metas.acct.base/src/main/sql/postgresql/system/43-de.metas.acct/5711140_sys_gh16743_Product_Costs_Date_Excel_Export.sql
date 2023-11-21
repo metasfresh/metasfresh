@@ -1,21 +1,26 @@
--- Value: Produktkosten pro Datum (Excel)
+-- Value: Auswertung Produktkosten (Excel)
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-11-20T18:44:33.213Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585339,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-11-20 19:44:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Produktkosten pro Datum (Excel)','json','N','N','xls','SELECT Date,AD_Org_ID,C_AcctSchema_ID,M_Product_Category_ID,M_Product_ID,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/-1@, @M_Product_Category_ID/-1@)
-','Excel',TO_TIMESTAMP('2023-11-20 19:44:32','YYYY-MM-DD HH24:MI:SS'),100,'Produktkosten pro Datum (Excel)')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585339,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-11-20 19:44:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Auswertung Produktkosten (Excel)','json','N','N','xls','SELECT Date,AD_Org_ID,C_AcctSchema_ID,M_Product_Category_ID,M_Product_ID,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/-1@, @M_Product_Category_ID/-1@)
+','Excel',TO_TIMESTAMP('2023-11-20 19:44:32','YYYY-MM-DD HH24:MI:SS'),100,'Auswertung Produktkosten (Excel)')
 ;
 
--- Value: Produktkosten pro Datum (Excel)
+-- Value: Auswertung Produktkosten (Excel)
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
--- 2023-11-20T19:14:38.284Z
-UPDATE AD_Process SET SQLStatement='SELECT Date,@AD_Org_ID@ AS AD_Org_ID,@C_AcctSchema_ID@ AS C_AcctSchema_ID,ProductCategory,Product,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/-1@, @M_Product_Category_ID/-1@)',Updated=TO_TIMESTAMP('2023-11-20 20:14:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585339
+-- 2023-11-21T09:16:50.255Z
+UPDATE AD_Process SET SQLStatement='SELECT Date,@AD_Org_ID@ AS param_organization,@C_AcctSchema_ID@ AS param_acctSchema,ProductCategory,Product,CostElement,Cost FROM report.getCostsPerDate(''@Date@''::date, @C_AcctSchema_ID@, @AD_Org_ID@, @M_Product_ID/null@, @M_Product_Category_ID/null@) order by productcategory, product',Updated=TO_TIMESTAMP('2023-11-21 10:16:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585339
 ;
 
 -- 2023-11-20T18:44:33.683Z
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=585339 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
--- Process: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- 2023-11-21T09:05:13.021Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Product costs per date (Excel)',Updated=TO_TIMESTAMP('2023-11-21 10:05:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585339
+;
+
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: DateAcct
 -- 2023-11-20T18:50:39.299Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,263,0,585339,542741,15,'DateAcct',TO_TIMESTAMP('2023-11-20 19:50:38','YYYY-MM-DD HH24:MI:SS'),100,'@Date@','Accounting Date','de.metas.acct',0,'The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.','Y','N','Y','N','Y','N','Buchungsdatum',10,TO_TIMESTAMP('2023-11-20 19:50:38','YYYY-MM-DD HH24:MI:SS'),100)
@@ -25,7 +30,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542741 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: AD_Org_ID
 -- 2023-11-20T18:51:40.589Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,113,0,585339,542742,19,'AD_Org_ID',TO_TIMESTAMP('2023-11-20 19:51:39','YYYY-MM-DD HH24:MI:SS'),100,'@AD_Org_ID@','Organisatorische Einheit des Mandanten','de.metas.acct',0,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','N','Y','N','Sektion',20,TO_TIMESTAMP('2023-11-20 19:51:39','YYYY-MM-DD HH24:MI:SS'),100)
@@ -35,7 +40,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542742 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: C_AcctSchema_ID
 -- 2023-11-20T18:52:33.874Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,181,0,585339,542743,19,'C_AcctSchema_ID',TO_TIMESTAMP('2023-11-20 19:52:33','YYYY-MM-DD HH24:MI:SS'),100,'1000000','Stammdaten für Buchhaltung','de.metas.acct',0,'Ein Kontenschema definiert eine Ausprägung von Stammdaten für die Buchhaltung wie verwendete Art der Kostenrechnung, Währung und Buchungsperiode.','Y','N','Y','N','Y','N','Buchführungs-Schema',30,TO_TIMESTAMP('2023-11-20 19:52:33','YYYY-MM-DD HH24:MI:SS'),100)
@@ -45,7 +50,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542743 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: M_Product_Category_ID
 -- 2023-11-20T18:53:15.498Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,ReadOnlyLogic,SeqNo,Updated,UpdatedBy) VALUES (0,453,0,585339,542744,19,'M_Product_Category_ID',TO_TIMESTAMP('2023-11-20 19:53:14','YYYY-MM-DD HH24:MI:SS'),100,'Kategorie eines Produktes','de.metas.acct',0,'Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','N','Y','N','N','N','Produkt Kategorie','@M_Product_ID@>0',40,TO_TIMESTAMP('2023-11-20 19:53:14','YYYY-MM-DD HH24:MI:SS'),100)
@@ -55,7 +60,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542744 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Process: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: M_Product_ID
 -- 2023-11-20T18:54:40.172Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Val_Rule_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,454,0,585339,542745,30,540272,540554,'M_Product_ID',TO_TIMESTAMP('2023-11-20 19:54:39','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, Leistung, Artikel','U',0,'Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','Y','N','N','N','Produkt',50,TO_TIMESTAMP('2023-11-20 19:54:39','YYYY-MM-DD HH24:MI:SS'),100)
@@ -84,7 +89,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product costs per date (Excel)
 
 -- Name: Auswertung Produktkosten (Excel)
 -- Action Type: R
--- Report: Produktkosten pro Datum (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- Report: Auswertung Produktkosten (Excel)(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- 2023-11-20T19:05:16.304Z
 INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('R',0,582813,542130,0,585339,TO_TIMESTAMP('2023-11-20 20:05:15','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Product costs per date (Excel)','Y','N','N','N','N','Auswertung Produktkosten (Excel)',TO_TIMESTAMP('2023-11-20 20:05:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -120,5 +125,56 @@ UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=2, Updated=now(), UpdatedBy=100
 -- Node name: `Auswertung Produktkosten (Excel)`
 -- 2023-11-20T19:05:21.343Z
 UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542130 AND AD_Tree_ID=10
+;
+
+-- 2023-11-21T08:53:12.920Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582814,0,'param_organization',TO_TIMESTAMP('2023-11-21 09:53:12','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Sektion','Sektion',TO_TIMESTAMP('2023-11-21 09:53:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-11-21T08:53:13.088Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582814 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: param_organization
+-- 2023-11-21T08:53:47.324Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Organisation', PrintName='Organisation',Updated=TO_TIMESTAMP('2023-11-21 09:53:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582814 AND AD_Language='en_US'
+;
+
+-- 2023-11-21T08:53:47.462Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582814,'en_US')
+;
+
+-- 2023-11-21T08:54:41.268Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582815,0,'param_acctSchema',TO_TIMESTAMP('2023-11-21 09:54:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Buchführungs-Schema','Buchführungs-Schema',TO_TIMESTAMP('2023-11-21 09:54:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-11-21T08:54:41.599Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582815 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: param_acctSchema
+-- 2023-11-21T08:55:04.189Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Accounting Schema', PrintName='Accounting Schema',Updated=TO_TIMESTAMP('2023-11-21 09:55:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582815 AND AD_Language='en_US'
+;
+
+-- 2023-11-21T08:55:04.298Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582815,'en_US')
+;
+
+-- 2023-11-21T08:58:10.840Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582816,0,'CostElement',TO_TIMESTAMP('2023-11-21 09:58:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Kostenart','Kostenart',TO_TIMESTAMP('2023-11-21 09:58:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-11-21T08:58:10.949Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582816 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: CostElement
+-- 2023-11-21T08:58:50.317Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Cost Element', PrintName='Cost Element',Updated=TO_TIMESTAMP('2023-11-21 09:58:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582816 AND AD_Language='en_US'
+;
+
+-- 2023-11-21T08:58:50.428Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582816,'en_US')
 ;
 
