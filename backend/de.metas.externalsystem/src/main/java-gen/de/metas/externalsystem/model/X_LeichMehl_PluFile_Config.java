@@ -1,30 +1,30 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for LeichMehl_PluFile_Config
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements I_LeichMehl_PluFile_Config, org.compiere.model.I_Persistent 
+public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements I_LeichMehl_PluFile_Config, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 443241880L;
+	private static final long serialVersionUID = 1254130680L;
 
-    /** Standard Constructor */
-    public X_LeichMehl_PluFile_Config (final Properties ctx, final int LeichMehl_PluFile_Config_ID, @Nullable final String trxName)
-    {
-      super (ctx, LeichMehl_PluFile_Config_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_LeichMehl_PluFile_Config (final Properties ctx, final int LeichMehl_PluFile_Config_ID, @Nullable final String trxName)
+	{
+		super (ctx, LeichMehl_PluFile_Config_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_LeichMehl_PluFile_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_LeichMehl_PluFile_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -35,43 +35,43 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl getExternalSystem_Config_LeichMehl()
+	public de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup getLeichMehl_PluFile_ConfigGroup()
 	{
-		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl.class);
+		return get_ValueAsPO(COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup.class);
 	}
 
 	@Override
-	public void setExternalSystem_Config_LeichMehl(final de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl ExternalSystem_Config_LeichMehl)
+	public void setLeichMehl_PluFile_ConfigGroup(final de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup LeichMehl_PluFile_ConfigGroup)
 	{
-		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl.class, ExternalSystem_Config_LeichMehl);
+		set_ValueFromPO(COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup.class, LeichMehl_PluFile_ConfigGroup);
 	}
 
 	@Override
-	public void setExternalSystem_Config_LeichMehl_ID (final int ExternalSystem_Config_LeichMehl_ID)
+	public void setLeichMehl_PluFile_ConfigGroup_ID (final int LeichMehl_PluFile_ConfigGroup_ID)
 	{
-		if (ExternalSystem_Config_LeichMehl_ID < 1) 
-			set_Value (COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, null);
-		else 
-			set_Value (COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, ExternalSystem_Config_LeichMehl_ID);
+		if (LeichMehl_PluFile_ConfigGroup_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID, LeichMehl_PluFile_ConfigGroup_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_LeichMehl_ID() 
+	public int getLeichMehl_PluFile_ConfigGroup_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_LeichMehl_ID);
+		return get_ValueAsInt(COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID);
 	}
 
 	@Override
 	public void setLeichMehl_PluFile_Config_ID (final int LeichMehl_PluFile_Config_ID)
 	{
-		if (LeichMehl_PluFile_Config_ID < 1) 
+		if (LeichMehl_PluFile_Config_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_LeichMehl_PluFile_Config_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_LeichMehl_PluFile_Config_ID, LeichMehl_PluFile_Config_ID);
 	}
 
 	@Override
-	public int getLeichMehl_PluFile_Config_ID() 
+	public int getLeichMehl_PluFile_Config_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_LeichMehl_PluFile_Config_ID);
 	}
@@ -83,12 +83,12 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public java.lang.String getReplacement() 
+	public java.lang.String getReplacement()
 	{
 		return get_ValueAsString(COLUMNNAME_Replacement);
 	}
 
-	/** 
+	/**
 	 * ReplacementSource AD_Reference_ID=541598
 	 * Reference name: ReplacementSourceList
 	 */
@@ -104,7 +104,7 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public java.lang.String getReplacementSource() 
+	public java.lang.String getReplacementSource()
 	{
 		return get_ValueAsString(COLUMNNAME_ReplacementSource);
 	}
@@ -116,7 +116,7 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public java.lang.String getReplaceRegExp() 
+	public java.lang.String getReplaceRegExp()
 	{
 		return get_ValueAsString(COLUMNNAME_ReplaceRegExp);
 	}
@@ -128,12 +128,12 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public java.lang.String getTargetFieldName() 
+	public java.lang.String getTargetFieldName()
 	{
 		return get_ValueAsString(COLUMNNAME_TargetFieldName);
 	}
 
-	/** 
+	/**
 	 * TargetFieldType AD_Reference_ID=541611
 	 * Reference name: AttributeTypeList
 	 */
@@ -159,7 +159,7 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public java.lang.String getTargetFieldType() 
+	public java.lang.String getTargetFieldType()
 	{
 		return get_ValueAsString(COLUMNNAME_TargetFieldType);
 	}
