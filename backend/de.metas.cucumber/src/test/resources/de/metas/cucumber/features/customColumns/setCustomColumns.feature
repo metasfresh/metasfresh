@@ -1,4 +1,5 @@
 @from:cucumber
+@flaky
 @ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
 

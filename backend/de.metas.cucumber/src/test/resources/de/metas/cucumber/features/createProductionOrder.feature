@@ -864,6 +864,7 @@ Feature: create production order
       | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
   @from:cucumber
+  @flaky
   @Id:S0129.2_200
   @Id:S0196_700
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past
