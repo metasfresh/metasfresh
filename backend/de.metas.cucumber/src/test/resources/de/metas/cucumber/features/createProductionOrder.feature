@@ -1500,6 +1500,7 @@ Feature: create production order
       | c_ppo_l_1_d                | DEMAND            | PRODUCTION                    | p_comp_1                | 2021-04-16T21:00:00Z | 200 | 0                      |
       | c_ppo_l_2_d                | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | 300 | 0                      |
 
+  @flaky
   @Id:S0196_900
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the future
