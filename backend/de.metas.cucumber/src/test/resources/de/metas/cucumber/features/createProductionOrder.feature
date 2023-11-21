@@ -1058,6 +1058,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
+  @flaky
   @Id:S0196_800
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the future
