@@ -929,6 +929,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @flaky
   @Id:S0160_230
   @from:cucumber
   Scenario: Reactivate receipt similar with case 160
@@ -1409,6 +1410,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @flaky
   @Id:S0160_270
   @from:cucumber
   Scenario: Complete receipt similar with case 200

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@ package de.metas.externalsystem.leichmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -33,37 +33,31 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemLeichMehlConfigProductMappingId implements RepoIdAware
+public class LeichMehlPluFileConfigGroupId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoId(final int repoId)
+	public static LeichMehlPluFileConfigGroupId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemLeichMehlConfigProductMappingId(repoId);
+		return new LeichMehlPluFileConfigGroupId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoIdOrNull(final Integer repoId)
+	public static LeichMehlPluFileConfigGroupId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ExternalSystemLeichMehlConfigProductMappingId(repoId) : null;
+		return repoId != null && repoId > 0 ? new LeichMehlPluFileConfigGroupId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final ExternalSystemLeichMehlConfigProductMappingId configProductMappingId)
-	{
-		return configProductMappingId != null ? configProductMappingId.getRepoId() : -1;
-	}
-
-	private ExternalSystemLeichMehlConfigProductMappingId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ProductMapping_ID);
-	}
-
-	@Override
 	@JsonValue
-	public int getRepoId()
+	public int toJson()
 	{
-		return repoId;
+		return getRepoId();
+	}
+
+	private LeichMehlPluFileConfigGroupId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_LeichMehl_PluFile_ConfigGroup.COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID);
 	}
 }

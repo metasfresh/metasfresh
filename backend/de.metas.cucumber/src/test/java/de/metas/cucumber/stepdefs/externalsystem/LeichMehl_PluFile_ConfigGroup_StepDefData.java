@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,15 @@
  * #L%
  */
 
-package de.metas.externalsystem.leichmehl;
+package de.metas.cucumber.stepdefs.externalsystem;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ExternalSystemLeichMehlConfigProductMapping
+public class LeichMehl_PluFile_ConfigGroup_StepDefData extends StepDefData<I_LeichMehl_PluFile_ConfigGroup>
 {
-	@NonNull
-	ExternalSystemLeichMehlConfigProductMappingId id;
-
-	@NonNull
-	String pluFile;
-
-	@NonNull
-	ProductId productId;
-
-	@Nullable
-	BPartnerId bPartnerId;
-
-	@NonNull
-	LeichMehlPluFileConfigGroup leichMehlPluFileConfigGroup;
+	public LeichMehl_PluFile_ConfigGroup_StepDefData()
+	{
+		super(I_LeichMehl_PluFile_ConfigGroup.class);
+	}
 }
