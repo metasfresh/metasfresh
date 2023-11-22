@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import cx from 'classnames';
 
 /**
  * @file Indicator is a component that shows the save status to user in form of a save progress
@@ -21,13 +22,11 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, stackTrace }) => {
     navigator.clipboard.writeText(message);
   };
 
+  const indicatorEffective = isDocumentNotSaved ? 'error' : indicator;
+
   return (
     <div className="window-indicator-container">
-      <div
-        className={`bar ${isDocumentNotSaved ? 'error' : ''} ${
-          !isDocumentNotSaved && indicator ? `${indicator}` : ''
-        }`}
-      />
+      <div className={cx('bar', indicatorEffective)} />
       {error ? (
         <div className="container-fluid message-bar" title={error}>
           <span className="text">{error}</span>
@@ -39,7 +38,7 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, stackTrace }) => {
           </button>
         </div>
       ) : (
-        <div className="container-fluid indicator-error-message">&nbsp;</div>
+        <div className="container-fluid message-bar">&nbsp;</div>
       )}
     </div>
   );
