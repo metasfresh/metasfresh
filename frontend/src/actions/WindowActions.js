@@ -1462,6 +1462,23 @@ export function togglePrintingOption(target) {
   };
 }
 
+export function openPrintingOptionsModal({
+  title,
+  windowId,
+  documentId,
+  documentNo,
+}) {
+  return openModal({
+    title,
+    windowId,
+    modalType: 'static',
+    //viewId,
+    viewDocumentIds: [documentNo],
+    dataId: documentId,
+    staticModalType: 'printing',
+  });
+}
+
 /**
  * @method setSpinner
  * @summary - action. It sets the `showSpinner` in the store to the boolean value passed in the action

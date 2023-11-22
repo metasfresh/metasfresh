@@ -12,6 +12,7 @@ import {
   openModal,
   setPrintingOptions,
   resetPrintingOptions,
+  openPrintingOptionsModal,
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -372,14 +373,11 @@ class Header extends PureComponent {
         } else {
           // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
           dispatch(
-            openModal({
+            openPrintingOptionsModal({
               title: caption,
               windowId,
-              modalType: 'static',
-              viewId,
-              viewDocumentIds: [docNo],
-              dataId: docId,
-              staticModalType: 'printing',
+              documentId: docId,
+              documentNo: docNo,
             })
           );
         }
