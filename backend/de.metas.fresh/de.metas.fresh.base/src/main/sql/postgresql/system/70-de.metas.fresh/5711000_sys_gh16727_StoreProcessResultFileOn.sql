@@ -110,3 +110,25 @@ UPDATE AD_Field SET DisplayLogic='@IsReport@=''Y''',Updated=TO_TIMESTAMP('2023-1
 UPDATE AD_Field SET SpanX=1,Updated=TO_TIMESTAMP('2023-11-20 10:24:20.196','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=721885
 ;
 
+-- Column: AD_Process.StoreProcessResultFileOn
+-- 2023-11-22T10:34:13.704338500Z
+UPDATE AD_Column SET DefaultValue='D', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-11-22 11:34:13.704','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587657
+;
+
+-- Field: Bericht & Prozess(165,D) -> Bericht & Prozess(245,D) -> Process Result Storing File Default Path
+-- Column: AD_Process.StoreProcessResultFileOn
+-- 2023-11-22T10:22:01.565581500Z
+UPDATE AD_Field SET SeqNo=232,Updated=TO_TIMESTAMP('2023-11-22 11:22:01.565','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=721885
+;
+
+-- Field: Bericht & Prozess(165,D) -> Bericht & Prozess(245,D) -> Process Result Storing File Path
+-- Column: AD_Process.StoreProcessResultFilePath
+-- 2023-11-22T10:25:21.222796100Z
+UPDATE AD_Field SET DisplayLogic='@IsReport@=''Y'' & (@StoreProcessResultFileOn@=''S''  | @StoreProcessResultFileOn@=''B'')',Updated=TO_TIMESTAMP('2023-11-22 11:25:21.222','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=721875
+;
+
+UPDATE ad_process
+SET StoreProcessResultFileOn = 'D'
+WHERE TRUE
+;
+

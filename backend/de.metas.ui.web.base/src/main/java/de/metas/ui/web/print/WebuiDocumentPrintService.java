@@ -139,7 +139,7 @@ public class WebuiDocumentPrintService
 									.docTypeId(documentBL.getDocTypeId(record).orElse(null))
 									.build());
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed retrieving DocOutBoundRecipient from {}. Returning empty.", recordRef, ex);
 			return Optional.empty();

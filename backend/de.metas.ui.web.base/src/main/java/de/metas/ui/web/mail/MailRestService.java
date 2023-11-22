@@ -75,9 +75,7 @@ public class MailRestService
 				.build();
 
 		final Stream<EmailAttachment> emailAttachments = documentPrintService.createDocumentPrint(printRequest)
-				.map(MailRestService::toEmailAttachment)
-				.map(Stream::of)
-				.orElseGet(Stream::empty);
+				.map(MailRestService::toEmailAttachment).stream();
 
 		return Stream.concat(emailAttachments, attachmentEntryService.streamEmailAttachments(recordRef, tagName))
 				.filter(Objects::nonNull)

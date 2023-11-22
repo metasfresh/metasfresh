@@ -3,6 +3,7 @@ package de.metas.report;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
@@ -121,13 +122,16 @@ public class ReportResultData
 
 	public Path writeToDirectory(@NonNull final Path directory)
 	{
-		final Path file = directory.resolve(getReportFilename());
+		final String ext = MimeType.getExtensionByType(reportContentType);
+		final String fileName = "Report_" + System.currentTimeMillis() + ext;
+		final Path file = directory.resolve(fileName);
+
 		try
 		{
 			Files.copy(reportData.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
 			return file;
 		}
-		catch (IOException ex)
+		catch (final IOException ex)
 		{
 			throw new AdempiereException("Failed writing " + file, ex);
 		}
