@@ -208,6 +208,11 @@ public class StockQtyAndUOMQty
 	{
 		return Optional.ofNullable(uomQty)
 				.map(uomQuantity -> {
+					if (uomQuantity.isZero() || stockQty.isZero())
+					{
+						return BigDecimal.ZERO;
+					}
+					
 					final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomQuantity.getUOM().getStdPrecision());
 
 					return uomQuantity.toBigDecimal().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode())
