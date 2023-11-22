@@ -1906,7 +1906,7 @@ public final class Document
 			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
-			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
+			return setSaveStatusAndReturn(DocumentSaveStatus.error(saveEx));
 		}
 	}
 
@@ -1919,14 +1919,21 @@ public final class Document
 		boolean deleted = false;
 		if (hasChanges())
 		{
-			final SaveResult saveResult = getDocumentRepository().save(this);
-			if (saveResult == SaveResult.DELETED)
+			try
 			{
-				deleted = true;
-			}
+				final SaveResult saveResult = getDocumentRepository().save(this);
+				if (saveResult == SaveResult.DELETED)
+				{
+					deleted = true;
+				}
 
-			documentCallout.onSave(asCalloutRecord());
-			logger.debug("Document saved: {}", this);
+				documentCallout.onSave(asCalloutRecord());
+				logger.debug("Document saved: {}", this);
+			}
+			catch (Exception ex)
+			{
+				return setSaveStatusAndReturn(DocumentSaveStatus.error(ex)).throwIfError();
+			}
 		}
 		else
 		{
