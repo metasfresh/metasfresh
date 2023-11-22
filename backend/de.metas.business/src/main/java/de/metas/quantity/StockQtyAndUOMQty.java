@@ -203,6 +203,7 @@ public class StockQtyAndUOMQty
 	}
 
 	@Nullable
+	@JsonIgnore
 	public BigDecimal getUOMToStockRatio()
 	{
 		return Optional.ofNullable(uomQty)
