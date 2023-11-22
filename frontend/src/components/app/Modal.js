@@ -714,6 +714,7 @@ class Modal extends Component {
               staticModalType === 'printing' ? false : isDocumentNotSaved
             }
             error={saveStatus?.error ? saveStatus?.reason : ''}
+            stackTrace={saveStatus?.error ? saveStatus?.stackTrace : ''}
           />
 
           <div
