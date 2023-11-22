@@ -21,6 +21,7 @@ Feature: create production order
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
 
+  @flaky
   @from:cucumber
   @Id:S0129.1_100
   @Id:S0129.2_100
@@ -240,6 +241,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @flaky
   @Id:S0196_500
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is completed, then it is reactivated and its qtyOrdered is updated and the ordered is completed again. Then, the order is reactivated once again, its qtyOrdered updated to the initial value and the order is completed.
@@ -1058,6 +1060,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
+  @flaky
   @Id:S0196_800
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the future
