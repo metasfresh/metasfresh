@@ -550,7 +550,23 @@ jobs:
           - profile: profile1
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @ignore"
           - profile: profile2
+<<<<<<< HEAD
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @ignore"
+=======
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @flaky and not @ignore"
+          - profile: profile3
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor3 and not @flaky and not @ignore"
+          - profile: profile4
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor4 and not @flaky and not @ignore"
+          - profile: profile5
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @flaky and not @ignore"
+          - profile: profile6
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
+          - profile: profile7
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+          - profile: flaky
+            params: -Dcucumber.filter.tags="@flaky and not @ignore"
+>>>>>>> 6cc129acc02 (fix flaky cucumber action run)
           - profile: catchall
             params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ignore"
     steps:
