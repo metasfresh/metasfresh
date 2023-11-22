@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -139,7 +140,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public static <T extends JavaProcess> T currentInstance()
 	{
-		@SuppressWarnings("unchecked") final T currentInstances = (T)currentInstanceHolder.get();
+		@SuppressWarnings("unchecked")
+		final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -174,8 +176,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (!overrideCurrentInstance && previousInstance != null && !Util.same(previousInstance, instance))
 		{
 			throw new AdempiereException("Changed current instance not allowed when there is a currently active one"
-					+ "\n Current active: " + previousInstance
-					+ "\n New: " + instance);
+												 + "\n Current active: " + previousInstance
+												 + "\n New: " + instance);
 		}
 
 		//
@@ -218,9 +220,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				if (!Objects.equal(currentInstanceFound, instance))
 				{
 					slogger.warn("Invalid current process instance found while restoring the current instance"
-							+ "\n Current instance found: {}"
-							+ "\n Current instance expected: {}"
-							+ "\n => Current instance restored: {}", currentInstanceFound, instance, currentInstanceHolder.get());
+										 + "\n Current instance found: {}"
+										 + "\n Current instance expected: {}"
+										 + "\n => Current instance restored: {}", currentInstanceFound, instance, currentInstanceHolder.get());
 				}
 			}
 		};
@@ -336,7 +338,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (reportResultDataTarget.isSaveToServerDirectory())
 		{
 			final Path targetFile = reportData.writeToDirectory(reportResultDataTarget.getServerTargetDirectoryNotNull());
-			Loggables.addLog("Saved report file to {}", targetFile);
+			getResult().addLog(getProcessInfo().getPinstanceId(), null, new BigDecimal(pi.getAdProcessId().getRepoId()), String.valueOf(targetFile));
 		}
 		if (!reportResultDataTarget.isForwardToUserBrowser())
 		{
@@ -457,15 +459,15 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (!trxManager.isNull(trx))
 		{
 			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are already in transaction."
-					+ "\n Process: " + getClass()
-					+ "\n Trx: " + trx);
+													+ "\n Process: " + getClass()
+													+ "\n Trx: " + trx);
 		}
 		final String threadInheritedTrxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isNull(threadInheritedTrxName))
 		{
 			throw new IllegalStateException("Process wants to " + stage + " out-of-transaction but we are running in a thread inherited transaction."
-					+ "\n Process: " + getClass()
-					+ "\n Thread inherited transaction: " + threadInheritedTrxName);
+													+ "\n Process: " + getClass()
+													+ "\n Thread inherited transaction: " + threadInheritedTrxName);
 		}
 	}
 
