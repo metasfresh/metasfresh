@@ -128,7 +128,13 @@ public class EDIDesadvPack
 		BigDecimal qtyCUsPerTU;
 
 		@Nullable
+		BigDecimal qtyCUPerTUinInvoiceUOM;
+
+		@Nullable
 		BigDecimal qtyCUsPerLU;
+
+		@Nullable
+		BigDecimal qtyCUsPerLUinInvoiceUOM;
 
 		@Nullable
 		Timestamp bestBeforeDate;

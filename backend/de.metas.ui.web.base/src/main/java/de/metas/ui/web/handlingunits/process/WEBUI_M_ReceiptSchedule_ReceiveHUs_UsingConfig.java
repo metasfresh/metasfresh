@@ -116,14 +116,14 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 		// Validate parameters
 		final int M_LU_HU_PI_ID = p_M_LU_HU_PI_ID;
 		final int M_HU_PI_Item_Product_ID = p_M_HU_PI_Item_Product_ID;
-		final BigDecimal qtyCU = p_QtyCUsPerTU;
+		final BigDecimal qtyCUsPerTU = p_QtyCUsPerTU;
 		final BigDecimal qtyTU = p_QtyTU;
 		final BigDecimal qtyLU = p_QtyLU;
 		if (M_HU_PI_Item_Product_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 		}
-		if (qtyCU == null || qtyCU.signum() <= 0)
+		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
@@ -140,7 +140,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 			.baseLUTUConfiguration(template)
 			.qtyLU(qtyLU)
 			.qtyTU(qtyTU)
-			.qtyCU(qtyCU)
+			.qtyCUsPerTU(qtyCUsPerTU)
 			.tuHUPIItemProductID(M_HU_PI_Item_Product_ID)
 			.luHUPIID(M_LU_HU_PI_ID)
 			.build();

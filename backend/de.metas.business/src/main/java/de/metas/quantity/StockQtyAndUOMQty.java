@@ -202,6 +202,19 @@ public class StockQtyAndUOMQty
 		return other;
 	}
 
+	@Nullable
+	public BigDecimal getUOMToStockRatio()
+	{
+		return Optional.ofNullable(uomQty)
+				.map(uomQuantity -> {
+					final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomQuantity.getUOM().getStdPrecision());
+
+					return uomQuantity.toBigDecimal().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode())
+							.divide(stockQty.toBigDecimal(), uomPrecision.getRoundingMode());
+				})
+				.orElse(null);
+	}
+
 	@NonNull
 	public static StockQtyAndUOMQty toZeroIfNegative(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
 	{

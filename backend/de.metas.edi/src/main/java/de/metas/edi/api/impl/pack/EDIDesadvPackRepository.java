@@ -244,7 +244,9 @@ public class EDIDesadvPackRepository
 			ediDesadvPackItemBuilder.qtyTu(ediDesadvPackItemRecord.getQtyTU());
 			ediDesadvPackItemBuilder.movementQty(ediDesadvPackItemRecord.getMovementQty());
 			ediDesadvPackItemBuilder.qtyCUsPerTU(ediDesadvPackItemRecord.getQtyCUsPerTU());
+			ediDesadvPackItemBuilder.qtyCUPerTUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM());
 			ediDesadvPackItemBuilder.qtyCUsPerLU(ediDesadvPackItemRecord.getQtyCUsPerLU());
+			ediDesadvPackItemBuilder.qtyCUsPerLUinInvoiceUOM(ediDesadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM());
 			ediDesadvPackItemBuilder.bestBeforeDate(ediDesadvPackItemRecord.getBestBeforeDate());
 			ediDesadvPackItemBuilder.lotNumber(ediDesadvPackItemRecord.getLotNumber());
 			ediDesadvPackItemBuilder.huPackagingCodeTuId(PackagingCodeId.ofRepoIdOrNull(ediDesadvPackItemRecord.getM_HU_PackagingCode_TU_ID()));

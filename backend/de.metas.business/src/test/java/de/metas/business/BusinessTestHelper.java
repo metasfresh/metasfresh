@@ -22,8 +22,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -149,6 +149,17 @@ public class BusinessTestHelper
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setX12DE355(x12de355 != null ? x12de355.getCode() : null);
+
+		saveRecord(uom);
+
+		return uom;
+	}
+
+	@NonNull
+	public I_C_UOM createUOM(final String name, final int stdPrecision, final X12DE355 x12de355)
+	{
+		final I_C_UOM uom = createUOM(name, x12de355);
+		uom.setStdPrecision(stdPrecision);
 
 		saveRecord(uom);
 

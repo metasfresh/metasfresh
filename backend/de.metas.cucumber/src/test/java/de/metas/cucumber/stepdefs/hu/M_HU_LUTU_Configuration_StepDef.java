@@ -151,7 +151,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					.baseLUTUConfiguration(lutuConfigDefault)
 					.qtyLU(lutuConfigDefault.getQtyLU())
 					.qtyTU(lutuConfigDefault.getQtyTU())
-					.qtyCU(lutuConfigDefault.getQtyCUsPerTU())
+					.qtyCUsPerTU(lutuConfigDefault.getQtyCUsPerTU())
 					.tuHUPIItemProductID(tuHuPiProduct.getM_HU_PI_Item_Product_ID())
 					.luHUPIID(luHuPi.getM_HU_PI_ID())
 					.build();

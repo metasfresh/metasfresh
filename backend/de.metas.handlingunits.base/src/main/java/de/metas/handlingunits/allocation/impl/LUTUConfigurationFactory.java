@@ -656,7 +656,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
 		//
 		// CU
-		lutuConfigurationNew.setQtyCUsPerTU(lutuConfigRequest.getQtyCU());
+		lutuConfigurationNew.setQtyCUsPerTU(lutuConfigRequest.getQtyCUsPerTU());
 		lutuConfigurationNew.setIsInfiniteQtyCU(false);
 
 		//
