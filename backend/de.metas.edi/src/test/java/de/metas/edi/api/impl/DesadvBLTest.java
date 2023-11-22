@@ -102,9 +102,9 @@ class DesadvBLTest
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("9"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU_InInvoiceUOM()).as("QtyCUsPerTU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("4.5"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUPerTUinInvoiceUOM()).as("QtyCUPerTUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("4.5"));
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).as("QtyCUsPerLU").isEqualByComparingTo(new BigDecimal("20.5"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU_InInvoiceUOM()).as("QtyCUsPerLU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("10.25"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLUinInvoiceUOM()).as("QtyCUsPerLUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("10.25"));
 		softly.assertThat(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM()).as("MovementQtyInStockUOM").isEqualByComparingTo(new BigDecimal("20.5"));
 
 		softly.assertAll();
@@ -144,9 +144,9 @@ class DesadvBLTest
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU_InInvoiceUOM()).as("QtyCUsPerTU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("1.25"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUPerTUinInvoiceUOM()).as("QtyCUPerTUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("1.25"));
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).as("QtyCUsPerLU").isEqualByComparingTo(new BigDecimal("10"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU_InInvoiceUOM()).as("QtyCUsPerLU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("2.5"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLUinInvoiceUOM()).as("QtyCUsPerLUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("2.5"));
 
 		softly.assertAll();
 	}
@@ -186,9 +186,9 @@ class DesadvBLTest
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU_InInvoiceUOM()).as("QtyCUsPerTU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("1.25"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUPerTUinInvoiceUOM()).as("QtyCUPerTUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("1.25"));
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).as("QtyCUsPerLU").isEqualByComparingTo(new BigDecimal("10"));
-		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU_InInvoiceUOM()).as("QtyCUsPerLU_InInvoiceUOM").isEqualByComparingTo(new BigDecimal("2.5"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLUinInvoiceUOM()).as("QtyCUsPerLUinInvoiceUOM").isEqualByComparingTo(new BigDecimal("2.5"));
 
 		softly.assertAll();
 	}

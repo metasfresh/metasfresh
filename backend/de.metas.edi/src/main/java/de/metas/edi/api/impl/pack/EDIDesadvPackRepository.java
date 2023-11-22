@@ -93,9 +93,9 @@ public class EDIDesadvPackRepository
 			ediDesadvPackItemRecord.setQtyTU(NumberUtils.asIntOrZero(createEDIDesadvPackItemRequest.getQtyTu()));
 			ediDesadvPackItemRecord.setMovementQty(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM());
 			ediDesadvPackItemRecord.setQtyCUsPerTU(createEDIDesadvPackItemRequest.getQtyCUsPerTU());
-			ediDesadvPackItemRecord.setQtyCUsPerTU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUsPerTU_InInvoiceUOM());
+			ediDesadvPackItemRecord.setQtyCUsPerTU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUPerTUinInvoiceUOM());
 			ediDesadvPackItemRecord.setQtyCUsPerLU(createEDIDesadvPackItemRequest.getQtyCUsPerLU());
-			ediDesadvPackItemRecord.setQtyCUsPerLU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUsPerLU_InInvoiceUOM());
+			ediDesadvPackItemRecord.setQtyCUsPerLU_InInvoiceUOM(createEDIDesadvPackItemRequest.getQtyCUsPerLUinInvoiceUOM());
 			ediDesadvPackItemRecord.setBestBeforeDate(createEDIDesadvPackItemRequest.getBestBeforeDate());
 			ediDesadvPackItemRecord.setLotNumber(createEDIDesadvPackItemRequest.getLotNumber());
 			ediDesadvPackItemRecord.setM_HU_PackagingCode_TU_ID(PackagingCodeId.toRepoId(createEDIDesadvPackItemRequest.getHuPackagingCodeTUID()));

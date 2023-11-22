@@ -270,8 +270,8 @@ public class DesadvLineSSCC18Generator
 				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
 				.qtyCUsPerLU(qtyCUsPerLU.toBigDecimal())
 				.movementQtyInStockUOM(qtyCUsPerLU.toBigDecimal())
-				.qtyCUsPerTU_InInvoiceUOM(qtyCUPerTUinInvoiceUOM)
-				.qtyCUsPerLU_InInvoiceUOM(qtyCUPerLUinInvoiceUOM)
+				.qtyCUPerTUinInvoiceUOM(qtyCUPerTUinInvoiceUOM)
+				.qtyCUsPerLUinInvoiceUOM(qtyCUPerLUinInvoiceUOM)
 				.build();
 	}
 

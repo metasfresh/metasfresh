@@ -580,9 +580,9 @@ public class EDIDesadvPackService
 
 		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(movementQtyInStockUOM);
 		createEDIDesadvPackItemRequestBuilder.qtyCUsPerTU(qtyCUPerTUinPackUOM);
-		createEDIDesadvPackItemRequestBuilder.qtyCUsPerTU_InInvoiceUOM(qtyCUPerTUinInvoiceUOM);
+		createEDIDesadvPackItemRequestBuilder.qtyCUPerTUinInvoiceUOM(qtyCUPerTUinInvoiceUOM);
 		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLU(qtyCUsPerLUinPackUOM);
-		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLU_InInvoiceUOM(qtyCUPerLUinInvoiceUOM);
+		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLUinInvoiceUOM(qtyCUPerLUinInvoiceUOM);
 	}
 
 	@NonNull
