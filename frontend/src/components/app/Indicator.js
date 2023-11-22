@@ -7,16 +7,26 @@ import cx from 'classnames';
  * line beneath the Header.
  * @module Indicator
  */
-const Indicator = ({ indicator, isDocumentNotSaved, error, stackTrace }) => {
+const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
   const copyErrorToClipboard = () => {
     if (!error) return;
 
     let message = error;
     message += '\n';
-    message += '\nLocation: ' + window.location.href;
+    message += `\nLocation: ${window.location.href}`;
 
-    if (stackTrace) {
-      message += '\nStacktrace: ' + stackTrace;
+    if (exception) {
+      if (exception?.attributes) {
+        for (const [key, value] of Object.entries(exception.attributes)) {
+          message += `\n${key}: ${value}`;
+        }
+      }
+      if (exception?.stackTrace) {
+        message += `\nStacktrace: ${exception.stackTrace}`;
+      }
+      if (exception?.adIssueId) {
+        message += `\nAD_Issue_ID: ${exception.adIssueId}`;
+      }
     }
 
     navigator.clipboard.writeText(message);
@@ -53,7 +63,7 @@ Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
   isDocumentNotSaved: PropTypes.bool,
   error: PropTypes.string,
-  stackTrace: PropTypes.string,
+  exception: PropTypes.object,
 };
 
 export default Indicator;

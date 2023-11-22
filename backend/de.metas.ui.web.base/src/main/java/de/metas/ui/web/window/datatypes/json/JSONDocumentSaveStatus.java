@@ -43,7 +43,7 @@ public class JSONDocumentSaveStatus
 	boolean deleted;
 	boolean error;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String reason;
-	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String stackTrace;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JSONJavaException exception;
 
 	public static JSONDocumentSaveStatus of(@NonNull final DocumentSaveStatus saveStatus, @NonNull final JSONOptions jsonOpts)
 	{
@@ -53,7 +53,7 @@ public class JSONDocumentSaveStatus
 				.deleted(saveStatus.isDeleted())
 				.error(saveStatus.isError())
 				.reason(saveStatus.getReason() != null ? saveStatus.getReason().translate(jsonOpts.getAdLanguage()) : null)
-				.stackTrace(saveStatus.getExceptionAsOneLineString())
+				.exception(JSONJavaException.ofNullable(saveStatus.getException(), jsonOpts))
 				.build();
 	}
 }

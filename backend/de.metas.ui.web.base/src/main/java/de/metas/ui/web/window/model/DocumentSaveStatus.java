@@ -53,7 +53,7 @@ public final class DocumentSaveStatus
 
 	public static DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
 	{
-		return builder().hasChangesToBeSaved(true).error(false).reason(invalidState.getReason()).exception(invalidState.getException()).build();
+		return builder().hasChangesToBeSaved(true).error(true).reason(invalidState.getReason()).exception(invalidState.getException()).build();
 	}
 
 	public static DocumentSaveStatus error(@NonNull final Exception exception)

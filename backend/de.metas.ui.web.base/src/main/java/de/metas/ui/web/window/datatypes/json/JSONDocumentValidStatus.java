@@ -41,7 +41,7 @@ public class JSONDocumentValidStatus
 	boolean valid;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Boolean initialValue;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String reason;
-	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String stackTrace;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JSONJavaException exception;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String fieldName;
 
 	public static JSONDocumentValidStatus of(@NonNull final DocumentValidStatus validStatus, @NonNull final JSONOptions jsonOpts)
@@ -50,7 +50,7 @@ public class JSONDocumentValidStatus
 				.valid(validStatus.isValid())
 				.initialValue(validStatus.getInitialValue())
 				.reason(validStatus.getReason() != null ? validStatus.getReason().translate(jsonOpts.getAdLanguage()) : null)
-				.stackTrace(validStatus.getExceptionAsOneLineString())
+				.exception(JSONJavaException.ofNullable(validStatus.getException(), jsonOpts))
 				.fieldName(validStatus.getFieldName())
 				.build();
 	}

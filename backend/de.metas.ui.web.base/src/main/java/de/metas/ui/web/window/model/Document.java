@@ -1894,7 +1894,7 @@ public final class Document
 		catch (final Exception saveEx)
 		{
 			// NOTE: usually if we do the right checks we shall not get to this
-			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
+			// logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
 			return setSaveStatusAndReturn(DocumentSaveStatus.error(saveEx));
 		}
