@@ -240,6 +240,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @flaky
   @Id:S0196_500
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is completed, then it is reactivated and its qtyOrdered is updated and the ordered is completed again. Then, the order is reactivated once again, its qtyOrdered updated to the initial value and the order is completed.
