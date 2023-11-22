@@ -261,6 +261,7 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
