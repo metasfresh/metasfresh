@@ -287,7 +287,7 @@ export function sortTab(scope, tabId, field, asc) {
   };
 }
 
-export function updateDataProperty(property, value, scope) {
+function updateDataProperty(property, value, scope) {
   return {
     type: UPDATE_DATA_PROPERTY,
     property,
