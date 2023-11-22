@@ -5,22 +5,21 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api';
-import { processNewRecord } from '../../actions/GenericActions';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
+  callAPI,
   closeModal,
   createProcess,
   createWindow,
-  handleProcessResponse,
   fetchChangeLog,
-  callAPI,
+  fireUpdateData,
+  handleProcessResponse,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -577,18 +576,18 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
+      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const isNotSaved =
-      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -709,7 +708,13 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator {...{ isNotSaved, indicator }} />
+          <Indicator
+            indicator={indicator}
+            isDocumentNotSaved={
+              staticModalType === 'printing' ? false : isDocumentNotSaved
+            }
+            error={saveStatus?.error ? saveStatus?.reason : ''}
+          />
 
           <div
             className="panel-modal-content js-panel-modal-content

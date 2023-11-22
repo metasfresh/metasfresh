@@ -572,6 +572,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      saveStatus,
       hasComments,
     } = this.props;
 
@@ -793,7 +794,11 @@ class Header extends PureComponent {
           </div>
 
           {showIndicator && (
-            <Indicator {...{ isDocumentNotSaved, indicator }} />
+            <Indicator
+              indicator={indicator}
+              isDocumentNotSaved={isDocumentNotSaved}
+              error={saveStatus?.error ? saveStatus?.reason : ''}
+            />
           )}
         </nav>
 
@@ -959,19 +964,26 @@ Header.propTypes = {
 };
 
 const mapStateToProps = (state) => {
-  const { master } = state.windowHandler;
-  const { docActionElement, documentSummaryElement } = master.layout;
+  const {
+    indicator,
+    master: {
+      layout: { docActionElement, documentSummaryElement },
+      data,
+      saveStatus,
+    },
+  } = state.windowHandler;
+
   const docSummaryData =
-    documentSummaryElement &&
-    master.data[documentSummaryElement.fields[0].field];
+    documentSummaryElement && data[documentSummaryElement.fields[0].field];
 
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
-    indicator: state.windowHandler.indicator,
     docStatus: docActionElement,
     docSummaryData,
+    indicator,
+    saveStatus,
   };
 };
 

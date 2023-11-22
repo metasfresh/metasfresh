@@ -199,6 +199,14 @@
     background-color: $brand-font-color-danger;
 }
 
+.indicator-error-message {
+    color: $brand-font-color-danger;
+    height: 1.25em;
+    overflow: hidden;
+    white-space:nowrap;
+    text-overflow: ellipsis;
+}
+
 @keyframes indicator-pending {
     0% {
         width: 0%;

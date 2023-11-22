@@ -6,13 +6,20 @@ import React from 'react';
  * line beneath the Header.
  * @module Indicator
  */
-const Indicator = ({ indicator, isDocumentNotSaved }) => (
+const Indicator = ({ indicator, isDocumentNotSaved, error }) => (
   <div>
     <div
       className={`indicator-bar ${
         isDocumentNotSaved ? 'indicator-error' : ''
       } ${!isDocumentNotSaved ? `indicator-${indicator}` : ''}`}
     />
+    {error ? (
+      <div className="container-fluid indicator-error-message" title={error}>
+        {error}
+      </div>
+    ) : (
+      <div className="container-fluid indicator-error-message">&nbsp;</div>
+    )}
   </div>
 );
 
@@ -24,6 +31,7 @@ const Indicator = ({ indicator, isDocumentNotSaved }) => (
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
   isDocumentNotSaved: PropTypes.bool,
+  error: PropTypes.string,
 };
 
 export default Indicator;
