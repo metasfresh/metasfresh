@@ -23,6 +23,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
@@ -117,7 +118,7 @@ public final class ProductsProposalRowsLoader
 	private ProductsProposalRowsLoader(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
-			@NonNull final OrderProductProposalsService orderProductProposalsService,
+			@Nullable final OrderProductProposalsService orderProductProposalsService,
 			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
 			@Nullable final Order order,
@@ -213,7 +214,14 @@ public final class ProductsProposalRowsLoader
 		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.collect(ImmutableList.toImmutableList());
-		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+		if(order != null && orderProductProposalsService != null)
+		{
+			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+		}
+		else
+		{
+			bestMatchingProductPriceIdToOrderLine = ImmutableMap.of();
+		}
 		return productPrices
 				.stream()
 				.map(this::toProductsProposalRowOrNull)
@@ -225,7 +233,7 @@ public final class ProductsProposalRowsLoader
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final LookupValue product = productLookup.findById(productId);
-		if (!product.isActive())
+		if (product == null || !product.isActive())
 		{
 			return null;
 		}
