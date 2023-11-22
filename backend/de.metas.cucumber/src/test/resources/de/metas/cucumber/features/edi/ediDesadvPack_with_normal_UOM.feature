@@ -523,7 +523,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
-  Scenario: S0316_030 - 1 Pack from 1 line with HU for entire qty.
+  Scenario: 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU.
   in:
   C_OrderLine:
@@ -674,8 +674,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
-  @Id:S0316_030
-  Scenario: S0316_030 - 1 Pack from 1 line with HU for entire qty.
+  Scenario: 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU, even though QtyToDeliverCatch_Override is changed in the shipment schedule.
   in:
   C_OrderLine:
