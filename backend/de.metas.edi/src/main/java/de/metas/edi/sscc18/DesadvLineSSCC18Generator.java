@@ -231,6 +231,7 @@ public class DesadvLineSSCC18Generator
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(desadvLine.getInvoicableQtyBasedOn());
 		final List<I_M_InOutLine> lines = desadvBL.retrieveAllInOutLines(desadvLine);
+		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLine.getC_UOM_Invoice_ID());
 
 		final BigDecimal qtyCUPerTUinInvoiceUOM;
 		final BigDecimal qtyCUPerLUinInvoiceUOM;
@@ -245,9 +246,8 @@ public class DesadvLineSSCC18Generator
 			qtyCUPerTUinInvoiceUOM = qtyCUsPerTU.toBigDecimal().multiply(uomToStockRatio);
 			qtyCUPerLUinInvoiceUOM = qtyCUsPerLU.toBigDecimal().multiply(uomToStockRatio);
 		}
-		else
+		else if (invoiceUomId != null)
 		{
-			final UomId invoiceUomId = UomId.ofRepoId(desadvLine.getC_UOM_Invoice_ID());
 			final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
@@ -262,6 +262,11 @@ public class DesadvLineSSCC18Generator
 							conversionCtx,
 							invoiceUomId)
 					.toBigDecimal();
+		}
+		else
+		{
+			qtyCUPerTUinInvoiceUOM = null;
+			qtyCUPerLUinInvoiceUOM = null;
 		}
 
 		return CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()

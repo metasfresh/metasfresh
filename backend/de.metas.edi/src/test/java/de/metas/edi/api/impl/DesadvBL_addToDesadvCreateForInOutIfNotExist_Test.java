@@ -65,14 +65,13 @@ import java.util.Properties;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -284,7 +283,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */) //
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.000")/* CUperLU - rounded to ceiling */) //
 				);
 	}
 

@@ -320,7 +320,7 @@ public class EDIDesadvPackService
 			createEDIDesadvPackItemRequestBuilder.qtyTu(currentQtyTU.toBigDecimal().intValue());
 
 			final UomId packUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-			final UomId invoiceUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID());
+			final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
 
 			final BigDecimal movementQty = qtyCUsPerCurrentLU.getStockQty().toBigDecimal();
 
@@ -470,7 +470,7 @@ public class EDIDesadvPackService
 		}
 
 		final UomId stockUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-		final UomId invoiceUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID());
+		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
 
 		final BigDecimal movementQty = quantity.getStockQty().toBigDecimal();
 
@@ -514,7 +514,7 @@ public class EDIDesadvPackService
 			@NonNull final Quantity qtyCUsPerTUInStockUOM,
 			@NonNull final StockQtyAndUOMQty qtyCUsPerLU,
 			@NonNull final UomId packUomId,
-			@NonNull final UomId invoiceUomId,
+			@Nullable final UomId invoiceUomId,
 			@NonNull final BigDecimal movementQtyInStockUOM,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio)
@@ -564,7 +564,7 @@ public class EDIDesadvPackService
 			qtyCUPerTUinInvoiceUOM = qtyCUsPerTUInStockUOM.toBigDecimal().multiply(qtyCUsPerLU.getUOMToStockRatio());
 			qtyCUPerLUinInvoiceUOM = qtyCUsPerLU.getUOMQtyOpt().get().toBigDecimal();
 		}
-		else
+		else if (invoiceUomId != null)
 		{
 			qtyCUPerTUinInvoiceUOM = uomConversionBL.convertQuantityTo(
 							qtyCUsPerTUInStockUOM,
@@ -576,6 +576,11 @@ public class EDIDesadvPackService
 							conversionCtx,
 							invoiceUomId)
 					.toBigDecimal();
+		}
+		else
+		{
+			qtyCUPerTUinInvoiceUOM = null;
+			qtyCUPerLUinInvoiceUOM = null;
 		}
 
 		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(movementQtyInStockUOM);
