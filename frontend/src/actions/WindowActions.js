@@ -907,17 +907,19 @@ export function patch(
       ) {
         await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
-        const errorMessage = dataItem.validStatus.reason;
 
-        dispatch(
-          addNotification(
-            'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
-            errorMessage,
-            5000,
-            'error',
-            ''
-          )
-        );
+        // Don't show the notification because we are showing the error message in Indicator component
+
+        // const errorMessage = dataItem.validStatus.reason;
+        // dispatch(
+        //   addNotification(
+        //     'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
+        //     errorMessage,
+        //     5000,
+        //     'error',
+        //     ''
+        //   )
+        // );
       } else {
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
