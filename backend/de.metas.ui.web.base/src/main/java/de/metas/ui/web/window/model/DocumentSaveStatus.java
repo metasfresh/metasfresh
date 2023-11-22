@@ -1,15 +1,13 @@
 package de.metas.ui.web.window.model;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Trace;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -36,7 +34,6 @@ import java.util.Objects;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DocumentSaveStatus
 {
 	public static DocumentSaveStatus unknown()
@@ -56,14 +53,12 @@ public final class DocumentSaveStatus
 
 	public static DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
 	{
-		final String reason = invalidState.getReason();
-		return builder().hasChangesToBeSaved(true).error(false).reason(reason).build();
+		return builder().hasChangesToBeSaved(true).error(false).reason(invalidState.getReason()).exception(invalidState.getException()).build();
 	}
 
 	public static DocumentSaveStatus error(@NonNull final Exception exception)
 	{
-		final String reason = AdempiereException.extractMessage(exception);
-		return builder().hasChangesToBeSaved(true).error(true).reason(reason).exception(exception).build();
+		return builder().hasChangesToBeSaved(true).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
 	}
 
 	public static DocumentSaveStatus notSavedJustCreated()
@@ -76,28 +71,29 @@ public final class DocumentSaveStatus
 		return STATUS_SavedJustLoaded;
 	}
 
-	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason("not yet checked").build();
+	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("not yet checked")).build();
 	private static final DocumentSaveStatus STATUS_Saved = builder().hasChangesToBeSaved(false).error(false).build();
 	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).deleted(true).error(false).build();
-	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason("new").build();
-	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason("just loaded").build();
+	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("new")).build();
+	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason(TranslatableStrings.anyLanguage("just loaded")).build();
 
-	@JsonProperty("hasChanges") private final boolean hasChangesToBeSaved;
-	@JsonProperty("deleted") @Getter private final boolean deleted;
-	@JsonProperty("error") @Getter private final boolean error;
-	@JsonProperty("reason") @JsonInclude(JsonInclude.Include.NON_EMPTY) @Nullable @Getter private final String reason;
-	@JsonIgnore @Nullable private final transient Exception exception;
+	@Getter private final boolean hasChangesToBeSaved;
+	@Getter private final boolean deleted;
+	@Getter private final boolean error;
+	@Nullable @Getter private final ITranslatableString reason;
+	@Nullable @Getter private final transient Exception exception;
 
-	@JsonProperty("saved") @Getter private final boolean saved; // computed
+	@Getter private final boolean saved; // computed
 
-	private transient Integer _hashcode;
+	private transient Integer _hashcode; // lazy
+	private transient String _exceptionAsOneLineString; // lazy
 
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
 			final boolean deleted,
 			final boolean error,
-			@Nullable final String reason,
+			@Nullable final ITranslatableString reason,
 			@Nullable final Exception exception)
 	{
 		this.hasChangesToBeSaved = hasChangesToBeSaved;
@@ -187,7 +183,40 @@ public final class DocumentSaveStatus
 		}
 		else
 		{
-			throw new AdempiereException(reason);
+			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Error"));
 		}
+	}
+
+	public void throwIfNotSavedNorDelete()
+	{
+		if (isSavedOrDeleted())
+		{
+			return;
+		}
+
+		if (exception != null)
+		{
+			throw AdempiereException.wrapIfNeeded(exception);
+		}
+		else
+		{
+			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Not saved"));
+		}
+	}
+
+	@Nullable
+	public String getExceptionAsOneLineString()
+	{
+		if(exception == null)
+		{
+			return null;
+		}
+
+		String exceptionAsOneLineString = this._exceptionAsOneLineString;
+		if(exceptionAsOneLineString == null)
+		{
+			exceptionAsOneLineString = this._exceptionAsOneLineString = Trace.toOneLineStackTraceString(exception);
+		}
+		return exceptionAsOneLineString;
 	}
 }

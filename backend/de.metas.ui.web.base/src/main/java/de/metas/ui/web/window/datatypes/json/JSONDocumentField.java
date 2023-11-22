@@ -70,7 +70,7 @@ public final class JSONDocumentField
 				.setReadonly(field.getReadonly())
 				.setMandatory(field.getMandatory())
 				.setDisplayed(field.getDisplayed())
-				.setValidStatus(field.getValidStatus());
+				.setValidStatus(JSONDocumentValidStatus.of(field.getValidStatus(), jsonOpts));
 		if (field.isLookupValuesStale())
 		{
 			jsonField.setLookupValuesStale(true, null);
@@ -95,7 +95,7 @@ public final class JSONDocumentField
 				.setReadonly(parameter.getReadonly())
 				.setMandatory(parameter.getMandatory())
 				.setDisplayed(parameter.getDisplayed())
-				.setValidStatus(parameter.getValidStatus())
+				.setValidStatus(JSONDocumentValidStatus.of(parameter.getValidStatus(), jsonOpts))
 				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), jsonOpts.getAdLanguage()));
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -154,7 +154,7 @@ public final class JSONDocumentField
 		final DocumentValidStatus validStatus = event.getValidStatus();
 		if (validStatus != null)
 		{
-			jsonField.setValidStatus(validStatus);
+			jsonField.setValidStatus(JSONDocumentValidStatus.of(validStatus, jsonOpts));
 		}
 
 		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAdLanguage()));
@@ -165,6 +165,7 @@ public final class JSONDocumentField
 	}
 
 	@JsonProperty("field")
+	@Getter
 	private final String field;
 	public static final String FIELD_VALUE_ID = "ID";
 
@@ -218,7 +219,7 @@ public final class JSONDocumentField
 
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private DocumentValidStatus validStatus;
+	private JSONDocumentValidStatus validStatus;
 
 	@JsonProperty("viewEditorRenderMode")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -342,8 +343,7 @@ public final class JSONDocumentField
 
 	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
 	{
-		setDisplayed(displayed.booleanValue(), displayed.getName());
-		return this;
+		return setDisplayed(displayed.booleanValue(), displayed.getName());
 	}
 
 	public JSONDocumentField setDisplayed(final boolean displayed)
@@ -358,15 +358,10 @@ public final class JSONDocumentField
 		lookupValuesStaleReason = reason;
 	}
 
-	/* package */ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
+	/* package */ JSONDocumentField setValidStatus(final JSONDocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
 		return this;
-	}
-
-	public String getField()
-	{
-		return field;
 	}
 
 	@Nullable
