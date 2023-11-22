@@ -675,11 +675,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
   Scenario: 1 Pack from 1 line with HU for entire qty.
-  There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU, even though QtyToDeliverCatch_Override is changed in the shipment schedule.
+  There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU and then we use the QtyToDeliverCatch_Override for the remaining qty
   in:
   C_OrderLine:
-  - QtyEntered = 10
+  - QtyEntered = 15
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
+  - Weight = 0.25 KGM
 
     Given metasfresh contains M_Products:
       | Identifier     | Name                            | OPT.Weight |
