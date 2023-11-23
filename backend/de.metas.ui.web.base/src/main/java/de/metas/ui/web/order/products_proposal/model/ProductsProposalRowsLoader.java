@@ -225,7 +225,7 @@ public final class ProductsProposalRowsLoader
 		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.collect(ImmutableList.toImmutableList());
-		if(order != null && orderProductProposalsService != null)
+		if (order != null && orderProductProposalsService != null)
 		{
 			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
 		}
@@ -270,12 +270,10 @@ public final class ProductsProposalRowsLoader
 				.seqNo(record.getSeqNo())
 				.productPriceId(productPriceId);
 
-
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
 
 		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
 				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
-
 
 		return rowBuilder
 				.build()
