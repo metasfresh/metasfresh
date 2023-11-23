@@ -87,3 +87,110 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
     uomEffective,
   };
 };
+
+export const roundToQtyPrecision = (
+  qty = { qty: undefined, uom: undefined },
+  roundToQty = { qty: undefined, uom: undefined }
+) => {
+  if (!qty.qty || !qty.uom || !roundToQty.qty || !roundToQty.uom) {
+    return qty;
+  }
+
+  const roundToQtyConverted = convertToQtyUOM(roundToQty, qty.uom);
+
+  const decimalAdjustment = Math.pow(
+    10,
+    Math.max(getNumberOfDecimalsOrZero(roundToQtyConverted.qty), getNumberOfDecimalsOrZero(qty.qty), 1)
+  );
+  const adjustedQty = qty.qty * decimalAdjustment;
+  const adjustedRoundToQty = roundToQtyConverted.qty * decimalAdjustment;
+
+  return ((Math.round(adjustedQty / adjustedRoundToQty) * adjustedRoundToQty) / decimalAdjustment).toFixed(
+    getNumberOfDecimalsOrZero(qty.qty)
+  );
+};
+
+const convertToQtyUOM = (qtyToConvert = { qty: undefined, uom: undefined }, targetUom) => {
+  if (!targetUom) {
+    return qtyToConvert;
+  }
+
+  if (!qtyToConvert || !qtyToConvert.uom || !qtyToConvert.qty) {
+    return undefined;
+  }
+
+  const convertedValue = qtyToConvert.qty * getConversionRate(qtyToConvert.uom, targetUom);
+  return { qty: convertedValue, uom: targetUom };
+};
+
+const getConversionRate = (source, target) => {
+  switch (source) {
+    case 'mg':
+      return getConversionRateFromMg(target);
+    case 'GRM':
+    case 'g':
+      return getConversionRateFromGram(target);
+    case 'kg':
+      return getConversionRateFromKg(target);
+    default:
+      throw new Error('No ConversionRate available!');
+  }
+};
+
+const getConversionRateFromMg = (targetUOM) => {
+  switch (targetUOM) {
+    case 'mg':
+      return 1;
+    case 'GRM':
+    case 'g':
+      return 1 / 1000;
+    case 'kg':
+      return 1 / (1000 * 1000);
+    default:
+      throw new Error('No ConversionRate available!');
+  }
+};
+
+const getConversionRateFromGram = (targetUOM) => {
+  switch (targetUOM) {
+    case 'mg':
+      return 1000;
+    case 'GRM':
+    case 'g':
+      return 1;
+    case 'kg':
+      return 1 / 1000;
+    default:
+      throw new Error('No ConversionRate available!');
+  }
+};
+
+const getConversionRateFromKg = (targetUOM) => {
+  switch (targetUOM) {
+    case 'mg':
+      return 1000 * 1000;
+    case 'GRM':
+    case 'g':
+      return 1000;
+    case 'kg':
+      return 1;
+    default:
+      throw new Error('No ConversionRate available!');
+  }
+};
+
+const getNumberOfDecimalsOrZero = (numberArg) => {
+  if (!numberArg) {
+    return 0;
+  }
+
+  const numberParts = numberArg.toString().split('.');
+
+  if (numberParts.length === 1) {
+    return 0;
+  } else if (numberParts.length === 2) {
+    return numberParts[1].length;
+  } else {
+    return 0;
+  }
+};

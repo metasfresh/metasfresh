@@ -41,13 +41,19 @@ public class JsonQuantity
 			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	String uomCode;
 
+	@ApiModelProperty(position = 30, required = false, //
+			value = "Unit of measurement symbol; this translates to `C_UOM.UOMSymbol`.")
+	String uomSymbol;
+
 	@JsonCreator
 	@Builder
 	private JsonQuantity(
 			@JsonProperty("qty") @NonNull final BigDecimal qty,
-			@JsonProperty("uomCode") @NonNull final String uomCode)
+			@JsonProperty("uomCode") @NonNull final String uomCode,
+			@JsonProperty("uomSymbol") @NonNull final String uomSymbol)
 	{
 		this.qty = qty;
 		this.uomCode = uomCode;
+		this.uomSymbol = uomSymbol;
 	}
 }

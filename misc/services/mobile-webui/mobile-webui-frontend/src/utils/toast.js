@@ -31,7 +31,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   }
 
   console.trace('toast error: ', { message, axiosError });
-  toast(message, { type: 'error', style: { color: 'white' } });
+  toast(message, { type: 'error', style: { color: 'white' }, duration: 100000 });
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {

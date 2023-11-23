@@ -27,6 +27,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -57,6 +59,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -109,6 +112,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -663,4 +669,29 @@ public class PPOrderBL implements IPPOrderBL
 				});
 	}
 
+	@NonNull
+	public Optional<Quantity> getRoundingToScale(@NonNull final PPOrderId ppOrderId)
+	{
+		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+
+		return Optional.ofNullable(getById(ppOrderId).getCurrentScaleDeviceId())
+				.map(DeviceId::ofString)
+				.flatMap(deviceAccessorsHubFactory::getDeviceAccessorById)
+				.map(deviceAccessor -> {
+					final BigDecimal roundingToScale = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+							.map(BigDecimal::new)
+							.orElse(null);
+					final UomId roundingToScaleUomId = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.map(Integer::parseInt)
+							.map(UomId::ofRepoId)
+							.orElse(null);
+
+					if (roundingToScale == null || roundingToScaleUomId == null)
+					{
+						return null;
+					}
+
+					return Quantitys.create(roundingToScale, roundingToScaleUomId);
+				});
+	}
 }
