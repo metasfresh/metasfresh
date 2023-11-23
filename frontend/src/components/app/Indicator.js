@@ -37,7 +37,7 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
   return (
     <div className="window-indicator-container">
       <div className={cx('bar', indicatorEffective)} />
-      {error ? (
+      {indicatorEffective === 'error' && error ? (
         <div className="container-fluid message-bar" title={error}>
           <span className="text">{error}</span>
           <button
