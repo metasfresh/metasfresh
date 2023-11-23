@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -122,9 +123,12 @@ public class ReportResultData
 
 	public Path writeToDirectory(@NonNull final Path directory)
 	{
-		final String ext = MimeType.getExtensionByType(reportContentType);
-		final String fileName = "Report_" + System.currentTimeMillis() + ext;
-		final Path file = directory.resolve(fileName);
+		final Path file = FileUtil.findNotExistingFile(directory, getReportFilename(), 200)
+				.orElseGet(() -> {
+					final String extWithDot = MimeType.getExtensionByType(reportContentType);
+					final String fileBaseName = FileUtil.getFileBaseName(getReportFilename());
+					return directory.resolve(fileBaseName + "_" + SystemTime.millis() + extWithDot);
+				});
 
 		try
 		{

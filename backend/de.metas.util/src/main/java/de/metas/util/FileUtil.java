@@ -35,6 +35,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 @UtilityClass
 public final class FileUtil
@@ -153,7 +156,7 @@ public final class FileUtil
 	/**
 	 * Change file's extension.
 	 *
-	 * @param filename filename or URL
+	 * @param filename  filename or URL
 	 * @param extension file extension to be used (with or without dot); in case the extension is null then it won't be appended so only the basename will be returned
 	 * @return filename with new file extension or same filename if the filename does not have an extension
 	 */
@@ -252,5 +255,21 @@ public final class FileUtil
 		}
 
 		return sb.toString();
+	}
+
+	public static Optional<Path> findNotExistingFile(@NonNull Path directory, @NonNull final String desiredFilename, final int tries)
+	{
+		final String fileBaseNameInitial = getFileBaseName(desiredFilename);
+		final String ext = StringUtils.trimBlankToNull(getFileExtension(desiredFilename));
+		Path file = directory.resolve(desiredFilename);
+		for (int i = 1; Files.exists(file) && i <= tries; i++)
+		{
+			final String newFilename = fileBaseNameInitial
+					+ "_" + (tries + 1)
+					+ (ext != null ? "." + ext : "");
+			file = directory.resolve(newFilename);
+		}
+
+		return !Files.exists(file) ? Optional.of(file) : Optional.empty();
 	}
 }
