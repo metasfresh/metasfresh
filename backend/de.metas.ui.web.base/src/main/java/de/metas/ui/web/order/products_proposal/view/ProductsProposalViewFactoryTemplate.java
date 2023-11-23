@@ -131,7 +131,7 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 				.load();
 	}
 
-	private final TableRecordReference getRecordReference(final CreateViewRequest request)
+	private TableRecordReference getRecordReference(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = request.getParameterAs(PARAM_RecordRef, TableRecordReference.class);
 		if (recordRef == null)

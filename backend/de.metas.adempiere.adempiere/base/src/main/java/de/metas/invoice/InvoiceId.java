@@ -44,6 +44,7 @@ public class InvoiceId implements RepoIdAware
 		return new InvoiceId(repoId);
 	}
 
+	@Nullable
 	public static InvoiceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InvoiceId(repoId) : null;
