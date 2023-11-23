@@ -38,7 +38,6 @@ import java.util.Optional;
 public interface LookupDataSource extends LookupValueByIdSupplier
 {
 	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
 
 	LookupValuesPage findEntities(Evaluatee ctx, int pageLength);
 
@@ -46,7 +45,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	default LookupValuesPage findEntities(final Evaluatee ctx, final String filter)
 	{
-		return findEntities(ctx, filter, FIRST_ROW, DEFAULT_PageLength);
+		return findEntities(ctx, filter, FIRST_ROW, -1);
 	}
 
 	/**
