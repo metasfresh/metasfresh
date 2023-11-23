@@ -262,10 +262,10 @@ public final class FileUtil
 		final String fileBaseNameInitial = getFileBaseName(desiredFilename);
 		final String ext = StringUtils.trimBlankToNull(getFileExtension(desiredFilename));
 		Path file = directory.resolve(desiredFilename);
-		for (int i = 1; Files.exists(file) && i <= tries; i++)
+		for (int i = 1; Files.exists(file) && i <= tries - 1; i++)
 		{
 			final String newFilename = fileBaseNameInitial
-					+ "_" + (tries + 1)
+					+ "_" + (i + 1)
 					+ (ext != null ? "." + ext : "");
 			file = directory.resolve(newFilename);
 		}
