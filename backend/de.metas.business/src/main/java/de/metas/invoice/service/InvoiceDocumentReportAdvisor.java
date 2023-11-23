@@ -102,7 +102,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()))
-				.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+				.docTypeId(docTypeId)
 				.onlyCopiesGreaterZero(true)
 				.build();
 
