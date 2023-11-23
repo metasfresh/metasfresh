@@ -122,7 +122,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 
 		if (getSelectedRowIds().isMoreThanOneDocumentId()
-	        ||  getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId() )
+				|| getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId())
 		{
 			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
 		}
@@ -172,11 +172,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 	protected final void printPickingLabelIfAutoPrint(@NonNull final HuId huId)
 	{
 		huLabelService.print(HULabelPrintRequest.builder()
-				.sourceDocType(HULabelSourceDocType.Picking)
-				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
-				.onlyIfAutoPrint(true)
-				.failOnMissingLabelConfig(false)
-				.build());
+									 .sourceDocType(HULabelSourceDocType.Picking)
+									 .hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+									 .onlyIfAutoPrint(true)
+									 .failOnMissingLabelConfig(false)
+									 .build());
 	}
 
 	@NonNull
@@ -202,9 +202,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
-				productId,
-				Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule),
-				true); // includeVirtualItem = true..similar case as with production
+															productId,
+															Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule),
+															true); // includeVirtualItem = true..similar case as with production
 	}
 
 	@Override

@@ -171,8 +171,8 @@ public class PackingInfoProcessParams
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
-				null, // huUnitType
-				bpartnerId);
+																 null, // huUnitType
+																 bpartnerId);
 	}
 
 	public I_M_HU_LUTU_Configuration getDefaultLUTUConfig()
@@ -237,8 +237,8 @@ public class PackingInfoProcessParams
 				false); // includeVirtualItem == false
 
 		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
-				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
-				productId, bpartnerId);
+					  "There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
+					  productId, bpartnerId);
 
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());

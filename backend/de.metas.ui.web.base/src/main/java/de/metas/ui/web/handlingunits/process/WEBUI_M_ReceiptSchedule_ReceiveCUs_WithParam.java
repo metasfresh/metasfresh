@@ -71,11 +71,11 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 	{
 		return getRecord(I_M_ReceiptSchedule.class);
 	}
-	
+
 	@Override
 	protected Quantity getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
 	{
-		if(p_QtyCUsPerTU == null || p_QtyCUsPerTU.signum() <= 0)
+		if (p_QtyCUsPerTU == null || p_QtyCUsPerTU.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
