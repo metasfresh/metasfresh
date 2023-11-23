@@ -1136,7 +1136,7 @@ public final class Document
 			_saveStatusOnCheckout = saveStatus;
 		}
 
-		if (!isInitializingNewDocument() && !NullDocumentChangesCollector.isNull(changesCollector) && !saveStatus.equalsIgnoreReason(saveStatusOnCheckoutOld))
+		if (!isInitializingNewDocument() && !NullDocumentChangesCollector.isNull(changesCollector) && !Objects.equals(saveStatus, saveStatusOnCheckoutOld))
 		{
 			changesCollector.collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
 		}
@@ -1386,6 +1386,7 @@ public final class Document
 			changesCollector.collectReadonlyIfChanged(documentField, readonlyOld, reason);
 		}
 	}
+
 	@Nullable
 	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
@@ -1709,8 +1710,7 @@ public final class Document
 			return defaultValue;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)valueObj;
+		@SuppressWarnings("unchecked") final T value = (T)valueObj;
 		return value;
 	}
 

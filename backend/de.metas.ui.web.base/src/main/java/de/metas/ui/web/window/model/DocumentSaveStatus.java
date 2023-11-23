@@ -4,13 +4,12 @@ import com.google.common.base.MoreObjects;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Trace;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /*
  * #%L
@@ -34,6 +33,7 @@ import java.util.Objects;
  * #L%
  */
 
+@EqualsAndHashCode
 public final class DocumentSaveStatus
 {
 	public static DocumentSaveStatus unknown()
@@ -85,9 +85,6 @@ public final class DocumentSaveStatus
 
 	@Getter private final boolean saved; // computed
 
-	private transient Integer _hashcode; // lazy
-	private transient String _exceptionAsOneLineString; // lazy
-
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
@@ -116,52 +113,6 @@ public final class DocumentSaveStatus
 				.add("error", error)
 				.add("reason", reason)
 				.toString();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		Integer hashcode = this._hashcode;
-		if (hashcode == null)
-		{
-			hashcode = this._hashcode = Objects.hash(hasChangesToBeSaved, error, reason, exception);
-		}
-		return hashcode;
-	}
-
-	@Override
-	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-	public boolean equals(final Object obj)
-	{
-		final boolean ignoreReason = false;
-		return equals(obj, ignoreReason);
-	}
-
-	public boolean equalsIgnoreReason(final Object obj)
-	{
-		final boolean ignoreReason = true;
-		return equals(obj, ignoreReason);
-	}
-
-	private boolean equals(final Object obj, final boolean ignoreReason)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		if (!(obj instanceof DocumentSaveStatus))
-		{
-			return false;
-		}
-
-		final DocumentSaveStatus other = (DocumentSaveStatus)obj;
-		return hasChangesToBeSaved == other.hasChangesToBeSaved
-				&& deleted == other.deleted
-				&& error == other.error
-				&& (ignoreReason || Objects.equals(reason, other.reason))
-				&& (ignoreReason || Objects.equals(exception, other.exception))
-				;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -202,21 +153,5 @@ public final class DocumentSaveStatus
 		{
 			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Not saved"));
 		}
-	}
-
-	@Nullable
-	public String getExceptionAsOneLineString()
-	{
-		if(exception == null)
-		{
-			return null;
-		}
-
-		String exceptionAsOneLineString = this._exceptionAsOneLineString;
-		if(exceptionAsOneLineString == null)
-		{
-			exceptionAsOneLineString = this._exceptionAsOneLineString = Trace.toOneLineStackTraceString(exception);
-		}
-		return exceptionAsOneLineString;
 	}
 }
