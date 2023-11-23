@@ -71,7 +71,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	}
 
 	@Override
-	protected ViewLayout createViewLayout(ViewLayoutKey key)
+	protected ViewLayout createViewLayout(final ViewLayoutKey key)
 	{
 		final ITranslatableString caption = getProcessCaption(WEBUI_BPartner_ProductsProposal_Launcher.class)
 				.orElse(null);
@@ -87,7 +87,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	}
 
 	@Override
-	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(TableRecordReference recordRef)
+	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(final TableRecordReference recordRef)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
