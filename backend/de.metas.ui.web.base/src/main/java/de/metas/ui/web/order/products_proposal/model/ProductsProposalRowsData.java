@@ -102,7 +102,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
-			@NonNull final OrderProductProposalsService orderProductProposalsService,
+			@Nullable final OrderProductProposalsService orderProductProposalsService,
 			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
@@ -234,8 +234,15 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		final List<ProductPriceId> productPriceIds = requests.stream()
 				.map(request -> request.getCopiedFromProductPriceId())
 				.collect(ImmutableList.toImmutableList());
+		if(order.isPresent() && orderProductProposalsService != null)
+		{
+			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPricesId(order.get(), productPriceIds);
+		}
+		else
+		{
+			bestMatchingProductPriceIdToOrderLine = ImmutableMap.of();
+		}
 
-		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPricesId(getOrder().orElse(null), productPriceIds);
 		requests.forEach(this::addOrUpdateRow);
 	}
 

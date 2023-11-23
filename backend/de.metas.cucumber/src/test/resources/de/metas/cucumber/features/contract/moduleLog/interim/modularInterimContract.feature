@@ -176,9 +176,9 @@ Feature: Interim contract and interim invoice for bpartner
       | receiptSchedule_PO_16082023_2   | po_order_1            | po_orderLine_2            | bp_interimPO             | bp_interimPO_Location_1           | module_log_product_PO_2 | 500        | warehouseStd              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100   | huItemPurchaseProduct_1            | huPackingLU                  |
-      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50    | huItemPurchaseProduct_2            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100         | huItemPurchaseProduct_1            | huPackingLU                  |
+      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50          | huItemPurchaseProduct_2            | huPackingLU                  |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -437,9 +437,9 @@ Feature: Interim contract and interim invoice for bpartner
       | receiptSchedule_PO_16082023_2   | po_order_1            | po_orderLine_2            | bp_interimPO             | bp_interimPO_Location_2           | module_log_product_PO_2 | 500        | warehouseStd              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100   | huItemPurchaseProduct_1            | huPackingLU                  |
-      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50    | huItemPurchaseProduct_2            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100         | huItemPurchaseProduct_1            | huPackingLU                  |
+      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50          | huItemPurchaseProduct_2            | huPackingLU                  |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -643,9 +643,9 @@ Feature: Interim contract and interim invoice for bpartner
       | receiptSchedule_PO_16082023_2   | po_order_1            | po_orderLine_2            | bp_interimPO             | bp_interimPO_Location             | module_log_product_PO_2 | 500        | warehouseStd              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100   | huItemPurchaseProduct_1            | huPackingLU                  |
-      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50    | huItemPurchaseProduct_2            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100         | huItemPurchaseProduct_1            | huPackingLU                  |
+      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50          | huItemPurchaseProduct_2            | huPackingLU                  |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |

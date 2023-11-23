@@ -87,9 +87,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
-	protected static final String PARAM_QTY_CU = "QtyCU";
-	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
-	protected BigDecimal qtyCU;
+	protected static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
+	protected BigDecimal qtyCUsPerTU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -139,7 +139,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	protected Quantity getQtyToPack()
 	{
 		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
-		return Quantity.of(qtyCU, uom);
+		return Quantity.of(qtyCUsPerTU, uom);
 	}
 
 	@Override
@@ -172,11 +172,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 	protected final void printPickingLabelIfAutoPrint(@NonNull final HuId huId)
 	{
 		huLabelService.print(HULabelPrintRequest.builder()
-				.sourceDocType(HULabelSourceDocType.Picking)
-				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
-				.onlyIfAutoPrint(true)
-				.failOnMissingLabelConfig(false)
-				.build());
+									 .sourceDocType(HULabelSourceDocType.Picking)
+									 .hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+									 .onlyIfAutoPrint(true)
+									 .failOnMissingLabelConfig(false)
+									 .build());
 	}
 
 	@NonNull
@@ -202,15 +202,15 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
-				productId,
-				Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule),
-				true); // includeVirtualItem = true..similar case as with production
+															productId,
+															Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule),
+															true); // includeVirtualItem = true..similar case as with production
 	}
 
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QtyCUsPerTU, parameter.getColumnName()))
 		{
 			return retrieveQtyToPick().toBigDecimal();
 		}

@@ -573,7 +573,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setM_Product_ID(data.helper.pSalad.getM_Product_ID()); // differs from real world
 		lutuConfiguration.setC_UOM_ID(data.helper.uomEach.getC_UOM_ID());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
-		lutuConfiguration.setQtyCU(new BigDecimal("252"));
+		lutuConfiguration.setQtyCUsPerTU(new BigDecimal("252"));
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
 		lutuConfiguration.setM_Locator_ID(l.getM_Locator_ID());
 		lutuConfiguration.setC_BPartner_ID(bpartner.getC_BPartner_ID());

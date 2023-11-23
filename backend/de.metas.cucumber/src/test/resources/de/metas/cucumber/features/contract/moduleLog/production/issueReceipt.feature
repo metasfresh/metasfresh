@@ -133,8 +133,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | createdCU          | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-03-31T13:30:13Z |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | receiptTU          | N               | 0     | N               | 1     | N               | 10    | huProductTU                        |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppOrder_manufacturing  | receiptTU          | N               | 0     | N               | 1     | N               | 10          | huProductTU                        |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |

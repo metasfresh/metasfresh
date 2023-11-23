@@ -64,7 +64,7 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 	//
 	private static final String PARAM_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
 	//
-	private static final String PARAM_QtyCU = "QtyCU";
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
 	//
 	private static final String PARAM_QtyTU = "QtyTU";
 	//
@@ -79,7 +79,7 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 	private int p_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
 	private int p_M_LU_HU_PI_ID;
-	@Param(parameterName = PARAM_QtyCU)
+	@Param(parameterName = PARAM_QtyCUsPerTU)
 	private BigDecimal p_QtyCU;
 	@Param(parameterName = PARAM_QtyTU)
 	private BigDecimal p_QtyTU;
@@ -95,8 +95,8 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 				return getDefaultLUTUConfiguration().getM_HU_PI_Item_Product_ID();
 			case PARAM_M_LU_HU_PI_ID:
 				return getDefaultLUTUConfiguration().getM_LU_HU_PI_ID();
-			case PARAM_QtyCU:
-				return getDefaultLUTUConfiguration().getQtyCU();
+			case PARAM_QtyCUsPerTU:
+				return getDefaultLUTUConfiguration().getQtyCUsPerTU();
 			case PARAM_QtyTU:
 				return getDefaultLUTUConfiguration().getQtyTU();
 			case PARAM_QtyLU:
@@ -173,7 +173,7 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 		}
 		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCU);
+			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
 		if (qtyTU == null || qtyTU.signum() <= 0)
 		{
@@ -188,7 +188,7 @@ public class WEBUI_M_HU_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcess
 				.baseLUTUConfiguration(template)
 				.qtyLU(qtyLU)
 				.qtyTU(qtyTU)
-				.qtyCU(qtyCU)
+				.qtyCUsPerTU(qtyCU)
 				.tuHUPIItemProductID(M_HU_PI_Item_Product_ID)
 				.luHUPIID(M_LU_HU_PI_ID)
 				.build();

@@ -96,9 +96,9 @@ Feature: accounting-purchase-harvesting-feature
       | receiptSchedule_06082023_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
       | receiptSchedule_06082023_2      | o_1                   | ol_2                      | endvendor_1              | l_1                               | p_2                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_06082023_1      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
-      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_06082023_2      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_06082023_1      | N               | 1     | N               | 1     | N               | 10          | huItemPurchaseProduct              | huPackingLU                  |
+      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_06082023_2      | N               | 1     | N               | 1     | N               | 10          | huItemPurchaseProduct              | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_1   | receiptSchedule_06082023_1      | inOut_210320222_1     |
@@ -248,9 +248,9 @@ Feature: accounting-purchase-harvesting-feature
       | receiptSchedule_05072023_2      | po_order              | po_orderLine_2            | bp_po                    | bp_moduleLogMR_Location           | product_PO_05082023_2   | 500        | warehouseStd              | moduleLogContract_2               |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000  | huItemPOProduct                    | huPackingLU                  |
-      | huLuTuConfig_2                        | hu_2               | receiptSchedule_05072023_2      | N               | 1     | N               | 1     | N               | 500   | huItemMRProduct                    | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000        | huItemPOProduct                    | huPackingLU                  |
+      | huLuTuConfig_2                        | hu_2               | receiptSchedule_05072023_2      | N               | 1     | N               | 1     | N               | 500         | huItemMRProduct                    | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_1               | receiptSchedule_05072023_1      | material_receipt_1    |

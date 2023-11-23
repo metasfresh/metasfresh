@@ -208,8 +208,8 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppo_1                  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10    | huItemManufacturingProduct         |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppo_1                  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
@@ -1957,9 +1957,9 @@ Feature: create production order
   @ignore # flaky
   Scenario:  The manufacturing order is created with Lot for Lot
     Given metasfresh contains M_Products:
-      | Identifier | Name                                  | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_27042023_4             | standard_category                    |
-      | p_2        | trackedProduct__component 27042023_4  | standard_category                    |
+      | Identifier | Name                                 | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | trackedProduct_27042023_4            | standard_category                    |
+      | p_2        | trackedProduct__component 27042023_4 | standard_category                    |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -2130,8 +2130,8 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppo_1                  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10    | huItemManufacturingProduct         |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppo_1                  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
