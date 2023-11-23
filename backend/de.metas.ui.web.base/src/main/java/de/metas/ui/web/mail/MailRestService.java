@@ -74,15 +74,19 @@ public class MailRestService
 				.roleId(userSession.getLoggedRoleId())
 				.build();
 
-		final ReportResultData contextDocumentPrint = documentPrintService.createDocumentPrint(printRequest);
+		final Stream<EmailAttachment> emailAttachments = documentPrintService.createDocumentPrint(printRequest)
+				.map(MailRestService::toEmailAttachment).stream();
 
-		final EmailAttachment attachmentToPrint = EmailAttachment.builder()
+		return Stream.concat(emailAttachments, attachmentEntryService.streamEmailAttachments(recordRef, tagName))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static EmailAttachment toEmailAttachment(final ReportResultData contextDocumentPrint)
+	{
+		return EmailAttachment.builder()
 				.filename(contextDocumentPrint.getReportFilename())
 				.attachmentDataSupplier(contextDocumentPrint::getReportDataByteArray)
 				.build();
-
-		return Stream.concat(Stream.of(attachmentToPrint), attachmentEntryService.streamEmailAttachments(recordRef, tagName))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
 	}
 }
