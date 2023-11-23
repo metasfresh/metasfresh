@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -50,7 +51,7 @@ public class JsonQuantity
 	private JsonQuantity(
 			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("uomCode") @NonNull final String uomCode,
-			@JsonProperty("uomSymbol") @NonNull final String uomSymbol)
+			@JsonProperty("uomSymbol") @Nullable final String uomSymbol)
 	{
 		this.qty = qty;
 		this.uomCode = uomCode;
