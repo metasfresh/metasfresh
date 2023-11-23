@@ -1782,7 +1782,7 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument(), onValidStatusChanged);
+				return setValidStatusAndReturn(validState, onValidStatusChanged);
 			}
 		}
 
