@@ -338,7 +338,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (reportResultDataTarget.isSaveToServerDirectory())
 		{
 			final Path targetFile = reportData.writeToDirectory(reportResultDataTarget.getServerTargetDirectoryNotNull());
-			getResult().addLog(getProcessInfo().getPinstanceId(), null, new BigDecimal(pi.getAdProcessId().getRepoId()), String.valueOf(targetFile));
+			addLog(getProcessInfo().getPinstanceId().getRepoId(), null, new BigDecimal(pi.getAdProcessId().getRepoId()), String.valueOf(targetFile));
 		}
 		if (!reportResultDataTarget.isForwardToUserBrowser())
 		{
