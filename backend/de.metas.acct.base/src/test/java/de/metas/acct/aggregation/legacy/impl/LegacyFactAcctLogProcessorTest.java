@@ -1,8 +1,29 @@
-package de.metas.acct.aggregation.impl;
+/*
+ * #%L
+ * de.metas.acct.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import de.metas.acct.aggregation.IFactAcctLogBL;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
+package de.metas.acct.aggregation.legacy.impl;
+
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
+import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.I_Fact_Acct_Log;
@@ -25,34 +46,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-/*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @ExtendWith(AdempiereTestWatcher.class)
-public class FactAcctLogBLTest
+public class LegacyFactAcctLogProcessorTest
 {
 	// services
-	private IFactAcctLogBL factAcctLogBL;
-	private FactAcctLogDAO factAcctLogDAO;
+	private LegacyFactAcctLogDAO legacyFactAcctLogDAO;
 
 	private static final AcctSchemaId C_AcctSchema_ID1 = AcctSchemaId.ofRepoId(1);
 	private final ElementValueId C_ElementValue_ID1 = ElementValueId.ofRepoId(1);
@@ -67,8 +65,7 @@ public class FactAcctLogBLTest
 		AdempiereTestHelper.get().init();
 		Env.setClientId(Env.getCtx(), ClientId.ofRepoId(10));
 
-		factAcctLogBL = Services.get(IFactAcctLogBL.class);
-		factAcctLogDAO = (FactAcctLogDAO)Services.get(IFactAcctLogDAO.class);
+		legacyFactAcctLogDAO = (LegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
 
 		// Master data:
 		final I_C_Year year2014 = FactAcctLogBLTestHelper.createYear(2014);
@@ -200,34 +197,34 @@ public class FactAcctLogBLTest
 		;
 	}
 
-	private void assertEquals(String description, int expected, int actual)
+	private void assertEquals(final String description, final int expected, final int actual)
 	{
 		assertThat(actual).as(description).isEqualTo(expected);
 	}
 
 	private void assertHasLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(legacyFactAcctLogDAO.hasLogs(Env.getCtx(), ILegacyFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isTrue();
 	}
 
 	private void assertNoLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(legacyFactAcctLogDAO.hasLogs(Env.getCtx(), ILegacyFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isFalse();
 	}
 
 	private void processAllLogs()
 	{
-		factAcctLogBL.processAll(Env.getCtx(), QueryLimit.NO_LIMIT);
+		new LegacyFactAcctLogProcessor().processAll(QueryLimit.NO_LIMIT);
 		assertNoLogs();
 	}
 
 	private List<I_Fact_Acct_Summary> retrieveAllFactAcctSummariesFor(final IFactAcctSummaryKey key)
 	{
-		return factAcctLogDAO.createFactAcctSummaryQueryForKeyNoDateAcct(Env.getCtx(), key)
+		return legacyFactAcctLogDAO.createFactAcctSummaryQueryForKeyNoDateAcct(Env.getCtx(), key)
 				.orderBy()
 				.addColumn(I_Fact_Acct_Summary.COLUMN_DateAcct)
 				.endOrderBy()
