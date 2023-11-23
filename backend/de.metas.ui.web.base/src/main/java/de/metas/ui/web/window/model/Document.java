@@ -1092,10 +1092,8 @@ public final class Document
 		return _valid;
 	}
 
-	private DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
+	private DocumentValidStatus setValidStatusAndReturn(@NonNull final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
 	{
-		Preconditions.checkNotNull(valid, "valid"); // shall not happen
-
 		// Don't check if changed because we want ALWAYS to collect the valid status
 		// final DocumentValidStatus validOld = _valid;
 		// if (Objects.equals(validOld, valid))
