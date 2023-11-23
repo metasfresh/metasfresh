@@ -106,7 +106,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()))
-				.docTypeId(DocTypeId.ofRepoId(order.getC_DocType_ID()))
+				.docTypeId(extractDocTypeId(order))
 				.onlyCopiesGreaterZero(true)
 				.build();
 
