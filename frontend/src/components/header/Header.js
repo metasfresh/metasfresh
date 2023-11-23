@@ -346,7 +346,7 @@ class Header extends PureComponent {
    * @param {string} docNo
    */
   handlePrint = async (windowId, docId, docNo) => {
-    const { dispatch, viewId } = this.props;
+    const { dispatch } = this.props;
 
     try {
       const response = await getPrintingOptions({
@@ -959,6 +959,7 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  saveStatus: PropTypes.object,
   hasComments: PropTypes.bool,
 };
 
