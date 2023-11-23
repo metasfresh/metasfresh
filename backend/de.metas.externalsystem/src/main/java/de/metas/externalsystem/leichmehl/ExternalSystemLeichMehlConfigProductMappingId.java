@@ -37,20 +37,17 @@ public class ExternalSystemLeichMehlConfigProductMappingId implements RepoIdAwar
 {
 	int repoId;
 
-	@NonNull
-	ExternalSystemLeichMehlConfigId leichMehlConfigId;
-
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoId(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemLeichMehlConfigProductMappingId(leichMehlConfigId, repoId);
+		return new ExternalSystemLeichMehlConfigProductMappingId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoIdOrNull(@Nullable final ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoIdOrNull(final Integer repoId)
 	{
-		return leichMehlConfigId != null && repoId > 0 ? new ExternalSystemLeichMehlConfigProductMappingId(leichMehlConfigId, repoId) : null;
+		return repoId != null && repoId > 0 ? new ExternalSystemLeichMehlConfigProductMappingId(repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final ExternalSystemLeichMehlConfigProductMappingId configProductMappingId)
@@ -58,10 +55,9 @@ public class ExternalSystemLeichMehlConfigProductMappingId implements RepoIdAwar
 		return configProductMappingId != null ? configProductMappingId.getRepoId() : -1;
 	}
 
-	private ExternalSystemLeichMehlConfigProductMappingId(final @NonNull ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	private ExternalSystemLeichMehlConfigProductMappingId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ProductMapping_ID);
-		this.leichMehlConfigId = leichMehlConfigId;
 	}
 
 	@Override

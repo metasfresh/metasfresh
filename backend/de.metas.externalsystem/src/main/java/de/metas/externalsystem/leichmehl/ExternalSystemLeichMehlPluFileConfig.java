@@ -38,7 +38,7 @@ public class ExternalSystemLeichMehlPluFileConfig
 	ExternalSystemLeichMehlPluFileConfigId id;
 
 	@NonNull
-	ExternalSystemLeichMehlConfigId leichMehlConfigId;
+	LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId;
 
 	@NonNull
 	String targetFieldName;
@@ -58,7 +58,7 @@ public class ExternalSystemLeichMehlPluFileConfig
 	@Builder
 	public ExternalSystemLeichMehlPluFileConfig(
 			@NonNull final ExternalSystemLeichMehlPluFileConfigId id,
-			@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId,
+			@NonNull final LeichMehlPluFileConfigGroupId leichMehlPluFileConfigGroupId,
 			@NonNull final String targetFieldName,
 			@NonNull final TargetFieldType targetFieldType,
 			@Nullable final String replaceRegExp,
@@ -68,7 +68,7 @@ public class ExternalSystemLeichMehlPluFileConfig
 		this.replaceRegExp = CoalesceUtil.coalesceNotNull(replaceRegExp, DEFAULT_REPLACEMENT_REGEX);
 
 		this.id = id;
-		this.leichMehlConfigId = leichMehlConfigId;
+		this.leichMehlPluFileConfigGroupId = leichMehlPluFileConfigGroupId;
 		this.targetFieldName = targetFieldName;
 		this.targetFieldType = targetFieldType;
 		this.replacement = replacement;
