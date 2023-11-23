@@ -675,13 +675,16 @@ public class PPOrderBL implements IPPOrderBL
 		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
 
 		return Optional.ofNullable(getById(ppOrderId).getCurrentScaleDeviceId())
+				.filter(Check::isNotBlank)
 				.map(DeviceId::ofString)
 				.flatMap(deviceAccessorsHubFactory::getDeviceAccessorById)
 				.map(deviceAccessor -> {
 					final BigDecimal roundingToScale = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+							.filter(Check::isNotBlank)
 							.map(BigDecimal::new)
 							.orElse(null);
 					final UomId roundingToScaleUomId = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
 							.map(Integer::parseInt)
 							.map(UomId::ofRepoId)
 							.orElse(null);

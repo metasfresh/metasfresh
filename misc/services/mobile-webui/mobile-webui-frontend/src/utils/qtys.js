@@ -97,10 +97,13 @@ export const roundToQtyPrecision = (
   }
 
   const roundToQtyConverted = convertToQtyUOM(roundToQty, qty.uom);
+  if (!roundToQtyConverted) {
+    return qty;
+  }
 
   const decimalAdjustment = Math.pow(
     10,
-    Math.max(getNumberOfDecimalsOrZero(roundToQtyConverted.qty), getNumberOfDecimalsOrZero(qty.qty), 1)
+    Math.max(getNumberOfDecimalsOrZero(roundToQtyConverted.qty), getNumberOfDecimalsOrZero(qty.qty), 0)
   );
   const adjustedQty = qty.qty * decimalAdjustment;
   const adjustedRoundToQty = roundToQtyConverted.qty * decimalAdjustment;

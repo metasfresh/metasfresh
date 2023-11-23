@@ -43,6 +43,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -473,8 +474,10 @@ public class ManufacturingJobService
 	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
 	{
 		final Quantity roundingToQty = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+				.filter(Check::isNotBlank)
 				.map(BigDecimal::new)
 				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
 							.map(Integer::parseInt)
 							.map(UomId::ofRepoId)
 							.map(uomId -> Quantitys.create(qtyBD, uomId)))
