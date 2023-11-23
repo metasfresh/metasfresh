@@ -181,22 +181,15 @@
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 				</subreport>
+				<textField>
+					<reportElement key="textField-16" x="40" y="124" width="230" height="12" forecolor="#000000" uuid="a5357d90-aa88-41a5-a675-94c308cbfb33"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_value} +" - " + $F{bp_name}]]></textFieldExpression>
+				</textField>
 			</band>
 			<band height="40" splitType="Stretch">
-				<textField>
-					<reportElement key="textField-16" x="37" y="12" width="133" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
-					<textElement markup="none">
-						<font fontName="Arial" size="10" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement key="textField-16" x="169" y="12" width="134" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
-					<textElement markup="none">
-						<font fontName="Arial" size="10" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
-				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement key="textField-20" x="363" y="0" width="89" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 					<box>
