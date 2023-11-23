@@ -6,6 +6,7 @@ import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -112,4 +113,6 @@ public interface IPPOrderBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
 
 	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
+
+	Optional<Quantity> getRoundingToScale(@NonNull PPOrderId ppOrderId);
 }
