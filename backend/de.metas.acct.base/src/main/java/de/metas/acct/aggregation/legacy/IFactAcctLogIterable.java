@@ -1,17 +1,8 @@
-package de.metas.acct.aggregation;
-
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.adempiere.util.lang.IAutoCloseable;
-
-import de.metas.acct.model.I_Fact_Acct_Log;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +11,24 @@ import de.metas.acct.model.I_Fact_Acct_Log;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.acct.aggregation.legacy;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
+
+import de.metas.acct.model.I_Fact_Acct_Log;
 
 /**
  * An iterable and closeable stream of {@link I_Fact_Acct_Log}s.
@@ -53,5 +54,6 @@ public interface IFactAcctLogIterable extends Iterable<I_Fact_Acct_Log>, IAutoCl
 	void close();
 
 	@Override
+	@NonNull
 	Iterator<I_Fact_Acct_Log> iterator();
 }

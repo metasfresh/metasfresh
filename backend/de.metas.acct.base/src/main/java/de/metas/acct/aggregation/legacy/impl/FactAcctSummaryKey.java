@@ -1,4 +1,4 @@
-package de.metas.acct.aggregation.impl;
+package de.metas.acct.aggregation.legacy.impl;
 
 import java.util.Date;
 
@@ -7,7 +7,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.util.Check;
 
@@ -35,7 +35,7 @@ import de.metas.util.Check;
 
 final class FactAcctSummaryKey implements IFactAcctSummaryKey
 {
-	public static final IFactAcctSummaryKey of(final I_Fact_Acct_Log log)
+	public static IFactAcctSummaryKey of(final I_Fact_Acct_Log log)
 	{
 		return new FactAcctSummaryKey(log);
 	}

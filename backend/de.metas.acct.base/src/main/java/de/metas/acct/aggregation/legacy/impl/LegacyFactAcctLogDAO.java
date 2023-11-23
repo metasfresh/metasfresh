@@ -1,15 +1,16 @@
-package de.metas.acct.aggregation.impl;
+package de.metas.acct.aggregation.legacy.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctLogIterable;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
+import de.metas.acct.aggregation.legacy.IFactAcctLogIterable;
+import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -24,6 +25,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,9 +55,9 @@ import java.util.UUID;
  * #L%
  */
 
-public class FactAcctLogDAO implements IFactAcctLogDAO
+public class LegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
 {
-	private static final Logger logger = LogManager.getLogger(FactAcctLogDAO.class);
+	private static final Logger logger = LogManager.getLogger(LegacyFactAcctLogDAO.class);
 
 	private static final String DB_SCHEMA = "de_metas_acct";
 	/**
@@ -77,7 +79,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, QueryLimit.NO_LIMIT);
 	}
 
-	private void updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final QueryLimit limit)
+	private void updateProcessingTag(final Properties ctx, @Nullable final String processingTagOld, @Nullable final String processingTagNew, final QueryLimit limit)
 	{
 		retrieveForTagQuery(ctx, processingTagOld)
 				.setLimit(limit)
@@ -89,14 +91,14 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 	}
 
 	@Override
-	public boolean hasLogs(final Properties ctx, final String processingTag)
+	public boolean hasLogs(final Properties ctx, @Nullable final String processingTag)
 	{
 		return retrieveForTagQuery(ctx, processingTag)
 				.create()
 				.anyMatch();
 	}
 
-	private IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
+	private IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, @Nullable final String processingTag)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct_Log.class, ctx, ITrx.TRXNAME_ThreadInherited)
@@ -145,6 +147,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				;
 	}
 
+	@Nullable
 	@Override
 	public I_Fact_Acct_Summary retrieveLastMatchingFactAcctSummary(final Properties ctx, final IFactAcctSummaryKey key)
 	{
@@ -185,7 +188,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 			}
 
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw DBException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("sql", sql)
@@ -235,6 +238,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		}
 
 		@Override
+		@NonNull
 		public Iterator<I_Fact_Acct_Log> iterator()
 		{
 			return retrieveForTag(ctx, processingTag);
