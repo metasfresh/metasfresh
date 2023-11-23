@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.util.Trace;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -52,37 +51,21 @@ public final class DocumentValidStatus
 
 	public static DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_Yes, REASON_Null, EXCEPTION_Null, fieldName, isInitialValue);
-	}
-
-	public static DocumentValidStatus invalidIncludedDocument()
-	{
-		return STATE_InvalidIncludedDocument;
+		return new DocumentValidStatus(true, null, null, fieldName, isInitialValue);
 	}
 
 	public static DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_No, FillMandatoryException.buildMessage(fieldName), EXCEPTION_Null, fieldName, isInitialValue);
+		return new DocumentValidStatus(false, FillMandatoryException.buildMessage(fieldName), null, fieldName, isInitialValue);
 	}
 
 	public static DocumentValidStatus invalid(@NonNull final Exception error)
 	{
-		return new DocumentValidStatus(VALID_No, AdempiereException.extractMessageTrl(error), error, FIELDNAME_Null, INITIALVALUE_Unknown);
+		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null);
 	}
 
-	private static final boolean VALID_Yes = true;
-	private static final boolean VALID_No = false;
-	private static final Boolean INITIALVALUE_Yes = Boolean.TRUE;
-	@SuppressWarnings("unused")
-	private static final Boolean INITIALVALUE_No = Boolean.FALSE;
-	private static final Boolean INITIALVALUE_Unknown = null;
-	private static final ITranslatableString REASON_Null = null;
-	private static final Exception EXCEPTION_Null = null;
-	private static final String FIELDNAME_Null = null;
-
-	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(VALID_No, TranslatableStrings.anyLanguage("not validated yet"), EXCEPTION_Null, FIELDNAME_Null, INITIALVALUE_Yes);
-	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(VALID_Yes, REASON_Null, EXCEPTION_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
-	private static final DocumentValidStatus STATE_InvalidIncludedDocument = new DocumentValidStatus(VALID_No, TranslatableStrings.anyLanguage("child invalid"), EXCEPTION_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
+	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE);
+	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null, null, null, null);
 
 	@Getter private final boolean valid;
 	@Nullable @Getter private final Boolean initialValue;
@@ -92,7 +75,6 @@ public final class DocumentValidStatus
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
-	private transient String _exceptionAsOneLineString; // lazy
 
 	private DocumentValidStatus(
 			final boolean valid,
@@ -184,22 +166,6 @@ public final class DocumentValidStatus
 		{
 			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Invalid"));
 		}
-	}
-
-	@Nullable
-	public String getExceptionAsOneLineString()
-	{
-		if (exception == null)
-		{
-			return null;
-		}
-
-		String exceptionAsOneLineString = this._exceptionAsOneLineString;
-		if (exceptionAsOneLineString == null)
-		{
-			exceptionAsOneLineString = this._exceptionAsOneLineString = Trace.toOneLineStackTraceString(exception);
-		}
-		return exceptionAsOneLineString;
 	}
 
 }
