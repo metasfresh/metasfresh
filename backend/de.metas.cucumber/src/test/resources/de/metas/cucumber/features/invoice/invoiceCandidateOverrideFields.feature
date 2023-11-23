@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor2
 Feature: Checking the effect of override fields on invoice candidate
 
   Background:

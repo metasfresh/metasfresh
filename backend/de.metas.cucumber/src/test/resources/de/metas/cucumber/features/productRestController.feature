@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature:product get/create/update using metasfresh api
 
   Background:
