@@ -76,8 +76,6 @@ public class InvoiceHeaderImplBuilder
 
 	private Boolean taxIncluded = null;
 
-	private int C_Async_Batch_ID;
-
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
@@ -97,7 +95,6 @@ public class InvoiceHeaderImplBuilder
 	{
 		final InvoiceHeaderImpl invoiceHeader = new InvoiceHeaderImpl();
 		invoiceHeader.setOrgId(OrgId.ofRepoId(getAD_Org_ID()));
-		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
 		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());
@@ -145,16 +142,6 @@ public class InvoiceHeaderImplBuilder
 	private String getExternalId()
 	{
 		return externalId;
-	}
-
-	private int getC_Async_Batch_ID()
-	{
-		return C_Async_Batch_ID;
-	}
-
-	public void setC_Async_Batch_ID(final int asyncBatchId)
-	{
-		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
 	}
 
 	private int getC_Incoterms_ID()
