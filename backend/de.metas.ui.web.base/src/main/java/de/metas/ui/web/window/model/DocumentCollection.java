@@ -714,11 +714,18 @@ public class DocumentCollection
 			final WindowId windowId = entityDescriptor.getWindowId();
 			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
-				if (rootDocument != null)
+			if (rootDocument != null)
+			{
+				//
+				// Invalidate included documents
+				// NOTE: we do this even if we will have to invalidate the whole document because we want to collect the events for frontend.
+				// Ideally would be to just invalidate the root document if that was required and frontend had to deal with it.
+				final Collection<IncludedDocumentToInvalidate> includedDocumentsToInvalidate = documentToInvalidate.getIncludedDocuments();
+				if(!includedDocumentsToInvalidate.isEmpty())
 				{
 					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 					{
-						for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+						for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : includedDocumentsToInvalidate)
 						{
 							final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
 							if (includedRowIds.isEmpty())
@@ -728,9 +735,8 @@ public class DocumentCollection
 
 							for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
 							{
-								final DetailId detailId = includedEntityDescriptor.getDetailId();
-
-								rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
+								final DetailId detailId = Check.assumeNotNull(includedEntityDescriptor.getDetailId(), "Expected detailId not null");
+								rootDocument.getIncludedDocumentsCollection(detailId).markStale(includedRowIds);
 							}
 						}
 					}
@@ -738,10 +744,13 @@ public class DocumentCollection
 
 				//
 				// Invalidate the root document
-				if (documentToInvalidate.isInvalidateDocument())
+				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
+				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
+				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
 				{
-				rootDocuments.invalidate(rootDocumentKey);
+					rootDocuments.invalidate(rootDocumentKey);
 				}
+			}
 
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
