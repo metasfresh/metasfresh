@@ -100,7 +100,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
-				.docTypeId(DocTypeId.ofRepoId(inout.getC_DocType_ID()))
+				.docTypeId(docTypeId)
 				.onlyCopiesGreaterZero(true)
 				.build();
 
