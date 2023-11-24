@@ -100,7 +100,7 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(null)
-				.docTypeId(DocTypeId.ofRepoId(manufacturingOrder.getC_DocType_ID()))
+				.docTypeId(docTypeId)
 				.onlyCopiesGreaterZero(true)
 				.build();
 
