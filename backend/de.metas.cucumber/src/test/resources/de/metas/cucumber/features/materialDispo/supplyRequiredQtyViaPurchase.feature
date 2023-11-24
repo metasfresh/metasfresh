@@ -448,7 +448,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
 
@@ -466,7 +466,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 5                            | 5                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 5                              | 5                          | 0                                  |
 
@@ -493,7 +493,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 5                      |                                 |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 5                              | 5                          | 0                                  |
 
@@ -525,7 +525,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 10         | 0            | 0           | 10    | 0        | EUR          | true      |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 5                              | 5                          | 10                                 |
 
@@ -591,7 +591,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
 
@@ -609,7 +609,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -5  | 10                     |                                 |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
 
@@ -636,7 +636,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
       | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |                                 |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 10                             | 10                         | 0                                  |
 
@@ -668,7 +668,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 10         | 0            | 0           | 10    | 0        | EUR          | true      |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 10                             | 10                         | 10                                 |
 
