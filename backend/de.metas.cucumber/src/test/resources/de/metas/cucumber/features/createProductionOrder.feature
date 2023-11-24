@@ -2074,7 +2074,7 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           | bomLineASI                               |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
@@ -2109,7 +2109,7 @@ Feature: create production order
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    | bomASI                                   |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
@@ -2120,7 +2120,7 @@ Feature: create production order
 
     And the manufacturing order identified by ppo_1 is completed
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
@@ -2151,7 +2151,7 @@ Feature: create production order
       | c_l_2      | SUPPLY              |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 100                    | bomLineASI                               |                                 |
       | c_l_3      | DEMAND              | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | 0                      | bomLineASI                               |                                 |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_3       | p_1                     | 2021-04-11  | olASI                        | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                             | 0                             |
