@@ -71,7 +71,7 @@ public class Fresh_QtyOnHand_Line
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(timing);
+		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivated(line);
 
 		final List<AbstractStockEstimateEvent> events = new ArrayList<>();
 
