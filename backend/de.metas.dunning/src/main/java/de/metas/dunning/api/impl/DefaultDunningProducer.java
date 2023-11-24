@@ -22,18 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
@@ -52,6 +40,18 @@ import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
@@ -64,6 +64,9 @@ public class DefaultDunningProducer implements IDunningProducer
 	private I_C_DunningDoc dunningDoc = null;
 	private I_C_DunningDoc_Line dunningDocLine = null;
 	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
+	private final ISysConfigBL systemBL = Services.get(ISysConfigBL.class);
+
+	public final String SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE = "de.metas.dunning.UsePrefixedPoReference";
 
 	@Override
 	public void setDunningContext(IDunningContext context)
@@ -156,12 +159,41 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
 		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
+		final String poReference = candidate.getPOReference();
+
+		doc.setPOReference(getPOReferenceToUse(candidate, poReference));
 		doc.setIsActive(true);
 		doc.setProcessed(false);
 		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);
 		doc.setDocAction(X_C_DunningDoc.DOCACTION_Complete);
 
 		return doc;
+	}
+
+	@Nullable
+	private String getPOReferenceToUse
+
+
+			(final I_C_Dunning_Candidate candidate, final String poReference)
+	{
+		final String actualPOReference;
+		if (systemBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
+		{
+			final String documentNo = candidate.getDocumentNo();
+			if (Check.isNotBlank(documentNo) && Check.isNotBlank(poReference) && documentNo.contains(poReference))
+			{
+				actualPOReference = documentNo.substring(0, documentNo.indexOf(poReference) + poReference.length());
+			}
+			else
+			{
+				actualPOReference = null;
+			}
+		}
+		else
+		{
+			actualPOReference = poReference;
+		}
+		return actualPOReference;
 	}
 
 	protected I_C_DunningDoc_Line createDunningDocLine(final I_C_Dunning_Candidate candidate)
