@@ -73,7 +73,6 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -132,7 +131,6 @@ public class OrderBL implements IOrderBL
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -788,7 +786,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
@@ -1129,7 +1127,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		boolean hasHaddexLine = orderDAO.retrieveOrderLines(order)
+		final boolean hasHaddexLine = orderDAO.retrieveOrderLines(order)
 				.stream()
 				.anyMatch(lineId -> productBL.isHaddexProduct(ProductId.ofRepoId(lineId.getM_Product_ID())));
 
@@ -1181,7 +1179,7 @@ public class OrderBL implements IOrderBL
 		return true;
 	}
 
-	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
+	private int getMaxHaddexAgeInMonths(final int clientID, final int orgID)
 	{
 		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
 		if (months > 0)
