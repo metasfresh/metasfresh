@@ -822,9 +822,7 @@ public class OrderBL implements IOrderBL
 	{
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final Quantity qtyEntered = orderLineBL.getQtyEntered(orderLine);
-		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
+		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 
 		//
 		// Set QtyOrdered
