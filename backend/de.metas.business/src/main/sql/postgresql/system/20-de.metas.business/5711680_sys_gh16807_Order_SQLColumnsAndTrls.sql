@@ -45,3 +45,34 @@ UPDATE AD_SQLColumn_SourceTableColumn SET Source_Column_ID=2893,Updated=TO_TIMES
 -- 2023-11-23T15:45:18.897Z
 UPDATE AD_SQLColumn_SourceTableColumn SET Source_Column_ID=NULL,Updated=TO_TIMESTAMP('2023-11-23 17:45:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540152
 ;
+
+-- Element: C_BPartner_Memo
+-- 2023-11-23T12:38:28.733Z
+UPDATE AD_Element_Trl SET Name='Memo',Updated=TO_TIMESTAMP('2023-11-23 14:38:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544250 AND AD_Language='de_CH'
+;
+
+-- 2023-11-23T12:38:28.736Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544250,'de_CH')
+;
+
+-- Element: C_BPartner_Memo
+-- 2023-11-23T12:38:35.146Z
+UPDATE AD_Element_Trl SET Name='Memo',Updated=TO_TIMESTAMP('2023-11-23 14:38:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544250 AND AD_Language='de_DE'
+;
+
+-- 2023-11-23T12:38:35.150Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(544250,'de_DE')
+;
+
+-- 2023-11-23T12:38:35.156Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544250,'de_DE')
+;
+
+-- Element: C_BPartner_Memo
+-- 2023-11-23T12:38:37.155Z
+UPDATE AD_Element_Trl SET Name='Memo',Updated=TO_TIMESTAMP('2023-11-23 14:38:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544250 AND AD_Language='fr_CH'
+;
+
+-- 2023-11-23T12:38:37.159Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544250,'fr_CH')
+;
