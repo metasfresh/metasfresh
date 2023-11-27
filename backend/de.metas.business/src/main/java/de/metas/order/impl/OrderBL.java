@@ -74,7 +74,6 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -770,7 +769,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, final Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
@@ -804,9 +803,7 @@ public class OrderBL implements IOrderBL
 	{
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final Quantity qtyEntered = orderLineBL.getQtyEntered(orderLine);
-		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
+		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 
 		//
 		// Set QtyOrdered
