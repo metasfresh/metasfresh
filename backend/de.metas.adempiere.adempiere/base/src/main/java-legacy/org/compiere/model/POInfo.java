@@ -88,6 +88,17 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return getPOInfoMap().getByTableNameOrNull(tableName);
 	}
 
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
+	{
+		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
+		if (poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for " + tableName);
+		}
+		return poInfo;
+	}
+
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
 	{
 		return Optional.ofNullable(getPOInfoMap().getByTableNameOrNull(tableName));
