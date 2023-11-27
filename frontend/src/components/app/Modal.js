@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
-import { openFile, processNewRecord } from '../../actions/GenericActions';
+import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
@@ -14,6 +14,7 @@ import {
   fetchChangeLog,
   fireUpdateData,
   patch,
+  printDocument,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
 
@@ -484,24 +485,21 @@ class Modal extends Component {
   handlePrinting = () => {
     const { windowId, modalViewDocumentIds, dataId, printingOptions } =
       this.props;
-    const docNo = modalViewDocumentIds[0];
-    const docId = dataId;
-    const { options } = printingOptions;
+    const documentId = dataId;
+    const documentNo = modalViewDocumentIds[0] ?? documentId;
 
-    let extraParams = '';
-    options.map((item) => {
-      extraParams += `${item.internalName}=${item.value}&`;
-    });
-    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
+    const options = printingOptions.options.reduce((acc, item) => {
+      acc[item.internalName] = item.value;
+      return acc;
+    }, {});
 
-    openFile(
-      'window',
+    printDocument({
       windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`,
-      extraParams
-    );
+      documentId,
+      documentNo,
+      options,
+    });
+
     this.handleClose();
   };
 

@@ -1030,4 +1030,46 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_WorkflowValue = new ModelColumn<>(I_AD_Process.class, "WorkflowValue", null);
 	String COLUMNNAME_WorkflowValue = "WorkflowValue";
+
+	/**
+	 * Set Process Result Storing File Default Path.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStoreProcessResultFileOn (@Nullable java.lang.String StoreProcessResultFileOn);
+
+	/**
+	 * Get Process Result Storing File Default Path.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStoreProcessResultFileOn();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFileOn = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFileOn", null);
+	String COLUMNNAME_StoreProcessResultFileOn = "StoreProcessResultFileOn";
+
+	/**
+	 * Set Process Result Storing File Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStoreProcessResultFilePath (@Nullable java.lang.String StoreProcessResultFilePath);
+
+	/**
+	 * Get Process Result Storing File Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStoreProcessResultFilePath();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFilePath = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFilePath", null);
+	String COLUMNNAME_StoreProcessResultFilePath = "StoreProcessResultFilePath";
 }

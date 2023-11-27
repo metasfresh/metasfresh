@@ -2,9 +2,12 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SpinnerOverlay from '../app/SpinnerOverlay';
-import { deleteRequest } from '../../api';
-import { attachmentsRequest, openFile } from '../../actions/GenericActions';
 import AttachUrl from './AttachUrl';
+import {
+  deleteAttachment,
+  getAttachments,
+  getAttachmentUrl,
+} from '../../api/window';
 
 /**
  * @file Class based component.
@@ -33,9 +36,9 @@ class Attachments extends Component {
    * @todo Write the documentation
    */
   fetchAttachments = () => {
-    const { windowType, docId } = this.props;
+    const { windowType: windowId, docId: documentId } = this.props;
 
-    attachmentsRequest('window', windowType, docId).then((response) => {
+    getAttachments({ windowId, documentId }).then((response) => {
       this.setState({ data: response.data }, () => {
         if (this.attachments) {
           this.attachments.focus();
@@ -76,41 +79,23 @@ class Attachments extends Component {
     this.setState({ isAttachUrlOpen: false });
   };
 
-  /**
-   * @method handleClickAttachment
-   * @summary ToDo: Describe the method
-   * @param {*} id
-   * @todo Write the documentation
-   */
-  handleClickAttachment = (id) => {
-    const { windowType, docId } = this.props;
-    openFile('window', windowType, docId, 'attachments', id);
+  handleClickAttachment = (attachmentEntryId) => {
+    const { windowType: windowId, docId: documentId } = this.props;
+    const url = getAttachmentUrl({ windowId, documentId, attachmentEntryId });
+    window.open(url, '_blank');
   };
 
-  /**
-   * @method handleDeleteAttachment
-   * @summary ToDo: Describe the method
-   * @param {*} event
-   * @param {*} id
-   * @todo Write the documentation
-   */
-  handleDeleteAttachment = (e, id) => {
-    const { windowType, docId } = this.props;
+  handleDeleteAttachment = (e, attachmentEntryId) => {
+    const { windowType: windowId, docId: documentId } = this.props;
     e.stopPropagation();
     if (
       window.confirm(
         `${counterpart.translate('window.attachment.deleteQuestion')}`
       )
     ) {
-      deleteRequest('window', windowType, docId, null, null, 'attachments', id)
-        .then(() => {
-          return attachmentsRequest('window', windowType, docId);
-        })
-        .then((response) => {
-          this.setState({
-            data: response.data,
-          });
-        });
+      deleteAttachment({ windowId, documentId, attachmentEntryId })
+        .then(() => getAttachments({ windowId, documentId }))
+        .then((response) => this.setState({ data: response.data }));
     }
   };
 
