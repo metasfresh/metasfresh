@@ -79,6 +79,7 @@ import {
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
+import { getPrintFile, getPrintUrl } from '../api/window';
 
 export function toggleOverlay(data) {
   return {
@@ -1262,4 +1263,30 @@ export function setSpinner(data) {
     type: SET_SPINNER,
     payload: data,
   };
+}
+
+export function printDocument({
+  windowId,
+  documentId,
+  documentNo,
+  options = {},
+}) {
+  const filename = `${windowId}_${documentNo ?? documentId}.pdf`;
+
+  let isOpenInBrowser = true;
+  if (options && options['PRINTER_OPTS_IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['PRINTER_OPTS_IsAlsoSendToBrowser'];
+  } else if (options && options['IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['IsAlsoSendToBrowser'];
+  } else {
+    isOpenInBrowser = true;
+  }
+
+  if (isOpenInBrowser) {
+    const url = getPrintUrl({ windowId, documentId, filename, options });
+    window.open(url, '_blank');
+    return Promise.resolve();
+  } else {
+    return getPrintFile({ windowId, documentId, filename, options });
+  }
 }
