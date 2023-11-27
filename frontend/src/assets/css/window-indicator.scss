@@ -23,6 +23,7 @@
 
   .message-bar {
     display: flex;
+    background-color: white;
 
     .text {
       flex-grow: 10;
@@ -36,6 +37,11 @@
       flex-grow: 0;
       visibility: hidden;
     }
+  }
+
+  .message-bar-empty {
+    background-color: transparent !important;
+    background-image: linear-gradient(to bottom, white, transparent) !important;
   }
 
   :hover .copy-button {

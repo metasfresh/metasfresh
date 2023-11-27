@@ -48,7 +48,9 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
           </button>
         </div>
       ) : (
-        <div className="container-fluid message-bar">&nbsp;</div>
+        <div className="container-fluid message-bar message-bar-empty">
+          &nbsp;
+        </div>
       )}
     </div>
   );
