@@ -796,7 +796,7 @@ class Header extends PureComponent {
               indicator={indicator}
               isDocumentNotSaved={isDocumentNotSaved}
               error={saveStatus?.error ? saveStatus?.reason : ''}
-              exception={saveStatus?.error ? saveStatus?.exception : ''}
+              exception={saveStatus?.error ? saveStatus?.exception : null}
             />
           )}
         </nav>
