@@ -100,6 +100,8 @@ public class ProductId implements RepoIdAware
 		return repoId;
 	}
 
+	public String getAsString() {return String.valueOf(getRepoId());}
+
 	public TableRecordReference toTableRecordReference()
 	{
 		return TableRecordReference.of(I_M_Product.Table_Name, getRepoId());

@@ -47,6 +47,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
@@ -136,7 +137,7 @@ public class PickingJobTestHelper
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -149,13 +150,14 @@ public class PickingJobTestHelper
 						bpartnerBL
 				),
 				new PickingJobHUReservationService(huReservationService),
-				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
-				)
-		);
+						huQRCodeService
+				),
+				pickingConfigRepo,
+				ShipmentService.getInstance(),
+				huQRCodeService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -209,7 +211,7 @@ public class PickingJobTestHelper
 		return PickingSlotId.ofRepoId(record.getM_PickingSlot_ID());
 	}
 
-	public OrderAndLineId createOrderAndLineId(String documentNo)
+	public OrderAndLineId createOrderAndLineId(final String documentNo)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocumentNo(documentNo);
@@ -222,6 +224,7 @@ public class PickingJobTestHelper
 		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void createPickingConfigV2(final boolean considerAttributes)
 	{
 		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
@@ -294,7 +297,7 @@ public class PickingJobTestHelper
 		return HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 	}
 
-	public LUPackingInstructions createLUPackingInstructions(final String name, HUPIItemProductId tuPackingInstructionId, QuantityTU qtyTU)
+	public LUPackingInstructions createLUPackingInstructions(final String name, final HUPIItemProductId tuPackingInstructionId, final QuantityTU qtyTU)
 	{
 		final I_M_HU_PI luPI = huTestHelper.createHUDefinition(name, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 
@@ -311,11 +314,6 @@ public class PickingJobTestHelper
 	public HuId createVHU(final ProductId productId, final String qtyStr)
 	{
 		final Quantity qty = Quantity.of(qtyStr, productBL.getStockUOM(productId));
-		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
-	}
-
-	public HuId createVHU(final ProductId productId, final Quantity qty)
-	{
 		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty);
 	}
 
@@ -368,12 +366,12 @@ public class PickingJobTestHelper
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId).orElseThrow(() -> new AdempiereException("No QRCode found for HU " + huId));
 	}
 
-	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull String qrCodeId)
+	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull final String qrCodeId)
 	{
 		return createQRCode(huId, HUQRCodeUniqueId.ofJson(qrCodeId));
 	}
 
-	private HUQRCode createQRCode(@NonNull final HuId huId, @NonNull HUQRCodeUniqueId qrCodeId)
+	private HUQRCode createQRCode(@NonNull final HuId huId, @NonNull final HUQRCodeUniqueId qrCodeId)
 	{
 		final I_M_HU hu = huTestHelper.handlingUnitsBL().getById(huId);
 		final I_M_HU_PI_Version piVersion = huTestHelper.handlingUnitsBL().getPIVersion(hu);

@@ -2,37 +2,10 @@ import { getLanguage } from './translations';
 
 const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits value is out of range"
 
-export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance = null }) => {
+export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolerance = null }) => {
   //console.log('formatQtyToHumanReadable', { qty, uom, precision, tolerancePercent });
 
-  let qtyEffective = qty ?? 0;
-  let uomEffective = uom;
-
-  while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {
-    if (uomEffective === 'kg') {
-      qtyEffective *= 1000;
-      uomEffective = 'g';
-    } else if (uomEffective === 'g') {
-      qtyEffective *= 1000;
-      uomEffective = 'mg';
-    } else {
-      break;
-    }
-  }
-
-  const formatOptions = {
-    useGrouping: false,
-  };
-
-  const maximumFractionDigits = Math.min(
-    precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
-    MAX_maximumFractionDigits
-  );
-  if (maximumFractionDigits < MAX_maximumFractionDigits) {
-    formatOptions.minimumFractionDigits = 0;
-    formatOptions.maximumFractionDigits = maximumFractionDigits;
-  }
-  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), formatOptions);
+  const { qtyEffectiveStr, uomEffective } = formatQtyToHumanReadable({ qty, uom, precision });
 
   let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
 
@@ -40,7 +13,7 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
     if (tolerance.percentage != null) {
       result += ' ±' + tolerance.percentage + '%';
     } else if (tolerance.qty != null) {
-      const toleranceQtyStr = formatQtyToHumanReadable({
+      const toleranceQtyStr = formatQtyToHumanReadableStr({
         qty: tolerance.qty,
         uom: tolerance.uom,
       });
@@ -73,4 +46,44 @@ const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
   } else {
     return defaultPrecision;
   }
+};
+
+export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
+  let qtyEffective = qty ?? 0;
+  let uomEffective = uom;
+
+  while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {
+    if (uomEffective === 'kg') {
+      qtyEffective *= 1000;
+      uomEffective = 'g';
+    } else if (uomEffective === 'g') {
+      qtyEffective *= 1000;
+      uomEffective = 'mg';
+    } else {
+      break;
+    }
+  }
+
+  const formatOptions = {
+    useGrouping: false,
+  };
+
+  const maximumFractionDigits = Math.min(
+    precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
+    MAX_maximumFractionDigits
+  );
+
+  qtyEffective = parseFloat(qtyEffective.toFixed(maximumFractionDigits));
+
+  if (maximumFractionDigits < MAX_maximumFractionDigits) {
+    formatOptions.minimumFractionDigits = 0;
+    formatOptions.maximumFractionDigits = maximumFractionDigits;
+  }
+  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), formatOptions);
+
+  return {
+    qtyEffectiveStr,
+    qtyEffective,
+    uomEffective,
+  };
 };

@@ -93,6 +93,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -106,6 +107,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -802,6 +804,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(piVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsVersionId huPackingInstructionsVersionId = Optional.ofNullable(getEffectivePIVersion(hu))
+				.map(I_M_HU_PI_Version::getM_HU_PI_Version_ID)
+				.map(HuPackingInstructionsVersionId::ofRepoId)
+				.orElse(HuPackingInstructionsVersionId.VIRTUAL);
+
+		return getPackingInstructionsId(huPackingInstructionsVersionId);
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -883,9 +896,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		return getPI(piVersionId);
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsVersionId piVersionId)
+	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
 	}
+
 
 	@NonNull
 	@Override
@@ -1092,9 +1112,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
-			@Nullable BPartnerId bpartnerId)
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
 	}
@@ -1167,5 +1187,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
+	}
+
+	@Override
+	public LocatorId getLocatorId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return IHandlingUnitsBL.extractLocatorId(hu);
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 	}
 }

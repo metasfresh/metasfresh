@@ -1,12 +1,15 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
   "docStatus" : "Drafted",
   "header" : {
+    "allowPickingAnyHU" : false,
     "customerName" : "bpname-3",
     "deliveryBPLocationId" : {
       "bpartnerId" : 3,
       "repoId" : 4
     },
+    "deliveryDate" : "2021-11-02T07:39:16Z",
     "deliveryRenderedAddress" : "deliveryRenderedAddress",
+    "isAllowPickingAnyHU" : false,
     "lockedBy" : 5,
     "preparationDate" : "2021-11-02T07:39:16Z",
     "salesOrderDocumentNo" : "docno-2"
@@ -18,8 +21,14 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "productName" : "productName-6",
     "progress" : "NOT_STARTED",
     "qtyToPick" : "100 Ea",
+    "salesOrderAndLineId" : {
+      "orderId" : 2,
+      "orderLineId" : 8
+    },
+    "shipmentScheduleId" : 7,
     "steps" : [ {
       "id" : 1000000,
+      "isGeneratedOnFly" : false,
       "packToSpec" : {
         "tuPackingInstructionsId" : 6789
       },

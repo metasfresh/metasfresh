@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.report.DocumentReportFlavor;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -20,7 +20,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -30,14 +29,19 @@ public class GlobalQRCodeService
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);
 	}
 
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
-			@Nullable final PInstanceId pInstanceId,
-			@NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final PInstanceId pInstanceId,
+									   @NonNull final AdProcessId qrCodeProcessId)
 	{
 		final QRCodePDFResource execute = CreatePDFCommand.builder()
 				.qrCodes(qrCodes)
@@ -48,7 +52,7 @@ public class GlobalQRCodeService
 		return execute;
 	}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 				.trxName(ITrx.TRXNAME_ThreadInherited)
@@ -71,6 +75,8 @@ public class GlobalQRCodeService
 
 		archiveRecord.setIsDirectEnqueue(true);
 		archiveRecord.setIsDirectProcessQueueItem(true);
+		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archiveRecord, copies);
+		
 		InterfaceWrapperHelper.save(archiveRecord);
 	}
 

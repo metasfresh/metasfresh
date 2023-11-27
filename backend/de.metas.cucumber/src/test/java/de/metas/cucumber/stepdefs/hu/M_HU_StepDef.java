@@ -35,10 +35,12 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
@@ -65,6 +67,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -166,66 +169,61 @@ public class M_HU_StepDef
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
 		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
 
-			final String parentHuIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.M_HU_Parent." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(parentHuIdentifier))
-			{
-				final I_M_HU parentHU = huTable.get(parentHuIdentifier);
+			row.getAsOptionalIdentifier("M_HU_Parent")
+					.ifPresent(parentHuIdentifier -> {
+						final I_M_HU parentHU = huTable.get(parentHuIdentifier);
 
-				final I_M_HU_Item huItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
-						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHU.getM_HU_ID())
-						.orderByDescending(I_M_HU_Item.COLUMN_M_HU_Item_ID)
-						.create()
-						.firstNotNull(I_M_HU_Item.class);
+						final I_M_HU_Item huItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
+								.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHU.getM_HU_ID())
+								.orderByDescending(I_M_HU_Item.COLUMN_M_HU_Item_ID)
+								.create()
+								.firstNotNull(I_M_HU_Item.class);
 
-				final I_M_HU currentHU = queryBL.createQueryBuilder(I_M_HU.class)
-						.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, huItem.getM_HU_Item_ID())
-						.orderByDescending(COLUMNNAME_M_HU_ID)
-						.create()
-						.firstNotNull(I_M_HU.class);
+						final I_M_HU currentHU = queryBL.createQueryBuilder(I_M_HU.class)
+								.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, huItem.getM_HU_Item_ID())
+								.orderByDescending(COLUMNNAME_M_HU_ID)
+								.create()
+								.firstNotNull(I_M_HU.class);
 
-				huTable.putOrReplace(huIdentifier, currentHU);
-			}
+						huTable.putOrReplace(huIdentifier, currentHU);
+					});
 
 			final I_M_HU hu = huTable.get(huIdentifier);
 			assertThat(hu).isNotNull();
 
-			final String huPiVersionIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Version_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU_PI_Version piVersion = huPiVersionTable.get(huPiVersionIdentifier);
-			assertThat(piVersion).isNotNull();
+			final I_M_HU_PI_Version piVersion = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Version_ID).lookupIn(huPiVersionTable);
 
-			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(locatorIdentifier))
-			{
-				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-				assertThat(locator).isNotNull();
-				assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
-			}
+			row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
+					.ifPresent(locatorIdentifier -> {
+						final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+						assertThat(locator).isNotNull();
+						assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+					});
 
-			final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(huPiItemProductIdentifier))
-			{
-				final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
-				assertThat(huPiItemProduct).isNotNull();
-				assertThat(hu.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID());
-			}
+			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID)
+					.ifPresent(huPiItemProductIdentifier -> {
+						final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
+						assertThat(huPiItemProduct).isNotNull();
+						assertThat(hu.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID());
+					});
 
-			final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
+			final String huStatus = row.getAsString(COLUMNNAME_HUStatus);
 
 			assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID());
 			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
 
-			final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus);
-			if(Check.isNotBlank(clearanceStatus))
+			final String clearanceStatus = row.getAsOptionalString(COLUMNNAME_ClearanceStatus).orElse(null);
+			if (Check.isNotBlank(clearanceStatus))
 			{
 				assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
 			}
 
-			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceNote);
-			if(Check.isNotBlank(clearanceNote))
+			final String clearanceNote = row.getAsOptionalString(COLUMNNAME_ClearanceNote).orElse(null);
+			if (Check.isNotBlank(clearanceNote))
 			{
 				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
 			}
@@ -251,9 +249,9 @@ public class M_HU_StepDef
 			final HuId huId = HuId.ofRepoId(inventoryLineWithHU.getM_HU_ID());
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
-																		 .huId(huId)
-																		 .huIdentifier(huIdentifier)
-																		 .build()));
+					.huId(huId)
+					.huIdentifier(huIdentifier)
+					.build()));
 		}
 	}
 
@@ -422,7 +420,7 @@ public class M_HU_StepDef
 
 		final Map<String, Map<String, String>> identifierToRow = rows.stream()
 				.collect(Collectors.toMap(row -> DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER),
-										  Function.identity()));
+						Function.identity()));
 
 		final Map<String, String> topRow = rows.get(0);
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -575,7 +573,7 @@ public class M_HU_StepDef
 			assertThat(huId).isPresent();
 			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
 
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." +TABLECOLUMN_IDENTIFIER);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
 		}
 	}
@@ -583,21 +581,22 @@ public class M_HU_StepDef
 	private void validateHU(@NonNull final Map<String, String> row)
 	{
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huTable.get(huIdentifier).getM_HU_ID(), I_M_HU.class);
+		final HuId huId = HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID());
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		final String huDescription = huIdentifier + "/" + huId.getRepoId();
 
 		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
 		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
 
-		assertThat(huRecord).isNotNull();
-		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
-		assertThat(huRecord.isActive()).isEqualTo(isActive);
+		assertThat(huRecord).as(huDescription).isNotNull();
+		assertThat(huRecord.getHUStatus()).as(huDescription + " - HUStatus").isEqualTo(huStatus);
+		assertThat(huRecord.isActive()).as(huDescription + " - HUStatus").isEqualTo(isActive);
 
-		final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(locatorIdentifier))
+		final String locatorIdentifier = StringUtils.trimBlankToNull(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER));
+		if (locatorIdentifier != null)
 		{
 			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-			assertThat(huRecord.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+			assertThat(huRecord.getM_Locator_ID()).as(huDescription + " - Locator").isEqualTo(locator.getM_Locator_ID());
 		}
 	}
 

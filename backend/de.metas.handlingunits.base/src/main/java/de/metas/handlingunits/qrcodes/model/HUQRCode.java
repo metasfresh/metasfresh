@@ -11,9 +11,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @implNote See {@link HUQRCodeJsonConverter} for tools to convert from/to JSON, {@link de.metas.global_qrcodes.GlobalQRCode} etc.
@@ -21,7 +23,7 @@ import java.util.Objects;
 @Value
 @Builder
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
-public class HUQRCode
+public class HUQRCode implements IHUQRCode
 {
 	@NonNull HUQRCodeUniqueId id;
 
@@ -34,10 +36,13 @@ public class HUQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@NonNull
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
+
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -86,6 +91,16 @@ public class HUQRCode
 		}
 
 		return result.toString();
+	}
+
+	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
+	{
+		return getAttribute(attributeCode).map(HUQRCodeAttribute::getValue);
+	}
+
+	private Optional<HUQRCodeAttribute> getAttribute(@NonNull final AttributeCode attributeCode)
+	{
+		return attributes.stream().filter(attribute -> AttributeCode.equals(attribute.getCode(), attributeCode)).findFirst();
 	}
 
 	private static String extractPrintableBottomText(final HUQRCode qrCode)

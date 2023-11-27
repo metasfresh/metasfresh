@@ -15,3 +15,4 @@ echo " exporting reports ..."
 echo "==================="
 
 cp target/*.xml /reports
+cp target/*.html /reports

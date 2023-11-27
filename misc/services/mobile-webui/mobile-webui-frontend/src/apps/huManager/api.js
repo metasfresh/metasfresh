@@ -48,5 +48,18 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
 }
 
 export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
-  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { clearanceStatus, clearanceNote });
+  return axios.put(`${huAPIBasePath}/clearance`, {
+    huIdentifier: { metasfreshId: huId },
+    clearanceStatus,
+    clearanceNote,
+  });
+}
+
+export async function assignExternalLotNumber({ huId, qrCode }) {
+  return axios
+    .put(`${huAPIBasePath}/byId/${huId}/externalLotNumber`, {
+      qrCode,
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
 }

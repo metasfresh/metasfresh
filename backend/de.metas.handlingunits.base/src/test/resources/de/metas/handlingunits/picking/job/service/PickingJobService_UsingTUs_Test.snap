@@ -3,12 +3,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
     "1. Created Picking Job" : {
       "docStatus" : "Drafted",
       "header" : {
+        "allowPickingAnyHU" : false,
         "customerName" : "BPartner1",
         "deliveryBPLocationId" : {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
@@ -20,8 +23,14 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "productName" : "P1",
         "progress" : "NOT_STARTED",
         "qtyToPick" : "100.000 Kg",
+        "salesOrderAndLineId" : {
+          "orderId" : 1000000,
+          "orderLineId" : 1000000
+        },
+        "shipmentScheduleId" : 1000000,
         "steps" : [ {
           "id" : 1000000,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -90,6 +99,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "shipmentScheduleId" : 1000000
         }, {
           "id" : 1000001,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -192,12 +202,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
     "3. Picking Job after ABORT" : {
       "docStatus" : "Voided",
       "header" : {
+        "allowPickingAnyHU" : false,
         "customerName" : "BPartner1",
         "deliveryBPLocationId" : {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
@@ -209,8 +222,14 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "productName" : "P1",
         "progress" : "NOT_STARTED",
         "qtyToPick" : "100.000 Kg",
+        "salesOrderAndLineId" : {
+          "orderId" : 1000000,
+          "orderLineId" : 1000000
+        },
+        "shipmentScheduleId" : 1000000,
         "steps" : [ {
           "id" : 1000000,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -279,6 +298,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "shipmentScheduleId" : 1000000
         }, {
           "id" : 1000001,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -387,12 +407,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
     "1. Created Picking Job" : {
       "docStatus" : "Drafted",
       "header" : {
+        "allowPickingAnyHU" : false,
         "customerName" : "BPartner1",
         "deliveryBPLocationId" : {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
@@ -404,8 +427,14 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "productName" : "P1",
         "progress" : "NOT_STARTED",
         "qtyToPick" : "100.000 Kg",
+        "salesOrderAndLineId" : {
+          "orderId" : 1000000,
+          "orderLineId" : 1000000
+        },
+        "shipmentScheduleId" : 1000000,
         "steps" : [ {
           "id" : 1000000,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -474,6 +503,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "shipmentScheduleId" : 1000000
         }, {
           "id" : 1000001,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -622,12 +652,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
     "5. Picking Job after Complete" : {
       "docStatus" : "Completed",
       "header" : {
+        "allowPickingAnyHU" : false,
         "customerName" : "BPartner1",
         "deliveryBPLocationId" : {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
@@ -639,8 +672,14 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "productName" : "P1",
         "progress" : "DONE",
         "qtyToPick" : "100.000 Kg",
+        "salesOrderAndLineId" : {
+          "orderId" : 1000000,
+          "orderLineId" : 1000000
+        },
+        "shipmentScheduleId" : 1000000,
         "steps" : [ {
           "id" : 1000000,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -728,6 +767,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "shipmentScheduleId" : 1000000
         }, {
           "id" : 1000001,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -842,12 +882,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
     "1. Created Picking Job" : {
       "docStatus" : "Drafted",
       "header" : {
+        "allowPickingAnyHU" : false,
         "customerName" : "BPartner1",
         "deliveryBPLocationId" : {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
@@ -859,8 +902,14 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
         "productName" : "P1",
         "progress" : "NOT_STARTED",
         "qtyToPick" : "100.000 Kg",
+        "salesOrderAndLineId" : {
+          "orderId" : 1000000,
+          "orderLineId" : 1000000
+        },
+        "shipmentScheduleId" : 1000000,
         "steps" : [ {
           "id" : 1000000,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },
@@ -929,6 +978,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
           "shipmentScheduleId" : 1000000
         }, {
           "id" : 1000001,
+          "isGeneratedOnFly" : false,
           "packToSpec" : {
             "tuPackingInstructionsId" : 1000000
           },

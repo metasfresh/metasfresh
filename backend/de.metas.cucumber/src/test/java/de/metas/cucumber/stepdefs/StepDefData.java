@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class StepDefData<T>
 {
@@ -55,10 +55,17 @@ public abstract class StepDefData<T>
 	}
 
 	public void put(
-			@NonNull final String identifier,
-			@NonNull final T productRecord)
+			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final T record)
 	{
-		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
+		put(identifier.getAsString(), record);
+	}
+
+	public void put(
+			@NonNull final String identifier,
+			@NonNull final T record)
+	{
+		final RecordDataItem<T> recordDataItem = createRecordDataItem(record);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
@@ -67,18 +74,25 @@ public abstract class StepDefData<T>
 	}
 
 	public void putOrReplace(
+			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final T record)
+	{
+		putOrReplace(identifier.getAsString(), record);
+	}
+
+	public void putOrReplace(
 			@NonNull final String identifier,
-			@NonNull final T productRecord)
+			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
 		if (oldRecord == null)
 		{
-			put(identifier, productRecord);
+			put(identifier, record);
 		}
 		else
 		{
-			records.replace(identifier, createRecordDataItem(productRecord));
+			records.replace(identifier, createRecordDataItem(record));
 		}
 	}
 
@@ -103,6 +117,12 @@ public abstract class StepDefData<T>
 		}
 
 		put(identifier, record);
+	}
+
+	@NonNull
+	public T get(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return get(identifier.getAsString());
 	}
 
 	@NonNull
@@ -139,30 +159,30 @@ public abstract class StepDefData<T>
 	}
 
 	/**
-	 * @param productRecord the item to store.
-	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
+	 * @param record the item to store.
+	 *               In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
 	 */
 	@NotNull
-	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T record)
 	{
-		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
+		if (InterfaceWrapperHelper.isModelInterface(record.getClass()) && clazz != null)
 		{
 			final Instant updated = InterfaceWrapperHelper
-					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
+					.getValueOptional(record, InterfaceWrapperHelper.COLUMNNAME_Updated)
 					.map(TimeUtil::asInstant)
 					.orElse(Instant.MIN);
 
 			// just store ID and table name, to avoid any leaks
-			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
+			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(record), InterfaceWrapperHelper.getId(record));
 
-			return new RecordDataItem<>((T)null,
-										tableRecordReference,
-										clazz,
-										Instant.now(),
-										updated);
+			return new RecordDataItem<>(null,
+					tableRecordReference,
+					clazz,
+					Instant.now(),
+					updated);
 
 		}
-		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
+		return new RecordDataItem<>(record, null, null, Instant.now(), Instant.MIN);
 	}
 
 	@Value

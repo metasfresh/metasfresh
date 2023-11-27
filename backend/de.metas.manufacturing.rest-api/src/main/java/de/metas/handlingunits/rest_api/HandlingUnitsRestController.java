@@ -72,6 +72,8 @@ import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
+import static de.metas.handlingunits.rest_api.constants.ErrorMessages.ExternalLotNumber_MISSING;
+import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
@@ -176,8 +178,8 @@ public class HandlingUnitsRestController
 		catch (final Exception ex)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(ex, adLanguage))
-					.build());
+															.error(JsonErrors.ofThrowable(ex, adLanguage))
+															.build());
 		}
 	}
 
@@ -219,12 +221,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-						.stream()
-						.map(item -> JsonDisposalReason.builder()
-								.key(item.getValue())
-								.caption(item.getName().translate(adLanguage))
-								.build())
-						.collect(ImmutableList.toImmutableList()))
+								 .stream()
+								 .map(item -> JsonDisposalReason.builder()
+										 .key(item.getValue())
+										 .caption(item.getName().translate(adLanguage))
+										 .build())
+								 .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -280,15 +282,30 @@ public class HandlingUnitsRestController
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-				.huId(request.getHuId())
-				.huQRCode(huQRCode)
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-				.build());
+										  .huId(request.getHuId())
+										  .huQRCode(huQRCode)
+										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+										  .build());
 
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
+	}
+
+	@PutMapping("/byId/{M_HU_ID}/externalLotNumber")
+	public ResponseEntity<JsonGetSingleHUResponse> assignExternalLotNumber(
+			@PathVariable("M_HU_ID") final int huRepoId,
+			@RequestBody @NonNull final JsonQRCode qrCode)
+	{
+		final String externalLotNumber = HUQRCodesService.toHUQRCode(qrCode.getQrCode())
+				.getAttributeValueAsString(HU_ExternalLotNumber)
+				.orElseThrow(() -> new AdempiereException(ExternalLotNumber_MISSING));
+		final HuId huId = HuId.ofRepoId(huRepoId);
+
+		handlingUnitsService.assignExternalLotNumber(huId, externalLotNumber);
+
+		return getByIdSupplier(() -> huId);
 	}
 
 	@NonNull

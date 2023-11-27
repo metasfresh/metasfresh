@@ -46,6 +46,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
@@ -118,6 +119,8 @@ public interface IPrintingDAO extends ISingletonService
 	 *            {@link I_AD_Printer_Config#COLUMNNAME_CreatedBy CreatedBy} value
 	 */
 	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId);
+
+	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId, WorkplaceId workplaceId);
 
 	/**
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.

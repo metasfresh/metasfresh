@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -8,7 +7,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
@@ -27,7 +26,7 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
 
 	@Override
-	public void warmUpCachesFrom(@NonNull final ImmutableList<Packageable> items)
+	public void warmUpCachesFrom(@NonNull final PackageableList items)
 	{
 		// do nothing
 	}
