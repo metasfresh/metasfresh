@@ -22,6 +22,11 @@
 
 DROP FUNCTION IF EXISTS report.Fresh_PriceList_Details_ToDate_Report(character varying,
                                                                      text,
+                                                                     date)
+;
+
+DROP FUNCTION IF EXISTS report.Fresh_PriceList_Details_ToDate_Report(character varying,
+                                                                     text,
                                                                      date,
                                                                      numeric,
                                                                      numeric,
