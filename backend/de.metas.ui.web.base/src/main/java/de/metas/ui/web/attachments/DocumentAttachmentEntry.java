@@ -1,16 +1,15 @@
 package de.metas.ui.web.attachments;
 
-import de.metas.attachments.AttachmentEntryType;
-import lombok.NonNull;
-import lombok.ToString;
-
-import java.net.URI;
-
-import org.compiere.Adempiere;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.NonNull;
+import lombok.ToString;
+import org.compiere.Adempiere;
+
+import java.net.URI;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -94,5 +93,11 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	public URI getUrl()
 	{
 		return entry.getUrl();
+	}
+
+	@Override
+	public ZonedDateTime getCreated()
+	{
+		return entry.getCreatedUpdatedInfo().getCreated();
 	}
 }

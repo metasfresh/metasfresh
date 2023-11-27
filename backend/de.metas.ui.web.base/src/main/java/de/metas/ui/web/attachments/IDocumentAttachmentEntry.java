@@ -4,6 +4,7 @@ import de.metas.attachments.AttachmentEntryType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 import java.net.URI;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -40,4 +41,11 @@ public interface IDocumentAttachmentEntry
 	String getContentType();
 
 	URI getUrl();
+
+	ZonedDateTime getCreated();
+
+	static IDocumentAttachmentEntry cast(final Object object)
+	{
+		return (IDocumentAttachmentEntry) object;
+	}
 }

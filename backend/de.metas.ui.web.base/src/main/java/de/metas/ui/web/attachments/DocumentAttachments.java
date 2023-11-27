@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -81,6 +82,7 @@ final class DocumentAttachments
 	private final TableRecordReference recordRef;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final DocumentWebsocketPublisher websocketPublisher;
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Builder
 	private DocumentAttachments(
@@ -112,7 +114,7 @@ final class DocumentAttachments
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
-		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ofInt(10))
+		final Stream<DocumentArchiveEntry> archives = archiveDAO.retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ofInt(10))
 				.stream()
 				.map(archive -> DocumentArchiveEntry.of(buildId(ID_PREFIX_Archive, archive.getAD_Archive_ID()), archive));
 
@@ -138,12 +140,33 @@ final class DocumentAttachments
 		notifyRelatedDocumentTabsChanged();
 	}
 
-	public Optional<DocumentAttachmentEntry> getNewest()
+	public Optional<IDocumentAttachmentEntry> getNewest()
 	{
-		return attachmentEntryService.getByReferencedRecord(recordRef)
+		final Optional<IDocumentAttachmentEntry> newestAttachment = attachmentEntryService.getByReferencedRecord(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(DocumentId.of(entry.getId()), entry))
+				.map(IDocumentAttachmentEntry::cast)
 				.findFirst();
+		final Optional<IDocumentAttachmentEntry> newestArchive = this.getNewestArchive();
+		if (!newestAttachment.isPresent())
+		{
+			return newestArchive;
+		}
+		if (!newestArchive.isPresent())
+		{
+			return newestAttachment;
+		}
+		final ZonedDateTime archiveCreatedOn = newestArchive.get().getCreated();
+		final ZonedDateTime attachmentCreatedOn = newestAttachment.get().getCreated();
+		return archiveCreatedOn.compareTo(attachmentCreatedOn) > 0 ? newestArchive : newestAttachment;
+	}
+
+	private Optional<IDocumentAttachmentEntry> getNewestArchive()
+	{
+		return archiveDAO.retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ONE)
+				.stream()
+				.findFirst()
+				.map(archive -> DocumentArchiveEntry.of(DocumentId.of(archive.getAD_Archive_ID()), archive));
 	}
 
 	public IDocumentAttachmentEntry getEntry(final DocumentId id)
@@ -164,7 +187,7 @@ final class DocumentAttachments
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
 			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
-			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
+			final I_AD_Archive archive = archiveDAO.retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -194,7 +217,7 @@ final class DocumentAttachments
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
 			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
-			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
+			final I_AD_Archive archive = archiveDAO.retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());

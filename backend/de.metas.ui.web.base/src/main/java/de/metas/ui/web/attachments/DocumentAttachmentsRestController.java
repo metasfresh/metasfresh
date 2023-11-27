@@ -193,7 +193,7 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Optional<DocumentAttachmentEntry> newestAttachment = getDocumentAttachments(windowIdStr, documentId).getNewest();
+		final Optional<IDocumentAttachmentEntry> newestAttachment = getDocumentAttachments(windowIdStr, documentId).getNewest();
 		return newestAttachment.map(DocumentAttachmentsRestController::toResponseBody)
 				.orElse(ResponseEntity.notFound().build());
 	}
