@@ -59,7 +59,6 @@ public class InvoiceService
 {
 	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
 
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
