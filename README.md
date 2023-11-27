@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 <!-- [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh) -->
 
-![Twitter Follow](https://img.shields.io/twitter/follow/metasfresh?style=social)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/metasfresh?style=social)](https://twitter.com/metasfresh)
 
 
 metasfresh is a responsive, Free and Open Source ERP System. Our aim is to create fast and easy-to-use enterprise software with an outstanding user experience.
