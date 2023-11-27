@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,6 +58,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = DocumentAttachmentsRestController.ENDPOINT)
+@FieldDefaults(makeFinal = true)
 public class DocumentAttachmentsRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/attachments";
@@ -180,6 +183,24 @@ public class DocumentAttachmentsRestController
 		final IDocumentAttachmentEntry entry = getDocumentAttachments(windowIdStr, documentId)
 				.getEntry(entryId);
 
+		return toResponseBody(entry);
+	}
+
+	@GetMapping("/newest")
+	public ResponseEntity<StreamingResponseBody> getAttachmentByCreatedOrder(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId )
+	{
+		userSession.assertLoggedIn();
+
+		final Optional<DocumentAttachmentEntry> newestAttachment = getDocumentAttachments(windowIdStr, documentId).getNewest();
+		return newestAttachment.map(DocumentAttachmentsRestController::toResponseBody)
+				.orElse(ResponseEntity.notFound().build());
+	}
+
+	@NonNull
+	private static ResponseEntity<StreamingResponseBody> toResponseBody(final IDocumentAttachmentEntry entry)
+	{
 		final AttachmentEntryType type = entry.getType();
 		switch (type)
 		{

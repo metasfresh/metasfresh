@@ -17,7 +17,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -62,11 +62,10 @@ import java.util.stream.Stream;
 
 /**
  * Document attachments facade.
- *
+ * <p>
  * NOTE to developers: introduced to hide behind legacy attachments code.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class DocumentAttachments
 {
@@ -137,6 +136,14 @@ final class DocumentAttachments
 		attachmentEntryService.createNewAttachment(recordRef, name, url);
 
 		notifyRelatedDocumentTabsChanged();
+	}
+
+	public Optional<DocumentAttachmentEntry> getNewest()
+	{
+		return attachmentEntryService.getByReferencedRecord(recordRef)
+				.stream()
+				.map(entry -> DocumentAttachmentEntry.of(DocumentId.of(entry.getId()), entry))
+				.findFirst();
 	}
 
 	public IDocumentAttachmentEntry getEntry(final DocumentId id)
