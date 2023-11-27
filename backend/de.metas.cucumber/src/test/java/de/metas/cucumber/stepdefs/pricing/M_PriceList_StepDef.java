@@ -37,6 +37,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -368,7 +369,9 @@ public class M_PriceList_StepDef
 		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 		if (Check.isNotBlank(invoiceableQtyBasedOn))
 		{
-			productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn);
+			final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(invoiceableQtyBasedOn);
+
+			productPrice.setInvoicableQtyBasedOn(invoicableQtyBasedOn.getCode());
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

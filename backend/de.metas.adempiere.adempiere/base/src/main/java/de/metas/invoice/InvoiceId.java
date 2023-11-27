@@ -30,6 +30,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +44,7 @@ public class InvoiceId implements RepoIdAware
 		return new InvoiceId(repoId);
 	}
 
+	@Nullable
 	public static InvoiceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InvoiceId(repoId) : null;
@@ -69,12 +71,12 @@ public class InvoiceId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final InvoiceId invoiceId)
+	public static int toRepoId(@Nullable final InvoiceId invoiceId)
 	{
 		return toRepoIdOr(invoiceId, -1);
 	}
 
-	public static int toRepoIdOr(final InvoiceId invoiceId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final InvoiceId invoiceId, final int defaultValue)
 	{
 		return invoiceId != null ? invoiceId.getRepoId() : defaultValue;
 	}

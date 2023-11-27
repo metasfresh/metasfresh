@@ -1,4 +1,4 @@
-package de.metas.acct.aggregation.impl;
+package de.metas.acct.aggregation.legacy.impl;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
@@ -25,12 +25,12 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class PlainFactAcctLogDAO extends FactAcctLogDAO
+public class PlainLegacyFactAcctLogDAO extends LegacyFactAcctLogDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(PlainFactAcctLogDAO.class);
+	private static final Logger logger = LogManager.getLogger(PlainLegacyFactAcctLogDAO.class);
 
 	@Override
-	public void updateFactAcctEndingBalanceForTag(String processingTag)
+	public void updateFactAcctEndingBalanceForTag(final String processingTag)
 	{
 		logger.warn("Updating Fact_Acct_EndingBalance not supported. Skipped.");
 	}
