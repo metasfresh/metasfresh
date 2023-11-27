@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 
@@ -10,6 +10,7 @@ import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
+import { toastError } from '../../utils/toast';
 
 const GetQuantityDialog = ({
   userInfo,
@@ -28,10 +29,12 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
+  const allowTempQtyStorage = useBooleanSetting('qtyInput.allowTempQtyStorage');
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
+  const [tempQtyStorage, setTempQtyStorage] = useState(qtyInfos.of({ qty: 0 }));
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
@@ -45,13 +48,26 @@ const GetQuantityDialog = ({
   const allValid =
     doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
 
+  const actualValidateQtyEntered = useCallback(
+    (qty, uom) => {
+      if (!allowTempQtyStorage) {
+        return validateQtyEntered(qty, uom);
+      }
+
+      return validateQtyEntered(qty + tempQtyStorage.qty, uom);
+    },
+    [tempQtyStorage]
+  );
+
   const onDialogYes = () => {
     if (allValid) {
       const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
 
-      let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
-      if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
-        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
+      const qtyToIssue = inputQtyEnteredAndValidated + tempQtyStorage.qty;
+
+      let qtyEnteredAndValidated = qtyToIssue;
+      if (qtyAlreadyOnScale) {
+        qtyEnteredAndValidated = Math.max(qtyToIssue - qtyAlreadyOnScale, 0);
       }
 
       onQtyChange({
@@ -60,6 +76,28 @@ const GetQuantityDialog = ({
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
       });
     }
+  };
+
+  const addQtyToTempLocalStorage = () => {
+    const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+
+    if (!inputQtyEnteredAndValidated) {
+      return toastError({ messageKey: 'activities.mfg.issues.noQtyEnteredCannotAddToStorage' });
+    }
+
+    const updatedTempStorageQtyValue = tempQtyStorage.qty + inputQtyEnteredAndValidated;
+    const notValidQtyErrorMessage = validateQtyEntered(updatedTempStorageQtyValue, uom);
+
+    if (notValidQtyErrorMessage) {
+      const errorMessage = `${trl('activities.mfg.issues.cannotAddToStorageDueTo')}${notValidQtyErrorMessage}`;
+      return toastError({ plainMessage: errorMessage });
+    }
+
+    setTempQtyStorage(qtyInfos.of({ qty: updatedTempStorageQtyValue }));
+  };
+
+  const getTotalQty = () => {
+    return totalQty - tempQtyStorage.qty;
   };
 
   const wsClientRef = useRef(null);
@@ -85,7 +123,7 @@ const GetQuantityDialog = ({
             }
           },
           headers: {
-            qtyTarget: totalQty || '0',
+            qtyTarget: getTotalQty() || '0',
             positiveTolerance: scaleTolerance?.positiveTolerance || '0',
             negativeTolerance: scaleTolerance?.negativeTolerance || '0',
             uom: uom,
@@ -100,7 +138,7 @@ const GetQuantityDialog = ({
         wsClientRef.current = null;
       }
     };
-  }, [scaleDevice, useScaleDevice]);
+  }, [scaleDevice, useScaleDevice, tempQtyStorage]);
 
   return (
     <div>
@@ -128,13 +166,31 @@ const GetQuantityDialog = ({
                     <QtyInputField
                       qty={qtyInfos.toNumberOrString(qtyInfo)}
                       uom={uom}
-                      validateQtyEntered={validateQtyEntered}
+                      validateQtyEntered={actualValidateQtyEntered}
                       readonly={useScaleDevice}
                       onQtyChange={onQtyEntered}
                       isRequestFocus={true}
                     />
                   </td>
                 </tr>
+                {allowTempQtyStorage && (
+                  <tr>
+                    <th>
+                      <button className="button is-danger" onClick={addQtyToTempLocalStorage}>
+                        {trl('activities.mfg.issues.addToFunnel')}
+                      </button>
+                    </th>
+                    <td>
+                      <QtyInputField
+                        qty={qtyInfos.toNumberOrString(tempQtyStorage)}
+                        uom={uom}
+                        readonly={true}
+                        onQtyChange={() => {}}
+                        isRequestFocus={true}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {scaleDevice && allowManualInput && (
                   <tr>
                     <td colSpan="2">
