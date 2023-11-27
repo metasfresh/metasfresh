@@ -773,11 +773,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-<<<<<<< HEAD
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, final Tax tax)
-=======
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, @Nullable final Tax tax)
->>>>>>> 5aa597d9845 (Fix UOM-conversion bug when reopening orderline with TU-UOM (#16792))
 	{
 		if (tax != null && tax.isWholeTax())
 		{
