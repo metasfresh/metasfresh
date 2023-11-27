@@ -59,38 +59,25 @@ public class BlockingExecutorWrapper
 	{
 		final IAutoCloseable permit = acquirePermit();
 
-		// wrap 'command' into another runnable, so we can in the end release the semaphore.
-		final Runnable r = new Runnable()
+		try
 		{
-			public String toString()
-			{
-				return "runnable-wrapper-for[" + command + "]";
-			}
-
-			public void run()
-			{
+			delegate.execute(() -> {
+				//noinspection TryFinallyCanBeTryWithResources
 				try
 				{
 					command.run();
 				}
 				finally
 				{
-					// release the semaphore permit on actual task is done
-					permit.close();
+					permit.close(); // release the semaphore permit on actual task is done
 				}
-			}
-		};
-
-		try
-		{
-			delegate.execute(r);
+			});
 		}
-		catch (final Exception ex)
+		catch (final Exception enqueueException)
 		{
-			// release the semaphore permit just in case enqueueing fails
-			permit.close();
+			permit.close(); // release the semaphore permit just in case enqueueing fails
 
-			throw ex;
+			throw enqueueException;
 		}
 	}
 
