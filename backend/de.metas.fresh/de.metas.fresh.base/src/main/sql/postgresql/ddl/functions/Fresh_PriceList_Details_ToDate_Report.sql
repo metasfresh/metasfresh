@@ -88,13 +88,10 @@ BEGIN
              INNER JOIN M_PriceList pl ON bp.m_pricingsystem_id = pl.m_pricingsystem_id
              INNER JOIN M_PriceList_Version plv ON pl.m_pricelist_id = plv.m_pricelist_id
     WHERE bp.iscustomer = 'Y'
-      AND pl.issopricelist = 'Y'
       AND pl.issopricelist = p_issotrx
       AND plv.validfrom >= p_validfrom
       AND (p_C_BPartner_ID IS NULL OR bp.c_bpartner_id = p_C_BPartner_ID)
-      AND (p_C_BP_Group_ID IS NULL OR bp.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id
-                                                           FROM c_bpartner b
-                                                           WHERE b.c_bp_group_id = p_C_BP_Group_ID));
+      AND (p_C_BP_Group_ID IS NULL OR bp.c_bp_group_id = p_C_BP_Group_ID);
 
 
     IF p_show_product_price_pi_flag = 'N' THEN
@@ -120,7 +117,7 @@ BEGIN
     END IF;
 
     IF p_show_product_price_pi_flag = 'Y' THEN
-        RETURN QUERY (SELECT DISTINCT d.*,
+        RETURN QUERY (SELECT DISTINCT pp.*,
                                       tmp.name::text AS plv_name,
                                       tmp.c_bpartner_location_id,
                                       tmp.ad_org_id
