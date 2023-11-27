@@ -1,13 +1,12 @@
 package org.adempiere.ad.table.api;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -34,21 +33,16 @@ import lombok.Value;
 @Value
 public class ColumnSqlSourceDescriptor
 {
-	@NonNull
-	String targetTableName;
-
-	@NonNull
-	String sourceTableName;
+	@NonNull String targetTableName;
+	@NonNull String sourceTableName;
 
 	public enum FetchTargetRecordsMethod
-	{
-		LINK_COLUMN, SQL
-	}
+	{LINK_COLUMN, SQL}
 
-	FetchTargetRecordsMethod fetchTargetRecordsMethod;
+	@NonNull FetchTargetRecordsMethod fetchTargetRecordsMethod;
 
-	String sqlToGetTargetRecordIdBySourceRecordId;
-	String linkColumnName;
+	@Nullable String sqlToGetTargetRecordIdBySourceRecordId;
+	@Nullable String linkColumnName;
 
 	@Builder
 	private ColumnSqlSourceDescriptor(
@@ -78,5 +72,8 @@ public class ColumnSqlSourceDescriptor
 			throw new AdempiereException("Unknown fetch method: " + fetchTargetRecordsMethod);
 		}
 	}
+
+	@NonNull
+	public String getLinkColumnNameNotNull() {return Check.assumeNotNull(linkColumnName, "linkColumnName is not empty");}
 
 }
