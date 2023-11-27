@@ -335,6 +335,14 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
+	public static final String FIELDNAME_M_Product_ID = I_MD_Cockpit.COLUMNNAME_M_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
+			widgetType = DocumentFieldWidgetType.Lookup, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
+			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)})
+	private final LookupValue product;
+
 	private final DocumentId documentId;
 
 	private final DocumentPath documentPath;
@@ -405,6 +413,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.productValue = productRecord.getValue();
 		this.productName = productRecord.getName();
+
 		this.productCategoryOrSubRowName = productCategoryRecord.getName();
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
@@ -417,6 +426,10 @@ public class MaterialCockpitRow implements IViewRow
 		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
+
+		this.product = lookupFactory
+				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+				.findById(productRecord.getM_Product_ID());
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -539,6 +552,10 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
+		this.product = lookupFactory
+				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+				.findById(productRecord.getM_Product_ID());
+
 		this.packageSize = productRecord.getPackageSize();
 
 		this.date = date;
@@ -632,6 +649,10 @@ public class MaterialCockpitRow implements IViewRow
 		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
+
+		this.product = lookupFactory
+				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+				.findById(productRecord.getM_Product_ID());
 
 		this.packageSize = productRecord.getPackageSize();
 
