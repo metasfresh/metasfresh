@@ -36,7 +36,7 @@ const QtyInputField = ({
         uom,
       })
     );
-  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid]);
+  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid, validateQtyEntered]);
   //
   // Inform parent about initial value
   useEffect(() => forwardQtyInfoToParent(qtyInfo), [qtyInfo]);

@@ -40,7 +40,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
       </div>
     ),
     {
-      duration: 100000,
+      duration: 86400000,
     }
   );
 };
