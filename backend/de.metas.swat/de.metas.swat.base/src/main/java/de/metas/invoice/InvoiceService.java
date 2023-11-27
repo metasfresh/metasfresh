@@ -118,11 +118,6 @@ public class InvoiceService
 		asyncBatchService.executeBatch(enqueueInvoiceCandidates, AsyncBatchId.NONE_ASYNC_BATCH_ID);
 	}
 
-	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds)
-	{
-
-	}
-
 	@NonNull
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandsByInOutLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
