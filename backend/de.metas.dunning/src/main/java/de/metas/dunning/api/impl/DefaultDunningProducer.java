@@ -159,9 +159,8 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
 		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
-		final String poReference = candidate.getPOReference();
 
-		doc.setPOReference(getPOReferenceToUse(candidate, poReference));
+		doc.setPOReference(getPOReferenceToUse(candidate));
 		doc.setIsActive(true);
 		doc.setProcessed(false);
 		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);
@@ -171,11 +170,9 @@ public class DefaultDunningProducer implements IDunningProducer
 	}
 
 	@Nullable
-	private String getPOReferenceToUse
-
-
-			(final I_C_Dunning_Candidate candidate, final String poReference)
+	private String getPOReferenceToUse(final I_C_Dunning_Candidate candidate)
 	{
+		final String poReference = candidate.getPOReference();
 		final String actualPOReference;
 		if (systemBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
 		{
