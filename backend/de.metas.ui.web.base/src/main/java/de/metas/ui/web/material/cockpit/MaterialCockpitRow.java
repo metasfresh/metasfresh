@@ -339,9 +339,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
-			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)})
-	private final LookupValue product;
+			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280)})
+	private final Supplier<LookupValue> product;
 
 	private final DocumentId documentId;
 
@@ -427,8 +426,8 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = lookupFactory
-				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+		this.product = () -> lookupFactory
+				.searchInTableLookup(I_M_Product.Table_Name)
 				.findById(productRecord.getM_Product_ID());
 
 		this.packageSize = productRecord.getPackageSize();
@@ -552,8 +551,8 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = lookupFactory
-				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+		this.product = () -> lookupFactory
+				.searchInTableLookup(I_M_Product.Table_Name)
 				.findById(productRecord.getM_Product_ID());
 
 		this.packageSize = productRecord.getPackageSize();
@@ -650,8 +649,8 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = lookupFactory
-				.searchInTableLookup(de.metas.adempiere.model.I_M_Product.Table_Name)
+		this.product = () -> lookupFactory
+				.searchInTableLookup(I_M_Product.Table_Name)
 				.findById(productRecord.getM_Product_ID());
 
 		this.packageSize = productRecord.getPackageSize();
