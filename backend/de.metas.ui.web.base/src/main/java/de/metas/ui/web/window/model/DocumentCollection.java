@@ -716,7 +716,7 @@ public class DocumentCollection
 				// NOTE: we do this even if we will have to invalidate the whole document because we want to collect the events for frontend.
 				// Ideally would be to just invalidate the root document if that was required and frontend had to deal with it.
 				final Collection<IncludedDocumentToInvalidate> includedDocumentsToInvalidate = documentToInvalidate.getIncludedDocuments();
-				if(!includedDocumentsToInvalidate.isEmpty())
+				if (!includedDocumentsToInvalidate.isEmpty())
 				{
 					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 					{
