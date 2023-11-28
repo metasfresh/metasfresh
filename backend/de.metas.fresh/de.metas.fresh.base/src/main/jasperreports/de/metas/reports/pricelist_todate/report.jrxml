@@ -148,9 +148,9 @@
 	<group name="BpHeader" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true" footerPosition="CollateAtBottom">
 		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
 		<groupHeader>
-			<band height="95">
+			<band height="110">
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-6" x="0" y="40" width="270" height="48" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
+					<reportElement key="subreport-6" x="0" y="59" width="270" height="48" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
 						<printWhenExpression><![CDATA[new Boolean ($F{c_bpartner_location_id} != null)]]></printWhenExpression>
 					</reportElement>
 					<subreportParameter name="bp_loc_id">
@@ -163,7 +163,7 @@
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 				</subreport>
 				<textField>
-					<reportElement key="textField-16" x="42" y="28" width="318" height="12" forecolor="#000000" uuid="a5357d90-aa88-41a5-a675-94c308cbfb33"/>
+					<reportElement key="textField-16" x="42" y="47" width="318" height="12" forecolor="#000000" uuid="a5357d90-aa88-41a5-a675-94c308cbfb33"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
@@ -178,23 +178,23 @@
 	<group name="PLV_Group" isStartNewColumn="true">
 		<groupExpression><![CDATA[$F{plv_name}]]></groupExpression>
 		<groupHeader>
-			<band height="50">
+			<band height="19">
 				<textField>
-					<reportElement key="textField-16" x="42" y="25" width="76" height="12" forecolor="#000000" uuid="41fd8138-a5d8-441a-8e60-903728fce04e"/>
+					<reportElement key="textField-16" x="42" y="1" width="76" height="12" forecolor="#000000" uuid="41fd8138-a5d8-441a-8e60-903728fce04e"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pricelist}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-16" x="118" y="25" width="242" height="12" forecolor="#000000" uuid="2f6135fe-e69a-4cd6-8f19-b9cbfeda28a9"/>
+					<reportElement key="textField-16" x="118" y="1" width="242" height="12" forecolor="#000000" uuid="2f6135fe-e69a-4cd6-8f19-b9cbfeda28a9"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{plv_name}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement key="textField-20" x="384" y="26" width="89" height="12" forecolor="#000000" uuid="ea0e196f-4c86-4f86-9c4f-6f6e3fa23747"/>
+					<reportElement key="textField-20" x="384" y="2" width="89" height="12" forecolor="#000000" uuid="ea0e196f-4c86-4f86-9c4f-6f6e3fa23747"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -207,7 +207,7 @@
 					<textFieldExpression><![CDATA[( $R{price_validity})]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="444" y="26" width="91" height="12" forecolor="#000000" uuid="d4eab156-dedc-45eb-a508-a11ba9b92665"/>
+					<reportElement key="textField-20" x="444" y="2" width="91" height="12" forecolor="#000000" uuid="d4eab156-dedc-45eb-a508-a11ba9b92665"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
