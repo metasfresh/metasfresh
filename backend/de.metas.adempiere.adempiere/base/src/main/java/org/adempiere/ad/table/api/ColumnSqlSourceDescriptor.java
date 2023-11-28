@@ -74,6 +74,9 @@ public class ColumnSqlSourceDescriptor
 	}
 
 	@NonNull
-	public String getLinkColumnNameNotNull() {return Check.assumeNotNull(linkColumnName, "linkColumnName is not empty");}
+	public String getLinkColumnNameNotNull()
+	{
+		return Check.assumeNotNull(linkColumnName, "linkColumnName is not empty");
+	}
 
 }
