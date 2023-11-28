@@ -6,11 +6,13 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.DisplayType;
@@ -57,7 +59,11 @@ public class LookupDescriptorProviders
 	 */
 	public static final LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private ADReferenceService _adReferenceService;
+
+	private static final String SYSCONFIG_PageLength = "webui.lookup.pageLength";
+	private static final int DEFAULT_PageLength = 10;
 
 	public LookupDescriptorProviders(
 			@Nullable final ADReferenceService adReferenceService)
@@ -75,7 +81,11 @@ public class LookupDescriptorProviders
 		return adReferenceService;
 	}
 
-	public SqlLookupDescriptorProviderBuilder sql() {return new SqlLookupDescriptorProviderBuilder(getAdReferenceService());}
+	public SqlLookupDescriptorProviderBuilder sql()
+	{
+		return new SqlLookupDescriptorProviderBuilder(getAdReferenceService())
+				.setPageLength(sysConfigBL.getIntValue(SYSCONFIG_PageLength, DEFAULT_PageLength));
+	}
 
 	public LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			@NonNull final ReferenceId AD_Reference_Value_ID,
