@@ -87,8 +87,7 @@ BEGIN
     FROM c_bpartner bp
              INNER JOIN M_PriceList pl ON bp.m_pricingsystem_id = pl.m_pricingsystem_id
              INNER JOIN M_PriceList_Version plv ON pl.m_pricelist_id = plv.m_pricelist_id
-    WHERE bp.iscustomer = 'Y'
-      AND pl.issopricelist = p_issotrx
+    WHERE pl.issopricelist = p_issotrx
       AND plv.validfrom >= p_validfrom
       AND (p_C_BPartner_ID IS NULL OR bp.c_bpartner_id = p_C_BPartner_ID)
       AND (p_C_BP_Group_ID IS NULL OR bp.c_bp_group_id = p_C_BP_Group_ID);
