@@ -34,7 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -75,6 +75,7 @@ final class DocumentAttachments
 	private static final String ID_SEPARATOR = "_";
 	private static final Splitter ID_Splitter = Splitter.on(ID_SEPARATOR);
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
+	private static final DocumentId NEWEST_DOCUMENT_ID = DocumentId.of("NEWEST");
 
 	private final AttachmentEntryService attachmentEntryService;
 
@@ -140,25 +141,38 @@ final class DocumentAttachments
 		notifyRelatedDocumentTabsChanged();
 	}
 
-	public Optional<IDocumentAttachmentEntry> getNewest()
+	@NonNull
+	public IDocumentAttachmentEntry getNewest()
 	{
-		final Optional<IDocumentAttachmentEntry> newestAttachment = attachmentEntryService.getByReferencedRecord(recordRef)
+		final Optional<IDocumentAttachmentEntry> newestAttachment = getNewestAttachment();
+		final Optional<IDocumentAttachmentEntry> newestArchive = this.getNewestArchive();
+		if (!newestAttachment.isPresent() && !newestArchive.isPresent())
+		{
+			throw new EntityNotFoundException(NEWEST_DOCUMENT_ID.toJson());
+		}
+		final IDocumentAttachmentEntry archiveEntry = newestArchive.orElse(null);
+		final IDocumentAttachmentEntry attachmentEntry = newestAttachment.orElse(null);
+		if (archiveEntry == null)
+		{
+			return attachmentEntry;
+		}
+		if (attachmentEntry == null)
+		{
+			return archiveEntry;
+		}
+		final Instant archiveCreatedOn = archiveEntry.getCreated();
+		final Instant attachmentCreatedOn = attachmentEntry.getCreated();
+		return archiveCreatedOn.compareTo(attachmentCreatedOn) > 0 ? archiveEntry : attachmentEntry;
+	}
+
+	@NonNull
+	private Optional<IDocumentAttachmentEntry> getNewestAttachment()
+	{
+		return attachmentEntryService.getByReferencedRecord(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(DocumentId.of(entry.getId()), entry))
 				.map(IDocumentAttachmentEntry::cast)
 				.findFirst();
-		final Optional<IDocumentAttachmentEntry> newestArchive = this.getNewestArchive();
-		if (!newestAttachment.isPresent())
-		{
-			return newestArchive;
-		}
-		if (!newestArchive.isPresent())
-		{
-			return newestAttachment;
-		}
-		final ZonedDateTime archiveCreatedOn = newestArchive.get().getCreated();
-		final ZonedDateTime attachmentCreatedOn = newestAttachment.get().getCreated();
-		return archiveCreatedOn.compareTo(attachmentCreatedOn) > 0 ? newestArchive : newestAttachment;
 	}
 
 	private Optional<IDocumentAttachmentEntry> getNewestArchive()
@@ -169,8 +183,12 @@ final class DocumentAttachments
 				.map(archive -> DocumentArchiveEntry.of(DocumentId.of(archive.getAD_Archive_ID()), archive));
 	}
 
-	public IDocumentAttachmentEntry getEntry(final DocumentId id)
+	public IDocumentAttachmentEntry getEntry(@NonNull final DocumentId id)
 	{
+		if (NEWEST_DOCUMENT_ID.equals(id))
+		{
+			return getNewest();
+		}
 		final IPair<String, Integer> prefixAndId = toPrefixAndEntryId(id);
 		final String idPrefix = prefixAndId.getLeft();
 		final int entryId = prefixAndId.getRight();

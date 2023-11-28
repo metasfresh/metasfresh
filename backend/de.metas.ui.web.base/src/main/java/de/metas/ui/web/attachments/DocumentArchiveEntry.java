@@ -1,19 +1,15 @@
 package de.metas.ui.web.attachments;
 
 import de.metas.attachments.AttachmentEntryType;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import org.adempiere.archive.api.IArchiveBL;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.MimeType;
-import org.compiere.util.TimeUtil;
 
 import java.net.URI;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 /*
  * #%L
@@ -41,7 +37,6 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 {
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	/* package */
 	static DocumentArchiveEntry of(final DocumentId id, final I_AD_Archive archive)
@@ -98,10 +93,9 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
-	public ZonedDateTime getCreated()
+	public Instant getCreated()
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(archive.getAD_Org_ID()));
-		return ZonedDateTime.of(TimeUtil.asLocalDateTime(archive.getCreated(), timeZone), timeZone);
+		return archive.getCreated().toInstant();
 	}
 
 }

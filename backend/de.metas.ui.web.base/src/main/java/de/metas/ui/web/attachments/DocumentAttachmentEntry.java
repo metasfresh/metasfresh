@@ -9,7 +9,7 @@ import lombok.ToString;
 import org.compiere.Adempiere;
 
 import java.net.URI;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 /*
  * #%L
@@ -37,12 +37,12 @@ import java.time.ZonedDateTime;
  * Attachment entry
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString
 class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 {
-	/* package */static DocumentAttachmentEntry of(@NonNull final DocumentId id, @NonNull final AttachmentEntry entry)
+	/* package */
+	static DocumentAttachmentEntry of(@NonNull final DocumentId id, @NonNull final AttachmentEntry entry)
 	{
 		return new DocumentAttachmentEntry(id, entry);
 	}
@@ -96,8 +96,8 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
-	public ZonedDateTime getCreated()
+	public Instant getCreated()
 	{
-		return entry.getCreatedUpdatedInfo().getCreated();
+		return entry.getCreatedUpdatedInfo().getCreated().toInstant();
 	}
 }

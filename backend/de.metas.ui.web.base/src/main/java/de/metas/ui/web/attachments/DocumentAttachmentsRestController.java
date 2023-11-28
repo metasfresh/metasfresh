@@ -32,7 +32,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -179,27 +178,15 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId entryId = DocumentId.of(entryIdStr);
+		final DocumentId entryId = DocumentId.of(entryIdStr.toUpperCase());
 		final IDocumentAttachmentEntry entry = getDocumentAttachments(windowIdStr, documentId)
 				.getEntry(entryId);
 
 		return toResponseBody(entry);
 	}
 
-	@GetMapping("/newest")
-	public ResponseEntity<StreamingResponseBody> getAttachmentByCreatedOrder(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentId )
-	{
-		userSession.assertLoggedIn();
-
-		final Optional<IDocumentAttachmentEntry> newestAttachment = getDocumentAttachments(windowIdStr, documentId).getNewest();
-		return newestAttachment.map(DocumentAttachmentsRestController::toResponseBody)
-				.orElse(ResponseEntity.notFound().build());
-	}
-
 	@NonNull
-	private static ResponseEntity<StreamingResponseBody> toResponseBody(final IDocumentAttachmentEntry entry)
+	private static ResponseEntity<StreamingResponseBody> toResponseBody(@NonNull final IDocumentAttachmentEntry entry)
 	{
 		final AttachmentEntryType type = entry.getType();
 		switch (type)
