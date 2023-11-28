@@ -9,25 +9,24 @@ DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_a
 ;
 
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1),
-    p_DryRun              char(1),
-    p_ImportAllProducts   char(1),
-    p_DateAcctFrom        date,
-    p_DateAcctTo          date
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1),
+    p_DryRun                  char(1),
+    p_ImportOnlyGivenProducts char(1),
+    p_DateAcctFrom            date,
+    p_DateAcctTo              date
 )
 ;
 
-
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1) = 'N',
-    p_DryRun              char(1) = 'N',
-    p_ImportAllProducts   char(1) = 'Y',
-    p_DateAcctFrom        date = NULL,
-    p_DateAcctTo          date = NULL
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1) = 'N',
+    p_DryRun                  char(1) = 'N',
+    p_ImportOnlyGivenProducts char(1) = 'N',
+    p_DateAcctFrom            date = NULL,
+    p_DateAcctTo              date = NULL
 )
     RETURNS VOID
 AS
@@ -38,11 +37,11 @@ DECLARE
     v_rowcount      numeric;
     v_record        record;
 BEGIN
-    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_DateAcctFrom=%, p_DateAcctTo=%',
+    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_ImportOnlyGivenProducts=%, p_DateAcctFrom=%, p_DateAcctTo=%',
         p_M_Inventory_ID,
         p_ProductAssetAccount,
         p_RecreateLines,
-        p_ImportAllProducts,
+        p_ImportOnlyGivenProducts,
         p_DryRun,
         p_DateAcctFrom,
         p_DateAcctTo;
@@ -78,7 +77,7 @@ BEGIN
     -- Sum-up the qtys from Fact_Acct
     --
     DROP TABLE IF EXISTS tmp_fact_acct;
-    IF (p_ImportAllProducts == 'Y') THEN
+    IF (p_ImportOnlyGivenProducts == 'N') THEN
         CREATE TEMPORARY TABLE tmp_fact_acct AS
         SELECT loc.m_warehouse_id,
                fa.m_product_id,

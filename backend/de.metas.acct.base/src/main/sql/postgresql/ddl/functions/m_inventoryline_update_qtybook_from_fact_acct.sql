@@ -1,22 +1,22 @@
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1),
-    p_DryRun              char(1),
-    p_ImportAllProducts   char(1),
-    p_DateAcctFrom        date,
-    p_DateAcctTo          date
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1),
+    p_DryRun                  char(1),
+    p_ImportOnlyGivenProducts char(1),
+    p_DateAcctFrom            date,
+    p_DateAcctTo              date
 )
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1) = 'N',
-    p_DryRun              char(1) = 'N',
-    p_ImportAllProducts   char(1) = 'Y',
-    p_DateAcctFrom        date = NULL,
-    p_DateAcctTo          date = NULL
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1) = 'N',
+    p_DryRun                  char(1) = 'N',
+    p_ImportOnlyGivenProducts char(1) = 'N',
+    p_DateAcctFrom            date = NULL,
+    p_DateAcctTo              date = NULL
 )
     RETURNS VOID
 AS
@@ -27,11 +27,11 @@ DECLARE
     v_rowcount      numeric;
     v_record        record;
 BEGIN
-    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_DateAcctFrom=%, p_DateAcctTo=%',
+    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_ImportOnlyGivenProducts=%, p_DateAcctFrom=%, p_DateAcctTo=%',
         p_M_Inventory_ID,
         p_ProductAssetAccount,
         p_RecreateLines,
-        p_ImportAllProducts,
+        p_ImportOnlyGivenProducts,
         p_DryRun,
         p_DateAcctFrom,
         p_DateAcctTo;
@@ -67,26 +67,25 @@ BEGIN
     -- Sum-up the qtys from Fact_Acct
     --
     DROP TABLE IF EXISTS tmp_fact_acct;
-    IF (p_ImportAllProducts == 'Y') THEN
-
-            CREATE TEMPORARY TABLE tmp_fact_acct AS
-            SELECT loc.m_warehouse_id,
-                   fa.m_product_id,
-                   fa.c_uom_id,
-                   SUM(fa.amtacctdr - fa.amtacctcr) AS amt,
-                   SUM(fa.qty)                      AS qty
-            FROM fact_acct fa
-                     INNER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
-                     LEFT OUTER JOIN m_locator loc ON loc.m_locator_id = fa.m_locator_id
-            WHERE ev.value = p_ProductAssetAccount
-              AND (v_inventoryInfo.DateAcctFrom IS NULL OR fa.dateacct >= v_inventoryInfo.DateAcctFrom::date)
-              AND fa.dateacct::date <= v_inventoryInfo.DateAcctTo::date
-              AND loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
-              AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id IN (p_M_Inventory_ID))
-            GROUP BY loc.m_warehouse_id, fa.m_product_id, fa.c_uom_id;
-            GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-            CREATE UNIQUE INDEX ON tmp_fact_acct (m_product_id);
-            RAISE NOTICE 'Prepared % products from Fact_Acct', v_rowcount;
+    IF (p_ImportOnlyGivenProducts == 'N') THEN
+        CREATE TEMPORARY TABLE tmp_fact_acct AS
+        SELECT loc.m_warehouse_id,
+               fa.m_product_id,
+               fa.c_uom_id,
+               SUM(fa.amtacctdr - fa.amtacctcr) AS amt,
+               SUM(fa.qty)                      AS qty
+        FROM fact_acct fa
+                 INNER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
+                 LEFT OUTER JOIN m_locator loc ON loc.m_locator_id = fa.m_locator_id
+        WHERE ev.value = p_ProductAssetAccount
+          AND (v_inventoryInfo.DateAcctFrom IS NULL OR fa.dateacct >= v_inventoryInfo.DateAcctFrom::date)
+          AND fa.dateacct::date <= v_inventoryInfo.DateAcctTo::date
+          AND loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
+          AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id IN (p_M_Inventory_ID))
+        GROUP BY loc.m_warehouse_id, fa.m_product_id, fa.c_uom_id;
+        GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+        CREATE UNIQUE INDEX ON tmp_fact_acct (m_product_id);
+        RAISE NOTICE 'Prepared % products from Fact_Acct', v_rowcount;
 
     ELSE
         CREATE TEMPORARY TABLE tmp_fact_acct AS
@@ -103,7 +102,7 @@ BEGIN
           AND fa.dateacct::date <= v_inventoryInfo.DateAcctTo::date
           AND loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
           AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id = (p_M_Inventory_ID))
-          AND EXISTS (select 1 from m_inventoryline il where il.m_inventory_id=p_M_Inventory_ID and fa.m_product_id=il.m_product_id)
+          AND EXISTS(SELECT 1 FROM m_inventoryline il WHERE il.m_inventory_id = p_M_Inventory_ID AND fa.m_product_id = il.m_product_id)
 
         GROUP BY loc.m_warehouse_id, fa.m_product_id, fa.c_uom_id;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
