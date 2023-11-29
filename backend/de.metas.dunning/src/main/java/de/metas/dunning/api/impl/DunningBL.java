@@ -22,7 +22,6 @@ import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.notification.NotificationGroupName;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
@@ -50,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DunningBL implements IDunningBL
 {
-	private final static NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.MassDunning.OrgBPUserNotifications");
+
 
 	private final Logger logger = LogManager.getLogger(getClass());
 
@@ -234,8 +233,8 @@ public class DunningBL implements IDunningBL
 		final String content = null;
 		final OrgId orgId = null;
 		final UserNotificationRequest notification = UserNotificationRequest.builder()
-				.notificationGroupName(NOTIFICATION_GROUP_NAME)
-				.recipient(Recipient.allUsersForGroupAndOrgId(NOTIFICATION_GROUP_NAME, orgId))
+				.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
+				.recipient(Recipient.allUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
 				.contentPlain(content)
 				.build();
 		Services.get(INotificationBL.class).send(notification);

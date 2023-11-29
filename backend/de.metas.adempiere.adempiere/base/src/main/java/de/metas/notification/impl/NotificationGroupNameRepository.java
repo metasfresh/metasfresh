@@ -73,9 +73,15 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 	}
 
 	@Override
-	public boolean isRestrictToOrgBPUsers(final NotificationGroupName notificationGroupName)
+	public boolean isNotifyOrgBpUsersOnly(final NotificationGroupName notificationGroupName)
 	{
-		return false;
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_NotificationGroup.COLUMNNAME_InternalName, notificationGroupName.getValueAsString())
+				.addEqualsFilter(I_AD_NotificationGroup.COLUMN_IsNotifyOrgBPUsersOnly, true)
+				.create()
+				.anyMatch();
 	}
 
 	private ImmutableBiMap<Integer, NotificationGroupName> getNotificationGroupInternalNamesById()

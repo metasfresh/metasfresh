@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_NotificationGroup extends org.compiere.model.PO implements I_AD_NotificationGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -582648003L;
+	private static final long serialVersionUID = 1837200981L;
 
     /** Standard Constructor */
     public X_AD_NotificationGroup (final Properties ctx, final int AD_NotificationGroup_ID, @Nullable final String trxName)
@@ -103,6 +103,18 @@ public class X_AD_NotificationGroup extends org.compiere.model.PO implements I_A
 	public java.lang.String getInternalName() 
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
+	public void setIsNotifyOrgBPUsersOnly (final boolean IsNotifyOrgBPUsersOnly)
+	{
+		set_Value (COLUMNNAME_IsNotifyOrgBPUsersOnly, IsNotifyOrgBPUsersOnly);
+	}
+
+	@Override
+	public boolean isNotifyOrgBPUsersOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotifyOrgBPUsersOnly);
 	}
 
 	@Override

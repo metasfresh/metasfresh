@@ -20,15 +20,19 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -77,7 +81,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 	{
 		final int notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
 
-		final boolean restrictToOrgBPUsers = notificationGroupNamesRepo.isRestrictToOrgBPUsers(notificationGroupName);
+		final boolean restrictToOrgBPUsers = notificationGroupNamesRepo.isNotifyOrgBpUsersOnly(notificationGroupName);
 
 		final List<UserId> userIdsToBeNotified = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
@@ -93,6 +97,27 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 		return userIdsToBeNotified;
 	}
 
+	@Override
+	public void create(@NonNull final UserNotificationGroupCreateRequest request)
+	{
+		final I_AD_User_NotificationGroup userNotificationGroup = InterfaceWrapperHelper.newInstance(I_AD_User_NotificationGroup.class);
+		userNotificationGroup.setAD_User_ID(request.getUserId().getRepoId());
+		userNotificationGroup.setAD_Org_ID(request.getOrgId().getRepoId());
+		userNotificationGroup.setAD_NotificationGroup_ID(notificationGroupNamesRepo.getNotificationGroupId(request.getNotificationGroupName()));
+		userNotificationGroup.setNotificationType(fromNotificationType(request.getNotificationType()));
+		saveRecord(userNotificationGroup);
+	}
+
+	@Override
+	public void delete(final UserNotificationGroupDeleteRequest request)
+	{
+		queryBL.createQueryBuilder(I_AD_User_NotificationGroup.class)
+				.addEqualsFilter(I_AD_User_NotificationGroup.COLUMNNAME_AD_User_ID, request.getUserId())
+				.addEqualsFilter(I_AD_User_NotificationGroup.COLUMNNAME_AD_NotificationGroup_ID, notificationGroupNamesRepo.getNotificationGroupId(request.getNotificationGroupName()))
+				.create()
+				.delete();
+	}
+
 	private UserNotificationsConfig retrieveUserNotificationsConfig(final UserId adUserId)
 	{
 		final I_AD_User user = userDAO.getById(adUserId);
@@ -104,7 +129,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_AD_User_NotificationGroup.class)
-				.map(notificationsGroupRecord -> toUserNotificationsGroup(notificationsGroupRecord))
+				.map(this::toUserNotificationsGroup)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
@@ -124,6 +149,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.build();
 	}
 
+	@Nullable
 	private UserNotificationsGroup toUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
 	{
 		if (!notificationsGroupRecord.isActive())
@@ -170,5 +196,23 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 		{
 			throw new AdempiereException("Unknown notification type: " + notificationTypeCode);
 		}
+	}
+
+	@NonNull
+	private static String fromNotificationType(@NonNull final NotificationType notificationType)
+	{
+		switch (notificationType)
+		{
+			case Notice:
+				return X_AD_User_NotificationGroup.NOTIFICATIONTYPE_Notice;
+			case EMail:
+				return X_AD_User_NotificationGroup.NOTIFICATIONTYPE_EMail;
+			case NotifyUserInCharge:
+				return X_AD_User_NotificationGroup.NOTIFICATIONTYPE_NotifyUserInCharge;
+			default:
+				//shall never happen
+				return null;
+		}
+
 	}
 }

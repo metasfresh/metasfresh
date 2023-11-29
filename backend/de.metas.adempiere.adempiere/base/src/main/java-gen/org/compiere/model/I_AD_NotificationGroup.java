@@ -206,6 +206,27 @@ public interface I_AD_NotificationGroup
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Notify organization business partner users only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNotifyOrgBPUsersOnly (boolean IsNotifyOrgBPUsersOnly);
+
+	/**
+	 * Get Notify organization business partner users only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNotifyOrgBPUsersOnly();
+
+	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_IsNotifyOrgBPUsersOnly = new ModelColumn<>(I_AD_NotificationGroup.class, "IsNotifyOrgBPUsersOnly", null);
+	String COLUMNNAME_IsNotifyOrgBPUsersOnly = "IsNotifyOrgBPUsersOnly";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
