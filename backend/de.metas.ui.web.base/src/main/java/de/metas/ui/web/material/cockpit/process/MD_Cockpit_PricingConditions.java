@@ -1,7 +1,10 @@
 package de.metas.ui.web.material.cockpit.process;
 
+import java.util.Objects;
 import java.util.Set;
 
+import de.metas.product.ProductId;
+import de.metas.util.lang.RepoIdAwares;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableSet;
@@ -37,7 +40,7 @@ public class MD_Cockpit_PricingConditions extends MaterialCockpitViewBasedProces
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> productIds = getProductIds();
+		final Set<ProductId> productIds = getProductIds();
 		if (productIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -49,15 +52,15 @@ public class MD_Cockpit_PricingConditions extends MaterialCockpitViewBasedProces
 	@Override
 	protected String doIt()
 	{
-		getResult().setRecordsToOpen(I_M_Product.Table_Name, getProductIds(), ProductPricingConditionsViewFactory.WINDOW_ID_STRING);
+		getResult().setRecordsToOpen(I_M_Product.Table_Name, RepoIdAwares.asRepoIdsSet(getProductIds()), ProductPricingConditionsViewFactory.WINDOW_ID_STRING);
 		return MSG_OK;
 	}
 
-	private Set<Integer> getProductIds()
+	private Set<ProductId> getProductIds()
 	{
 		return streamSelectedRows()
 				.map(MaterialCockpitRow::getProductId)
-				.filter(productId -> productId > 0)
+				.filter(Objects::nonNull)
 				.distinct()
 				.limit(2)
 				.collect(ImmutableSet.toImmutableSet());

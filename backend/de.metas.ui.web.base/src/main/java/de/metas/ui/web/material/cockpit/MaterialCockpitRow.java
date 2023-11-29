@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,6 +39,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -99,7 +101,7 @@ public class MaterialCockpitRow implements IViewRow
 	private final LocalDate date;
 
 	@Getter
-	private final int productId;
+	private final ProductId productId;
 
 	public static final String FIELDNAME_QtyStockEstimateSeqNoAtDate = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate;
 	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNoAtDate, //
@@ -339,7 +341,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
-			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280)})
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280) },
+			zoomInto = true)
 	private final Supplier<LookupValue> product;
 
 	private final DocumentId documentId;
@@ -394,7 +397,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = productId.getRepoId();
+		this.productId = productId;
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
@@ -426,9 +429,7 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = () -> lookupFactory
-				.searchInTableLookup(I_M_Product.Table_Name)
-				.findById(productRecord.getM_Product_ID());
+		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -533,7 +534,7 @@ public class MaterialCockpitRow implements IViewRow
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
 				documentId);
 
-		this.productId = productId;
+		this.productId = ProductId.ofRepoId(productId);
 
 		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
 		this.productValue = productRecord.getValue();
@@ -551,9 +552,7 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = () -> lookupFactory
-				.searchInTableLookup(I_M_Product.Table_Name)
-				.findById(productRecord.getM_Product_ID());
+		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(this.productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -631,7 +630,7 @@ public class MaterialCockpitRow implements IViewRow
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
 				documentId);
 
-		this.productId = productId;
+		this.productId = ProductId.ofRepoId(productId);
 
 		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
 		this.productValue = productRecord.getValue();
@@ -649,9 +648,7 @@ public class MaterialCockpitRow implements IViewRow
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
-		this.product = () -> lookupFactory
-				.searchInTableLookup(I_M_Product.Table_Name)
-				.findById(productRecord.getM_Product_ID());
+		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -729,4 +726,18 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		return values.get(this);
 	}
+
+	public DocumentZoomIntoInfo getZoomIntoInfo(@NonNull final String fieldName)
+	{
+		if (FIELDNAME_M_Product_ID.equals(fieldName))
+		{
+			final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+			return lookupFactory.searchInTableLookup(I_M_Product.Table_Name).getDocumentZoomInto(ProductId.toRepoId(productId));
+		}
+		else
+		{
+			throw new AdempiereException("Field " + fieldName + " does not support zoom info");
+		}
+	}
+
 }
