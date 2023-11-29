@@ -433,8 +433,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
 		icRecord.setIncotermLocation(inOut.getIncotermLocation());
 
-		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
-
 		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
 
 		setWarehouseId(icRecord);
