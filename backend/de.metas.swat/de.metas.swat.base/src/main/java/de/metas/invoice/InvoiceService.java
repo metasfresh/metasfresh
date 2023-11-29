@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.compiere.util.Env.getCtx;
 
@@ -145,16 +146,6 @@ public class InvoiceService
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
-	}
-
-	@NonNull
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandsByInOutLines(@NonNull final List<I_M_InOutLine> shipmentLines)
-	{
-		return shipmentLines.stream()
-				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	@NonNull
