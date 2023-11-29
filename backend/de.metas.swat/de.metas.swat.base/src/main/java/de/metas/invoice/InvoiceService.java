@@ -28,14 +28,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
@@ -59,18 +60,23 @@ public class InvoiceService
 {
 	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
 
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private final AsyncBatchService asyncBatchService;
-
+	
 	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
 	{
 		this.asyncBatchService = asyncBatchService;
 	}
 
+	/**
+	 * @param shipmentLines the inout-lines for whose ICs the invoices shall be created
+	 * @param asyncBatchId the async-batch-Id to create the workpackage(s) for and to wait for
+	 */
 	@NonNull
-	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		if (shipmentLines.isEmpty())
 		{
@@ -84,13 +90,20 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
 	}
 
-	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	/**
+	 * @param invoiceCandidateIds the Ids of the ICs to invoice
+	 * @param asyncBatchId the async-batch-Id to create the workpackage(s) for and to wait for
+	 */
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(
+			@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds,
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		processInvoiceCandidates(ImmutableSet.copyOf(invoiceCandidateIds));
+		processInvoiceCandidates(ImmutableSet.copyOf(invoiceCandidateIds), asyncBatchId);
 
+		// retrieve the result
 		return invoiceCandidateIds.stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
 				.flatMap(List::stream)
@@ -99,22 +112,11 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	private void processInvoiceCandidates(
+			@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, 
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
-
-		final IInvoiceCandidateEnqueuer enqueuer = invoiceCandBL.enqueueForInvoicing()
-				.setContext(getCtx())
-				.setInvoicingParams(createDefaultIInvoicingParams())
-				.setFailIfNothingEnqueued(true);
-
-		// this creates workpackages
-		enqueuer.prepareSelection(invoiceCandidatesSelectionId);
-
-		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> enqueuer
-				.enqueueSelection(invoiceCandidatesSelectionId);
-
-		asyncBatchService.executeBatch(enqueueInvoiceCandidates, AsyncBatchId.NONE_ASYNC_BATCH_ID);
+		generateInvoicesForAsyncBatch(invoiceCandidateIds, asyncBatchId);
 	}
 
 	@NonNull
@@ -126,6 +128,27 @@ public class InvoiceService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
+
+		final IInvoiceCandidateEnqueuer enqueuer = invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setC_Async_Batch(asyncBatch)
+				.setInvoicingParams(createDefaultIInvoicingParams())
+				.setFailIfNothingEnqueued(true);
+		
+		// this creates workpackages
+		enqueuer.prepareSelection(invoiceCandidatesSelectionId);
+
+		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> enqueuer
+				.enqueueSelection(invoiceCandidatesSelectionId);
+
+		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
+	}
+	
 	@NonNull
 	private IInvoicingParams createDefaultIInvoicingParams()
 	{
