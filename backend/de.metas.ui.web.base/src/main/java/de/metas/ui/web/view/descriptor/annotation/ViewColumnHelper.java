@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.descriptor.annotation;
 
+import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -150,6 +151,30 @@ public final class ViewColumnHelper
 		@Singular
 		ImmutableSet<MediaType> restrictToMediaTypes;
 		boolean hideIfConfiguredSysConfig;
+
+		public static List<ClassViewColumnOverrides> parseCommaSeparatedString(@Nullable final String string)
+		{
+			final String stringNorm = StringUtils.trimBlankToNull(string);
+
+			if (string == null || "-".equals(string))
+			{
+				return ImmutableList.of();
+			}
+
+			final ImmutableList.Builder<ClassViewColumnOverrides> columns = ImmutableList.builder();
+			for (final String part : Splitter.on(",").splitToList(stringNorm))
+			{
+				final String fieldName = StringUtils.trimBlankToNull(part);
+				if (fieldName == null)
+				{
+					throw new AdempiereException("Empty field name not allowed: `" + string + "`");
+				}
+
+				columns.add(builder(fieldName).hideIfConfiguredSysConfig(false).build());
+			}
+
+			return columns.build();
+		}
 	}
 
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(

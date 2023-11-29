@@ -59,6 +59,7 @@ import java.util.List;
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory implements IViewFactory
 {
+	public static final String SYSCFG_Layout = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout";
 	/**
 	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
 	 */
@@ -143,6 +144,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
 						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
+		final String commaSeparatedFieldNames = sysConfigBL.getValue(SYSCFG_Layout, (String)null);
 		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);
 
 		final ViewLayout.Builder viewlayOutBuilder = ViewLayout.builder()
@@ -151,7 +153,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.setAllowOpeningRowDetails(false)
-				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
+				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType, commaSeparatedFieldNames)
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();
