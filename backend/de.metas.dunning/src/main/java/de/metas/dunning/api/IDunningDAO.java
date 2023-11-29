@@ -34,6 +34,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -175,4 +176,6 @@ public interface IDunningDAO extends ISingletonService
 	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
 
 	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
+
+	Collection<I_C_DunningDoc> getByIdsInTrx(@NonNull Collection<DunningDocId> dunningDocIds);
 }

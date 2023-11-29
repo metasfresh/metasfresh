@@ -49,6 +49,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +59,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public abstract class AbstractDunningDAO implements IDunningDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public final I_C_Dunning retrieveDunningForBPartner(@NonNull final BPartnerId bpartnerId)
 	{
@@ -86,7 +90,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	{
 		Check.assume(orgId.isRegular(), "Param 'orgId' needs to be > 0");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Dunning.class)
+		return queryBL.createQueryBuilder(I_C_Dunning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_IsDefault, true)
@@ -186,7 +190,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@Override
 	public final List<I_C_DunningDoc_Line> retrieveDunningDocLines(@NonNull final I_C_DunningDoc dunningDoc)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningDoc_Line.class)
+		return queryBL.createQueryBuilder(I_C_DunningDoc_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID, dunningDoc.getC_DunningDoc_ID())
 				.orderBy()
@@ -198,7 +202,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@Override
 	public final List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(@NonNull final I_C_DunningDoc_Line line)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_DunningDoc_Line_Source.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID, line.getC_DunningDoc_Line_ID())
@@ -211,7 +215,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
 	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
 				.addEqualsFilter(I_C_DunningLevel.COLUMNNAME_C_Dunning_ID, dunningId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
@@ -229,10 +233,19 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 
 	protected abstract Iterator<I_C_Dunning_Candidate> retrieveDunningCandidatesIterator(IDunningContext context, IDunningCandidateQuery query);
 
-
 	@Override
 	public I_C_DunningDoc getByIdInTrx(@NonNull final DunningDocId dunningDocId)
 	{
 		return load(dunningDocId, I_C_DunningDoc.class);
+	}
+
+	@Override
+	public Collection<I_C_DunningDoc> getByIdsInTrx(@NonNull final Collection<DunningDocId> dunningDocIds)
+	{
+		return queryBL.createQueryBuilder(I_C_DunningDoc.class)
+				.addInArrayFilter(I_C_DunningDoc.COLUMNNAME_C_DunningDoc_ID, dunningDocIds)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
 	}
 }

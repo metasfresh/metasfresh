@@ -26,6 +26,7 @@ import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
@@ -49,7 +50,10 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -65,6 +69,9 @@ public class DefaultDunningProducer implements IDunningProducer
 	private I_C_DunningDoc_Line dunningDocLine = null;
 	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
 	private final ISysConfigBL systemBL = Services.get(ISysConfigBL.class);
+	private boolean isFinished = false;
+
+	private final Collection<DunningDocId> createdDunningDocIds = new HashSet<>();
 
 	public final String SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE = "de.metas.dunning.UsePrefixedPoReference";
 
@@ -293,6 +300,8 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		dunningDAO.save(dunningDoc);
 
+		createdDunningDocIds.add(DunningDocId.ofRepoId(dunningDoc.getC_DunningDoc_ID()));
+
 		// If ProcessDunningDoc option is set in context, we need to automatically process the dunningDoc too
 		if (getDunningContext().isProperty(CONTEXT_ProcessDunningDoc, DEFAULT_ProcessDunningDoc))
 		{
@@ -333,12 +342,19 @@ public class DefaultDunningProducer implements IDunningProducer
 	public void finish()
 	{
 		completeDunningDoc();
+		isFinished = true;
 	}
 
 	@Override
 	public void addAggregator(IDunningAggregator aggregator)
 	{
 		dunningAggregators.addAggregator(aggregator);
+	}
+
+	@Override
+	public Collection<DunningDocId> getCreatedDunningDocIds()
+	{
+		return isFinished ? createdDunningDocIds : Collections.emptySet();
 	}
 
 }

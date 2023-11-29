@@ -1,5 +1,6 @@
 package de.metas.dunning.api.impl;
 
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
 import de.metas.dunning.api.IDunningBL;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +68,8 @@ public class DunningBL implements IDunningBL
 	 * NOTE: please always access it via {@link #getDunningConfig()} and never directly
 	 */
 	private IDunningConfig _config;
+	private INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 	@Override
 	public IDunningConfig getDunningConfig()
@@ -230,6 +234,14 @@ public class DunningBL implements IDunningBL
 
 		dunningProducer.finish();
 
+		sendMassNotifications(dunningProducer.getCreatedDunningDocIds());
+	}
+
+	private void sendMassNotifications(@NonNull final Collection<DunningDocId> createdDunningDocIds)
+	{
+		final Collection<I_C_DunningDoc> dunningDocs = dunningDAO.getByIdsInTrx(createdDunningDocIds);
+//FIXME split by org, and replace in template
+
 		final String content = null;
 		final OrgId orgId = null;
 		final UserNotificationRequest notification = UserNotificationRequest.builder()
@@ -237,7 +249,8 @@ public class DunningBL implements IDunningBL
 				.recipient(Recipient.allUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
 				.contentPlain(content)
 				.build();
-		Services.get(INotificationBL.class).send(notification);
+
+		notificationBL.send(notification);
 	}
 
 	@Override
