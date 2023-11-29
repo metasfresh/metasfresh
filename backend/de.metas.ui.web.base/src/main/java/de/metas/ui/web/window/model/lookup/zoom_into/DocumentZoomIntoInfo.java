@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.lookup;
+package de.metas.ui.web.window.model.lookup.zoom_into;
 
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
