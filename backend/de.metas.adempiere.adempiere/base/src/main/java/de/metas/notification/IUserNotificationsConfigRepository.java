@@ -1,7 +1,12 @@
 package de.metas.notification;
 
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -28,4 +33,6 @@ import de.metas.util.ISingletonService;
 public interface IUserNotificationsConfigRepository extends ISingletonService
 {
 	UserNotificationsConfig getByUserId(UserId adUserId);
+
+	List<UserId> getByNotificationGroupAndOrgId(@NonNull final NotificationGroupName notificationGroupName, @Nullable final OrgId orgId);
 }

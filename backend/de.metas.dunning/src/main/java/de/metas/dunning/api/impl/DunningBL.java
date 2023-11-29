@@ -21,6 +21,11 @@ import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.NotificationGroupName;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -45,6 +50,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DunningBL implements IDunningBL
 {
+	private final static NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.MassDunning.OrgBPUserNotifications");
+
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	private ReentrantLock configLock = new ReentrantLock();
@@ -223,7 +230,15 @@ public class DunningBL implements IDunningBL
 		}
 
 		dunningProducer.finish();
-		//TODO ADI: Send email from here
+
+		final String content = null;
+		final OrgId orgId = null;
+		final UserNotificationRequest notification = UserNotificationRequest.builder()
+				.notificationGroupName(NOTIFICATION_GROUP_NAME)
+				.recipient(Recipient.allUsersForGroupAndOrgId(NOTIFICATION_GROUP_NAME, orgId))
+				.contentPlain(content)
+				.build();
+		Services.get(INotificationBL.class).send(notification);
 	}
 
 	@Override

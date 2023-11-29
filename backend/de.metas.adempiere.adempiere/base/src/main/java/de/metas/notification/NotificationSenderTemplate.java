@@ -86,6 +86,8 @@ public class NotificationSenderTemplate
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
+	private final IUserNotificationsConfigRepository userNotificationsConfigRepository = Services.get(IUserNotificationsConfigRepository.class);
+	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
@@ -208,6 +210,20 @@ public class NotificationSenderTemplate
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
+		}
+		else if (recipient.isOrgUsersContainingGroup())
+		{
+			final List<UserId> userIds = userNotificationsConfigRepository.getByNotificationGroupAndOrgId(recipient.getNotificationGroupName(), recipient.getOrgId());
+			if (userIds.isEmpty())
+			{
+				final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(recipient.getNotificationGroupName());
+				if (deadletterUserId != null)
+				{
+					return Stream.of(Recipient.user(deadletterUserId));
+				}
+			}
+			return userIds.stream()
+					.map(Recipient::user);
 		}
 		else if (recipient.isGroup())
 		{

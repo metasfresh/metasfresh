@@ -1,16 +1,17 @@
 package de.metas.notification.impl;
 
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_NotificationGroup;
-
 import com.google.common.collect.ImmutableBiMap;
-
 import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_NotificationGroup;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -37,6 +38,7 @@ import de.metas.util.Services;
 public class NotificationGroupNameRepository implements INotificationGroupNameRepository
 {
 	private final CCache<Integer, ImmutableBiMap<Integer, NotificationGroupName>> notificationGroupNames = CCache.newCache(I_AD_NotificationGroup.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public NotificationGroupName getById(final int notificationGroupId)
@@ -56,6 +58,26 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 		return getNotificationGroupInternalNamesById().values();
 	}
 
+	@Override
+	@Cached
+	@Nullable
+	public UserId getDeadletterUserId(final NotificationGroupName notificationGroupName)
+	{
+		final Integer first = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_NotificationGroup.COLUMNNAME_InternalName, notificationGroupName.getValueAsString())
+				.create()
+				.first(I_AD_NotificationGroup.COLUMNNAME_Deadletter_User_ID, Integer.class);
+		return first == null ? null : UserId.ofRepoIdOrNull(first);
+	}
+
+	@Override
+	public boolean isRestrictToOrgBPUsers(final NotificationGroupName notificationGroupName)
+	{
+		return false;
+	}
+
 	private ImmutableBiMap<Integer, NotificationGroupName> getNotificationGroupInternalNamesById()
 	{
 		return notificationGroupNames.getOrLoad(0, this::retrieveNotificationGroupInternalNamesById);
@@ -63,7 +85,7 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 
 	private ImmutableBiMap<Integer, NotificationGroupName> retrieveNotificationGroupInternalNamesById()
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)
 				.addOnlyActiveRecordsFilter()
 				.create()

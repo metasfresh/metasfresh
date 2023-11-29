@@ -18,7 +18,7 @@ public interface I_C_DocType
 
 
 	/**
-	 * Set Boiler Plate.
+	 * Set Text Snippet.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_C_DocType
 	void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
 
 	/**
-	 * Get Boiler Plate.
+	 * Get Text Snippet.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -209,6 +209,27 @@ public interface I_C_DocType
 	int getC_DocTypeShipment_ID();
 
 	String COLUMNNAME_C_DocTypeShipment_ID = "C_DocTypeShipment_ID";
+
+	/**
+	 * Set Completed Notification Text Snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompletedNotification_BoilerPlate_ID (int CompletedNotification_BoilerPlate_ID);
+
+	/**
+	 * Get Completed Notification Text Snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCompletedNotification_BoilerPlate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CompletedNotification_BoilerPlate_ID = new ModelColumn<>(I_C_DocType.class, "CompletedNotification_BoilerPlate_ID", null);
+	String COLUMNNAME_CompletedNotification_BoilerPlate_ID = "CompletedNotification_BoilerPlate_ID";
 
 	/**
 	 * Get Created.
@@ -701,7 +722,6 @@ public interface I_C_DocType
 
 	/**
 	 * Set Overwrite document date on complete.
-	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -711,7 +731,6 @@ public interface I_C_DocType
 
 	/**
 	 * Get Overwrite document date on complete.
-	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -834,6 +853,73 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_IsSplitWhenDifference = new ModelColumn<>(I_C_DocType.class, "IsSplitWhenDifference", null);
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
+
+	/**
+	 * Set Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
+
+	/**
+	 * Get Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLotNo_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
+
+	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_C_DocType.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
+
+	/**
+	 * Set Mass generation text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMass_Generate_Boilerplate_ID (int Mass_Generate_Boilerplate_ID);
+
+	/**
+	 * Get Mass generation text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMass_Generate_Boilerplate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_Mass_Generate_Boilerplate_ID = new ModelColumn<>(I_C_DocType.class, "Mass_Generate_Boilerplate_ID", null);
+	String COLUMNNAME_Mass_Generate_Boilerplate_ID = "Mass_Generate_Boilerplate_ID";
+
+	/**
+	 * Set Mass generation line text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMass_Generate_Line_Boilerplate_ID (int Mass_Generate_Line_Boilerplate_ID);
+
+	/**
+	 * Get Mass generation line text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMass_Generate_Line_Boilerplate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_Mass_Generate_Line_Boilerplate_ID = new ModelColumn<>(I_C_DocType.class, "Mass_Generate_Line_Boilerplate_ID", null);
+	String COLUMNNAME_Mass_Generate_Line_Boilerplate_ID = "Mass_Generate_Line_Boilerplate_ID";
 
 	/**
 	 * Set Name.
