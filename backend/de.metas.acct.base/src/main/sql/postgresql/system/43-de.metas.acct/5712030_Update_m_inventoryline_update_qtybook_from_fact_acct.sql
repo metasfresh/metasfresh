@@ -1,4 +1,14 @@
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
+    p_M_Inventory_ID      numeric,
+    p_ProductAssetAccount varchar,
+    p_RecreateLines       char(1),
+    p_DryRun              char(1),
+    p_DateAcctFrom        date,
+    p_DateAcctTo          date
+)
+;
+
+DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
     p_M_Inventory_ID          numeric,
     p_ProductAssetAccount     varchar,
     p_RecreateLines           char(1),
@@ -82,8 +92,8 @@ BEGIN
       AND loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
       AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id = (p_M_Inventory_ID))
       AND (p_ImportOnlyGivenProducts = 'N'
-      OR
-          EXISTS(SELECT 1 FROM m_inventoryline il WHERE il.m_inventory_id = p_M_Inventory_ID AND fa.m_product_id = il.m_product_id))
+        OR
+           EXISTS(SELECT 1 FROM m_inventoryline il WHERE il.m_inventory_id = p_M_Inventory_ID AND fa.m_product_id = il.m_product_id))
 
     GROUP BY loc.m_warehouse_id, fa.m_product_id, fa.c_uom_id;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -354,5 +364,3 @@ $BODY$
     VOLATILE
     COST 100
 ;
-
-
