@@ -1,3 +1,4 @@
+/**
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
 (
     date
@@ -171,3 +172,4 @@ WHERE TRUE
 $$
     LANGUAGE sql STABLE
 ;
+**/
