@@ -25,14 +25,9 @@ package de.metas.invoice;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
-import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
@@ -40,7 +35,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -50,7 +44,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.compiere.util.Env.getCtx;
 
@@ -61,14 +54,7 @@ public class InvoiceService
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final AsyncBatchService asyncBatchService;
-
-	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
-	{
-		this.asyncBatchService = asyncBatchService;
-	}
 
 	@NonNull
 	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
@@ -105,18 +91,12 @@ public class InvoiceService
 	{
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
 
-		final IInvoiceCandidateEnqueuer enqueuer = invoiceCandBL.enqueueForInvoicing()
+		invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
 				.setInvoicingParams(createDefaultIInvoicingParams())
-				.setFailIfNothingEnqueued(true);
-
-		// this creates workpackages
-		enqueuer.prepareSelection(invoiceCandidatesSelectionId);
-
-		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> enqueuer
+				.setFailIfNothingEnqueued(true)
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
-		asyncBatchService.executeBatch(enqueueInvoiceCandidates, AsyncBatchId.NONE_ASYNC_BATCH_ID);
 	}
 
 	@NonNull
