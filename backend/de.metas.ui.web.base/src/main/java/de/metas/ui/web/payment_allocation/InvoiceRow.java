@@ -55,6 +55,8 @@ import java.util.Set;
 
 public class InvoiceRow implements IViewRow
 {
+	private static final String SYSCONFIG_IsDisplayed_PREFIX = "de.metas.ui.web.payment_allocation.InvoiceRow";
+	
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_DocType_ID")
 	private final ITranslatableString docTypeName;
 
@@ -89,6 +91,12 @@ public class InvoiceRow implements IViewRow
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "DiscountAmt", fieldName = FIELD_DiscountAmt)
 	@Getter
 	private final Amount discountAmt;
+
+	public static final String FIELD_WriteOffAmt = "writeOffAmt";
+	@ViewColumn(seqNo = 75, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "WriteOffAmt", fieldName = FIELD_WriteOffAmt,
+			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_IsDisplayed_PREFIX)
+	@Getter
+	private final Amount writeOffAmt;
 
 	public static final String FIELD_ServiceFeeAmt = "serviceFeeAmt";
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "ServiceFeeAmt", fieldName = FIELD_ServiceFeeAmt)
@@ -139,6 +147,7 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
+			@Nullable final Amount writeOffAmt,
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
@@ -154,10 +163,11 @@ public class InvoiceRow implements IViewRow
 		this.grandTotal = grandTotal;
 		this.openAmt = openAmt;
 		this.discountAmt = discountAmt;
+		this.writeOffAmt = writeOffAmt != null ? writeOffAmt : Amount.zero(grandTotal.getCurrencyCode());
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
 		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, writeOffAmt, this.serviceFeeAmt, this.bankFeeAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
@@ -249,9 +259,9 @@ public class InvoiceRow implements IViewRow
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
 	}
 
-	public InvoiceRow withPreparedForAllocationSet() { return withPreparedForAllocation(true); }
+	public InvoiceRow withPreparedForAllocationSet() {return withPreparedForAllocation(true);}
 
-	public InvoiceRow withPreparedForAllocationUnset() { return withPreparedForAllocation(false); }
+	public InvoiceRow withPreparedForAllocationUnset() {return withPreparedForAllocation(false);}
 
 	public InvoiceRow withPreparedForAllocation(final boolean isPreparedForAllocation)
 	{

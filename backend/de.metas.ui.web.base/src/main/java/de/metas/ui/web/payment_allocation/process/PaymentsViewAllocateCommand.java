@@ -158,6 +158,7 @@ public class PaymentsViewAllocateCommand
 
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
+		final Money writeOffAmt = moneyService.toMoney(row.getWriteOffAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
 
 		@Nullable
@@ -202,6 +203,7 @@ public class PaymentsViewAllocateCommand
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
+										   .writeOffAmt(writeOffAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))

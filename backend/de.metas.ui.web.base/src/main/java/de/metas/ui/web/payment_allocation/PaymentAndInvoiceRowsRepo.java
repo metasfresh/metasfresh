@@ -242,6 +242,7 @@ public class PaymentAndInvoiceRowsRepo
 				.grandTotal(invoiceToAllocate.getGrandTotal())
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
+				.writeOffAmt(null)
 				.serviceFeeAmt(serviceFeeAmount.orElse(null))
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.build();

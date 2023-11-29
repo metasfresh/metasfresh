@@ -143,7 +143,7 @@ public class Amount implements Comparable<Amount>
 		}
 	}
 
-	public static CurrencyCode getCommonCurrencyCodeOfAll(@NonNull final Amount... amounts)
+	public static CurrencyCode getCommonCurrencyCodeOfAll(final Amount... amounts)
 	{
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 

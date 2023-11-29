@@ -52,6 +52,14 @@ public class InvoiceRowReducers
 				final Amount discountAmt = Amount.of(discountAmtBD, currencyCode);
 				rowBuilder.discountAmt(discountAmt);
 			}
+			else if (InvoiceRow.FIELD_WriteOffAmt.contentEquals(fieldName))
+			{
+				final BigDecimal writeOffAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
+
+				final CurrencyCode currencyCode = row.getWriteOffAmt().getCurrencyCode();
+				final Amount writeOffAmt = Amount.of(writeOffAmtBD, currencyCode);
+				rowBuilder.discountAmt(writeOffAmt);
+			}
 			else if (InvoiceRow.FIELD_ServiceFeeAmt.contentEquals(fieldName))
 			{
 				final BigDecimal serviceFeeAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
