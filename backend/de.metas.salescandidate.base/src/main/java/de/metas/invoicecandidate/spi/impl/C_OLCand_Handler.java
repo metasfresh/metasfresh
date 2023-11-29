@@ -219,7 +219,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
-		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
 
 		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
 

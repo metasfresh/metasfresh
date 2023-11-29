@@ -425,7 +425,6 @@ public final class AggregationEngine
 	{
 		try
 		{
-			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBillTo(getBillTo(icRecord));
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
