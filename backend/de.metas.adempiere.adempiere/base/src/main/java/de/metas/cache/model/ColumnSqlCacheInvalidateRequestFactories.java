@@ -52,7 +52,8 @@ final class ColumnSqlCacheInvalidateRequestFactories
 {
 	private final static Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestFactories.class);
 
-	public static ModelCacheInvalidateRequestFactory ofDescriptor(@NonNull final ColumnSqlSourceDescriptor descriptor)
+	@Nullable
+	public static ModelCacheInvalidateRequestFactory ofDescriptorOrNull(@NonNull final ColumnSqlSourceDescriptor descriptor)
 	{
 		final FetchTargetRecordsMethod fetchTargetRecordsMethod = descriptor.getFetchTargetRecordsMethod();
 		final String targetTableName = descriptor.getTargetTableName();
@@ -69,6 +70,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 			if (!targetTableInfo.isPhysicalColumn(linkColumnName))
 			{
 				logger.warn("Column " + targetTableName + "." + linkColumnName + " it's expected to exist and be a physical column");
+				return null;
 			}
 			sqlToGetTargetRecordIdBySourceRecordId = "SELECT " + targetTableKeyColumnName
 					+ " FROM " + targetTableName
