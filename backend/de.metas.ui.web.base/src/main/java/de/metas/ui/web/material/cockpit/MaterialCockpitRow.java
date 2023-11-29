@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
@@ -29,7 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -40,8 +41,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -54,7 +53,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -142,7 +140,7 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	private final Supplier<LookupValue> manufacturer;
+	private final LookupValue manufacturer;
 
 	public static final String FIELDNAME_PackageSize = I_M_Product.COLUMNNAME_PackageSize;
 	@ViewColumn(fieldName = FIELDNAME_PackageSize, //
@@ -164,7 +162,7 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	private final Supplier<LookupValue> uom;
+	private final LookupValue uom;
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
@@ -343,7 +341,7 @@ public class MaterialCockpitRow implements IViewRow
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280) },
 			zoomInto = true)
-	private final Supplier<LookupValue> product;
+	private final LookupValue product;
 
 	private final DocumentId documentId;
 
@@ -360,9 +358,11 @@ public class MaterialCockpitRow implements IViewRow
 	private final Set<Integer> allIncludedStockRecordIds;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<MaterialCockpitRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(MaterialCockpitRow.class);
+	private final MaterialCockpitRowLookups lookups;
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowLookups lookups,
 			final Quantity qtyDemandSalesOrderAtDate,
 			final Quantity qtyDemandSalesOrder,
 			final Quantity qtyDemandPPOrderAtDate,
@@ -418,18 +418,14 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.productCategoryOrSubRowName = productCategoryRecord.getName();
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
 
-		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
+		this.uom = lookups.lookupUOMById(uomId);
 
-		this.uom = () -> lookupFactory
-				.searchInTableLookup(I_C_UOM.Table_Name)
-				.findById(uomRepoId);
-		this.manufacturer = () -> lookupFactory
-				.searchInTableLookup(I_C_BPartner.Table_Name)
-				.findById(productRecord.getManufacturer_ID());
+		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
-		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(productId);
+		this.product = lookups.lookupProductById(this.productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -480,6 +476,8 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
+
+		this.lookups = lookups;
 	}
 
 	private void assertNullOrCommonUomId(@NonNull final List<Quantity> quantitiesToVerify)
@@ -492,6 +490,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
 			final LocalDate date,
 			@NonNull final DimensionSpecGroup dimensionGroup,
@@ -541,18 +540,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
+		this.uom = lookups.lookupUOMById(uomId);
 
-		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
-		this.uom = () -> lookupFactory
-				.searchInTableLookup(I_C_UOM.Table_Name)
-				.findById(uomRepoId);
+		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
-		this.manufacturer = () -> lookupFactory
-				.searchInTableLookup(I_C_BPartner.Table_Name)
-				.findById(productRecord.getManufacturer_ID());
-
-		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(this.productId);
+		this.product = lookups.lookupProductById(this.productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -587,10 +581,13 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
+
+		this.lookups = lookups;
 	}
 
 	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
 			final LocalDate date,
 			@Nullable final ResourceId plantId,
@@ -637,18 +634,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = plantName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
+		this.uom = lookups.lookupUOMById(uomId);
 
-		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
-		this.uom = () -> lookupFactory
-				.searchInTableLookup(I_C_UOM.Table_Name)
-				.findById(uomRepoId);
+		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
-		this.manufacturer = () -> lookupFactory
-				.searchInTableLookup(I_C_BPartner.Table_Name)
-				.findById(productRecord.getManufacturer_ID());
-
-		this.product = () -> lookupFactory.searchInTableLookup(I_M_Product.Table_Name).findById(productId);
+		this.product = lookups.lookupProductById(this.productId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -680,6 +672,8 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
+
+		this.lookups = lookups;
 	}
 
 	@Override
@@ -731,8 +725,7 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		if (FIELDNAME_M_Product_ID.equals(fieldName))
 		{
-			final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
-			return lookupFactory.searchInTableLookup(I_M_Product.Table_Name).getDocumentZoomInto(ProductId.toRepoId(productId));
+			return lookups.getZoomInto(productId);
 		}
 		else
 		{
