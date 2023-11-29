@@ -339,7 +339,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280) },
+			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)},
 			zoomInto = true)
 	private final LookupValue product;
 
