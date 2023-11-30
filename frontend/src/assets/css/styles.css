@@ -1579,6 +1579,7 @@ body{
 
 .user-dropdown-item {
     padding: 1rem .7rem;
+    white-space: nowrap;
 }
 
 .user-dropdown-item i {

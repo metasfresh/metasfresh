@@ -73,6 +73,10 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String rolename;
 
+	@JsonProperty("orgname")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String orgname;
+
 	@JsonProperty("language")
 	private final JSONLookupValue language;
 	@JsonProperty("locale")
@@ -104,6 +108,7 @@ public class JSONUserSession
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
+			orgname = userSession.getOrgName();
 
 			fullname = userSession.getUserFullname();
 			email = userSession.getUserEmail();
@@ -121,6 +126,7 @@ public class JSONUserSession
 		{
 			username = null;
 			rolename = null;
+			orgname = null;
 			fullname = null;
 			email = null;
 			avatarId = null;

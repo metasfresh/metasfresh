@@ -144,8 +144,10 @@ class UserDropdown extends Component {
 
         {open && (
           <div className="user-dropdown-list" onKeyDown={this.handleKeyDown}>
-            <div className="user-dropdown-item user-dropdown-header-item meta-text-primary">
-              {me.fullname}
+            <div className="user-dropdown-item user-dropdown-header-item">
+              <span className="meta-text-primary">{me.fullname}</span>
+              <br />
+              <span>({me.orgname})</span>
             </div>
             <hr className="context-menu-separator" />
             {

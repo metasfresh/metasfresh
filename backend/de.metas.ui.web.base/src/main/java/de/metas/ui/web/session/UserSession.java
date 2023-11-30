@@ -15,12 +15,12 @@ import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -295,6 +295,11 @@ public class UserSession
 		return getData().getOrgId();
 	}
 
+	public String getOrgName()
+	{
+		return getData().getOrgName();
+	}
+
 	public String getAD_Language()
 	{
 		return getData().getAdLanguage();
@@ -433,7 +438,7 @@ public class UserSession
 		return oldDefaultBoilerPlate;
 	}
 
-	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld (final @Nullable ConditionsId defaultFlatrateConditionsId)
+	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld(final @Nullable ConditionsId defaultFlatrateConditionsId)
 	{
 		final InternalUserSessionData data = getData();
 		final ConditionsId oldDefaultFlatrateConditionsId = data.getDefaultFlatrateConditionsId();
