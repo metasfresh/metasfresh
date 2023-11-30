@@ -104,13 +104,18 @@ class UserDropdown extends Component {
       'userDropdown.showOrg',
       false
     );
+    const isShowRole = getSettingFromMEAsBoolean(
+      me,
+      'userDropdown.showRole',
+      true
+    );
 
     return (
       <div className="user-dropdown-list" onKeyDown={this.handleKeyDown}>
         <div className="user-dropdown-item user-dropdown-header-item">
           <span className="meta-text-primary">{me.fullname}</span>
-          <br />
-          {isShowOrg && me.orgname && <span>({me.orgname})</span>}
+          {isShowOrg && me.orgname && <div>{me.orgname}</div>}
+          {isShowRole && me.rolename && <div>{me.rolename}</div>}
         </div>
         <hr className="context-menu-separator" />
         {
