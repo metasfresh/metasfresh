@@ -12,23 +12,19 @@ import Tooltips from '../tooltips/Tooltips';
  * @extends Component
  */
 class UserDropdown extends Component {
-  constructor(props) {
-    super(props);
-  }
+  handleClickOutside = () => this.closeDropdownPanel();
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleClickOutside = () => this.props.handleUDOpen(false);
+  openDropdownPanel = () => {
+    const { handleUDOpen } = this.props;
+    handleUDOpen(true);
+  };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @todo Write the documentation
-   */
+  closeDropdownPanel = () => {
+    const { handleUDOpen, toggleTooltip } = this.props;
+    handleUDOpen(false);
+    toggleTooltip('');
+  };
+
   handleKeyDown = (e) => {
     switch (e.key) {
       case 'ArrowDown': {
@@ -67,7 +63,7 @@ class UserDropdown extends Component {
   };
 
   renderPlugins = () => {
-    const { plugins, handleUDOpen, redirect, toggleTooltip } = this.props;
+    const { plugins, redirect } = this.props;
 
     if (!plugins || plugins.length <= 0) return null;
 
@@ -81,8 +77,7 @@ class UserDropdown extends Component {
             icon="meta-icon-settings"
             onClick={() => {
               redirect(plugin.userDropdownLink.url);
-              handleUDOpen(false);
-              toggleTooltip('');
+              this.closeDropdownPanel();
             }}
           />
         );
@@ -101,7 +96,7 @@ class UserDropdown extends Component {
   };
 
   renderDropdownPanel = () => {
-    const { handleUDOpen, redirect, toggleTooltip, me } = this.props;
+    const { me, redirect } = this.props;
 
     return (
       <div className="user-dropdown-list" onKeyDown={this.handleKeyDown}>
@@ -128,8 +123,7 @@ class UserDropdown extends Component {
             redirect(
               '/window/' + me.userProfileWindowId + '/' + me.userProfileId
             );
-            handleUDOpen(false);
-            toggleTooltip('');
+            this.closeDropdownPanel();
           }}
         />
         {this.renderPlugins()}
@@ -138,16 +132,36 @@ class UserDropdown extends Component {
           icon="meta-icon-logout"
           onClick={() => {
             redirect('/logout');
-            handleUDOpen(false);
+            this.closeDropdownPanel();
           }}
         />
       </div>
     );
   };
 
+  renderHeaderButton = () => {
+    const { open, shortcut, tooltipOpen, me } = this.props;
+    return (
+      <>
+        <div
+          className="header-item avatar-container"
+          onClick={() => this.openDropdownPanel()}
+        >
+          <Avatar id={me.avatarId} />
+        </div>
+        {tooltipOpen === shortcut && !open && (
+          <Tooltips
+            name={shortcut}
+            action={counterpart.translate('mainScreen.userMenu.tooltip')}
+            type={''}
+          />
+        )}
+      </>
+    );
+  };
+
   render() {
-    const { open, handleUDOpen, shortcut, toggleTooltip, tooltipOpen, me } =
-      this.props;
+    const { open, shortcut, toggleTooltip } = this.props;
 
     return (
       <div
@@ -160,21 +174,8 @@ class UserDropdown extends Component {
         onMouseEnter={() => toggleTooltip(shortcut)}
         onMouseLeave={() => toggleTooltip('')}
       >
-        <div
-          className="header-item avatar-container"
-          onClick={() => handleUDOpen(true)}
-        >
-          <Avatar id={me.avatarId} />
-        </div>
-
+        {this.renderHeaderButton()}
         {open && this.renderDropdownPanel()}
-        {tooltipOpen === shortcut && !open && (
-          <Tooltips
-            name={shortcut}
-            action={counterpart.translate('mainScreen.userMenu.tooltip')}
-            type={''}
-          />
-        )}
       </div>
     );
   }
