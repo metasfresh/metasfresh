@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import Avatar from '../app/Avatar';
 import Tooltips from '../tooltips/Tooltips';
+import { getSettingFromMEAsBoolean } from '../../utils/settings';
 
 /**
  * @file Class based component.
@@ -98,12 +99,18 @@ class UserDropdown extends Component {
   renderDropdownPanel = () => {
     const { me, redirect } = this.props;
 
+    const isShowOrg = getSettingFromMEAsBoolean(
+      me,
+      'userDropdown.showOrg',
+      false
+    );
+
     return (
       <div className="user-dropdown-list" onKeyDown={this.handleKeyDown}>
         <div className="user-dropdown-item user-dropdown-header-item">
           <span className="meta-text-primary">{me.fullname}</span>
           <br />
-          <span>({me.orgname})</span>
+          {isShowOrg && me.orgname && <span>({me.orgname})</span>}
         </div>
         <hr className="context-menu-separator" />
         {

@@ -33,6 +33,6 @@ export const getSettingFromState = (state, name) => {
   return getSettingFromME(state?.appHandler?.me, name);
 };
 
-export const getSettingFromME = (me, name) => {
+const getSettingFromME = (me, name) => {
   return me?.settings?.[name];
 };
