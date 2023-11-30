@@ -4,6 +4,7 @@ import com.google.common.base.Predicates;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -180,18 +181,13 @@ public class ProductFilterUtil
 			anyRestrictionAdded = true;
 		}
 
-		final int productId = productFilterVO.getProductId();
-		if (productId > 0)
-		{
-			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
-			anyRestrictionAdded = true;
-		}
-final ProductId productId = ProductId.ofRepoIdOrNull(productFilterVO.getProductId());
+		final ProductId productId = ProductId.ofRepoIdOrNull(productFilterVO.getProductId());
 		if (productId != null)
 		{
 			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
 			anyRestrictionAdded = true;
 		}
+
 		final int productCategoryId = productFilterVO.getProductCategoryId();
 		if (productCategoryId > 0)
 		{
