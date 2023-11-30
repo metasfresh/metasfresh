@@ -826,6 +826,31 @@ public class DocumentCollection
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 	}
 
+	public void duplicateTabRowInTrx(
+			@NonNull final TableRecordReference parentRef,
+			@NonNull final TableRecordReference fromRecordRef,
+			@NonNull final AdWindowId windowId)
+	{
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
+
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
+		copyRecordSupport.setAdWindowId(windowId);
+		copyRecordSupport.setParentPO(parentPO);
+		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		copyRecordSupport.setBase(true);
+		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
 	{
 		if (documentPath == null)

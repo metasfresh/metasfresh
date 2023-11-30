@@ -7,6 +7,7 @@ import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -14,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_UOM;
 
 import java.util.HashSet;
@@ -50,19 +52,14 @@ import static de.metas.util.Check.assumeNotNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Data
+@RequiredArgsConstructor
 public class DimensionGroupSubRowBucket
 {
-	@Getter(AccessLevel.NONE)
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@Getter(AccessLevel.NONE)
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@Getter(AccessLevel.NONE) private final IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE) private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
-	{
-		return new DimensionGroupSubRowBucket(dimensionSpecGroup);
-	}
-
-	private final DimensionSpecGroup dimensionSpecGroup;
+	@NonNull private final MaterialCockpitRowLookups rowLookups;
+	@NonNull private final DimensionSpecGroup dimensionSpecGroup;
 
 	// Zusage Lieferant
 	private Quantity pmmQtyPromisedAtDate;
@@ -101,11 +98,6 @@ public class DimensionGroupSubRowBucket
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
-
-	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
-	{
-		this.dimensionSpecGroup = dimensionSpecGroup;
-	}
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
@@ -155,6 +147,7 @@ public class DimensionGroupSubRowBucket
 				"productIdAndDate may not be null; mainRowBucket={}", mainRowBucket);
 
 		return MaterialCockpitRow.attributeSubRowBuilder()
+				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 
