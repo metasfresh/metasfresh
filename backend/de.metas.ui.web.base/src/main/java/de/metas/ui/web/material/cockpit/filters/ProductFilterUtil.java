@@ -186,7 +186,12 @@ public class ProductFilterUtil
 			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
 			anyRestrictionAdded = true;
 		}
-
+final ProductId productId = ProductId.ofRepoIdOrNull(productFilterVO.getProductId());
+		if (productId != null)
+		{
+			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
+			anyRestrictionAdded = true;
+		}
 		final int productCategoryId = productFilterVO.getProductCategoryId();
 		if (productCategoryId > 0)
 		{
