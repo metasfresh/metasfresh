@@ -42,6 +42,9 @@ public class ProductFilterVO
 	public static final String PARAM_ProductName = I_MD_Cockpit.COLUMNNAME_ProductName;
 	String productName;
 
+	public static final String PARAM_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
+	int productId;
+
 	public static final String PARAM_M_Product_Category_ID = I_M_Product.COLUMNNAME_M_Product_Category_ID;
 	int productCategoryId;
 

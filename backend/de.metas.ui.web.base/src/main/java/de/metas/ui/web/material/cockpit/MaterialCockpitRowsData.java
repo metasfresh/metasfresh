@@ -76,7 +76,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 		for (final MaterialCockpitRow row : rows)
 		{
-			productIdDocumentIdBuilder.put(ProductId.ofRepoId(row.getProductId()), row.getId());
+			productIdDocumentIdBuilder.put(row.getProductId(), row.getId());
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
 	}
@@ -135,7 +135,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			final List<I_MD_Stock> stockRecords = loadStockRecords(row.getAllIncludedStockRecordIds());
 			builder.stockRecords(stockRecords);
 
-			final ProductId productId = ProductId.ofRepoId(row.getProductId());
+			final ProductId productId = row.getProductId();
 
 			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
 			builder.quantitiesRecords(quantitiesRecords);
