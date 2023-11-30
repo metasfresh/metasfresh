@@ -22,7 +22,6 @@
 
 package de.metas.cucumber;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
@@ -62,10 +61,10 @@ public class InfrastructureSupport
 	 * {@code false} means that we need to start up our own postgresql and will also apply the location migration-scripts to bring that DB up to date.
 	 */
 	@Getter
-	private boolean runAgainstProvidedDatabase = false;
+	private boolean runAgainstDockerizedDatabase = true;
 
-	@Getter
-	private boolean cucumberIsUsingProvidedInfrastructure;
+    @Getter
+    private boolean cucumberIsUsingProvidedInfrastructure;
 
 	@Getter
 	private String dbHost;
@@ -92,33 +91,24 @@ public class InfrastructureSupport
 	{
 		assertThat(started).isFalse(); // guard
 
-		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
+        cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
 
-		// note that this will only matter if CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE is false
-		final int dbPortFromEnvVar = StringUtils.toIntegerOrZero(System.getenv(ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL));
-		runAgainstProvidedDatabase =
-				dbPortFromEnvVar > 0 // if a DB port was provided, it means that we want to run against an externally provided DB
-						|| cucumberIsUsingProvidedInfrastructure;
+	// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
+        if (cucumberIsUsingProvidedInfrastructure) {
+            logger.info("using provided infrasstructure, not starting any containers");
 
-		dbPort = CoalesceUtil.firstGreaterThanZero(
-				dbPortFromEnvVar,
-				5432);
+            runAgainstDockerizedDatabase = false;
 
-		// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
-		if (cucumberIsUsingProvidedInfrastructure)
-		{
-			logger.info("using provided infrastructure, not starting any containers");
+            dbHost = "db";
+            dbPort = 5432;
+            rabbitHost = "rabbitmq";
+            rabbitPort = 5672;
+            rabbitUser = "metasfresh";
+            rabbitPassword = "metasfresh";
 
-			dbHost = "db";
-			// dbPort = 5432; was already set
-			rabbitHost = "rabbitmq";
-			rabbitPort = 5672;
-			rabbitUser = "metasfresh";
-			rabbitPassword = "metasfresh";
-
-			started = true;
-			return;
-		}
+            started = true;
+            return;
+        }
 
 		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
 		rabbitMQContainer.start();
@@ -128,10 +118,10 @@ public class InfrastructureSupport
 		rabbitUser = rabbitMQContainer.getAdminUsername();
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
-		if (!runAgainstProvidedDatabase)
+		if (runAgainstDockerizedDatabase)
 		{
-			// this image is from release-branch 2021-09-15. it is failrly old, 
-			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
+			// this image is from release-branch 2021-09-15. it is failrly old,
+			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image
 			final String fullImageName = "metasfresh/metasfresh-db:5.174.2_461_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
@@ -159,7 +149,7 @@ public class InfrastructureSupport
 		else
 		{
 			dbHost = "localhost";
-			// dbPort = 5432; was already set
+			dbPort = 5432;
 			logger.info("Assume metasfresh-db already runs at {}:{}", dbHost, dbPort);
 		}
 		started = true;
