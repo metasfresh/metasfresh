@@ -146,11 +146,14 @@ public class MaterialCockpitRowFactory
 
 			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 	{
+		final HighPriceProvider highPriceProvider = new HighPriceProvider();
+		highPriceProvider.warmUp(request.getCockpitRecords());
 		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (MainRowWithSubRows::create))
+					.withHighPriceProvider(highPriceProvider);
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}

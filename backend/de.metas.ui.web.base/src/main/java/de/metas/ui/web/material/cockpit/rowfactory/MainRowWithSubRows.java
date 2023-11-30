@@ -60,6 +60,8 @@ public class MainRowWithSubRows
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull
+	private HighPriceProvider highPriceProvider = new HighPriceProvider();
 
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
 	{
@@ -69,6 +71,12 @@ public class MainRowWithSubRows
 	private MainRowWithSubRows(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		this.productIdAndDate = productIdAndDate;
+	}
+
+	public MainRowWithSubRows withHighPriceProvider(@NonNull final HighPriceProvider highPriceProvider)
+	{
+		this.highPriceProvider = highPriceProvider;
+		return this;
 	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
@@ -114,7 +122,7 @@ public class MainRowWithSubRows
 			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
 			fallbackBucket.addCockpitRecord(cockpitRecord);
 		}
-		mainRow.addDataRecord(cockpitRecord);
+		mainRow.addDataRecord(cockpitRecord, highPriceProvider);
 	}
 
 	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate, final int ppPlantId)
