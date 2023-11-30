@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:invoiceAddress
+@ghActions:run_on_executor7
 Feature: Render invoice address
   Especially tracing the "BPartnerName" part of the address
 

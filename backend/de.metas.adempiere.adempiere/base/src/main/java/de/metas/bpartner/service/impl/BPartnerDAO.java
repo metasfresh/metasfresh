@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1363,11 +1362,15 @@ public class BPartnerDAO implements IBPartnerDAO
 		switch (type)
 		{
 			case BILL_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsBillTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsBillTo;
 			case SHIP_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsShipTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsShipTo;
 			case REMIT_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsRemitTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsRemitTo;
+			case SHIP_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsShipToDefault;
+			case BILL_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsBillToDefault;
 			default:
 				Check.fail("Unexpected type={}", type);
 				return null;

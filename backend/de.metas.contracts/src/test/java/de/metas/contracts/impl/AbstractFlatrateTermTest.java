@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -105,7 +106,9 @@ public abstract class AbstractFlatrateTermTest
 	protected final static BigDecimal PRICE_TEN = BigDecimal.TEN;
 
 	public FlatrateTermTestHelper helper;
-
+	
+	protected IContractChangeBL contractChangeBL;
+	
 	@Getter
 	private I_C_Calendar calendar;
 
@@ -130,18 +133,17 @@ public abstract class AbstractFlatrateTermTest
 	private TaxCategoryId taxCategoryId;
 
 	@BeforeAll
-	public final static void staticInit()
+	public static void staticInit()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
 	@BeforeEach
-	public final void init()
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		setupMasterData();
-		initialize();
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 
@@ -154,9 +156,13 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
+		contractChangeBL = Services.get(IContractChangeBL.class);
+
+		afterInit();
 	}
 
-	protected void initialize()
+	protected void afterInit()
 	{
 	}
 

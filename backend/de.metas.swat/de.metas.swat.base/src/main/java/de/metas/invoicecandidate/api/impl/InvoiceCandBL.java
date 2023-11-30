@@ -2520,8 +2520,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
 		invoiceCandDAO.save(invoiceCandidate);
 	}
 
