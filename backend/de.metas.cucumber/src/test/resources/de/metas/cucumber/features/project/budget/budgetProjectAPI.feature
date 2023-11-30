@@ -7,6 +7,7 @@ Feature: Budget Project API Test
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-02T08:00:00+01:00[Europe/Berlin]
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7023554155/job/19111210552
   @from:cucumber
   Scenario: Persist Budget Project with associated resource using API
   1st we insert a budget project setting all available fields in API
