@@ -152,6 +152,15 @@ public abstract class PO
 	private static final int QUERY_TIME_OUT = 10;
 
 	/**
+	 * DynAttr which holds the <code>CopyRecordSupport</code> class which handles this PO
+	 */
+	public static final String DYNATTR_CopyRecordSupport = "CopyRecordSupport";
+	/**
+	 * DynAttr which holds the source PO from which this PO was copied
+	 */
+	public static final String DYNATTR_CopyRecordSupport_OldValue = "CopyRecordSupportOldValue";
+
+	/**
 	 * User Maintained Entity Type
 	 */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
