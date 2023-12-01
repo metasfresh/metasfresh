@@ -11,12 +11,14 @@ import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Displa
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewZoomIntoFieldSupport;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -46,7 +48,7 @@ import java.util.List;
  * #L%
  */
 
-public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
+public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow> implements IViewZoomIntoFieldSupport
 {
 	public static MaterialCockpitView cast(final IView view)
 	{
@@ -67,9 +69,9 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
 		super(viewId,
-			  description,
-			  rowsData,
-			  filterDescriptors);
+				description,
+				rowsData,
+				filterDescriptors);
 
 		this.filters = filters;
 		this.relatedProcessDescriptors = ImmutableList.copyOf(relatedProcessDescriptors);
@@ -121,4 +123,9 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 				.getFromClass(MD_Cockpit_DocumentDetail_Display.class);
 	}
 
+	@Override
+	public DocumentZoomIntoInfo getZoomIntoInfo(@NonNull final DocumentId rowId, @NonNull final String fieldName)
+	{
+		return getById(rowId).getZoomIntoInfo(fieldName);
+	}
 }

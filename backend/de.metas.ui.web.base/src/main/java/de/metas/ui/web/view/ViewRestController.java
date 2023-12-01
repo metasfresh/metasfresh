@@ -52,18 +52,24 @@ import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 import org.springframework.core.io.InputStreamResource;
@@ -95,6 +101,7 @@ import java.util.Set;
 @Tag(name = "ViewRestController")
 @RestController
 @RequestMapping(value = ViewRestController.ENDPOINT)
+@RequiredArgsConstructor
 public class ViewRestController
 {
 	public static final String PARAM_WindowId = "windowId";
@@ -113,25 +120,12 @@ public class ViewRestController
 	//
 	private static final String PARAM_FilterId = "filterId";
 
-	private final UserSession userSession;
-	private final IViewsRepository viewsRepo;
-	private final ProcessRestController processRestController;
-	private final WindowRestController windowRestController;
-	private final CommentsService commentsService;
-
-	public ViewRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final IViewsRepository viewsRepo,
-			@NonNull final ProcessRestController processRestController,
-			@NonNull final WindowRestController windowRestController,
-			@NonNull final CommentsService commentsService)
-	{
-		this.userSession = userSession;
-		this.viewsRepo = viewsRepo;
-		this.processRestController = processRestController;
-		this.windowRestController = windowRestController;
-		this.commentsService = commentsService;
-	}
+	@NonNull private final UserSession userSession;
+	@NonNull private final IViewsRepository viewsRepo;
+	@NonNull private final ProcessRestController processRestController;
+	@NonNull private final WindowRestController windowRestController;
+	@NonNull private final CommentsService commentsService;
+	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -212,7 +206,7 @@ public class ViewRestController
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
+									  @PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
 	)
@@ -563,16 +557,27 @@ public class ViewRestController
 	public JSONZoomInto getRowFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@PathVariable("rowId") final String rowId,
+			@PathVariable("rowId") final String rowIdStr,
 			@PathVariable("fieldName") final String fieldName)
 	{
-		// userSession.assertLoggedIn(); // NOTE: not needed because we are forwarding to windowRestController
+		userSession.assertLoggedIn();
 
-		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr));
+		final IView view = viewsRepo.getView(viewId);
+		if (view instanceof IViewZoomIntoFieldSupport)
+		{
+			final IViewZoomIntoFieldSupport zoomIntoSupport = (IViewZoomIntoFieldSupport)view;
+			final DocumentId rowId = DocumentId.of(rowIdStr);
+			final DocumentZoomIntoInfo zoomIntoInfo = zoomIntoSupport.getZoomIntoInfo(rowId, fieldName);
+			final DocumentPath zoomIntoDocumentPath = documentZoomIntoService.getDocumentPath(zoomIntoInfo);
+			return JSONZoomInto.builder()
+					.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
+					.source(JSONDocumentPath.builder().viewId(viewId).rowId(rowId).fieldName(fieldName).build())
+					.build();
+		}
 
-		// TODO: atm we are forwarding all calls to windowRestController hoping the document existing and has the same ID as view's row ID.
-
-		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
+		// Fallback to windowRestController, hoping the document existing and has the same ID as view's row ID.
+		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowIdStr, fieldName);
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
