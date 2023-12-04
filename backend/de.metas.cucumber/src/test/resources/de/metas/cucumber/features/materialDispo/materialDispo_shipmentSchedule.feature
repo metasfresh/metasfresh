@@ -6,6 +6,9 @@ Feature: material-dispo updates on shipment-schedule events
   I want material dispo to be updated properly if shipment-schedules are created
   So that the ATP is always correct
 
+  Background:
+    Given infrastructure and metasfresh are running
+
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule without stock or ATP
