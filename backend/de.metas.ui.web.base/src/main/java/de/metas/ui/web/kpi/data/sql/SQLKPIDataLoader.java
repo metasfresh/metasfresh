@@ -151,10 +151,10 @@ public class SQLKPIDataLoader
 				.put("MainToMillis", DB.TO_DATE(timeRange.getTo()))
 				.put("FromMillis", DB.TO_DATE(timeRange.getFrom()))
 				.put("ToMillis", DB.TO_DATE(timeRange.getTo()))
-				.put("AD_User_ID", UserId.toRepoId(context.getUserId()))
-				.put("AD_Role_ID", RoleId.toRepoId(context.getRoleId()))
-				.put("AD_Client_ID", ClientId.toRepoId(context.getClientId()))
-				.put("AD_Org_ID", OrgId.toRepoId(context.getOrgId()))
+				.put(KPIDataContext.CTXNAME_AD_User_ID, UserId.toRepoId(context.getUserId()))
+				.put(KPIDataContext.CTXNAME_AD_Role_ID, RoleId.toRepoId(context.getRoleId()))
+				.put(KPIDataContext.CTXNAME_AD_Client_ID, ClientId.toRepoId(context.getClientId()))
+				.put(KPIDataContext.CTXNAME_AD_Org_ID, OrgId.toRepoId(context.getOrgId()))
 				.put("#Date", DB.TO_DATE(SystemTime.asZonedDateTime()))
 				.build();
 	}
