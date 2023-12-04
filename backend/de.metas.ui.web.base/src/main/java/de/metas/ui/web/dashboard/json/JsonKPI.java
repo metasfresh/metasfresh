@@ -43,13 +43,13 @@ import java.util.List;
 public class JsonKPI
 {
 	int kpiId;
-	String caption;
-	KPIChartType chartType;
-	ImmutableSet<DashboardWidgetType> widgetTypes;
+	@NonNull String caption;
+	@NonNull KPIChartType chartType;
+	@NonNull ImmutableSet<DashboardWidgetType> widgetTypes;
 
 	// layout
 	@JsonInclude(JsonInclude.Include.NON_NULL) JsonKPIFieldLayout groupByField;
-	List<JsonKPIFieldLayout> fields;
+	@NonNull List<JsonKPIFieldLayout> fields;
 
 	@Nullable JsonKPIDataResult sampleData;
 
