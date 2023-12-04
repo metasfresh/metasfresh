@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: data export audit using bpartner metasfresh api
   `When` a retrieve bpartner API call is made
   export audit data should be created
