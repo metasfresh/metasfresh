@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
@@ -13,6 +13,10 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -39,11 +43,6 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONUserSession
 {
-	public static final JSONUserSession of(final UserSession userSession)
-	{
-		return new JSONUserSession(userSession);
-	}
-
 	@JsonProperty("loggedIn")
 	private final boolean loggedIn;
 
@@ -73,6 +72,10 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String rolename;
 
+	@JsonProperty("orgname")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String orgname;
+
 	@JsonProperty("language")
 	private final JSONLookupValue language;
 	@JsonProperty("locale")
@@ -97,13 +100,19 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer userProfileId;
 
-	private JSONUserSession(final UserSession userSession)
+	@JsonProperty("settings")
+	private final Map<String, String> settings;
+
+	public JSONUserSession(
+			@NonNull final UserSession userSession,
+			@Nullable final Map<String, String> settings)
 	{
 		loggedIn = userSession.isLoggedIn();
 		if (loggedIn)
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
+			orgname = userSession.getOrgName();
 
 			fullname = userSession.getUserFullname();
 			email = userSession.getUserEmail();
@@ -121,6 +130,7 @@ public class JSONUserSession
 		{
 			username = null;
 			rolename = null;
+			orgname = null;
 			fullname = null;
 			email = null;
 			avatarId = null;
@@ -138,5 +148,7 @@ public class JSONUserSession
 		this.locale = JSONUserSessionLocale.of(userSession.getUserSessionLocale());
 
 		timeZone = DateTimeConverters.toJson(userSession.getTimeZone());
+
+		this.settings = settings != null ? settings : ImmutableMap.of();
 	}
 }
