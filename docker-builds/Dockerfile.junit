@@ -1,0 +1,50 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-common:$REFNAME as common
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+
+FROM maven:3.8.4-jdk-8 as junit
+
+ARG SKIP_MIGRATION_SCRIPTS_TEST=false
+
+RUN echo $SKIP_MIGRATION_SCRIPTS_TEST
+
+RUN apt-get update && apt-get install -y locales mmv && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+ENV SKIP_MIGRATION_SCRIPTS_TEST=$SKIP_MIGRATION_SCRIPTS_TEST
+
+WORKDIR /java
+SHELL ["/bin/bash", "-c"]
+
+COPY --from=backend /root/.m2 /root/.m2/
+COPY --from=common /commons commons
+COPY --from=backend /backend backend
+
+
+WORKDIR /java/commons
+
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+
+WORKDIR /java/backend
+
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+
+WORKDIR /java
+VOLUME /reports
+
+CMD set -o pipefail \
+	&& shopt -s globstar \
+	&& find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& find **/junit.log -printf "%h\n" | uniq | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml' \
+	&& mcp '*/junit.*' '/reports/#1/junit.#2'

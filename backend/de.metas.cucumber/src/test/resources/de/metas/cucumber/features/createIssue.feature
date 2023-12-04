@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: issue creation using metasfresh api
   As a REST-API invoker
   I want want to be able to create issues
