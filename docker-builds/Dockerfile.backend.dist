@@ -1,0 +1,11 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+
+COPY docker-builds/mvn/settings.xml /root/.m2/
+
+WORKDIR /backend/extensionsupport
+
+ARG VERSION=10.0.0-local
+RUN mvn versions:set -DnewVersion=$VERSION
+
+CMD mvn clean deploy
