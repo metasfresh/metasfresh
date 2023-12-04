@@ -28,6 +28,8 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -45,16 +47,19 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +76,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 
 public class C_Order_StepDef
 {
@@ -279,6 +285,12 @@ public class C_Order_StepDef
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
 
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
+
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(orderIdentifier))
+		{
+			orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
+		}
 	}
 
 	@And("validate created order")
@@ -359,6 +371,51 @@ public class C_Order_StepDef
 					.firstOnlyOptional(I_C_OrderLine.class);
 
 			assertThat(orderLine).isPresent();
+		}
+	}
+
+	@And("update order")
+	public void update_order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+
+			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
+			{
+				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.docSubType(docSubType)
+						.adClientId(order.getAD_Client_ID())
+						.adOrgId(order.getAD_Org_ID())
+						.build();
+
+				final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+
+				order.setC_DocType_ID(docTypeId.getRepoId());
+				order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+			}
+
+			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
+			if (Check.isNotBlank(paymentRule))
+			{
+				order.setPaymentRule(paymentRule);
+			}
+
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+			if (datePromised != null)
+			{
+				order.setDatePromised(TimeUtil.asTimestamp(datePromised));
+			}
+
+			InterfaceWrapperHelper.saveRecord(order);
+
+			orderTable.putOrReplace(orderIdentifier, order);
 		}
 	}
 }

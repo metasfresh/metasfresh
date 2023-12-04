@@ -52,6 +52,7 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 	public ShipmentScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("oldShipmentScheduleData") final OldShipmentScheduleData oldShipmentScheduleData,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
@@ -59,10 +60,11 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(eventDescriptor,
-				materialDescriptor,
-				minMaxDescriptor,
-				reservedQuantity,
-				shipmentScheduleId);
+			  materialDescriptor,
+			  oldShipmentScheduleData,
+			  minMaxDescriptor,
+			  reservedQuantity,
+			  shipmentScheduleId);
 
 		this.orderedQuantityDelta = orderedQuantityDelta;
 		this.reservedQuantityDelta = reservedQuantityDelta;

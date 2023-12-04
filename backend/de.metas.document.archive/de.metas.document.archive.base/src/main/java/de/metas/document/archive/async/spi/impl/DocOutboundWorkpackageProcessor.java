@@ -22,6 +22,7 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -32,6 +33,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegist
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -44,6 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -61,6 +64,8 @@ import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AU
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
+	private static final Logger logger = LogManager.getLogger(DocOutboundWorkpackageProcessor.class);
+
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
@@ -73,6 +78,8 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
 		{
+			Loggables.withLogger(logger, Level.INFO).addLog("SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION=Y -> Skipping DocOutboundWorkpackageProcessor!");
+
 			return Result.SUCCESS;
 		}
 

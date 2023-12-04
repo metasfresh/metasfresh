@@ -62,6 +62,7 @@ public class ReceiptScheduleDeletedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+				null, // we don't care about it, we're going to delete it anyway
 				minMaxDescriptor,
 				reservedQuantity,
 				receiptScheduleId);

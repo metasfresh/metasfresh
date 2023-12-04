@@ -54,6 +54,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
+				null, // we don't care about it, we're going to delete it anyway
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				shipmentScheduleId);

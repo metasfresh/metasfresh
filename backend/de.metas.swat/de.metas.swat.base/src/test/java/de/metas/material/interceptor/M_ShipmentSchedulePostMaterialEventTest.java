@@ -7,8 +7,10 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
+import de.metas.material.event.shipmentschedule.OldShipmentScheduleData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
@@ -202,8 +204,17 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(productId.getRepoId());
 		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(updatedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
-		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(ONE);
-		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN.negate());
+		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(FIVE);
+		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN);
+
+		final OldShipmentScheduleData oldShipmentScheduleData = result.getOldShipmentScheduleData();
+		assertThat(oldShipmentScheduleData).isNotNull();
+		final MaterialDescriptor oldMaterialDescriptor = oldShipmentScheduleData.getOldMaterialDescriptor();  
+		assertThat(oldMaterialDescriptor).isNotNull();
+		assertThat(oldMaterialDescriptor.getDate()).isNotEqualTo(updatedEvent.getMaterialDescriptor().getDate());
+		assertThat(oldMaterialDescriptor.getQuantity()).isEqualByComparingTo(TWENTY);
+		assertThat(oldShipmentScheduleData.getOldOrderedQuantity()).isEqualByComparingTo(TWENTY);
+		assertThat(oldShipmentScheduleData.getOldReservedQuantity()).isEqualByComparingTo(FOUR);
 	}
 
 	@Test
