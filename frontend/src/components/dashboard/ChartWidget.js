@@ -55,6 +55,8 @@ export class ChartWidget extends Component {
 
     if (!isMaximized && typeof idMaximized === 'number') return false;
 
+    const isRenderChartContent = !framework || !!data;
+
     return (
       <div>
         <div
@@ -116,7 +118,7 @@ export class ChartWidget extends Component {
         </div>
 
         <div className="draggable-widget-body">
-          {!framework ? (
+          {isRenderChartContent ? (
             <RawChart
               {...{
                 index,

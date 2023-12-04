@@ -5,6 +5,7 @@ import Loader from '../app/Loader';
 import BarChart from './BarChartComponent';
 import Indicator from './Indicator';
 import PieChart from './PieChartComponent';
+import { URLsChart } from './URLsChart';
 
 class RawChart extends Component {
   constructor(props) {
@@ -163,6 +164,8 @@ class RawChart extends Component {
             />
           </div>
         );
+      case 'URLs':
+        return <URLsChart data={dataset0} />;
       default:
         return <div>{chartType}</div>;
     }
