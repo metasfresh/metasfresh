@@ -1,17 +1,16 @@
 package de.metas.location.geocoding.interceptor;
 
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,7 +38,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
-	public static final Topic EVENTS_TOPIC = Topic.remote("de.metas.location.geocoding.events");
+	public static final Topic EVENTS_TOPIC = Topic.distributed("de.metas.location.geocoding.events");
 
 	private final IEventBusFactory eventBusFactory;
 
@@ -61,6 +60,6 @@ public class C_Location
 	{
 		eventBusFactory
 				.getEventBus(EVENTS_TOPIC)
-				.postObject(LocationGeocodeEventRequest.of(locationId));
+				.enqueueObject(LocationGeocodeEventRequest.of(locationId));
 	}
 }

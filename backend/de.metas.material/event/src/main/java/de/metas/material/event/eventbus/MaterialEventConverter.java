@@ -1,13 +1,10 @@
 package de.metas.material.event.eventbus;
 
-import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.material.event.MaterialEvent;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -59,18 +56,13 @@ public class MaterialEventConverter
 	/**
 	 * Note: the returned metasfresh event shall be logged.
 	 */
-	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent, @Nullable final QueueWorkPackageId queueWorkPackageId)
+	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent)
 	{
 		final String eventStr = jsonObjectMapper.writeValueAsString(materialEvent);
 
-		final Event.Builder builder = Event.builder()
+		return Event.builder()
 				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
-				.shallBeLogged();
-		if (queueWorkPackageId != null)
-		{
-			builder.setQueueWorkPackageId(queueWorkPackageId);
-		}
-		return builder
+				.shallBeLogged()
 				.build();
 	}
 }

@@ -1,9 +1,8 @@
 package de.metas.event.log;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
-import de.metas.event.IEventBus;
+import de.metas.event.Topic;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
@@ -88,7 +87,7 @@ public class EventLogService
 
 	public EventLogId saveEvent(
 			@NonNull final Event event,
-			@NonNull final IEventBus eventBus)
+			@NonNull final Topic eventBusTopic)
 	{
 		final String eventString = JacksonJsonEventSerializer.instance.toString(event);
 
@@ -96,13 +95,8 @@ public class EventLogService
 		eventLogRecord.setEvent_UUID(event.getUuid().toString());
 		eventLogRecord.setEventTime(Timestamp.from(event.getWhen()));
 		eventLogRecord.setEventData(eventString);
-		eventLogRecord.setEventTopicName(eventBus.getTopicName());
-		eventLogRecord.setEventTypeName(eventBus.getType().toString());
-		final QueueWorkPackageId workpackageQueueRepoId = event.getQueueWorkPackageId();
-		if (workpackageQueueRepoId != null)
-		{
-			eventLogRecord.setC_Queue_WorkPackage_ID(workpackageQueueRepoId.getRepoId());
-		}
+		eventLogRecord.setEventTopicName(eventBusTopic.getName());
+		eventLogRecord.setEventTypeName(eventBusTopic.getType().toString());
 
 		save(eventLogRecord);
 
