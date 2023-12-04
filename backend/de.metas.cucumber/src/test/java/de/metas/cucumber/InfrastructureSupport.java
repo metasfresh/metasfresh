@@ -22,9 +22,10 @@
 
 package de.metas.cucumber;
 
-import de.metas.common.util.StringUtils;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -38,7 +39,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
-	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
@@ -61,10 +62,10 @@ public class InfrastructureSupport
 	 * {@code false} means that we need to start up our own postgresql and will also apply the location migration-scripts to bring that DB up to date.
 	 */
 	@Getter
-	private boolean runAgainstDockerizedDatabase = true;
+	private boolean runAgainstProvidedDatabase = false;
 
-    @Getter
-    private boolean cucumberIsUsingProvidedInfrastructure;
+	@Getter
+	private boolean cucumberIsUsingProvidedInfrastructure;
 
 	@Getter
 	private String dbHost;
@@ -91,24 +92,33 @@ public class InfrastructureSupport
 	{
 		assertThat(started).isFalse(); // guard
 
-        cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
+		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
 
-	// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
-        if (cucumberIsUsingProvidedInfrastructure) {
-            logger.info("using provided infrasstructure, not starting any containers");
+		// note that this will only matter if CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE is false
+		final int dbPortFromEnvVar = StringUtils.toIntegerOrZero(System.getenv(ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL));
+		runAgainstProvidedDatabase =
+				dbPortFromEnvVar > 0 // if a DB port was provided, it means that we want to run against an externally provided DB
+						|| cucumberIsUsingProvidedInfrastructure;
 
-            runAgainstDockerizedDatabase = false;
+		dbPort = CoalesceUtil.firstGreaterThanZero(
+				dbPortFromEnvVar,
+				5432);
 
-            dbHost = "db";
-            dbPort = 5432;
-            rabbitHost = "rabbitmq";
-            rabbitPort = 5672;
-            rabbitUser = "metasfresh";
-            rabbitPassword = "metasfresh";
+		// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
+		if (cucumberIsUsingProvidedInfrastructure)
+		{
+			logger.info("using provided infrastructure, not starting any containers");
 
-            started = true;
-            return;
-        }
+			dbHost = "db";
+			// dbPort = 5432; was already set
+			rabbitHost = "rabbitmq";
+			rabbitPort = 5672;
+			rabbitUser = "metasfresh";
+			rabbitPassword = "metasfresh";
+
+			started = true;
+			return;
+		}
 
 		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
 		rabbitMQContainer.start();
@@ -118,7 +128,7 @@ public class InfrastructureSupport
 		rabbitUser = rabbitMQContainer.getAdminUsername();
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
-		if (runAgainstDockerizedDatabase)
+		if (!runAgainstProvidedDatabase)
 		{
 			// this image is from release-branch 2021-09-15. it is failrly old,
 			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image
@@ -149,7 +159,7 @@ public class InfrastructureSupport
 		else
 		{
 			dbHost = "localhost";
-			dbPort = 5432;
+			// dbPort = 5432; was already set
 			logger.info("Assume metasfresh-db already runs at {}:{}", dbHost, dbPort);
 		}
 		started = true;
