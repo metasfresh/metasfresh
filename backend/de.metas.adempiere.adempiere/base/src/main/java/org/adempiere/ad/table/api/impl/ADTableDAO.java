@@ -374,8 +374,8 @@ public class ADTableDAO implements IADTableDAO
 
 	private ColumnSqlSourceDescriptor toColumnSqlSourceDescriptor(final I_AD_SQLColumn_SourceTableColumn record)
 	{
-		final String targetTableName = retrieveTableName(record.getAD_Table_ID());
-		final String sourceTableName = retrieveTableName(record.getSource_Table_ID());
+		final String targetTableName = retrieveTableName(AdTableId.ofRepoId(record.getAD_Table_ID()));
+		final String sourceTableName = retrieveTableName(AdTableId.ofRepoId(record.getSource_Table_ID()));
 		final String fetchTargetRecordsMethod = record.getFetchTargetRecordsMethod();
 
 		if (X_AD_SQLColumn_SourceTableColumn.FETCHTARGETRECORDSMETHOD_SQL.equals(fetchTargetRecordsMethod))
@@ -393,7 +393,7 @@ public class ADTableDAO implements IADTableDAO
 					.targetTableName(targetTableName)
 					.sourceTableName(sourceTableName)
 					.fetchTargetRecordsMethod(FetchTargetRecordsMethod.LINK_COLUMN)
-					.linkColumnName(retrieveColumnName(record.getLink_Column_ID()))
+					.sourceLinkColumnName(retrieveColumnName(record.getLink_Column_ID()))
 					.build();
 		}
 		else
