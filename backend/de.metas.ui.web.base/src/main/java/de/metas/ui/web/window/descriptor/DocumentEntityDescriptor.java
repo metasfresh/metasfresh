@@ -161,6 +161,8 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -207,6 +209,8 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -485,6 +489,8 @@ public class DocumentEntityDescriptor
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -999,7 +1005,7 @@ public class DocumentEntityDescriptor
 		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
 		{
 			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
-            return this;
+			return this;
 		}
 
 		/**
@@ -1164,6 +1170,12 @@ public class DocumentEntityDescriptor
 					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
+			return this;
 		}
 	}
 }
