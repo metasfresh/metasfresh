@@ -22,22 +22,28 @@
 
 package de.metas.material.event.shipmentschedule;
 
-import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-@Builder
 @Value
+@Builder
 @Jacksonized
-public class OldShipmentScheduleData
+public class ShipmentScheduleDetail
 {
 	@NonNull
-	BigDecimal oldReservedQuantity;
+	BigDecimal orderedQuantity;
 
 	@NonNull
-	MaterialDescriptor oldMaterialDescriptor;
+	BigDecimal reservedQuantity;
+
+	@NonNull
+	BigDecimal reservedQuantityDelta;
+
+	@Nullable
+	OldShipmentScheduleData oldShipmentScheduleData;
 }

@@ -66,13 +66,16 @@ public class MD_Cockpit_StepDef
 
 	private final M_Product_StepDefData productTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final MD_Cockpit_StepDefData cockpitTable;
 
 	public MD_Cockpit_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final MD_Cockpit_StepDefData cockpitTable)
 	{
 		this.productTable = productTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.cockpitTable = cockpitTable;
 	}
 
 	@And("^after not more than (.*)s, metasfresh has this MD_Cockpit data$")
@@ -102,7 +105,9 @@ public class MD_Cockpit_StepDef
 			return validateCockpitRecord(identifier, expectedResults, mdCockpitRecord);
 		};
 
-		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpit, () -> logCurrentContext(expectedResults));
+		final I_MD_Cockpit cockpitRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpit, () -> logCurrentContext(expectedResults));
+
+		cockpitTable.putOrReplace(identifier, cockpitRecord);
 	}
 
 	@NonNull
@@ -112,13 +117,19 @@ public class MD_Cockpit_StepDef
 		final ProductId productId = ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID());
 
 		final LocalDate dateGeneral = DataTableUtil.extractLocalDateForColumnName(tableRow, I_MD_Cockpit.COLUMNNAME_DateGeneral);
-		final BigDecimal qtyDemandSum = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemandSum_AtDate);
-		final BigDecimal qtyDemandSalesOrder = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder_AtDate);
-		final BigDecimal qtyStockCurrent = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyStockCurrent_AtDate);
-		final BigDecimal qtyExpectedSurplus = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyExpectedSurplus_AtDate);
-		final BigDecimal qtyInventoryCount = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyInventoryCount_AtDate);
-		final BigDecimal qtySupplyPurchaseOrder = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate);
-		final BigDecimal qtySupplySum = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate);
+		final BigDecimal qtyDemandSumAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemandSum_AtDate);
+		final BigDecimal qtyDemandSalesOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder_AtDate);
+		final BigDecimal qtyStockCurrentAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyStockCurrent_AtDate);
+		final BigDecimal qtyExpectedSurplusAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyExpectedSurplus_AtDate);
+		final BigDecimal qtyInventoryCountAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyInventoryCount_AtDate);
+		final BigDecimal qtySupplyPurchaseOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate);
+		final BigDecimal qtySupplySumAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate);
+		final BigDecimal qtySupplyRequiredAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupplyRequired_AtDate);
+		final BigDecimal qtySupplyToScheduleAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupplyToSchedule_AtDate);
+		final BigDecimal mdCandidateQtyStockAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock_AtDate);
+		final BigDecimal qtyStockChange = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyStockChange);
+		final BigDecimal qtyDemandPPOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_PP_Order_AtDate);
+		final BigDecimal qtySupplyPPOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate);
 
 		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_AttributesKey + "." + TABLECOLUMN_IDENTIFIER);
 		final AttributesKey attributeStorageKey = getAttributesKey(asiIdentifier);
@@ -127,13 +138,19 @@ public class MD_Cockpit_StepDef
 				.productId(productId)
 				.storageAttributesKey(attributeStorageKey)
 				.dateGeneral(dateGeneral)
-				.qtyDemandSumAtDate(qtyDemandSum)
-				.qtyDemandSalesOrderAtDate(qtyDemandSalesOrder)
-				.qtyStockCurrentAtDate(qtyStockCurrent)
-				.qtyExpectedSurplusAtDate(qtyExpectedSurplus)
-				.qtyInventoryCountAtDate(qtyInventoryCount)
-				.qtySupplyPurchaseOrderAtDate(qtySupplyPurchaseOrder)
-				.qtySupplySumAtDate(qtySupplySum)
+				.qtyDemandSumAtDate(qtyDemandSumAtDate)
+				.qtyDemandSalesOrderAtDate(qtyDemandSalesOrderAtDate)
+				.qtyStockCurrentAtDate(qtyStockCurrentAtDate)
+				.qtyExpectedSurplusAtDate(qtyExpectedSurplusAtDate)
+				.qtyInventoryCountAtDate(qtyInventoryCountAtDate)
+				.qtySupplyPurchaseOrderAtDate(qtySupplyPurchaseOrderAtDate)
+				.qtySupplySumAtDate(qtySupplySumAtDate)
+				.qtySupplyRequiredAtDate(qtySupplyRequiredAtDate)
+				.qtySupplyToScheduleAtDate(qtySupplyToScheduleAtDate)
+				.mdCandidateQtyStockAtDate(mdCandidateQtyStockAtDate)
+				.qtyStockChange(qtyStockChange)
+				.qtyDemandPPOrderAtDate(qtyDemandPPOrderAtDate)
+				.qtySupplyPPOrderAtDate(qtySupplyPPOrderAtDate)
 				.build();
 	}
 
@@ -212,6 +229,48 @@ public class MD_Cockpit_StepDef
 													cockpitIdentifier, qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate()));
 		}
 
+		final BigDecimal qtySupplyRequiredAtDate = expectedResults.getQtySupplyRequiredAtDate();
+		if (qtySupplyRequiredAtDate != null && !cockpitRecord.getQtySupplyRequired_AtDate().equals(qtySupplyRequiredAtDate))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtySupplyRequiredAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate()));
+		}
+
+		final BigDecimal qtySupplyToScheduleAtDate = expectedResults.getQtySupplyToScheduleAtDate();
+		if (qtySupplyToScheduleAtDate != null && !cockpitRecord.getQtySupplyToSchedule_AtDate().equals(qtySupplyToScheduleAtDate))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtySupplyToScheduleAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate()));
+		}
+
+		final BigDecimal mdCandidateQtyStockAtDate = expectedResults.getMdCandidateQtyStockAtDate();
+		if (mdCandidateQtyStockAtDate != null && !cockpitRecord.getMDCandidateQtyStock_AtDate().equals(mdCandidateQtyStockAtDate))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting MDCandidateQtyStockAtDate={1} but actual is {2}",
+													cockpitIdentifier, mdCandidateQtyStockAtDate, cockpitRecord.getMDCandidateQtyStock_AtDate()));
+		}
+
+		final BigDecimal qtyStockChange = expectedResults.getQtyStockChange();
+		if (qtyStockChange != null && !cockpitRecord.getQtyStockChange().equals(qtyStockChange))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyStockChange={1} but actual is {2}",
+													cockpitIdentifier, qtyStockChange, cockpitRecord.getQtyStockChange()));
+		}
+
+		final BigDecimal qtyDemandPPOrderAtDate = expectedResults.getQtyDemandPPOrderAtDate();
+		if (qtyDemandPPOrderAtDate != null && !cockpitRecord.getQtyDemand_PP_Order_AtDate().equals(qtyDemandPPOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyDemandPPOrderAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyDemandPPOrderAtDate, cockpitRecord.getQtyDemand_PP_Order_AtDate()));
+		}
+
+		final BigDecimal qtySupplyPPOrderAtDate = expectedResults.getQtySupplyPPOrderAtDate();
+		if (qtySupplyPPOrderAtDate != null && !cockpitRecord.getQtySupply_PP_Order_AtDate().equals(qtySupplyPPOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtySupplyPPOrderAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtySupplyPPOrderAtDate, cockpitRecord.getQtySupply_PP_Order_AtDate()));
+		}
+
 		if (errorCollector.size() > 0)
 		{
 			final String errorMessages = String.join(" && \n", errorCollector);
@@ -251,7 +310,13 @@ public class MD_Cockpit_StepDef
 				.append(I_MD_Cockpit.COLUMNNAME_QtyExpectedSurplus_AtDate).append(" : ").append(expectedResults.getQtyExpectedSurplusAtDate()).append("\n")
 				.append(I_MD_Cockpit.COLUMNNAME_QtyInventoryCount_AtDate).append(" : ").append(expectedResults.getQtyInventoryCountAtDate()).append("\n")
 				.append(I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate).append(" : ").append(expectedResults.getQtySupplyPurchaseOrderAtDate()).append("\n")
-				.append(I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate).append(" : ").append(expectedResults.getQtySupplySumAtDate()).append("\n");
+				.append(I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate).append(" : ").append(expectedResults.getQtySupplySumAtDate()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_QtySupplyRequired_AtDate).append(" : ").append(expectedResults.getQtySupplyRequiredAtDate()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_QtySupplyToSchedule_AtDate).append(" : ").append(expectedResults.getQtySupplyToScheduleAtDate()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock_AtDate).append(" : ").append(expectedResults.getMdCandidateQtyStockAtDate()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_QtyStockChange).append(" : ").append(expectedResults.getQtyStockChange()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_QtyDemand_PP_Order_AtDate).append(" : ").append(expectedResults.getQtyDemandPPOrderAtDate()).append("\n")
+				.append(I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate).append(" : ").append(expectedResults.getQtySupplyPPOrderAtDate()).append("\n");
 
 		message.append("MD_Cockpit records:").append("\n");
 
@@ -270,6 +335,12 @@ public class MD_Cockpit_StepDef
 						.append(I_MD_Cockpit.COLUMNNAME_QtyInventoryCount_AtDate).append(" : ").append(cockpitEntry.getQtyInventoryCount_AtDate()).append(" ; ")
 						.append(I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate).append(" : ").append(cockpitEntry.getQtySupply_PurchaseOrder_AtDate()).append(" ; ")
 						.append(I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate).append(" : ").append(cockpitEntry.getQtySupplySum_AtDate()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_QtySupplyRequired_AtDate).append(" : ").append(cockpitEntry.getQtySupplyRequired_AtDate()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_QtySupplyToSchedule_AtDate).append(" : ").append(cockpitEntry.getQtySupplyToSchedule_AtDate()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock_AtDate).append(" : ").append(cockpitEntry.getMDCandidateQtyStock_AtDate()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_QtyStockChange).append(" : ").append(cockpitEntry.getQtyStockChange()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_QtyDemand_PP_Order_AtDate).append(" : ").append(cockpitEntry.getQtyDemand_PP_Order_AtDate()).append(" ; ")
+						.append(I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate).append(" : ").append(cockpitEntry.getQtySupply_PP_Order_AtDate()).append(" ; ")
 						.append("\n"));
 
 		logger.error("*** Error while looking for MD_Cockpit records, see current context: \n" + message);
@@ -308,5 +379,23 @@ public class MD_Cockpit_StepDef
 
 		@Nullable
 		BigDecimal qtySupplySumAtDate;
+
+		@Nullable
+		BigDecimal qtySupplyRequiredAtDate;
+
+		@Nullable
+		BigDecimal qtySupplyToScheduleAtDate;
+
+		@Nullable
+		BigDecimal mdCandidateQtyStockAtDate;
+
+		@Nullable
+		BigDecimal qtyStockChange;
+
+		@Nullable
+		BigDecimal qtyDemandPPOrderAtDate;
+
+		@Nullable
+		BigDecimal qtySupplyPPOrderAtDate;
 	}
 }
