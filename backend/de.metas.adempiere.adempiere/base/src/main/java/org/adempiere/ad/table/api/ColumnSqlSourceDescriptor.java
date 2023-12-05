@@ -42,7 +42,7 @@ public class ColumnSqlSourceDescriptor
 	@NonNull FetchTargetRecordsMethod fetchTargetRecordsMethod;
 
 	@Nullable String sqlToGetTargetRecordIdBySourceRecordId;
-	@Nullable String linkColumnName;
+	@Nullable String sourceLinkColumnName;
 
 	@Builder
 	private ColumnSqlSourceDescriptor(
@@ -50,22 +50,20 @@ public class ColumnSqlSourceDescriptor
 			@NonNull final String sourceTableName,
 			@NonNull final FetchTargetRecordsMethod fetchTargetRecordsMethod,
 			@Nullable final String sqlToGetTargetRecordIdBySourceRecordId,
-			@Nullable final String linkColumnName)
+			@Nullable final String sourceLinkColumnName)
 	{
 		this.targetTableName = targetTableName;
 		this.sourceTableName = sourceTableName;
 		this.fetchTargetRecordsMethod = fetchTargetRecordsMethod;
 		if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.LINK_COLUMN)
 		{
-			Check.assumeNotEmpty(linkColumnName, "linkColumnName is not empty");
-			this.linkColumnName = linkColumnName;
+			this.sourceLinkColumnName = Check.assumeNotEmpty(sourceLinkColumnName, "sourceLinkColumnName is not empty");
 			this.sqlToGetTargetRecordIdBySourceRecordId = null;
 		}
 		else if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.SQL)
 		{
-			Check.assumeNotEmpty(sqlToGetTargetRecordIdBySourceRecordId, "sqlToGetTargetRecordIdBySourceRecordId is not empty");
-			this.linkColumnName = null;
-			this.sqlToGetTargetRecordIdBySourceRecordId = sqlToGetTargetRecordIdBySourceRecordId;
+			this.sourceLinkColumnName = null;
+			this.sqlToGetTargetRecordIdBySourceRecordId = Check.assumeNotEmpty(sqlToGetTargetRecordIdBySourceRecordId, "sqlToGetTargetRecordIdBySourceRecordId is not empty");
 		}
 		else
 		{
@@ -74,6 +72,6 @@ public class ColumnSqlSourceDescriptor
 	}
 
 	@NonNull
-	public String getLinkColumnNameNotNull() {return Check.assumeNotNull(linkColumnName, "linkColumnName is not empty");}
+	public String getSourceLinkColumnNameNotNull() {return Check.assumeNotNull(sourceLinkColumnName, "sourceLinkColumnName is not empty");}
 
 }
