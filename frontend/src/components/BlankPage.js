@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-const BlankPage = ({ what = 'Document', title, description }) => {
+export const BlankPage = ({ what = 'Document', title, description }) => {
   let titleEffective;
   let descriptionEffective;
   if (title) {
@@ -23,22 +23,29 @@ const BlankPage = ({ what = 'Document', title, description }) => {
     );
   }
 
+  titleEffective = normalizeMessage(titleEffective);
+  descriptionEffective = normalizeMessage(descriptionEffective);
+
   return (
     <div className="blank-page">
-      <h1>{titleEffective}</h1>
-      <h3>{descriptionEffective}</h3>
+      {titleEffective && <h1>{titleEffective}</h1>}
+      {descriptionEffective && <h3>{descriptionEffective}</h3>}
     </div>
   );
 };
 
-/**
- * @typedef {object} Props Component props
- * @prop {string} what
- */
 BlankPage.propTypes = {
   what: PropTypes.any,
   title: PropTypes.string,
   description: PropTypes.string,
 };
 
-export default BlankPage;
+const normalizeMessage = (message) => {
+  if (!message) return null;
+
+  let messageNorm = message.trim();
+  if (!messageNorm) return null;
+  if (messageNorm === '-') return null;
+
+  return messageNorm;
+};

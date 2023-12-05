@@ -1,4 +1,4 @@
-import BlankPage from '../../components/BlankPage';
+import { BlankPage } from '../../components/BlankPage';
 import React from 'react';
 import renderer from 'react-test-renderer';
 import counterpart from 'counterpart';
