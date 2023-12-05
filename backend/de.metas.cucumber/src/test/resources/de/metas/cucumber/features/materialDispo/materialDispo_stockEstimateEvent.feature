@@ -81,7 +81,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 4                  | 44                      | 2021-06-23T00:00:00.00Z | 90  |
-    Then metasfresh has no MD_Candidate for identifier "c_1"
+    Then after not more than 60s, metasfresh has no MD_Candidate for identifier c_1
     And metasfresh has this MD_Candidate_StockChange_Detail data
       | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
       | c_1                        | 4                  | 44                      | Y          |

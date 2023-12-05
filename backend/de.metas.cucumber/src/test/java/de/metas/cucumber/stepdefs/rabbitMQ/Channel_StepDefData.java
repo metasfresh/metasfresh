@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,30 +20,15 @@
  * #L%
  */
 
-package de.metas.material.event;
+package de.metas.cucumber.stepdefs.rabbitMQ;
 
-import de.metas.util.JSONObjectMapper;
-import org.springframework.stereotype.Service;
+import com.rabbitmq.client.Channel;
+import de.metas.cucumber.stepdefs.StepDefData;
 
-@Service
-public class JacksonMaterialEventSerializer
+public class Channel_StepDefData extends StepDefData<Channel>
 {
-	public static final transient JacksonMaterialEventSerializer instance = new JacksonMaterialEventSerializer();
-
-	private final JSONObjectMapper<MaterialEvent> delegate;
-
-	private JacksonMaterialEventSerializer()
+	public Channel_StepDefData()
 	{
-		delegate = JSONObjectMapper.forClass(MaterialEvent.class);
-	}
-
-	public String toString(final MaterialEvent event)
-	{
-		return delegate.writeValueAsString(event);
-	}
-
-	public MaterialEvent fromString(final String eventStr)
-	{
-		return delegate.readValue(eventStr);
+		super(Channel.class);
 	}
 }

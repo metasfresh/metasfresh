@@ -70,7 +70,7 @@ public class DD_Order_PostMaterialEvent
 		final List<DDOrderCreatedEvent> events = createEvents(ddOrder);
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		events.forEach(materialEventService::postEventAfterNextCommit);
+		events.forEach(materialEventService::enqueueEventAfterNextCommit);
 	}
 
 	@NonNull
@@ -160,7 +160,7 @@ public class DD_Order_PostMaterialEvent
 				.build();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@NonNull
