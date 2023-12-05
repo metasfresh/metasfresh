@@ -45,7 +45,9 @@ import java.util.function.Function;
  * #L%
  */
 
-/** Bidirectional binding between local cache system and remote cache systems */
+/**
+ * Bidirectional binding between local cache system and remote cache systems
+ */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
 	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();

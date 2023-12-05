@@ -1,13 +1,11 @@
 package de.metas.event.log;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
 import de.metas.event.Topic;
+import de.metas.event.Type;
+import de.metas.event.model.I_AD_EventLog;
+import de.metas.event.model.I_AD_EventLog_Entry;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -15,11 +13,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.Type;
-import de.metas.event.model.I_AD_EventLog;
-import de.metas.event.model.I_AD_EventLog_Entry;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 /*
  * #%L
