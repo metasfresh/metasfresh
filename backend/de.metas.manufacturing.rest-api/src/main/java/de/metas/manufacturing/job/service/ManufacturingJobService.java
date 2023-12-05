@@ -37,8 +37,12 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -67,6 +71,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 @Service
 public class ManufacturingJobService
@@ -473,10 +480,21 @@ public class ManufacturingJobService
 
 	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
 	{
+		final Quantity roundingToQty = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+				.filter(Check::isNotBlank)
+				.map(BigDecimal::new)
+				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
+							.map(Integer::parseInt)
+							.map(UomId::ofRepoId)
+							.map(uomId -> Quantitys.create(qtyBD, uomId)))
+				.orElse(null);
+
 		return ScaleDevice.builder()
 				.deviceId(deviceAccessor.getId())
 				.caption(deviceAccessor.getDisplayName())
 				.websocketEndpoint(deviceWebsocketNamingStrategy.toWebsocketEndpoint(deviceAccessor.getId()))
+				.roundingToScale(roundingToQty)
 				.build();
 	}
 
