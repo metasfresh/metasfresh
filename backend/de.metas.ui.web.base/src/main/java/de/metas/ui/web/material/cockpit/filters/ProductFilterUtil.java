@@ -4,6 +4,7 @@ import com.google.common.base.Predicates;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -67,6 +68,13 @@ public class ProductFilterUtil
 				.widgetType(DocumentFieldWidgetType.Text)
 				.operator(Operator.LIKE_I);
 
+		final DocumentFilterParamDescriptor.Builder productParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_ID))
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(LookupDescriptorProviders.sharedInstance().searchInTable(I_M_Product.Table_Name).provideForFilter())
+				.operator(Operator.EQUAL);
+
 		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
 				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
@@ -92,6 +100,7 @@ public class ProductFilterUtil
 				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_FILTER_CAPTION))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
+				.addParameter(productParameter)
 				.addParameter(productCategoryParameter)
 				.addParameter(isPurchasedParameter)
 				.addParameter(isSoldParameter)
@@ -112,6 +121,7 @@ public class ProductFilterUtil
 		return ProductFilterVO.builder()
 				.productName(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductName, null))
 				.productValue(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductValue, null))
+				.productId(filter.getParameterValueAsInt(ProductFilterVO.PARAM_M_Product_ID, -1))
 				.productCategoryId(filter.getParameterValueAsInt(ProductFilterVO.PARAM_M_Product_Category_ID, -1))
 				.isPurchased(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsPurchased, null))
 				.isSold(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsSold, null))
@@ -168,6 +178,13 @@ public class ProductFilterUtil
 		{
 			final boolean ignoreCase = true;
 			productFilter.addStringLikeFilter(I_M_Product.COLUMN_Value, productValue, ignoreCase);
+			anyRestrictionAdded = true;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(productFilterVO.getProductId());
+		if (productId != null)
+		{
+			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
 			anyRestrictionAdded = true;
 		}
 
@@ -237,6 +254,12 @@ public class ProductFilterUtil
 			{
 				return false;
 			}
+		}
+
+		// Product
+		if (filterVO.getProductId() > 0 && product.getM_Product_ID() != filterVO.getProductId())
+		{
+			return false;
 		}
 
 		// Product Category
