@@ -656,9 +656,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public void validateBeforeClose(final I_PP_Order_BOMLine line)
+	public void validateBeforeClose(final I_PP_Order_BOMLine line, @Nullable final Quantity roundToScale)
 	{
-		getQuantities(line).assertQtyToIssueToleranceIsRespected();
+		getQuantities(line).assertQtyToIssueToleranceIsRespected(roundToScale);
 	}
 
 	@Override
