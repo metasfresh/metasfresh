@@ -112,6 +112,7 @@ public class MaterialDispoRecordRepository
 		{
 			case DEMAND:
 			case INVENTORY_DOWN:
+			case UNEXPECTED_DECREASE:
 				stockCandidate = candidateRepositoryRetrieval
 						.retrieveSingleChild(candidate.getId())
 						.orElseThrow(() -> new AdempiereException("").appendParametersToMessage()

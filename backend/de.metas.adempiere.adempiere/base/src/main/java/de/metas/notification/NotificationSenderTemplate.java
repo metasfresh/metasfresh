@@ -1,32 +1,7 @@
 package de.metas.notification;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ecs.ClearElement;
-import org.apache.ecs.xhtml.body;
-import org.apache.ecs.xhtml.br;
-import org.apache.ecs.xhtml.html;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
@@ -53,6 +28,29 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ecs.ClearElement;
+import org.apache.ecs.xhtml.body;
+import org.apache.ecs.xhtml.br;
+import org.apache.ecs.xhtml.html;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -404,11 +402,11 @@ public class NotificationSenderTemplate
 		{
 			final UserNotification notification = notificationsRepo.save(request);
 
-			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
+			final Topic topic = Topic.distributed(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
 					.getEventBus(topic)
-					.postEvent(UserNotificationUtils.toEvent(notification));
+					.enqueueEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
 		{

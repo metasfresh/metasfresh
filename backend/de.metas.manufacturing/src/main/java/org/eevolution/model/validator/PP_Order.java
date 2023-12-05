@@ -218,7 +218,7 @@ public class PP_Order
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)

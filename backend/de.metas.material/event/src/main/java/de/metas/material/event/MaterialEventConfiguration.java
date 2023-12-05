@@ -1,17 +1,16 @@
 package de.metas.material.event;
 
+import de.metas.Profiles;
+import de.metas.event.IEventBusFactory;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
-
-import de.metas.Profiles;
-import de.metas.event.IEventBusFactory;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import lombok.NonNull;
 
 /*
  * #%L

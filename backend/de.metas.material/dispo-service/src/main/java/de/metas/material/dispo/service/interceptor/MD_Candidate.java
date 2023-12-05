@@ -71,7 +71,7 @@ public class MD_Candidate
 				.materialDescriptor(getMaterialDescriptor(candidate))
 				.build();
 
-		materialEventService.postEventAfterNextCommit(stockCandidateChangedEvent);
+		materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled )
@@ -113,7 +113,7 @@ public class MD_Candidate
 				.qtyFulfilledDelta(qtyFulfilledDelta)
 				.build();
 
-		materialEventService.postEventAfterNextCommit(materialCandidateChangedEvent);
+		materialEventService.enqueueEventAfterNextCommit(materialCandidateChangedEvent);
 	}
 
 	@NonNull

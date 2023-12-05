@@ -1,13 +1,13 @@
 package de.metas.notification;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.notification.impl.NotificationRepository;
+import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -15,13 +15,12 @@ import org.compiere.model.I_AD_Message;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.event.Topic;
-import de.metas.event.Type;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.notification.impl.NotificationRepository;
-import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -65,7 +64,7 @@ public class NotificationRepositoryTest
 		createAD_Message("contentADMessage");
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
-				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
+				.topic(Topic.builder().name("topic1").type(Type.DISTRIBUTED).build())
 				.recipientUserId(UserId.ofRepoId(123))
 				.important(true)
 				//

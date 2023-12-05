@@ -101,7 +101,7 @@ public final class PPOrderAdvisedHandler
 					.dateOrdered(SystemTime.asInstant())
 					.ppOrder(ppOrderWithGroupId)
 					.build();
-			materialEventService.postEventAsync(ppOrderRequestEvent);
+			materialEventService.enqueueEventNow(ppOrderRequestEvent);
 		}
 	}
 
