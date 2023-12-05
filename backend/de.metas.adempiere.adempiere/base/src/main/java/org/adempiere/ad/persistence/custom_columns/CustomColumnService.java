@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Null;
 import org.compiere.model.PO;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class CustomColumnService
 		{
 			return;
 		}
+
+		InterfaceWrapperHelper.refresh(record);
 
 		final CustomColumnsPOValues poValues = CustomColumnsConverters.convertToPOValues(valuesByColumnName, record.getPOInfo(), extractZoneId(record));
 		setCustomColumns(record, poValues);
