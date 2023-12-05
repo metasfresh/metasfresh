@@ -1,5 +1,7 @@
 package de.metas.dunning.api.impl;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
@@ -19,12 +21,17 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.i18n.Language;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateRepository;
+import de.metas.letter.BoilerPlateWithLineId;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -37,6 +44,9 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -48,14 +58,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 
 public class DunningBL implements IDunningBL
 {
 
-
+	public static final String MASS_GENERATE_LINES_EVALUATION_PARAM = "Mass_Generate_Lines";
 	private final Logger logger = LogManager.getLogger(getClass());
 
-	private ReentrantLock configLock = new ReentrantLock();
+	private final ReentrantLock configLock = new ReentrantLock();
 
 	/**
 	 * Dunning configurator (if any)
@@ -64,12 +77,20 @@ public class DunningBL implements IDunningBL
 
 	/**
 	 * Dunning configuration
-	 *
+	 * <p>
 	 * NOTE: please always access it via {@link #getDunningConfig()} and never directly
 	 */
 	private IDunningConfig _config;
-	private INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final BoilerPlateRepository boilerPlateRepository;
+
+	public DunningBL(final BoilerPlateRepository boilerPlateRepository)
+	{
+		this.boilerPlateRepository = boilerPlateRepository;
+	}
 
 	@Override
 	public IDunningConfig getDunningConfig()
@@ -239,18 +260,48 @@ public class DunningBL implements IDunningBL
 
 	private void sendMassNotifications(@NonNull final Collection<DunningDocId> createdDunningDocIds)
 	{
-		final Collection<I_C_DunningDoc> dunningDocs = dunningDAO.getByIdsInTrx(createdDunningDocIds);
-//FIXME split by org, and replace in template
+		dunningDAO.getByIdsInTrx(createdDunningDocIds)
+				.stream()
+				.collect(Collectors.groupingBy(doc -> docTypeDAO.loadById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification()))
+				.forEach(this::sendMassNotifications);
+	}
 
-		final String content = null;
-		final OrgId orgId = null;
-		final UserNotificationRequest notification = UserNotificationRequest.builder()
+	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId, @NonNull final List<I_C_DunningDoc> dunningDocs)
+	{
+		dunningDocs.stream()
+				.collect(Collectors.groupingBy(doc -> OrgId.ofRepoId(doc.getAD_Org_ID())))
+				.forEach((orgId, docs) -> this.sendMassNotifications(boilerPlateWithLineId, orgId, docs));
+	}
+
+	private void sendMassNotifications(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId,
+			@NonNull final OrgId orgId,
+			@NonNull final List<I_C_DunningDoc> dunningDocs)
+	{
+		final Language userLanguage = Env.getLanguage();
+		final BoilerPlate headerBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getHeaderId(), userLanguage);
+		final String lines = getMassGenerateLinesPlainString(boilerPlateWithLineId, dunningDocs);
+
+		final Evaluatee headerEvaluatee = Evaluatees.mapBuilder()
+				.put(MASS_GENERATE_LINES_EVALUATION_PARAM, lines)
+				.build()
+				.andComposeWith(getPO(orgDAO.getById(orgId)));
+
+		notificationBL.send(UserNotificationRequest.builder()
 				.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
 				.recipient(Recipient.allUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
-				.contentPlain(content)
-				.build();
+				.contentPlain(headerBoilerPlate.evaluateTextSnippet(headerEvaluatee))
+				.subjectPlain(headerBoilerPlate.evaluateSubject(headerEvaluatee))
+				.build());
+	}
 
-		notificationBL.send(notification);
+	@NonNull
+	private String getMassGenerateLinesPlainString(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId, final @NonNull List<I_C_DunningDoc> dunningDocs)
+	{
+		final Language userLanguage = Env.getLanguage();
+		final BoilerPlate lineBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getLineId(), userLanguage);
+		return dunningDocs.stream()
+				.map(doc -> lineBoilerPlate.evaluateTextSnippet(getPO(doc)))
+				.collect(Collectors.joining("\n"));
 	}
 
 	@Override
@@ -299,7 +350,6 @@ public class DunningBL implements IDunningBL
 		candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
 		candidate.setDunningDateEffective(dunningDoc.getDunningDate());
 		dao.save(candidate);
-
 
 		source.setProcessed(true);
 		InterfaceWrapperHelper.save(source);

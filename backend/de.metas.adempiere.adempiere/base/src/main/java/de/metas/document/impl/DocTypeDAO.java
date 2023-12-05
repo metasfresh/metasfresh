@@ -7,6 +7,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateWithLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -21,6 +23,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
@@ -342,5 +345,21 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			return Optional.ofNullable(counterDocBaseTypeByDocBaseType.get(docBaseType));
 		}
+	}
+
+	@Cached
+	@Override
+	public DocType loadById(final DocTypeId id)
+	{
+		return fromDB(getById(id));
+	}
+
+	private DocType fromDB(final I_C_DocType docType)
+	{
+		return DocType.builder()
+				.id(DocTypeId.ofRepoId(docType.getC_DocType_ID()))
+				.notification(BoilerPlateId.ofRepoIdOrNull(docType.getAD_BoilerPlate_ID()))
+				.massGenerateNotification(BoilerPlateWithLineId.ofRepoIdsOrNull(docType.getMass_Generate_Boilerplate_ID(), docType.getMass_Generate_Line_Boilerplate_ID()))
+				.build();
 	}
 }
