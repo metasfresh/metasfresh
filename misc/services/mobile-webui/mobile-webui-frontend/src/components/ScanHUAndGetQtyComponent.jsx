@@ -170,8 +170,8 @@ const ScanHUAndGetQtyComponent = ({
 
     try {
       return roundToQtyPrecision(
-          { qty: qtyMax, uom: qtyMaxUOM },
-          { qty: scaleDevice.roundingToScale.qty, uom: scaleDevice.roundingToScale.uomSymbol }
+        { qty: qtyMax, uom: qtyMaxUOM },
+        { qty: scaleDevice.roundingToScale.qty, uom: scaleDevice.roundingToScale.uomSymbol }
       );
     } catch (e) {
       toastError({ plainMessage: e.message });
