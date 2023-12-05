@@ -151,41 +151,64 @@ class MacAddressGeneratorTest
 		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
 		private ComponentGeneratorContext createContext(
 				@NonNull final Integer qty,
-				@Nullable String alreadySetMAC1,
-				@Nullable String alreadySetMAC2)
-		{
+				@Nullable final String alreadySetMAC1,
+				@Nullable final String alreadySetMAC2,
+				@Nullable final String alreadySetMAC3,
+				@Nullable final String alreadySetMAC4,
+				@Nullable final String alreadySetMAC5,
+				@Nullable final String alreadySetMAC6,
+				@Nullable final String alreadySetMAC7,
+				@Nullable final String alreadySetMAC8) {
+
 			final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
-			if (alreadySetMAC1 != null)
-			{
+			if (alreadySetMAC1 != null) {
 				existingAttributes.attributeValue(AttributeConstants.RouterMAC1, alreadySetMAC1);
 			}
-			if (alreadySetMAC2 != null)
-			{
+			if (alreadySetMAC2 != null) {
 				existingAttributes.attributeValue(AttributeConstants.RouterMAC2, alreadySetMAC2);
+			}
+			if (alreadySetMAC3 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC3, alreadySetMAC3);
+			}
+			if (alreadySetMAC4 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC4, alreadySetMAC4);
+			}
+			if (alreadySetMAC5 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC5, alreadySetMAC5);
+			}
+			if (alreadySetMAC6 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC6, alreadySetMAC6);
+			}
+			if (alreadySetMAC7 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC7, alreadySetMAC7);
+			}
+			if (alreadySetMAC8 != null) {
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC8, alreadySetMAC8);
 			}
 
 			return ComponentGeneratorContext.builder()
 					.qty(qty)
 					.existingAttributes(existingAttributes.build())
 					.parameters(ComponentGeneratorParams.builder()
-							.sequenceId(DocSequenceId.ofRepoId(123456))
-							.build())
-					.clientId(ClientId.METASFRESH) // irrelevant
+										.sequenceId(DocSequenceId.ofRepoId(123456))
+										.build())
+					.clientId(ClientId.METASFRESH)
 					.build();
 		}
+
 
 		@Test
 		void prefixHasColon()
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB:", 1);
 			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+																			.qty(1)
+																			.alreadySetMAC1("")
+																			.build());
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
-					.attributeValue(AttributeConstants.RouterMAC1, "BB:00:00:00:00:01")
-					.build());
+												 .attributeValue(AttributeConstants.RouterMAC1, "BB:00:00:00:00:01")
+												 .build());
 		}
 
 		@Test
@@ -193,14 +216,14 @@ class MacAddressGeneratorTest
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB:A", 1234);
 			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(2)
-					.alreadySetMAC1("already set")
-					.alreadySetMAC2("")
-					.build());
+																			.qty(2)
+																			.alreadySetMAC1("already set")
+																			.alreadySetMAC2("")
+																			.build());
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
-					.attributeValue(AttributeConstants.RouterMAC2, "BB:A0:00:00:04:D2")
-					.build());
+												 .attributeValue(AttributeConstants.RouterMAC2, "BB:A0:00:00:04:D2")
+												 .build());
 		}
 
 		@Test
@@ -208,13 +231,13 @@ class MacAddressGeneratorTest
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("BB-A", 1234);
 			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+																			.qty(1)
+																			.alreadySetMAC1("")
+																			.build());
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
-					.attributeValue(AttributeConstants.RouterMAC1, "BB-A0-00-00-04-D2")
-					.build());
+												 .attributeValue(AttributeConstants.RouterMAC1, "BB-A0-00-00-04-D2")
+												 .build());
 		}
 
 		@Test
@@ -222,13 +245,42 @@ class MacAddressGeneratorTest
 		{
 			final MacAddressGenerator generator = newMacAddressGenerator("", 1234321);
 			final ImmutableAttributeSet result = generator.generate(context()
-					.qty(1)
-					.alreadySetMAC1("")
-					.build());
+																			.qty(1)
+																			.alreadySetMAC1("")
+																			.build());
 
 			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
-					.attributeValue(AttributeConstants.RouterMAC1, "00:00:00:12:D5:91")
-					.build());
+												 .attributeValue(AttributeConstants.RouterMAC1, "00:00:00:12:D5:91")
+												 .build());
 		}
+
+		@Test
+		void allEightMacAddressesGenerated()
+		{
+			final MacAddressGenerator generator = newMacAddressGenerator("BB:A", 1234);
+			final ImmutableAttributeSet result = generator.generate(context()
+																			.qty(8)
+																			.alreadySetMAC1("")
+																			.alreadySetMAC2("")
+																			.alreadySetMAC3("")
+																			.alreadySetMAC4("")
+																			.alreadySetMAC5("")
+																			.alreadySetMAC6("")
+																			.alreadySetMAC7("")
+																			.alreadySetMAC8("")
+																			.build());
+
+			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
+												 .attributeValue(AttributeConstants.RouterMAC1, "BB:A0:00:00:04:D2")
+												 .attributeValue(AttributeConstants.RouterMAC2, "BB:A0:00:00:04:D3")
+												 .attributeValue(AttributeConstants.RouterMAC3, "BB:A0:00:00:04:D4")
+												 .attributeValue(AttributeConstants.RouterMAC4, "BB:A0:00:00:04:D5")
+												 .attributeValue(AttributeConstants.RouterMAC5, "BB:A0:00:00:04:D6")
+												 .attributeValue(AttributeConstants.RouterMAC6, "BB:A0:00:00:04:D7")
+												 .attributeValue(AttributeConstants.RouterMAC7, "BB:A0:00:00:04:D8")
+												 .attributeValue(AttributeConstants.RouterMAC8, "BB:A0:00:00:04:D9")
+												 .build());
+		}
+
 	}
 }
