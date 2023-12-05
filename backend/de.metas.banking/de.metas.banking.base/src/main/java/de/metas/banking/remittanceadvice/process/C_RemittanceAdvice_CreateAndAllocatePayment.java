@@ -34,6 +34,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -149,7 +150,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : Instant.now())
+				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
 				.build();

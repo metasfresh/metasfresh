@@ -5,6 +5,7 @@
 @import './board.css';
 @import './charts.css';
 @import './charts.css';
+@import './URLsChart.scss';
 @import './datepicker.css';
 @import './daterangepicker.css';
 @import './datetime.css';
