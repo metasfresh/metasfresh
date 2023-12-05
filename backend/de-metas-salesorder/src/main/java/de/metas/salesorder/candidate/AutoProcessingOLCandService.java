@@ -66,6 +66,8 @@ public class AutoProcessingOLCandService
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
