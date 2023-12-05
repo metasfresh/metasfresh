@@ -146,7 +146,7 @@ public class RequestMaterialOrderService
 			{
 				if (groupMember.getDemandDetail().getOrderLineId() > 0)
 				{
-				ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
+					ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
 				}
 
 				if (groupMember.getDemandDetail().getShipmentScheduleId() > 0)

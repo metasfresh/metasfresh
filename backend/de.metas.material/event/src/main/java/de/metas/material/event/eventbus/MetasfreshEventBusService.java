@@ -67,7 +67,7 @@ public final class MetasfreshEventBusService
 			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		logger.info("Creating MaterialEventBusService for distributed event dispatching");
-		return new MetasfreshEventBusService(Type.DISTRIBUTED, materialEventConverter, eventBusFactory);
+		return new MetasfreshEventBusService(Type.DISTRIBUTED, materialEventConverter, eventBusFactory, materialEventObserver);
 	}
 
 	/**
@@ -99,7 +99,7 @@ public final class MetasfreshEventBusService
 	public void enqueueEvent(@NonNull final MaterialEvent event)
 	{
 		materialEventObserver.reportEventEnqueued(event);
-		
+
 		final Event realEvent = materialEventConverter.fromMaterialEvent(event);
 		getEventBus().enqueueEvent(realEvent);
 	}

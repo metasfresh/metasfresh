@@ -137,7 +137,7 @@ public class NotificationSenderTemplate
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
