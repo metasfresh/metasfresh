@@ -1,15 +1,7 @@
 package de.metas.cache;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.event.Event;
@@ -23,6 +15,12 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -148,7 +146,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
 			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
-					.postEvent(event);
+					.enqueueEvent(event);
 		}
 	}
 
