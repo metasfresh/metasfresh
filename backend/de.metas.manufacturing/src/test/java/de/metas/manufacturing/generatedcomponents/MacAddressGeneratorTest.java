@@ -132,7 +132,7 @@ class MacAddressGeneratorTest
 	}
 
 	@Nested
-	public class generate
+	public static class generate
 	{
 		@BeforeEach
 		void beforeEach()
