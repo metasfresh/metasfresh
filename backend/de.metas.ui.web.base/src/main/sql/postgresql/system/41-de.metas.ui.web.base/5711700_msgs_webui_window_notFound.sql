@@ -28,3 +28,27 @@ UPDATE AD_Message SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2023-11
 UPDATE AD_Message SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2023-11-27 11:18:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545361
 ;
 
+-- 2023-12-05T09:52:18.286Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-05 11:52:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545361
+;
+
+-- 2023-12-05T09:52:20.436Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-05 11:52:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545361
+;
+
+-- 2023-12-05T09:52:21.512Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-05 11:52:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545361
+;
+
+-- 2023-12-05T09:52:45.083Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='%(what)s nicht gefunden.',Updated=TO_TIMESTAMP('2023-12-05 11:52:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545362
+;
+
+-- 2023-12-05T09:52:48.380Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-05 11:52:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545362
+;
+
+-- 2023-12-05T09:52:52.752Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='%(what)s nicht gefunden.',Updated=TO_TIMESTAMP('2023-12-05 11:52:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545362
+;
+
