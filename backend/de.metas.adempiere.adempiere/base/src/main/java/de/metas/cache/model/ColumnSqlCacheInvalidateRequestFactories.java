@@ -57,34 +57,38 @@ final class ColumnSqlCacheInvalidateRequestFactories
 	{
 		final FetchTargetRecordsMethod fetchTargetRecordsMethod = descriptor.getFetchTargetRecordsMethod();
 		final String targetTableName = descriptor.getTargetTableName();
-		final String sqlToGetTargetRecordIdBySourceRecordId;
 		if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.SQL)
 		{
-			sqlToGetTargetRecordIdBySourceRecordId = descriptor.getSqlToGetTargetRecordIdBySourceRecordId();
+			return FetchFromSQL.builder()
+					.targetTableName(targetTableName)
+					.sqlToGetTargetRecordIdBySourceRecordId(descriptor.getSqlToGetTargetRecordIdBySourceRecordId())
+					.build();
 		}
 		else if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.LINK_COLUMN)
 		{
 			final POInfo targetTableInfo = POInfo.getPOInfoNotNull(targetTableName);
 			final String targetTableKeyColumnName = targetTableInfo.getSingleKeyColumnName();
-			final String linkColumnName = descriptor.getLinkColumnNameNotNull();
-			if (!targetTableInfo.isPhysicalColumn(linkColumnName))
+			final String sourceLinkColumnName = descriptor.getSourceLinkColumnNameNotNull();
+
+			if (!targetTableInfo.isPhysicalColumn(sourceLinkColumnName))
 			{
-				logger.warn("Column " + targetTableName + "." + linkColumnName + " it's expected to exist and be a physical column");
+				logger.warn("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
 				return null;
 			}
-			sqlToGetTargetRecordIdBySourceRecordId = "SELECT " + targetTableKeyColumnName
-					+ " FROM " + targetTableName
-					+ " WHERE " + linkColumnName + "=@Record_ID@";
+			//noinspection UnnecessaryLocalVariable
+			final String targetLinkColumnName = sourceLinkColumnName;
+
+			return FetchUsingSourceLinkColumn.builder()
+					.targetTableName(targetTableName)
+					.targetKeyColumnName(targetTableKeyColumnName)
+					.targetLinkColumnName(targetLinkColumnName)
+					.sourceLinkColumnName(sourceLinkColumnName)
+					.build();
 		}
 		else
 		{
 			throw new AdempiereException("Fetch method not supported for " + descriptor);
 		}
-
-		return FetchFromSQL.builder()
-				.targetTableName(targetTableName)
-				.sqlToGetTargetRecordIdBySourceRecordId(sqlToGetTargetRecordIdBySourceRecordId)
-				.build();
 	}
 
 	@ToString
@@ -154,4 +158,79 @@ final class ColumnSqlCacheInvalidateRequestFactories
 			return targetRecordIds.build();
 		}
 	}
+
+	@ToString
+	@EqualsAndHashCode
+	private static class FetchUsingSourceLinkColumn implements ModelCacheInvalidateRequestFactory
+	{
+		@NonNull private final String targetTableName;
+		@NonNull private final String targetKeyColumnName;
+		@NonNull private final String targetLinkColumnName;
+		@NonNull private final String sourceLinkColumnName;
+
+		private final boolean isTargetLinkColumnSameAsKeyColumn;
+		@Nullable private final String sqlGetTargetRecordIdByLinkId;
+
+		@Builder
+		private FetchUsingSourceLinkColumn(
+				@NonNull final String targetTableName,
+				@NonNull final String targetKeyColumnName,
+				@NonNull final String targetLinkColumnName,
+				@NonNull final String sourceLinkColumnName)
+		{
+			this.targetTableName = targetTableName;
+			this.targetKeyColumnName = targetKeyColumnName;
+			this.targetLinkColumnName = targetLinkColumnName;
+			this.sourceLinkColumnName = sourceLinkColumnName;
+
+			if (targetLinkColumnName.equals(targetKeyColumnName))
+			{
+				this.isTargetLinkColumnSameAsKeyColumn = true;
+				this.sqlGetTargetRecordIdByLinkId = null;
+			}
+			else
+			{
+				this.isTargetLinkColumnSameAsKeyColumn = false;
+				this.sqlGetTargetRecordIdByLinkId = "SELECT " + targetKeyColumnName + " FROM " + targetTableName + " WHERE " + targetLinkColumnName + "=?";
+			}
+		}
+
+		@Override
+		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTUSED)
+		{
+			final int linkId = sourceModel.getValueAsInt(sourceLinkColumnName, -1);
+			return getTargetRecordIdsByLinkId(linkId)
+					.stream()
+					.map(targetRecordId -> CacheInvalidateRequest.rootRecord(targetTableName, targetRecordId))
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		private ImmutableSet<Integer> getTargetRecordIdsByLinkId(final int linkId)
+		{
+			if (linkId < 0)
+			{
+				return ImmutableSet.of();
+			}
+
+			if (isTargetLinkColumnSameAsKeyColumn)
+			{
+				return ImmutableSet.of(linkId);
+			}
+
+			final ImmutableSet.Builder<Integer> targetRecordIds = ImmutableSet.builder();
+			DB.forEachRow(
+					Check.assumeNotNull(this.sqlGetTargetRecordIdByLinkId, "sqlGetTargetRecordIdByLinkId shall not be null"),
+					ImmutableList.of(linkId),
+					rs -> {
+						final int targetRecordId = rs.getInt(1);
+						if (targetRecordId > 0)
+						{
+							targetRecordIds.add(targetRecordId);
+						}
+					});
+			return targetRecordIds.build();
+		}
+
+	}
+
 }
