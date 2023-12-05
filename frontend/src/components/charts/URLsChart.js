@@ -25,11 +25,11 @@ const URLItem = ({ url, caption, target }) => {
   const targetEffective = target ? target : '_blank';
 
   return (
-    <li className="item">
+    <div className="item">
       <a href={url} target={targetEffective}>
         {captionEffective}
       </a>
-    </li>
+    </div>
   );
 };
 URLItem.propTypes = {
