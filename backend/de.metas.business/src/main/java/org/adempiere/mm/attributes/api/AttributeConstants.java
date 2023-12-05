@@ -70,6 +70,8 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC4 = AttributeCode.ofString("RouterMAC4");
 	public static final AttributeCode RouterMAC5 = AttributeCode.ofString("RouterMAC5");
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
+	public static final AttributeCode RouterMAC7 = AttributeCode.ofString("RouterMAC7");
+	public static final AttributeCode RouterMAC8 = AttributeCode.ofString("RouterMAC8");
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
 }
