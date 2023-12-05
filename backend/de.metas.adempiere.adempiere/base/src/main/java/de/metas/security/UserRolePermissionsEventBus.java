@@ -1,7 +1,5 @@
 package de.metas.security;
 
-import org.slf4j.Logger;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -9,6 +7,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.slf4j.Logger;
 
 /*
  * #%L

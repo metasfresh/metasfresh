@@ -72,8 +72,8 @@ public class InventoryUserNotificationsProducer
 		}
 
 		notificationBL.sendAfterCommit(inventories.stream()
-				.map(InventoryUserNotificationsProducer::toUserNotification)
-				.collect(ImmutableList.toImmutableList()));
+											   .map(InventoryUserNotificationsProducer::toUserNotification)
+											   .collect(ImmutableList.toImmutableList()));
 	}
 
 	private static UserNotificationRequest toUserNotification(@NonNull final I_M_Inventory inventory)

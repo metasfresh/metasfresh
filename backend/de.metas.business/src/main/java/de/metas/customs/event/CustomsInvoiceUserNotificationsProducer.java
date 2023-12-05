@@ -1,24 +1,22 @@
 package de.metas.customs.event;
 
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Customs_Invoice;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.customs.CustomsInvoice;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Customs_Invoice;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L

@@ -1,11 +1,7 @@
 package de.metas.bpartner.process;
 
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner_CreditLimit;
-
 import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -18,6 +14,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 
 public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements IProcessPrecondition
 {

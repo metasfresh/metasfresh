@@ -163,7 +163,6 @@ public class PPOrderRequestedEventHandlerTests
 		productBom.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
 		save(productBom);
 
-
 		productPlanning = newInstance(I_PP_Product_Planning.class);
 		productPlanning.setAD_Workflow_ID(routingId.getRepoId());
 		productPlanning.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
@@ -213,8 +212,8 @@ public class PPOrderRequestedEventHandlerTests
 		}
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(),
-				AttributesKey.ofAttributeValueIds(12345),
-				bomMainProduct.getM_AttributeSetInstance_ID());
+																							  AttributesKey.ofAttributeValueIds(12345),
+																							  bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
 				.ppOrderData(PPOrderData.builder()
