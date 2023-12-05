@@ -111,7 +111,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		}
 		else
 		{
-			events.forEach(postMaterialEventService::postEventAsync);
+			events.forEach(postMaterialEventService::enqueueEventNow);
 		}
 	}
 

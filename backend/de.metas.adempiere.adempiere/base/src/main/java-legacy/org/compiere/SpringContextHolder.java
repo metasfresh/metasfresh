@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -166,6 +165,32 @@ public final class SpringContextHolder
 			}
 			throw e;
 		}
+	}
+
+	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			if (beanImpl != null)
+			{
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType)
+					.setParameter("name", name);
+		}
+		// noinspection ConstantConditions
+		return springApplicationContext.getBean(name, requiredType);
 	}
 
 	/**

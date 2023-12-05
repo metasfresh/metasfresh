@@ -137,7 +137,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePPOrderRequestedEvent(@NonNull final CandidatesGroup group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.postEventAsync(ppOrderRequestEvent);
+		materialEventService.enqueueEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -222,7 +222,7 @@ public class RequestMaterialOrderService
 	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
 	{
 		final DDOrderCandidateRequestedEvent event = createDDOrderCandidateRequestedEvent(group, traceId);
-		materialEventService.postEventAsync(event);
+		materialEventService.enqueueEventNow(event);
 	}
 
 	@VisibleForTesting
@@ -272,7 +272,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
@@ -309,7 +309,7 @@ public class RequestMaterialOrderService
 	private void createAndFireForecastRequestedEvent(@NonNull final CandidatesGroup group)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final CandidatesGroup group)

@@ -164,10 +164,10 @@ public class DemandCandiateHandlerTest
 
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 		assertThat(demandStockRecord).extracting(
-						"MD_Candidate_Parent_ID",
-						"Qty",
-						"StorageAttributesKey",
-						"SeqNo")
+				"MD_Candidate_Parent_ID",
+				"Qty",
+				"StorageAttributesKey",
+				"SeqNo")
 				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
@@ -195,7 +195,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.postEventAfterNextCommit(eventCaptor.capture());
+				.enqueueEventAfterNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 
@@ -230,7 +230,7 @@ public class DemandCandiateHandlerTest
 
 		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any(), Mockito.any());
+				.enqueueEventNow(Mockito.any());
 	}
 
 	@SuppressWarnings("SameParameterValue")
