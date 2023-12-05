@@ -65,3 +65,7 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # this is ignored to prevent pusing debug snapshots
  **/*.snap.debug
+
+# github related
+.github/merge_to_master
+
