@@ -338,7 +338,11 @@ export default class MasterWindow extends PureComponent {
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         {dataId === 'notfound' ? (
-          <BlankPage what="Document" />
+          <BlankPage
+            what="Document"
+            title={master.layout.notFoundMessage}
+            description={master.layout.notFoundMessageDetail}
+          />
         ) : (
           <SectionGroup
             key="window"
