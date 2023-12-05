@@ -31,6 +31,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
@@ -346,7 +347,7 @@ public class StepDefUtil
 			throw e;
 		}
 	}
-
+	
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));

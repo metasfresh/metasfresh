@@ -152,6 +152,6 @@ public class StockDataUpdateRequestHandler
 				.changeDate(TimeUtil.asInstant(dataRecord.getUpdated()))
 				.build();
 
-		postMaterialEventService.postEventAsync(event);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 }

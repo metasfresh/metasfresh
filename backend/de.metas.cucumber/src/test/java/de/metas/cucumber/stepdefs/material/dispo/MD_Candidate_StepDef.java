@@ -82,7 +82,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -357,16 +356,108 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event, null);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 
-	@And("metasfresh has no MD_Candidate for identifier {string}")
-	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")
+	public void metasfresh_has_no_md_cand_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
 	{
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
-		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
-		assertThat(candidateRecord).isNull();
+		final Supplier<Boolean> candidateWasDeleted = () -> MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId()) == null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
+	}
+
+	@And("^after not more than (.*)s, MD_Candidates are found$")
+	public void validate_md_candidates(
+			final int timeoutSec,
+			@NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		for (final MaterialDispoTableRow tableRow : table.getRows())
+		{
+			// make sure the given md_candidate has been created
+			final MaterialDispoDataItem materialDispoRecord = tryAndWaitforCandidate(timeoutSec, tableRow);
+
+			assertThat(materialDispoRecord).isNotNull();
+
+			assertThat(materialDispoRecord.getType()).as("type of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date  of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getTime());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity().abs()).as("quantity of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
+			assertThat(materialDispoRecord.getAtp()).as("atp of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getAtp());
+
+			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
+		}
+	}
+
+	private MaterialDispoDataItem tryAndWaitforCandidate(
+			final int timeoutSec,
+			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
+	{
+		final CandidatesQuery candidatesQuery = tableRow.createQuery();
+
+		// The provider gets the matching items and then does some matching of its own.
+		final ItemProvider<MaterialDispoDataItem> itemProvider = () -> {
+
+			final StringBuilder sb = new StringBuilder();
+			final ImmutableList<MaterialDispoDataItem> allByQuery = materialDispoRecordRepository.getAllBy(candidatesQuery);
+			for (final MaterialDispoDataItem item : allByQuery)
+			{
+				if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the qty values are different"
+									  + " Expected=" + tableRow.getQty().abs() + " (abs), Actual= " + item.getMaterialDescriptor().getQuantity().abs() + " (abs)"
+									  + "\n");
+					continue;
+				}
+				if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the atp values are different"
+									  + " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp()
+									  + "\n");
+					continue;
+				}
+				if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the time (resp. materialDecription.date) values are different"
+									  + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
+									  + "\n");
+					continue;
+				}
+
+				if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the business case values are different\n");
+					continue;
+				}
+				return ItemProvider.ProviderResult.resultWasFound(item);
+			}
+			return ItemProvider.ProviderResult.resultWasNotFound(sb.toString());
+		};
+
+		final Supplier<String> contextSupplier = () -> {
+
+			final StringBuilder context = new StringBuilder("MD_Candidate not found\n");
+			context.append("**tableRow:** \n").append(tableRow).append("\n");
+			context.append("**candidatesQuery:** \n").append(candidatesQuery).append("\n");
+			context.append("**query result candidates:** \n").append(materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery)).append("\n");
+			context.append("**all product related candidates:** \n").append(materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+
+			return context.toString();
+		};
+
+		return StepDefUtil
+				.tryAndWaitForItem(timeoutSec, 1000,
+								   itemProvider,
+								   contextSupplier);
 	}
 
 	@And("metasfresh has no MD_Candidate_StockChange_Detail data for identifier {string}")
