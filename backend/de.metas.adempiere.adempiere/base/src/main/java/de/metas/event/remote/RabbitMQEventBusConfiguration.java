@@ -402,7 +402,7 @@ public class RabbitMQEventBusConfiguration
 	@Configuration
 	public static class AsyncBatchQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.async.eventbus.AsyncBatchNotifyRequest");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
 		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
 		private static final String EXCHANGE_NAME = "metasfresh-async-batch-events";
 
