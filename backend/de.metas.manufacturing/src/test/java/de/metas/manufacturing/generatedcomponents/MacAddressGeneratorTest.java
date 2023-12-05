@@ -116,6 +116,8 @@ class MacAddressGeneratorTest
 			mkAttribute(AttributeConstants.RouterMAC4);
 			mkAttribute(AttributeConstants.RouterMAC5);
 			mkAttribute(AttributeConstants.RouterMAC6);
+			mkAttribute(AttributeConstants.RouterMAC7);
+			mkAttribute(AttributeConstants.RouterMAC8);
 		}
 
 		private void mkAttribute(final AttributeCode attributeCode)
