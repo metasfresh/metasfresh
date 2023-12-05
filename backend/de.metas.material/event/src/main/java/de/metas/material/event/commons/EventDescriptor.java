@@ -1,16 +1,14 @@
 package de.metas.material.event.commons;
 
-import org.adempiere.service.ClientId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -35,7 +33,7 @@ import lombok.Value;
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class EventDescriptor
+public class EventDescriptor
 {
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
