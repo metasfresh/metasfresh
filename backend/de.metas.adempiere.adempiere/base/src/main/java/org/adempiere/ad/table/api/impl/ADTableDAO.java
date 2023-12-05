@@ -343,7 +343,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
-		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+		return Math.max(typeaheadMinLength, 0);
 	}
 
 	@Override
