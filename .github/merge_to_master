@@ -1,4 +1,0 @@
-# Merge to master
-FROM_BRANCH=koala_yawn_uat
-TARGET_BRANCH=master
-MERGE_BRANCH=master_mergeFrom_koala_yawn_uat
