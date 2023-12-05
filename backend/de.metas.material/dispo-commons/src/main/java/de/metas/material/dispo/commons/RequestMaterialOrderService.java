@@ -211,7 +211,7 @@ public class RequestMaterialOrderService
 
 	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
 	{
-		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
+		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group, traceId);
 		materialEventService.enqueueEventNow(ddOrderRequestEvent);
 	}
 
@@ -281,7 +281,7 @@ public class RequestMaterialOrderService
 
 	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
 	{
-		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group);
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
 		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
