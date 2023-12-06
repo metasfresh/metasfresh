@@ -440,7 +440,10 @@ export default function windowHandler(state = initialState, action) {
           ...state[action.scope],
           data: action.data,
           docId: action.docId,
-          layout: {},
+          layout: {
+            notFoundMessage: action.notFoundMessage,
+            notFoundMessageDetail: action.notFoundMessageDetail,
+          },
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
           validStatus: action.validStatus,

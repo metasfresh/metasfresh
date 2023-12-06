@@ -1033,6 +1033,48 @@ public interface I_AD_Tab
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_Message (@Nullable java.lang.String NotFound_Message);
+
+	/**
+	 * Get Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_Message();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_Message = new ModelColumn<>(I_AD_Tab.class, "NotFound_Message", null);
+	String COLUMNNAME_NotFound_Message = "NotFound_Message";
+
+	/**
+	 * Set Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_MessageDetail (@Nullable java.lang.String NotFound_MessageDetail);
+
+	/**
+	 * Get Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_MessageDetail();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_MessageDetail = new ModelColumn<>(I_AD_Tab.class, "NotFound_MessageDetail", null);
+	String COLUMNNAME_NotFound_MessageDetail = "NotFound_MessageDetail";
+
+	/**
 	 * Set SQL ORDER BY.
 	 * Fully qualified ORDER BY clause
 	 *
@@ -1125,27 +1167,6 @@ public interface I_AD_Tab
 	String COLUMNNAME_QuickInput_CloseButton_Caption = "QuickInput_CloseButton_Caption";
 
 	/**
-	 * Set Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
-
-	/**
-	 * Get Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
-	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
-
-	/**
 	 * Set Quick Input Layout.
 	 *
 	 * <br>Type: String
@@ -1165,6 +1186,27 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInputLayout = new ModelColumn<>(I_AD_Tab.class, "QuickInputLayout", null);
 	String COLUMNNAME_QuickInputLayout = "QuickInputLayout";
+
+	/**
+	 * Set Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
+
+	/**
+	 * Get Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
+	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
 
 	/**
 	 * Set Read Only Logic.

@@ -165,7 +165,8 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
+	private ViewLayout(
+			@NonNull final ViewLayout from,
 					   final WindowId windowId,
 					   final ViewProfileId profileId,
 					   final ImmutableList<DocumentFilterDescriptor> filters,
