@@ -140,7 +140,11 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getSourceTableName());
 			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getTargetTableName());
 
-			factoriesByTableName.put(descriptor.getSourceTableName(), ColumnSqlCacheInvalidateRequestFactories.ofDescriptor(descriptor));
+			final ModelCacheInvalidateRequestFactory modelCacheInvalidateRequestFactory = ColumnSqlCacheInvalidateRequestFactories.ofDescriptorOrNull(descriptor);
+			if (modelCacheInvalidateRequestFactory != null)
+			{
+				factoriesByTableName.put(descriptor.getSourceTableName(), modelCacheInvalidateRequestFactory);
+			}
 
 			return this;
 		}
