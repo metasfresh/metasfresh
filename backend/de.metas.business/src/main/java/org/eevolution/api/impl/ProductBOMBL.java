@@ -24,6 +24,7 @@ package org.eevolution.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -273,7 +274,7 @@ public class ProductBOMBL implements IProductBOMBL
 		{
 			final ProductId finishedGoodProductId = ProductId.ofRepoId(finishGood.getM_Product_ID());
 
-			bomDAO.getDefaultBOM(finishedGoodProductId, bomType)
+			bomDAO.getByProductIdAndType(finishedGoodProductId, ImmutableSet.of(bomType))
 					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()), bom));
 		}
 

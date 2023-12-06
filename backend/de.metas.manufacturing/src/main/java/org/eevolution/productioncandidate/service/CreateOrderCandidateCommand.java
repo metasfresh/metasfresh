@@ -26,7 +26,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -36,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -106,7 +106,7 @@ public class CreateOrderCandidateCommand
 			ppOrderCandidateRecord.setProcessed(true);
 		}
 
-		if(!Utils.isEmpty(request.getLotForLot()))
+		if (!Utils.isEmpty(request.getLotForLot()))
 		{
 			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}
@@ -127,20 +127,17 @@ public class CreateOrderCandidateCommand
 		{
 			final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
-			final Optional<I_PP_Product_BOM> productBOMFromPlanning = Optional.ofNullable(productPlanning)
+			return Optional.ofNullable(productPlanning)
 					.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
 					.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
-					.flatMap(bomRepo::getLatestBOMRecordByVersionId);
-
-			if (productBOMFromPlanning.isPresent())
-			{
-				return productBOMFromPlanning.get();
-			}
+					.flatMap(bomVersionsId -> bomRepo.getLatestBOMRecordByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes()))
+					.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
+							.appendParametersToMessage()
+							.setParameter("request", request)
+							.setParameter("productPlanningId", productPlanningId));
 		}
 
-		final ProductId productId = request.getProductId();
-
-		return bomRepo.getDefaultBOMByProductId(productId)
+		return bomRepo.getDefaultBOMByProductId(request.getProductId())
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
 						.appendParametersToMessage()
 						.setParameter("request", request)
