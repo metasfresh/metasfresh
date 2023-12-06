@@ -110,7 +110,7 @@ public class Database
 		else
 		{
 			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
+			dateString.append("','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC'");
 		}
 		return dateString.toString();
 	}   // TO_DATE
