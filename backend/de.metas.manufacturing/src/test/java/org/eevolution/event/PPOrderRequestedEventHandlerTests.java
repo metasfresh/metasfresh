@@ -286,7 +286,9 @@ public class PPOrderRequestedEventHandlerTests
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 
 		final ProductBOMVersionsId productBOMVersionsId = ProductBOMVersionsId.ofRepoId(productPlanning.getPP_Product_BOMVersions_ID());
-		final ProductBOMId productBOMId = productBOMsRepo.getLatestBOMByVersion(productBOMVersionsId).orElse(null);
+		final ProductBOMId productBOMId = productBOMsRepo
+				.getLatestBOMIdByVersionAndType(productBOMVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes())
+				.orElse(null);
 
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(ProductBOMId.toRepoId(productBOMId));
 

@@ -2,6 +2,7 @@ package org.eevolution.api.impl;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocTypeId;
@@ -48,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -127,15 +129,15 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		return getProductBOMVersionsDAO()
 				.retrieveBOMVersionsId(productId)
-				.flatMap(this::getDefaultBOM);
+				.flatMap(this::getDefaultBOMRecordByVersionId);
 	}
 
 	@Override
-	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final ProductId productId, @NonNull final BOMType bomType)
+	public Optional<I_PP_Product_BOM> getByProductIdAndType(@NonNull final ProductId productId, @NonNull final Set<BOMType> bomTypes)
 	{
 		return getProductBOMVersionsDAO()
 				.retrieveBOMVersionsId(productId)
-				.flatMap(bomVersionsId -> getLatestBOMRecordByVersion(bomVersionsId, bomType));
+				.flatMap(bomVersionsId -> getLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes));
 	}
 
 	@Override
@@ -379,18 +381,9 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 	@Override
 	@NonNull
-	public Optional<ProductBOMId> getLatestBOMByVersion(final @NonNull ProductBOMVersionsId bomVersionsId)
-	{
-		return getLatestBOMRecordByVersion(bomVersionsId, null)
-				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
-				.map(ProductBOMId::ofRepoId);
-	}
-
-	@Override
-	@NonNull
 	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(final @NonNull ProductBOMVersionsId bomVersionsId)
 	{
-		return getLatestBOMRecordByVersion(bomVersionsId, null);
+		return getLatestBOMRecordByVersionAndType(bomVersionsId, null);
 	}
 
 	/**
@@ -398,7 +391,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	 */
 	@Override
 	@NonNull
-	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
+	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable Set<BOMType> bomTypes, final @Nullable DocStatus docStatus)
 	{
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = queryBL
 				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
@@ -410,6 +403,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		if (docStatus != null)
 		{
 			queryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, docStatus.getCode());
+		}
+
+		if (bomTypes != null)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomTypes);
 		}
 
 		return queryBuilder
@@ -433,9 +431,9 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@NonNull
-	private Optional<I_PP_Product_BOM> getLatestBOMRecordByVersion(
+	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(
 			final @NonNull ProductBOMVersionsId bomVersionsId,
-			final @Nullable BOMType bomType)
+			final @Nullable Set<BOMType> bomTypes)
 	{
 		final I_PP_Product_BOMVersions bomVersions = getProductBOMVersionsDAO().getBOMVersions(bomVersionsId);
 
@@ -445,9 +443,9 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (bomType != null)
+		if (bomTypes != null)
 		{
-			productBOMQueryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType.getCode());
+			productBOMQueryBuilder.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomTypes);
 		}
 
 		return productBOMQueryBuilder
@@ -459,11 +457,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@NonNull
-	private Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final ProductBOMVersionsId bomVersionsId)
+	private Optional<I_PP_Product_BOM> getDefaultBOMRecordByVersionId(@NonNull final ProductBOMVersionsId bomVersionsId)
 	{
 		return Optionals.firstPresentOfSuppliers(
-				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.CurrentActive),
-				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.MakeToOrder));
+				() -> getLatestBOMRecordByVersionAndType(bomVersionsId, ImmutableSet.of(BOMType.CurrentActive)),
+				() -> getLatestBOMRecordByVersionAndType(bomVersionsId, ImmutableSet.of(BOMType.MakeToOrder)));
 	}
 
 	@NonNull

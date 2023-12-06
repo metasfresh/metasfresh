@@ -120,10 +120,10 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 			createNotice(productId, "@NotFound@ @PP_Product_Planning_ID@");
 		}
 
-		ProductBOMId productBOMId;
+		final ProductBOMId productBOMId;
 		if (bomVersionsId != null)
 		{
-			productBOMId = productBOMsRepo.getLatestBOMByVersion(bomVersionsId).orElse(null);
+			productBOMId = productBOMsRepo.getLatestBOMIdByVersionId(bomVersionsId).orElse(null);
 		}
 		else
 		{

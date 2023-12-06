@@ -47,7 +47,7 @@ public class PP_Product_BOMVersions
 	{
 		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(bomVersions.getPP_Product_BOMVersions_ID());
 
-		final Optional<ProductBOMId> productBomId = bomsRepo.getLatestBOMByVersion(bomVersionsId);
+		final Optional<ProductBOMId> productBomId = bomsRepo.getLatestBOMIdByVersionId(bomVersionsId);
 
 		if (productBomId.isPresent())
 		{

@@ -69,6 +69,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -323,11 +324,11 @@ public class PPOrderBL implements IPPOrderBL
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
-				.docSubType(docSubType)
-				.adClientId(ppOrder.getAD_Client_ID())
-				.adOrgId(ppOrder.getAD_Org_ID())
-				.build());
+																	  .docBaseType(docBaseType.getCode())
+																	  .docSubType(docSubType)
+																	  .adClientId(ppOrder.getAD_Client_ID())
+																	  .adOrgId(ppOrder.getAD_Org_ID())
+																	  .build());
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
@@ -440,7 +441,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -469,13 +470,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(orderRecord)
-						.orderActivity(activity)
-						.movementDate(reportDate)
-						.qtyMoved(qtyToProcess)
-						.durationSetup(setupTimeRemaining)
-						.duration(durationRemaining.getDuration())
-						.build());
+																	.order(orderRecord)
+																	.orderActivity(activity)
+																	.movementDate(reportDate)
+																	.qtyMoved(qtyToProcess)
+																	.durationSetup(setupTimeRemaining)
+																	.duration(durationRemaining.getDuration())
+																	.build());
 			}
 		}
 	}
@@ -619,7 +620,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		final ImmutableList<I_PP_OrderCandidate_PP_Order> orderAllocations = ppOrderDAO.getPPOrderAllocations(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
 		String lotForLot = "";
-		if(orderAllocations.size() == 1)
+		if (orderAllocations.size() == 1)
 		{
 			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(orderAllocations.get(0).getPP_Order_Candidate_ID());
 			lotForLot = ppOrderCandidateDAO.getById(ppOrderCandidateId).getIsLotForLot();
@@ -641,4 +642,10 @@ public class PPOrderBL implements IPPOrderBL
 		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
 	}
 
+	@Override
+	public PPOrderDocBaseType getPPOrderDocBaseType(@NonNull final I_PP_Order ppOrder)
+	{
+		final I_C_DocType docTypeTarget = docTypesRepo.getById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
+	}
 }
