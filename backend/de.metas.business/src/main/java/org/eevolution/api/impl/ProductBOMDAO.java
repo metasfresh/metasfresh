@@ -472,6 +472,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId.getRepoId())
 				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(ZonedDateTime.now(zoneId)))
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
 				.create();
 	}
 
