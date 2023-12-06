@@ -19,7 +19,6 @@ import {
   INIT_LAYOUT_SUCCESS,
   INIT_WINDOW,
   NO_CONNECTION,
-  INIT_WINDOW,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -45,7 +44,7 @@ import {
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
-import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -53,13 +52,9 @@ import { getScope, parseToDisplay } from '../utils/documentListHelper';
 import {
   formatParentUrl,
   getData,
-  getLayout,
-  getTabLayoutRequest,
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
-  patchRequest,
-  startProcess,
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
@@ -67,10 +62,7 @@ import {
   addNotification,
   deleteNotification,
   setNotificationProgress,
-  setProcessPending,
-  setProcessSaved,
 } from './AppActions';
-import { openFile } from './GenericActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -80,9 +72,6 @@ import {
 import {
   createTabTable,
   updateTableRowProperty,
-  updateTabTable,
-  updateTableRowProperty,
-  updateTableSelection,
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
@@ -620,10 +609,10 @@ export function createWindow({
         }
 
         if (documentId === 'NEW' && !isModal) {
-        // redirect immediately, but preserve URL search params if any
-        return history.replace(
-          `/window/${windowId}/${docId}${urlSearchParams ?? ''}`
-        );
+          // redirect immediately, but preserve URL search params if any
+          return history.replace(
+            `/window/${windowId}/${docId}${urlSearchParams ?? ''}`
+          );
         }
 
         let elem = 0;

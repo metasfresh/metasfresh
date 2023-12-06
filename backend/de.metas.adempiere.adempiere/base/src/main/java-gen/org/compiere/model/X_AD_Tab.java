@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -275252737L;
+	private static final long serialVersionUID = 544997857L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -460,7 +460,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isAutodetectDefaultDateFilter()
+	public boolean isAutodetectDefaultDateFilter() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
 	}
@@ -520,7 +520,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isQueryIfNoFilters()
+	public boolean isQueryIfNoFilters() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
@@ -664,7 +664,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public java.lang.String getNotFound_Message()
+	public java.lang.String getNotFound_Message() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotFound_Message);
 	}
@@ -676,7 +676,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public java.lang.String getNotFound_MessageDetail()
+	public java.lang.String getNotFound_MessageDetail() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotFound_MessageDetail);
 	}

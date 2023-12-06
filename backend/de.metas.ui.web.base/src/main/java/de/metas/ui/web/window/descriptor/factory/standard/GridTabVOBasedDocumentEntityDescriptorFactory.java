@@ -273,10 +273,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		return entityDescriptorBuilder;
 	}
 
-	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO) {
+	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO)
+	{
 		final ITranslatableString message = gridTabVO.getNotFoundMessage();
 		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
-		if(TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+		if (TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
 		{
 			return null;
 		}
