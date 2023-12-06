@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_Column
  *  @author metasfresh (generated) 
@@ -239,7 +240,7 @@ public interface I_AD_Column
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setColumnName (java.lang.String ColumnName);
+	void setColumnName (@Nullable java.lang.String ColumnName);
 
 	/**
 	 * Get Spaltenname.

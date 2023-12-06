@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.reflist;
+package de.metas.ad_reference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -31,25 +31,25 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class RefListId implements RepoIdAware
+public class ReferenceId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static RefListId ofRepoId(final int repoId)
+	public static ReferenceId ofRepoId(final int repoId)
 	{
-		return new RefListId(repoId);
+		return new ReferenceId(repoId);
 	}
 
 	@Nullable
-	public static RefListId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ReferenceId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new RefListId(repoId) : null;
+		return repoId != null && repoId > 0 ? new ReferenceId(repoId) : null;
 	}
 
-	private RefListId(final int repoId)
+	private ReferenceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Ref_List_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Reference_ID");
 	}
 
 	@JsonValue

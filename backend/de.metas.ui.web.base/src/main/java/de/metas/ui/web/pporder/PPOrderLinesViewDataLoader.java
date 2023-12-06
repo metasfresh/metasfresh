@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -44,7 +45,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
@@ -96,7 +96,7 @@ class PPOrderLinesViewDataLoader
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -152,7 +152,7 @@ class PPOrderLinesViewDataLoader
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.caption(msgBL.translatable(I_PP_Order.COLUMNNAME_PlanningStatus))
-								.value(adReferenceDAO.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
+								.value(adReferenceService.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
 								.build())
 						.build())
 				.build();

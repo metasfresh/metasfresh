@@ -22,19 +22,16 @@ package de.metas.async.spi.impl;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.X_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
 
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.X_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.util.Services;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO: check if we can do this better (using enum??)
@@ -99,14 +96,14 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	}
 
 	@Override
-	public String getPrioriy(IWorkPackageQueue IGNORED)
+	public String getPrioriy(final IWorkPackageQueue IGNORED)
 	{
 		return prio;
 	}
 
 	public String retrievePrioName()
 	{
-		return Services.get(IADReferenceDAO.class)
+		return ADReferenceService.get()
 				.retrieveListNameTrl(Env.getCtx(), X_C_Queue_WorkPackage.PRIORITY_AD_Reference_ID, prio);
 	}
 
@@ -125,7 +122,7 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
