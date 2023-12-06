@@ -86,7 +86,7 @@ public class Recipient
 				.build();
 	}
 
-	public static Recipient allUsersForGroupAndOrgId(final NotificationGroupName notificationGroupName, final OrgId orgId)
+	public static Recipient allOrgUsersForGroupAndOrgId(final NotificationGroupName notificationGroupName, final OrgId orgId)
 	{
 		return _builder()
 				.type(RecipientType.OrgUsersContainingGroup)

@@ -49,6 +49,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 public class DunningBL implements IDunningBL
 {
 
-	public static final String MASS_GENERATE_LINES_EVALUATION_PARAM = "Mass_Generate_Lines";
+	public static final String MASS_GENERATE_LINES_EVALUATEE_PARAM = "Mass_Generate_Lines";
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final ReentrantLock configLock = new ReentrantLock();
@@ -281,14 +282,12 @@ public class DunningBL implements IDunningBL
 		final BoilerPlate headerBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getHeaderId(), userLanguage);
 		final String lines = getMassGenerateLinesPlainString(boilerPlateWithLineId, dunningDocs);
 
-		final Evaluatee headerEvaluatee = Evaluatees.mapBuilder()
-				.put(MASS_GENERATE_LINES_EVALUATION_PARAM, lines)
-				.build()
+		final Evaluatee headerEvaluatee = Evaluatees.ofSingleton(MASS_GENERATE_LINES_EVALUATEE_PARAM, lines)
 				.andComposeWith(getPO(orgDAO.getById(orgId)));
 
 		notificationBL.send(UserNotificationRequest.builder()
 				.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
-				.recipient(Recipient.allUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
+				.recipient(Recipient.allOrgUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
 				.contentPlain(headerBoilerPlate.evaluateTextSnippet(headerEvaluatee))
 				.subjectPlain(headerBoilerPlate.evaluateSubject(headerEvaluatee))
 				.build());
@@ -385,7 +384,7 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public boolean isExpired(final I_C_Dunning_Candidate candidate, final Timestamp dunningGraceDate)
+	public boolean isExpired(final I_C_Dunning_Candidate candidate, @Nullable final Timestamp dunningGraceDate)
 	{
 		Check.assumeNotNull(candidate, "candidate not null");
 
