@@ -460,7 +460,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isAutodetectDefaultDateFilter() 
+	public boolean isAutodetectDefaultDateFilter()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
 	}
@@ -520,7 +520,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isQueryIfNoFilters() 
+	public boolean isQueryIfNoFilters()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
@@ -658,6 +658,30 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
+	public void setNotFound_Message (final @Nullable java.lang.String NotFound_Message)
+	{
+		set_Value (COLUMNNAME_NotFound_Message, NotFound_Message);
+	}
+
+	@Override
+	public java.lang.String getNotFound_Message()
+	{
+		return get_ValueAsString(COLUMNNAME_NotFound_Message);
+	}
+
+	@Override
+	public void setNotFound_MessageDetail (final @Nullable java.lang.String NotFound_MessageDetail)
+	{
+		set_Value (COLUMNNAME_NotFound_MessageDetail, NotFound_MessageDetail);
+	}
+
+	@Override
+	public java.lang.String getNotFound_MessageDetail()
+	{
+		return get_ValueAsString(COLUMNNAME_NotFound_MessageDetail);
+	}
+
+	@Override
 	public void setOrderByClause (final @Nullable java.lang.String OrderByClause)
 	{
 		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
@@ -739,7 +763,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public java.lang.String getQuickInputLayout() 
+	public java.lang.String getQuickInputLayout()
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
 	}
