@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1686882839L;
+	private static final long serialVersionUID = -1494329261L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -460,7 +460,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isAutodetectDefaultDateFilter()
+	public boolean isAutodetectDefaultDateFilter() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
 	}
@@ -520,7 +520,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public boolean isQueryIfNoFilters()
+	public boolean isQueryIfNoFilters() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
@@ -664,7 +664,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public java.lang.String getNotFound_Message()
+	public java.lang.String getNotFound_Message() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotFound_Message);
 	}
@@ -676,7 +676,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public java.lang.String getNotFound_MessageDetail()
+	public java.lang.String getNotFound_MessageDetail() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotFound_MessageDetail);
 	}
@@ -745,6 +745,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
+	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
+	{
+		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
+	}
+
+	@Override
+	public java.lang.String getQuickInputLayout() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
+	}
+
+	@Override
 	public void setQuickInput_OpenButton_Caption (final @Nullable java.lang.String QuickInput_OpenButton_Caption)
 	{
 		set_Value (COLUMNNAME_QuickInput_OpenButton_Caption, QuickInput_OpenButton_Caption);
@@ -754,18 +766,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public java.lang.String getQuickInput_OpenButton_Caption() 
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInput_OpenButton_Caption);
-	}
-
-	@Override
-	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
-	{
-		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
-	}
-
-	@Override
-	public java.lang.String getQuickInputLayout()
-	{
-		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
 	}
 
 	@Override

@@ -55,7 +55,6 @@ import {
 import {
   formatParentUrl,
   getData,
-  getLayout,
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
@@ -607,10 +606,10 @@ export function createWindow({
         }
 
         if (documentId === 'NEW' && !isModal) {
-        // redirect immediately, but preserve URL search params if any
-        return history.replace(
-          `/window/${windowType}/${docId}${urlSearchParams ?? ''}`
-        );
+          // redirect immediately, but preserve URL search params if any
+          return history.replace(
+            `/window/${windowId}/${docId}${urlSearchParams ?? ''}`
+          );
         }
 
         let elem = 0;
