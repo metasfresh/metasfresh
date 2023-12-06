@@ -65,7 +65,7 @@ public interface IProductBOMDAO extends ISingletonService
 
 	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomTypes);
 
-	Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull final ProductBOMVersionsId bomVersionsId, final @Nullable Set<BOMType> bomTypes);
+	Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomTypes);
 
 	Optional<I_PP_Product_BOM> getByProductIdAndType(@NonNull ProductId productId, @NonNull Set<BOMType> bomTypes);
 

@@ -46,6 +46,7 @@ import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
@@ -161,6 +162,7 @@ public class PPOrderRequestedEventHandlerTests
 		productBom.setValidFrom(TimeUtil.asTimestamp(Instant.now().minus(1, ChronoUnit.HOURS)));
 		productBom.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Completed);
 		productBom.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
+		productBom.setBOMType(BOMType.CurrentActive.getCode());
 		save(productBom);
 
 

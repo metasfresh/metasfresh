@@ -463,7 +463,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (bomTypes != null)
+		if (!Check.isEmpty(bomTypes))
 		{
 			productBOMQueryBuilder.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomTypes);
 		}
