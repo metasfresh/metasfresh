@@ -203,6 +203,12 @@ public class PP_Product_Bom_StepDef
 
 	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final Map<String, String> tableRow)
 	{
+		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (productBomVersionsTable.getOptional(bomVersionsIdentifier).isPresent())
+		{
+			return productBomVersionsTable.getOptional(bomVersionsIdentifier).get();
+		}
+
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
@@ -212,7 +218,6 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		productBomVersionsTable.putOrReplace(bomVersionsIdentifier, bomVersionsRecord);
 
 		return bomVersionsRecord;
