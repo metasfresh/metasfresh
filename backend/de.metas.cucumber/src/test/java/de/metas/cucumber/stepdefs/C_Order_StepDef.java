@@ -24,7 +24,9 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -33,6 +35,8 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -47,13 +51,17 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -70,6 +78,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
@@ -86,22 +95,29 @@ public class C_Order_StepDef
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final C_Order_StepDefData orderTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final AD_Message_StepDefData messageTable;
+	private final M_InOut_StepDefData inoutTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final M_InOut_StepDefData inoutTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.orderTable = orderTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
+		this.messageTable = messageTable;
+		this.inoutTable = inoutTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -185,12 +201,96 @@ public class C_Order_StepDef
 		}
 	}
 
-	@Given("^the order identified by (.*) is completed$")
-	public void order_is_completed(@NonNull final String orderIdentifier)
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
-		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reactivated:
+			{
+				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+			}
+			case completed:
+			{
+				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
+			case closed:
+			{
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+			}
+			case voided:
+			{
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+			}
+			case reversed:
+			{
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			}
+			default: throw new AdempiereException("Unhandled C_Order action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
+		}
+	}
+
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed) expecting error$")
+	public void order_action_expecting_error(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		boolean errorThrown = false;
+
+		try
+		{
+			order_action(orderIdentifier, action);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+
+				final String inoutIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(inoutIdentifier))
+				{
+					final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+
+					final String expectedErrorMessage = msgBL.getTranslatableMsgText(AdMessageKey.of(errorMessage.getValue()), String.valueOf(inout.getM_InOut_ID())).translate(Env.getAD_Language());
+
+					assertThat(e.getMessage()).contains(expectedErrorMessage);
+				}
+				else
+				{
+					assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+				}
+			}
+		}
+
+		assertThat(errorThrown).isTrue();
+	}
+
+	@And("^the order identified by (.*) is (completed) and an exception with error-code (.*) is thrown$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String errorCode)
+	{
+		try
+		{
+			order_action(orderIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
 	}
 
 	@Given("generate PO from SO is invoked with parameters:")

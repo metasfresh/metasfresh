@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.message;
 
-public enum StepDefDocAction
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_AD_Message;
+
+public class AD_Message_StepDefData extends StepDefData<I_AD_Message>
 {
-	completed,
-	reactivated,
-	reversed,
-	voided,
-	closed,
+	public AD_Message_StepDefData()
+	{
+		super(I_AD_Message.class);
+	}
 }
