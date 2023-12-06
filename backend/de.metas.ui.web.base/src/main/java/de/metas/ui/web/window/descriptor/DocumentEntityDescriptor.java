@@ -165,6 +165,8 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean queryIfNoFilters;
 
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -213,6 +215,8 @@ public class DocumentEntityDescriptor
 		cloneEnabled = builder.isCloneEnabled();
 
 		queryIfNoFilters = builder.queryIfNoFilters;
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -491,6 +495,8 @@ public class DocumentEntityDescriptor
 		private Optional<SOTrx> _soTrx = Optional.empty();
 
 		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -1000,7 +1006,7 @@ public class DocumentEntityDescriptor
 		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
 		{
 			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
-            return this;
+			return this;
 		}
 
 		/**
@@ -1164,6 +1170,12 @@ public class DocumentEntityDescriptor
 		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
 		{
 			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 	}
