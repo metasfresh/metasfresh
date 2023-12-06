@@ -278,8 +278,17 @@ public class BankStatementCamt53Service
 
 	private void importBankStatementLine(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
-		buildBankStatementLineCreateRequest(importBankStatementLineRequest)
-				.ifPresent(bankStatementDAO::createBankStatementLine);
+		final IStatementLineWrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
+		if (entryWrapper.isBatchTransaction())
+		{
+
+		}
+
+		else
+		{
+			buildBankStatementLineCreateRequest(importBankStatementLineRequest)
+					.ifPresent(bankStatementDAO::createBankStatementLine);
+		}
 	}
 
 	@NonNull

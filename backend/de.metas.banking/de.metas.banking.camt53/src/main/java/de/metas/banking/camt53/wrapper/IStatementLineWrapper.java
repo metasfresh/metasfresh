@@ -23,6 +23,7 @@
 package de.metas.banking.camt53.wrapper;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.camt53.jaxb.camt053_001_04.EntryTransaction4;
 import de.metas.currency.Amount;
 import de.metas.money.Money;
 import lombok.NonNull;
@@ -31,6 +32,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 public interface IStatementLineWrapper
@@ -72,4 +74,6 @@ public interface IStatementLineWrapper
 
 	@Nullable
 	String getLineReference();
+
+	boolean isBatchTransaction();
 }
