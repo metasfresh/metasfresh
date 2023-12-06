@@ -33,6 +33,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -123,7 +124,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		final ProductBOMId productBOMId;
 		if (bomVersionsId != null)
 		{
-			productBOMId = productBOMsRepo.getLatestBOMIdByVersionId(bomVersionsId).orElse(null);
+			productBOMId = productBOMsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes()).orElse(null);
 		}
 		else
 		{

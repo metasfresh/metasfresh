@@ -57,27 +57,15 @@ public interface IProductBOMDAO extends ISingletonService
 
 	ProductId getBOMProductId(ProductBOMId bomId);
 
-	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(ProductBOMVersionsId bomVersionsId);
-
-	default Optional<ProductBOMId> getLatestBOMIdByVersionId(@NonNull final ProductBOMVersionsId bomVersionsId)
-	{
-		return getLatestBOMRecordByVersionId(bomVersionsId)
-				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
-				.map(ProductBOMId::ofRepoId);
-	}
+	boolean hasBOMs(@NonNull ProductBOMVersionsId bomVersionsId);
 
 	Optional<I_PP_Product_BOM> getPreviousVersion(@NonNull I_PP_Product_BOM bomVersion, @Nullable Set<BOMType> bomTypes, @Nullable DocStatus docStatus);
 
 	boolean isComponent(ProductId productId);
 
-	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomType);
+	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomTypes);
 
-	default Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull final ProductBOMVersionsId bomVersionsId, final @Nullable Set<BOMType> bomType)
-	{
-		return getLatestBOMRecordByVersionAndType(bomVersionsId, bomType)
-				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
-				.map(ProductBOMId::ofRepoId);
-	}
+	Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull final ProductBOMVersionsId bomVersionsId, final @Nullable Set<BOMType> bomTypes);
 
 	Optional<I_PP_Product_BOM> getByProductIdAndType(@NonNull ProductId productId, @NonNull Set<BOMType> bomTypes);
 

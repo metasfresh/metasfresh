@@ -27,6 +27,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -380,10 +381,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	@NonNull
-	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(final @NonNull ProductBOMVersionsId bomVersionsId)
+	public boolean hasBOMs(final @NonNull ProductBOMVersionsId bomVersionsId)
 	{
-		return getLatestBOMRecordByVersionAndType(bomVersionsId, null);
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId)
+				.create()
+				.anyMatch();
 	}
 
 	/**
@@ -430,8 +433,25 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.anyMatch();
 	}
 
+	@Override
+	public Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull final ProductBOMVersionsId bomVersionsId, final @Nullable Set<BOMType> bomTypes)
+	{
+		return Optional.ofNullable(
+				queryLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes).firstId(ProductBOMId::ofRepoIdOrNull)
+		);
+	}
+
+	@Override
 	@NonNull
 	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(
+			final @NonNull ProductBOMVersionsId bomVersionsId,
+			final @Nullable Set<BOMType> bomTypes)
+	{
+		return queryLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes).firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@NonNull
+	private IQuery<I_PP_Product_BOM> queryLatestBOMRecordByVersionAndType(
 			final @NonNull ProductBOMVersionsId bomVersionsId,
 			final @Nullable Set<BOMType> bomTypes)
 	{
@@ -452,8 +472,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId.getRepoId())
 				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(ZonedDateTime.now(zoneId)))
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
-				.create()
-				.firstOptional(I_PP_Product_BOM.class);
+				.create();
 	}
 
 	@NonNull
