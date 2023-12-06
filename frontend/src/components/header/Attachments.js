@@ -48,7 +48,8 @@ class Attachments extends Component {
       return;
     }
 
-    getAttachments({ windowId, documentId }).then((response) => {
+    getAttachments({ windowId, documentId })
+      .then((response) => {
         this.setState({ data: response.data }, () => {
           if (this.attachments) {
             this.attachments.focus();
