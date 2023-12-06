@@ -31,6 +31,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
@@ -100,7 +101,7 @@ public class PP_Order extends CalloutEngine
 		}
 	}
 
-	@CalloutMethod(columnNames = I_PP_Order.COLUMNNAME_M_Product_ID)
+	@CalloutMethod(columnNames = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_C_DocTypeTarget_ID })
 	public void onProductChanged(final I_PP_Order ppOrder)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
@@ -118,7 +119,8 @@ public class PP_Order extends CalloutEngine
 		final ProductBOMVersionsId productBOMVersionsId = Optional.ofNullable(ProductBOMVersionsId.ofRepoIdOrNull(pp.getPP_Product_BOMVersions_ID()))
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
 
-		final ProductBOMId productBOMId = bomsRepo.getLatestBOMByVersion(productBOMVersionsId)
+		final PPOrderDocBaseType docBaseType = ppOrderBL.getPPOrderDocBaseType(ppOrder);
+		final ProductBOMId productBOMId = bomsRepo.getLatestBOMIdByVersionAndType(productBOMVersionsId, docBaseType.getBOMTypes())
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
 
 		ppOrder.setPP_Product_BOM_ID(productBOMId.getRepoId());
