@@ -234,6 +234,7 @@ public class KPIDataProvider
 		{
 			return Optional.of(
 					SQLKPIDataLoader.builder()
+							.permissionsProvider(kpiPermissionsProvider)
 							.kpi(kpi)
 							.timeRange(timeRange)
 							.context(context)
