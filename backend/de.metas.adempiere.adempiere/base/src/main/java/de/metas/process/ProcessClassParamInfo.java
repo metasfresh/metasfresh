@@ -99,9 +99,15 @@ public class ProcessClassParamInfo
 		this.nestedParamsFieldRef = nestedParamsField != null ? FieldReference.of(nestedParamsField) : null;
 	}
 
-	public Field getField() {return fieldRef.getField();}
+	public Field getField()
+	{
+		return fieldRef.getField();
+	}
 
-	public Class<?> getFieldType() {return fieldRef.getField().getType();}
+	public Class<?> getFieldType()
+	{
+		return fieldRef.getField().getType();
+	}
 
 	/**
 	 * Loads process instance's parameter value from source to <code>processField</code>
