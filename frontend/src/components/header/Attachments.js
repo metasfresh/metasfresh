@@ -30,6 +30,11 @@ class Attachments extends Component {
     this.fetchAttachments();
   };
 
+  isDocumentNotFound = () => {
+    const { windowType, docId } = this.props;
+    return !windowType || docId === 'notfound';
+  };
+
   /**
    * @method fetchAttachments
    * @summary ToDo: Describe the method
@@ -38,13 +43,22 @@ class Attachments extends Component {
   fetchAttachments = () => {
     const { windowType: windowId, docId: documentId } = this.props;
 
+    if (this.isDocumentNotFound()) {
+      this.setState({ data: [] });
+      return;
+    }
+
     getAttachments({ windowId, documentId }).then((response) => {
-      this.setState({ data: response.data }, () => {
-        if (this.attachments) {
-          this.attachments.focus();
-        }
+        this.setState({ data: response.data }, () => {
+          if (this.attachments) {
+            this.attachments.focus();
+          }
+        });
+      })
+      .catch((ex) => {
+        console.log('Got error while fetching the attachments', { ex });
+        this.setState({ data: [] });
       });
-    });
   };
 
   /**
@@ -225,13 +239,20 @@ class Attachments extends Component {
     const { data } = this.state;
     let actions, content;
 
-    if (data) {
+    if (this.isDocumentNotFound()) {
+      content = this.renderEmpty();
+    } else if (data) {
       content = data.length ? this.renderData() : this.renderEmpty();
       actions = this.renderActions();
     } else {
       content = this.renderAttachmentSpinner();
     }
 
+    console.log('render', {
+      content,
+      actions,
+      isDocumentNotFound: this.isDocumentNotFound(),
+    });
     return (
       <div
         onKeyDown={this.handleKeyDown}
