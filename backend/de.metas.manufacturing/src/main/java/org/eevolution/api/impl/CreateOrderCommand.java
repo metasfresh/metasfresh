@@ -2,12 +2,12 @@
 package org.eevolution.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
@@ -18,7 +18,6 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -225,23 +224,21 @@ final class CreateOrderCommand
 			return request.getBomId();
 		}
 
-		final Optional<ProductBOMId> productBOMIdFromPlanning = Optional.ofNullable(productPlanning)
+		final ProductBOMId productBOMId = Optional.ofNullable(productPlanning)
 				.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
 				.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
-				.flatMap(bomsRepo::getLatestBOMByVersion);
+ 				.flatMap(bomVersionsId -> bomsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, request.getDocBaseType().getBOMTypes()))
+				.orElseGet(() -> bomsRepo.getIdByProductIdAndType(request.getProductId(), request.getDocBaseType().getBOMTypes()).orElse(null));
 
-		if (productBOMIdFromPlanning.isPresent())
+		if (productBOMId != null)
 		{
-			return productBOMIdFromPlanning.get();
+			return productBOMId;
 		}
 
-		final ProductId productId = request.getProductId();
-
-		return bomsRepo.getDefaultBOMIdByProductId(productId)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
-						.appendParametersToMessage()
-						.setParameter("request", request)
-						.setParameter("productPlanning", productPlanning));
+		throw new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
+				.appendParametersToMessage()
+				.setParameter("request", request)
+				.setParameter("productPlanning", productPlanning);
 	}
 
 	private PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
@@ -300,5 +297,4 @@ final class CreateOrderCommand
 		order.setQtyEntered(qtyRounded.toBigDecimal());
 		ppOrderBOMBL.setQuantities(order, PPOrderQuantities.ofQtyRequiredToProduce(qtyRounded));
 	}
-
 }
