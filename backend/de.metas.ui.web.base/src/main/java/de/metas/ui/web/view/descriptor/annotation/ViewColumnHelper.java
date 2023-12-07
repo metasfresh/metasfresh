@@ -102,6 +102,8 @@ public final class ViewColumnHelper
 				}
 			});
 
+	public static String SYSCFG_DISPLAYED_SUFFIX = ".IsDisplayed";
+
 	public static void cacheReset()
 	{
 		descriptorsByClass.invalidateAll();
@@ -391,7 +393,7 @@ public final class ViewColumnHelper
 			{
 				return defaultDisplaySysConfig ? DisplayMode.DISPLAYED_BY_SYSCONFIG : DisplayMode.HIDDEN_BY_SYSCONFIG;
 			}
-			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
+			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + SYSCFG_DISPLAYED_SUFFIX;
 
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final boolean isDisplayed = sysConfigBL.getBooleanValue(

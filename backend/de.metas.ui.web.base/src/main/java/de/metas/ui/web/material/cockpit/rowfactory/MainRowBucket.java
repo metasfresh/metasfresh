@@ -1,12 +1,18 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
+import de.metas.material.cockpit.model.X_MD_Cockpit;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.ColorId;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,6 +21,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -100,6 +107,9 @@ public class MainRowBucket
 	@Nullable
 	private Instant qtyInventoryTimeAtDate;
 
+	@Nullable
+	private String procurementStatus;
+
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
@@ -107,6 +117,7 @@ public class MainRowBucket
 	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord, @NonNull final HighPriceProvider highPriceProvider)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
@@ -135,6 +146,9 @@ public class MainRowBucket
 		qtyExpectedSurplusAtDate = addToNullable(qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate(), uom);
 		qtyStockCurrentAtDate = addToNullable(qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), uom);
 
+		final ColorId colorId = adReferenceService.getColorId(cockpitRecord, X_MD_Cockpit.COLUMNNAME_ProcurementStatus, cockpitRecord.getProcurementStatus());
+		procurementStatus = toHexString(Services.get(IColorRepository.class).getColorById(colorId));
+
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
@@ -152,5 +166,17 @@ public class MainRowBucket
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+	}
+
+	@Nullable
+	private static String toHexString(@Nullable final MFColor color)
+	{
+		if (color == null)
+		{
+			return null;
+		}
+
+		final Color awtColor = color.toFlatColor().getFlatColor();
+		return ColorValue.toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
 	}
 }

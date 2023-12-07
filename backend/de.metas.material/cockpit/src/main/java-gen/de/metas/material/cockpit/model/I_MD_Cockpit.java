@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-cockpit
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.cockpit.model;
 
 import org.adempiere.model.ModelColumn;
@@ -59,7 +81,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributesKey (@Nullable String AttributesKey);
+	void setAttributesKey (@Nullable java.lang.String AttributesKey);
 
 	/**
 	 * Get AttributesKey (technical).
@@ -68,7 +90,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getAttributesKey();
+	@Nullable java.lang.String getAttributesKey();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_AttributesKey = new ModelColumn<>(I_MD_Cockpit.class, "AttributesKey", null);
 	String COLUMNNAME_AttributesKey = "AttributesKey";
@@ -143,6 +165,48 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set 📆 MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMDCandidateQtyStock_AtDate (@Nullable BigDecimal MDCandidateQtyStock_AtDate);
+
+	/**
+	 * Get 📆 MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMDCandidateQtyStock_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock_AtDate", null);
+	String COLUMNNAME_MDCandidateQtyStock_AtDate = "MDCandidateQtyStock_AtDate";
+
+	/**
+	 * Set Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Cockpit_ID();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -187,48 +251,6 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Cockpit_ID();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
-	 * Set 📆 MDCandidateQtyStock.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMDCandidateQtyStock_AtDate (@Nullable BigDecimal MDCandidateQtyStock_AtDate);
-
-	/**
-	 * Get 📆 MDCandidateQtyStock.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMDCandidateQtyStock_AtDate();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock_AtDate", null);
-	String COLUMNNAME_MDCandidateQtyStock_AtDate = "MDCandidateQtyStock_AtDate";
-
-	/**
 	 * Set 📆 Vendor Promised.
 	 *
 	 * <br>Type: Quantity
@@ -250,6 +272,27 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_PMM_QtyPromised_OnDate_AtDate = "PMM_QtyPromised_OnDate_AtDate";
 
 	/**
+	 * Set Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcurementStatus (@Nullable java.lang.String ProcurementStatus);
+
+	/**
+	 * Get Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcurementStatus();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProcurementStatus = new ModelColumn<>(I_MD_Cockpit.class, "ProcurementStatus", null);
+	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
+
+	/**
 	 * Set Produktname.
 	 * Name des Produktes
 	 *
@@ -257,7 +300,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductName (@Nullable String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -267,7 +310,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductName();
+	@Nullable java.lang.String getProductName();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new ModelColumn<>(I_MD_Cockpit.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
@@ -281,7 +324,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue (@Nullable String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
@@ -292,7 +335,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new ModelColumn<>(I_MD_Cockpit.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";

@@ -1,0 +1,8 @@
+-- 2023-12-07T13:37:29.911Z
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541668,'S',TO_TIMESTAMP('2023-12-07 14:37:29','YYYY-MM-DD HH24:MI:SS'),100,'Can be overwritten by "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout"','de.metas.material.cockpit','Y','de.metas.ui.web.material.cockpit.field.ProcurementStatus.IsDisplayed',TO_TIMESTAMP('2023-12-07 14:37:29','YYYY-MM-DD HH24:MI:SS'),100,'N')
+;
+
+-- 2023-12-07T09:59:17.303Z
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541667,'S',TO_TIMESTAMP('2023-12-07 10:59:17','YYYY-MM-DD HH24:MI:SS'),100,'Overwrites "de.metas.ui.web.material.cockpit.field.*.isDisplayed" and hardcoded order(SeqNo).
+Input comma seperated fieldnames (available fieldnames: QtyStockEstimateSeqNo_AtDate,productValue,productName,Manufacturer_ID,PackageSize,C_UOM_ID,QtyDemand_SalesOrder_AtDate,QtyDemand_SalesOrder,QtyDemand_DD_Order_AtDate,QtyDemandSum_AtDate,QtySupply_PP_Order_AtDate,QtySupply_PurchaseOrder_AtDate,QtySupply_PurchaseOrder,QtySupply_DD_Order_AtDate,QtySupplySum_AtDate,QtySupplyRequired_AtDate,QtySupplyToSchedule_AtDate,QtyMaterialentnahme_AtDate,ProcurementStatus)','de.metas.material.cockpit','Y','de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout',TO_TIMESTAMP('2023-12-07 10:59:17','YYYY-MM-DD HH24:MI:SS'),100,'')
+;

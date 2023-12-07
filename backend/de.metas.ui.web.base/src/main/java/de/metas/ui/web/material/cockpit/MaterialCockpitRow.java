@@ -334,6 +334,14 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
+	public static final String FIELDNAME_procurementStatus = I_MD_Cockpit.COLUMNNAME_ProcurementStatus;
+	@ViewColumn(fieldName = FIELDNAME_procurementStatus, //
+			captionKey = FIELDNAME_procurementStatus, //
+			widgetType = DocumentFieldWidgetType.Color, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final String procurementStatus;
+
 	private final DocumentId documentId;
 
 	private final DocumentPath documentPath;
@@ -376,6 +384,7 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity qtyOnHandStock,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate date,
+			@Nullable final String procurementStatus,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
@@ -443,6 +452,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
 		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
+
+		this.procurementStatus = procurementStatus;
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
 				pmmQtyPromisedAtDate,
@@ -512,6 +523,7 @@ public class MaterialCockpitRow implements IViewRow
 			final Instant qtyInventoryTimeAtDate,
 			final Quantity qtyExpectedSurplusAtDate,
 			final Quantity qtyOnHandStock,
+			@Nullable final String procurementStatus,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
@@ -579,6 +591,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
+		this.procurementStatus = procurementStatus;
+
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
 	}
@@ -597,6 +611,7 @@ public class MaterialCockpitRow implements IViewRow
 			@Nullable final Instant qtyInventoryTimeAtDate,
 			@Nullable final Quantity qtyStockCurrentAtDate,
 			@Nullable final Quantity qtyOnHandStock,
+			@Nullable final String procurementStatus,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
@@ -670,6 +685,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
 		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
+
+		this.procurementStatus = procurementStatus;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);

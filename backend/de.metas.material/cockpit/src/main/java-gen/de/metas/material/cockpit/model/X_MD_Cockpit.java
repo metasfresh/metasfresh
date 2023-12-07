@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-cockpit
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
@@ -13,7 +35,7 @@ import java.util.Properties;
 public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1989481417L;
+	private static final long serialVersionUID = 695426077L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (final Properties ctx, final int MD_Cockpit_ID, @Nullable final String trxName)
@@ -36,13 +58,13 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setAttributesKey (final @Nullable String AttributesKey)
+	public void setAttributesKey (final @Nullable java.lang.String AttributesKey)
 	{
 		set_Value (COLUMNNAME_AttributesKey, AttributesKey);
 	}
 
 	@Override
-	public String getAttributesKey() 
+	public java.lang.String getAttributesKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
@@ -57,6 +79,34 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public java.sql.Timestamp getDateGeneral() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateGeneral);
+	}
+
+	@Override
+	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
+	{
+		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
+	}
+
+	@Override
+	public BigDecimal getMDCandidateQtyStock_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
 	}
 
 	@Override
@@ -90,34 +140,6 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
-	}
-
-	@Override
-	public int getMD_Cockpit_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
-	}
-
-	@Override
-	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
-	{
-		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
-	}
-
-	@Override
-	public BigDecimal getMDCandidateQtyStock_AtDate() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setPMM_QtyPromised_OnDate_AtDate (final @Nullable BigDecimal PMM_QtyPromised_OnDate_AtDate)
 	{
 		set_Value (COLUMNNAME_PMM_QtyPromised_OnDate_AtDate, PMM_QtyPromised_OnDate_AtDate);
@@ -130,26 +152,49 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	/** 
+	 * ProcurementStatus AD_Reference_ID=541842
+	 * Reference name: Beschaffungsstatus
+	 */
+	public static final int PROCUREMENTSTATUS_AD_Reference_ID=541842;
+	/** low = low */
+	public static final String PROCUREMENTSTATUS_Low = "low";
+	/** medium = medium */
+	public static final String PROCUREMENTSTATUS_Medium = "medium";
+	/** high = high */
+	public static final String PROCUREMENTSTATUS_High = "high";
 	@Override
-	public void setProductName (final @Nullable String ProductName)
+	public void setProcurementStatus (final @Nullable java.lang.String ProcurementStatus)
+	{
+		set_Value (COLUMNNAME_ProcurementStatus, ProcurementStatus);
+	}
+
+	@Override
+	public java.lang.String getProcurementStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProcurementStatus);
+	}
+
+	@Override
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
 
 	@Override
-	public String getProductName() 
+	public java.lang.String getProductName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
 	@Override
-	public void setProductValue (final @Nullable String ProductValue)
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
 
 	@Override
-	public String getProductValue() 
+	public java.lang.String getProductValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}

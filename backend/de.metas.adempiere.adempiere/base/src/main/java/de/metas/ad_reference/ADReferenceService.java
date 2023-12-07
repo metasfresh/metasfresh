@@ -6,10 +6,12 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.impl.LookupException;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_ValidCombination;
@@ -97,7 +99,7 @@ public class ADReferenceService
 	}
 
 	@Nullable
-	public ADRefListItem retrieveListItemOrNull(final ReferenceId adReferenceId, final String value)
+	public ADRefListItem retrieveListItemOrNull(@NonNull final ReferenceId adReferenceId, @Nullable final String value)
 	{
 		return getRefListById(adReferenceId).getItemByValue(value).orElse(null);
 	}
@@ -216,6 +218,24 @@ public class ADReferenceService
 	{
 		final ADRefListItem item = retrieveListItemOrNull(adReferenceId, value);
 		return item != null;
+	}
+
+	@Nullable
+	public ColorId getColorId(@NonNull final Object model, @NonNull final String columnName, @Nullable final String refListValue)
+	{
+		if(Check.isBlank(refListValue))
+		{
+			return null;
+		}
+
+		final ReferenceId referenceId = ReferenceId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(model).getPOInfo().getColumnReferenceValueId(columnName));
+		if(referenceId == null)
+		{
+			return null;
+		}
+		final ADRefListItem refListItem = retrieveListItemOrNull(referenceId, refListValue);
+
+		return  refListItem != null ? refListItem.getColorId() : null;
 	}
 }
 

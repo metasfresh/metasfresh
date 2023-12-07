@@ -324,6 +324,7 @@ public class MainRowWithSubRows
 				.qtyStockEstimateTimeAtDate(mainRow.getQtyStockEstimateTimeAtDate())
 				.qtyStockEstimateSeqNoAtDate(mainRow.getQtyStockEstimateSeqNoAtDate())
 				.pmmQtyPromisedAtDate(mainRow.getPmmQtyPromisedAtDate())
+				.procurementStatus(mainRow.getProcurementStatus())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
 

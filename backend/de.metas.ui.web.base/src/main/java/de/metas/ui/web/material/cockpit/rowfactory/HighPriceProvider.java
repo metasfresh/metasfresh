@@ -22,7 +22,6 @@
 
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
@@ -62,7 +61,7 @@ public class HighPriceProvider
 	{
 		// TODO mass compute!!!
 
-		final Map<HighPriceRequest, HighPriceResponse> resultMap = ImmutableMap.of();
+		final Map<HighPriceRequest, HighPriceResponse> resultMap = new HashMap<>();
 		for (final HighPriceRequest request : requests)
 		{
 			final HighPriceResponse response = HighPriceResponse.builder()
