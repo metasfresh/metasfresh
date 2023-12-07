@@ -59,6 +59,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
@@ -372,11 +373,11 @@ public class BankStatementCamt53Service
 			return Collections.emptyList();
 		}
 
-		final List<ITransactionDtlsWrapper> detailWrappers = entryWrapper.getTransactionDtlsWrapper();
-
-		for (final ITransactionDtlsWrapper detailWrapper : detailWrappers)
+		for (final ITransactionDtlsWrapper detailWrapper : entryWrapper.getTransactionDtlsWrapper())
 		{
-			final Money stmtAmount = detailWrapper.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
+			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(detailWrapper.getCcy());
+			final CurrencyId currencyId = moneyService.getCurrencyIdByCurrencyCode(currencyCode);
+			final Money zero = Money.zero(currencyId);
 
 			final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
 					.orgId(orgId)
@@ -386,10 +387,7 @@ public class BankStatementCamt53Service
 					.referenceNo(detailWrapper.getAcctSvcrRef())
 					.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
 					.multiPayment(false)
-					.statementAmt(stmtAmount)
-					.trxAmt(stmtAmount)
-					.currencyRate(null)
-					.interestAmt(stmtAmount)
+					.statementAmt(zero)
 					.statementLineDate(statementLineDate.toLocalDate());
 
 			if (detailWrapper.isCRDT())

@@ -22,7 +22,6 @@
 
 package de.metas.banking.camt53.wrapper;
 
-import de.metas.currency.Amount;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -46,9 +45,6 @@ public interface ITransactionDtlsWrapper
 
 	@Nullable
 	String getCcy();
-
-	@NonNull
-	public Amount getStatementAmount();
 
 	/**
 	 * @return true if this is a "credit" line (i.e. we get money)

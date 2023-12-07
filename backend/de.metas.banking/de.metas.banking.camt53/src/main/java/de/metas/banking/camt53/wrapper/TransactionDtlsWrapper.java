@@ -22,8 +22,6 @@
 
 package de.metas.banking.camt53.wrapper;
 
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -53,12 +51,4 @@ public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
 	@NonNull
 	protected abstract String getLineDescription(@NonNull final String delimiter);
 
-
-	@Override
-	@NonNull
-	public Amount getStatementAmount()
-	{
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(getCcy());
-		return Amount.zero(currencyCode);
-	}
 }
