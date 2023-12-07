@@ -22,6 +22,7 @@
 
 package org.eevolution.order;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -29,10 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.*;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +47,11 @@ public class PP_Product_BOM
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onComplete(@NonNull final I_PP_Product_BOM productBOMRecord)
 	{
-		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord, DocStatus.Completed);
+		final BOMType bomType = Optional.ofNullable(BOMType.ofNullableCode(productBOMRecord.getBOMType()))
+				.orElse(BOMType.CurrentActive);
+
+		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord,
+				ImmutableSet.of(bomType), DocStatus.Completed);
 
 		if (!previousBOMVersion.isPresent())
 		{
