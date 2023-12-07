@@ -82,6 +82,7 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 			case QUALITY_ORDER:
 			case MAINTENANCE_ORDER:
 			case MANUFACTURING_ORDER:
+			case MODULAR_ORDER:
 				return ImmutableSet.of(BOMType.CurrentActive, BOMType.MakeToOrder);
 			default:
 				throw new AdempiereException("Unsupported type=" + this);
