@@ -39,7 +39,7 @@ public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
 	@NonNull
 	public String getUnstructuredRemittanceInfo()
 	{
-		return getUnstructuredRemittanceInfo("\n");
+		return getUnstructuredRemittanceInfo(" \n");
 	}
 
 
@@ -50,7 +50,7 @@ public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
 	@NonNull
 	public String getLineDescription()
 	{
-		return getLineDescription("\n");
+		return getLineDescription(" \n");
 	}
 
 	@NonNull

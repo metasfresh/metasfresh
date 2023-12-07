@@ -180,19 +180,6 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
-		if (isBatchTransaction())
-		{
-			return getEntryTransaction()
-					.stream()
-					.map(EntryTransaction4::getRmtInf)
-					.map(RemittanceInformation7::getUstrd)
-					.filter(list -> !list.isEmpty())
-					.flatMap(List::stream)
-					.filter(Check::isNotBlank)
-					.collect(Collectors.joining(delimiter));
-		}
-		else
-		{
 			return String.join(delimiter,
 							   getEntryTransaction()
 									   .stream()
@@ -200,7 +187,6 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 									   .map(EntryTransaction4::getRmtInf)
 									   .map(RemittanceInformation7::getUstrd)
 									   .orElseGet(ImmutableList::of));
-		}
 	}
 
 	@Override
