@@ -191,6 +191,7 @@ public class PP_Product_Bom_StepDef
 		final I_PP_Product_BOM productBOMRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
 						.create()
 						.firstOnly(I_PP_Product_BOM.class),
 				() -> newInstance(I_PP_Product_BOM.class));
