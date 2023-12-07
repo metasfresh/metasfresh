@@ -193,7 +193,8 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
-		final List<String> trxDetails = new ArrayList<>();
+		final ArrayList<String> trxDetails = new ArrayList<>();
+		trxDetails.add(entry.getAddtlNtryInf());
 
 		getEntryTransaction()
 				.forEach(ntryDetails -> {
@@ -204,7 +205,6 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 					}
 				});
 
-		trxDetails.add(entry.getAddtlNtryInf());
 
 		return trxDetails.stream()
 				.filter(Check::isNotBlank)
