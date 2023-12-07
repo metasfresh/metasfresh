@@ -22,7 +22,6 @@
 
 package de.metas.banking.camt53.wrapper.v02;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
@@ -33,10 +32,8 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
-import de.metas.banking.camt53.jaxb.camt053_001_04.EntryDetails3;
-import de.metas.banking.camt53.jaxb.camt053_001_04.EntryTransaction4;
-import de.metas.banking.camt53.jaxb.camt053_001_04.RemittanceInformation7;
 import de.metas.banking.camt53.wrapper.BatchReportEntryWrapper;
+import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
@@ -230,5 +227,22 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction() 	{ return getEntryTransaction().size() >0;	}
+	public boolean isBatchTransaction() 	{ return getEntryTransaction().size() > 1;	}
+
+	@Override
+	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
+	{
+		final List<ITransactionDtlsWrapper> wrapperList = new ArrayList<>();
+
+		getEntryTransaction().forEach(
+				tr ->
+				{
+					final ITransactionDtlsWrapper wrapper = TransactionDtls2Wrapper.builder()
+							.entryDtls(tr)
+							.build();
+					wrapperList.add(wrapper);
+				}
+		);
+		return wrapperList;
+	}
 }

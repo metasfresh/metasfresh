@@ -22,18 +22,36 @@
 
 package de.metas.banking.camt53.wrapper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.camt53.jaxb.camt053_001_04.AccountStatement4;
+import de.metas.banking.camt53.jaxb.camt053_001_04.BalanceType12Code;
+import de.metas.banking.camt53.jaxb.camt053_001_04.CashBalance3;
+import de.metas.banking.camt53.jaxb.camt053_001_04.GenericAccountIdentification1;
+import de.metas.banking.camt53.jaxb.camt053_001_04.ReportEntry4;
+import de.metas.banking.camt53.wrapper.v04.BatchReportEntry4Wrapper;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
+
+import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
 
 @NonFinal
 @Value

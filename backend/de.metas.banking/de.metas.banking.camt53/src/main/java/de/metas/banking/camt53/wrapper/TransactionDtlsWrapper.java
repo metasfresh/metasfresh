@@ -22,60 +22,47 @@
 
 package de.metas.banking.camt53.wrapper;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.camt53.jaxb.camt053_001_04.EntryTransaction4;
 import de.metas.currency.Amount;
-import de.metas.money.Money;
+import de.metas.currency.CurrencyCode;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
 
-public interface IStatementLineWrapper
+@NonFinal
+@Value
+public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
 {
+	@Override
 	@NonNull
-	ImmutableSet<String> getDocumentReferenceCandidates();
+	public String getUnstructuredRemittanceInfo()
+	{
+		return getUnstructuredRemittanceInfo("\n");
+	}
 
-	@NonNull
-	String getUnstructuredRemittanceInfo();
-
-	@NonNull
-	Optional<Instant> getStatementLineDate(@NonNull ZoneId zoneId);
-
-	@NonNull
-	Optional<Money> getInterestAmount();
 
 	@NonNull
-	Optional<BigDecimal> getCurrencyRate();
+	protected abstract String getUnstructuredRemittanceInfo(@NonNull final String delimiter);
+
+	@Override
+	@NonNull
+	public String getLineDescription()
+	{
+		return getLineDescription("\n");
+	}
 
 	@NonNull
-	String getLineDescription();
+	protected abstract String getLineDescription(@NonNull final String delimiter);
 
+
+	@Override
 	@NonNull
-	Amount getStatementAmount();
-
-	/**
-	 * @return true if this is a "credit" line (i.e. we get money)
-	 */
-	boolean isCRDT();
-
-	@Nullable
-	String getAcctSvcrRef();
-
-	@NonNull
-	String getDbtrNames();
-
-	@NonNull
-	String getCdtrNames();
-
-	@Nullable
-	String getLineReference();
-
-	boolean isBatchTransaction();
-
-	List<ITransactionDtlsWrapper> getTransactionDtlsWrapper();
+	public Amount getStatementAmount()
+	{
+		final BigDecimal value = BigDecimal.ZERO;
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(getCcy());
+		return Amount.of(value, currencyCode);
+	}
 }
