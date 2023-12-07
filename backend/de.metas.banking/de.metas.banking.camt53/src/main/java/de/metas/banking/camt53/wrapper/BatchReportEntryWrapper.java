@@ -109,15 +109,4 @@ public abstract class BatchReportEntryWrapper implements IStatementLineWrapper
 
 	@Nullable
 	protected abstract BigDecimal getAmtValue();
-
-	protected Optional<Object> getWhatEverIsFirstLineOrNull(List<Object> list)
-	{
-		return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
-	}
-
-	protected final <T> T convertObject(Object object, final Class<T> cl)
-	{
-		final T modelCasted = (T)cl;
-		return modelCasted;
-	}
 }

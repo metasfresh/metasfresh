@@ -40,6 +40,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -78,12 +79,9 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public List<EntryTransaction4> getEntryTransaction()
 	{
-		return Optional.of(entry.getNtryDtls())
-				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
-				.filter(Objects::nonNull)
-				.map(object -> convertObject(object, EntryDetails3.class))
+		return CollectionUtils.firstOptional(entry.getNtryDtls())
 				.map(EntryDetails3::getTxDtls)
-				.orElse(Collections.emptyList());
+				.orElseGet(ImmutableList::of);
 	}
 
 	public @NonNull Optional<ZonedDateTime> getStatementLineDate(@NonNull final ZoneId zoneId)

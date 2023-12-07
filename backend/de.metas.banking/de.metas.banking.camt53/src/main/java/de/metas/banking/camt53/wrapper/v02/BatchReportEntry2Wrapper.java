@@ -22,6 +22,7 @@
 
 package de.metas.banking.camt53.wrapper.v02;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
@@ -38,6 +39,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -78,13 +80,9 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public List<EntryTransaction2> getEntryTransaction()
 	{
-
-		return Optional.of(entry.getNtryDtls())
-				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
-				.filter(Objects::nonNull)
-				.map(object -> convertObject(object, EntryDetails1.class))
+		return CollectionUtils.firstOptional(entry.getNtryDtls())
 				.map(EntryDetails1::getTxDtls)
-				.orElse(Collections.emptyList());
+				.orElseGet(ImmutableList::of);
 	}
 
 	public @NonNull Optional<ZonedDateTime> getStatementLineDate(@NonNull final ZoneId zoneId)
@@ -99,22 +97,22 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public Optional<Money> getInterestAmount()
 	{
-		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
-				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
-				.filter(Objects::nonNull)
-				.map(object -> convertObject(object, TransactionInterest2.class))
-				.map(TransactionInterest2::getAmt)
-				.orElse(null);
+		final TransactionInterest2 interest = CollectionUtils.first(entry.getIntrst());
+		return interest != null ? toMoney(interest.getAmt()) : Optional.empty();
+	}
 
-		if (activeOrHistoricCurrencyAndAmount == null || activeOrHistoricCurrencyAndAmount.getValue() == null)
+	@NonNull
+	private Optional<Money> toMoney(@Nullable final ActiveOrHistoricCurrencyAndAmount amt)
+	{
+		if (amt == null || amt.getValue() == null)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(activeOrHistoricCurrencyAndAmount.getCcy())
+		return Optional.of(amt.getCcy())
 				.map(CurrencyCode::ofThreeLetterCode)
 				.map(this::getCurrencyIdByCurrencyCode)
-				.map(currencyId -> Money.of(activeOrHistoricCurrencyAndAmount.getValue(), currencyId));
+				.map(currencyId -> Money.of(amt.getValue(), currencyId));
 	}
 
 	@NonNull
@@ -229,7 +227,7 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction() 	{ return getEntryTransaction().size() > 1;	}
+	public boolean isBatchTransaction() {return getEntryTransaction().size() > 1;}
 
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
