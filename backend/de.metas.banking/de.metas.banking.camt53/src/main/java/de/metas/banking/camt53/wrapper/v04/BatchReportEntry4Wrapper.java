@@ -47,8 +47,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -84,14 +84,13 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 				.orElse(Collections.emptyList());
 	}
 
-	@NonNull
-	public Optional<Instant> getStatementLineDate(@NonNull final ZoneId zoneId)
+	public @NonNull Optional<ZonedDateTime> getStatementLineDate(@NonNull final ZoneId zoneId)
 	{
 		final TimeZone timeZone = TimeZone.getTimeZone(zoneId);
 
 		return Optional.ofNullable(entry.getValDt())
 				.map(DateAndDateTimeChoice::getDt)
-				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar(timeZone, null, null).toInstant());
+				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar(timeZone, null, null).toZonedDateTime());
 	}
 
 	@NonNull

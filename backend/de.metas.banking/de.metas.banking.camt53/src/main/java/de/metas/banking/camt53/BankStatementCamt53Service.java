@@ -55,6 +55,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.logging.LogManager;
@@ -286,7 +287,7 @@ public class BankStatementCamt53Service
 		if (entryWrapper.isBatchTransaction())
 		{
 			buildBankStatementLineCreateRequestForMultiBatch(importBankStatementLineRequest)
-					.forEach(line -> bankStatementDAO.createBankStatementLine(line));
+					.forEach(bankStatementDAO::createBankStatementLine);
 		}
 		else
 		{
@@ -360,14 +361,15 @@ public class BankStatementCamt53Service
 		final OrgId orgId = importBankStatementLineRequest.getOrgId();
 
 		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate(orgDAO.getTimeZone(orgId))
-				.map(instant -> instant.atZone(orgDAO.getTimeZone(orgId)))
 				.orElse(null);
 
 		if (statementLineDate == null)
 		{
-			final String msg = msgBL.getMsg(MSG_MISSING_REPORT_ENTRY_DATE, ImmutableList.of(entryWrapper.getLineReference(), importBankStatementLineRequest.getBankStatementId()));
+			final String msg = TranslatableStrings.adMessage(MSG_MISSING_REPORT_ENTRY_DATE,
+															 entryWrapper.getLineReference(),
+															 importBankStatementLineRequest.getBankStatementId())
+					.getDefaultValue();
 			Loggables.withLogger(logger, Level.INFO).addLog(msg);
-
 			return Collections.emptyList();
 		}
 

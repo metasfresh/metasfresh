@@ -28,9 +28,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @NonFinal
 @Value
 public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
@@ -61,8 +58,7 @@ public abstract class TransactionDtlsWrapper implements ITransactionDtlsWrapper
 	@NonNull
 	public Amount getStatementAmount()
 	{
-		final BigDecimal value = BigDecimal.ZERO;
 		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(getCcy());
-		return Amount.of(value, currencyCode);
+		return Amount.zero(currencyCode);
 	}
 }

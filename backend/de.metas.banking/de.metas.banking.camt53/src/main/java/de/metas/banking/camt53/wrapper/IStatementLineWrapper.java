@@ -23,15 +23,14 @@
 package de.metas.banking.camt53.wrapper;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.banking.camt53.jaxb.camt053_001_04.EntryTransaction4;
 import de.metas.currency.Amount;
 import de.metas.money.Money;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +43,7 @@ public interface IStatementLineWrapper
 	String getUnstructuredRemittanceInfo();
 
 	@NonNull
-	Optional<Instant> getStatementLineDate(@NonNull ZoneId zoneId);
+	Optional<ZonedDateTime> getStatementLineDate(@NonNull ZoneId zoneId);
 
 	@NonNull
 	Optional<Money> getInterestAmount();
