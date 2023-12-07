@@ -119,4 +119,6 @@ public interface IPPOrderBL extends ISingletonService
 	boolean isModularOrder(@NonNull PPOrderId ppOrderId);
 
 	Optional<Quantity> getRoundingToScale(@NonNull PPOrderId ppOrderId);
+
+	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
 }
