@@ -180,13 +180,13 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
-			return String.join(delimiter,
-							   getEntryTransaction()
-									   .stream()
-									   .findFirst()
-									   .map(EntryTransaction4::getRmtInf)
-									   .map(RemittanceInformation7::getUstrd)
-									   .orElseGet(ImmutableList::of));
+		return String.join(delimiter,
+				getEntryTransaction()
+						.stream()
+						.findFirst()
+						.map(EntryTransaction4::getRmtInf)
+						.map(RemittanceInformation7::getUstrd)
+						.orElseGet(ImmutableList::of));
 	}
 
 	@Override
@@ -233,17 +233,9 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
 	{
-		final List<ITransactionDtlsWrapper> wrapperList = new ArrayList<>();
-
-		getEntryTransaction().forEach(
-				tr ->
-						{
-							final ITransactionDtlsWrapper wrapper = TransactionDtls4Wrapper.builder()
-									.entryDtls(tr)
-									.build();
-							wrapperList.add(wrapper);
-						}
-		);
-		return wrapperList;
+		return getEntryTransaction()
+				.stream()
+				.map(tr -> TransactionDtls4Wrapper.builder().entryDtls(tr).build())
+				.collect(ImmutableList.toImmutableList());
 	}
 }
