@@ -6,6 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -111,7 +112,7 @@ public class Database
 		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
 		if (dayOnly)
 		{
-			dateString.append(DAY_ONLY_UTC_FORMATTER.format(time.toInstant()));
+			dateString.append(DAY_ONLY_UTC_FORMATTER.format(TimeUtil.asLocalDate(time, SystemTime.zoneId())));
 			dateString.append("','YYYY-MM-DD')");
 		}
 		else

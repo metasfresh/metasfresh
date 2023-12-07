@@ -22,6 +22,7 @@ package org.compiere.db;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,9 +64,12 @@ public class DatabaseTest
 		final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+00:00")
 				.withZoneSameInstant(ZoneId.of("Etc/UTC"));
 
-		final Timestamp time = TimeUtil.asTimestamp(zonedDateTime.toInstant());
+		final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
+		// setting zoneId to Europe/Berlin
+		SystemTime.setFixedTimeSource(ZonedDateTime.now(ZoneId.of("Europe/Berlin")));
 		final String dateString = Database.TO_DATE(time, true);
-		Assert.assertEquals("TO_TIMESTAMP('2023-12-04','YYYY-MM-DD')", dateString);
+		// dev-note: we expect 2023-12-05 as for column without time information, the values should always be in local time
+		Assert.assertEquals("TO_TIMESTAMP('2023-12-05','YYYY-MM-DD')", dateString);
 	}
 
 	@Test
