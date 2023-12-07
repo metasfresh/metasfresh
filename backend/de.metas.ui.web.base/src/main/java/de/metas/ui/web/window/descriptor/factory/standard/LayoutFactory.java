@@ -36,6 +36,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
@@ -43,6 +44,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -61,6 +63,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -99,6 +106,7 @@ public class LayoutFactory
 
 	// services
 	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ImmutableList<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
 	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
@@ -567,7 +575,11 @@ public class LayoutFactory
 			// add the "primary" field
 			{
 				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
-				if (field != null)
+				if (field != null && isSkipField(field))
+				{
+					logger.trace("Skip field {} because it's not displayed", field.getFieldName());
+				}
+				else if (field != null)
 				{
 					fields.add(field);
 				}
@@ -844,5 +856,15 @@ public class LayoutFactory
 				.addField(layoutElementField(docStatusField).setFieldType(FieldType.ActionButtonStatus))
 				.addField(layoutElementField(docActionField).setFieldType(FieldType.ActionButton))
 				.build();
+	}
+
+	private boolean isSkipField(@NonNull final DocumentFieldDescriptor.Builder field)
+	{
+		return switch (field.getFieldName())
+				{
+					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+					default -> false;
+				};
 	}
 }

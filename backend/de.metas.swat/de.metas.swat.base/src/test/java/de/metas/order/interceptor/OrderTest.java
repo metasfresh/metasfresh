@@ -7,12 +7,8 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.project.ProjectTypeRepository;
-import de.metas.project.service.ProjectLineRepository;
-import de.metas.project.service.ProjectRepository;
 import de.metas.project.service.ProjectService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -25,8 +21,6 @@ import org.compiere.model.I_C_DocType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -157,4 +151,5 @@ public class OrderTest
 
 		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
+
 }

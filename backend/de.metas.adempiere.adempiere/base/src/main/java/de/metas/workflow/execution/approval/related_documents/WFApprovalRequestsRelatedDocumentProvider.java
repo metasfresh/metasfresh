@@ -38,18 +38,6 @@ public class WFApprovalRequestsRelatedDocumentProvider implements IRelatedDocume
 			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
-		final AdWindowId windowId = RecordWindowFinder.findAdWindowId(I_AD_WF_Approval_Request.Table_Name).orElse(null);
-		if (windowId == null)
-		{
-			return ImmutableList.of();
-		}
-
-		// If not our target window ID, return nothing
-		if (targetWindowId != null && !AdWindowId.equals(targetWindowId, windowId))
-		{
-			return ImmutableList.of();
-		}
-
 		final TableRecordReference documentRef = TableRecordReference.of(fromDocument.getAD_Table_ID(), fromDocument.getRecord_ID());
 		if (!wfApprovalRequestRepository.hasRecordsForTable(documentRef.getAdTableId()))
 		{
@@ -61,6 +49,20 @@ public class WFApprovalRequestsRelatedDocumentProvider implements IRelatedDocume
 		final MQuery query = new MQuery(I_AD_WF_Approval_Request.Table_Name);
 		query.addRestriction(I_AD_WF_Approval_Request.COLUMNNAME_AD_Table_ID, MQuery.Operator.EQUAL, fromDocument.getAD_Table_ID());
 		query.addRestriction(I_AD_WF_Approval_Request.COLUMNNAME_Record_ID, MQuery.Operator.EQUAL, fromDocument.getRecord_ID());
+
+		final AdWindowId windowId = RecordWindowFinder.newInstance(query)
+				.checkRecordPresentInWindow()
+				.findAdWindowId()
+				.orElse(null);
+		if (windowId == null)
+		{
+			return ImmutableList.of();
+		}
+		// If not our target window ID, return nothing
+		if (targetWindowId != null && !AdWindowId.equals(targetWindowId, windowId))
+		{
+			return ImmutableList.of();
+		}
 
 		final RelatedDocumentsCountSupplier recordsCountSupplier = (permissions) -> wfApprovalRequestRepository.countByDocumentRef(documentRef);
 

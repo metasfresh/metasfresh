@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Approval_Request extends org.compiere.model.PO implements I_AD_WF_Approval_Request, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1526813161L;
+	private static final long serialVersionUID = -2083934954L;
 
     /** Standard Constructor */
     public X_AD_WF_Approval_Request (final Properties ctx, final int AD_WF_Approval_Request_ID, @Nullable final String trxName)
@@ -107,6 +108,66 @@ public class X_AD_WF_Approval_Request extends org.compiere.model.PO implements I
 	public int getAD_WF_Process_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_Process_ID);
+	}
+
+	@Override
+	public void setC_Activity_ID (final int C_Activity_ID)
+	{
+		if (C_Activity_ID < 1) 
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
+	}
+
+	@Override
+	public int getC_Activity_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
+	{
+		if (C_BPartner_Vendor_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Vendor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -290,5 +351,18 @@ public class X_AD_WF_Approval_Request extends org.compiere.model.PO implements I
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setTotalAmt (final @Nullable BigDecimal TotalAmt)
+	{
+		set_Value (COLUMNNAME_TotalAmt, TotalAmt);
+	}
+
+	@Override
+	public BigDecimal getTotalAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }
