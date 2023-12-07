@@ -33,6 +33,7 @@ import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @NonFinal
@@ -108,4 +109,15 @@ public abstract class BatchReportEntryWrapper implements IStatementLineWrapper
 
 	@Nullable
 	protected abstract BigDecimal getAmtValue();
+
+	protected Optional<Object> getWhatEverIsFirstLineOrNull(List<Object> list)
+	{
+		return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+	}
+
+	protected final <T> T convertObject(Object object, final Class<T> cl)
+	{
+		final T modelCasted = (T)cl;
+		return modelCasted;
+	}
 }

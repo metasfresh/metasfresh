@@ -50,10 +50,10 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static de.metas.banking.camt53.jaxb.camt053_001_02.CreditDebitCode.CRDT;
 
@@ -78,9 +78,11 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public List<EntryTransaction2> getEntryTransaction()
 	{
+
 		return Optional.of(entry.getNtryDtls())
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
+				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
+				.filter(Objects::nonNull)
+				.map(object -> convertObject(object, EntryDetails1.class))
 				.map(EntryDetails1::getTxDtls)
 				.orElse(Collections.emptyList());
 	}
@@ -98,8 +100,9 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	public Optional<Money> getInterestAmount()
 	{
 		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
+				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
+				.filter(Objects::nonNull)
+				.map(object -> convertObject(object, TransactionInterest2.class))
 				.map(TransactionInterest2::getAmt)
 				.orElse(null);
 
@@ -117,10 +120,10 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public Optional<BigDecimal> getCurrencyRate()
 	{
-		return Stream.of(getEntryTransaction())
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
-				.findFirst()
+		return Optional.of(getEntryTransaction())
+				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
+				.filter(Objects::nonNull)
+				.map(object -> convertObject(object, EntryTransaction2.class))
 				.map(EntryTransaction2::getAmtDtls)
 				.map(AmountAndCurrencyExchange3::getCntrValAmt)
 				.map(AmountAndCurrencyExchangeDetails3::getCcyXchg)

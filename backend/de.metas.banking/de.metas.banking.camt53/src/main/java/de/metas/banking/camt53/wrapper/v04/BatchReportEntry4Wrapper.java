@@ -52,6 +52,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -78,8 +79,9 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	public List<EntryTransaction4> getEntryTransaction()
 	{
 		return Optional.of(entry.getNtryDtls())
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
+				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
+				.filter(Objects::nonNull)
+				.map(object -> convertObject(object, EntryDetails3.class))
 				.map(EntryDetails3::getTxDtls)
 				.orElse(Collections.emptyList());
 	}
@@ -98,8 +100,9 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	{
 		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
 				.map(TransactionInterest3::getRcrd)
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
+				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
+				.filter(Objects::nonNull)
+				.map(object -> convertObject(object, InterestRecord1.class))
 				.map(InterestRecord1::getAmt)
 				.orElse(null);
 
