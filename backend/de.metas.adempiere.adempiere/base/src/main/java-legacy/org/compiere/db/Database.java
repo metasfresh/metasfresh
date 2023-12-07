@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
@@ -14,6 +15,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -50,9 +52,11 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
+		final long microseconds = zdt.getNano() / 1000;
+
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
-				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -100,8 +104,10 @@ public class Database
 		}
 
 		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
-		final String myDate = time.toString();
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+				.withZone(ZoneOffset.UTC);
+
+		final String myDate = formatter.format(time.toInstant());
 		if (dayOnly)
 		{
 			dateString.append(myDate.substring(0, 10));
@@ -109,8 +115,14 @@ public class Database
 		}
 		else
 		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC'");
+			final String[] parts = myDate.split("\\.");
+			final String dateWithoutMicroseconds = parts[0];
+			final String microseconds = parts[1];
+			dateString.append(dateWithoutMicroseconds)
+					.append(".")
+					.append(StringUtils.trunc(microseconds, 6))
+					// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"  (UTC time zone)
+					.append("','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
 		}
 		return dateString.toString();
 	}   // TO_DATE
