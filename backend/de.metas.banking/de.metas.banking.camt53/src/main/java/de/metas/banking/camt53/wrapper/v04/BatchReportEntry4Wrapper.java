@@ -35,10 +35,12 @@ import de.metas.banking.camt53.jaxb.camt053_001_04.RemittanceInformation7;
 import de.metas.banking.camt53.jaxb.camt053_001_04.ReportEntry4;
 import de.metas.banking.camt53.jaxb.camt053_001_04.TransactionInterest3;
 import de.metas.banking.camt53.wrapper.BatchReportEntryWrapper;
+import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -46,12 +48,13 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
 
@@ -68,57 +71,59 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 			@NonNull final ReportEntry4 entry)
 	{
 		super(currencyRepository);
-		Check.assume(Check.isEmpty(entry.getNtryDtls()) || entry.getNtryDtls().size() == 1, "Batched transactions are not supported!");
-
 		this.entry = entry;
 	}
 
 	@NonNull
-	public Optional<EntryTransaction4> getEntryTransaction()
+	public List<EntryTransaction4> getEntryTransaction()
 	{
-		return Optional.of(entry.getNtryDtls())
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
+		return CollectionUtils.firstOptional(entry.getNtryDtls())
 				.map(EntryDetails3::getTxDtls)
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0));
+				.orElseGet(ImmutableList::of);
 	}
 
-	@NonNull
-	public Optional<Instant> getStatementLineDate(@NonNull final ZoneId zoneId)
+	public @NonNull Optional<ZonedDateTime> getStatementLineDate(@NonNull final ZoneId zoneId)
 	{
 		final TimeZone timeZone = TimeZone.getTimeZone(zoneId);
 
 		return Optional.ofNullable(entry.getValDt())
 				.map(DateAndDateTimeChoice::getDt)
-				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar(timeZone, null, null).toInstant());
+				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar(timeZone, null, null).toZonedDateTime());
 	}
 
 	@NonNull
 	public Optional<Money> getInterestAmount()
 	{
-		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
-				.map(TransactionInterest3::getRcrd)
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.get(0))
-				.map(InterestRecord1::getAmt)
-				.orElse(null);
+		final TransactionInterest3 interest = entry.getIntrst();
+		if (interest != null)
+		{
+			final InterestRecord1 interesetRecord = CollectionUtils.first(interest.getRcrd());
+			return toMoney(interesetRecord.getAmt());
+		}
 
-		if (activeOrHistoricCurrencyAndAmount == null || activeOrHistoricCurrencyAndAmount.getValue() == null)
+		return Optional.empty();
+	}
+
+	@NonNull
+	private Optional<Money> toMoney(@Nullable final ActiveOrHistoricCurrencyAndAmount amt)
+	{
+		if (amt == null || amt.getValue() == null)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(activeOrHistoricCurrencyAndAmount.getCcy())
+		return Optional.of(amt.getCcy())
 				.map(CurrencyCode::ofThreeLetterCode)
 				.map(this::getCurrencyIdByCurrencyCode)
-				.map(currencyId -> Money.of(activeOrHistoricCurrencyAndAmount.getValue(), currencyId));
+				.map(currencyId -> Money.of(amt.getValue(), currencyId));
 	}
 
 	@NonNull
 	public Optional<BigDecimal> getCurrencyRate()
 	{
 		return getEntryTransaction()
+				.stream()
+				.findFirst()
 				.map(EntryTransaction4::getAmtDtls)
 				.map(AmountAndCurrencyExchange3::getCntrValAmt)
 				.map(AmountAndCurrencyExchangeDetails3::getCcyXchg)
@@ -178,22 +183,33 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
-		return String.join(delimiter, getEntryTransaction()
-				.map(EntryTransaction4::getRmtInf)
-				.map(RemittanceInformation7::getUstrd)
-				.orElseGet(ImmutableList::of));
+		return String.join(delimiter,
+				getEntryTransaction()
+						.stream()
+						.findFirst()
+						.map(EntryTransaction4::getRmtInf)
+						.map(RemittanceInformation7::getUstrd)
+						.orElseGet(ImmutableList::of));
 	}
 
 	@Override
 	@NonNull
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
-		final String trxDetails = getEntryTransaction()
-				.map(EntryTransaction4::getAddtlTxInf)
-				.filter(Check::isNotBlank)
-				.orElse(null);
+		final ArrayList<String> trxDetails = new ArrayList<>();
+		trxDetails.add(entry.getAddtlNtryInf());
 
-		return Stream.of(trxDetails, entry.getAddtlNtryInf())
+		getEntryTransaction()
+				.forEach(ntryDetails -> {
+					final String addtlTxInf = ntryDetails.getAddtlTxInf();
+					if (Check.isNotBlank(addtlTxInf))
+					{
+						trxDetails.add(addtlTxInf);
+					}
+				});
+
+
+		return trxDetails.stream()
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(delimiter));
 	}
@@ -210,5 +226,19 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	protected BigDecimal getAmtValue()
 	{
 		return entry.getAmt().getValue();
+	}
+
+	public boolean isBatchTransaction()
+	{
+		return getEntryTransaction().size() > 1;
+	}
+
+	@Override
+	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
+	{
+		return getEntryTransaction()
+				.stream()
+				.map(tr -> TransactionDtls4Wrapper.builder().entryDtls(tr).build())
+				.collect(ImmutableList.toImmutableList());
 	}
 }
