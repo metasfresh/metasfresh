@@ -32,8 +32,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
-import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
-
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class TransactionDtls2Wrapper extends TransactionDtlsWrapper

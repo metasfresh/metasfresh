@@ -23,7 +23,6 @@
 package de.metas.banking.camt53.wrapper.v04;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
 import de.metas.banking.camt53.jaxb.camt053_001_04.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchange3;
 import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchangeDetails3;

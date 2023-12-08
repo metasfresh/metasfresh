@@ -50,9 +50,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -230,17 +228,9 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
 	{
-		final List<ITransactionDtlsWrapper> wrapperList = new ArrayList<>();
-
-		getEntryTransaction().forEach(
-				tr ->
-				{
-					final ITransactionDtlsWrapper wrapper = TransactionDtls2Wrapper.builder()
-							.entryDtls(tr)
-							.build();
-					wrapperList.add(wrapper);
-				}
-		);
-		return wrapperList;
+		return getEntryTransaction()
+				.stream()
+				.map(tr -> TransactionDtls2Wrapper.builder().entryDtls(tr).build())
+				.collect(ImmutableList.toImmutableList());
 	}
 }
