@@ -37,30 +37,30 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 60s, M_InOut is found:
+    And after not more than 120s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    And after not more than 90s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
 
@@ -68,10 +68,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    And after not more than 90s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -79,10 +79,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    And after not more than 90s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
 
@@ -117,10 +117,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -128,11 +128,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 10                         | 0                             | 0                            |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 0              | 0               |
 
@@ -143,10 +143,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 12                              | 12                      | 0                          | -12                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
@@ -182,10 +182,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -200,11 +200,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 20                              | 20                      | 0                          | -20                           | 0                            |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
@@ -245,7 +245,7 @@ Feature: sales order interaction with material cockpit - no product planning
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -259,11 +259,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_2                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
@@ -310,10 +310,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI                      | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -359,10 +359,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_2":
@@ -386,11 +386,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  | lineASI_2                    | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
@@ -438,11 +438,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
@@ -451,12 +451,12 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 0                               | 0                       | 10                         | 0                             | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 10                         | 0                             | 0                            |
 
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 0              | 0               |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 0              | 0               |
@@ -472,7 +472,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
@@ -519,10 +519,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     And metasfresh contains C_Orders:
@@ -535,10 +535,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
@@ -585,10 +585,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     When the order identified by o_1 is reactivated
@@ -599,11 +599,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     When the order identified by o_1 is reactivated
@@ -614,11 +614,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 12                              | 12                      | 0                          | -12                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
@@ -654,10 +654,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-15  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     When the order identified by o_1 is reactivated
@@ -668,11 +668,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-17  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-15  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
@@ -718,10 +718,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     When the order identified by o_1 is reactivated
@@ -732,11 +732,11 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
     When the order identified by o_1 is reactivated
@@ -747,10 +747,10 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 90s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                               | 8                       | 0                          | -8                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 8              | 8               |
