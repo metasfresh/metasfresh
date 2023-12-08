@@ -547,7 +547,7 @@ public class PriceListDAO implements IPriceListDAO
 		final CurrencyId currencyId = Services.get(ICurrencyBL.class).getBaseCurrency(Env.getCtx()).getId();
 
 		final IQuery<I_M_PriceList> currencyPriceListQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
-				.addEqualsFilter(I_M_PriceList.COLUMN_C_Currency_ID, currencyId)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, currencyId)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -879,7 +879,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		return queryBL.createQueryBuilder(I_M_PriceList.class)
 
-				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePriceListId)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_BasePriceList_ID, basePriceListId)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
 
