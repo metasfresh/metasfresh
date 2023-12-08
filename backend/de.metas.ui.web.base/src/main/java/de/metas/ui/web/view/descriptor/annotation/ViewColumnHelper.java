@@ -7,11 +7,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -198,8 +198,7 @@ public final class ViewColumnHelper
 
 	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
-		@SuppressWarnings("unchecked")
-		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
+		@SuppressWarnings("unchecked") final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
 
 		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
 				.map(ViewColumnHelper::createClassViewColumnDescriptor)
@@ -235,6 +234,7 @@ public final class ViewColumnHelper
 				.layoutsByViewType(layoutsByViewType)
 				.widgetSize(viewColumnAnn.widgetSize())
 				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
+				.allowZoomInfo(viewColumnAnn.zoomInto())
 				.build();
 	}
 
@@ -335,9 +335,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumn viewColumn)
 	{
 		return extractDisplayMode(fieldName,
-								  viewColumn.displayed(),
-								  viewColumn.displayedSysConfigPrefix(),
-								  viewColumn.defaultDisplaySysConfig());
+				viewColumn.displayed(),
+				viewColumn.displayedSysConfigPrefix(),
+				viewColumn.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -345,9 +345,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumnLayout viewColumnLayout)
 	{
 		return extractDisplayMode(fieldName,
-								  viewColumnLayout.displayed(),
-								  viewColumnLayout.displayedSysConfigPrefix(),
-								  viewColumnLayout.defaultDisplaySysConfig());
+				viewColumnLayout.displayed(),
+				viewColumnLayout.displayedSysConfigPrefix(),
+				viewColumnLayout.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -398,7 +398,8 @@ public final class ViewColumnHelper
 				.setViewAllowSorting(column.isAllowSorting())
 				.restrictToMediaTypes(column.getRestrictToMediaTypes())
 				.setDescription(column.getDescription())
-				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
+				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName())
+						.setSupportZoomInto(column.isSupportZoomInto()));
 	}
 
 	public static <T extends IViewRow> ImmutableSet<String> extractFieldNames(@NonNull final T row)
@@ -598,6 +599,8 @@ public final class ViewColumnHelper
 		@NonNull ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
 		@NonNull ImmutableSet<MediaType> restrictToMediaTypes;
 
+		boolean allowZoomInfo;
+
 		public DisplayMode getDisplayMode(final JSONViewDataType viewType)
 		{
 			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
@@ -620,6 +623,8 @@ public final class ViewColumnHelper
 		{
 			return fieldReference.getField();
 		}
+
+		public boolean isSupportZoomInto() {return allowZoomInfo && widgetType.isSupportZoomInto();}
 	}
 
 	@Getter

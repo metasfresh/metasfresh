@@ -98,6 +98,12 @@ public @interface ViewColumn
 
 	WidgetSize widgetSize() default WidgetSize.Default;
 
+	/**
+	 * If true the Zoom Into will be enabled for this field, if supported.
+	 * When setting this flag, pls also make sure your view implements {@link de.metas.ui.web.view.IViewZoomIntoFieldSupport}.
+	 */
+	boolean zoomInto() default false;
+
 	enum TranslationSource
 	{
 		/**

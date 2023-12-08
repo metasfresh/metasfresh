@@ -54,13 +54,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
-	public static final int DEFAULT_PAGE_SIZE = 1000;
+	private static final int DEFAULT_PAGE_SIZE = 1000;
 
 	@NonNull private final String lookupTableName;
 	@Getter private final boolean numericKey;
@@ -70,7 +68,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Getter @NonNull private final Optional<WindowId> zoomIntoWindowId;
 	@NonNull private final TooltipType tooltipType;
 
-	@Nullable private final int pageLength;
+	private final int pageLength;
 
 	//
 	// Computed:
@@ -171,7 +169,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtxParam)
 	{
 		final int offset = evalCtxParam.getOffset(0);
-		final int pageLength = firstGreaterThanZero(this.pageLength, evalCtxParam.getLimit(DEFAULT_PAGE_SIZE));
+		final int pageLength = getPageLength(evalCtxParam);
 
 		final LookupDataSourceContext evalCtxEffective = evalCtxParam
 				.withOffset(offset)
@@ -203,6 +201,23 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
 			return LookupValuesPage.ofValuesAndHasMoreFlag(values, hasMoreResults);
+		}
+	}
+
+	private int getPageLength(final LookupDataSourceContext evalCtxParam)
+	{
+		final int ctxPageLength = evalCtxParam.getLimit(0);
+		if (ctxPageLength > 0)
+		{
+			return ctxPageLength;
+		}
+		if (this.pageLength > 0)
+		{
+			return this.pageLength;
+		}
+		else
+		{
+			return DEFAULT_PAGE_SIZE;
 		}
 	}
 
