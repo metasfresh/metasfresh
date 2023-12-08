@@ -1,5 +1,4 @@
 @from:cucumber
-@flaky
 @ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
 
@@ -33,14 +32,6 @@ Feature: Setting customColumns via SetCustomColumns method
       | Identifier | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner   | BPartner_05082022 | N            | Y              | ps_1                          |
 
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | order      | true    | bpartner                 | 2022-08-05  |
-
-    And metasfresh contains S_ResourceType:
-      | S_ResourceType_ID.Identifier | Name | Value | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
-      | resourceType                 | Name | Value | standard_category                | MJ      | true       |
-
     And update AD_Column:
       | TableName      | ColumnName    | OPT.IsRestAPICustomColumn |
       | C_Order        | BPartnerName  | true                      |
@@ -52,6 +43,14 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | TimeSlotStart | true                      |
       | S_ResourceType | TimeSlotEnd   | true                      |
       | S_ResourceType | ChargeableQty | true                      |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order      | true    | bpartner                 | 2022-08-05  |
+
+    And metasfresh contains S_ResourceType:
+      | S_ResourceType_ID.Identifier | Name | Value | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
+      | resourceType                 | Name | Value | standard_category                | MJ      | true       |
 
     And the metasfresh cache is reset
 
