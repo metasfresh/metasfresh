@@ -1097,10 +1097,14 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_1                 | bs_1_S0337_400_1              | 10   |
       | bsl_1_S0337_400_2                 | bs_1_S0337_400_1              | 20   |
       | bsl_1_S0337_400_3                 | bs_1_S0337_400_1              | 30   |
+      | bsl_1_S0337_400_4                 | bs_1_S0337_400_1              | 40   |
+      | bsl_1_S0337_400_5                 | bs_1_S0337_400_1              | 50   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
       | bsl_1_S0337_400_1                 | 2023-10-24     | 2023-10-24   | CHF                        | 107.7      |                              |                             |
       | bsl_1_S0337_400_2                 | 2023-10-26     | 2023-10-26   | CHF                        | -20002.50  |                              |                             |
-      | bsl_1_S0337_400_3                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
+      | bsl_1_S0337_400_3                 | 2023-10-26     | 2023-10-26   | CHF                        | 0          |                              |                             |
+      | bsl_1_S0337_400_4                 | 2023-10-26     | 2023-10-26   | CHF                        | 0          |                              |                             |
+      | bsl_1_S0337_400_5                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled

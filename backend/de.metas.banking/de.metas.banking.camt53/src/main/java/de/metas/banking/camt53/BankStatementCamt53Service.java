@@ -33,7 +33,8 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
 import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
-import de.metas.banking.camt53.wrapper.v02.NoBatchBankToCustomerStatementV02Wrapper;
+import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
+import de.metas.banking.camt53.wrapper.v02.BatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.v04.BatchBankToCustomerStatementV04Wrapper;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.log.BankStatementImportFileLogRepository;
@@ -54,9 +55,11 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
@@ -95,6 +98,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -278,8 +284,17 @@ public class BankStatementCamt53Service
 
 	private void importBankStatementLine(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
-		buildBankStatementLineCreateRequest(importBankStatementLineRequest)
-				.ifPresent(bankStatementDAO::createBankStatementLine);
+		final IStatementLineWrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
+		if (entryWrapper.isBatchTransaction())
+		{
+			buildBankStatementLineCreateRequestForMultiBatch(importBankStatementLineRequest)
+					.forEach(bankStatementDAO::createBankStatementLine);
+		}
+		else
+		{
+			buildBankStatementLineCreateRequest(importBankStatementLineRequest)
+					.ifPresent(bankStatementDAO::createBankStatementLine);
+		}
 	}
 
 	@NonNull
@@ -289,7 +304,6 @@ public class BankStatementCamt53Service
 		final OrgId orgId = importBankStatementLineRequest.getOrgId();
 
 		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate(orgDAO.getTimeZone(orgId))
-				.map(instant -> instant.atZone(orgDAO.getTimeZone(orgId)))
 				.orElse(null);
 
 		if (statementLineDate == null)
@@ -309,6 +323,7 @@ public class BankStatementCamt53Service
 				.memo(entryWrapper.getUnstructuredRemittanceInfo())
 				.referenceNo(entryWrapper.getAcctSvcrRef())
 				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
+				.multiPayment(importBankStatementLineRequest.isMultiPayment())
 				.statementAmt(stmtAmount)
 				.trxAmt(stmtAmount)
 				.currencyRate(entryWrapper.getCurrencyRate().orElse(null))
@@ -331,6 +346,70 @@ public class BankStatementCamt53Service
 
 		return Optional.of(bankStatementLineCreateRequestBuilder.build());
 	}
+
+
+	@NonNull
+	private List<BankStatementLineCreateRequest> buildBankStatementLineCreateRequestForMultiBatch(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
+	{
+		final List<BankStatementLineCreateRequest> lineRequests =  new ArrayList<>();
+
+		// create request for summary line
+		buildBankStatementLineCreateRequest(importBankStatementLineRequest)
+				.ifPresent(lineRequests::add);
+
+		final IStatementLineWrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
+		final OrgId orgId = importBankStatementLineRequest.getOrgId();
+
+		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate(orgDAO.getTimeZone(orgId))
+				.orElse(null);
+
+		if (statementLineDate == null)
+		{
+			final String msg = TranslatableStrings.adMessage(MSG_MISSING_REPORT_ENTRY_DATE,
+															 entryWrapper.getLineReference(),
+															 importBankStatementLineRequest.getBankStatementId())
+					.getDefaultValue();
+			Loggables.withLogger(logger, Level.INFO).addLog(msg);
+			return Collections.emptyList();
+		}
+
+		for (final ITransactionDtlsWrapper detailWrapper : entryWrapper.getTransactionDtlsWrapper())
+		{
+			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(detailWrapper.getCcy());
+			final CurrencyId currencyId = moneyService.getCurrencyIdByCurrencyCode(currencyCode);
+			final Money zero = Money.zero(currencyId);
+
+			final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
+					.orgId(orgId)
+					.bankStatementId(importBankStatementLineRequest.getBankStatementId())
+					.lineDescription(detailWrapper.getLineDescription())
+					.memo(detailWrapper.getUnstructuredRemittanceInfo())
+					.referenceNo(detailWrapper.getAcctSvcrRef())
+					.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
+					.multiPayment(false)
+					.statementAmt(zero)
+					.statementLineDate(statementLineDate.toLocalDate());
+
+			if (detailWrapper.isCRDT())
+			{ // if this is CREDIT (i.e. we get money), then we are interested in the name of the debitor from whom we the money is coming
+				bankStatementLineCreateRequestBuilder.importedBillPartnerName(detailWrapper.getDbtrNames());
+			}
+			else
+			{
+				bankStatementLineCreateRequestBuilder.importedBillPartnerName(detailWrapper.getCdtrNames());
+			}
+
+			getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
+					.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
+							.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+							.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+
+			lineRequests.add(bankStatementLineCreateRequestBuilder.build());
+		}
+
+		return lineRequests;
+	}
+
 
 	@NonNull
 	private Optional<I_C_Invoice> getReferencedInvoiceRecord(
@@ -516,7 +595,7 @@ public class BankStatementCamt53Service
 			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
-			return NoBatchBankToCustomerStatementV02Wrapper
+			return BatchBankToCustomerStatementV02Wrapper
 					.of(docV02.getValue().getBkToCstmrStmt())
 					.getAccountStatements(bankAccountService, currencyRepository, msgBL);
 		}
@@ -546,5 +625,10 @@ public class BankStatementCamt53Service
 		OrgId orgId;
 
 		boolean isMatchAmounts;
+
+		boolean isMultiPayment()
+		{
+			return entryWrapper.isBatchTransaction();
+		}
 	}
 }

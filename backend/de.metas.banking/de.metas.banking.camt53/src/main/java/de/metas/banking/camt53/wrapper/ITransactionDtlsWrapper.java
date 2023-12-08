@@ -22,59 +22,32 @@
 
 package de.metas.banking.camt53.wrapper;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.currency.Amount;
-import de.metas.money.Money;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
 
-public interface IStatementLineWrapper
+public interface ITransactionDtlsWrapper
 {
-	@NonNull
-	ImmutableSet<String> getDocumentReferenceCandidates();
+	@Nullable
+	String getAcctSvcrRef();
+
+	@Nullable
+	String getDbtrNames();
+
+	@Nullable
+	String getCdtrNames();
 
 	@NonNull
 	String getUnstructuredRemittanceInfo();
 
 	@NonNull
-	Optional<ZonedDateTime> getStatementLineDate(@NonNull ZoneId zoneId);
-
-	@NonNull
-	Optional<Money> getInterestAmount();
-
-	@NonNull
-	Optional<BigDecimal> getCurrencyRate();
-
-	@NonNull
 	String getLineDescription();
 
-	@NonNull
-	Amount getStatementAmount();
+	@Nullable
+	String getCcy();
 
 	/**
 	 * @return true if this is a "credit" line (i.e. we get money)
 	 */
 	boolean isCRDT();
-
-	@Nullable
-	String getAcctSvcrRef();
-
-	@NonNull
-	String getDbtrNames();
-
-	@NonNull
-	String getCdtrNames();
-
-	@Nullable
-	String getLineReference();
-
-	boolean isBatchTransaction();
-
-	List<ITransactionDtlsWrapper> getTransactionDtlsWrapper();
 }

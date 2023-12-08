@@ -26,14 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_04.AccountStatement4;
 import de.metas.banking.camt53.jaxb.camt053_001_04.BankToCustomerStatementV04;
-import de.metas.banking.camt53.jaxb.camt053_001_04.ReportEntry4;
 import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
 import de.metas.currency.CurrencyRepository;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 @Value(staticConstructor = "of")
 public class BatchBankToCustomerStatementV04Wrapper
