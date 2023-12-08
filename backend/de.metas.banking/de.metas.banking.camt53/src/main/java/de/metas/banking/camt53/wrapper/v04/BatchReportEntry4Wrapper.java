@@ -95,8 +95,13 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	public Optional<Money> getInterestAmount()
 	{
 		final TransactionInterest3 interest = entry.getIntrst();
-        final InterestRecord1 interesetRecord = CollectionUtils.first(interest.getRcrd());
-		return interest != null ? toMoney(interesetRecord.getAmt()) : Optional.empty();
+		if (interest != null)
+		{
+			final InterestRecord1 interesetRecord = CollectionUtils.first(interest.getRcrd());
+			return toMoney(interesetRecord.getAmt());
+		}
+
+		return Optional.empty();
 	}
 
 	@NonNull
