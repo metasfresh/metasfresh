@@ -23,6 +23,7 @@
 package de.metas.banking.camt53.wrapper.v04;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
 import de.metas.banking.camt53.jaxb.camt053_001_04.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchange3;
 import de.metas.banking.camt53.jaxb.camt053_001_04.AmountAndCurrencyExchangeDetails3;
@@ -51,9 +52,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -96,23 +95,23 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public Optional<Money> getInterestAmount()
 	{
-		final ActiveOrHistoricCurrencyAndAmount activeOrHistoricCurrencyAndAmount = Optional.ofNullable(entry.getIntrst())
-				.map(TransactionInterest3::getRcrd)
-				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
-				.filter(Objects::nonNull)
-				.map(object -> convertObject(object, InterestRecord1.class))
-				.map(InterestRecord1::getAmt)
-				.orElse(null);
+		final TransactionInterest3 interest = entry.getIntrst();
+        final InterestRecord1 interesetRecord = CollectionUtils.first(interest.getRcrd());
+		return interest != null ? toMoney(interesetRecord.getAmt()) : Optional.empty();
+	}
 
-		if (activeOrHistoricCurrencyAndAmount == null || activeOrHistoricCurrencyAndAmount.getValue() == null)
+	@NonNull
+	private Optional<Money> toMoney(@Nullable final ActiveOrHistoricCurrencyAndAmount amt)
+	{
+		if (amt == null || amt.getValue() == null)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(activeOrHistoricCurrencyAndAmount.getCcy())
+		return Optional.of(amt.getCcy())
 				.map(CurrencyCode::ofThreeLetterCode)
 				.map(this::getCurrencyIdByCurrencyCode)
-				.map(currencyId -> Money.of(activeOrHistoricCurrencyAndAmount.getValue(), currencyId));
+				.map(currencyId -> Money.of(amt.getValue(), currencyId));
 	}
 
 	@NonNull

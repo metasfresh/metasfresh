@@ -118,10 +118,9 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	public Optional<BigDecimal> getCurrencyRate()
 	{
-		return Optional.of(getEntryTransaction())
-				.map(list -> getWhatEverIsFirstLineOrNull(Collections.singletonList(list)))
-				.filter(Objects::nonNull)
-				.map(object -> convertObject(object, EntryTransaction2.class))
+		return getEntryTransaction()
+				.stream()
+				.findFirst()
 				.map(EntryTransaction2::getAmtDtls)
 				.map(AmountAndCurrencyExchange3::getCntrValAmt)
 				.map(AmountAndCurrencyExchangeDetails3::getCcyXchg)
