@@ -1,6 +1,7 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -11,14 +12,22 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
+import de.metas.ui.web.window.datatypes.ColorValue;
+import de.metas.util.ColorId;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +71,7 @@ public class MainRowWithSubRows
 	@NonNull
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull
-	private HighPriceProvider highPriceProvider = new HighPriceProvider();
+	final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
 	{
@@ -72,11 +81,34 @@ public class MainRowWithSubRows
 	private MainRowWithSubRows(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		this.productIdAndDate = productIdAndDate;
+
+		final I_M_Product product = productBL.getById(productIdAndDate.getProductId());
+		final ColorId colorId = adReferenceService.getColorId(product, I_M_Product.COLUMNNAME_ProcurementStatus, product.getProcurementStatus());
+		final String procurementStatus = toHexString(Services.get(IColorRepository.class).getColorById(colorId));
+		this.mainRow.setProcurementStatus(procurementStatus);
 	}
 
-	public MainRowWithSubRows withHighPriceProvider(@NonNull final HighPriceProvider highPriceProvider)
+	@Nullable
+	private static String toHexString(@Nullable final MFColor color)
 	{
-		this.highPriceProvider = highPriceProvider;
+		if (color == null)
+		{
+			return null;
+		}
+
+		final Color awtColor = color.toFlatColor().getFlatColor();
+		return ColorValue.toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+	}
+
+	public MainRowWithSubRows withHighestPrices(@NonNull final HighPriceProvider highPriceProvider, @NonNull final MainRowBucketId productIdAndDate)
+	{
+
+		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
+				.productId(productIdAndDate.getProductId())
+						.evalDate(productIdAndDate.getDate())
+								.build();
+		//TODO add/set column
+		final BigDecimal price = highPriceProvider.getHighestPrice(request).getMaxPurchasePrice().toBigDecimal();
 		return this;
 	}
 
@@ -123,7 +155,7 @@ public class MainRowWithSubRows
 			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
 			fallbackBucket.addCockpitRecord(cockpitRecord);
 		}
-		mainRow.addDataRecord(cockpitRecord, highPriceProvider);
+		mainRow.addDataRecord(cockpitRecord);
 	}
 
 	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate, final int ppPlantId)

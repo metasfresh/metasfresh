@@ -334,7 +334,7 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
-	public static final String FIELDNAME_procurementStatus = I_MD_Cockpit.COLUMNNAME_ProcurementStatus;
+	public static final String FIELDNAME_procurementStatus = I_M_Product.COLUMNNAME_ProcurementStatus;
 	@ViewColumn(fieldName = FIELDNAME_procurementStatus, //
 			captionKey = FIELDNAME_procurementStatus, //
 			widgetType = DocumentFieldWidgetType.Color, //

@@ -135,55 +135,71 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Procurement Status', PrintName
 -- 2023-12-06T13:36:46.475Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582840,'en_US') 
 ;
--- Column: MD_Cockpit.ProcurementStatus
--- 2023-12-06T13:43:54.565Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587689,582840,0,17,541842,540863,'ProcurementStatus',TO_TIMESTAMP('2023-12-06 14:43:54','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.material.cockpit',0,60,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Beschaffungsstatus',0,0,TO_TIMESTAMP('2023-12-06 14:43:54','YYYY-MM-DD HH24:MI:SS'),100,0)
+
+-- Column: M_Product.ProcurementStatus
+-- 2023-12-08T12:48:50.626Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587717,582840,0,17,541842,208,'ProcurementStatus',TO_TIMESTAMP('2023-12-08 12:48:50.319000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,60,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Beschaffungsstatus',0,0,TO_TIMESTAMP('2023-12-08 12:48:50.319000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
--- 2023-12-06T13:43:54.572Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=587689 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.migration-sql
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+-- 2023-12-08T12:48:50.631Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=587717 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 2023-12-06T13:43:54.577Z
-/* DDL */  select update_Column_Translation_From_AD_Element(582840) 
+-- 2023-12-08T12:48:50.655Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582840)
 ;
 
--- 2023-12-06T13:43:56.985Z
-/* DDL */ SELECT public.db_alter_table('MD_Cockpit','ALTER TABLE public.MD_Cockpit ADD COLUMN ProcurementStatus VARCHAR(60)')
+-- 2023-12-08T12:48:56.837Z
+/* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN ProcurementStatus VARCHAR(60)')
 ;
 
--- Value: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus
--- Classname: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus
--- 2023-12-07T10:51:06.690Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585342,'Y','de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus','N',TO_TIMESTAMP('2023-12-07 11:51:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.cockpit','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Beschaffungsstatus setzen','json','N','N','xls','Java',TO_TIMESTAMP('2023-12-07 11:51:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus')
+-- Field: Produkt(140,D) -> Produkt(180,D) -> Beschaffungsstatus
+-- Column: M_Product.ProcurementStatus
+-- 2023-12-08T12:49:51.185Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587717,723140,0,180,0,TO_TIMESTAMP('2023-12-08 12:49:51.052000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.material.cockpit',0,'Y','Y','Y','N','N','N','N','N','Beschaffungsstatus',0,510,0,1,1,TO_TIMESTAMP('2023-12-08 12:49:51.052000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- 2023-12-07T10:51:06.700Z
-INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=585342 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+-- 2023-12-08T12:49:51.187Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=723140 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- Process: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus(de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus)
--- 2023-12-07T10:51:13.348Z
-UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-07 11:51:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585342
+-- 2023-12-08T12:49:51.189Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582840)
 ;
 
--- Process: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus(de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus)
--- 2023-12-07T10:51:14.119Z
-UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-07 11:51:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585342
+-- 2023-12-08T12:49:51.198Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=723140
 ;
 
--- Process: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus(de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus)
--- 2023-12-07T10:51:27.081Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Set Procurement Status',Updated=TO_TIMESTAMP('2023-12-07 11:51:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585342
+-- 2023-12-08T12:49:51.200Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(723140)
 ;
 
--- Process: de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus(de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus)
--- ParameterName: ProcurementStatus
--- 2023-12-07T11:30:32.756Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,582840,0,585342,542761,17,541842,'ProcurementStatus',TO_TIMESTAMP('2023-12-07 12:30:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.cockpit',0,'Y','N','Y','N','N','N','Beschaffungsstatus',10,TO_TIMESTAMP('2023-12-07 12:30:32','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2023-12-07T11:30:32.764Z
-INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542761 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+-- UI Element: Produkt(140,D) -> Produkt(180,D) -> main -> 10 -> No.Beschaffungsstatus
+-- Column: M_Product.ProcurementStatus
+-- 2023-12-08T12:50:55.925Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723140,0,180,1000015,621971,'F',TO_TIMESTAMP('2023-12-08 12:50:55.785000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Beschaffungsstatus',70,0,0,TO_TIMESTAMP('2023-12-08 12:50:55.785000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 

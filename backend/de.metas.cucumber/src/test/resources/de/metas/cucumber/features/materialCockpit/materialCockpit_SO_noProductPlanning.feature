@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: sales order interaction with material cockpit - no product planning
 
   Background: Initial Data
-    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @Id:S0189_100
   @from:cucumber

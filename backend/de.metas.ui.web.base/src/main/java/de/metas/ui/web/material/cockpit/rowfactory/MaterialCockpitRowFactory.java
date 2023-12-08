@@ -159,7 +159,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (MainRowWithSubRows::create))
-					.withHighPriceProvider(highPriceProvider);
+					.withHighestPrices(highPriceProvider, mainRowBucketId);
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}

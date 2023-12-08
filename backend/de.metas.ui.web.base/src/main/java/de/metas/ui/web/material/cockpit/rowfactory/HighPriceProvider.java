@@ -36,7 +36,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +86,7 @@ public class HighPriceProvider
 	{
 		return HighPriceRequest.builder()
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.evalDate(record.getDateGeneral().toInstant())
+				.evalDate(record.getDateGeneral().toLocalDateTime().toLocalDate())
 				.attributesKey(AttributesKey.ofString(record.getAttributesKey()))
 				.build();
 	}
@@ -98,7 +98,7 @@ public class HighPriceProvider
 	{
 		@NonNull ProductId productId;
 		@Nullable AttributesKey attributesKey;
-		@NonNull Instant evalDate;
+		@NonNull LocalDate evalDate;
 	}
 
 	@Value

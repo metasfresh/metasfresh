@@ -158,7 +158,7 @@ public final class ViewColumnHelper
 		{
 			final String stringNorm = StringUtils.trimBlankToNull(string);
 
-			if (string == null || "-".equals(string))
+			if (stringNorm == null || "-".equals(stringNorm))
 			{
 				return ImmutableList.of();
 			}

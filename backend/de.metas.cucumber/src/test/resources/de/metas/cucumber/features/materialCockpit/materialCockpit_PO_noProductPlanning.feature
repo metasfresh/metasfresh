@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: purchase order interaction with material cockpit - no product planning
 
   Background: Initial Data
-    Given metasfresh has date and time 2021-04-16T13:30:13+02:00[Europe/Berlin]
+    Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2021-04-16T13:30:13+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @Id:S0189_1200

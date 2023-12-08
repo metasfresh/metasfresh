@@ -32,7 +32,6 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
-import de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -106,7 +105,6 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
-				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_SetProcurementStatus.class))
 				.build();
 	}
 
