@@ -34,7 +34,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
 import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
 import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
-import de.metas.banking.camt53.wrapper.v02.NoBatchBankToCustomerStatementV02Wrapper;
+import de.metas.banking.camt53.wrapper.v02.BatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.v04.BatchBankToCustomerStatementV04Wrapper;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.log.BankStatementImportFileLogRepository;
@@ -595,7 +595,7 @@ public class BankStatementCamt53Service
 			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
-			return NoBatchBankToCustomerStatementV02Wrapper
+			return BatchBankToCustomerStatementV02Wrapper
 					.of(docV02.getValue().getBkToCstmrStmt())
 					.getAccountStatements(bankAccountService, currencyRepository, msgBL);
 		}
