@@ -19,7 +19,14 @@ Feature: Budget Project API Test
   3rd we update only one random field
   _Then we retrieve the updated project once again to validate that only that field has been changed
 
-    Given load M_Product_Category:
+    Given update AD_Column:
+      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
+      | C_Project | POReference | true                      |
+      | C_Project | Note        | true                      |
+
+    And the metasfresh cache is reset
+    
+    And load M_Product_Category:
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
     And metasfresh contains S_Resource_Group with the following id:
@@ -228,13 +235,6 @@ Feature: Budget Project API Test
     }
 }
   """
-
-    And update AD_Column:
-      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
-      | C_Project | POReference | true                      |
-      | C_Project | Note        | true                      |
-
-    And the metasfresh cache is reset
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 

@@ -28,10 +28,6 @@ Feature: Setting customColumns via SetCustomColumns method
   _Timestamp (displayType=Date)
 
     #dev-note used I_C_Order and I_S_ResourceType just for convenience, the logic is not related at all with any given table.
-    And metasfresh contains C_BPartners:
-      | Identifier | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner   | BPartner_05082022 | N            | Y              | ps_1                          |
-
     And update AD_Column:
       | TableName      | ColumnName    | OPT.IsRestAPICustomColumn |
       | C_Order        | BPartnerName  | true                      |
@@ -45,6 +41,10 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
+
+    And metasfresh contains C_BPartners:
+      | Identifier | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner   | BPartner_05082022 | N            | Y              | ps_1                          |
     
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
