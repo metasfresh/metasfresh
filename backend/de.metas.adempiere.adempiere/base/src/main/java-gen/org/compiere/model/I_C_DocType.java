@@ -99,6 +99,53 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
+
+	/**
+	 * Set Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
+
+	/**
+	 * Get Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeDifference_ID();
+
+	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
+
+	/**
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -120,6 +167,28 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_ID", null);
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set DocType Invoice.
+	 * Document type used for invoices generated from this sales document
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
+
+	/**
+	 * Get DocType Invoice.
+	 * Document type used for invoices generated from this sales document
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeInvoice_ID();
+
+	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
 	 * Set Invoicing Pool.
@@ -147,50 +216,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
 	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
-
-	/**
-	 * Set Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
-
-	/**
-	 * Get Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeDifference_ID();
-
-	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
-
-	/**
-	 * Set DocType Invoice.
-	 * Document type used for invoices generated from this sales document
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
-
-	/**
-	 * Get DocType Invoice.
-	 * Document type used for invoices generated from this sales document
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeInvoice_ID();
-
-	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
 	 * Set Document Type for ProForma.

@@ -58,6 +58,7 @@ public class WFProcess
 	private static final Logger log = LogManager.getLogger(WFProcess.class);
 
 	@NonNull private final WorkflowExecutionContext context;
+	@NonNull private final WorkflowExecutionSupportingServicesFacade services;
 	@NonNull @Getter(AccessLevel.PACKAGE) private final Workflow workflow;
 
 	@NonNull private final WFProcessState state;
@@ -70,7 +71,8 @@ public class WFProcess
 	WFProcess(@NonNull final WorkflowExecutionContext context, @NonNull final WorkflowId workflowId)
 	{
 		this.context = context;
-		this.workflow = context.getWorkflowById(workflowId);
+		this.services = context.getServices();
+		this.workflow = this.services.getWorkflowById(workflowId);
 		this.state = createState(context, workflow);
 		this.activities = new ArrayList<>();
 	}
@@ -96,7 +98,8 @@ public class WFProcess
 			@NonNull final List<WFActivityState> wfActivityStates)
 	{
 		this.context = context;
-		this.workflow = context.getWorkflowById(wfProcessState.getWorkflowId());
+		this.services = this.context.getServices();
+		this.workflow = services.getWorkflowById(wfProcessState.getWorkflowId());
 		this.state = wfProcessState;
 
 		activities = new ArrayList<>(wfActivityStates.size());

@@ -1,9 +1,11 @@
 package de.metas.workflow.execution.approval.strategy;
 
+import de.metas.document.approval_strategy.DocApprovalStrategyId;
 import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.workflow.WFResponsible;
@@ -18,13 +20,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
-public interface WFApprovalStrategy
+public interface WFApprovalStrategyHandler
 {
-	Response approve(@NonNull WFApprovalStrategy.Request request);
+	Response approve(@NonNull WFApprovalStrategyHandler.Request request);
 
 	@Value
 	@Builder
@@ -35,6 +39,7 @@ public interface WFApprovalStrategy
 		@NonNull UserId documentOwnerId;
 		@NonNull ClientAndOrgId clientAndOrgId;
 		@NonNull WFApprovalRequest.DocumentInfo documentInfo;
+		@Nullable DocApprovalStrategyId docApprovalStrategyId;
 
 		@Nullable Money amountToApprove;
 
@@ -43,7 +48,13 @@ public interface WFApprovalStrategy
 		@Nullable WFProcessId wfProcessId;
 		@Nullable WFActivityId wfActivityId;
 
+		public LocalDate getEvaluationTimeAsLocalDate() {return context.getEvaluationTimeAsLocalDate();}
+
 		public IDocument getDocument() {return context.getDocument(documentRef);}
+
+		public ClientId getClientId() {return clientAndOrgId.getClientId();}
+
+		public OrgId getOrgId() {return clientAndOrgId.getOrgId();}
 	}
 
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -54,7 +65,7 @@ public interface WFApprovalStrategy
 		public enum Type
 		{APPROVED, REJECTED, PENDING, FORWARD_TO}
 
-		@NonNull private final WFApprovalStrategy.Response.Type type;
+		@NonNull private final WFApprovalStrategyHandler.Response.Type type;
 		@Nullable private final UserId forwardToUserId;
 		@Nullable private final TargetAction notificationTargetAction;
 
@@ -77,7 +88,7 @@ public interface WFApprovalStrategy
 			R forwardTo(@NonNull UserId userId, @Nullable TargetAction notificationTargetAction);
 		}
 
-		public <R> R map(@NonNull final WFApprovalStrategy.Response.CaseMapper<R> mapper)
+		public <R> R map(@NonNull final WFApprovalStrategyHandler.Response.CaseMapper<R> mapper)
 		{
 			return switch (type)
 			{

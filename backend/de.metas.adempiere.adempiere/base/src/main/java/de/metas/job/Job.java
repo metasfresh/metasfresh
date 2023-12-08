@@ -31,12 +31,8 @@ import org.adempiere.service.ClientId;
 @Builder
 public class Job
 {
-	private static final String NAME_CFO = "CFO";
-
 	@NonNull JobId id;
 	@NonNull String name;
 	boolean isActive;
 	@NonNull ClientId clientId;
-
-	public boolean isCFO() {return NAME_CFO.equals(name);}
 }
