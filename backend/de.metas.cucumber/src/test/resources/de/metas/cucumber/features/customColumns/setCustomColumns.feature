@@ -1,5 +1,4 @@
 @from:cucumber
-@flaky
 @ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
 
@@ -33,14 +32,6 @@ Feature: Setting customColumns via SetCustomColumns method
       | Identifier | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner   | BPartner_05082022 | N            | Y              | ps_1                          |
 
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | order      | true    | bpartner                 | 2022-08-05  |
-
-    And metasfresh contains S_ResourceType:
-      | S_ResourceType_ID.Identifier | Name | Value | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
-      | resourceType                 | Name | Value | standard_category                | MJ      | true       |
-
     And update AD_Column:
       | TableName      | ColumnName    | OPT.IsRestAPICustomColumn |
       | C_Order        | BPartnerName  | true                      |
@@ -54,6 +45,15 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order      | true    | bpartner                 | 2022-08-05  |
+
+    And metasfresh contains S_ResourceType:
+      | S_ResourceType_ID.Identifier | Name | Value | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
+      | resourceType                 | Name | Value | standard_category                | MJ      | true       |
+
 
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |
@@ -71,4 +71,17 @@ Feature: Setting customColumns via SetCustomColumns method
     And set custom columns for C_Order expecting error:
       | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |
       | order                 | DeliveryInfo     | DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
+
+    # cleanup
+    And update AD_Column:
+      | TableName      | ColumnName    | OPT.IsRestAPICustomColumn |
+      | C_Order        | BPartnerName  | false                     |
+      | C_Order        | EMail         | false                     |
+      | C_Order        | IsDropShip    | false                     |
+      | C_Order        | DateOrdered   | false                     |
+      | C_Order        | DatePromised  | false                     |
+      | C_Order        | Volume        | false                     |
+      | S_ResourceType | TimeSlotStart | false                     |
+      | S_ResourceType | TimeSlotEnd   | false                     |
+      | S_ResourceType | ChargeableQty | false                     |
 
