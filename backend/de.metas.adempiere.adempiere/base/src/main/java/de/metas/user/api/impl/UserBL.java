@@ -537,4 +537,6 @@ public class UserBL implements IUserBL
 		return userDAO.retrieveUsersByJobId(jobId);
 	}
 
+	@Override
+	public String getUserFullNameById(@NonNull final UserId userId) {return userDAO.retrieveUserFullName(userId);}
 }
