@@ -22,12 +22,11 @@ package de.metas.event;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.base.MoreObjects;
+import de.metas.event.impl.EventMDC;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -35,12 +34,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.event.impl.EventMDC;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An {@link IEventBus} wrapper implementation which can be asked to collect posted events and send them all together when {@link #flush()} is called.
