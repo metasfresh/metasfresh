@@ -6,7 +6,6 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
@@ -73,7 +72,7 @@ public class ProcessClassParamInfo
 	@NonNull FieldReference fieldRef;
 	@Nullable FieldReference nestedParamsFieldRef;
 
-	@Builder
+	@lombok.Builder
 	private ProcessClassParamInfo(
 			@NonNull final String externalParameterName,
 			@NonNull final String internalParameterName,

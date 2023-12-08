@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,15 +20,25 @@
  * #L%
  */
 
-package de.metas.event.remote;
+package org.eevolution.api;
 
-import java.util.Optional;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-public interface IEventBusQueueConfiguration
+import java.util.Arrays;
+
+public class PPOrderDocBaseTypeTests
 {
-	String getQueueName();
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
-	Optional<String> getTopicName();
-
-	String getFanoutExchangeName();
+	@Test
+	public void givenAnyDocBaseType_whenGetBOMType_thenNoErrorIsThrown()
+	{
+		Arrays.stream(PPOrderDocBaseType.values()).forEach(PPOrderDocBaseType::getBOMTypes);
+	}
 }

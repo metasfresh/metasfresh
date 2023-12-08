@@ -45,7 +45,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
-
+    
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | order      | true    | bpartner                 | 2022-08-05  |

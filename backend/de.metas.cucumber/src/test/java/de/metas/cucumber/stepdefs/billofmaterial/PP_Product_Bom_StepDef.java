@@ -52,6 +52,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -184,9 +185,13 @@ public class PP_Product_Bom_StepDef
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_ValidFrom);
 
+		final String bomType = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOM.COLUMNNAME_BOMType))
+				.orElse(BOMType.CurrentActive.getCode());
+
 		final I_PP_Product_BOM productBOMRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
 						.create()
 						.firstOnly(I_PP_Product_BOM.class),
 				() -> newInstance(I_PP_Product_BOM.class));
@@ -195,7 +200,7 @@ public class PP_Product_Bom_StepDef
 		productBOMRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
 		productBOMRecord.setValue(productRecord.getValue());
 		productBOMRecord.setName(productRecord.getName());
-		productBOMRecord.setBOMType(BOMType.CurrentActive.getCode());
+		productBOMRecord.setBOMType(bomType);
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
 		productBOMRecord.setValidFrom(validFrom);
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
@@ -224,6 +229,12 @@ public class PP_Product_Bom_StepDef
 
 	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final Map<String, String> tableRow)
 	{
+		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (productBomVersionsTable.getOptional(bomVersionsIdentifier).isPresent())
+		{
+			return productBomVersionsTable.getOptional(bomVersionsIdentifier).get();
+		}
+
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
@@ -239,7 +250,6 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		productBomVersionsTable.putOrReplace(bomVersionsIdentifier, bomVersionsRecord);
 
 		return bomVersionsRecord;

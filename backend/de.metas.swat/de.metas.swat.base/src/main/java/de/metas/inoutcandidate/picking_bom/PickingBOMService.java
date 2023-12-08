@@ -20,6 +20,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -115,7 +116,7 @@ public class PickingBOMService
 					.appendParametersToMessage();
 		}
 
-		final ProductBOMId bomId = bomsRepo.getLatestBOMByVersion(bomVersionsId)
+		final ProductBOMId bomId = bomsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes())
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productPlanning.getM_Product_ID() + ")"));
 
 		return Optional.of(PickingOrderConfig.builder()
@@ -175,7 +176,7 @@ public class PickingBOMService
 	private Set<ProductBOMId> getPickingBOMIds(@NonNull final Set<ProductBOMVersionsId> bomVersionsIds)
 	{
 		return bomVersionsIds.stream()
-				.map(bomsRepo::getLatestBOMByVersion)
+				.map(bomVersionsId -> bomsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes()))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(ImmutableSet.toImmutableSet());
