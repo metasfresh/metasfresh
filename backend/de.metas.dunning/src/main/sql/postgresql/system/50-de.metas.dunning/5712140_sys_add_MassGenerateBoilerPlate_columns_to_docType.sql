@@ -1,5 +1,5 @@
 -- 2023-11-29T12:47:24.157Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582822,0,'IsReceiveMassDunningReports',TO_TIMESTAMP('2023-11-29 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Receive Mass Dunning Reports','Receive Mass Dunning Reports',TO_TIMESTAMP('2023-11-29 14:47:23','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582822,0,'IsReceiveMassDunningReports',TO_TIMESTAMP('2023-11-29 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Receives Dunning History Report','Receives Dunning History Report',TO_TIMESTAMP('2023-11-29 14:47:23','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-11-29T12:47:24.169Z
@@ -7,7 +7,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2023-11-29T12:47:52.441Z
-UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName='Empfang von Massenmahnungsberichten',Updated=TO_TIMESTAMP('2023-11-29 14:47:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Empfängt Mahnhistorienbericht', PrintName='Empfängt Mahnhistorienbericht',Updated=TO_TIMESTAMP('2023-11-29 14:47:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='de_CH'
 ;
 
 -- 2023-11-29T12:47:52.468Z
@@ -15,7 +15,7 @@ UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName=
 ;
 
 -- 2023-11-29T12:47:56.055Z
-UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName='Empfang von Massenmahnungsberichten',Updated=TO_TIMESTAMP('2023-11-29 14:47:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Empfängt Mahnhistorienbericht', PrintName='Empfängt Mahnhistorienbericht',Updated=TO_TIMESTAMP('2023-11-29 14:47:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='de_DE'
 ;
 
 -- 2023-11-29T12:47:56.057Z
@@ -23,7 +23,7 @@ UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName=
 ;
 
 -- 2023-11-29T12:47:58.187Z
-UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName='Empfang von Massenmahnungsberichten',Updated=TO_TIMESTAMP('2023-11-29 14:47:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Empfängt Mahnhistorienbericht', PrintName='Empfängt Mahnhistorienbericht',Updated=TO_TIMESTAMP('2023-11-29 14:47:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='fr_CH'
 ;
 
 -- 2023-11-29T12:47:58.188Z
@@ -31,7 +31,7 @@ UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName=
 ;
 
 -- 2023-11-29T12:48:01.494Z
-UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName='Empfang von Massenmahnungsberichten',Updated=TO_TIMESTAMP('2023-11-29 14:48:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Empfängt Mahnhistorienbericht', PrintName='Empfängt Mahnhistorienbericht',Updated=TO_TIMESTAMP('2023-11-29 14:48:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582822 AND AD_Language='nl_NL'
 ;
 
 -- 2023-11-29T12:48:01.496Z
@@ -40,7 +40,7 @@ UPDATE AD_Element_Trl SET Name='Empfang von Massenmahnungsberichten', PrintName=
 
 -- Column: AD_User.IsReceiveMassDunningReports
 -- 2023-11-29T12:49:03.549Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587665,582822,0,20,114,'IsReceiveMassDunningReports',TO_TIMESTAMP('2023-11-29 14:49:03','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Receive Mass Dunning Reports',0,0,TO_TIMESTAMP('2023-11-29 14:49:03','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587665,582822,0,20,114,'IsReceiveMassDunningReports',TO_TIMESTAMP('2023-11-29 14:49:03','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Receives Dunning History Report',0,0,TO_TIMESTAMP('2023-11-29 14:49:03','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-11-29T12:49:03.551Z
@@ -60,7 +60,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2023-11-29T13:05:43.717Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Massengenerierung Textbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelege', PrintName='Textbaustein für Massenbelege',Updated=TO_TIMESTAMP('2023-11-29 15:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='de_CH'
 ;
 
 -- 2023-11-29T13:05:43.718Z
@@ -68,7 +68,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Mass
 ;
 
 -- 2023-11-29T13:05:46.175Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Massengenerierung Textbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelege', PrintName='Textbaustein für Massenbelege',Updated=TO_TIMESTAMP('2023-11-29 15:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='de_DE'
 ;
 
 -- 2023-11-29T13:05:46.177Z
@@ -76,7 +76,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Mass
 ;
 
 -- 2023-11-29T13:05:47.831Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Massengenerierung Textbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:05:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelege', PrintName='Textbaustein für Massenbelege',Updated=TO_TIMESTAMP('2023-11-29 15:05:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='fr_CH'
 ;
 
 -- 2023-11-29T13:05:47.832Z
@@ -84,7 +84,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Mass
 ;
 
 -- 2023-11-29T13:05:50.538Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Textbaustein', PrintName='Massengenerierung Textbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:05:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelege', PrintName='Textbaustein für Massenbelege',Updated=TO_TIMESTAMP('2023-11-29 15:05:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='nl_NL'
 ;
 
 -- 2023-11-29T13:05:50.539Z
@@ -100,7 +100,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2023-11-29T13:07:15.326Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName='Massengenerierung Zeilentextbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:07:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelegpositionen', PrintName='Textbaustein für Massenbelegpositionen',Updated=TO_TIMESTAMP('2023-11-29 15:07:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='de_CH'
 ;
 
 -- 2023-11-29T13:07:15.328Z
@@ -108,7 +108,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName
 ;
 
 -- 2023-11-29T13:07:17.081Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName='Massengenerierung Zeilentextbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:07:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelegpositionen', PrintName='Textbaustein für Massenbelegpositionen',Updated=TO_TIMESTAMP('2023-11-29 15:07:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='de_DE'
 ;
 
 -- 2023-11-29T13:07:17.083Z
@@ -116,7 +116,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName
 ;
 
 -- 2023-11-29T13:07:18.551Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName='Massengenerierung Zeilentextbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:07:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelegpositionen', PrintName='Textbaustein für Massenbelegpositionen',Updated=TO_TIMESTAMP('2023-11-29 15:07:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='fr_CH'
 ;
 
 -- 2023-11-29T13:07:18.552Z
@@ -124,7 +124,7 @@ UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName
 ;
 
 -- 2023-11-29T13:07:20.795Z
-UPDATE AD_Element_Trl SET Name='Massengenerierung Zeilentextbaustein', PrintName='Massengenerierung Zeilentextbaustein',Updated=TO_TIMESTAMP('2023-11-29 15:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Textbaustein für Massenbelegpositionen', PrintName='Textbaustein für Massenbelegpositionen',Updated=TO_TIMESTAMP('2023-11-29 15:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='nl_NL'
 ;
 
 -- 2023-11-29T13:07:20.797Z
@@ -178,7 +178,7 @@ ALTER TABLE C_DocType ADD CONSTRAINT MassGenerateLineBoilerplate_CDocType FOREIG
 ;
 
 -- 2023-11-29T16:12:47.013Z
-UPDATE AD_Element_Trl SET Name='Mass generation line text snippet', PrintName='Mass generation line text snippet',Updated=TO_TIMESTAMP('2023-11-29 18:12:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Text snippet for bulk document lines', PrintName='Text snippet for bulk document lines',Updated=TO_TIMESTAMP('2023-11-29 18:12:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582824 AND AD_Language='en_US'
 ;
 
 -- 2023-11-29T16:12:47.015Z
@@ -190,7 +190,7 @@ UPDATE AD_Element_Trl SET Name='Mass generation line text snippet', PrintName='M
 ;
 
 -- 2023-11-29T16:13:04.372Z
-UPDATE AD_Element_Trl SET Name='Mass generation text snippet', PrintName='Mass generation text snippet',Updated=TO_TIMESTAMP('2023-11-29 18:13:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Text snippet for bulk documents', PrintName='Text snippet for bulk documents',Updated=TO_TIMESTAMP('2023-11-29 18:13:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582823 AND AD_Language='en_US'
 ;
 
 -- 2023-11-29T16:13:04.373Z
@@ -202,7 +202,7 @@ UPDATE AD_Element_Trl SET Name='Mass generation text snippet', PrintName='Mass g
 ;
 
 -- 2023-11-29T16:39:29.785Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582825,0,'Deadletter_User_ID',TO_TIMESTAMP('2023-11-29 18:39:29','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Deadletter User','Deadletter User',TO_TIMESTAMP('2023-11-29 18:39:29','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582825,0,'Deadletter_User_ID',TO_TIMESTAMP('2023-11-29 18:39:29','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Forward undeliverable emails to','Forward undeliverable emails to',TO_TIMESTAMP('2023-11-29 18:39:29','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-11-29T16:39:29.787Z
@@ -210,7 +210,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2023-11-29T16:39:41.770Z
-UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buchstabe Benutzer',Updated=TO_TIMESTAMP('2023-11-29 18:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Unzustellbare E-Mails weiterleiten an', PrintName='Unzustellbare E-Mails weiterleiten an',Updated=TO_TIMESTAMP('2023-11-29 18:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='de_CH'
 ;
 
 -- 2023-11-29T16:39:41.771Z
@@ -218,7 +218,7 @@ UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buch
 ;
 
 -- 2023-11-29T16:39:43.789Z
-UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buchstabe Benutzer',Updated=TO_TIMESTAMP('2023-11-29 18:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Unzustellbare E-Mails weiterleiten an', PrintName='Unzustellbare E-Mails weiterleiten an',Updated=TO_TIMESTAMP('2023-11-29 18:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='de_DE'
 ;
 
 -- 2023-11-29T16:39:43.791Z
@@ -226,7 +226,7 @@ UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buch
 ;
 
 -- 2023-11-29T16:39:45.560Z
-UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buchstabe Benutzer',Updated=TO_TIMESTAMP('2023-11-29 18:39:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Unzustellbare E-Mails weiterleiten an', PrintName='Unzustellbare E-Mails weiterleiten an',Updated=TO_TIMESTAMP('2023-11-29 18:39:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='fr_CH'
 ;
 
 -- 2023-11-29T16:39:45.562Z
@@ -234,7 +234,7 @@ UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buch
 ;
 
 -- 2023-11-29T16:39:47.950Z
-UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buchstabe Benutzer',Updated=TO_TIMESTAMP('2023-11-29 18:39:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Unzustellbare E-Mails weiterleiten an', PrintName='Unzustellbare E-Mails weiterleiten an',Updated=TO_TIMESTAMP('2023-11-29 18:39:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582825 AND AD_Language='nl_NL'
 ;
 
 -- 2023-11-29T16:39:47.952Z
@@ -243,7 +243,7 @@ UPDATE AD_Element_Trl SET Name='Toter Buchstabe Benutzer', PrintName='Toter Buch
 
 -- Column: AD_NotificationGroup.Deadletter_User_ID
 -- 2023-11-29T16:41:30.955Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587668,582825,0,30,110,540959,'Deadletter_User_ID',TO_TIMESTAMP('2023-11-29 18:41:30','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Deadletter User',0,0,TO_TIMESTAMP('2023-11-29 18:41:30','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587668,582825,0,30,110,540959,'Deadletter_User_ID',TO_TIMESTAMP('2023-11-29 18:41:30','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Forward undeliverable emails to',0,0,TO_TIMESTAMP('2023-11-29 18:41:30','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-11-29T16:41:30.956Z
@@ -279,7 +279,7 @@ DELETE FROM AD_Element WHERE AD_Element_ID=582826
 ;
 
 -- 2023-11-29T17:00:38.749Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582827,0,'IsNotifyOrgBPUsersOnly',TO_TIMESTAMP('2023-11-29 19:00:38','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Notify organization business partner users only','Notify organization business partner users only',TO_TIMESTAMP('2023-11-29 19:00:38','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582827,0,'IsNotifyOrgBPUsersOnly',TO_TIMESTAMP('2023-11-29 19:00:38','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Notify only subscribed users of the organization's business partners','Notify only subscribed users of the organization's business partners',TO_TIMESTAMP('2023-11-29 19:00:38','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-11-29T17:00:38.750Z
@@ -287,7 +287,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2023-11-29T17:00:56.492Z
-UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen', PrintName='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:00:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen', PrintName='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:00:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='de_CH'
 ;
 
 -- 2023-11-29T17:00:56.494Z
@@ -295,7 +295,7 @@ UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisa
 ;
 
 -- 2023-11-29T17:00:58.777Z
-UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen', PrintName='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:00:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen', PrintName='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:00:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='de_DE'
 ;
 
 -- 2023-11-29T17:00:58.778Z
@@ -303,7 +303,7 @@ UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisa
 ;
 
 -- 2023-11-29T17:01:00.641Z
-UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen', PrintName='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:01:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen', PrintName='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:01:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='fr_CH'
 ;
 
 -- 2023-11-29T17:01:00.642Z
@@ -311,7 +311,7 @@ UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisa
 ;
 
 -- 2023-11-29T17:01:03.075Z
-UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen', PrintName='Nur Benutzer von Geschäftspartnern der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:01:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen', PrintName='Nur registrierte Benutzer der Geschäftspartner der Organisation benachrichtigen',Updated=TO_TIMESTAMP('2023-11-29 19:01:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582827 AND AD_Language='nl_NL'
 ;
 
 -- 2023-11-29T17:01:03.077Z
@@ -320,7 +320,7 @@ UPDATE AD_Element_Trl SET Name='Nur Benutzer von Geschäftspartnern der Organisa
 
 -- Column: AD_NotificationGroup.IsNotifyOrgBPUsersOnly
 -- 2023-11-29T17:01:21.794Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587669,582827,0,20,540959,'IsNotifyOrgBPUsersOnly',TO_TIMESTAMP('2023-11-29 19:01:21','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Notify organization business partner users only',0,0,TO_TIMESTAMP('2023-11-29 19:01:21','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587669,582827,0,20,540959,'IsNotifyOrgBPUsersOnly',TO_TIMESTAMP('2023-11-29 19:01:21','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Notify only subscribed users of the organization's business partners',0,0,TO_TIMESTAMP('2023-11-29 19:01:21','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-11-29T17:01:21.795Z
