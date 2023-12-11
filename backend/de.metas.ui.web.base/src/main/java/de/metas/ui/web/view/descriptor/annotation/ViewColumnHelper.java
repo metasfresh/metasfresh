@@ -103,6 +103,7 @@ public final class ViewColumnHelper
 			});
 
 	public static String SYSCFG_DISPLAYED_SUFFIX = ".IsDisplayed";
+	public static String SYSCFG_DISABLED = "-";
 
 	public static void cacheReset()
 	{
@@ -158,7 +159,7 @@ public final class ViewColumnHelper
 		{
 			final String stringNorm = StringUtils.trimBlankToNull(string);
 
-			if (stringNorm == null || "-".equals(stringNorm))
+			if (stringNorm == null || SYSCFG_DISABLED.equals(stringNorm))
 			{
 				return ImmutableList.of();
 			}

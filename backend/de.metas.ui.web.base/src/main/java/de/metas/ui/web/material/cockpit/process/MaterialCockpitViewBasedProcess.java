@@ -53,10 +53,18 @@ public abstract class MaterialCockpitViewBasedProcess extends ViewBasedProcessTe
 	{
 		final MaterialCockpitView materialCockpitView = getView();
 
-		return getSelectedRowIds()
-				.stream()
-				.map(materialCockpitView::getById)
+		return materialCockpitView.streamByIds(getSelectedRowIds())
 				.flatMap(row -> row.getAllIncludedCockpitRecordIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected Set<Integer> getSelectedProductIdsRecursively()
+	{
+		final MaterialCockpitView materialCockpitView = getView();
+
+		return materialCockpitView.streamByIds(getSelectedRowIds())
+				.map(MaterialCockpitRow::getProductId)
+				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }
