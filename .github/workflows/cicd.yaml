@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.3.2'
+  PIPELINE_VERSION: '0.3.3'
 jobs:
 
   init:
@@ -372,16 +372,6 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: build-report-compat
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.backend.report.compat \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
-          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat \
-          .
       - name: build-mobile-compat
         run: |
           docker buildx build \
@@ -413,8 +403,6 @@ jobs:
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
-            docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
-            docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
