@@ -48,7 +48,7 @@ public final class DocumentPath
 
 	public static DocumentPath newWindowRecord(@NonNull final WindowId windowId)
 	{
-		return rootDocumentPath(windowId, DocumentId.NEW);
+		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), DocumentId.NEW);
 	}
 
 	public static DocumentPath rootDocumentPath(@NonNull final AdWindowId adWindowId, final int documentIdInt)
