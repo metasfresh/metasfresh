@@ -326,6 +326,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
 		record.setCurrencyRate(request.getCurrencyRate());
+		record.setIsMultiplePayment(request.isMultiPayment());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
