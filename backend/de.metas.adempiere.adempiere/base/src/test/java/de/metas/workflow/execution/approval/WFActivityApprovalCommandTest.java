@@ -39,11 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createApprovalStrategy;
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createClient;
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createJob;
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.role;
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.user;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WFActivityApprovalCommandTest
