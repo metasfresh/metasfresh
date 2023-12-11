@@ -139,7 +139,7 @@ public class WFProcess
 
 	@NonNull UserId getInitialUserId() {return state.getInitialUserId();}
 
-	@NonNull UserId getUserId() {return state.getUserId();}
+	@NonNull UserId getUserId() {return Check.assumeNotNull(state.getUserId(), "user is set: {}", state);}
 
 	@NonNull Optional<DocStatus> getDocumentStatus() {return context.getDocumentStatus(getDocumentRef());}
 

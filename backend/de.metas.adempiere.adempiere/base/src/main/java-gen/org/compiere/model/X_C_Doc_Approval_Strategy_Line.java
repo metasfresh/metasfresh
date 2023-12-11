@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Doc_Approval_Strategy_Line extends org.compiere.model.PO implements I_C_Doc_Approval_Strategy_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -755804228L;
+	private static final long serialVersionUID = 593857391L;
 
     /** Standard Constructor */
     public X_C_Doc_Approval_Strategy_Line (final Properties ctx, final int C_Doc_Approval_Strategy_Line_ID, @Nullable final String trxName)
@@ -166,16 +166,41 @@ public class X_C_Doc_Approval_Strategy_Line extends org.compiere.model.PO implem
 	}
 
 	/** 
+	 * SupervisorCheckStrategy AD_Reference_ID=541844
+	 * Reference name: C_Doc_Approval_Strategy_Line_SupervisorCheckStrategy
+	 */
+	public static final int SUPERVISORCHECKSTRATEGY_AD_Reference_ID=541844;
+	/** DoNotCheck = N */
+	public static final String SUPERVISORCHECKSTRATEGY_DoNotCheck = "N";
+	/** AllMatching = A */
+	public static final String SUPERVISORCHECKSTRATEGY_AllMatching = "A";
+	/** FirstMatching = F */
+	public static final String SUPERVISORCHECKSTRATEGY_FirstMatching = "F";
+	@Override
+	public void setSupervisorCheckStrategy (final @Nullable java.lang.String SupervisorCheckStrategy)
+	{
+		set_Value (COLUMNNAME_SupervisorCheckStrategy, SupervisorCheckStrategy);
+	}
+
+	@Override
+	public java.lang.String getSupervisorCheckStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_SupervisorCheckStrategy);
+	}
+
+	/** 
 	 * Type AD_Reference_ID=541843
 	 * Reference name: C_Doc_Approval_Strategy_Line_Type
 	 */
 	public static final int TYPE_AD_Reference_ID=541843;
-	/** SupervisorsHierarchy = SH */
-	public static final String TYPE_SupervisorsHierarchy = "SH";
 	/** ProjectManager = PM */
 	public static final String TYPE_ProjectManager = "PM";
 	/** Job = JOB */
 	public static final String TYPE_Job = "JOB";
+	/** Requestor = REQUESTOR */
+	public static final String TYPE_Requestor = "REQUESTOR";
+	/** WorkflowResponsible = WFResponsible */
+	public static final String TYPE_WorkflowResponsible = "WFResponsible";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

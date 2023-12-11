@@ -1,10 +1,11 @@
-package de.metas.document.approval_strategy;
+package de.metas.workflow.execution.approval.strategy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
+import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
 import de.metas.job.JobId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -19,6 +20,7 @@ import org.compiere.model.I_C_Doc_Approval_Strategy;
 import org.compiere.model.I_C_Doc_Approval_Strategy_Line;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collector;
 
@@ -31,6 +33,15 @@ public class DocApprovalStrategyRepository
 			.tableName(I_C_Doc_Approval_Strategy.Table_Name)
 			.additionalTableNameToResetFor(I_C_Doc_Approval_Strategy_Line.Table_Name)
 			.initialCapacity(1)
+			.build();
+
+	private static final DocApprovalStrategy DEFAULT = DocApprovalStrategy.builder()
+			.id(DocApprovalStrategyId.DEFAULT_ID)
+			.name("Default")
+			.line(DocApprovalStrategyLine.builder().
+					seqNo(SeqNo.ofInt(10))
+					.type(DocApprovalStrategyType.WorkflowResponsible)
+					.checkSupervisorStrategyType(CheckSupervisorStrategyType.FirstMatching).build())
 			.build();
 
 	public DocApprovalStrategy getById(final DocApprovalStrategyId id)
@@ -70,17 +81,22 @@ public class DocApprovalStrategyRepository
 				.build();
 	}
 
-	private static DocApprovalStrategyLine fromRecord(@NonNull final I_C_Doc_Approval_Strategy_Line lineRecord)
+	private static DocApprovalStrategyLine fromRecord(@NonNull final I_C_Doc_Approval_Strategy_Line record)
 	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(lineRecord.getC_Currency_ID());
-		final Money minimumAmountThatRequiresApproval = currencyId != null ? Money.of(lineRecord.getMinimumAmt(), currencyId) : null;
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		final Money minimumAmountThatRequiresApproval = currencyId != null ? Money.of(record.getMinimumAmt(), currencyId) : null;
 
 		return DocApprovalStrategyLine.builder()
-				.seqNo(SeqNo.ofInt(lineRecord.getSeqNo()))
-				.type(DocApprovalStrategyLineType.ofCode(lineRecord.getType()))
-				.isProjectManagerSet(OptionalBoolean.ofNullableString(lineRecord.getIsProjectManagerSet()))
-				.jobId(JobId.ofRepoIdOrNull(lineRecord.getC_Job_ID()))
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
+				//
+				.type(DocApprovalStrategyType.ofCode(record.getType()))
+				.jobId(JobId.ofRepoIdOrNull(record.getC_Job_ID()))
+				.checkSupervisorStrategyType(CheckSupervisorStrategyType.optionalOfNullableCode(record.getSupervisorCheckStrategy()).orElse(CheckSupervisorStrategyType.DoNotCheck))
+				//
+				// Condition
+				.isProjectManagerSet(OptionalBoolean.ofNullableString(record.getIsProjectManagerSet()))
 				.minimumAmountThatRequiresApproval(minimumAmountThatRequiresApproval)
+				//
 				.build();
 	}
 
@@ -90,7 +106,11 @@ public class DocApprovalStrategyRepository
 
 		private DocApprovalStrategyMap(final List<DocApprovalStrategy> list)
 		{
-			this.byId = Maps.uniqueIndex(list, DocApprovalStrategy::getId);
+			final HashMap<DocApprovalStrategyId, DocApprovalStrategy> byId = new HashMap<>();
+			byId.put(DEFAULT.getId(), DEFAULT);
+			list.forEach(item -> byId.put(item.getId(), item));
+
+			this.byId = ImmutableMap.copyOf(byId);
 		}
 
 		public static Collector<DocApprovalStrategy, ?, DocApprovalStrategyMap> collect()

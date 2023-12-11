@@ -1,11 +1,7 @@
 package de.metas.workflow.execution;
 
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
-import de.metas.document.approval_strategy.DocApprovalStrategyId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.MailService;
@@ -13,19 +9,12 @@ import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -36,6 +25,9 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.approval.WFApprovalRequestRepository;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyService;
 import de.metas.workflow.service.IADWorkflowDAO;
 import de.metas.workflow.service.WFEventAuditRepository;
 import lombok.Getter;
@@ -49,8 +41,6 @@ import org.compiere.util.TrxRunnable;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -62,8 +52,6 @@ public class WorkflowExecutionSupportingServicesFacade
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	@NonNull @Getter private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -73,6 +61,8 @@ public class WorkflowExecutionSupportingServicesFacade
 	@NonNull private final MailService mailService;
 	@NonNull private final WFEventAuditRepository auditRepo;
 	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull @Getter private final DocApprovalStrategyService docApprovalStrategyService;
+	@NonNull @Getter private final WFApprovalRequestRepository wfApprovalRequestRepository;
 
 	public Workflow getWorkflowById(final WorkflowId workflowId) {return workflowDAO.getById(workflowId);}
 
@@ -117,17 +107,6 @@ public class WorkflowExecutionSupportingServicesFacade
 
 	public String getUserFullnameById(@NonNull final UserId userId) {return userBL.getUserFullNameById(userId);}
 
-	public Optional<UserId> getSupervisorId(@NonNull UserId userId, @NonNull OrgId orgId) {return userBL.getSupervisorId(userId, orgId);}
-
-	public List<IUserRolePermissions> getUserRolesPermissionsForUserWithOrgAccess(@NonNull UserId userId, @NonNull ClientAndOrgId clientAndOrgId, @NonNull LocalDate evalDate)
-	{
-		return userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-				clientAndOrgId.getClientId(),
-				clientAndOrgId.getOrgId(),
-				userId,
-				evalDate);
-	}
-
 	public OrgInfo getOrgInfoById(@NonNull final OrgId orgId)
 	{
 		return orgsRepo.getOrgInfoById(orgId);
@@ -140,31 +119,6 @@ public class WorkflowExecutionSupportingServicesFacade
 	public void createNewAttachment(@NonNull final Object referencedRecord, @NonNull final File file)
 	{
 		attachmentEntryService.createNewAttachment(referencedRecord, file);
-	}
-
-	public Money convertMoney(
-			@NonNull final Money amount,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final LocalDate conversionDate,
-			@NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
-		{
-			return amount;
-		}
-
-		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				LocalDateAndOrgId.ofLocalDate(conversionDate, clientAndOrgId.getOrgId()),
-				(CurrencyConversionTypeId)null,
-				clientAndOrgId.getClientId());
-
-		final CurrencyConversionResult conversionResult = currencyBL.convert(
-				conversionCtx,
-				amount.toBigDecimal(),
-				amount.getCurrencyId(),
-				toCurrencyId);
-
-		return Money.of(conversionResult.getAmount(), toCurrencyId);
 	}
 
 	public void runInThreadInheritedTrx(final TrxRunnable runnable) {trxManager.runInThreadInheritedTrx(runnable);}

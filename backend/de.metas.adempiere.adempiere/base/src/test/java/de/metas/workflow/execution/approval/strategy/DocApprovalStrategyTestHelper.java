@@ -1,4 +1,4 @@
-package de.metas.document.approval_strategy;
+package de.metas.workflow.execution.approval.strategy;
 
 import de.metas.job.JobId;
 import de.metas.money.Money;
@@ -8,8 +8,9 @@ import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
+import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,13 +35,14 @@ public class DocApprovalStrategyTestHelper
 	@Builder
 	public static class StrategyLineCreateRequest
 	{
-		@NonNull DocApprovalStrategyLineType type;
-		@NonNull @Builder.Default OptionalBoolean isProjectManagerSet = OptionalBoolean.UNKNOWN;
+		@NonNull DocApprovalStrategyType type;
 		@Nullable JobId jobId;
+		@NonNull @Builder.Default CheckSupervisorStrategyType supervisorCheckStrategy = CheckSupervisorStrategyType.DoNotCheck;
+		@NonNull @Builder.Default OptionalBoolean isProjectManagerSet = OptionalBoolean.UNKNOWN;
 		@Nullable Money minimumAmountThatRequiresApproval;
 	}
 
-	public DocApprovalStrategyId createApprovalStrategy(StrategyLineCreateRequest... lineRequests)
+	public DocApprovalStrategyId createApprovalStrategy(DocApprovalStrategyLine.DocApprovalStrategyLineBuilder... lines)
 	{
 		I_C_Doc_Approval_Strategy headerRecord = InterfaceWrapperHelper.newInstance(I_C_Doc_Approval_Strategy.class);
 		headerRecord.setName("test");
@@ -48,28 +50,37 @@ public class DocApprovalStrategyTestHelper
 		final DocApprovalStrategyId docApprovalStrategyId = DocApprovalStrategyId.ofRepoId(headerRecord.getC_Doc_Approval_Strategy_ID());
 
 		final SeqNoProvider nextSeqNo = SeqNoProvider.ofInt(10);
-		for (final StrategyLineCreateRequest lineRequest : lineRequests)
+		for (final DocApprovalStrategyLine.DocApprovalStrategyLineBuilder line : lines)
 		{
-			createApprovalStrategyLine(lineRequest, docApprovalStrategyId, nextSeqNo.getAndIncrement());
+			line.seqNo(nextSeqNo.getAndIncrement());
+			createApprovalStrategyLine(line.build(), docApprovalStrategyId);
 		}
 
 		return docApprovalStrategyId;
 	}
 
-	private void createApprovalStrategyLine(StrategyLineCreateRequest lineRequest, DocApprovalStrategyId docApprovalStrategyId, SeqNo seqNo)
+	private void createApprovalStrategyLine(DocApprovalStrategyLine line, DocApprovalStrategyId docApprovalStrategyId)
 	{
 		final I_C_Doc_Approval_Strategy_Line record = InterfaceWrapperHelper.newInstance(I_C_Doc_Approval_Strategy_Line.class);
 		record.setC_Doc_Approval_Strategy_ID(docApprovalStrategyId.getRepoId());
-		record.setSeqNo(seqNo.toInt());
-		record.setType(lineRequest.getType().getCode());
-		record.setIsProjectManagerSet(StringUtils.ofBoolean(lineRequest.getIsProjectManagerSet().toBooleanOrNull()));
-		record.setC_Job_ID(JobId.toRepoId(lineRequest.getJobId()));
-		final Money minimumAmountThatRequiresApproval = lineRequest.getMinimumAmountThatRequiresApproval();
+		record.setSeqNo(line.getSeqNo().toInt());
+		record.setType(line.getType().getCode());
+		record.setC_Job_ID(JobId.toRepoId(line.getJobId()));
+		record.setSupervisorCheckStrategy(line.getCheckSupervisorStrategyType().getCode());
+		record.setIsProjectManagerSet(StringUtils.ofBoolean(line.getIsProjectManagerSet().toBooleanOrNull()));
+
+		final Money minimumAmountThatRequiresApproval = line.getMinimumAmountThatRequiresApproval();
 		if (minimumAmountThatRequiresApproval != null)
 		{
 			record.setMinimumAmt(minimumAmountThatRequiresApproval.toBigDecimal());
 			record.setC_Currency_ID(minimumAmountThatRequiresApproval.getCurrencyId().getRepoId());
 		}
+		else
+		{
+			record.setMinimumAmt(null);
+			record.setC_Currency_ID(-1);
+		}
+
 		InterfaceWrapperHelper.save(record);
 	}
 

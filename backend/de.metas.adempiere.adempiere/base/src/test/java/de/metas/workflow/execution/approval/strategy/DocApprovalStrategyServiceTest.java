@@ -1,9 +1,8 @@
-package de.metas.document.approval_strategy;
+package de.metas.workflow.execution.approval.strategy;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.approval_strategy.DocApprovalStrategyService.GetUsersToApproveRequest;
 import de.metas.job.JobId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -14,6 +13,14 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.WFResponsibleType;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyService.GetUsersToApproveRequest;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
+import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
+import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -25,16 +32,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.StrategyLineCreateRequest;
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.createApprovalStrategy;
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.createClient;
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.createJob;
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.role;
-import static de.metas.document.approval_strategy.DocApprovalStrategyTestHelper.user;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createApprovalStrategy;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createClient;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createJob;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.role;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.user;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DocApprovalStrategyServiceTest
 {
+	private static final WFResponsible WF_RESPONSIBLE_INVOKER = WFResponsible.builder().name("Invoker").id(WFResponsibleId.Invoker).type(WFResponsibleType.Human).build();
+
 	private DocApprovalStrategyService service;
 	private IUserBL userBL;
 
@@ -48,7 +56,11 @@ class DocApprovalStrategyServiceTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
-		this.service = new DocApprovalStrategyService(new DocApprovalStrategyRepository());
+		this.service = new DocApprovalStrategyService(
+				new DocApprovalStrategyRepository(),
+				new DocApprovalStrategyTypeHandlers(),
+				new CheckSupervisorStrategies()
+		);
 		this.userBL = Services.get(IUserBL.class);
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
@@ -97,20 +109,22 @@ class DocApprovalStrategyServiceTest
 			this.ceoId = user().name("CEO").jobId(job_CEO).build();
 
 			this.approvalStrategyId = createApprovalStrategy(
-					StrategyLineCreateRequest.builder().type(DocApprovalStrategyLineType.RequestorSupervisorsHierarchy).isProjectManagerSet(OptionalBoolean.FALSE).build(),
-					StrategyLineCreateRequest.builder().type(DocApprovalStrategyLineType.ProjectManager).isProjectManagerSet(OptionalBoolean.TRUE).build(),
-					StrategyLineCreateRequest.builder().type(DocApprovalStrategyLineType.Job).jobId(job_CFO).minimumAmountThatRequiresApproval(euro("250")).build(),
-					StrategyLineCreateRequest.builder().type(DocApprovalStrategyLineType.Job).jobId(job_CEO).minimumAmountThatRequiresApproval(euro("5000")).build()
+					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Requestor).checkSupervisorStrategyType(CheckSupervisorStrategyType.AllMathing).isProjectManagerSet(OptionalBoolean.FALSE),
+					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.ProjectManager).isProjectManagerSet(OptionalBoolean.TRUE),
+					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(job_CFO).minimumAmountThatRequiresApproval(euro("250")),
+					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(job_CEO).minimumAmountThatRequiresApproval(euro("5000"))
 			);
 		}
 
 		private GetUsersToApproveRequest.GetUsersToApproveRequestBuilder newRequest()
 		{
-			return DocApprovalStrategyService.GetUsersToApproveRequest.builder()
-					.docApprovalStrategyId(approvalStrategyId)
-					//.amountToApprove(...)
+			return GetUsersToApproveRequest.builder()
 					.evaluationDate(LocalDate.parse("2023-12-07"))
+					.docApprovalStrategyId(approvalStrategyId)
 					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
+					//.amountToApprove(...)
+					.workflowInvokerId(documentOwnerId)
+					.workflowResponsible(WF_RESPONSIBLE_INVOKER)
 					.documentOwnerId(documentOwnerId)
 					//.requestorId(...)
 					//.projectManagerId(...)
@@ -190,6 +204,5 @@ class DocApprovalStrategyServiceTest
 				assertThat(userIdsToApprove).containsOnly(projectManagerId, cfoId, ceoId);
 			}
 		}
-
 	}
 }

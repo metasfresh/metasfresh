@@ -1,29 +1,38 @@
-package de.metas.document.approval_strategy;
+package de.metas.workflow.execution.approval.strategy;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
-class UsersToApproveList implements Iterable<UserId>
+@EqualsAndHashCode
+@ToString
+public class UsersToApproveList implements Iterable<UserId>
 {
-	private final ArrayList<UserId> list = new ArrayList<>();
+	private final LinkedHashSet<UserId> list = new LinkedHashSet<>();
 
 	public static UsersToApproveList empty()
 	{
 		return new UsersToApproveList();
 	}
 
-	public static UsersToApproveList ofNullable(@Nullable final UserId userId)
+	public static UsersToApproveList of(@NonNull final UserId userId)
 	{
 		final UsersToApproveList result = empty();
 		result.add(userId);
 		return result;
+	}
+
+	public static UsersToApproveList ofNullable(@Nullable final UserId userId)
+	{
+		return userId != null ? of(userId) : empty();
 	}
 
 	public static UsersToApproveList ofCollection(@NonNull final Collection<UserId> collection)
@@ -63,8 +72,16 @@ class UsersToApproveList implements Iterable<UserId>
 			return;
 		}
 
-		list.remove(userId);
+		list.remove(userId); // remove it so we make sure it will be added last
 		list.add(userId);
+	}
+
+	public void remove(@Nullable final UserId userId)
+	{
+		if (userId != null)
+		{
+			list.remove(userId);
+		}
 	}
 
 	public ImmutableList<UserId> toList() {return ImmutableList.copyOf(list);}

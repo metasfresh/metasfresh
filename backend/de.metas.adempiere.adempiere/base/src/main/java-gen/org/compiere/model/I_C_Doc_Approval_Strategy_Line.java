@@ -264,6 +264,27 @@ public interface I_C_Doc_Approval_Strategy_Line
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
+	 * Set Check Supervisor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSupervisorCheckStrategy (@Nullable java.lang.String SupervisorCheckStrategy);
+
+	/**
+	 * Get Check Supervisor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSupervisorCheckStrategy();
+
+	ModelColumn<I_C_Doc_Approval_Strategy_Line, Object> COLUMN_SupervisorCheckStrategy = new ModelColumn<>(I_C_Doc_Approval_Strategy_Line.class, "SupervisorCheckStrategy", null);
+	String COLUMNNAME_SupervisorCheckStrategy = "SupervisorCheckStrategy";
+
+	/**
 	 * Set Type.
 	 * Type of Validation (SQL, Java Script, Java Language)
 	 *

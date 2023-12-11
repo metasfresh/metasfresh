@@ -1,8 +1,9 @@
-package de.metas.document.approval_strategy;
+package de.metas.workflow.execution.approval.strategy;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import java.util.Collection;
@@ -19,7 +20,7 @@ public class DocApprovalStrategy
 	private DocApprovalStrategy(
 			@NonNull final DocApprovalStrategyId id,
 			@NonNull final String name,
-			@NonNull final Collection<DocApprovalStrategyLine> lines)
+			@NonNull @Singular final Collection<DocApprovalStrategyLine> lines)
 	{
 		this.id = id;
 		this.name = name;
