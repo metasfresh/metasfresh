@@ -74,14 +74,8 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:
 
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %pubregistry%/metas-api:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app.compat -t %pubregistry%/metas-app:%qualifier%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.report.compat -t %pubregistry%/metas-report:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.mobile.compat -t %pubregistry%/metas-mobile:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %pubregistry%/metas-frontend:%qualifier%-compat . || @goto error
-
-@REM ----- for a rainy day -----
-@REM docker build -f docker-builds/Dockerfile.e2e -t %pubregistry%/metas-e2e:%qualifier% . || @goto error
-@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/metas-procurement-frontend:%qualifier% . || @goto error
-@REM ---------------------------
 
 
 :success
