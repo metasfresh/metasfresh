@@ -51,7 +51,6 @@ import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -208,7 +207,7 @@ public class WFProcessRepository
 		existingActivityRecords.put(id, record);
 	}
 
-	private static void updateRecord(final I_AD_WF_Activity record, final @NotNull WFActivity from)
+	private static void updateRecord(final I_AD_WF_Activity record, final @NonNull WFActivity from)
 	{
 		//record.setAD_Org_ID();
 		record.setAD_WF_Process_ID(from.getWfProcessId().getRepoId());
