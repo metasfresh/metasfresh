@@ -104,7 +104,7 @@ public class WFApprovalRequestRepository
 				.id(WFApprovalRequestId.ofRepoId(record.getAD_WF_Approval_Request_ID()))
 				//
 				.documentRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				.documentInfo(extractDocumentInfo(record))
+				.additionalDocumentInfo(extractDocumentInfo(record))
 				//
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.userId(UserId.ofRepoId(record.getAD_User_ID()))
@@ -119,9 +119,9 @@ public class WFApprovalRequestRepository
 				.build();
 	}
 
-	private static WFApprovalRequest.DocumentInfo extractDocumentInfo(@NonNull final I_AD_WF_Approval_Request record)
+	private static WFApprovalRequest.AdditionalDocumentInfo extractDocumentInfo(@NonNull final I_AD_WF_Approval_Request record)
 	{
-		return WFApprovalRequest.DocumentInfo.builder()
+		return WFApprovalRequest.AdditionalDocumentInfo.builder()
 				.docBaseType(DocBaseType.ofNullableCode(record.getDocBaseType()))
 				.documentNo(StringUtils.trimBlankToNull(record.getDocumentNo()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Vendor_ID()))
@@ -171,7 +171,7 @@ public class WFApprovalRequestRepository
 	{
 		record.setAD_Table_ID(from.getDocumentRef().getAD_Table_ID());
 		record.setRecord_ID(from.getDocumentRef().getRecord_ID());
-		updateRecord(record, from.getDocumentInfo());
+		updateRecord(record, from.getAdditionalDocumentInfo());
 
 		//
 		record.setSeqNo(from.getSeqNo().toInt());
@@ -185,7 +185,7 @@ public class WFApprovalRequestRepository
 		record.setAD_WF_Activity_ID(WFActivityId.toRepoId(from.getWfActivityId()));
 	}
 
-	private static void updateRecord(@NonNull final I_AD_WF_Approval_Request record, @Nullable final WFApprovalRequest.DocumentInfo from)
+	private static void updateRecord(@NonNull final I_AD_WF_Approval_Request record, @Nullable final WFApprovalRequest.AdditionalDocumentInfo from)
 	{
 		record.setDocBaseType(from != null && from.getDocBaseType() != null ? from.getDocBaseType().getCode() : null);
 		record.setDocumentNo(from != null ? StringUtils.trimBlankToNull(from.getDocumentNo()) : null);
