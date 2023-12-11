@@ -92,7 +92,9 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID,
 			I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 			I_M_ReceiptSchedule.COLUMNNAME_MovementDate, // this is the actual order's datePromised
-			I_M_ReceiptSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion */ })
+			I_M_ReceiptSchedule.COLUMNNAME_IsActive, /* IsActive=N shall be threaded like a deletion */
+			I_M_ReceiptSchedule.COLUMNNAME_Processed,
+			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder})
 	public void createAndFireEvent(
 			@NonNull final I_M_ReceiptSchedule schedule,
 			@NonNull final ModelChangeType timing)
@@ -198,8 +200,32 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			final BigDecimal oldQtyReserved = extractQtyReserved(oldReceiptSchedule);
 			
 			receiptScheduleUpdatedEventBuilder
-					.reservedQuantityDelta(currentQtyReserved.subtract(oldQtyReserved))
-					.orderedQuantityDelta(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity()));
+					.reservedQuantityDelta(currentQtyReserved.subtract(oldQtyReserved));
+
+			//If Order is closed and receiptSchedule row was already closed no update is needed (ignore orderedQty update)
+			if(oldReceiptSchedule.isProcessed() && receiptSchedule.isProcessed())
+			{
+				return;
+			}
+
+			//overDelivery
+			if(receiptSchedule.getQtyOrderedOverUnder().signum() > 0 && !receiptSchedule.isProcessed() && !oldReceiptSchedule.isProcessed())
+			{
+				receiptScheduleUpdatedEventBuilder
+						.orderedQuantityDelta(receiptSchedule.getQtyOrderedOverUnder().subtract(oldReceiptSchedule.getQtyOrderedOverUnder())
+													  .add(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity())));
+			}
+			//receiptSchedule closed or receiptSchedule reopen or order closed
+			else if(receiptSchedule.getQtyOrderedOverUnder().signum() != 0)
+			{
+				receiptScheduleUpdatedEventBuilder
+						.orderedQuantityDelta(receiptSchedule.getQtyOrderedOverUnder().subtract(oldReceiptSchedule.getQtyOrderedOverUnder()));
+			}
+			else
+			{
+				receiptScheduleUpdatedEventBuilder
+						.orderedQuantityDelta(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity()));
+			}
 		}
 	}
 
