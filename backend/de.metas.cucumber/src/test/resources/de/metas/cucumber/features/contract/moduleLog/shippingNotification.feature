@@ -186,3 +186,42 @@ Feature: Shipping Notifications
       | Record_ID.Identifier                  | TableName                   |
       | shippingNotificationLine_04102023_3_1 | M_Shipping_NotificationLine |
 
+
+
+  @from:cucumber
+  Scenario: Covers:
+  validate that a shipping notification can be created from an order with no harvesting details
+
+    Given metasfresh contains M_Products:
+      | Identifier           | Name                            |
+      | modularContract_prod | modularContract_prod_04102023_3 |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod    | 5.00     | PCE               | Normal                        |
+      | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | so_order   | true    | bp_moduleLogSO           | 2022-03-03  | so_04102023_3   | warehouseModularContract      | locatorModularContract      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | soLine_1   | so_order              | modularContract_prod    | 8          | modularContractTerms_2023_2             |
+
+    When the order identified by so_order is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_ol_1     | soLine_1                  | N             |
+
+    And generate M_Shipping_Notification:
+      | C_Order_ID.Identifier | PhysicalClearanceDate |
+      | so_order              | 2022-03-04            |
+    And after not more than 30s, M_Shipping_Notifications are found
+      | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier |
+      | shippingNotification_04102023_4       | so_order              | CO        | bp_moduleLogSO               | bp_moduleLogSO_04102023_3             | org_1                | locatorModularContract  |
+    And validate M_Shipping_NotificationLines:
+      | M_Shipping_NotificationLine_ID.Identifier | M_Shipping_Notification_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | MovementQty |
+      | shippingNotificationLine_04102023_3_1     | shippingNotification_04102023_4       | s_ol_1                           | modularContract_prod    | 8           |
+
+
+
