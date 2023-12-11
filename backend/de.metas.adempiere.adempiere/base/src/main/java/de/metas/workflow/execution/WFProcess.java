@@ -413,6 +413,8 @@ public class WFProcess
 
 	}
 
+	void save() {context.save(this);}
+
 	/**
 	 * Start WF Execution
 	 */
@@ -426,7 +428,7 @@ public class WFProcess
 
 		//
 		// Make sure is saved
-		context.save(this);
+		save();
 
 		final WFNodeId firstWFNodeId = workflow.getFirstNodeId();
 		changeWFStateTo(WFState.Running);

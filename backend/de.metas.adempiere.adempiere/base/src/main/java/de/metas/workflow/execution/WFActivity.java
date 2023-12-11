@@ -26,7 +26,6 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
@@ -68,6 +67,7 @@ import de.metas.workflow.WorkflowId;
 import de.metas.workflow.execution.approval.WFActivityApprovalCommand;
 import de.metas.workflow.execution.approval.WFActivityApprovalResponse;
 import de.metas.workflow.execution.approval.WFApprovalRequest;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.With;
@@ -704,9 +704,6 @@ public class WFActivity
 
 	private PerformWorkResult performWork_UserChoice()
 	{
-		final WFNode wfNode = getNode();
-		log.debug("UserChoice:AD_Column_ID={}", wfNode.getDocumentColumnId());
-
 		// Approval:
 		if (getNode().isUserApproval())
 		{
@@ -726,6 +723,12 @@ public class WFActivity
 		{
 			return PerformWorkResult.SUSPENDED;
 		}
+
+		if (getId() == null)
+		{
+			getWorkflowProcess().save();
+		}
+		final WFActivityId wfActivityId = getIdNotNull();
 
 		final TableRecordReference documentRef = document.toTableRecordReference();
 		final UserId documentOwnerId = UserId.ofRepoId(document.getDoc_User_ID());
@@ -753,7 +756,7 @@ public class WFActivity
 				.wfInvokerId(invokerId)
 				.wfResponsible(getResponsible())
 				.wfProcessId(getWfProcessId())
-				.wfActivityId(getIdNotNull())
+				.wfActivityId(wfActivityId)
 				//
 				.executeThenMapResponse(new WFActivityApprovalResponse.CaseMapper<>()
 				{
