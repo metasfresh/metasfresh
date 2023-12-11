@@ -189,8 +189,7 @@ Feature: Shipping Notifications
 
 
   @from:cucumber
-  Scenario: Covers:
-  validate that a shipping notification can be created from an order with no harvesting details
+  Scenario: Validate that a shipping notification can be created from an order with no harvesting details
 
     Given metasfresh contains M_Products:
       | Identifier           | Name                            |
@@ -204,8 +203,8 @@ Feature: Shipping Notifications
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
       | so_order   | true    | bp_moduleLogSO           | 2022-03-03  | so_04102023_3   | warehouseModularContract      | locatorModularContract      |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | soLine_1   | so_order              | modularContract_prod    | 8          | modularContractTerms_2023_2             |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | soLine_1   | so_order              | modularContract_prod    | 8          |
 
     When the order identified by so_order is completed
 
