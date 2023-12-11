@@ -23,6 +23,7 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
@@ -30,10 +31,14 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_purchase_prices_in_stock_uom_plv_v;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -43,8 +48,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
+
 public class HighPriceProvider
 {
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final HashMap<HighPriceRequest, HighPriceResponse> cache = new HashMap<>();
 
 	public HighPriceResponse getHighestPrice(final HighPriceRequest request)
@@ -59,19 +69,31 @@ public class HighPriceProvider
 
 	private Map<HighPriceRequest, HighPriceResponse> computeHighestPrices(final Set<HighPriceRequest> requests)
 	{
-		// TODO mass compute!!!
+		final CurrencyId currencyId = acctSchemaDAO.getByClientAndOrg(Env.getCtx()).getCurrencyId();
 
 		final Map<HighPriceRequest, HighPriceResponse> resultMap = new HashMap<>();
 		for (final HighPriceRequest request : requests)
 		{
-			final HighPriceResponse response = HighPriceResponse.builder()
-					.maxPurchasePrice(ProductPrice.builder()
-											  .productId(request.getProductId())
-											  .money(Money.of(5, CurrencyId.ofRepoId(318)))
-											  .uomId(UomId.EACH)
-											  .build())
-					.build();
-			resultMap.put(request, response);
+			final I_purchase_prices_in_stock_uom_plv_v record = queryBL.createQueryBuilder(I_purchase_prices_in_stock_uom_plv_v.class)
+					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, request.getProductId())
+					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_C_Currency_ID, currencyId)
+					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getEvalDate())
+					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidTo, GREATER, request.getEvalDate())
+					.orderByDescending(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ProductPriceInStockUOM)
+					.create()
+					.firstOnlyOrNull(I_purchase_prices_in_stock_uom_plv_v.class);
+
+			if(record != null)
+			{
+				final HighPriceResponse response = HighPriceResponse.builder()
+						.maxPurchasePrice(ProductPrice.builder()
+												  .productId(request.getProductId())
+												  .money(Money.of(record.getProductPriceInStockUOM(), CurrencyId.ofRepoId(318)))
+												  .uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+												  .build())
+						.build();
+				resultMap.put(request, response);
+			}
 		}
 		return resultMap;
 	}
