@@ -14,6 +14,7 @@ COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/metasfresh_s
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/configs/* ./
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
 
+# repackage version information
 COPY docker-builds/metadata/build-info.properties META-INF/
 COPY docker-builds/metadata/git.properties BOOT-INF/classes/
 RUN zip -g metasfresh_server.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
