@@ -108,7 +108,7 @@ public class MoneyTest
 		final String json = objectMapper.writeValueAsString(money);
 		System.out.println("Serialized " + money + " to " + json);
 
-		final Money moneyDeserialized = objectMapper.readValue(json, money.getClass());
+		final Money moneyDeserialized = objectMapper.readValue(json, Money.class);
 		assertThat(moneyDeserialized).isEqualTo(money);
 	}
 
