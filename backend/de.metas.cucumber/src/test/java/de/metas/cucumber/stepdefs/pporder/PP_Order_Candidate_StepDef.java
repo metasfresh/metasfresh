@@ -422,7 +422,8 @@ public class PP_Order_Candidate_StepDef
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(
+					attributeSetInstanceIdentifier);
 			softly.assertThat(expectedASI).isNotNull();
 
 			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
@@ -563,7 +564,7 @@ public class PP_Order_Candidate_StepDef
 		ppOrderCandidateRecord.setProcessed(isProcessed);
 		ppOrderCandidateRecord.setIsClosed(isClosed);
 
-		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(asiIdentifier))
 		{
 			final I_M_AttributeSetInstance asiRecord = attributeSetInstanceTable.get(asiIdentifier);

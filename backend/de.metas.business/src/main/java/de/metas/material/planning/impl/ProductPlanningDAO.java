@@ -29,12 +29,20 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
+import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,6 +64,8 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -86,8 +96,50 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	public static ProductPlanning fromRecord(@NonNull final I_PP_Product_Planning record)
 	{
 		return ProductPlanning.builder()
-				// TODO implement
+				.disallowSaving(false)
+				.id(ProductPlanningId.ofRepoId(record.getPP_Product_Planning_ID()))
+				.productPlanningSchemaId(ProductPlanningSchemaId.ofRepoIdOrNull(record.getM_Product_PlanningSchema_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
+				.workflowId(PPRoutingId.ofRepoIdOrNull(record.getAD_Workflow_ID()))
+				.isAttributeDependant(record.isAttributeDependant())
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.plannerId(UserId.ofRepoIdOrNull(record.getPlanner_ID()))
+				.isCreatePlan(record.isCreatePlan())
+				.bomVersionsId(ProductBOMVersionsId.ofRepoIdOrNull(record.getPP_Product_BOMVersions_ID()))
+				.isPickingOrder(record.isPickingOrder())
+				.isPickDirectlyIfFeasible(record.isPickDirectlyIfFeasible())
+				.isDocComplete(record.isDocComplete())
+				.seqNo(record.getSeqNo())
+				.transferTimeDays(record.getTransfertTime().intValueExact())
+				.leadTimeDays(record.getDeliveryTime_Promised().intValueExact())
+				.isManufactured(StringUtils.toBoolean(record.getIsManufactured()))
+				.isPurchased(StringUtils.toBoolean(record.getIsPurchased()))
+				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
+				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
+				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
 				.build();
+
+	}
+
+	@Nullable
+	private static Quantity extractMaxManufacturedQtyPerOrderDispo(final I_PP_Product_Planning record)
+	{
+		final BigDecimal maxManufacturedQtyPerOrderDispo = record.getMaxManufacturedQtyPerOrderDispo();
+		if (maxManufacturedQtyPerOrderDispo.signum() <= 0)
+		{
+			return null;
+		}
+
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getMaxManufacturedQtyPerOrderDispo_UOM_ID());
+		if (uomId == null)
+		{
+			return null;
+		}
+
+		return Quantitys.create(maxManufacturedQtyPerOrderDispo, uomId);
 	}
 
 	private static void updateRecord(@NonNull final I_PP_Product_Planning record, @NonNull final ProductPlanning from)

@@ -40,7 +40,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.ProductBOMVersionsId;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -73,24 +72,12 @@ public class ProductPlanning
 	boolean isPurchased;
 
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
-	// if (productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID() > 0)
-	// {
-	// 	maxQtyPerOrder = Quantitys.create(
-	// 			productPlanning.getMaxManufacturedQtyPerOrderDispo(),
-	// 			UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID()));
-	// }
 
 	@Nullable DistributionNetworkId distributionNetworkId;
 
 	@Nullable OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse;
 
 	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
-
-	@Deprecated
-	public BigDecimal getDeliveryTime_Promised() {return BigDecimal.valueOf(leadTimeDays);}
-
-	@Deprecated
-	public BigDecimal getTransfertTime() {return BigDecimal.valueOf(transferTimeDays);}
 
 	public ProductPlanning withId(final ProductPlanningId id)
 	{

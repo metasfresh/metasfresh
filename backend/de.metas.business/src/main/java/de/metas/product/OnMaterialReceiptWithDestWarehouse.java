@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -42,5 +44,8 @@ public enum OnMaterialReceiptWithDestWarehouse implements ReferenceListAwareEnum
 	@NonNull private final String code;
 
 	public static OnMaterialReceiptWithDestWarehouse ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@Nullable
+	public static OnMaterialReceiptWithDestWarehouse ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 }

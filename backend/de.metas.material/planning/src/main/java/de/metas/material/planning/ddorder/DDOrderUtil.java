@@ -67,7 +67,7 @@ public class DDOrderUtil
 		final int leadtimeDays;
 		if (productPlanningData != null)
 		{
-			leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
+			leadtimeDays = productPlanningData.getLeadTimeDays();
 			Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
 		}
 		else
@@ -93,7 +93,7 @@ public class DDOrderUtil
 		}
 		else if (productPlanningData != null)
 		{
-			transferTime = productPlanningData.getTransfertTime().intValueExact();
+			transferTime = productPlanningData.getTransferTimeDays();
 			Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
 		}
 		else
