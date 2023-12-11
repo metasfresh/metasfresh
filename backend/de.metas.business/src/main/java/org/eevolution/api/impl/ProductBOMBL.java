@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
@@ -327,5 +328,11 @@ public class ProductBOMBL implements IProductBOMBL
 				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
+	}
+
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
+	{
+		return bomDAO.retrieveValidProductBOM(request);
 	}
 }

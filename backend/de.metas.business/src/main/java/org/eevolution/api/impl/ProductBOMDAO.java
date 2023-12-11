@@ -2,12 +2,15 @@ package org.eevolution.api.impl;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -21,8 +24,10 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -31,12 +36,16 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -45,7 +54,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProductBOMDAO implements IProductBOMDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	private final CCache<ProductBOMRequest, Optional<ProductBOM>> productBOMCCache = CCache.<ProductBOMRequest, Optional<ProductBOM>> builder()
+			.tableName(I_PP_Product_BOM.Table_Name)
+			.additionalTableNameToResetFor(I_PP_Product_BOMLine.Table_Name)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(2000)
+			.build();
 
 	@Override
 	public ImmutableList<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM)
@@ -89,7 +105,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public Optional<ProductBOMId> getDefaultBOMIdByProductId(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
+		final I_M_Product product = productBL.getById(productId);
 
 		return getDefaultBOM(product)
 				.map(bom -> ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()));
@@ -98,7 +114,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public Optional<I_PP_Product_BOM> getDefaultBOMByProductId(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
+		final I_M_Product product = productBL.getById(productId);
 		return getDefaultBOM(product);
 	}
 
@@ -159,6 +175,62 @@ public class ProductBOMDAO implements IProductBOMDAO
 			}
 			return defaultBOM;
 		}
+	}
+
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
+	{
+		return productBOMCCache.getOrLoad(request,this::retrieveValidProductBOM0);
+	}
+
+	private Optional<ProductBOM> retrieveValidProductBOM0(@NonNull final ProductBOMRequest request)
+	{
+		final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
+		final UomId uomId = productBL.getStockUOMId(productId);
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_C_UOM_ID, uomId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.CurrentActive.getCode())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMUse, BOMUse.Manufacturing.getCode())
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getLocalDate())
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, GREATER, request.getLocalDate())
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_AD_Org_ID)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
+				.create()
+				.stream().findFirst()
+				.map(productBOM -> toProductBOM(productBOM, request));
+	}
+
+	private ProductBOM toProductBOM(@NonNull final I_PP_Product_BOM ppProductBom, @NonNull final ProductBOMRequest request)
+	{
+		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(ppProductBom.getPP_Product_BOM_ID());
+		final List<I_PP_Product_BOMLine> components = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.Component.getCode())
+				.create()
+				.listImmutable(I_PP_Product_BOMLine.class);
+
+		final Map<ProductDescriptor, ProductBOM> componentsProductBOMs = new HashMap<>();
+		for ( final I_PP_Product_BOMLine component : components)
+		{
+			final ProductId productId = ProductId.ofRepoId(component.getM_Product_ID());
+
+			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(productId.getRepoId(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
+			final ProductBOMRequest subBOMRequest = ProductBOMRequest.builder()
+					.productDescriptor(productDescriptor)
+					.localDate(request.getLocalDate())
+					.build();
+
+			retrieveValidProductBOM(subBOMRequest).ifPresent(subBOM -> componentsProductBOMs.put(productDescriptor, subBOM));
+		}
+		return ProductBOM.builder()
+				.productBOMId(productBOMId)
+				.components(components)
+				.componentsProductBOMs(componentsProductBOMs)
+				.build();
 	}
 
 	@Override
