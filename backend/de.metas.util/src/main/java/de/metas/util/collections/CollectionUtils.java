@@ -742,4 +742,16 @@ public final class CollectionUtils
 				.filter(elem -> value.equals(elem))
 				.count() > 1;
 	}
+
+	@Nullable
+	public static <T> T first(@NonNull final Collection<T> collection)
+	{
+		return !collection.isEmpty() ? collection.iterator().next() : null;
+	}
+
+	public static <T> Optional<T> firstOptional(@NonNull final Collection<T> collection)
+	{
+		return Optional.ofNullable(first(collection));
+	}
+
 }
