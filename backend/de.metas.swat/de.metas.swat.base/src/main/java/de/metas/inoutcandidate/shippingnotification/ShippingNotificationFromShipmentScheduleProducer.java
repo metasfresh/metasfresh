@@ -50,12 +50,6 @@ public class ShippingNotificationFromShipmentScheduleProducer
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
 		}
 
-		final YearAndCalendarId harvestingYearId = extractHarvestingYearId(salesOrder).orElse(null);
-		if (harvestingYearId == null)
-		{
-			return ProcessPreconditionsResolution.reject(MSG_M_Shipment_Notification_NoHarvestingYear);
-		}
-
 		if (!shipmentScheduleBL.anyMatchByOrderId(salesOrderId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_M_Shipment_Notification_NoShipmentSchedule);
@@ -85,7 +79,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 				.dateAcct(physicalClearanceDate)
 				.physicalClearanceDate(physicalClearanceDate)
 				.locatorId(LocatorId.ofRepoId(salesOrderRecord.getM_Warehouse_ID(), salesOrderRecord.getM_Locator_ID()))
-				.harvestingYearId(extractHarvestingYearId(salesOrderRecord).orElseThrow())
+				.harvestingYearId(extractHarvestingYearId(salesOrderRecord).orElse(null))
 				.poReference(salesOrderRecord.getPOReference())
 				.description(salesOrderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
