@@ -183,8 +183,14 @@ public class ProductPlanningSchemaBLTest
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isEqualTo(1)
 				.returnToIterable()
-				.extracting("M_Product_ID", "M_Warehouse_ID", "AD_Org_ID", "M_Product_PlanningSchema_ID", "getDistributionNetworkId")
-				.containsExactly(tuple(productId1.getRepoId(), warehouseId2.getRepoId(), orgId.getRepoId(), schema3.getId().getRepoId(), distributionNetworkId2.getRepoId()));
+				.extracting(
+						ProductPlanning::getProductId,
+						ProductPlanning::getWarehouseId,
+						ProductPlanning::getOrgId,
+						ProductPlanning::getProductPlanningSchemaId,
+						ProductPlanning::getDistributionNetworkId
+				)
+				.containsExactly(tuple(productId1, warehouseId2, orgId, schema3.getId(), distributionNetworkId2));
 	}
 
 	@Test
@@ -239,8 +245,8 @@ public class ProductPlanningSchemaBLTest
 						ProductPlanning::getProductPlanningSchemaId,
 						ProductPlanning::getDistributionNetworkId)
 				.containsExactlyInAnyOrder(
-						tuple(productId1, warehouseId1, orgId.getRepoId(), schema1.getId(), distributionNetworkId1.getRepoId()),
-						tuple(productId1, warehouseId2, orgId.getRepoId(), schema2.getId(), distributionNetworkId2.getRepoId()));
+						tuple(productId1, warehouseId1, orgId, schema1.getId(), distributionNetworkId1),
+						tuple(productId1, warehouseId2, orgId, schema2.getId(), distributionNetworkId2));
 	}
 
 	@Test

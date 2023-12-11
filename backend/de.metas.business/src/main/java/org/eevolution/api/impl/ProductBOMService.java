@@ -32,7 +32,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMVersionsCreateRequest;
 import org.eevolution.api.IProductBOMDAO;
