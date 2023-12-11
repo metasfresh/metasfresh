@@ -1,16 +1,18 @@
 package de.metas.material.planning.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -20,11 +22,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
@@ -32,6 +37,7 @@ import org.eevolution.model.X_PP_Product_Planning;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -39,16 +45,36 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProductPlanningDAO implements IProductPlanningDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 
 	@Override
-	public I_PP_Product_Planning getById(@NonNull final ProductPlanningId ppProductPlanningId)
+	public ProductPlanning getById(@NonNull final ProductPlanningId id)
 	{
-		return loadOutOfTrx(ppProductPlanningId, I_PP_Product_Planning.class);
+		return fromRecord(loadOutOfTrx(id, I_PP_Product_Planning.class));
 	}
 
 	@Override
-	public Optional<I_PP_Product_Planning> find(@NonNull final ProductPlanningQuery productPlanningQuery)
+	public void deleteById(@NonNull final ProductPlanningId id)
+	{
+		queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_Planning_ID, id)
+				.create()
+				.delete();
+	}
+
+	public static ProductPlanning fromRecord(@NonNull final I_PP_Product_Planning record)
+	{
+		return ProductPlanning.builder()
+				// TODO implement
+				.build();
+	}
+
+	private static void updateRecord(@NonNull final I_PP_Product_Planning record, @NonNull final ProductPlanning from)
+	{
+		// TODO impl
+	}
+
+	@Override
+	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery productPlanningQuery)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
 				productPlanningQuery.getOrgId(),
@@ -60,11 +86,16 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		//
 		// Fetch first matching product planning data
 		final I_PP_Product_Planning productPlanningData = queryBuilder.create().first();
-		return Optional.ofNullable(productPlanningData);
+		if (productPlanningData == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(fromRecord(productPlanningData));
 	}
 
 	@Override
-	public I_S_Resource findPlant(
+	public ResourceId findPlant(
 			final int orgRepoId,
 			final I_M_Warehouse warehouse,
 			final int productRepoId,
@@ -77,7 +108,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 			if (plantId != null)
 			{
-				return resourcesRepo.getById(plantId);
+				return plantId;
 			}
 		}
 
@@ -114,7 +145,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			}
 			else
 			{
-				return resourcesRepo.getById(plantIds.get(0));
+				return plantIds.get(0);
 			}
 		}
 	}
@@ -188,9 +219,23 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public void save(final I_PP_Product_Planning productPlanningRecord)
+	public ProductPlanning save(@NonNull final ProductPlanning productPlanning)
 	{
-		saveRecord(productPlanningRecord);
+		if (productPlanning.isDisallowSaving())
+		{
+			throw new AdempiereException("Save is disabled for " + productPlanning);
+		}
+
+		final I_PP_Product_Planning record = InterfaceWrapperHelper.loadOrNew(productPlanning.getId(), I_PP_Product_Planning.class);
+		updateRecord(record, productPlanning);
+		save(record);
+		return productPlanning.withId(ProductPlanningId.ofRepoId(record.getPP_Product_Planning_ID()));
+	}
+
+	@VisibleForTesting
+	public static void save(final I_PP_Product_Planning record)
+	{
+		saveRecord(record);
 	}
 
 	@Override
@@ -229,12 +274,62 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@NonNull
-	public List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
+	public List<ProductPlanning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
 	{
 		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVerisonId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listImmutable(I_PP_Product_Planning.class);
+				.stream()
+				.map(ProductPlanningDAO::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public List<ProductPlanning> retrieveActiveProductPlanningsBySchemaId(@NonNull final ProductPlanningSchemaId schemaId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
+				.create()
+				.stream()
+				.map(ProductPlanningDAO::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Optional<ProductPlanning> retrieveActiveProductPlanningByProductAndSchemaId(
+			@NonNull final ProductId productId,
+			@NonNull final ProductPlanningSchemaId schemaId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
+				.orderBy(I_PP_Product_Planning.COLUMN_SeqNo)
+				.create()
+				.firstOptional(I_PP_Product_Planning.class)
+				.map(ProductPlanningDAO::fromRecord);
+	}
+
+	@Override
+	public Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector()
+	{
+		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create();
+
+		// TODO move it to ProductDAO
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addNotInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_M_Product_ID, existentProductPlanning)
+				.addNotNull(I_M_Product.COLUMN_M_ProductPlanningSchema_Selector)
+				.create()
+				.iterateAndStream();
+	}
+
 }

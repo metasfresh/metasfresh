@@ -22,9 +22,8 @@ package org.eevolution.util;
  * #L%
  */
 
-import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.impl.ProductPlanningDAO;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Workflow;
@@ -125,7 +124,7 @@ public class PPProductPlanningBuilder
 
 		//
 		// Save & return
-		Services.get(IProductPlanningDAO.class).save(productPlanning);
+		ProductPlanningDAO.save(productPlanning);
 		this._productPlanning = productPlanning;
 		return _productPlanning;
 	}

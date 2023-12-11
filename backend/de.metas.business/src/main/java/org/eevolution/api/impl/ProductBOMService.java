@@ -26,6 +26,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,7 +38,6 @@ import org.eevolution.api.BOMVersionsCreateRequest;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import static org.eevolution.exceptions.ExceptionConstants.PP_PRODUCT_PLANNING_BOM_ATTR_ERROR;
@@ -69,14 +69,14 @@ public class ProductBOMService
 		return createdBOM;
 	}
 
-	public void verifyBOMAssignment(@NonNull final I_PP_Product_Planning planning, @NonNull final I_PP_Product_BOM productBom)
+	public void verifyBOMAssignment(@NonNull final ProductPlanning planning, @NonNull final I_PP_Product_BOM productBom)
 	{
 		if (!planning.isAttributeDependant())
 		{
 			return;
 		}
 
-		final AttributeSetInstanceId planningASIId = AttributeSetInstanceId.ofRepoIdOrNone(planning.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId planningASIId = planning.getAttributeSetInstanceId();
 		final AttributesKey planningAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(planningASIId).orElse(AttributesKey.NONE);
 
 		if (planningAttributesKeys.isNone())

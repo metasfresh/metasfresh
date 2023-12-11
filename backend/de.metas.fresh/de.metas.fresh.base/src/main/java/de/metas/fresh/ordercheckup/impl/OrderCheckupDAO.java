@@ -22,41 +22,44 @@ package de.metas.fresh.ordercheckup.impl;
  * #L%
  */
 
-import java.util.List;
-
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.impl.ProductPlanningDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
-import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
-import de.metas.util.Services;
+import java.util.List;
 
 public class OrderCheckupDAO implements IOrderCheckupDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
-	public I_PP_Product_Planning retrieveProductPlanningOrNull(final I_C_OrderLine orderLine)
+	public ProductPlanning retrieveProductPlanningOrNull(final I_C_OrderLine orderLine)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoIdOrAny(orderLine.getAD_Org_ID());
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> manufacturedOrTraded = queryBL.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinOr()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, X_PP_Product_Planning.ISTRADED_Yes);
 
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
+		final I_PP_Product_Planning record = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, orderLine.getM_Product_ID())
-				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
+				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.filter(manufacturedOrTraded)
 				.orderBy()
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last) // specific org first
@@ -66,26 +69,8 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.endOrderBy()
 				.create()
 				.first();
-	}
 
-	@Override
-	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
-	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final I_PP_Product_Planning productPlanning = retrieveProductPlanningOrNull(orderLine);
-		if (productPlanning == null)
-		{
-			return null;
-		}
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(productPlanning.getM_Warehouse_ID());
-		if (warehouseId == null)
-		{
-			return null; // no warehouse available
-		}
-
-		return warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID()));
+		return record != null ? ProductPlanningDAO.fromRecord(record) : null;
 	}
 
 	@Override

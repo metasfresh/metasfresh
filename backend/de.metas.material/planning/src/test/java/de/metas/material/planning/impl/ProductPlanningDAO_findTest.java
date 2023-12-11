@@ -1,10 +1,12 @@
 package de.metas.material.planning.impl;
 
-import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.business.BusinessTestHelper;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -25,11 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -91,11 +91,11 @@ public class ProductPlanningDAO_findTest
 	@Test
 	public void productPlanningWithoutASI_searchWithNoAsi()
 	{
-		final I_PP_Product_Planning productPlanning = createAttributeIndependantProductPlanning();
+		final I_PP_Product_Planning productPlanningRecord = createAttributeIndependantProductPlanning();
 
-		final I_PP_Product_Planning result = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
+		final ProductPlanning result = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
 		assertThat(result).isNotNull();
-		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
+		assertThat(result.getId().getRepoId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
 	}
 
 	@Test
@@ -112,9 +112,9 @@ public class ProductPlanningDAO_findTest
 
 		save(productPlanningWithAsi);
 
-		final I_PP_Product_Planning resultWithoutASI = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
+		final ProductPlanning resultWithoutASI = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
 		assertThat(resultWithoutASI).isNotNull();
-		assertThat(resultWithoutASI.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutASI.getPP_Product_Planning_ID());
+		assertThat(resultWithoutASI.getId()).isEqualTo(ProductPlanningId.ofRepoId(productPlanningWithoutASI.getPP_Product_Planning_ID()));
 	}
 
 	@Test
@@ -132,10 +132,10 @@ public class ProductPlanningDAO_findTest
 		productPlanningWithAsi.setIsAttributeDependant(true);
 		save(productPlanningWithAsi);
 
-		final I_PP_Product_Planning resultWithAsi = invokeFindMethodWithASI(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+		final ProductPlanning resultWithAsi = invokeFindMethodWithASI(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 
 		assertThat(resultWithAsi).isNotNull();
-		assertThatModel(resultWithAsi).hasSameIdAs(productPlanningWithAsi);
+		assertThat(resultWithAsi.getId().getRepoId()).isEqualTo(productPlanningWithAsi.getPP_Product_Planning_ID());
 	}
 
 	@Test
@@ -146,7 +146,7 @@ public class ProductPlanningDAO_findTest
 		save(productPlanningWithoutAsi);
 
 		final I_M_AttributeSetInstance organicAndMadeInCologneASI = createOrganicAndMadeInCologneASI();
-		final I_PP_Product_Planning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
+		final ProductPlanning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
 
 		assertThat(result).isNull();
 	}
@@ -159,9 +159,9 @@ public class ProductPlanningDAO_findTest
 		save(productPlanningWithoutAsi);
 
 		final I_M_AttributeSetInstance organicAndMadeInCologneASI = createOrganicASI();
-		final I_PP_Product_Planning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
+		final ProductPlanning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
 
-		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutAsi.getPP_Product_Planning_ID());
+		assertThat(result.getId().getRepoId()).isEqualTo(productPlanningWithoutAsi.getPP_Product_Planning_ID());
 	}
 
 	private I_M_Attribute createStorageRelevantListAttribute(final String name)
@@ -217,7 +217,7 @@ public class ProductPlanningDAO_findTest
 		return productPlanning;
 	}
 
-	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
+	private ProductPlanning invokeFindMethodWithASI(final int attributeSetInstanceId)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))

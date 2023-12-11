@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service.produce;
 
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -33,7 +34,6 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
@@ -52,7 +52,7 @@ public class PPOrderProducerFromCandidate
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
-	private final Map<ProductPlanningId, I_PP_Product_Planning> productPlanningCache;
+	private final Map<ProductPlanningId, ProductPlanning> productPlanningCache;
 	private final boolean createEachPPOrderInOwnTrx;
 
 	@Builder
