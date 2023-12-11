@@ -676,98 +676,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-11-14 18:40:37.087','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=621273
 ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- -- Process: AD_AttachmentEntry_ReferencedRecord_v_Download(de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download)
--- -- Table: AD_AttachmentEntry_ReferencedRecord_v
--- -- EntityType: D
--- -- 2023-11-15T09:19:13.063650500Z
--- UPDATE AD_Table_Process SET WEBUI_DocumentAction='N', WEBUI_ViewAction='N', WEBUI_ViewQuickAction='N',Updated=TO_TIMESTAMP('2023-11-15 11:19:13.063','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=540664
--- ;
-
--- -- Process: AD_AttachmentEntry_ReferencedRecord_v_Download(de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download)
--- -- Table: AD_AttachmentEntry_ReferencedRecord_v
--- -- Tab: Approval Requests(541730,D) -> Dokumente(547277,D)
--- -- Window: Approval Requests(541730,D)
--- -- EntityType: D
--- -- 2023-11-15T09:21:40.154975300Z
--- UPDATE AD_Table_Process SET AD_Tab_ID=547277, AD_Window_ID=541730,Updated=TO_TIMESTAMP('2023-11-15 11:21:40.154','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=540664
--- ;
-
--- -- Value: AD_AttachmentEntry_ReferencedRecord_v_Download
--- -- Classname: de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download
--- -- 2023-11-15T09:31:21.273735900Z
--- UPDATE AD_Process SET AllowProcessReRun='Y',Updated=TO_TIMESTAMP('2023-11-15 11:31:21.272','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=541033
--- ;
-
--- -- Process: AD_AttachmentEntry_ReferencedRecord_v_Download(de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download)
--- -- Table: AD_AttachmentEntry_ReferencedRecord_v
--- -- Tab: Approval Requests(541730,D) -> Dokumente(547277,D)
--- -- Window: Approval Requests(541730,D)
--- -- EntityType: D
--- -- 2023-11-15T09:43:32.213939200Z
--- UPDATE AD_Table_Process SET WEBUI_ViewAction='Y',Updated=TO_TIMESTAMP('2023-11-15 11:43:32.213','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=540664
--- ;
-
--- -- Process: AD_AttachmentEntry_ReferencedRecord_v_Download(de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download)
--- -- Table: AD_AttachmentEntry_ReferencedRecord_v
--- -- Tab: Approval Requests(541730,D) -> Dokumente(547277,D)
--- -- Window: Approval Requests(541730,D)
--- -- EntityType: D
--- -- 2023-11-15T09:44:21.099802900Z
--- UPDATE AD_Table_Process SET WEBUI_ViewAction='N', WEBUI_ViewQuickAction='Y', WEBUI_ViewQuickAction_Default='Y',Updated=TO_TIMESTAMP('2023-11-15 11:44:21.099','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=540664
--- ;
-
--- -- Process: AD_AttachmentEntry_ReferencedRecord_v_Download(de.metas.attachments.process.AD_AttachmentEntry_ReferencedRecord_v_Download)
--- -- Table: AD_AttachmentEntry_ReferencedRecord_v
--- -- Tab: Approval Requests(541730,D) -> Dokumente(547277,D)
--- -- Window: Approval Requests(541730,D)
--- -- EntityType: D
--- -- 2023-11-15T09:45:58.076434200Z
--- UPDATE AD_Table_Process SET WEBUI_DocumentAction='Y', WEBUI_ViewAction='Y',Updated=TO_TIMESTAMP('2023-11-15 11:45:58.076','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_Process_ID=540664
-;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- Tab: Meine Zulassungen(541736,D) -> Dokumente
 -- Table: AD_AttachmentEntry_ReferencedRecord_v
 -- 2023-11-15T15:01:50.618152600Z
@@ -797,7 +705,7 @@ INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActi
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Erstellt
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.Created
 -- 2023-11-15T15:01:50.746808500Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563230,721857,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:50.651','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag erstellt wurde',0,'D','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.',0,'Y','N','Y','Y','N','N','N','N','N','Erstellt',10,10,0,1,1,TO_TIMESTAMP('2023-11-15 17:01:50.651','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563230,721857,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:50.651','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag erstellt wurde',0,'D','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.',0,'Y','Y','Y','N','N','N','N','N','Erstellt',10,10,0,1,1,TO_TIMESTAMP('2023-11-15 17:01:50.651','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:50.749807200Z
@@ -827,7 +735,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Erstellt durch
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.CreatedBy
 -- 2023-11-15T15:01:51.261761100Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563231,721858,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:51.162','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag erstellt hat',0,'D','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.',0,'Y','N','Y','Y','N','N','N','N','N','Erstellt durch',20,20,0,1,1,TO_TIMESTAMP('2023-11-15 17:01:51.162','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563231,721858,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:51.162','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag erstellt hat',0,'D','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.',0,'Y','Y','Y','N','N','N','N','N','Erstellt durch',20,20,0,1,1,TO_TIMESTAMP('2023-11-15 17:01:51.162','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:51.263262200Z
@@ -857,7 +765,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Mandant
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.AD_Client_ID
 -- 2023-11-15T15:01:51.517975400Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563225,721859,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:51.407','YYYY-MM-DD HH24:MI:SS.US'),100,'Mandant für diese Installation.',22,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','N','N','N','N','N','Y','N','Mandant',30,1,1,TO_TIMESTAMP('2023-11-15 17:01:51.407','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563225,721859,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:51.407','YYYY-MM-DD HH24:MI:SS.US'),100,'Mandant für diese Installation.',22,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','N','N','N','N','Y','N','Mandant',30,1,1,TO_TIMESTAMP('2023-11-15 17:01:51.407','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:51.518976300Z
@@ -887,7 +795,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Organisation
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.AD_Org_ID
 -- 2023-11-15T15:01:52.732303300Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563226,721860,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:52.631','YYYY-MM-DD HH24:MI:SS.US'),100,'Organisatorische Einheit des Mandanten',22,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','N','Y','N','N','N','N','N','N','Organisation',40,1,1,TO_TIMESTAMP('2023-11-15 17:01:52.631','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563226,721860,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:52.631','YYYY-MM-DD HH24:MI:SS.US'),100,'Organisatorische Einheit des Mandanten',22,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','Y','N','N','N','N','N','N','Organisation',40,1,1,TO_TIMESTAMP('2023-11-15 17:01:52.631','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:52.733304500Z
@@ -917,7 +825,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> DB-Tabelle
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.AD_Table_ID
 -- 2023-11-15T15:01:53.845139200Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563227,721861,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:53.748','YYYY-MM-DD HH24:MI:SS.US'),100,'Database Table information',22,'D','The Database Table provides the information of the table definition',0,'Y','N','Y','N','N','N','N','N','N','DB-Tabelle',50,1,1,TO_TIMESTAMP('2023-11-15 17:01:53.748','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563227,721861,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:53.748','YYYY-MM-DD HH24:MI:SS.US'),100,'Database Table information',22,'D','The Database Table provides the information of the table definition',0,'Y','Y','N','N','N','N','N','N','DB-Tabelle',50,1,1,TO_TIMESTAMP('2023-11-15 17:01:53.748','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:53.846640600Z
@@ -947,7 +855,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Binärwert
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.BinaryData
 -- 2023-11-15T15:01:54.062816Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563228,721862,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:53.959','YYYY-MM-DD HH24:MI:SS.US'),100,'Binärer Wert',0,'D','Das Feld "Binärwert" speichert binäre Werte.',0,'Y','N','N','N','N','N','N','N','N','Binärwert',60,1,1,TO_TIMESTAMP('2023-11-15 17:01:53.959','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563228,721862,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:53.959','YYYY-MM-DD HH24:MI:SS.US'),100,'Binärer Wert',0,'D','Das Feld "Binärwert" speichert binäre Werte.',0,'Y','N','N','N','N','N','N','N','Binärwert',60,1,1,TO_TIMESTAMP('2023-11-15 17:01:53.959','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:54.063817500Z
@@ -977,7 +885,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Content type
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.ContentType
 -- 2023-11-15T15:01:54.187696600Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563229,721863,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.08','YYYY-MM-DD HH24:MI:SS.US'),100,60,'D',0,'Y','N','Y','N','N','N','N','N','N','Content type',70,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.08','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563229,721863,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.08','YYYY-MM-DD HH24:MI:SS.US'),100,60,'D',0,'Y','Y','N','N','N','N','N','N','Content type',70,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.08','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:54.188696800Z
@@ -1007,7 +915,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Beschreibung
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.Description
 -- 2023-11-15T15:01:54.287925900Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563232,721864,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.198','YYYY-MM-DD HH24:MI:SS.US'),100,2000,'D',0,'Y','N','Y','N','N','N','N','N','N','Beschreibung',80,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.198','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563232,721864,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.198','YYYY-MM-DD HH24:MI:SS.US'),100,2000,'D',0,'Y','Y','N','N','N','N','N','N','Beschreibung',80,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.198','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:54.289428700Z
@@ -1037,7 +945,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Dateiname
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.FileName
 -- 2023-11-15T15:01:54.550430800Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563233,721865,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.442','YYYY-MM-DD HH24:MI:SS.US'),100,'Name of the local file or URL',2000,'D','Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)',0,'Y','N','Y','N','N','N','N','N','N','Dateiname',90,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.442','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563233,721865,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.442','YYYY-MM-DD HH24:MI:SS.US'),100,'Name of the local file or URL',2000,'D','Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)',0,'Y','Y','N','N','N','N','N','N','Dateiname',90,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.442','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:54.551930600Z
@@ -1067,7 +975,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Aktiv
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.IsActive
 -- 2023-11-15T15:01:54.664157Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563234,721866,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.568','YYYY-MM-DD HH24:MI:SS.US'),100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','N','Y','N','N','N','N','N','N','Aktiv',100,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.568','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563234,721866,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.568','YYYY-MM-DD HH24:MI:SS.US'),100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','Y','N','N','N','N','N','N','Aktiv',100,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.568','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:54.665156400Z
@@ -1097,7 +1005,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Datensatz-ID
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.Record_ID
 -- 2023-11-15T15:01:55.047102200Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563235,721867,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.95','YYYY-MM-DD HH24:MI:SS.US'),100,'Direct internal record ID',22,'D','The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.',0,'Y','N','Y','N','N','N','N','N','N','Datensatz-ID',110,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.95','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563235,721867,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:54.95','YYYY-MM-DD HH24:MI:SS.US'),100,'Direct internal record ID',22,'D','The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.',0,'Y','Y','N','N','N','N','N','N','Datensatz-ID',110,1,1,TO_TIMESTAMP('2023-11-15 17:01:54.95','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:55.048603300Z
@@ -1127,7 +1035,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Art
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.Type
 -- 2023-11-15T15:01:55.212601300Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563236,721868,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.113','YYYY-MM-DD HH24:MI:SS.US'),100,'',1,'D','',0,'Y','N','Y','N','N','N','N','N','N','Art',120,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.113','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563236,721868,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.113','YYYY-MM-DD HH24:MI:SS.US'),100,'',1,'D','',0,'Y','Y','N','N','N','N','N','N','Art',120,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.113','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:55.213602800Z
@@ -1157,7 +1065,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> AD_AttachmentEntry_ReferencedRecord_v
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.AD_AttachmentEntry_ReferencedRecord_v_ID
 -- 2023-11-15T15:01:55.332104200Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563223,721869,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.232','YYYY-MM-DD HH24:MI:SS.US'),100,22,'D',0,'Y','N','N','N','N','N','N','N','N','AD_AttachmentEntry_ReferencedRecord_v',130,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.232','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563223,721869,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.232','YYYY-MM-DD HH24:MI:SS.US'),100,22,'D',0,'Y','N','N','N','N','N','N','N','AD_AttachmentEntry_ReferencedRecord_v',130,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.232','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:55.333104Z
@@ -1187,7 +1095,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> URL
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.URL
 -- 2023-11-15T15:01:55.451507Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563239,721870,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.344','YYYY-MM-DD HH24:MI:SS.US'),100,'Z.B. http://www.metasfresh.com',2000,'D','',0,'Y','N','Y','N','N','N','N','N','N','URL',140,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.344','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563239,721870,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.344','YYYY-MM-DD HH24:MI:SS.US'),100,'Z.B. http://www.metasfresh.com',2000,'D','',0,'Y','Y','N','N','N','N','N','N','URL',140,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.344','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:55.452508700Z
@@ -1217,7 +1125,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 -- Field: Meine Zulassungen(541736,D) -> Dokumente(547282,D) -> Editierbarer Datensatz
 -- Column: AD_AttachmentEntry_ReferencedRecord_v.AD_AttachmentEntry_ID
 -- 2023-11-15T15:01:55.575507100Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563224,721871,575858,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.479','YYYY-MM-DD HH24:MI:SS.US'),100,'Über dieses Feld kann man zu einer editierbaren Version des Datensatzes springen.',10,'D',0,'Y','N','N','N','N','N','N','N','N','Editierbarer Datensatz',150,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.479','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,563224,721871,575858,0,547282,0,TO_TIMESTAMP('2023-11-15 17:01:55.479','YYYY-MM-DD HH24:MI:SS.US'),100,'Über dieses Feld kann man zu einer editierbaren Version des Datensatzes springen.',10,'D',0,'Y','N','N','N','N','N','N','N','Editierbarer Datensatz',150,1,1,TO_TIMESTAMP('2023-11-15 17:01:55.479','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-11-15T15:01:55.576507700Z
