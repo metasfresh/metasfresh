@@ -23,6 +23,7 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
@@ -100,14 +101,17 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		return toSingleHUResponseEntity(() -> retrieveActiveHUIdBySerialNo(serialNo));
+		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo, ImmutableSet.of(X_M_HU.HUSTATUS_Active,
+																							   X_M_HU.HUSTATUS_Planning,
+																							   X_M_HU.HUSTATUS_Repair)));
 	}
 
-	private I_M_HU retrieveActiveHUIdBySerialNo(final @NonNull String serialNo)
+	@NonNull
+	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo, final ImmutableSet<String> huStatuses)
 	{
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.addHUStatusesToInclude(huStatuses)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNo)
 				.list();
 		if (hus.isEmpty())
