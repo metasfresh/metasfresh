@@ -58,6 +58,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,7 +68,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -160,22 +161,22 @@ public class M_Product_StepDef
 			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
 			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
 
-			if(Check.isNotBlank(exclusionFromSaleReason))
+			if (Check.isNotBlank(exclusionFromSaleReason))
 			{
 				bPartnerProduct.setExclusionFromSaleReason(exclusionFromSaleReason);
 			}
 
-			if(Check.isNotBlank(exclusionFromPurchaseReason))
+			if (Check.isNotBlank(exclusionFromPurchaseReason))
 			{
 				bPartnerProduct.setExclusionFromPurchaseReason(exclusionFromPurchaseReason);
 			}
 
-			if(Check.isNotBlank(productNumber))
+			if (Check.isNotBlank(productNumber))
 			{
 				bPartnerProduct.setProductNo(productNumber);
 			}
 
-			if(Check.isNotBlank(upc))
+			if (Check.isNotBlank(upc))
 			{
 				bPartnerProduct.setUPC(upc);
 			}
@@ -247,7 +248,9 @@ public class M_Product_StepDef
 
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
-		final String productName = tableRow.get("Name");
+		String productName = tableRow.get("Name");
+		productName = productName.replace("@Date@", Instant.now().toString());
+
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
 		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
@@ -401,7 +404,7 @@ public class M_Product_StepDef
 		}
 
 		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
-		if(isStocked != null)
+		if (isStocked != null)
 		{
 			productRecord.setIsStocked(isStocked);
 		}
