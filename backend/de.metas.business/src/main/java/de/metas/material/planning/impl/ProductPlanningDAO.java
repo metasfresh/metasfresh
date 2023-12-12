@@ -97,7 +97,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		return ProductPlanning.builder()
 				.disallowSaving(false)
-				.id(ProductPlanningId.ofRepoId(record.getPP_Product_Planning_ID()))
+				.id(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID())) // accept not saved records
 				.productPlanningSchemaId(ProductPlanningSchemaId.ofRepoIdOrNull(record.getM_Product_PlanningSchema_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
@@ -121,7 +121,33 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
 				.build();
+	}
 
+	private static void updateRecord(@NonNull final I_PP_Product_Planning record, @NonNull final ProductPlanning from)
+	{
+		record.setM_Product_PlanningSchema_ID(ProductPlanningSchemaId.toRepoId(from.getProductPlanningSchemaId()));
+		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setM_Warehouse_ID(WarehouseId.toRepoId(from.getWarehouseId()));
+		record.setAD_Org_ID(from.getOrgId().getRepoId());
+		record.setS_Resource_ID(ResourceId.toRepoId(from.getPlantId()));
+		record.setAD_Workflow_ID(PPRoutingId.toRepoId(from.getWorkflowId()));
+		record.setIsAttributeDependant(from.isAttributeDependant());
+		record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());
+		record.setPlanner_ID(UserId.toRepoId(from.getPlannerId()));
+		record.setIsCreatePlan(from.isCreatePlan());
+		record.setPP_Product_BOMVersions_ID(ProductBOMVersionsId.toRepoId(from.getBomVersionsId()));
+		record.setIsPickingOrder(from.isPickingOrder());
+		record.setIsPickDirectlyIfFeasible(from.isPickDirectlyIfFeasible());
+		record.setIsDocComplete(from.isDocComplete());
+		record.setSeqNo(from.getSeqNo());
+		record.setTransfertTime(BigDecimal.valueOf(from.getTransferTimeDays()));
+		record.setDeliveryTime_Promised(BigDecimal.valueOf(from.getLeadTimeDays()));
+		record.setIsManufactured(StringUtils.ofBoolean(from.isManufactured()));
+		record.setIsPurchased(StringUtils.ofBoolean(from.isPurchased()));
+		record.setMaxManufacturedQtyPerOrderDispo(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().toBigDecimal() : null);
+		record.setMaxManufacturedQtyPerOrderDispo_UOM_ID(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().getUomId().getRepoId() : -1);
+		record.setDD_NetworkDistribution_ID(DistributionNetworkId.toRepoId(from.getDistributionNetworkId()));
+		record.setOnMaterialReceiptWithDestWarehouse(from.getOnMaterialReceiptWithDestWarehouse() != null ? from.getOnMaterialReceiptWithDestWarehouse().getCode() : null);
 	}
 
 	@Nullable
@@ -140,11 +166,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		}
 
 		return Quantitys.create(maxManufacturedQtyPerOrderDispo, uomId);
-	}
-
-	private static void updateRecord(@NonNull final I_PP_Product_Planning record, @NonNull final ProductPlanning from)
-	{
-		// TODO impl
 	}
 
 	@Override
@@ -196,7 +217,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
 					orgId,
 					warehouseId,
-					(ResourceId)null,  // any plant
+					null,  // any plant
 					productId,
 					attributeSetInstanceId);
 
@@ -214,7 +235,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			}
 			else if (plantIds.size() > 1)
 			{
-				// we found more then one Plant => consider it as no plant was found
+				// we found more than one Plant => consider it as no plant was found
 				throw new NoPlantForWarehouseException(orgId, warehouseId, productId);
 			}
 			else
@@ -348,10 +369,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@NonNull
-	public List<ProductPlanning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
+	public List<ProductPlanning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVersionsId)
 	{
 		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVerisonId)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
