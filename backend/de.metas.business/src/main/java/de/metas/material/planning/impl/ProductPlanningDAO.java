@@ -171,24 +171,12 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery productPlanningQuery)
+	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery query)
 	{
-		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
-				productPlanningQuery.getOrgId(),
-				productPlanningQuery.getWarehouseId(),
-				productPlanningQuery.getPlantId(),
-				productPlanningQuery.getProductId(),
-				productPlanningQuery.getAttributeSetInstanceId());
-
-		//
-		// Fetch first matching product planning data
-		final I_PP_Product_Planning productPlanningData = queryBuilder.create().first();
-		if (productPlanningData == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(fromRecord(productPlanningData));
+		return toSql(query)
+				.create()
+				.firstOptional(I_PP_Product_Planning.class)
+				.map(ProductPlanningDAO::fromRecord);
 	}
 
 	@Override
@@ -215,13 +203,13 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
 			final WarehouseId warehouseId = warehouse != null ? WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()) : null;
 			final ProductId productId = ProductId.ofRepoId(productRepoId);
-			final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceRepoId);
-			final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
-					orgId,
-					warehouseId,
-					null,  // any plant
-					productId,
-					attributeSetInstanceId);
+			final IQueryBuilder<I_PP_Product_Planning> queryBuilder = toSql(ProductPlanningQuery.builder()
+					.orgId(orgId)
+					.warehouseId(warehouseId)
+					.plantId(null) // any plant
+					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceRepoId))
+					.productId(productId)
+					.build());
 
 			final List<ResourceId> plantIds = queryBuilder
 					.create()
@@ -247,41 +235,35 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		}
 	}
 
-	private IQueryBuilder<I_PP_Product_Planning> createQueryBuilder(
-			@Nullable final OrgId orgId,
-			@Nullable final WarehouseId warehouseId,
-			@Nullable final ResourceId resourceId,
-			@Nullable final ProductId productId,
-			@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	private IQueryBuilder<I_PP_Product_Planning> toSql(@NonNull ProductPlanningQuery query)
 	{
-		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
+		final IQueryBuilder<I_PP_Product_Planning> sqlQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter();
 
 		// Filter by context #AD_Client_ID
-		queryBuilder.addOnlyContextClient();
+		sqlQueryBuilder.addOnlyContextClient();
 
 		// Filter by AD_Org_ID: given AD_Org_ID or 0/null
-		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY, null);
+		sqlQueryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY, null);
 
 		// Filter by Warehouse: given M_Warehouse_ID or 0/null
-		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, warehouseId, null);
+		sqlQueryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId(), null);
 
 		// Filter by Plant: given S_Resource_ID or 0/null
-		if (resourceId != null)
+		if (query.getPlantId() != null)
 		{
-			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
+			sqlQueryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, query.getPlantId(), null);
 		}
 
 		// Filter by Product if provided
 
-		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+		sqlQueryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, query.getProductId(), null);
 
 		// Filter by ASI
-		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
-		queryBuilder.filter(attributesFilter);
+		sqlQueryBuilder.filter(createAttributesFilter(query.getAttributeSetInstanceId()));
 
-		return queryBuilder.orderBy()
+		return sqlQueryBuilder.orderBy()
 				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
