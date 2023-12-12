@@ -4,6 +4,8 @@
   "command": "getDocuments",
   "adPInstanceId": 10,
   "externalSystemConfigId": 100,
+  "traceId": "traceId",
+  "externalSystemChildConfigValue": "ChildConfigValue",
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",

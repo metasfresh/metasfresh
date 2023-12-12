@@ -23,9 +23,9 @@
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import org.apache.camel.Exchange;

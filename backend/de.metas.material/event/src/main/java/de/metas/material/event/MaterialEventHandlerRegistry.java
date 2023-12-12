@@ -44,12 +44,15 @@ public class MaterialEventHandlerRegistry
 
 	private final ImmutableListMultimap<Class, MaterialEventHandler> eventType2Handler;
 	private final EventLogUserService eventLogUserService;
+	private final MaterialEventObserver materialEventObserver;
 
 	public MaterialEventHandlerRegistry(
 			@NonNull final Optional<Collection<MaterialEventHandler>> handlers,
-			@NonNull final EventLogUserService eventLogUserService)
+			@NonNull final EventLogUserService eventLogUserService,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		this.eventLogUserService = eventLogUserService;
+		this.materialEventObserver = materialEventObserver;
 		eventType2Handler = createEventHandlerMapping(handlers);
 		logger.info("Registered {}", eventType2Handler);
 	}
@@ -62,7 +65,7 @@ public class MaterialEventHandlerRegistry
 		for (final MaterialEventHandler handler : handlers.orElse(ImmutableList.of()))
 		{
 			@SuppressWarnings("unchecked")
-			final Collection<Class<? extends MaterialEventHandler>> handeledEventTypes = handler.getHandeledEventType();
+			final Collection<Class<? extends MaterialEventHandler>> handeledEventTypes = handler.getHandledEventType();
 
 			for (final Class<? extends MaterialEventHandler> handeledEventType : handeledEventTypes)
 			{
@@ -89,6 +92,11 @@ public class MaterialEventHandlerRegistry
 
 				eventLogUserService.invokeHandlerAndLog(request);
 			}
+		}
+
+		if (!handlersForEventClass.isEmpty())
+		{
+			materialEventObserver.reportEventProcessed(event);
 		}
 	}
 }

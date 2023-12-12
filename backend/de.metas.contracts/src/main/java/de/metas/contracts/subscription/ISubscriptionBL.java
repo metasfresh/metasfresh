@@ -136,4 +136,6 @@ public interface ISubscriptionBL extends ISingletonService
 	 * Creates a Price change record in <code>C_SubscriptionProgress</code>
 	 */
 	void createQtyChange(@NonNull final I_C_Flatrate_Term term,	@Nullable final BigDecimal newQty);
+
+	boolean isSubscription(final I_C_OrderLine ol);
 }

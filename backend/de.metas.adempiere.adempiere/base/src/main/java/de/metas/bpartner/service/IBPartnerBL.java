@@ -55,7 +55,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
-	String getBPartnerName(final BPartnerId bpartnerId);
+	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
@@ -240,4 +240,21 @@ public interface IBPartnerBL extends ISingletonService
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 
+	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
+
+	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
+
+	/**
+	 * extracted logic from legacy code
+	 *
+	 * @param bp
+	 * @return
+	 */
+	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull BPartnerId bPartnerId);
 }

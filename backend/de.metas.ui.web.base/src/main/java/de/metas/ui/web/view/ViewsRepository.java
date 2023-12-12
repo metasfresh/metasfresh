@@ -16,7 +16,9 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.websocket.WebsocketActiveSubscriptionsIndex;
+import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
@@ -72,6 +74,8 @@ public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
+	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
+
 	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
 	private final SqlViewFactory defaultFactory;
 	private final MenuTreeRepository menuTreeRepo;
@@ -103,7 +107,8 @@ public class ViewsRepository implements IViewsRepository
 		this.menuTreeRepo = menuTreeRepo;
 		this.websocketActiveSubscriptionsIndex = websocketActiveSubscriptionsIndex;
 
-		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
+		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ViewExpirationTimeoutInMinutes, 60));
+		logger.info("viewExpirationTimeout: {} (see `{}` sysconfig)", viewExpirationTimeout, SYSCONFIG_ViewExpirationTimeoutInMinutes);
 		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
 
 		async = createAsyncExecutor();
@@ -204,7 +209,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public boolean isWatchedByFrontend(final ViewId viewId)
 	{
-		return websocketActiveSubscriptionsIndex.hasViewSubscriptions(viewId);
+		final WebsocketTopicName topicName = WebsocketTopicNames.buildViewNotificationsTopicName(viewId.toJson());
+		return websocketActiveSubscriptionsIndex.hasSubscriptionsForTopicName(topicName);
 	}
 
 	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -458,7 +464,7 @@ public class ViewsRepository implements IViewsRepository
 		{
 			try
 			{
-				final boolean watchedByFrontend = websocketActiveSubscriptionsIndex.hasViewSubscriptions(view.getViewId());
+				final boolean watchedByFrontend = isWatchedByFrontend(view.getViewId());
 				view.notifyRecordsChanged(recordRefs, watchedByFrontend);
 				notifiedCount.incrementAndGet();
 			}

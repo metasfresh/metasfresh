@@ -22,18 +22,19 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.ModelValidator;
-
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine_ShipmentSchedule
 {
+	final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	/**
 	 * Moved code here from <code>InOutCandidateValidator.orderLineChange()</code>.
 	 * @param ol
@@ -53,8 +54,10 @@ public class C_OrderLine_ShipmentSchedule
 			return;
 		}
 
-		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-		shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
-		shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
+		trxManager.runAfterCommit(() -> {
+			final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+			shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
+			shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
+		});
 	}
 }

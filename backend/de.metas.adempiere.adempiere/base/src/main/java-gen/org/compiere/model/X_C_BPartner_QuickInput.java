@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_C_BPartner_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2123287978L;
+	private static final long serialVersionUID = 1035994458L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (final Properties ctx, final int C_BPartner_QuickInput_ID, @Nullable final String trxName)
@@ -94,6 +94,30 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setC_BPartner_Location_Email (final @Nullable java.lang.String C_BPartner_Location_Email)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Email, C_BPartner_Location_Email);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Email() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Email);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Fax (final @Nullable java.lang.String C_BPartner_Location_Fax)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Fax, C_BPartner_Location_Fax);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Fax() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Fax);
+	}
+
+	@Override
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
@@ -106,6 +130,30 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Mobile (final @Nullable java.lang.String C_BPartner_Location_Mobile)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Mobile, C_BPartner_Location_Mobile);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Mobile() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Mobile);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Phone (final @Nullable java.lang.String C_BPartner_Location_Phone)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Phone, C_BPartner_Location_Phone);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Phone() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Phone);
 	}
 
 	@Override
@@ -148,6 +196,21 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public int getC_BP_Group_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
+	}
+
+	@Override
+	public void setC_DocTypeTarget_ID (final int C_DocTypeTarget_ID)
+	{
+		if (C_DocTypeTarget_ID < 1) 
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, C_DocTypeTarget_ID);
+	}
+
+	@Override
+	public int getC_DocTypeTarget_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
 	}
 
 	@Override
@@ -244,6 +307,18 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setFirstname (final @Nullable java.lang.String Firstname)
+	{
+		set_Value (COLUMNNAME_Firstname, Firstname);
+	}
+
+	@Override
+	public java.lang.String getFirstname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Firstname);
+	}
+
+	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
 		set_Value (COLUMNNAME_IsCompany, IsCompany);
@@ -292,6 +367,18 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setLastname (final @Nullable java.lang.String Lastname)
+	{
+		set_Value (COLUMNNAME_Lastname, Lastname);
+	}
+
+	@Override
+	public java.lang.String getLastname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Lastname);
+	}
+
+	@Override
 	public void setMKTG_Campaign_ID (final int MKTG_Campaign_ID)
 	{
 		if (MKTG_Campaign_ID < 1) 
@@ -331,6 +418,39 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public java.lang.String getName2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name2);
+	}
+
+	/** 
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
+	@Override
+	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
+	{
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	@Override
+	public java.lang.String getPaymentRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
 
 	@Override
@@ -397,5 +517,17 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public java.lang.String getReferrer() 
 	{
 		return get_ValueAsString(COLUMNNAME_Referrer);
+	}
+
+	@Override
+	public void setVATaxID (final @Nullable java.lang.String VATaxID)
+	{
+		set_Value (COLUMNNAME_VATaxID, VATaxID);
+	}
+
+	@Override
+	public java.lang.String getVATaxID() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxID);
 	}
 }

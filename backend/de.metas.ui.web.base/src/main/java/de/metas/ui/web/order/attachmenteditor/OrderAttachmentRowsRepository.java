@@ -24,6 +24,7 @@ package de.metas.ui.web.order.attachmenteditor;
 
 import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.order.OrderId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepository;
@@ -37,6 +38,7 @@ public class OrderAttachmentRowsRepository
 	private final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO;
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AlbertaPatientRepository albertaPatientRepository;
+	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
 	private final LookupDataSource patientLookup;
 	private final LookupDataSource payerLookup;
@@ -46,11 +48,13 @@ public class OrderAttachmentRowsRepository
 	public OrderAttachmentRowsRepository(
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
-			@NonNull final AlbertaPatientRepository albertaPatientRepository)
+			@NonNull final AlbertaPatientRepository albertaPatientRepository,
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.albertaPatientRepository = albertaPatientRepository;
+		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		patientLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 		payerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 		pharmacyLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
@@ -62,6 +66,7 @@ public class OrderAttachmentRowsRepository
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
 				.attachmentEntryRepository(attachmentEntryRepository)
 				.albertaPatientRepository(albertaPatientRepository)
+				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.patientLookup(patientLookup)
 				.payerLookup(payerLookup)
 				.pharmacyLookup(pharmacyLookup)

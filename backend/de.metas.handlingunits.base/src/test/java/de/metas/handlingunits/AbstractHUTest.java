@@ -18,9 +18,11 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.warehouse.LocatorId;
@@ -33,11 +35,21 @@ import java.util.ArrayList;
 import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.test.ErrorMessage;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -138,7 +150,6 @@ public abstract class AbstractHUTest
 	@BeforeEach
 	public final void init()
 	{
-
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
@@ -156,6 +167,9 @@ public abstract class AbstractHUTest
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		initialize();
 	}

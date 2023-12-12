@@ -9,7 +9,7 @@ import java.util.Properties;
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_Dunning_Candidate, org.compiere.model.I_Persistent 
+public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_Dunning_Candidate, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -65,15 +65,15 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set DB-Tabelle.
-		@param AD_Table_ID 
+		@param AD_Table_ID
 		Database Table information
 	  */
 	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1) 
+		if (AD_Table_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
@@ -81,7 +81,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Database Table information
 	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
 		if (ii == null)
@@ -102,15 +102,15 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
+		@param C_BPartner_ID
 		Bezeichnet einen Geschäftspartner
 	  */
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
@@ -118,7 +118,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Bezeichnet einen Geschäftspartner
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
@@ -139,15 +139,15 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Standort.
-		@param C_BPartner_Location_ID 
+		@param C_BPartner_Location_ID
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1) 
+		if (C_BPartner_Location_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
@@ -155,7 +155,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
@@ -176,15 +176,15 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Währung.
-		@param C_Currency_ID 
+		@param C_Currency_ID
 		Die Währung für diesen Eintrag
 	  */
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
@@ -192,7 +192,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Die Währung für diesen Eintrag
 	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
@@ -205,16 +205,16 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Dunning_Candidate_ID (int C_Dunning_Candidate_ID)
 	{
-		if (C_Dunning_Candidate_ID < 1) 
+		if (C_Dunning_Candidate_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Dunning_Candidate_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Dunning_Candidate_ID, Integer.valueOf(C_Dunning_Candidate_ID));
 	}
 
 	/** Get Mahnungsdisposition.
 		@return Mahnungsdisposition	  */
 	@Override
-	public int getC_Dunning_Candidate_ID () 
+	public int getC_Dunning_Candidate_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_Candidate_ID);
 		if (ii == null)
@@ -239,16 +239,16 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Dunning_Contact_ID (int C_Dunning_Contact_ID)
 	{
-		if (C_Dunning_Contact_ID < 1) 
+		if (C_Dunning_Contact_ID < 1)
 			set_Value (COLUMNNAME_C_Dunning_Contact_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Dunning_Contact_ID, Integer.valueOf(C_Dunning_Contact_ID));
 	}
 
 	/** Get Mahnkontakt.
 		@return Mahnkontakt	  */
 	@Override
-	public int getC_Dunning_Contact_ID () 
+	public int getC_Dunning_Contact_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_Contact_ID);
 		if (ii == null)
@@ -273,16 +273,16 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_DunningLevel_ID (int C_DunningLevel_ID)
 	{
-		if (C_DunningLevel_ID < 1) 
+		if (C_DunningLevel_ID < 1)
 			set_Value (COLUMNNAME_C_DunningLevel_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DunningLevel_ID, Integer.valueOf(C_DunningLevel_ID));
 	}
 
 	/** Get Mahnstufe.
 		@return Mahnstufe	  */
 	@Override
-	public int getC_DunningLevel_ID () 
+	public int getC_DunningLevel_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DunningLevel_ID);
 		if (ii == null)
@@ -291,7 +291,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Tage fällig.
-		@param DaysDue 
+		@param DaysDue
 		Anzahl der Tage der Fälligkeit (negativ: Fällig in Anzahl Tagen)
 	  */
 	@Override
@@ -304,7 +304,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Anzahl der Tage der Fälligkeit (negativ: Fällig in Anzahl Tagen)
 	  */
 	@Override
-	public int getDaysDue () 
+	public int getDaysDue ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DaysDue);
 		if (ii == null)
@@ -313,7 +313,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Nr..
-		@param DocumentNo 
+		@param DocumentNo
 		Document sequence number of the document
 	  */
 	@Override
@@ -326,13 +326,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Document sequence number of the document
 	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Datum Fälligkeit.
-		@param DueDate 
+		@param DueDate
 		Datum, zu dem Zahlung fällig wird
 	  */
 	@Override
@@ -345,13 +345,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Datum, zu dem Zahlung fällig wird
 	  */
 	@Override
-	public java.sql.Timestamp getDueDate () 
+	public java.sql.Timestamp getDueDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DueDate);
 	}
 
 	/** Set Dunning Date.
-		@param DunningDate 
+		@param DunningDate
 		Date of Dunning
 	  */
 	@Override
@@ -364,13 +364,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Date of Dunning
 	  */
 	@Override
-	public java.sql.Timestamp getDunningDate () 
+	public java.sql.Timestamp getDunningDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DunningDate);
 	}
 
 	/** Set Dunning Date Effective.
-		@param DunningDateEffective 
+		@param DunningDateEffective
 		Effective Date of Dunning
 	  */
 	@Override
@@ -383,7 +383,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Effective Date of Dunning
 	  */
 	@Override
-	public java.sql.Timestamp getDunningDateEffective () 
+	public java.sql.Timestamp getDunningDateEffective ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DunningDateEffective);
 	}
@@ -399,13 +399,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Dunning Grace Date.
 		@return Dunning Grace Date	  */
 	@Override
-	public java.sql.Timestamp getDunningGrace () 
+	public java.sql.Timestamp getDunningGrace ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DunningGrace);
 	}
 
 	/** Set Mahnzins.
-		@param DunningInterestAmt 
+		@param DunningInterestAmt
 		Prozentualer Anteil der offenen Summe, der als zusätzliche Mahngebühr ausgewiesen wird.
 	  */
 	@Override
@@ -418,7 +418,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Prozentualer Anteil der offenen Summe, der als zusätzliche Mahngebühr ausgewiesen wird.
 	  */
 	@Override
-	public java.math.BigDecimal getDunningInterestAmt () 
+	public java.math.BigDecimal getDunningInterestAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DunningInterestAmt);
 		if (bd == null)
@@ -427,7 +427,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Mahnpauschale.
-		@param FeeAmt 
+		@param FeeAmt
 		Pauschale Mahngebühr
 	  */
 	@Override
@@ -440,7 +440,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Pauschale Mahngebühr
 	  */
 	@Override
-	public java.math.BigDecimal getFeeAmt () 
+	public java.math.BigDecimal getFeeAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FeeAmt);
 		if (bd == null)
@@ -459,13 +459,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get IsDunningDocProcessed.
 		@return IsDunningDocProcessed	  */
 	@Override
-	public boolean isDunningDocProcessed () 
+	public boolean isDunningDocProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDunningDocProcessed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -482,13 +482,13 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Massenaustritt.
 		@return Massenaustritt	  */
 	@Override
-	public boolean isWriteOff () 
+	public boolean isWriteOff ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsWriteOff);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -505,7 +505,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Offener Betrag.
 		@return Offener Betrag	  */
 	@Override
-	public java.math.BigDecimal getOpenAmt () 
+	public java.math.BigDecimal getOpenAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
@@ -514,8 +514,8 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -524,31 +524,31 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Datensatz-ID.
-		@param Record_ID 
+		@param Record_ID
 		Direct internal record ID
 	  */
 	@Override
 	public void setRecord_ID (int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
@@ -556,7 +556,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		@return Direct internal record ID
 	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
 		if (ii == null)
@@ -575,7 +575,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/** Get Gesamtbetrag.
 		@return Gesamtbetrag	  */
 	@Override
-	public java.math.BigDecimal getTotalAmt () 
+	public java.math.BigDecimal getTotalAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
 		if (bd == null)

@@ -67,7 +67,7 @@ public final class DataTypes
 	 * <li>{@link BigDecimal}s are compared excluding the scale (so "1.00" equals with "1.0")
 	 * </ul>
 	 */
-	public static <T> boolean equals(final T value1, final T value2)
+	public static <T> boolean equals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (value1 == value2)
 		{
@@ -183,7 +183,7 @@ public final class DataTypes
 			}
 			else if (LookupValuesList.class == targetType)
 			{
-				return cast(convertToLookupValuesList(value));
+				return cast(convertToLookupValuesList(value, lookupDataSource));
 			}
 			else if (DateRangeValue.class == targetType)
 			{
@@ -642,7 +642,9 @@ public final class DataTypes
 	}
 
 	@Nullable
-	private static LookupValuesList convertToLookupValuesList(final Object value)
+	private static LookupValuesList convertToLookupValuesList(
+			@Nullable final Object value,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -672,7 +674,7 @@ public final class DataTypes
 			final ArrayList<LookupValue> lookupValues = new ArrayList<>(fromList.size());
 			for (final Object fromItem : fromList)
 			{
-				final LookupValue lookupValue = convertToStringLookupValue(fromItem);
+				final LookupValue lookupValue = convertToStringLookupValue(fromItem, lookupDataSource);
 				lookupValues.add(lookupValue);
 			}
 

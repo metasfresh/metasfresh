@@ -1,19 +1,20 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
+import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.Map;
 
 /*
  * #%L
@@ -37,8 +38,9 @@ import lombok.Value;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Value
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = Receiver.ReceiverBuilder.class)
 public class Receiver
 {
 	/**
@@ -46,10 +48,11 @@ public class Receiver
 	 */
 	public static Receiver of(@NonNull final ContactPerson contactPerson)
 	{
-		final String idString = CoalesceUtil.firstNotEmptyTrimmed(contactPerson.getRemoteId(), "0");
-		return Receiver.builder()
-				.id(Integer.parseInt(idString))
-				.email(contactPerson.getEmailAddessStringOrNull())
+		final int id = StringUtils.trimBlankToOptional(contactPerson.getRemoteId()).map(Integer::parseInt).orElse(0);
+
+		return builder()
+				.id(id)
+				.email(contactPerson.getEmailAddressStringOrNull())
 				.build();
 	}
 
@@ -70,8 +73,6 @@ public class Receiver
 	String source;
 	boolean active;
 	int stars;
-	Map<String, String> global_attributes;
-	Map<String, String> attributes;
 
 	@JsonCreator
 	@Builder
@@ -90,9 +91,7 @@ public class Receiver
 			@JsonProperty("deactivated") long deactivated,
 			@JsonProperty("source") String source,
 			@JsonProperty("active") boolean active,
-			@JsonProperty("stars") int stars,
-			@JsonProperty("global_attributes") @Singular Map<String, String> global_attributes,
-			@JsonProperty("attributes") @Singular Map<String, String> attributes)
+			@JsonProperty("stars") int stars)
 	{
 		this.id = id;
 		this.email = email;
@@ -109,15 +108,13 @@ public class Receiver
 		this.source = source;
 		this.active = active;
 		this.stars = stars;
-		this.global_attributes = global_attributes;
-		this.attributes = attributes;
 	}
 
 	public ContactPersonRemoteUpdate toContactPersonUpdate()
 	{
 		return ContactPersonRemoteUpdate.builder()
 				.remoteId(String.valueOf(id))
-				.address(EmailAddress.of(email, !active))
+				.address(EmailAddress.of(email, DeactivatedOnRemotePlatform.ofIsActiveFlag(active)))
 				.build();
 	}
 

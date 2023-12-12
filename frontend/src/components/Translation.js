@@ -3,14 +3,29 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import deepForceUpdate from 'react-deep-force-update';
 import { connect } from 'react-redux';
-
+import offline_de from '../utils/offlineTranslations/offline_de.js';
+import offline_en from '../utils/offlineTranslations/offline_en.js';
 import { getMessages } from '../actions/AppActions';
+import { getCurrentActiveLanguage } from '../utils/locale';
 
 // Fake singleton
 let INSTANCE = null;
 
 class Translation extends Component {
   static getMessages = () => {
+    const parsedLangs = {
+      de: offline_de,
+      en: offline_en,
+    };
+    const activeLang = getCurrentActiveLanguage();
+
+    const offlineMessages = {
+      window: {
+        error: parsedLangs[activeLang],
+      },
+    };
+    counterpart.registerTranslations('lang', offlineMessages);
+
     return getMessages().then((response) => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);

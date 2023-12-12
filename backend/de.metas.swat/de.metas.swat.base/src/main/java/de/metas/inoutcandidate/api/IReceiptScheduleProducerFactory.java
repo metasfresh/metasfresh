@@ -18,9 +18,7 @@ public interface IReceiptScheduleProducerFactory extends ISingletonService
 	 * 
 	 * NOTE: in case we ask for an asynchronous producer, that producer will always return <code>null</code> results
 	 * 
-	 * @param tableName
 	 * @param async if true then a producer which creates the records asynchronously will be returned
-	 * @return
 	 */
 	IReceiptScheduleProducer createProducer(String tableName, final boolean async);
 

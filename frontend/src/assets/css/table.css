@@ -621,6 +621,20 @@
     justify-content: space-between;
     align-items: center;
 }
+.spinner-wrapper-in-tab {
+  position: absolute;
+  width: 98%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  height: 150px;
+
+  div {
+      text-align: center;
+  }
+}
+
 
 @media only screen and (min-width: $breakpoint-md){
     .desktop {

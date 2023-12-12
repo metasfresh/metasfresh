@@ -1,11 +1,10 @@
 package de.metas.marketing.base.model;
 
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -34,7 +33,7 @@ import lombok.Value;
 public class Platform
 {
 	String name;
-	String platformGatewayId;
+	PlatformGatewayId platformGatewayId;
 	PlatformId platformId;
 	boolean requiredLocation;
 	boolean requiredMailAddress;

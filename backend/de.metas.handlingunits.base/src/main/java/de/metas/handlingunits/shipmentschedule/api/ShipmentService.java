@@ -29,11 +29,13 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -58,6 +60,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -100,7 +103,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService());
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
 		}
 		else
 		{
@@ -150,7 +153,13 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
 
-					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(asyncBatchId, shipmentScheduleIds, request.getQuantityTypeToUse(), request.getIsCompleteShipment(), request.getIsShipDateToday());
+					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(
+							asyncBatchId,
+							shipmentScheduleIds,
+							request.getQuantityTypeToUse(), 
+							request.isOnTheFlyPickToPackingInstructions(), 
+							request.getIsCompleteShipment(), 
+							request.getIsShipDateToday());
 
 					generateShipments(generateShipmentsRequest);
 
@@ -178,9 +187,9 @@ public class ShipmentService implements IShipmentService
 		{
 			final Quantity qtyOrdered = shipmentScheduleBL.getQtyOrdered(shipmentSchedule);
 			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
+			final DeliveryRule deliveryRule = DeliveryRule.ofCode(shipmentSchedule.getDeliveryRule());
 
-			if (qtyToDeliver.compareTo(qtyOrdered) < 0
-					|| !shipmentSchedule.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode()))
+			if (qtyToDeliver.compareTo(qtyOrdered) < 0 || !deliveryRule.isBasedOnDelivery())
 			{
 				canSchedulesBeFulfilled = false;
 				break;
@@ -274,6 +283,7 @@ public class ShipmentService implements IShipmentService
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
+				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
@@ -290,6 +300,7 @@ public class ShipmentService implements IShipmentService
 			@NonNull final AsyncBatchId asyncBatchId,
 			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
+			final boolean onTheFlyPickToPackingInstructions,
 			@NonNull final Boolean isCompleteShipment,
 			@Nullable final Boolean isShipDateToday)
 	{
@@ -299,6 +310,7 @@ public class ShipmentService implements IShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
 				.quantityTypeToUse(quantityTypeToUse)
+				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 				.isShipDateToday(isShipDateToday)
 				.isCompleteShipment(isCompleteShipment)
 				.build();
@@ -378,6 +390,7 @@ public class ShipmentService implements IShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyToDeliver)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.onTheFlyPickToPackingInstructions(true) // we might need to create a shipper transportation, so we need TUs
 				.isCompleteShipment(true)
 				.build();
 
@@ -386,7 +399,6 @@ public class ShipmentService implements IShipmentService
 		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyToDeliver.keySet());
 	}
 
-	@NonNull
 	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
@@ -426,10 +438,16 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if (NumberUtils.asBigDecimal(olCand.getQtyShipped(), BigDecimal.ZERO).signum() <= 0)
+			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
+				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,
 										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+				continue;
+			}
+			else if (olCand.getQtyShipped().signum() <= 0)
+			{
+				// the caller wants *no* shipment
 				continue;
 			}
 

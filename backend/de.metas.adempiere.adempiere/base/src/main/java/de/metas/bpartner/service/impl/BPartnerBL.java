@@ -26,6 +26,7 @@ import de.metas.location.ILocationBL;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -45,9 +46,12 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -56,22 +60,35 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO_DEFAULT;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO_DEFAULT;
+
 @Service
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
+	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
 
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
+
+	public BPartnerBL()
+	{
+		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
+		this.userRepository = new UserRepository();
+		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
+	}
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
 		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
 	}
 
 	@Override
@@ -87,7 +104,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public String getBPartnerName(final BPartnerId bpartnerId)
+	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
 	{
 		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
@@ -98,7 +115,7 @@ public class BPartnerBL implements IBPartnerBL
 		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue() + "_" + bpartner.getName());
 	}
 
-	private String toBPartnerDisplayName(final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
+	private String toBPartnerDisplayName(@Nullable final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
 	{
 		if (bpartnerId == null)
 		{
@@ -702,4 +719,115 @@ public class BPartnerBL implements IBPartnerBL
 		}
 	}
 
+	@Override
+	public void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation)
+	{
+		updateFromPreviousLocationNoSave(bpLocation);
+		bpartnersRepo.save(bpLocation);
+	}
+
+	@Override
+	public void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation)
+	{
+		final int previousId = bpLocation.getPrevious_ID();
+		if (previousId <= 0)
+		{
+			return;
+		}
+
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
+		if (previousLocation == null)
+		{
+			return;
+		}
+		// Don't update the defaults if the current location is still valid.
+		if (validFrom.before(Env.getDate()))
+		{
+			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
+			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
+
+			previousLocation.setIsBillToDefault(false);
+			previousLocation.setIsShipToDefault(false);
+			bpartnersRepo.save(previousLocation);
+		}
+
+		bpLocation.setIsBillTo(previousLocation.isBillTo());
+		bpLocation.setIsShipTo(previousLocation.isShipTo());
+	}
+
+	@Override
+	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
+	{
+		I_C_BPartner_Location bPartnerLocation = null;
+
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(bp);
+
+		// Set Locations
+		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
+		boolean foundLoc = false;
+		for (final I_C_BPartner_Location loc : locations)
+		{
+			if (loc.isShipTo() && loc.isActive())
+			{
+				shipLocations.add(loc);
+			}
+
+			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
+			if (bpLoc.isShipToDefault())
+			{
+				bPartnerLocation = bpLoc;
+				foundLoc = true;
+			}
+		}
+
+		// set first ship location if is not set
+		if (!foundLoc)
+		{
+			if (!shipLocations.isEmpty())
+			{
+				bPartnerLocation = shipLocations.get(0);
+			}
+			//No longer setting any location when no shipping location exists for the bpartner
+		}
+
+		if (!foundLoc)
+		{
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
+		}
+
+		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBPartnerLocation(bPartnerId, SHIP_TO_DEFAULT);
+	}
+
+	@NonNull
+	@Override
+	public Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBPartnerLocation(bPartnerId, BILL_TO_DEFAULT);
+
+	}
+	
+	@NonNull
+	private Optional<I_C_BPartner_Location> retrieveBPartnerLocation(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final IBPartnerDAO.BPartnerLocationQuery.Type type)
+	{
+		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
+																				  .builder()
+																				  .type(type)
+																				  .bpartnerId(bPartnerId)
+																				  .build()));
+	}
 }

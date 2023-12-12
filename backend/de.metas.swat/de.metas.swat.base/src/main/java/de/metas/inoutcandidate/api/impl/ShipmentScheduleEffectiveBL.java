@@ -11,7 +11,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -24,7 +23,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -32,8 +30,6 @@ import java.time.ZonedDateTime;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
-	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEffectiveBL.class);
-
 	@Override
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{

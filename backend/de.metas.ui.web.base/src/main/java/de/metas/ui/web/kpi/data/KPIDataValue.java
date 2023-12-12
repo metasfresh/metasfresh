@@ -134,7 +134,7 @@ public class KPIDataValue
 					}
 					else if (value instanceof Number)
 					{
-						final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
+						final BigDecimal bd = BigDecimal.valueOf(((Number)value).doubleValue());
 						return roundToPrecision(bd);
 					}
 					else
@@ -142,6 +142,7 @@ public class KPIDataValue
 						return value;
 					}
 				}
+				case URL:
 				case String:
 				{
 					return value.toString();

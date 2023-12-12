@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2121363189L;
+	private static final long serialVersionUID = -1013314438L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -496,6 +496,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setEMail2 (final @Nullable java.lang.String EMail2)
+	{
+		set_Value (COLUMNNAME_EMail2, EMail2);
+	}
+
+	@Override
+	public java.lang.String getEMail2() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail2);
+	}
+
+	@Override
+	public void setEMail3 (final @Nullable java.lang.String EMail3)
+	{
+		set_Value (COLUMNNAME_EMail3, EMail3);
+	}
+
+	@Override
+	public java.lang.String getEMail3() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail3);
+	}
+
+	@Override
 	public void setEMailUser (final @Nullable java.lang.String EMailUser)
 	{
 		set_Value (COLUMNNAME_EMailUser, EMailUser);
@@ -657,6 +681,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isBillToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToContact_Default);
+	}
+
+	@Override
+	public void setIsCustomUserRestriction (final boolean IsCustomUserRestriction)
+	{
+		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
+
+	@Override
+	public boolean isCustomUserRestriction() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
 	}
 
 	@Override
@@ -906,6 +941,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getMemo() 
 	{
 		return get_ValueAsString(COLUMNNAME_Memo);
+	}
+
+	@Override
+	public void setMKTG_Campaign_Default_ID (final int MKTG_Campaign_Default_ID)
+	{
+		if (MKTG_Campaign_Default_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, MKTG_Campaign_Default_ID);
+	}
+
+	@Override
+	public int getMKTG_Campaign_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_Default_ID);
 	}
 
 	@Override

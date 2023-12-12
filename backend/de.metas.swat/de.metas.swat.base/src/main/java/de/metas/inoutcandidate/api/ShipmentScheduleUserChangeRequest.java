@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import lombok.Builder;

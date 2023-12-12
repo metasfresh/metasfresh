@@ -137,31 +137,31 @@ class UserRolePermissionsBuilder
 		}
 		if (tableAccesses == null)
 		{
-			tableAccesses = userRolePermissionsRepo.retrieveTablePermissions(adRoleId);
+			tableAccesses = userRolePermissionsRepo.getTablePermissions(adRoleId);
 		}
 		if (columnAccesses == null)
 		{
-			columnAccesses = userRolePermissionsRepo.retrieveTableColumnPermissions(adRoleId);
+			columnAccesses = userRolePermissionsRepo.getTableColumnPermissions(adRoleId);
 		}
 		if (windowAccesses == null)
 		{
-			windowAccesses = userRolePermissionsRepo.retrieveWindowPermissions(adRoleId, adClientId);
+			windowAccesses = userRolePermissionsRepo.getWindowPermissions(adRoleId);
 		}
 		if (processAccesses == null)
 		{
-			processAccesses = userRolePermissionsRepo.retrieveProcessPermissions(adRoleId, adClientId);
+			processAccesses = userRolePermissionsRepo.getProcessPermissions(adRoleId);
 		}
 		if (taskAccesses == null)
 		{
-			taskAccesses = userRolePermissionsRepo.retrieveTaskPermissions(adRoleId, adClientId);
+			taskAccesses = userRolePermissionsRepo.getTaskPermissions(adRoleId);
 		}
 		if (workflowAccesses == null)
 		{
-			workflowAccesses = userRolePermissionsRepo.retrieveWorkflowPermissions(adRoleId, adClientId);
+			workflowAccesses = userRolePermissionsRepo.getWorkflowPermissions(adRoleId);
 		}
 		if (formAccesses == null)
 		{
-			formAccesses = userRolePermissionsRepo.retrieveFormPermissions(adRoleId, adClientId);
+			formAccesses = userRolePermissionsRepo.getFormPermissions(adRoleId);
 		}
 
 		if (miscPermissions == null)

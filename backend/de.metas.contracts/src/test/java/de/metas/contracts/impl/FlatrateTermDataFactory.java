@@ -6,7 +6,9 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +33,7 @@ import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -113,16 +116,24 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "flatrateConditionsNew")
-	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule,
-			final String typeConditions, @NonNull final I_C_Calendar calendar, @NonNull final String onFlatrateTermExtend,
-			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType, final boolean isCreateNoInvoice)
+	public static I_C_Flatrate_Conditions createFlatrateConditions(
+			final String name, 
+			final String invoiceRule,
+			final String typeConditions, 
+			@Nullable final UomId uomId,
+			@NonNull final I_C_Calendar calendar, 
+			@NonNull final String onFlatrateTermExtend,
+			@NonNull final I_M_PricingSystem pricingSystem, 
+			final String extensionType, 
+			final boolean isCreateNoInvoice)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setM_PricingSystem_ID(pricingSystem == null ? null : pricingSystem.getM_PricingSystem_ID());
+		conditions.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		conditions.setInvoiceRule(invoiceRule);
 		conditions.setType_Conditions(typeConditions);
 		conditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
 		conditions.setName(name);
+		conditions.setC_UOM_ID(UomId.toRepoId(uomId));
 		save(conditions);
 
 		final I_C_Flatrate_Transition transition = flatrateTransitionNew()
@@ -147,8 +158,15 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "flatrateTransitionNew")
-	private static I_C_Flatrate_Transition createFlatrateTransition(final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Calendar calendar, final int termDuration, final String termDurationUnit,
-			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoCompleteNewTerm, final String extensionType)
+	private static I_C_Flatrate_Transition createFlatrateTransition(
+			final I_C_Flatrate_Conditions conditions, 
+			@NonNull final I_C_Calendar calendar, 
+			final int termDuration, 
+			final String termDurationUnit,
+			final int deliveryInterval, 
+			final String deliveryIntervalUnit, 
+			final boolean isAutoCompleteNewTerm, 
+			final String extensionType)
 	{
 		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setC_Calendar_Contract(calendar);
@@ -189,6 +207,7 @@ public class FlatrateTermDataFactory
 		I_C_TaxCategory taxCategory;
 		I_C_Tax tax;
 
+		@Nullable
 		public ProductAndCategoryId getProductAndCategoryId()
 		{
 			return product != null
@@ -350,6 +369,7 @@ public class FlatrateTermDataFactory
 		productPrice.setPriceList(BigDecimal.valueOf(2));
 		productPrice.setPriceStd(BigDecimal.valueOf(2));
 		productPrice.setIsAttributeDependant(false);
+		productPrice.setUseScalePrice(ScalePriceUsage.DONT_USE_SCALE_PRICE.getCode());
 		save(productPrice);
 		return productPrice;
 	}

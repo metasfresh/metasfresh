@@ -1,3 +1,29 @@
+
+INSERT INTO ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help) 
+SELECT 1000363, 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, null, 'D', 'Projektart', 'Projektart', 'Type of the project', 'Type of the project with optional phases of the project with standard performance information'
+where not exists (select 1 from ad_element where ad_element_id=1000363)
+;
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+ SELECT 1000363, 'de_CH', 0, 0, 'Y', '2021-07-26 09:18:13.210779 +00:00', -1, '2021-07-26 09:18:13.210779 +00:00', -1, 'Projektart', 'Projektart', 'Type of the project', 'Type of the project with optional phases of the project with standard performance information', null, null, null, null, 'N', null, null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000363 and ad_language='de_CH');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000363, 'de_DE', 0, 0, 'Y', '2018-11-26 07:57:00.353716 +00:00', 100, '2018-11-26 07:57:00.353716 +00:00', 100, 'Projektart', 'Projektart', 'Type of the project', 'Type of the project with optional phases of the project with standard performance information', null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000363 and ad_language='de_DE');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+ SELECT 1000363, 'en_US', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Project Type', 'Project Type', 'Type of the project', 'Type of the project with optional phases of the project with standard performance information', null, null, null, null, 'Y', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000363 and ad_language='en_US');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+ SELECT 1000363, 'fr_CH', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Projektart', 'Projektart', '', '', null, null, null, null, 'Y', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000363 and ad_language='fr_CH');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+ SELECT 1000363, 'nl_NL', 0, 0, 'Y', '2021-07-26 09:18:17.647262 +00:00', -1, '2021-07-26 09:18:17.647262 +00:00', -1, 'Projektart', 'Projektart', 'Type of the project', 'Type of the project with optional phases of the project with standard performance information', null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000363 and ad_language='nl_NL');     
+
+
 -- 2019-08-14T18:17:15.690Z
 -- URL zum Konzept
 INSERT INTO AD_Menu (AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES (0,574814,541329,0,TO_TIMESTAMP('2019-08-14 20:17:15','YYYY-MM-DD HH24:MI:SS'),100,'U','project_webui','Y','N','N','Y','Y','Projekt-Verwaltung',TO_TIMESTAMP('2019-08-14 20:17:15','YYYY-MM-DD HH24:MI:SS'),100)

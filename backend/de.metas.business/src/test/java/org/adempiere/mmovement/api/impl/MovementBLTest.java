@@ -11,14 +11,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +58,7 @@ public class MovementBLTest
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
+	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
 	 */
 	@Test
 	public void test_setCActivity_warehouseActivity()
@@ -76,13 +77,13 @@ public class MovementBLTest
 
 		movementBL.setC_Activities(movementLine);
 
-		Assert.assertEquals("Movement line shall have the activity of the warehouse", activityFrom, movementLine.getC_ActivityFrom());
+		Assertions.assertEquals(activityFrom, movementLine.getC_ActivityFrom(), "Movement line shall have the activity of the warehouse");
 
-		Assert.assertEquals("Movement line shall have the activity of the warehouse dest", activityTo, movementLine.getC_Activity());
+		Assertions.assertEquals(activityTo, movementLine.getC_Activity(), "Movement line shall have the activity of the warehouse dest");
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
+	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
 	 */
 	@Test
 	public void test_setCActivity_productActivity()
@@ -95,12 +96,12 @@ public class MovementBLTest
 
 		movementBL.setC_Activities(movementLine);
 
-		Assert.assertEquals("Movement line shall have the activity of the product", productActivity, movementLine.getC_Activity());
-		Assert.assertEquals("Movement line shall have the activityFrom of the product", productActivity, movementLine.getC_ActivityFrom());
+		Assertions.assertEquals(productActivity, movementLine.getC_Activity(), "Movement line shall have the activity of the product");
+		Assertions.assertEquals(productActivity, movementLine.getC_ActivityFrom(), "Movement line shall have the activityFrom of the product");
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
+	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
 	 */
 	@Test
 	public void test_setCActivity_noActivity()
@@ -114,8 +115,8 @@ public class MovementBLTest
 
 		movementBL.setC_Activities(movementLine);
 
-		Assert.assertNull("Movement line shall have the activity null", movementLine.getC_Activity());
-		Assert.assertNull("Movement line shall have the activityFrom null", movementLine.getC_ActivityFrom());
+		Assertions.assertNull(movementLine.getC_Activity(), "Movement line shall have the activity null");
+		Assertions.assertNull(movementLine.getC_ActivityFrom(), "Movement line shall have the activityFrom null");
 	}
 
 	private I_M_Product createProduct(final I_C_Activity activity)

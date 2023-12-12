@@ -24,8 +24,10 @@ package de.metas.contracts.interceptor;
 
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
+import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
+import de.metas.contracts.inoutcandidate.ShipmentScheduleCallOrderVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLineVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -74,6 +76,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final IDocumentLocationBL documentLocationBL;
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
+	private final CallOrderContractService callOrderContractService;
 
 	@Deprecated
 	public MainValidator()
@@ -82,19 +85,22 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(ContractOrderService.class),
 				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
-				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class));
+				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
+				SpringContextHolder.instance.getBean(CallOrderContractService.class));
 	}
 
 	public MainValidator(
 			@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
-			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo)
+			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
+			@NonNull final CallOrderContractService callOrderContractService)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.groupChangesHandler = groupChangesHandler;
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
+		this.callOrderContractService = callOrderContractService;
 	}
 
 	@Override
@@ -136,6 +142,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	public void registerFactories()
 	{
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
+		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleCallOrderVetoer(callOrderContractService), I_C_OrderLine.Table_Name);
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(new SubscriptionShipmentScheduleHandler());
 
 		Services.get(IShipmentScheduleUpdater.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());

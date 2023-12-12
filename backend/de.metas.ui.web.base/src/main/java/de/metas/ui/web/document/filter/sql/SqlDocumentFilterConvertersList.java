@@ -72,6 +72,11 @@ public final class SqlDocumentFilterConvertersList
 		return defaultConverter;
 	}
 
+	public SqlDocumentFilterConverter withFallback(@NonNull final SqlDocumentFilterConverter fallback)
+	{
+		return SqlDocumentFilterConvertersListWithFallback.newInstance(this, fallback);
+	}
+
 	//
 	//
 	//

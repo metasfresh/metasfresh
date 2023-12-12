@@ -23,11 +23,11 @@
 package de.metas.camel.externalsystems.rabbitmq;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.rabbitmq.api.DispatchMessageRequest;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpMessage;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpResponse;
 import de.metas.camel.externalsystems.rabbitmq.common.CamelConstants;
-import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -49,8 +49,6 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String RABBITMQ_ENDPOINT_ID = "rabbitMQEndpointId";
 	@VisibleForTesting
-	static final String RABBITMQ_PUBLISH_ENDPOINT = "/messages/publish";
-	@VisibleForTesting
 	static final String RABBITMQ_MESSAGE_SENDER = "RabbitMQMessageSender";
 
 	public static final String RABBITMQ_DISPATCHER_ROUTE_ID = "RabbitMQDispatcher";
@@ -60,8 +58,8 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	{
 		CamelRouteUtil.setupProperties(getContext());
 
-		final String maximumRedeliveries = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_BPARTNER_RETRY_COUNT, "0");
-		final String redeliveryDelay = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_BPARTNER_RETRY_DELAY, "0");
+		final String maximumRedeliveries = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_INFO_RETRY_COUNT, "0");
+		final String redeliveryDelay = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_INFO_RETRY_DELAY, "0");
 
 		errorHandler(deadLetterChannel(RABBITMQ_DEADLETTER_ROUTE_ID)
 							 .logHandled(true)
@@ -105,7 +103,7 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
-		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 		exchange.getIn().setBody(dispatchMessageRequest.getMessage());
 	}

@@ -1,5 +1,6 @@
 package de.metas.pricing.rules;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
@@ -13,20 +14,24 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -34,7 +39,6 @@ import java.time.ZonedDateTime;
  * Calculate Price using Price List Version
  *
  * @author tsa
- *
  */
 public class PriceListVersion extends AbstractPriceListBasedRule
 {
@@ -45,8 +49,10 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
+
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
 		{
@@ -70,6 +76,13 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
+		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
+		if (productPriceSettings == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			return;
+		}
+
 		final PriceListVersionId resultPriceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version resultPriceListVersion = getOrLoadPriceListVersion(resultPriceListVersionId, ctxPriceListVersion);
 		final I_M_PriceList priceList = priceListsRepo.getById(resultPriceListVersion.getM_PriceList_ID());
@@ -77,9 +90,9 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
-		result.setPriceStd(productPrice.getPriceStd());
-		result.setPriceList(productPrice.getPriceList());
-		result.setPriceLimit(productPrice.getPriceLimit());
+		result.setPriceStd(productPriceSettings.getPriceStd());
+		result.setPriceList(productPriceSettings.getPriceList());
+		result.setPriceLimit(productPriceSettings.getPriceLimit());
 		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
@@ -116,6 +129,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 				: BooleanWithReason.falseBecause(reason);
 	}
 
+	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
 			final I_M_PriceList_Version ctxPriceListVersion,
 			final ZonedDateTime promisedDate)
@@ -139,6 +153,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		return priceListsRepo.getPriceListVersionById(priceListVersionId);
 	}
 
+	@Nullable
 	private I_M_PriceList_Version getPriceListVersionEffective(final IPricingContext pricingCtx)
 	{
 		final I_M_PriceList_Version contextPLV = pricingCtx.getM_PriceList_Version();

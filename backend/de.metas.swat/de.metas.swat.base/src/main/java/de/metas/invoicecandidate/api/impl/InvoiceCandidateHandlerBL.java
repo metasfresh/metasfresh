@@ -27,12 +27,14 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -46,6 +48,7 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -553,5 +556,26 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(icRecord);
 		handler.setInvoiceScheduleAndDateToInvoice(icRecord);
+	}
+
+	@Override
+	public void setPickedData(final I_C_Invoice_Candidate ic)
+	{
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setShipmentSchedule(ic);
+
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(ic.getM_ShipmentSchedule_ID());
+
+		if (shipmentScheduleId == null)
+		{
+			return;
+		}
+
+		final StockQtyAndUOMQty qtysPicked = invoiceCandidateRecordService.ofRecord(ic).computeQtysPicked();
+
+		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
+		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
 	}
 }
