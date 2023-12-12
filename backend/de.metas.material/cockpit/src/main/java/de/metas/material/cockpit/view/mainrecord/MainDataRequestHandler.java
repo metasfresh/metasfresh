@@ -98,6 +98,9 @@ public class MainDataRequestHandler
 		dataRecord.setPMM_QtyPromised_OnDate_AtDate(stripTrailingDecimalZeros(
 				dataRecord.getPMM_QtyPromised_OnDate_AtDate().add(dataUpdateRequest.getOfferedQty())));
 
+		dataRecord.setPMM_QtyPromised_NextDay(stripTrailingDecimalZeros(
+				dataRecord.getPMM_QtyPromised_NextDay().add(dataUpdateRequest.getOfferedQtyNextDay())));
+
 		// this column was not in the old data model
 		dataRecord.setQtyStockChange(stripTrailingDecimalZeros(
 				dataRecord.getQtyStockChange().add(dataUpdateRequest.getOnHandQtyChange())));
