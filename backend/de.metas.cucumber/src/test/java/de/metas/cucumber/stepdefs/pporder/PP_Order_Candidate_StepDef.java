@@ -41,6 +41,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -72,7 +73,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.EnqueuePPOrderCandidateRequest;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
@@ -91,7 +91,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -284,7 +284,7 @@ public class PP_Order_Candidate_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-																											   .first());
+				.first());
 
 		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
@@ -353,7 +353,7 @@ public class PP_Order_Candidate_StepDef
 		{
 			ppOrderCandidateRecord.setSeqNo(seqNo);
 		}
-		
+
 		saveRecord(ppOrderCandidateRecord);
 	}
 
@@ -373,8 +373,8 @@ public class PP_Order_Candidate_StepDef
 		final String productBOMIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_PP_Product_BOM productBOMRecord = productBOMTable.get(productBOMIdentifier);
 
-		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_Planning.COLUMNNAME_PP_Product_Planning_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_Planning productPlanningRecord = productPlanningTable.get(productPlanningIdentifier);
+		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "PP_Product_Planning_ID." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
 
 		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
 		final int qtyEntered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
@@ -392,7 +392,7 @@ public class PP_Order_Candidate_StepDef
 		final IQuery<I_PP_Order_Candidate> candidateQuery = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningRecord.getPP_Product_Planning_ID())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanning.getId())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess)
@@ -406,9 +406,9 @@ public class PP_Order_Candidate_StepDef
 
 		final I_PP_Order_Candidate locatedPPOrderCandidate =
 				StepDefUtil.tryAndWaitForItem(timeoutSec,
-											  500,
-											  () -> locatePPOrderCandidate(candidateQuery),
-											  () -> getPPOrderCandidateContextForProductId(ProductId.ofRepoId(productRecord.getM_Product_ID())));
+						500,
+						() -> locatePPOrderCandidate(candidateQuery),
+						() -> getPPOrderCandidateContextForProductId(ProductId.ofRepoId(productRecord.getM_Product_ID())));
 
 		final String orderCandidateRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order_Candidate.Table_Name);
 
@@ -445,7 +445,7 @@ public class PP_Order_Candidate_StepDef
 			softly.assertThat(ppOrderCandidate.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
 
-		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_SeqNo);
+		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + "SeqNo");
 		if (seqNo != null)
 		{
 			softly.assertThat(ppOrderCandidate.getSeqNo()).isEqualTo(seqNo);
@@ -478,8 +478,8 @@ public class PP_Order_Candidate_StepDef
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-																			 qtyEnteredColumnTrl,
-																			 qtyProcessedColumnTrl);
+					qtyEnteredColumnTrl,
+					qtyProcessedColumnTrl);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 		}
@@ -528,10 +528,10 @@ public class PP_Order_Candidate_StepDef
 
 		ppOrderCandidateRecord.setPP_Product_BOM_ID(productBOMRecord.getPP_Product_BOM_ID());
 
-		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_Planning.COLUMNNAME_PP_Product_Planning_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_Planning productPlanningRecord = productPlanningTable.get(productPlanningIdentifier);
+		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "PP_Product_Planning_ID" + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
 
-		ppOrderCandidateRecord.setPP_Product_Planning_ID(productPlanningRecord.getPP_Product_Planning_ID());
+		ppOrderCandidateRecord.setPP_Product_Planning_ID(productPlanning.getIdNotNull().getRepoId());
 
 		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
 
@@ -617,7 +617,7 @@ public class PP_Order_Candidate_StepDef
 	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
 	{
 		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
+				.orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 
 	@NonNull
@@ -648,23 +648,23 @@ public class PP_Order_Candidate_StepDef
 		final StringBuilder messageBuilder = new StringBuilder("\n");
 		candidatesForProductId
 				.forEach(candidate ->
-								 messageBuilder.append(" -> PP_Order_Candidate_ID: ")
-										 .append(candidate.getPP_Order_Candidate_ID())
-										 .append(" M_Product_ID: ")
-										 .append(candidate.getM_Product_ID())
-										 .append(" QtyEntered: ")
-										 .append(candidate.getQtyEntered())
-										 .append(" QtyProcessed: ")
-										 .append(candidate.getQtyProcessed())
-										 .append(" C_UOM_ID: ")
-										 .append(candidate.getC_UOM_ID())
-										 .append(" DatePromised: ")
-										 .append(candidate.getDatePromised())
-										 .append(" DateStartSchedule: ")
-										 .append(candidate.getDateStartSchedule())
-										 .append(" PP_Product_Planning_ID: ")
-										 .append(candidate.getPP_Product_Planning_ID())
-										 .append("\n"));
+						messageBuilder.append(" -> PP_Order_Candidate_ID: ")
+								.append(candidate.getPP_Order_Candidate_ID())
+								.append(" M_Product_ID: ")
+								.append(candidate.getM_Product_ID())
+								.append(" QtyEntered: ")
+								.append(candidate.getQtyEntered())
+								.append(" QtyProcessed: ")
+								.append(candidate.getQtyProcessed())
+								.append(" C_UOM_ID: ")
+								.append(candidate.getC_UOM_ID())
+								.append(" DatePromised: ")
+								.append(candidate.getDatePromised())
+								.append(" DateStartSchedule: ")
+								.append(candidate.getDateStartSchedule())
+								.append(" PP_Product_Planning_ID: ")
+								.append(candidate.getPP_Product_Planning_ID())
+								.append("\n"));
 
 		return "Current PP_Order_Candidates available for M_Product_ID:\n\n" + messageBuilder;
 	}

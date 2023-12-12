@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 
 public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
@@ -30,5 +32,11 @@ public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
 	public M_Warehouse_StepDefData()
 	{
 		super(I_M_Warehouse.class);
+	}
+
+	public WarehouseId getId(final String identifier)
+	{
+		final I_M_Warehouse model = get(identifier);
+		return WarehouseId.ofRepoId(model.getM_Warehouse_ID());
 	}
 }
