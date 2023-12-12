@@ -167,7 +167,6 @@ public class DataTableRow
 		return OptionalInt.of(valueInt);
 	}
 
-	@NonNull
 	public boolean getAsBoolean(@NonNull final String columnName)
 	{
 		final Boolean valueBoolean = getAsOptionalBoolean(columnName).toBooleanOrNull();

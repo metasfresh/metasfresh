@@ -328,9 +328,7 @@ public class PPOrderRequestedEventHandlerTests
 		verifyPPOrder(ppOrder);
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		assertThat(orderBOMLines)
-				.isNotEmpty()
-				.hasSize(2);
+		assertThat(orderBOMLines).hasSize(2);
 
 		assertThat(filter(ppOrder, BOMComponentType.Component)).hasSize(1);
 		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).get(0);

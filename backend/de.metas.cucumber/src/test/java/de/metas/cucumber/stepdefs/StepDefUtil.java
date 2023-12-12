@@ -284,8 +284,7 @@ public class StepDefUtil
 	private long computeDeadLineMillis(final long maxWaitSeconds)
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
-		return deadLineMillis;
+		return maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
 	}
 
 	@NonNull

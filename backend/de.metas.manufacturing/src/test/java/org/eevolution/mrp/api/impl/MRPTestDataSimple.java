@@ -91,7 +91,7 @@ public class MRPTestDataSimple
 		// createStandardProductPlannings();
 	}
 
-	private final void createPlantsWarehouses()
+	private void createPlantsWarehouses()
 	{
 		this.adOrg01 = helper.adOrg01;
 
@@ -110,7 +110,7 @@ public class MRPTestDataSimple
 		this.warehouse_rawMaterials01_locatorId = helper.warehouse_rawMaterials01_locatorId;
 	}
 
-	private final void createProductsAndBOMs()
+	private void createProductsAndBOMs()
 	{
 		this.pTomato = helper.createProduct("Tomato", uomKg);
 		this.pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
@@ -147,7 +147,7 @@ public class MRPTestDataSimple
 	/**
 	 * Creates default distribution network.
 	 */
-	private final void createDistributionNetworks()
+	private void createDistributionNetworks()
 	{
 		this.ddNetwork = helper.newDDNetwork()
 				.name("Network01")
