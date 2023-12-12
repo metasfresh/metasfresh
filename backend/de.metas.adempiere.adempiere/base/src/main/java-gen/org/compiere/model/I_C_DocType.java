@@ -99,6 +99,31 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
+
+	/**
 	 * Set Difference Document.
 	 * Document type for generating in dispute Shipments
 	 *
@@ -191,24 +216,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
 	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
-
-	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
-
-	/**
-	 * Get Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Doc_Approval_Strategy_ID();
-
-	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
-
-	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
-
-	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
-	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
 
 	/**
 	 * Set Document Type for ProForma.
@@ -400,7 +407,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Document Copies.
-	 * Number of copies to be printed
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -410,7 +417,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Document Copies.
-	 * Number of copies to be printed
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
