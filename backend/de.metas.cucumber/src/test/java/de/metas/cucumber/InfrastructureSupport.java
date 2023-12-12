@@ -22,9 +22,11 @@
 
 package de.metas.cucumber;
 
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -35,11 +37,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfrastructureSupport
 {
-	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
@@ -90,6 +92,7 @@ public class InfrastructureSupport
 
 	public void start()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		assertThat(started).isFalse(); // guard
 
 		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
@@ -162,6 +165,12 @@ public class InfrastructureSupport
 			// dbPort = 5432; was already set
 			logger.info("Assume metasfresh-db already runs at {}:{}", dbHost, dbPort);
 		}
+
+		Loggables.setDebuggingLoggable(Loggables.console("LOGGABLES> "));
+
 		started = true;
+
+		stopwatch.stop();
+		logger.info("Cucumber infrastructure started in {}", stopwatch);
 	}
 }

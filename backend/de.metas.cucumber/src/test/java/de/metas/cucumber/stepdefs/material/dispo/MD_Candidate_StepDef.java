@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -395,6 +396,8 @@ public class MD_Candidate_StepDef
 			final int timeoutSec,
 			@NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			// make sure the given md_candidate has been created
@@ -428,6 +431,9 @@ public class MD_Candidate_StepDef
 
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
+
+		stopwatch.stop();
+		logger.info("All candidates were created after {}", stopwatch);
 	}
 
 	@And("the following MD_Candidates are validated")
