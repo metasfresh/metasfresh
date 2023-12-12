@@ -44,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -86,12 +87,7 @@ public class DunningBL implements IDunningBL
 	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final BoilerPlateRepository boilerPlateRepository;
-
-	public DunningBL(final BoilerPlateRepository boilerPlateRepository)
-	{
-		this.boilerPlateRepository = boilerPlateRepository;
-	}
+	private final BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 
 	@Override
 	public IDunningConfig getDunningConfig()
