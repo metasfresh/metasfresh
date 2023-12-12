@@ -48,27 +48,27 @@ public class ProductPlanning
 	boolean disallowSaving;
 	@Nullable ProductPlanningId id;
 	@Nullable ProductPlanningSchemaId productPlanningSchemaId;
-	@Nullable ProductId productId; // = ProductId.ofRepoId(getProductPlanning().getM_Product_ID());
+	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
 
-	@Nullable ResourceId plantId;  // = ResourceId.ofRepoIdOrNull(productPlanningRecord.getS_Resource_ID());
-	@Nullable PPRoutingId workflowId; // PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID())
+	@Nullable ResourceId plantId;
+	@Nullable PPRoutingId workflowId;
 
 	boolean isAttributeDependant;
 	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
 
-	@Nullable UserId plannerId; // UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID());
+	@Nullable UserId plannerId;
 	boolean isCreatePlan;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;
 	boolean isDocComplete;
 	int seqNo;
-	int transferTimeDays; // = productPlanningData.getTransfertTime().intValueExact();
-	int leadTimeDays; //= productPlanningRecord.getDeliveryTime_Promised().intValueExact();
+	int transferTimeDays;
+	int leadTimeDays;
 
-	boolean isManufactured; // =StringUtils.toBoolean(productPlanning.getIsManufactured());
+	boolean isManufactured;
 	boolean isPurchased;
 
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
