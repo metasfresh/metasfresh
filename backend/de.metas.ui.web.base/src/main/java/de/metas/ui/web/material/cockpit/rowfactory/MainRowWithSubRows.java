@@ -8,6 +8,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -27,7 +28,6 @@ import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,13 +102,12 @@ public class MainRowWithSubRows
 
 	public MainRowWithSubRows withHighestPrices(@NonNull final HighPriceProvider highPriceProvider, @NonNull final MainRowBucketId productIdAndDate)
 	{
-
 		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
-				.productId(productIdAndDate.getProductId())
-						.evalDate(productIdAndDate.getDate())
-								.build();
-		//TODO add/set column
-		final BigDecimal price = highPriceProvider.getHighestPrice(request).getMaxPurchasePrice().toBigDecimal();
+				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
+				.evalDate(productIdAndDate.getDate())
+				.build();
+
+		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
 		return this;
 	}
 

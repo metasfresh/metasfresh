@@ -9,6 +9,7 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.money.Money;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -342,6 +343,54 @@ public class MaterialCockpitRow implements IViewRow
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final String procurementStatus;
 
+	public static final String FIELDNAME_HighestPurchasePrice_AtDate = "HighestPurchasePrice_AtDate";
+	@ViewColumn(fieldName = FIELDNAME_HighestPurchasePrice_AtDate, //
+			captionKey = FIELDNAME_HighestPurchasePrice_AtDate, //
+			widgetType = DocumentFieldWidgetType.CostPrice, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 290, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal highestPurchasePrice_AtDate;
+
+	public static final String FIELDNAME_QtyOrdered_PurchaseOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate;
+	@ViewColumn(fieldName = FIELDNAME_QtyOrdered_PurchaseOrder_AtDate, //
+			captionKey = FIELDNAME_QtyOrdered_PurchaseOrder_AtDate, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 300, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal qtyOrdered_PurchaseOrder_AtDate;
+
+	public static final String FIELDNAME_QtyOrdered_SalesOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtyOrdered_SalesOrder_AtDate;
+	@ViewColumn(fieldName = FIELDNAME_QtyOrdered_SalesOrder_AtDate, //
+			captionKey = FIELDNAME_QtyOrdered_SalesOrder_AtDate, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 310, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal qtyOrdered_SalesOrder_AtDate;
+
+	public static final String FIELDNAME_AvailableQty_AtDate = "AvailableQty_AtDate";
+	@ViewColumn(fieldName = FIELDNAME_AvailableQty_AtDate, //
+			captionKey = FIELDNAME_AvailableQty_AtDate, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 320, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal availableQty_AtDate;
+
+	public static final String FIELDNAME_RemainingStock_AtDate = "RemainingStock_AtDate";
+	@ViewColumn(fieldName = FIELDNAME_RemainingStock_AtDate, //
+			captionKey = FIELDNAME_RemainingStock_AtDate, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 330, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal remainingStock_AtDate;
+
+	public static final String FIELDNAME_PMM_QtyPromised_NextDay = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_NextDay;
+	@ViewColumn(fieldName = FIELDNAME_PMM_QtyPromised_NextDay, //
+			captionKey = FIELDNAME_PMM_QtyPromised_NextDay, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 340, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal pmm_QtyPromised_NextDay;
+
 	private final DocumentId documentId;
 
 	private final DocumentPath documentPath;
@@ -385,6 +434,12 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate date,
 			@Nullable final String procurementStatus,
+			final Money highestPurchasePrice_AtDate,
+			final Quantity qtyOrdered_PurchaseOrder_AtDate,
+			final Quantity qtyOrdered_SalesOrder_AtDate,
+			final Quantity availableQty_AtDate,
+			final Quantity remainingStock_AtDate,
+			final Quantity pmm_QtyPromised_NextDay,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
@@ -454,6 +509,12 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
+		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
+		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
+		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
 				pmmQtyPromisedAtDate,
@@ -472,7 +533,12 @@ public class MaterialCockpitRow implements IViewRow
 				qtyDemandSumAtDate,
 				qtyStockCurrentAtDate,
 				qtyExpectedSurplusAtDate,
-				qtyOnHandStock);
+				qtyOnHandStock,
+				qtyOrdered_PurchaseOrder_AtDate,
+				qtyOrdered_SalesOrder_AtDate,
+				availableQty_AtDate,
+				remainingStock_AtDate,
+				pmm_QtyPromised_NextDay);
 		assertNullOrCommonUomId(quantitiesToVerify);
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
@@ -523,7 +589,13 @@ public class MaterialCockpitRow implements IViewRow
 			final Instant qtyInventoryTimeAtDate,
 			final Quantity qtyExpectedSurplusAtDate,
 			final Quantity qtyOnHandStock,
-			@Nullable final String procurementStatus,
+			final String procurementStatus,
+			final Money highestPurchasePrice_AtDate,
+			final Quantity qtyOrdered_PurchaseOrder_AtDate,
+			final Quantity  qtyOrdered_SalesOrder_AtDate,
+			final Quantity  availableQty_AtDate,
+			final Quantity remainingStock_AtDate,
+			final Quantity pmm_QtyPromised_NextDay,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
@@ -592,6 +664,12 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
+		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
+		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
+		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
@@ -611,7 +689,6 @@ public class MaterialCockpitRow implements IViewRow
 			@Nullable final Instant qtyInventoryTimeAtDate,
 			@Nullable final Quantity qtyStockCurrentAtDate,
 			@Nullable final Quantity qtyOnHandStock,
-			@Nullable final String procurementStatus,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
@@ -686,7 +763,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
-		this.procurementStatus = procurementStatus;
+		this.procurementStatus = null;
+		this.highestPurchasePrice_AtDate = null;
+		this.qtyOrdered_PurchaseOrder_AtDate = null;
+		this.qtyOrdered_SalesOrder_AtDate = null;
+		this.availableQty_AtDate = null;
+		this.remainingStock_AtDate = null;
+		this.pmm_QtyPromised_NextDay = null;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);

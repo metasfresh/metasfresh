@@ -2,6 +2,11 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.common.util.time.SystemTime;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -24,7 +29,10 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -92,6 +100,8 @@ public class MaterialCockpitRowFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.class,new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+
 		attributesTestHelper = new AttributesTestHelper();
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
@@ -100,6 +110,11 @@ public class MaterialCockpitRowFactoryTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+		save(acctSchema);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
 
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");

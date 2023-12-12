@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1989481417L;
+	private static final long serialVersionUID = 1480680640L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (final Properties ctx, final int MD_Cockpit_ID, @Nullable final String trxName)
@@ -42,7 +42,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getAttributesKey() 
+	public String getAttributesKey()
 	{
 		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
@@ -57,6 +57,34 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public java.sql.Timestamp getDateGeneral() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateGeneral);
+	}
+
+	@Override
+	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
+	{
+		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
+	}
+
+	@Override
+	public BigDecimal getMDCandidateQtyStock_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
 	}
 
 	@Override
@@ -90,30 +118,15 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	public void setPMM_QtyPromised_NextDay (final @Nullable BigDecimal PMM_QtyPromised_NextDay)
 	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+		set_Value (COLUMNNAME_PMM_QtyPromised_NextDay, PMM_QtyPromised_NextDay);
 	}
 
 	@Override
-	public int getMD_Cockpit_ID() 
+	public BigDecimal getPMM_QtyPromised_NextDay() 
 	{
-		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
-	}
-
-	@Override
-	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
-	{
-		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
-	}
-
-	@Override
-	public BigDecimal getMDCandidateQtyStock_AtDate() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PMM_QtyPromised_NextDay);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -137,7 +150,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getProductName() 
+	public String getProductName()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
@@ -149,7 +162,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getProductValue() 
+	public String getProductValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
@@ -267,6 +280,32 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public BigDecimal getQtyOnHandCount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOnHandCount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_PurchaseOrder_AtDate (final @Nullable BigDecimal QtyOrdered_PurchaseOrder_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate, QtyOrdered_PurchaseOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_PurchaseOrder_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_SalesOrder_AtDate (final @Nullable BigDecimal QtyOrdered_SalesOrder_AtDate)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_SalesOrder_AtDate, QtyOrdered_SalesOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_SalesOrder_AtDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_SalesOrder_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

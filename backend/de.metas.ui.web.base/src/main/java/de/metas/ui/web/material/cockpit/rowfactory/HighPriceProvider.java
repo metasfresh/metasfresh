@@ -26,11 +26,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -40,7 +39,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_purchase_prices_in_stock_uom_plv_v;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +73,9 @@ public class HighPriceProvider
 		final Map<HighPriceRequest, HighPriceResponse> resultMap = new HashMap<>();
 		for (final HighPriceRequest request : requests)
 		{
+			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
 			final I_purchase_prices_in_stock_uom_plv_v record = queryBL.createQueryBuilder(I_purchase_prices_in_stock_uom_plv_v.class)
-					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, request.getProductId())
+					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, productId)
 					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_C_Currency_ID, currencyId)
 					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getEvalDate())
 					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidTo, GREATER, request.getEvalDate())
@@ -83,17 +83,12 @@ public class HighPriceProvider
 					.create()
 					.firstOnlyOrNull(I_purchase_prices_in_stock_uom_plv_v.class);
 
-			if(record != null)
-			{
-				final HighPriceResponse response = HighPriceResponse.builder()
-						.maxPurchasePrice(ProductPrice.builder()
-												  .productId(request.getProductId())
-												  .money(Money.of(record.getProductPriceInStockUOM(), CurrencyId.ofRepoId(318)))
-												  .uomId(UomId.ofRepoId(record.getC_UOM_ID()))
-												  .build())
-						.build();
-				resultMap.put(request, response);
-			}
+			final BigDecimal price = record != null ? record.getProductPriceInStockUOM() : BigDecimal.ZERO;
+			final HighPriceResponse response = HighPriceResponse.builder()
+					.maxPurchasePrice(Money.of(price, currencyId))
+					.build();
+			resultMap.put(request, response);
+
 		}
 		return resultMap;
 	}
@@ -107,9 +102,10 @@ public class HighPriceProvider
 	private static HighPriceRequest toHighPriceRequest(final I_MD_Cockpit record)
 	{
 		return HighPriceRequest.builder()
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.productDescriptor(ProductDescriptor.forProductAndAttributes(
+						record.getM_Product_ID(),
+						AttributesKey.ofString(record.getAttributesKey())))
 				.evalDate(record.getDateGeneral().toLocalDateTime().toLocalDate())
-				.attributesKey(AttributesKey.ofString(record.getAttributesKey()))
 				.build();
 	}
 
@@ -118,8 +114,7 @@ public class HighPriceProvider
 	@Builder
 	public static class HighPriceRequest
 	{
-		@NonNull ProductId productId;
-		@Nullable AttributesKey attributesKey;
+		@NonNull ProductDescriptor productDescriptor;
 		@NonNull LocalDate evalDate;
 	}
 
@@ -127,6 +122,6 @@ public class HighPriceProvider
 	@Builder
 	public static class HighPriceResponse
 	{
-		@NonNull ProductPrice maxPurchasePrice;
+		@NonNull Money maxPurchasePrice;
 	}
 }

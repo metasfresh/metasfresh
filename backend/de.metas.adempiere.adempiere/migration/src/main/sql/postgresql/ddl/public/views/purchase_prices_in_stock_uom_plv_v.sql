@@ -36,7 +36,7 @@ SELECT pl.m_pricelist_id,
                pp.pricestd,
                pp.c_uom_id,
                (SELECT p.c_uom_id FROM m_product p WHERE pp.m_product_id = p.m_product_id)
-           ) AS priceStdInStockUOM,
+           ) AS ProductPriceInStockUOM,
        (SELECT p.c_uom_id FROM m_product p WHERE pp.m_product_id = p.m_product_id) AS C_UOM_ID
 FROM m_productprice pp
          JOIN m_pricelist_version plv ON plv.m_pricelist_version_id = pp.m_pricelist_version_id
