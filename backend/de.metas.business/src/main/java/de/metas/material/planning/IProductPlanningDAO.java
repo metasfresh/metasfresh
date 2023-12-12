@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
+	Optional<ProductPlanning> retrieveManufacturingOrTradingPlanning(@NonNull ProductId productId, @NonNull OrgId orgId);
+
 	@Value
 	class ProductPlanningQuery
 	{

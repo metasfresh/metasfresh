@@ -432,4 +432,29 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.iterateAndStream();
 	}
 
+	@Override
+	public Optional<ProductPlanning> retrieveManufacturingOrTradingPlanning(@NonNull final ProductId productId, @NonNull final OrgId orgId)
+	{
+		final ICompositeQueryFilter<I_PP_Product_Planning> manufacturedOrTraded = queryBL.createCompositeQueryFilter(I_PP_Product_Planning.class)
+				.setJoinOr()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, X_PP_Product_Planning.ISTRADED_Yes);
+
+		final I_PP_Product_Planning record = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
+				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.filter(manufacturedOrTraded)
+				.orderBy()
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last) // specific org first
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_IsManufactured, Direction.Descending, Nulls.Last) // 'Y' first, NULL last
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_IsTraded, Direction.Descending, Nulls.Last) // 'Y' first, NULL last
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first();
+
+		return record != null ? Optional.of(ProductPlanningDAO.fromRecord(record)) : Optional.empty();
+	}
+
 }

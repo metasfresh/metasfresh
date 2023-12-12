@@ -24,22 +24,13 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 
 import java.util.List;
 
 public interface IOrderCheckupDAO extends ISingletonService
 {
-	/**
-	 * For the given order line, return a {@link ProductPlanning} which has either <code>IsManufactured='Y'</code> or, if there is not such, with has <code>IsTraded='Y'</code>.
-	 *
-	 * @return product data planning or <code>null</code>.
-	 */
-	ProductPlanning retrieveProductPlanningOrNull(I_C_OrderLine orderLine);
-
 	/**
 	 * Retrieves all (active or not) reports for given order
 	 */
