@@ -104,7 +104,7 @@ public class DDOrderPojoSupplier
 		// Indicates that a shipment for a Order Distribution is past due. You should either delay the orders created the requirement for the product
 		// or expedite them when the product does arrive.
 
-		if (productPlanningData.getDistributionNetworkId() != null)
+		if (productPlanningData.getDistributionNetworkId() == null)
 		{
 			// Indicates that the Product Planning Data for this product does not specify a valid network distribution.
 			Loggables.addLog(
