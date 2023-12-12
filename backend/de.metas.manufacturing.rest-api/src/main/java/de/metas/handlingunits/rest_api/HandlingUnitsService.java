@@ -34,6 +34,7 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -48,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.HUIdAndQRCode;
 import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -392,7 +394,21 @@ public class HandlingUnitsService
 	{
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.request(request)
+				.huIdAndQRCodes(ImmutableList.of(HUIdAndQRCode.builder()
+														 .huId(request.getHuId())
+														 .huQRCode(request.getHuQRCode())
+														 .build()))
+				.targetQRCode(request.getTargetQRCode())
+				.build()
+				.execute();
+	}
+
+	public void bulkMove(@NonNull final List<HUIdAndQRCode> huIdAndQRCodes, @NonNull final GlobalQRCode targetQRCode)
+	{
+		MoveHUCommand.builder()
+				.huQRCodesService(huQRCodeService)
+				.huIdAndQRCodes(huIdAndQRCodes)
+				.targetQRCode(targetQRCode)
 				.build()
 				.execute();
 	}

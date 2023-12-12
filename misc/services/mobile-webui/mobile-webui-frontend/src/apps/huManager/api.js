@@ -50,3 +50,13 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
 export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
   return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { clearanceStatus, clearanceNote });
 }
+
+export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
+  return axios
+    .post(`${huAPIBasePath}/bulk/move`, {
+      huQRCodes: huQRCodes,
+      targetQRCode: toQRCodeString(targetQRCode),
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};

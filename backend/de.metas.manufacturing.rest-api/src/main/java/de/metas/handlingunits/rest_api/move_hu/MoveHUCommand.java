@@ -29,23 +29,22 @@ public class MoveHUCommand
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
-	private final HuId huId;
-	private final HUQRCode huQRCode;
+	private final List<HUIdAndQRCode> huIdAndQRCodes;
 	private final GlobalQRCode targetQRCode;
 
 	@Builder
 	private MoveHUCommand(
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final MoveHURequest request)
+			@NonNull final List<HUIdAndQRCode> huIdAndQRCodes,
+			@NonNull final GlobalQRCode targetQRCode)
 	{
 		this.huTransformService = HUTransformService.builder()
 				.huQRCodesService(huQRCodesService)
 				.build();
 
 		this.huQRCodesService = huQRCodesService;
-		this.huId = request.getHuId();
-		this.huQRCode = request.getHuQRCode();
-		this.targetQRCode = request.getTargetQRCode();
+		this.huIdAndQRCodes = huIdAndQRCodes;
+		this.targetQRCode = targetQRCode;
 
 	}
 
@@ -58,20 +57,26 @@ public class MoveHUCommand
 	{
 		if (LocatorQRCode.isTypeMatching(targetQRCode))
 		{
-			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
+			final List<HuId> topLevelHUIds = huIdAndQRCodes.stream()
+					.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
+					.collect(ImmutableList.toImmutableList());
 
-			final HuId topLevelHUId = huTransformService.extractToTopLevelByQRCode(huId, huQRCode);
+			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
 			huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
 										 .toLocatorId(locatorQRCode.getLocatorId())
-										 .huIdToMove(topLevelHUId)
+										 .huIdsToMove(topLevelHUIds)
 										 .movementDate(SystemTime.asInstant())
 										 .build());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
+			final List<HuId> topLevelHUIds = huIdAndQRCodes.stream()
+					.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
+					.collect(ImmutableList.toImmutableList());
+
 			getMoveToTargetHUConsumer(HUQRCode.fromGlobalQRCode(targetQRCode))
-					.accept(huTransformService.extractToTopLevelByQRCode(huId, huQRCode));
+					.accept(topLevelHUIds);
 		}
 		else
 		{
@@ -80,7 +85,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Consumer<HuId> getMoveToTargetHUConsumer(@NonNull final HUQRCode huqrCode)
+	private Consumer<List<HuId>> getMoveToTargetHUConsumer(@NonNull final HUQRCode huqrCode)
 	{
 		final I_M_HU targetHU = handlingUnitsBL.getById(huQRCodesService.getHuIdByQRCode(huqrCode));
 
@@ -89,8 +94,8 @@ public class MoveHUCommand
 			throw new AdempiereException("Invalid target HU! Expecting LU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU));
 		}
 
-		return (huIdToMove) -> {
-			final List<I_M_HU> husToMove = ImmutableList.of(handlingUnitsBL.getById(huIdToMove));
+		return (huIdsToMove) -> {
+			final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIdsToMove);
 			huTransformService.tusToExistingLU(husToMove, targetHU);
 		};
 	}

@@ -21,6 +21,12 @@
     },
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"
+    },
+    "bulkActions": {
+      "buttonCaption": "Bulk actions",
+      "windowName": "Bulk actions",
+      "scan": "Scan",
+      "move": "Move"
     }
   }
 }
