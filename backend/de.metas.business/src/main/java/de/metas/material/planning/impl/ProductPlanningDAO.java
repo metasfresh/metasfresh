@@ -106,6 +106,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.workflowId(PPRoutingId.ofRepoIdOrNull(record.getAD_Workflow_ID()))
 				.isAttributeDependant(record.isAttributeDependant())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.storageAttributesKey(StringUtils.trimBlankToNull(record.getStorageAttributesKey()))
 				.plannerId(UserId.ofRepoIdOrNull(record.getPlanner_ID()))
 				.isCreatePlan(record.isCreatePlan())
 				.bomVersionsId(ProductBOMVersionsId.ofRepoIdOrNull(record.getPP_Product_BOMVersions_ID()))
@@ -133,6 +134,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setAD_Workflow_ID(PPRoutingId.toRepoId(from.getWorkflowId()));
 		record.setIsAttributeDependant(from.isAttributeDependant());
 		record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());
+		record.setStorageAttributesKey(from.getStorageAttributesKey());
 		record.setPlanner_ID(UserId.toRepoId(from.getPlannerId()));
 		record.setIsCreatePlan(from.isCreatePlan());
 		record.setPP_Product_BOMVersions_ID(ProductBOMVersionsId.toRepoId(from.getBomVersionsId()));

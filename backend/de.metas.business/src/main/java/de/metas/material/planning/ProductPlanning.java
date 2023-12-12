@@ -57,6 +57,7 @@ public class ProductPlanning
 	@Nullable ResourceId plantId;
 	boolean isAttributeDependant;
 	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
+	@Nullable String storageAttributesKey;
 	int seqNo;
 
 	//
