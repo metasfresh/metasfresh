@@ -71,11 +71,11 @@ public class PP_Product_Planning
 	}
 
 	@VisibleForTesting
-	void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
+	void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning record)
 	{
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
-		productPlanning.setStorageAttributesKey(attributesKey.getAsString());
+		record.setStorageAttributesKey(attributesKey.getAsString());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
