@@ -10,34 +10,29 @@ package de.metas.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.util.Env;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * TODO: check if we can do this better (using enum??)
- * 
- * @author ts
- *
  */
 public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 {
@@ -96,15 +91,14 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	}
 
 	@Override
-	public String getPrioriy(final IWorkPackageQueue IGNORED)
+	public String getPrioriy(IWorkPackageQueue IGNORED)
 	{
-		return prio;
+		return getPriority();
 	}
 
-	public String retrievePrioName()
+	public String getPriority()
 	{
-		return ADReferenceService.get()
-				.retrieveListNameTrl(Env.getCtx(), X_C_Queue_WorkPackage.PRIORITY_AD_Reference_ID, prio);
+		return prio;
 	}
 
 	@Override
