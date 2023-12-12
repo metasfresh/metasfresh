@@ -277,7 +277,7 @@ public class StepDefUtil
 		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
 								+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
 								+ "\n Context: " + context);
-		return null;
+		return null; // will never get here because fail throws
 
 	}
 
