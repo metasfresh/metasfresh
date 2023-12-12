@@ -22,16 +22,20 @@
 
 package de.metas.async.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +49,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,9 +57,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class QueueDAO extends AbstractQueueDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(QueueDAO.class);
+
 	public QueueDAO()
 	{
 		//
@@ -105,7 +113,7 @@ public class QueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
-	protected List<I_C_Queue_Processor_Assign> retrieveQueueProcessorAssignments(I_C_Queue_Processor processor)
+	protected List<I_C_Queue_Processor_Assign> retrieveQueueProcessorAssignments(final I_C_Queue_Processor processor)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String trxName = InterfaceWrapperHelper.getTrxName(processor);
@@ -129,6 +137,7 @@ public class QueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
+	@NonNull
 	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
 	{
 		final int adTableId = element.getAD_Table_ID();
@@ -200,16 +209,22 @@ public class QueueDAO extends AbstractQueueDAO
 		wc.append(" COALESCE(" + I_C_Queue_WorkPackage.COLUMNNAME_SkippedAt + ", " + nowMinusTimeOutSql + ")").append("<=").append(nowMinusTimeOutSql);
 
 		// Only work packages for given process
-		final List<Integer> packageProcessorIds = packageQuery.getPackageProcessorIds();
+		final Set<QueuePackageProcessorId> packageProcessorIds = packageQuery.getPackageProcessorIds();
 		if (packageProcessorIds != null)
 		{
+			if (packageProcessorIds.isEmpty())
+			{
+				logger.warn("There were no package processor Ids set in the package query. This could be a possible development error! Package query: {}", packageQuery);
+			}
+
+			final Set<Integer> packageProcessorRepoIds = packageProcessorIds.stream()
+					.map(QueuePackageProcessorId::getRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
 			wc.append(" AND ");
-			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID).append(" IN (")
-					.append(" SELECT ").append(I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID)
-					.append(" FROM ").append(I_C_Queue_Block.Table_Name).append(" b ")
-					.append(" WHERE ")
-					.append("b.").append(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID).append(" IN ").append(DB.buildSqlList(packageQuery.getPackageProcessorIds(), params))
-					.append(")");
+			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID)
+					.append(" IN ")
+					.append(DB.buildSqlList(packageProcessorRepoIds, params));
 		}
 
 		//
@@ -223,6 +238,7 @@ public class QueueDAO extends AbstractQueueDAO
 		return new TypedSqlQuery<>(ctx, I_C_Queue_WorkPackage.class, wc.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOnlyActiveRecords(true)
+				.setLimit(QueryLimit.getQueryLimitOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator.getSql());
 
 	}

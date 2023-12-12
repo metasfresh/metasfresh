@@ -102,7 +102,11 @@ select ('SPC' || E'\n' || --QRType
        i.DocumentNo,
        y.zuordnung
 
-from C_Invoice i
+from C_DunningDoc dd
+         INNER JOIN C_DunningDoc_line dl ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
+         INNER JOIN C_DunningDoc_Line_Source dls ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
+         INNER JOIN C_Dunning_Candidate cand ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
+         INNER JOIN C_Invoice i ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
          JOIN C_BPartner bp
               ON i.C_BPartner_ID = bp.C_BPartner_ID
          LEFT JOIN AD_User u on i.AD_User_ID = u.AD_user_ID
@@ -147,12 +151,6 @@ from C_Invoice i
                             where al.C_Invoice_ID = i.C_Invoice_ID
                             GROUP BY al.c_invoice_id) y on y.c_invoice_id = i.c_invoice_id
 
-
-         LEFT JOIN C_Dunning_Candidate cand
-                   ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
-         LEFT JOIN C_DunningDoc_Line_Source dls ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
-         LEFT JOIN C_DunningDoc_line dl ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
-         LEFT JOIN C_DunningDoc dd ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
 WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 
 $$

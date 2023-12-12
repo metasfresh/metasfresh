@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Location
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Location extends org.compiere.model.PO implements I_C_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1346308161L;
+	private static final long serialVersionUID = 710682099L;
 
     /** Standard Constructor */
     public X_C_Location (final Properties ctx, final int C_Location_ID, @Nullable final String trxName)
@@ -231,6 +231,18 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	}
 
 	@Override
+	public void setDHL_PostId (final @Nullable java.lang.String DHL_PostId)
+	{
+		set_Value (COLUMNNAME_DHL_PostId, DHL_PostId);
+	}
+
+	@Override
+	public java.lang.String getDHL_PostId() 
+	{
+		return get_ValueAsString(COLUMNNAME_DHL_PostId);
+	}
+
+	@Override
 	public void setGeocoding_Issue_ID (final int Geocoding_Issue_ID)
 	{
 		if (Geocoding_Issue_ID < 1) 
@@ -268,6 +280,18 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	public java.lang.String getGeocodingStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_GeocodingStatus);
+	}
+
+	@Override
+	public void setHouseNumber (final @Nullable java.lang.String HouseNumber)
+	{
+		set_Value (COLUMNNAME_HouseNumber, HouseNumber);
+	}
+
+	@Override
+	public java.lang.String getHouseNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_HouseNumber);
 	}
 
 	@Override
@@ -366,5 +390,17 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	public java.lang.String getRegionName() 
 	{
 		return get_ValueAsString(COLUMNNAME_RegionName);
+	}
+
+	@Override
+	public void setStreet (final @Nullable java.lang.String Street)
+	{
+		set_Value (COLUMNNAME_Street, Street);
+	}
+
+	@Override
+	public java.lang.String getStreet() 
+	{
+		return get_ValueAsString(COLUMNNAME_Street);
 	}
 }

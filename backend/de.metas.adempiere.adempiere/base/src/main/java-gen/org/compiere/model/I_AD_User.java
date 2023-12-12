@@ -321,7 +321,7 @@ public interface I_AD_User
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -330,7 +330,7 @@ public interface I_AD_User
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -457,7 +457,7 @@ public interface I_AD_User
 	String COLUMNNAME_Companyname = "Companyname";
 
 	/**
-	 * Set Verbindungsart.
+	 * Set Connection Profile.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
@@ -467,7 +467,7 @@ public interface I_AD_User
 	void setConnectionProfile (@Nullable java.lang.String ConnectionProfile);
 
 	/**
-	 * Get Verbindungsart.
+	 * Get Connection Profile.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
@@ -635,7 +635,51 @@ public interface I_AD_User
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set EMail Nutzer-ID.
+	 * Set Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail2 (@Nullable java.lang.String EMail2);
+
+	/**
+	 * Get Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail2();
+
+	ModelColumn<I_AD_User, Object> COLUMN_EMail2 = new ModelColumn<>(I_AD_User.class, "EMail2", null);
+	String COLUMNNAME_EMail2 = "EMail2";
+
+	/**
+	 * Set EMail3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail3 (@Nullable java.lang.String EMail3);
+
+	/**
+	 * Get EMail3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail3();
+
+	ModelColumn<I_AD_User, Object> COLUMN_EMail3 = new ModelColumn<>(I_AD_User.class, "EMail3", null);
+	String COLUMNNAME_EMail3 = "EMail3";
+
+	/**
+	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -645,7 +689,7 @@ public interface I_AD_User
 	void setEMailUser (@Nullable java.lang.String EMailUser);
 
 	/**
-	 * Get EMail Nutzer-ID.
+	 * Get EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -658,8 +702,8 @@ public interface I_AD_User
 	String COLUMNNAME_EMailUser = "EMailUser";
 
 	/**
-	 * Set Passwort EMail-Nutzer.
-	 * Passwort Ihrer EMail Nutzer-ID
+	 * Set EMail User Password.
+	 * Password of your email user id
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -668,8 +712,8 @@ public interface I_AD_User
 	void setEMailUserPW (@Nullable java.lang.String EMailUserPW);
 
 	/**
-	 * Get Passwort EMail-Nutzer.
-	 * Passwort Ihrer EMail Nutzer-ID
+	 * Get EMail User Password.
+	 * Password of your email user id
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -681,7 +725,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMailUserPW = "EMailUserPW";
 
 	/**
-	 * Set Überprüfung EMail.
+	 * Set Verification Info.
 	 * Verification information of EMail Address
 	 *
 	 * <br>Type: String
@@ -691,7 +735,7 @@ public interface I_AD_User
 	void setEMailVerify (@Nullable java.lang.String EMailVerify);
 
 	/**
-	 * Get Überprüfung EMail.
+	 * Get Verification Info.
 	 * Verification information of EMail Address
 	 *
 	 * <br>Type: String
@@ -704,7 +748,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMailVerify = "EMailVerify";
 
 	/**
-	 * Set EMail überprüft.
+	 * Set EMail Verify.
 	 * Date Email was verified
 	 *
 	 * <br>Type: DateTime
@@ -714,7 +758,7 @@ public interface I_AD_User
 	void setEMailVerifyDate (@Nullable java.sql.Timestamp EMailVerifyDate);
 
 	/**
-	 * Get EMail überprüft.
+	 * Get EMail Verify.
 	 * Date Email was verified
 	 *
 	 * <br>Type: DateTime
@@ -816,7 +860,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Included Tab.
-	 * Included Tab in this Tab (Master Dateail)
+	 * Included Tab in this Tab (Master Detail)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -826,7 +870,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Included Tab.
-	 * Included Tab in this Tab (Master Dateail)
+	 * Included Tab in this Tab (Master Detail)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -839,7 +883,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Account locked.
-	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
+	 * Flag is yes if account is locked
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -849,7 +893,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Account locked.
-	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
+	 * Flag is yes if account is locked
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -932,7 +976,7 @@ public interface I_AD_User
 	String COLUMNNAME_IsAuthorizedSignatory = "IsAuthorizedSignatory";
 
 	/**
-	 * Set BillTo Contact Default.
+	 * Set Invoice Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -941,7 +985,7 @@ public interface I_AD_User
 	void setIsBillToContact_Default (boolean IsBillToContact_Default);
 
 	/**
-	 * Get BillTo Contact Default.
+	 * Get Invoice Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -951,6 +995,31 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
+
+	/**
+	 * Set Nutzerbeschränkung.
+	 * Wenn angekakt und diese Rolle ist bei einem Nutzer/Kontakt zugeordnet, dann können indivituell angepasste Einschränkungen implementiert werden (z.B. read-only-regeln)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsCustomUserRestriction (boolean IsCustomUserRestriction);
+
+	/**
+	 * Get Nutzerbeschränkung.
+	 * Wenn angekakt und diese Rolle ist bei einem Nutzer/Kontakt zugeordnet, dann können indivituell angepasste Einschränkungen implementiert werden (z.B. read-only-regeln)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isCustomUserRestriction();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsCustomUserRestriction = new ModelColumn<>(I_AD_User.class, "IsCustomUserRestriction", null);
+	String COLUMNNAME_IsCustomUserRestriction = "IsCustomUserRestriction";
 
 	/**
 	 * Set Default Contact.
@@ -1065,6 +1134,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1074,6 +1144,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Is Membership Contact.
+	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1148,7 +1219,7 @@ public interface I_AD_User
 	String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
 
 	/**
-	 * Set IsSalesContact.
+	 * Set Sales Contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1157,7 +1228,7 @@ public interface I_AD_User
 	void setIsSalesContact (boolean IsSalesContact);
 
 	/**
-	 * Get IsSalesContact.
+	 * Get Sales Contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1323,7 +1394,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Login Failure Count.
-	 * Anzahl Login Fehlversuche
+	 * Failed login count
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1333,7 +1404,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Login Failure Count.
-	 * Anzahl Login Fehlversuche
+	 * Failed login count
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1346,7 +1417,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Login Failure Date.
-	 * Datum Login Fehler
+	 * Date when was last faild
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1356,7 +1427,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Login Failure Date.
-	 * Datum Login Fehler
+	 * Date when was last faild
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1389,6 +1460,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
 	String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_Default_ID (int MKTG_Campaign_Default_ID);
+
+	/**
+	 * Get Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_MKTG_Campaign_Default_ID = new ModelColumn<>(I_AD_User.class, "MKTG_Campaign_Default_ID", null);
+	String COLUMNNAME_MKTG_Campaign_Default_ID = "MKTG_Campaign_Default_ID";
 
 	/**
 	 * Set Mobile Phone.
@@ -1433,7 +1525,7 @@ public interface I_AD_User
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Benachrichtigungs-Art.
+	 * Set Notification Type.
 	 * Type of Notifications
 	 *
 	 * <br>Type: List
@@ -1443,7 +1535,7 @@ public interface I_AD_User
 	void setNotificationType (java.lang.String NotificationType);
 
 	/**
-	 * Get Benachrichtigungs-Art.
+	 * Get Notification Type.
 	 * Type of Notifications
 	 *
 	 * <br>Type: List
@@ -1634,7 +1726,7 @@ public interface I_AD_User
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Vorgesetzter.
+	 * Set Supervisor.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search
@@ -1644,7 +1736,7 @@ public interface I_AD_User
 	void setSupervisor_ID (int Supervisor_ID);
 
 	/**
-	 * Get Vorgesetzter.
+	 * Get Supervisor.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search

@@ -50,7 +50,7 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternal
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -195,21 +195,22 @@ public class JsonShipmentService
 				continue;
 			}
 
-			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
+			final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
+			
+			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
 			shipmentService.generateShipments(generateShipmentRequest);
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
 
 			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
-							AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+							currentBatchId, createdInoutIds);
 			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
 			{
-				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
-				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds());
-
+				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
+				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest);
 				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",
-								AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+								currentBatchId, createInvoiceInfos);
 				invoiceInfoResponseCollector.addAll(createInvoiceInfos);
 			}
 
@@ -244,11 +245,11 @@ public class JsonShipmentService
 	}
 
 	@NonNull
-	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(@NonNull final GenerateShipmentsRequest generateShipmentsRequest)
 	{
-		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(shipmentScheduleIds);
+		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(generateShipmentsRequest.getScheduleIds());
 
-		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, generateShipmentsRequest.getAsyncBatchId());
 
 		return invoiceIds.stream()
 				.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))

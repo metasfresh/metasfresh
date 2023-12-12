@@ -1,17 +1,8 @@
-import { post, get, delete as del } from 'axios';
+import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-
-/**
- * @param attributeType 'pattribute' or 'address'
- */
-export function getAttributesInstance(attributeType, templateId, source) {
-  return post(`${config.API_URL}/${attributeType}`, {
-    templateId: templateId,
-    source: source,
-  });
-}
+import { formatSortingQuery, getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -87,7 +78,7 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: orderBy,
+    orderBy: formatSortingQuery(orderBy),
   })
     .then(
       (res) =>
@@ -104,8 +95,18 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**

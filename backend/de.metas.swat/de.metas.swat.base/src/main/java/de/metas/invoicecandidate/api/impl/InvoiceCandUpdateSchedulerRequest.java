@@ -2,8 +2,10 @@ package de.metas.invoicecandidate.api.impl;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -33,28 +35,31 @@ import java.util.Properties;
 @Value
 public class InvoiceCandUpdateSchedulerRequest implements IInvoiceCandUpdateSchedulerRequest
 {
-	public static InvoiceCandUpdateSchedulerRequest of (
+	public static InvoiceCandUpdateSchedulerRequest of(
 			@NonNull final Properties ctx,
-			@Nullable final String trxName,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final String trxName)
 	{
-		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName, asyncBatchId);
+		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName);
+	}
+
+	public static InvoiceCandUpdateSchedulerRequest of(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCandidate);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceCandidate);
+
+		return InvoiceCandUpdateSchedulerRequest.of(ctx, trxName);
 	}
 
 	String trxName;
 	Properties ctx;
-	AsyncBatchId asyncBatchId;
 
 	private InvoiceCandUpdateSchedulerRequest(
 			@NonNull final Properties ctx,
-			@Nullable final String trxName,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final String trxName)
 	{
 		this.ctx = ctx;
 
 		// transaction name it's OK to be null
 		this.trxName = trxName;
-
-		this.asyncBatchId = asyncBatchId;
 	}
 }

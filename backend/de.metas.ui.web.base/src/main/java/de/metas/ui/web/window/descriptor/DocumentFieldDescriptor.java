@@ -8,8 +8,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
-import de.metas.ui.web.devices.providers.DeviceDescriptorsProvider;
-import de.metas.ui.web.devices.providers.DeviceDescriptorsProviders;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProvider;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProviders;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -60,6 +60,7 @@ import java.util.TreeSet;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class DocumentFieldDescriptor
 {
 	public static Builder builder(final String fieldName)
@@ -121,7 +122,6 @@ public final class DocumentFieldDescriptor
 		, SpecialField_DocStatus //
 		, SpecialField_DocAction //
 		// , SpecialField_DocumentSummary //
-		;
 	}
 
 	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
@@ -149,7 +149,7 @@ public final class DocumentFieldDescriptor
 	@Getter
 	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
 
-	private DocumentFieldDescriptor(final Builder builder)
+	private DocumentFieldDescriptor(@NonNull final Builder builder)
 	{
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
@@ -375,6 +375,7 @@ public final class DocumentFieldDescriptor
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
+	@Nullable
 	public <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,

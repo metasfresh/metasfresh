@@ -46,7 +46,9 @@ import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder.SqlOrderByBindings;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
@@ -296,7 +298,7 @@ public final class SqlViewSelectionQueryBuilder
 		//
 		// WHERE clause (from query)
 		{
-			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClause();
+			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClauseConsideringAlwaysIncludeSqls();
 			if (sqlWhereClause != null && !sqlWhereClause.isEmpty())
 			{
 				sqlInsert.append("\n AND (\n").append(sqlWhereClause).append("\n)");
@@ -372,7 +374,7 @@ public final class SqlViewSelectionQueryBuilder
 		// WHERE clause (from query)
 		boolean isAnyFilterApplied = false;
 		{
-			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClause();
+			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClauseConsideringAlwaysIncludeSqls();
 			if (sqlWhereClause != null && !sqlWhereClause.isEmpty())
 			{
 				sqlInsert.append("\n AND (\n").append(sqlWhereClause).append("\n)");
@@ -490,8 +492,9 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// Document filters
-		SqlAndParams sqlOrderBy = null;
 		FilterSql.FullTextSearchResult filterByFTS = null;
+		FilterSql.RecordsToAlwaysIncludeSql alwaysIncludeSql = null;
+		SqlAndParams sqlOrderBy = null;
 		if (filters != null && !filters.isEmpty())
 		{
 			final FilterSql filtersSql = toFilterSql(filters, context, sqlOpts);
@@ -501,13 +504,15 @@ public final class SqlViewSelectionQueryBuilder
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(filtersSql.getWhereClause()).append(")\n");
 			}
 
-			sqlOrderBy = filtersSql.getOrderBy();
 			filterByFTS = filtersSql.getFilterByFTS();
+			alwaysIncludeSql = filtersSql.getAlwaysIncludeSql();
+			sqlOrderBy = filtersSql.getOrderBy();
 		}
 
 		return FilterSqlExpression.builder()
 				.whereClause(sqlWhereClauseBuilder.build())
 				.filterByFTS(filterByFTS)
+				.alwaysIncludeSql(alwaysIncludeSql)
 				.orderBy(sqlOrderBy)
 				.build();
 	}
@@ -516,9 +521,35 @@ public final class SqlViewSelectionQueryBuilder
 	@Builder
 	private static class FilterSqlExpression
 	{
+		@Getter(AccessLevel.NONE)
 		@Nullable SqlAndParamsExpression whereClause;
+
 		@Nullable FilterSql.FullTextSearchResult filterByFTS;
+
+		@Getter(AccessLevel.NONE)
+		@Nullable FilterSql.RecordsToAlwaysIncludeSql alwaysIncludeSql;
+
 		@Nullable SqlAndParams orderBy;
+
+		@Nullable
+		public SqlAndParamsExpression getWhereClauseConsideringAlwaysIncludeSqls()
+		{
+			if (whereClause == null || whereClause.isEmpty())
+			{
+				return null;
+			}
+
+			final SqlAndParams alwaysIncludeSql = this.alwaysIncludeSql != null ? this.alwaysIncludeSql.toSqlAndParams() : null;
+			if (alwaysIncludeSql == null || alwaysIncludeSql.isEmpty())
+			{
+				return whereClause;
+			}
+
+			return SqlAndParamsExpression.builder()
+					.append(whereClause)
+					.append("\n OR (").append(alwaysIncludeSql).append(")")
+					.build();
+		}
 	}
 
 	/**

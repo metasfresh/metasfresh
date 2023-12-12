@@ -307,6 +307,12 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
+	public void afterDestroy()
+	{
+		selectionsRef.forgetCurrentSelections();
+	}
+
+	@Override
 	public void invalidateAll()
 	{
 		cache_rowsById.reset();

@@ -25,7 +25,7 @@ package de.metas.rest_api.v1.product;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.v1.product.command.GetProductsCommand;
-import de.metas.rest_api.product.response.JsonGetProductsResponse;
+import de.metas.rest_api.v1.product.response.JsonGetProductsResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.compiere.util.Env;
@@ -37,6 +37,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/products",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/products"})

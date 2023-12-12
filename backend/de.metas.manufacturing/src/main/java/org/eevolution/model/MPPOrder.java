@@ -174,7 +174,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				{
 					throw new LiberoException("@CannotChangeDocType@"
 							+ "\n@PP_Order_BOMLine_ID@: " + line
-							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse()
+							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
 							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
 				}
 			}

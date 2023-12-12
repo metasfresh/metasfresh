@@ -1,11 +1,13 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: external references for metasfresh resources
   As a REST-API invoker
   I want want to query and update the external references for metasfresh resources like BPartners
   So that the resources 3rd party systems can be connected with metasfresh data
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource
@@ -53,9 +55,26 @@ Feature: external references for metasfresh resources
     """
 {
     "items": [
-        { "lookupItem": { "id": "noIssueWithThisId", "type": "IssueID" } },
-        { "lookupItem": { "id": "existingId", "type": "IssueID" }, "metasfreshId": 43 },
-        { "lookupItem": { "id": "againNoIssueWithThisId", "type": "IssueID" } }
+        {
+            "lookupItem": {
+                "id": "noIssueWithThisId",
+                "type": "IssueID"
+            }
+        },
+        {
+            "lookupItem": {
+                "id": "existingId",
+                "type": "IssueID"
+            },
+            "metasfreshId": 43,
+            "systemName": "Github"
+        },
+        {
+            "lookupItem": {
+                "id": "againNoIssueWithThisId",
+                "type": "IssueID"
+            }
+        }
     ]
 }
     """

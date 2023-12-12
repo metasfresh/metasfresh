@@ -24,12 +24,13 @@ package de.metas.audit.apirequest.config;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
+import de.metas.audit.config.ApiAuditConfigsMap;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_API_Audit_Config;
 import org.springframework.stereotype.Repository;
 
@@ -37,6 +38,15 @@ import org.springframework.stereotype.Repository;
 public class ApiAuditConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<Integer, ApiAuditConfigsMap> cache = CCache.<Integer, ApiAuditConfigsMap>builder()
+			.tableName(I_API_Audit_Config.Table_Name)
+			.build();
+
+	public ImmutableList<ApiAuditConfig> getActiveConfigsByOrgId(@NonNull final OrgId orgId)
+	{
+		return getMap().getActiveConfigsByOrgId(orgId);
+	}
 
 	public ImmutableList<ApiAuditConfig> getAllConfigsByOrgId(@NonNull final OrgId orgId)
 	{
@@ -46,34 +56,51 @@ public class ApiAuditConfigRepository
 				.create()
 				.list()
 				.stream()
-				.map(this::buildConfigFromRecord)
+				.map(ApiAuditConfigRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	public ApiAuditConfig getConfigById(@NonNull final ApiAuditConfigId apiAuditConfigId)
+	public ApiAuditConfig getConfigById(@NonNull final ApiAuditConfigId id)
 	{
-		final I_API_Audit_Config config = InterfaceWrapperHelper.load(apiAuditConfigId, I_API_Audit_Config.class);
+		return getMap().getConfigById(id);
+	}
 
-		return buildConfigFromRecord(config);
+	private ApiAuditConfigsMap getMap()
+	{
+		return cache.getOrLoad(0, this::retrieveMap);
+	}
+
+	private ApiAuditConfigsMap retrieveMap()
+	{
+		return ApiAuditConfigsMap.ofList(
+				queryBL.createQueryBuilder(I_API_Audit_Config.class)
+						.create()
+						.stream()
+						.map(ApiAuditConfigRepository::fromRecord)
+						.collect(ImmutableList.toImmutableList()));
 	}
 
 	@NonNull
-	private ApiAuditConfig buildConfigFromRecord(@NonNull final I_API_Audit_Config record)
+	private static ApiAuditConfig fromRecord(@NonNull final I_API_Audit_Config record)
 	{
 		return ApiAuditConfig.builder()
 				.apiAuditConfigId(ApiAuditConfigId.ofRepoId(record.getAPI_Audit_Config_ID()))
+				.active(record.isActive())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
-				.isInvokerWaitsForResponse(record.isInvokerWaitsForResult())
+				.forceProcessedAsync(record.isForceProcessedAsync())
 				.keepRequestDays(record.getKeepRequestDays())
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
 				.userGroupInChargeId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_InCharge_ID()))
+				.performAuditAsync(!record.isSynchronousAuditLoggingEnabled())
+				.wrapApiResponse(record.isWrapApiResponse())
 				.build();
 	}
 }

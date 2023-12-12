@@ -1,10 +1,9 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-
+import SpinnerOverlay from '../app/SpinnerOverlay';
 import { deleteRequest } from '../../api';
 import { attachmentsRequest, openFile } from '../../actions/GenericActions';
-import Loader from '../app/Loader';
 import AttachUrl from './AttachUrl';
 
 /**
@@ -28,6 +27,11 @@ class Attachments extends Component {
     this.fetchAttachments();
   };
 
+  isDocumentNotFound = () => {
+    const { windowType, docId } = this.props;
+    return !windowType || docId === 'notfound';
+  };
+
   /**
    * @method fetchAttachments
    * @summary ToDo: Describe the method
@@ -36,13 +40,23 @@ class Attachments extends Component {
   fetchAttachments = () => {
     const { windowType, docId } = this.props;
 
-    attachmentsRequest('window', windowType, docId).then((response) => {
-      this.setState({ data: response.data }, () => {
-        if (this.attachments) {
-          this.attachments.focus();
-        }
+    if (this.isDocumentNotFound()) {
+      this.setState({ data: [] });
+      return;
+    }
+
+    attachmentsRequest('window', windowType, docId)
+      .then((response) => {
+        this.setState({ data: response.data }, () => {
+          if (this.attachments) {
+            this.attachments.focus();
+          }
+        });
+      })
+      .catch((ex) => {
+        console.log('Got error while fetching the attachments', { ex });
+        this.setState({ data: [] });
       });
-    });
   };
 
   /**
@@ -224,6 +238,14 @@ class Attachments extends Component {
     </div>
   );
 
+  renderAttachmentSpinner = () => {
+    return (
+      <div className="side-attachment-wrapper">
+        <SpinnerOverlay iconSize={50} />
+      </div>
+    );
+  };
+
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -233,13 +255,20 @@ class Attachments extends Component {
     const { data } = this.state;
     let actions, content;
 
-    if (data) {
+    if (this.isDocumentNotFound()) {
+      content = this.renderEmpty();
+    } else if (data) {
       content = data.length ? this.renderData() : this.renderEmpty();
       actions = this.renderActions();
     } else {
-      content = <Loader />;
+      content = this.renderAttachmentSpinner();
     }
 
+    console.log('render', {
+      content,
+      actions,
+      isDocumentNotFound: this.isDocumentNotFound(),
+    });
     return (
       <div
         onKeyDown={this.handleKeyDown}

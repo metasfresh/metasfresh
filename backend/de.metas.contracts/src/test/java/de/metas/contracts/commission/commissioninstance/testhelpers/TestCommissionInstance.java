@@ -1,19 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.testhelpers;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -22,14 +9,27 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -81,6 +81,12 @@ public class TestCommissionInstance
 
 	@NonNull
 	CommissionTriggerType triggerType;
+
+	@NonNull
+	CurrencyId currencyId;
+
+	@NonNull
+	Quantity invoicedQty;
 
 	/** If null, the instance's ordered product gets an on-the-fly created category */
 	@Nullable
@@ -141,6 +147,9 @@ public class TestCommissionInstance
 		instanceRecord.setPointsBase_Forecasted(new BigDecimal(pointsBase_Forecasted));
 		instanceRecord.setPointsBase_Invoiceable(new BigDecimal(pointsBase_Invoiceable));
 		instanceRecord.setPointsBase_Invoiced(new BigDecimal(pointsBase_Invoiced));
+		instanceRecord.setC_Currency_ID(currencyId.getRepoId());
+		instanceRecord.setQty(invoicedQty.toBigDecimal());
+		instanceRecord.setC_UOM_ID(invoicedQty.getUOM().getC_UOM_ID());
 		saveRecord(instanceRecord);
 
 		final ImmutableMap.Builder<BPartnerId, Integer> bpartnerId2commissionShareId = ImmutableMap.builder();

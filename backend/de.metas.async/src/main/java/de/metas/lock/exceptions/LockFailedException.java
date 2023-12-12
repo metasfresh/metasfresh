@@ -1,11 +1,10 @@
 package de.metas.lock.exceptions;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.lock.spi.impl.SqlLockDatabase;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.spi.ExistingLockInfo;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-
-import de.metas.lock.api.ILockCommand;
 
 /**
  * Exception thrown when a lock acquiring failed.
@@ -57,7 +56,7 @@ public class LockFailedException extends LockException
 		return this;
 	}
 
-	public LockFailedException setExistingLocks(@NonNull final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks)
+	public LockFailedException setExistingLocks(@NonNull final ImmutableList<ExistingLockInfo> existingLocks)
 	{
 		super.setExistingLocks(existingLocks);
 		return this;

@@ -25,6 +25,6 @@ package org.adempiere.ad.persistence;
 
 public interface IModelClassIntrospector
 {
-	public IModelClassInfo getModelClassInfo(final Class<?> clazz);
+	IModelClassInfo getModelClassInfo(final Class<?> clazz);
 
 }

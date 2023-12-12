@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,8 +31,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
@@ -839,7 +842,7 @@ public class TimeUtil
 	{
 		if (dateTime == null)
 		{
-			dateTime = new Timestamp(System.currentTimeMillis());
+			dateTime = new Timestamp(Instant.now().toEpochMilli());
 		}
 		if (offset == 0)
 		{
@@ -1290,6 +1293,11 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	public static Timestamp asTimestampNotNull(@NonNull final ZonedDateTime zdt)
+	{
+		return Timestamp.from(zdt.toInstant());
+	}
+
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
@@ -1510,13 +1518,27 @@ public class TimeUtil
 	}
 
 	/**
-	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
+	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
 	 */
+	@Deprecated
 	public static Timestamp parseTimestamp(@NonNull final String date)
+	{
+		return parseTimestamp(date, SystemTime.zoneId());
+	}
+
+	/**
+	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * The returned timestamp is 00:00 at the given date and timezone.
+	 */
+	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
 	{
 		try
 		{
-			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
+
+			final Date parsedDate = simpleDateFormat.parse(date);
 			return new Timestamp(parsedDate.getTime());
 		}
 		catch (final ParseException e)
@@ -1786,6 +1808,28 @@ public class TimeUtil
 	}
 
 	/**
+	 * @return timestamp converted to ZonedDateTime using system time zone.
+	 * @deprecated Please consider using {@link #asZonedDateTime(Timestamp, ZoneId)}.
+	 * <p>
+	 * If you don't know the {@link ZoneId} then
+	 * <ul>
+	 *     <li>please consider using {@link de.metas.organization.InstantAndOrgId} and don't assume system time zone.
+	 *     <li>or please consider using {@link Instant}
+	 *     </ul>
+	 *     <b>But please don't just assume the time zone is system time zone.</b>
+	 */
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
+	}
+
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
+	}
+
+	/**
 	 * @deprecated please use {@link #asZonedDateTime(Object, ZoneId)}. The server's timezone might not be the one you need.
 	 */
 	@Nullable
@@ -1874,6 +1918,10 @@ public class TimeUtil
 		if (obj == null)
 		{
 			return null;
+		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else if (obj instanceof Instant)
 		{
@@ -2007,7 +2055,6 @@ public class TimeUtil
 		return d1.isAfter(d2) ? d1 : d2;
 	}
 
-
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -2077,16 +2124,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{
@@ -2098,4 +2147,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

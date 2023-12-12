@@ -27,6 +27,7 @@ import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -58,6 +59,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -239,14 +241,14 @@ public class JsonInvoiceService
 	{
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
 
-		final Set<InvoiceId> invoiceIds = invoiceService.retrieveInvoiceCandsByInOutLines(shipmentLines).stream()
+		final Set<InvoiceId> createdInvoiceIds = invoiceService.retrieveInvoiceCandsByInOutLines(shipmentLines).stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
 				.flatMap(List::stream)
 				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return invoiceIds.stream()
+		return createdInvoiceIds.stream()
 				.map(invoiceId -> getInvoiceInfo(invoiceId, Env.getAD_Language()))
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -1,26 +1,22 @@
 package de.metas.handlingunits.reservation;
 
-import java.util.Map;
-import java.util.Set;
-
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -47,47 +43,74 @@ import javax.annotation.Nullable;
 @Value
 public class HUReservation
 {
-	@NonNull
-	HUReservationDocRef documentRef;
+	@Getter(AccessLevel.PRIVATE)
+	@NonNull ImmutableMap<HuId, HUReservationEntry> entriesByVHUId;
+
+	@NonNull HUReservationDocRef documentRef;
+	@Nullable BPartnerId customerId;
+	@NonNull Quantity reservedQtySum;
+
+	private HUReservation(@NonNull final Collection<HUReservationEntry> entries)
+	{
+		Check.assumeNotEmpty(entries, "entries is not empty");
+
+		this.entriesByVHUId = Maps.uniqueIndex(entries, HUReservationEntry::getVhuId);
+		this.documentRef = extractSingleDocumentRefOrFail(entries);
+		customerId = extractSingleCustomerIdOrNull(entries);
+		reservedQtySum = computeReservedQtySum(entries);
+	}
+
+	public static HUReservation ofEntries(@NonNull final Collection<HUReservationEntry> entries)
+	{
+		return new HUReservation(entries);
+	}
+
+	private static HUReservationDocRef extractSingleDocumentRefOrFail(final Collection<HUReservationEntry> entries)
+	{
+		//noinspection OptionalGetWithoutIsPresent
+		return entries
+				.stream()
+				.map(HUReservationEntry::getDocumentRef)
+				.distinct()
+				.reduce((documentRef1, documentRef2) -> {
+					throw new AdempiereException("Entries shall be for a single document reference: " + entries);
+				})
+				.get();
+	}
 
 	@Nullable
-	BPartnerId customerId;
-
-	@Getter(AccessLevel.PRIVATE)
-	ImmutableMap<HuId, Quantity> reservedQtyByVhuIds;
-
-	Quantity reservedQtySum;
-
-	@Builder(toBuilder = true)
-	private HUReservation(
-			@NonNull final HUReservationDocRef documentRef,
-			@Nullable final BPartnerId customerId,
-			@NonNull @Singular final Map<HuId, Quantity> reservedQtyByVhuIds)
+	private static BPartnerId extractSingleCustomerIdOrNull(final Collection<HUReservationEntry> entries)
 	{
-		Check.assumeNotEmpty(reservedQtyByVhuIds, "reservedQtyByVhuIds is not empty");
-
-		this.documentRef = documentRef;
-		this.customerId = customerId;
-		this.reservedQtyByVhuIds = ImmutableMap.copyOf(reservedQtyByVhuIds);
-
-		this.reservedQtySum = reservedQtyByVhuIds.values()
+		final ImmutableSet<BPartnerId> customerIds = entries
 				.stream()
+				.map(HUReservationEntry::getCustomerId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		return customerIds.size() == 1 ? customerIds.iterator().next() : null;
+	}
+
+	private static Quantity computeReservedQtySum(final Collection<HUReservationEntry> entries)
+	{
+		//noinspection OptionalGetWithoutIsPresent
+		return entries
+				.stream()
+				.map(HUReservationEntry::getQtyReserved)
 				.reduce(Quantity::add)
 				.get();
 	}
 
-	public Set<HuId> getVhuIds()
+	public ImmutableSet<HuId> getVhuIds()
 	{
-		return reservedQtyByVhuIds.keySet();
+		return entriesByVHUId.keySet();
 	}
 
 	public Quantity getReservedQtyByVhuId(@NonNull final HuId vhuId)
 	{
-		final Quantity reservedQty = reservedQtyByVhuIds.get(vhuId);
-		if (reservedQty == null)
+		final HUReservationEntry entry = entriesByVHUId.get(vhuId);
+		if (entry == null)
 		{
 			throw new AdempiereException("@NotFound@ @VHU_ID@");
 		}
-		return reservedQty;
+		return entry.getQtyReserved();
 	}
 }

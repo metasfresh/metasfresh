@@ -1,14 +1,14 @@
 package de.metas.handlingunits.empties;
 
-import java.util.Properties;
-
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.ISingletonService;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 /*
  * #%L
@@ -71,4 +71,5 @@ public interface IHUEmptiesService extends ISingletonService
 
 	IReturnsInOutProducer newReturnsInOutProducer(Properties ctx);
 
+	I_M_InOut createDraftEmptiesInOutFromReceiptSchedule(I_M_ReceiptSchedule receiptSchedule, String movementType);
 }

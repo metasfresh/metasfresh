@@ -11,6 +11,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -75,6 +76,9 @@ public class Product
 
 	@Nullable
 	Boolean discontinued;
+
+	@Nullable
+	LocalDate discontinuedFrom;
 
 	@Nullable
 	Boolean active;

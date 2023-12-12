@@ -25,6 +25,7 @@ const plugins = [
   }),
   new HtmlWebpackPlugin({
     template: './index.html',
+    favicon: './favicon.png',
   }),
   new GitRevisionPlugin(),
   new CopyWebpackPlugin({
@@ -55,7 +56,7 @@ module.exports = {
     errorDetails: true,
   },
   devtool: 'cheap-module-source-map',
-  entry: ['./src/index.jsx', './favicon.png'],
+  entry: ['./src/index.jsx'],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
@@ -74,14 +75,14 @@ module.exports = {
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name].[hash].[ext]',
+          filename: '[path][name]-[git-revision-hash][ext]',
         },
       },
       {
         test: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name].[ext]',
+          filename: '[path][name][ext]',
         },
       },
       {

@@ -161,25 +161,25 @@ public class DemandCandiateHandlerTest
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-		assertThat(demandRecord).extracting("qty.toString", "StorageAttributesKey")
-				.containsExactly("23", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(demandRecord).extracting("qty", "StorageAttributesKey")
+				.containsExactly(BigDecimal.valueOf(23), STORAGE_ATTRIBUTES_KEY.getAsString());
 
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 		assertThat(demandStockRecord).extracting(
 				"MD_Candidate_Parent_ID",
-				"Qty.toString",
+				"Qty",
 				"StorageAttributesKey",
 				"SeqNo")
-				.containsExactly(demandRecord.getMD_Candidate_ID(), "-23", STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
+				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-		assertThat(supplyRecord).extracting("qty.toString", "StorageAttributesKey")
-				.containsExactly("13", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(supplyRecord).extracting("qty", "StorageAttributesKey")
+				.containsExactly(BigDecimal.valueOf(13), STORAGE_ATTRIBUTES_KEY.getAsString());
 
 		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
 		// the stock record's qty is -10 because we were at -23, and 13 were added
-		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty.toString", "StorageAttributesKey")
-				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), "-10", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty", "StorageAttributesKey")
+				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), BigDecimal.valueOf(-10), STORAGE_ATTRIBUTES_KEY.getAsString());
 	}
 
 	private void setupRepositoryReturnsQuantityForMaterial(
@@ -232,7 +232,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any());
+				.postEventNow(Mockito.any(), Mockito.any());
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
@@ -405,7 +405,7 @@ public class DemandCandiateHandlerTest
 			"5,7,3,4",
 			"5,7,-10,17",
 	})
-	void computeRequiredQty(String givenMin, String givenMax, String when, String then)
+	void computeRequiredQty(final String givenMin, final String givenMax, final String when, final String then)
 	{
 		// given
 		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()

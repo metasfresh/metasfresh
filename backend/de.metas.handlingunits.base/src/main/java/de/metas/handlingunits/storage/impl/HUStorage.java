@@ -22,16 +22,6 @@ package de.metas.handlingunits.storage.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -47,13 +37,25 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /* package */class HUStorage implements IHUStorage
 {
@@ -135,6 +137,15 @@ import lombok.NonNull;
 		final I_C_UOM qtyUOM = IHUStorageBL.extractUOM(storageLine);
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, qtyUOM, uom);
 		return qtyConv;
+	}
+
+	@Override
+	public Optional<Quantity> getQuantity(ProductId productId)
+	{
+		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
+		return storage != null
+				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
+				: Optional.empty();
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.datatypes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -148,6 +149,23 @@ public class DataTypes_convertToValueClass_Test
 			assertThat(valueConverted).isEqualTo(
 					LookupValuesList.fromCollection(ImmutableList.of(
 							StringLookupValue.of("k1", "value1"))));
+		}
+
+		@Test
+		void from_Set_of_Strings()
+		{
+			final String fieldName = "MyLabels";
+			final ImmutableSet<String> value = ImmutableSet.of("A", "B", "C");
+			final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Labels;
+			final Class<?> targetType = widgetType.getValueClass();
+			final LookupValueByIdSupplier lookupDataSource = key -> key != null ? StringLookupValue.of(key.toString(), "Caption for " + key) : null;
+
+			final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+			assertThat(valueConverted).isEqualTo(LookupValuesList.fromCollection(ImmutableList.of(
+					StringLookupValue.of("A", "Caption for A"),
+					StringLookupValue.of("B", "Caption for B"),
+					StringLookupValue.of("C", "Caption for C")
+			)));
 		}
 	}
 }

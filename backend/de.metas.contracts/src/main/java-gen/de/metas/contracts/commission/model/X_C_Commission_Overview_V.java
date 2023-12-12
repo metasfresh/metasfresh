@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_Commission_Overview_V
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_Commission_Overview_V extends org.compiere.model.PO implements I_C_Commission_Overview_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -151577667L;
+	private static final long serialVersionUID = 871688694L;
 
     /** Standard Constructor */
     public X_C_Commission_Overview_V (final Properties ctx, final int C_Commission_Overview_V_ID, @Nullable final String trxName)
@@ -47,6 +48,21 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	public int getBill_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Payer_ID (final int C_BPartner_Payer_ID)
+	{
+		if (C_BPartner_Payer_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Payer_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Payer_ID, C_BPartner_Payer_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Payer_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Payer_ID);
 	}
 
 	@Override
@@ -314,7 +330,34 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setCommissionDate (final java.sql.Timestamp CommissionDate)
+	public de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine getC_MediatedCommissionSettingsLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_MediatedCommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine.class);
+	}
+
+	@Override
+	public void setC_MediatedCommissionSettingsLine(final de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine C_MediatedCommissionSettingsLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_MediatedCommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine.class, C_MediatedCommissionSettingsLine);
+	}
+
+	@Override
+	public void setC_MediatedCommissionSettingsLine_ID (final int C_MediatedCommissionSettingsLine_ID)
+	{
+		if (C_MediatedCommissionSettingsLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_MediatedCommissionSettingsLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_MediatedCommissionSettingsLine_ID, C_MediatedCommissionSettingsLine_ID);
+	}
+
+	@Override
+	public int getC_MediatedCommissionSettingsLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_MediatedCommissionSettingsLine_ID);
+	}
+
+	@Override
+	public void setCommissionDate (final @Nullable java.sql.Timestamp CommissionDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionDate, CommissionDate);
 	}
@@ -326,7 +369,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setCommissionTrigger_Type (final java.lang.String CommissionTrigger_Type)
+	public void setCommissionTrigger_Type (final @Nullable java.lang.String CommissionTrigger_Type)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
 	}
@@ -419,6 +462,18 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
 	public void setLevelHierarchy (final int LevelHierarchy)
 	{
 		set_ValueNoCheck (COLUMNNAME_LevelHierarchy, LevelHierarchy);
@@ -431,7 +486,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setMostRecentTriggerTimestamp (final java.sql.Timestamp MostRecentTriggerTimestamp)
+	public void setMostRecentTriggerTimestamp (final @Nullable java.sql.Timestamp MostRecentTriggerTimestamp)
 	{
 		set_ValueNoCheck (COLUMNNAME_MostRecentTriggerTimestamp, MostRecentTriggerTimestamp);
 	}
@@ -458,7 +513,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPercentOfBasePoints (final BigDecimal PercentOfBasePoints)
+	public void setPercentOfBasePoints (final @Nullable BigDecimal PercentOfBasePoints)
 	{
 		set_ValueNoCheck (COLUMNNAME_PercentOfBasePoints, PercentOfBasePoints);
 	}
@@ -471,7 +526,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPointsBase_Forecasted (final BigDecimal PointsBase_Forecasted)
+	public void setPointsBase_Forecasted (final @Nullable BigDecimal PointsBase_Forecasted)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Forecasted, PointsBase_Forecasted);
 	}
@@ -484,7 +539,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPointsBase_Invoiceable (final BigDecimal PointsBase_Invoiceable)
+	public void setPointsBase_Invoiceable (final @Nullable BigDecimal PointsBase_Invoiceable)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Invoiceable, PointsBase_Invoiceable);
 	}
@@ -497,7 +552,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPointsBase_Invoiced (final BigDecimal PointsBase_Invoiced)
+	public void setPointsBase_Invoiced (final @Nullable BigDecimal PointsBase_Invoiced)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Invoiced, PointsBase_Invoiced);
 	}
@@ -510,7 +565,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPointsSum_Settled (final BigDecimal PointsSum_Settled)
+	public void setPointsSum_Settled (final @Nullable BigDecimal PointsSum_Settled)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_Settled, PointsSum_Settled);
 	}
@@ -523,7 +578,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPointsSum_ToSettle (final BigDecimal PointsSum_ToSettle)
+	public void setPointsSum_ToSettle (final @Nullable BigDecimal PointsSum_ToSettle)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_ToSettle, PointsSum_ToSettle);
 	}
@@ -536,7 +591,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPOReference (final java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
@@ -548,7 +603,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setQtyEntered (final BigDecimal QtyEntered)
+	public void setQtyEntered (final @Nullable BigDecimal QtyEntered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyEntered, QtyEntered);
 	}

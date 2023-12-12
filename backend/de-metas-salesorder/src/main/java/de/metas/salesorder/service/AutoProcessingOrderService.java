@@ -23,47 +23,43 @@
 package de.metas.salesorder.service;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 @Service
 public class AutoProcessingOrderService
@@ -72,31 +68,24 @@ public class AutoProcessingOrderService
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
 	private final ShipperDeliveryService shipperDeliveryService;
-	private final ShipperTransportationRepository shipperTransportationRepository;
-	private final InOutToTransportationOrderService inOutToTransportationOrderService;
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	public AutoProcessingOrderService(
 			@NonNull final OrderService orderService,
 			@NonNull final ShipmentService shipmentService,
 			@NonNull final InvoiceService invoiceService,
-			@NonNull final ShipperDeliveryService shipperDeliveryService,
-			@NonNull final ShipperTransportationRepository shipperTransportationRepository,
-			@NonNull final InOutToTransportationOrderService inOutToTransportationOrderService
-	)
+			@NonNull final ShipperDeliveryService shipperDeliveryService)
 	{
 		this.orderService = orderService;
 		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
 		this.shipperDeliveryService = shipperDeliveryService;
-		this.shipperTransportationRepository = shipperTransportationRepository;
-		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
 	}
 
 	public void completeShipAndInvoice(@NonNull final OrderId orderId)
@@ -118,6 +107,10 @@ public class AutoProcessingOrderService
 		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
 				.scheduleIds(scheduleIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+
+				// Usually we want only *CUs* to be picked on-the-fly, because we don't know and care which HUs are shipped and don't want to make assumptions regarding their TU-Packaging.
+				// But here it is different: we want that whatever HUs are picked, exactly those HUs shall be boxed and send to the customer.
+				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
 				.build();
 
@@ -130,7 +123,7 @@ public class AutoProcessingOrderService
 
 		for (final InOutId inOutId : generatedInOutIds)
 		{
-			createTransportationAndPackagesForShipment(inOutId);
+			shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId);
 		}
 
 		final List<I_M_InOutLine> inOutLines = shipmentService.retrieveInOutLineByShipScheduleId(scheduleIds);
@@ -151,7 +144,29 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+		final AsyncBatchId asyncBatchId = extractOrCreateAsyncBatchId(orderId);
+
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+	}
+
+	@NonNull
+	private AsyncBatchId extractOrCreateAsyncBatchId(final @NonNull OrderId orderId)
+	{
+		final I_C_Order orderRecord = orderBL.getById(orderId);
+		final int asyncBatchIdInt = orderRecord.getC_Async_Batch_ID();
+		
+		if (orderRecord.getC_Async_Batch_ID() > 0)
+		{
+			return AsyncBatchId.ofRepoId(asyncBatchIdInt);
+		}
+
+		final I_C_Async_Batch asyncBatchRecord = asyncBatchBL.newAsyncBatch()
+				.setContext(Env.getCtx())
+				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
+				.setName("Process ICs for C_Order_ID=" + OrderId.toRepoId(orderId))
+				.setOrgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+				.build();
+		return AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID());
 	}
 
 	private boolean sameShippingAndBillingAddress(
@@ -191,45 +206,5 @@ public class AutoProcessingOrderService
 		}
 
 		return true;
-	}
-
-	private void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
-	{
-		final I_M_InOut shipment = inOutDAO.getById(inOutId);
-
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
-
-		if (shipperId == null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipper present on shipment! m_inout_id: ", inOutId);
-			return;
-		}
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
-		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(warehouseId);
-
-		final LocalDate shipDate = inOutBL.retrieveMovementDate(shipment);
-
-		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
-				.builder()
-				.shipperId(shipperId)
-				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
-				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
-				.shipDate(shipDate)
-				.assignAnonymouslyPickedHUs(true)
-				.build();
-
-		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
-
-		final List<I_M_Package> addedPackages = inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));
-		if (addedPackages.isEmpty())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No packages added for shipperTransportationId: ", shipperTransportationId);
-			return;
-		}
-
-		final AsyncBatchId shipmentAsyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipment.getC_Async_Batch_ID());
-
-		shipperDeliveryService.generateShipperDeliveryOrderIfPossible(shipperId, shipperTransportationId, addedPackages, shipmentAsyncBatchId);
 	}
 }

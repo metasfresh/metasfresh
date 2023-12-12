@@ -1,5 +1,4 @@
 import {
-  getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,
   discardNewRequest,
@@ -73,7 +72,6 @@ export {
   elementPathRequest,
   filterViewRequest,
   formatParentUrl,
-  getAttributesInstance,
   getAvailableLang,
   getAvatar,
   getData,

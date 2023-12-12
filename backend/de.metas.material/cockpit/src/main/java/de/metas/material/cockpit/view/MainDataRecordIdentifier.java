@@ -1,25 +1,8 @@
-package de.metas.material.cockpit.view;
-
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.util.TimeUtil;
-
-import java.time.Instant;
-import java.time.ZoneId;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,8 +20,26 @@ import java.time.ZoneId;
  * #L%
  */
 
+package de.metas.material.cockpit.view;
+
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+
+import java.time.Instant;
+import java.time.ZoneId;
+
 @Value
-@Builder
 public class MainDataRecordIdentifier
 {
 	/**
@@ -51,7 +52,7 @@ public class MainDataRecordIdentifier
 		return MainDataRecordIdentifier.builder()
 				.productDescriptor(material)
 				.date(TimeUtil.getDay(material.getDate(), timeZone))
-				.plantId(0)
+				.warehouseId(material.getWarehouseId())
 				.build();
 	}
 
@@ -59,20 +60,18 @@ public class MainDataRecordIdentifier
 
 	Instant date;
 
-	/**
-	 * Optional, a value <= 0 means "none"
-	 */
-	int plantId;
+	WarehouseId warehouseId;
 
+	@Builder
 	public MainDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Instant date,
-			final int plantId)
+			final WarehouseId warehouseId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
 		this.productDescriptor = productDescriptor;
 		this.date = date;
-		this.plantId = plantId;
+		this.warehouseId = warehouseId;
 	}
 
 	public IQueryBuilder<I_MD_Cockpit> createQueryBuilder()
@@ -82,22 +81,12 @@ public class MainDataRecordIdentifier
 		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
 		attributesKey.assertNotAllOrOther();
 
-		final IQueryBuilder<I_MD_Cockpit> queryBuilder = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Cockpit.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, productDescriptor.getProductId())
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, TimeUtil.asTimestamp(getDate()));
-
-		if (getPlantId() > 0)
-		{
-			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, getPlantId());
-		}
-		else
-		{
-			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, null);
-		}
-
-		return queryBuilder;
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, TimeUtil.asTimestamp(getDate()))
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID, NumberUtils.asIntegerOrNull(warehouseId));
 	}
 }

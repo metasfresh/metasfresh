@@ -1,18 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_Planning
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1032027986L;
+	private static final long serialVersionUID = 568258642L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -92,7 +93,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setDeliveryTime_Promised (final BigDecimal DeliveryTime_Promised)
+	public void setDeliveryTime_Promised (final @Nullable BigDecimal DeliveryTime_Promised)
 	{
 		set_Value (COLUMNNAME_DeliveryTime_Promised, DeliveryTime_Promised);
 	}
@@ -150,7 +151,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/** No = N */
 	public static final String ISMANUFACTURED_No = "N";
 	@Override
-	public void setIsManufactured (final java.lang.String IsManufactured)
+	public void setIsManufactured (final @Nullable java.lang.String IsManufactured)
 	{
 		set_Value (COLUMNNAME_IsManufactured, IsManufactured);
 	}
@@ -207,7 +208,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/** No = N */
 	public static final String ISPURCHASED_No = "N";
 	@Override
-	public void setIsPurchased (final java.lang.String IsPurchased)
+	public void setIsPurchased (final @Nullable java.lang.String IsPurchased)
 	{
 		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
 	}
@@ -228,7 +229,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/** No = N */
 	public static final String ISTRADED_No = "N";
 	@Override
-	public void setIsTraded (final java.lang.String IsTraded)
+	public void setIsTraded (final @Nullable java.lang.String IsTraded)
 	{
 		set_Value (COLUMNNAME_IsTraded, IsTraded);
 	}
@@ -264,34 +265,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
-	}
-
-	@Override
-	public void setMaxManufacturedQtyPerOrder (final BigDecimal MaxManufacturedQtyPerOrder)
-	{
-		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder, MaxManufacturedQtyPerOrder);
-	}
-
-	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrder() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrder);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setMaxManufacturedQtyPerOrder_UOM_ID (final int MaxManufacturedQtyPerOrder_UOM_ID)
-	{
-		if (MaxManufacturedQtyPerOrder_UOM_ID < 1) 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, MaxManufacturedQtyPerOrder_UOM_ID);
-	}
-
-	@Override
-	public int getMaxManufacturedQtyPerOrder_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID);
 	}
 
 	@Override
@@ -339,6 +312,34 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
+	@Override
+	public void setMaxManufacturedQtyPerOrder (final @Nullable BigDecimal MaxManufacturedQtyPerOrder)
+	{
+		set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder, MaxManufacturedQtyPerOrder);
+	}
+
+	@Override
+	public BigDecimal getMaxManufacturedQtyPerOrder() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrder);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMaxManufacturedQtyPerOrder_UOM_ID (final int MaxManufacturedQtyPerOrder_UOM_ID)
+	{
+		if (MaxManufacturedQtyPerOrder_UOM_ID < 1) 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID, MaxManufacturedQtyPerOrder_UOM_ID);
+	}
+
+	@Override
+	public int getMaxManufacturedQtyPerOrder_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID);
+	}
+
 	/** 
 	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
 	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
@@ -349,7 +350,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/** Create Distribution Order = D */
 	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
 	@Override
-	public void setOnMaterialReceiptWithDestWarehouse (final java.lang.String OnMaterialReceiptWithDestWarehouse)
+	public void setOnMaterialReceiptWithDestWarehouse (final @Nullable java.lang.String OnMaterialReceiptWithDestWarehouse)
 	{
 		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
 	}
@@ -376,30 +377,30 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
+	public org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions()
 	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class);
 	}
 
 	@Override
-	public void setPP_Product_BOM(final org.eevolution.model.I_PP_Product_BOM PP_Product_BOM)
+	public void setPP_Product_BOMVersions(final org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions)
 	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class, PP_Product_BOM);
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class, PP_Product_BOMVersions);
 	}
 
 	@Override
-	public void setPP_Product_BOM_ID (final int PP_Product_BOM_ID)
+	public void setPP_Product_BOMVersions_ID (final int PP_Product_BOMVersions_ID)
 	{
-		if (PP_Product_BOM_ID < 1) 
-			set_Value (COLUMNNAME_PP_Product_BOM_ID, null);
+		if (PP_Product_BOMVersions_ID < 1) 
+			set_Value (COLUMNNAME_PP_Product_BOMVersions_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
+			set_Value (COLUMNNAME_PP_Product_BOMVersions_ID, PP_Product_BOMVersions_ID);
 	}
 
 	@Override
-	public int getPP_Product_BOM_ID() 
+	public int getPP_Product_BOMVersions_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOMVersions_ID);
 	}
 
 	@Override
@@ -415,18 +416,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getPP_Product_Planning_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_Planning_ID);
-	}
-
-	@Override
-	public void setSeqNo (final int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
-	}
-
-	@Override
-	public int getSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override
@@ -457,7 +446,19 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setStorageAttributesKey (final java.lang.String StorageAttributesKey)
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setStorageAttributesKey (final @Nullable java.lang.String StorageAttributesKey)
 	{
 		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
 	}
@@ -469,7 +470,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setTransfertTime (final BigDecimal TransfertTime)
+	public void setTransfertTime (final @Nullable BigDecimal TransfertTime)
 	{
 		set_Value (COLUMNNAME_TransfertTime, TransfertTime);
 	}
@@ -482,7 +483,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setWorkingTime (final BigDecimal WorkingTime)
+	public void setWorkingTime (final @Nullable BigDecimal WorkingTime)
 	{
 		set_Value (COLUMNNAME_WorkingTime, WorkingTime);
 	}

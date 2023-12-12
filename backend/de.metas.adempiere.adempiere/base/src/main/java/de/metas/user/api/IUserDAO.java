@@ -22,7 +22,9 @@ package de.metas.user.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.job.JobId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -31,6 +33,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -97,4 +100,6 @@ public interface IUserDAO extends ISingletonService
 	Optional<I_AD_User> getCounterpartUser(
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
+
+	ImmutableSet<UserId> retrieveUsersByJobId(JobId jobId);
 }

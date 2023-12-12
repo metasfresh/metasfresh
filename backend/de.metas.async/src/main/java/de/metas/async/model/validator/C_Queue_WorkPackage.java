@@ -67,7 +67,7 @@ public class C_Queue_WorkPackage
 		logsRepository.deleteLogsInTrx(workpackageId);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_Queue_WorkPackage.COLUMNNAME_Processed,
 			I_C_Queue_WorkPackage.COLUMNNAME_IsError
 	})
@@ -87,7 +87,7 @@ public class C_Queue_WorkPackage
 	}
 
 	private void processBatchInOwnTrx(@NonNull final AsyncBatchId asyncBatchId)
-			{
+	{
 		trxManager.runInNewTrx(() -> asyncBatchService.checkProcessed(asyncBatchId, ITrx.TRXNAME_ThreadInherited));
 	}
 }

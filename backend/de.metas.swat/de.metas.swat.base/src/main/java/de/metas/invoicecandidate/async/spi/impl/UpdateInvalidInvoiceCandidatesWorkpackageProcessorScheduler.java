@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 
@@ -59,11 +58,5 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
 	{
 		return true;
-	}
-
-	@Override
-	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final IInvoiceCandUpdateSchedulerRequest request)
-	{
-		return Optional.ofNullable(request.getAsyncBatchId());
 	}
 }

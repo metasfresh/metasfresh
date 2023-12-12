@@ -2,6 +2,8 @@ package de.metas.material.dispo.service.event.handler.ddorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -67,19 +69,23 @@ public class DDOrderAdvisedHandler
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
-			@NonNull final RequestMaterialOrderService requestMaterialOrderService)
+			@NonNull final RequestMaterialOrderService requestMaterialOrderService,
+			@NonNull final DDOrderDetailRequestHandler ddOrderDetailRequestHandler,
+			@NonNull final MainDataRequestHandler mainDataRequestHandler)
 	{
 		super(
 				candidateRepository,
 				candidateRepositoryCommands,
-				candidateChangeHandler);
+				candidateChangeHandler,
+				ddOrderDetailRequestHandler,
+				mainDataRequestHandler);
 
 		this.requestMaterialOrderService = requestMaterialOrderService;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
 	@Override
-	public Collection<Class<? extends DDOrderAdvisedEvent>> getHandeledEventType()
+	public Collection<Class<? extends DDOrderAdvisedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(DDOrderAdvisedEvent.class);
 	}
@@ -114,7 +120,7 @@ public class DDOrderAdvisedHandler
 
 		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId);
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor().getTraceId());
 		}
 	}
 

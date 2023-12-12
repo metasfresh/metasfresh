@@ -23,9 +23,11 @@
 package de.metas.async.service;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -41,7 +43,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
@@ -68,7 +72,12 @@ public class AsyncBatchService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
-		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+		final List<I_C_Queue_WorkPackage> workPackages = getWorkPackagesFromCurrentRun(asyncBatch, trxName);
+
+		if (workPackages.isEmpty())
+		{
+			return;
+		}
 
 		final int workPackagesProcessedCount = (int)workPackages.stream()
 				.filter(I_C_Queue_WorkPackage::isProcessed)
@@ -78,42 +87,114 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
+		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
+																" allWPSize: " + workPackages.size() +
+																" processedWPSize: " + workPackagesProcessedCount +
+																" erroredWPSize: " + workPackagesWithErrorCount);
 
-		Loggables.withLogger(logger, Level.INFO)
-				.addLog("AsyncBatchService.checkProcessed for C_Async_Batch_ID={}: allWPSize: {}, processedWPSize: {}, erroredWPSize: {}",
-						asyncBatch.getC_Async_Batch_ID(), workPackages.size(), workPackagesProcessedCount, workPackagesWithErrorCount);
+		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
+				.clientId(Env.getClientId())
+				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+				.noOfProcessedWPs(workPackagesProcessedCount)
+				.noOfEnqueuedWPs(workPackages.size())
+				.noOfErrorWPs(workPackagesWithErrorCount)
+				.build();
 
-		if (workPackagesFinalized >= workPackages.size())
-		{
-			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-					.clientId(Env.getClientId())
-					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
-					.success(workPackagesWithErrorCount <= 0)
-					.build();
-
-			asyncBatchEventBusService.postRequest(request);
-		}
+		asyncBatchEventBusService.postRequest(request);
 	}
 
 	/**
-	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
-	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
+	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
+	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
+	 * <br/>
+	 * @return the enqueuing result as returned by the supplier.
 	 *
-	 * @param supplier     Supplier<>
-	 * @param asyncBatchId C_Async_Batch_ID
-	 * @param <T>          model type
-	 * @return model type of supplier
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchObserver.observeOn(asyncBatchId);
+		final T result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get); // let the supplier enqueue its workpackages
 
-		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			if (result.getWorkpackageEnqueuedCount() > 0)
+			{
+				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
+			else 
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
+			}
+		}
+		finally
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
 
 		return result;
+	}
+
+	@NonNull
+	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
+	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		final Optional<Instant> startMonitoringFrom = asyncBatchObserver.getStartMonitoringTimestamp(asyncBatchId);
+
+		if (!startMonitoringFrom.isPresent())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
+			return ImmutableList.of();
+		}
+
+		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}!",
+														asyncBatchId, startMonitoringFrom.get(), workPackages.size());
+
+		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
+				.filter(workPackage -> qualifiesForBatchProcessingStatus(workPackage, startMonitoringFrom.get()))
+				.collect(ImmutableList.toImmutableList());
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
+														asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
+
+		return filteredWPs;
+	}
+
+	/**
+	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
+	 * <br/>
+	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * <br/>
+	 * <br/>
+	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
+	 * <br/>
+	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * <br/>
+	 * <br/>
+	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
+	 * <br/>
+	 *
+	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
+	 */
+	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)
+	{
+		final boolean wasCreatedAfterMonitorStarted = workPackage.getCreated().toInstant().getEpochSecond() >= startMonitoringFrom.getEpochSecond();
+
+		final boolean wasProcessedAfterMonitorStarted = workPackage.getUpdated().toInstant().getEpochSecond() >= startMonitoringFrom.getEpochSecond()
+				&& (workPackage.isProcessed() || workPackage.isError())
+				&& workPackage.getSkippedAt() == null;
+
+		final boolean isPendingProcessingNoSkipping = !workPackage.isError()
+				&& !workPackage.isProcessed()
+				&& workPackage.isReadyForProcessing()
+				&& workPackage.getSkippedAt() == null;
+
+		return wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping;
 	}
 }

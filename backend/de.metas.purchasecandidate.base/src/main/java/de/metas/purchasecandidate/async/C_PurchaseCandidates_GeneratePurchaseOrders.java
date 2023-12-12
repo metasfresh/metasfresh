@@ -104,14 +104,13 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					TableRecordReference.ofCollection(candidateRecords);
 
 			Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(C_PurchaseCandidates_GeneratePurchaseOrders.class)
-					.newBlock()
-					.newWorkpackage()
+					.newWorkPackage()
 					.setElementsLocker(elementsLocker)
 					.bindToThreadInheritedTrx()
 					.addElements(candidateRecordReferences)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.parameter(DOC_TYPE_ID, docTypeId)
-					.build();
+					.buildAndEnqueue();
 		}
 	}
 
