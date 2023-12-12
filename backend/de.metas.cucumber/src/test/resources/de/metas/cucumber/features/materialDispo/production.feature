@@ -271,10 +271,11 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 2   | 0                      |
       | c_l_1_1    | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -2  | 0                      |
 
+
+  @flaky
   @Id:S0196_100
   @from:cucumber
   @Id:S0129.2_110
-  @ignore # flaky
   Scenario: Close production candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
@@ -370,9 +371,11 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @flaky
   @Id:S0196_200
   @from:cucumber
   @Id:S0129.2_120
+
   Scenario: Production candidate is closed after it has been processed
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
