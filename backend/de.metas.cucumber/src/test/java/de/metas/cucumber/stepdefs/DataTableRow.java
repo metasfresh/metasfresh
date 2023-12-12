@@ -22,18 +22,26 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.OptionalBoolean;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @EqualsAndHashCode
@@ -76,6 +84,12 @@ public class DataTableRow
 		}
 
 		return Optional.ofNullable(value);
+	}
+
+	@NonNull
+	public StepDefDataIdentifier getAsIdentifier()
+	{
+		return getAsIdentifier(StepDefDataIdentifier.SUFFIX);
 	}
 
 	@NonNull
@@ -123,8 +137,74 @@ public class DataTableRow
 		return DataTableUtil.extractBigDecimalForColumnName(map, columnName);
 	}
 
+	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)
+	{
+		return Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(map, columnName));
+	}
+
 	public int getAsInt(@NonNull final String columnName)
 	{
 		return DataTableUtil.extractIntForColumnName(map, columnName);
 	}
+
+	@NonNull
+	public OptionalInt getAsOptionalInt(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName)
+				.map(DataTableRow::parseOptionalInt)
+				.orElseGet(OptionalInt::empty);
+	}
+
+	private static OptionalInt parseOptionalInt(@Nullable final String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		if (valueNorm == null)
+		{
+			return OptionalInt.empty();
+		}
+
+		final int valueInt = NumberUtils.asInt(value);
+		return OptionalInt.of(valueInt);
+	}
+
+	@NonNull
+	public boolean getAsBoolean(@NonNull final String columnName)
+	{
+		final Boolean valueBoolean = getAsOptionalBoolean(columnName).toBooleanOrNull();
+		if (valueBoolean == null)
+		{
+			throw new AdempiereException("No value found for " + columnName);
+		}
+		return valueBoolean;
+	}
+
+	@NonNull
+	public OptionalBoolean getAsOptionalBoolean(@NonNull final String columnName)
+	{
+		final String valueString = getAsOptionalString(columnName).orElse(null);
+		return OptionalBoolean.ofNullableString(valueString);
+	}
+
+	public Optional<Quantity> getAsOptionalQuantity(
+			@NonNull final String valueColumnName,
+			@NonNull final String uomColumnName,
+			@NonNull final Function<String, I_C_UOM> uomMapper)
+	{
+		final BigDecimal valueBD = getAsOptionalBigDecimal(valueColumnName).orElse(null);
+		if (valueBD == null)
+		{
+			return Optional.empty();
+		}
+
+		final String uomString = getAsOptionalString(uomColumnName).orElse(null);
+		if (uomString == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_UOM uom = uomMapper.apply(uomString);
+
+		return Optional.of(Quantity.of(valueBD, uom));
+	}
+
 }
