@@ -88,9 +88,4 @@ public class ProductPlanning
 	@Nullable DistributionNetworkId distributionNetworkId;
 
 	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
-
-	public ProductPlanning withId(final ProductPlanningId id)
-	{
-		return ProductPlanningId.equals(this.id, id) ? this : toBuilder().id(id).build();
-	}
 }

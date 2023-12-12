@@ -326,7 +326,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		final I_PP_Product_Planning record = InterfaceWrapperHelper.loadOrNew(productPlanning.getId(), I_PP_Product_Planning.class);
 		updateRecord(record, productPlanning);
 		save(record);
-		return productPlanning.withId(ProductPlanningId.ofRepoId(record.getPP_Product_Planning_ID()));
+
+		// Because we want to also load changes done by model interceptors like StorageAttributesKey,
+		// we are fully reloading our POJO from record
+		return fromRecord(record);
 	}
 
 	@VisibleForTesting
