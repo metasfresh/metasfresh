@@ -76,7 +76,7 @@ public class ShippingNotification
 	@NonNull private final OrderId salesOrderId;
 	@NonNull private final Instant dateAcct;
 	@NonNull private final Instant physicalClearanceDate;
-	@NonNull private final YearAndCalendarId harvestingYearId;
+	@Nullable private final YearAndCalendarId harvestingYearId;
 	@Nullable private final String poReference;
 	@Nullable private final String description;
 	@NonNull @Setter private DocStatus docStatus;
@@ -100,7 +100,7 @@ public class ShippingNotification
 			@NonNull final LocatorId locatorId,
 			@NonNull final OrderId salesOrderId,
 			final @NonNull Instant dateAcct, @NonNull final Instant physicalClearanceDate,
-			@NonNull final YearAndCalendarId harvestingYearId,
+			@Nullable final YearAndCalendarId harvestingYearId,
 			@Nullable final String poReference,
 			@Nullable final String description,
 			@NonNull final DocStatus docStatus,
