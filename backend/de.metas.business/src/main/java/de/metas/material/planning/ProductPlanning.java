@@ -48,41 +48,48 @@ public class ProductPlanning
 	boolean disallowSaving;
 	@Nullable ProductPlanningId id;
 	@Nullable ProductPlanningSchemaId productPlanningSchemaId;
+
+	//
+	// Selector
 	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
-
 	@Nullable ResourceId plantId;
-	@Nullable PPRoutingId workflowId;
-
 	boolean isAttributeDependant;
 	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
+	int seqNo;
 
+	//
+	// Common
 	@Nullable UserId plannerId;
 	boolean isCreatePlan;
-	@Nullable ProductBOMVersionsId bomVersionsId;
-	boolean isPickingOrder;
-	boolean isPickDirectlyIfFeasible;
-	boolean isDocComplete;
-	int seqNo;
 	int transferTimeDays;
 	int leadTimeDays;
+	boolean isDocComplete;
 
+	//
+	// Manufacturing
 	boolean isManufactured;
-	boolean isPurchased;
-
+	@Nullable ProductBOMVersionsId bomVersionsId;
+	@Nullable PPRoutingId workflowId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
+	// Picking
+	boolean isPickingOrder;
+	boolean isPickDirectlyIfFeasible;
 
-	@Nullable DistributionNetworkId distributionNetworkId;
-
+	//
+	// Purchasing
+	boolean isPurchased;
 	@Nullable OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse;
+
+	//
+	// Distribution
+	@Nullable DistributionNetworkId distributionNetworkId;
 
 	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
 
 	public ProductPlanning withId(final ProductPlanningId id)
 	{
-		return ProductPlanningId.equals(this.id, id)
-				? this
-				: toBuilder().id(id).build();
+		return ProductPlanningId.equals(this.id, id) ? this : toBuilder().id(id).build();
 	}
 }
