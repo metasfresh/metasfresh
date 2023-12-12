@@ -3,6 +3,8 @@ package de.metas.material.planning.impl;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -10,12 +12,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +35,7 @@ public class ProductPlanningDAO_findPlantTest
 	private IContextAware context;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -231,17 +233,13 @@ public class ProductPlanningDAO_findPlantTest
 
 	private ProductPlanning createProductPlanning(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product, ResourceId plantId)
 	{
-		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
-		pp.setIsAttributeDependant(false);
-		pp.setAD_Org_ID(org.getAD_Org_ID());
-		pp.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		pp.setM_Product_ID(product.getM_Product_ID());
-		if (plantId != null)
-		{
-			pp.setS_Resource_ID(plantId.getRepoId());
-		}
-		InterfaceWrapperHelper.save(pp);
-		return ProductPlanningDAO.fromRecord(pp);
+		return productPlanningDAO.save(ProductPlanning.builder()
+				.isAttributeDependant(false)
+				.orgId(OrgId.ofRepoIdOrAny(org.getAD_Org_ID()))
+				.warehouseId(warehouse != null ? WarehouseId.ofRepoIdOrNull(warehouse.getM_Warehouse_ID()) : null)
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.plantId(plantId)
+				.build());
 	}
 
 }
