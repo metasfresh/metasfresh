@@ -20,10 +20,10 @@
  * #L%
  */
 
-DROP VIEW IF EXISTS purchaseprices_plv_v
+DROP VIEW IF EXISTS purchase_prices_in_stock_uom_plv_v
 ;
 
-CREATE TEMP VIEW purchase_prices_in_stock_uom_plv_v AS
+CREATE VIEW purchase_prices_in_stock_uom_plv_v AS
 SELECT pl.m_pricelist_id,
        pl.c_currency_id,
        plv.m_pricelist_version_id,
