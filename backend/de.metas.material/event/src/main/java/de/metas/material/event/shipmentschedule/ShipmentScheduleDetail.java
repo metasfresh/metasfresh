@@ -39,6 +39,9 @@ public class ShipmentScheduleDetail
 	BigDecimal orderedQuantity;
 
 	@NonNull
+	BigDecimal orderedQuantityDelta;
+
+	@NonNull
 	BigDecimal reservedQuantity;
 
 	@NonNull

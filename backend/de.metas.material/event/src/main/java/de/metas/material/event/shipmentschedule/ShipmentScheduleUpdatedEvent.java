@@ -70,4 +70,11 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 	{
 		return getShipmentScheduleDetail().getReservedQuantityDelta();
 	}
+
+	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantityDelta();
+	}
 }

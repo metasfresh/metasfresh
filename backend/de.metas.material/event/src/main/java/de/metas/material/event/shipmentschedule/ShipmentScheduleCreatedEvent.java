@@ -73,6 +73,13 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	}
 
 	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity();
+	}
+
+	@Override
 	public void validate()
 	{
 		super.validate();

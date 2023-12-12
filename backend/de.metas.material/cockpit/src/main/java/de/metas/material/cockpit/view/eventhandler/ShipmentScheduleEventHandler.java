@@ -114,6 +114,7 @@ public class ShipmentScheduleEventHandler
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.qtyDemandSalesOrder(shipmentScheduleEvent.getReservedQuantityDelta())
+				.orderedSalesQty(shipmentScheduleEvent.getOrderedQuantityDelta())
 				.build();
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
 
@@ -239,16 +240,18 @@ public class ShipmentScheduleEventHandler
 			@NonNull final MainDataRecordIdentifier identifier)
 	{
 		final BigDecimal oldReservedQuantity = oldShipmentScheduleData.getOldReservedQuantity();
+		final BigDecimal oldOrderedQuantity = oldShipmentScheduleData.getOldOrderedQuantity();
 
-		if (oldReservedQuantity.signum() == 0)
+		if (oldReservedQuantity.signum() == 0 && oldOrderedQuantity.signum() == 0)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has oldReservedQuantity = zero");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has oldReservedQuantity and oldOrderedQuantity = zero");
 			return;
 		}
 
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.qtyDemandSalesOrder(oldReservedQuantity.negate())
+				.orderedSalesQty(oldOrderedQuantity.negate())
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
