@@ -21,6 +21,7 @@ Feature: create production order
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
 
+  @flaky
   @from:cucumber
   @Id:S0129.1_100
   @Id:S0129.2_100
