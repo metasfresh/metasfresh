@@ -3,7 +3,8 @@
 Feature: create distribution simulation
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
 
   @from:cucumber
@@ -33,11 +34,11 @@ Feature: create distribution simulation
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
-    And metasfresh contains M_Warehouse
+    And metasfresh contains M_Warehouse:
       | M_Warehouse_ID.Identifier | Name             | Value            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.IsInTransit |
       | warehouse_1               | WarehouseTransit | WarehouseTransit | bpartner_1               | location_1                        | true            |
       | warehouse_2               | WarehouseSource  | WarehouseSource  | bpartner_1               | location_1                        | false           |
-    And metasfresh contains M_Locator
+    And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value    | M_Warehouse_ID.Identifier |
       | locator_1               | Standard | warehouse_2               |
     And load M_Shipper

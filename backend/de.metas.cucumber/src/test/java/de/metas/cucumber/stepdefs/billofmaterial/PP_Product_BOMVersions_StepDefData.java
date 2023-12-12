@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.billofmaterial;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 
@@ -33,9 +34,9 @@ public class PP_Product_BOMVersions_StepDefData extends StepDefData<I_PP_Product
 		super(I_PP_Product_BOMVersions.class);
 	}
 
-	public ProductBOMVersionsId getId(final String bomVersionsIdentifier)
+	public ProductBOMVersionsId getId(final StepDefDataIdentifier identifier)
 	{
-		final I_PP_Product_BOMVersions bomVersions = get(bomVersionsIdentifier);
+		final I_PP_Product_BOMVersions bomVersions = get(identifier);
 		return ProductBOMVersionsId.ofRepoId(bomVersions.getPP_Product_BOMVersions_ID());
 	}
 }
