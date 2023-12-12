@@ -19,6 +19,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
@@ -61,14 +62,10 @@ import java.util.stream.Collectors;
  * #L%
  */
 @Service
+@RequiredArgsConstructor
 public class DDOrderPojoSupplier
 {
-	private final ModelProductDescriptorExtractor productDescriptorFactory;
-
-	public DDOrderPojoSupplier(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
-	{
-		this.productDescriptorFactory = productDescriptorFactory;
-	}
+	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
 	{
@@ -244,7 +241,7 @@ public class DDOrderPojoSupplier
 	}
 
 	@VisibleForTesting
-	/* package */final BigDecimal calculateQtyToMove(
+	/* package */ final BigDecimal calculateQtyToMove(
 			@NonNull final BigDecimal qtyToMoveRequested,
 			@NonNull final BigDecimal networkLineTransferPercent)
 	{
