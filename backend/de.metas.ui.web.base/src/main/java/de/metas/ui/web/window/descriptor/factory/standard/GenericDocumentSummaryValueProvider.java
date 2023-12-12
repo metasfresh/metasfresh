@@ -1,23 +1,9 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
-import org.adempiere.ad.service.TableRefInfo;
-import org.compiere.model.ILookupDisplayColumn;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.ad_reference.TableRefTable;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -31,6 +17,18 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.util.Services;
 import lombok.Data;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
+import org.compiere.model.ILookupDisplayColumn;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -90,8 +88,8 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			}
 
 			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
-			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefInfo);
+			final TableRefTable tableRefTable = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
+			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefTable);
 
 			final ImmutableList<FieldValueExtractor> displayColumnNames = displayInfo.getLookupDisplayColumns()
 					.stream()

@@ -1,27 +1,25 @@
 package org.adempiere.ad.column.autoapplyvalrule;
 
-import java.util.Collection;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
-import org.adempiere.ad.service.TableRefInfo;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Column;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
+import de.metas.ad_reference.TableRefTable;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Column;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -100,10 +98,10 @@ public class ValRuleAutoApplier
 			@NonNull final Object recordModel,
 			@NonNull final I_AD_Column column)
 	{
-		final TableRefInfo tableRefInfo = extractTableRefInfo(column);
+		final TableRefTable tableRefTable = extractTableRefInfo(column);
 
 		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(tableRefInfo.getTableName());
+				.createQueryBuilder(tableRefTable.getTableName());
 
 		if (column.getAD_Val_Rule_ID() > 0)
 		{
@@ -114,7 +112,7 @@ public class ValRuleAutoApplier
 				.create()
 				.setRequiredAccess(Access.READ);
 
-		final String orderByClause = tableRefInfo.getOrderByClause();
+		final String orderByClause = tableRefTable.getOrderByClause();
 		if (query instanceof TypedSqlQuery && !Check.isEmpty(orderByClause, true))
 		{
 			@SuppressWarnings("rawtypes")
@@ -126,19 +124,19 @@ public class ValRuleAutoApplier
 		return resultId;
 	}
 
-	private TableRefInfo extractTableRefInfo(@NonNull final I_AD_Column column)
+	private TableRefTable extractTableRefInfo(@NonNull final I_AD_Column column)
 	{
 		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
-		final TableRefInfo tableRefInfo;
+		final TableRefTable tableRefTable;
 		if (column.getAD_Reference_Value_ID() > 0)
 		{
-			tableRefInfo = lookupDAO.retrieveTableRefInfo(column.getAD_Reference_Value_ID());
+			tableRefTable = lookupDAO.retrieveTableRefInfo(column.getAD_Reference_Value_ID());
 		}
 		else
 		{
-			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(column.getColumnName());
+			tableRefTable = lookupDAO.retrieveTableDirectRefInfo(column.getColumnName());
 		}
-		return tableRefInfo;
+		return tableRefTable;
 	}
 }

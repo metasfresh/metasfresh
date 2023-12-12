@@ -65,13 +65,11 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
-;
-
 @Component
 public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final ADReferenceService adReferenceService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final CCache<String, ImmutableList<SpecificRelationTypeRelatedDocumentsProvider>> providersBySourceTableName = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
@@ -87,8 +85,10 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 			+ createOrderBy();
 
 	public RelationTypeRelatedDocumentsProvidersFactory(
+			@NonNull final ADReferenceService adReferenceService,
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
+		this.adReferenceService = adReferenceService;
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
@@ -163,9 +163,9 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		{
 			return provider.retrieveRelatedDocumentsCandidates(fromDocument, targetWindowId).stream();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId);
+			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId, ex);
 			return Stream.empty();
 		}
 	}
@@ -260,7 +260,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 
 	@VisibleForTesting
 	@Nullable
-	protected SpecificRelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
+	SpecificRelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
 	{
 		final ADRefListItem roleSourceItem = adReferenceService.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
@@ -269,6 +269,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
 		return SpecificRelationTypeRelatedDocumentsProvider.builder()
+				.setAdReferenceService(adReferenceService)
 				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 				.setInternalName(relationType.getInternalName())
