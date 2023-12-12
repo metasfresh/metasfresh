@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -209,7 +211,7 @@ class ShippingNotificationLoaderAndSaver
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
-				.harvestingYearId(YearAndCalendarId.ofRepoId(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
+				.harvestingYearId(YearAndCalendarId.ofRepoIdOrNull(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
 				.poReference(StringUtils.trimBlankToNull(record.getPOReference()))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
@@ -252,7 +254,7 @@ class ShippingNotificationLoaderAndSaver
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(lineRecord -> ShippingNotificationLineId.ofRepoId(lineRecord.getM_Shipping_NotificationLine_ID())));
 
-		for (ShippingNotificationLine line : shippingNotification.getLines())
+		for (final ShippingNotificationLine line : shippingNotification.getLines())
 		{
 			I_M_Shipping_NotificationLine lineRecord = line.getId() != null
 					? existingLineRecordsById.remove(line.getId())
@@ -275,6 +277,10 @@ class ShippingNotificationLoaderAndSaver
 
 	private static void updateRecord(@NonNull final I_M_Shipping_Notification record, @NonNull final ShippingNotification from)
 	{
+		final YearAndCalendarId harvestingYearId = from.getHarvestingYearId();
+		final YearId yearId = harvestingYearId == null ? null : harvestingYearId.yearId();
+		final CalendarId calendarId = harvestingYearId == null ? null : harvestingYearId.calendarId();
+
 		record.setAD_Org_ID(from.getClientAndOrgId().getOrgId().getRepoId());
 		record.setC_DocType_ID(from.getDocTypeId().getRepoId());
 		record.setDocumentNo(from.getDocumentNo());
@@ -288,8 +294,8 @@ class ShippingNotificationLoaderAndSaver
 		record.setDateAcct(Timestamp.from(from.getDateAcct()));
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
 		record.setDateAcct(Timestamp.from(from.getPhysicalClearanceDate()));
-		record.setHarvesting_Year_ID(from.getHarvestingYearId().yearId().getRepoId());
-		record.setC_Harvesting_Calendar_ID(from.getHarvestingYearId().calendarId().getRepoId());
+		record.setHarvesting_Year_ID(YearId.toRepoId(yearId));
+		record.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(calendarId));
 		record.setPOReference(from.getPoReference());
 		record.setDescription(from.getDescription());
 		record.setDocStatus(from.getDocStatus().getCode());
@@ -319,7 +325,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setC_OrderLine_ID(fromLine.getSalesOrderAndLineId().getOrderLineRepoId());
 	}
 
-	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
+	private void saveRecordIfAllowed(@NonNull final I_M_Shipping_Notification shippingNotificationRecord)
 	{
 		final ShippingNotificationId id = extractIdOrNull(shippingNotificationRecord);
 		if (id != null && headerIdsToAvoidSaving.contains(id))
@@ -329,7 +335,7 @@ class ShippingNotificationLoaderAndSaver
 		InterfaceWrapperHelper.saveRecord(shippingNotificationRecord);
 	}
 
-	private void saveLine(@NonNull I_M_Shipping_NotificationLine shippingNotificationLineRecord)
+	private void saveLine(@NonNull final I_M_Shipping_NotificationLine shippingNotificationLineRecord)
 	{
 		InterfaceWrapperHelper.save(shippingNotificationLineRecord);
 	}

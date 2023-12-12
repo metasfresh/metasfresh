@@ -184,7 +184,7 @@ public interface I_M_Shipping_Notification
 	 * Set Harvesting Calendar.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
@@ -193,14 +193,14 @@ public interface I_M_Shipping_Notification
 	 * Get Harvesting Calendar.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Harvesting_Calendar_ID();
 
-	org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
 
-	void setC_Harvesting_Calendar(org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
 
 	ModelColumn<I_M_Shipping_Notification, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
@@ -371,8 +371,8 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Set Harvesting Year.
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setHarvesting_Year_ID (int Harvesting_Year_ID);
@@ -380,15 +380,15 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Get Harvesting Year.
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getHarvesting_Year_ID();
 
-	org.compiere.model.I_C_Year getHarvesting_Year();
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
 
-	void setHarvesting_Year(org.compiere.model.I_C_Year Harvesting_Year);
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
 
 	ModelColumn<I_M_Shipping_Notification, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
