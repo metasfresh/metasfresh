@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.AdRefListRepositoryMocked;
-import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.common.util.time.SystemTime;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -100,7 +98,7 @@ public class MaterialCockpitRowFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(ADReferenceService.class,new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+		SpringContextHolder.registerJUnitBean(ADReferenceService.class, ADReferenceService.newMocked());
 
 		attributesTestHelper = new AttributesTestHelper();
 

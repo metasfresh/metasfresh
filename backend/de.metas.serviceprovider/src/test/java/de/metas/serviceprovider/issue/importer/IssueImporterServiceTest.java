@@ -79,7 +79,7 @@ class IssueImporterServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final ADReferenceService adReferenceService = ADReferenceService.newMocked();
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 

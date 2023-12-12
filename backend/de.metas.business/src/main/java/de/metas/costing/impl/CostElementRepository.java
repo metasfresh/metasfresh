@@ -54,12 +54,14 @@ import java.util.stream.Stream;
 public class CostElementRepository implements ICostElementRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final ADReferenceService adReferenceService;
 
-	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
+	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements>builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
 			.build();
+
+	public CostElementRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	private IndexedCostElements getIndexedCostElements()
 	{
