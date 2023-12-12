@@ -29,11 +29,11 @@ public interface IProductPlanningDAO extends ISingletonService
 	@Value
 	class ProductPlanningQuery
 	{
-		OrgId orgId;
-		WarehouseId warehouseId;
-		ResourceId plantId;
-		ProductId productId;
-		AttributeSetInstanceId attributeSetInstanceId;
+		@Nullable OrgId orgId;
+		@Nullable WarehouseId warehouseId;
+		@Nullable ResourceId plantId;
+		@Nullable ProductId productId;
+		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
 		 * @param orgId                  may be null which means only the * org
@@ -48,13 +48,13 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
-				@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+				@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
-			this.attributeSetInstanceId = attributeSetInstanceId;
+			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		}
 	}
 

@@ -248,11 +248,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	private IQueryBuilder<I_PP_Product_Planning> createQueryBuilder(
-			final OrgId orgId,
-			final WarehouseId warehouseId,
-			final ResourceId resourceId,
-			final ProductId productId,
-			final AttributeSetInstanceId attributeSetInstanceId)
+			@Nullable final OrgId orgId,
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ResourceId resourceId,
+			@Nullable final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
@@ -290,7 +290,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.endOrderBy();
 	}
 
-	private ICompositeQueryFilter<I_PP_Product_Planning> createAttributesFilter(final AttributeSetInstanceId attributeSetInstanceId)
+	private ICompositeQueryFilter<I_PP_Product_Planning> createAttributesFilter(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
@@ -304,7 +304,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addFilter(matchingAsiFilter);
 	}
 
-	private static IQueryFilter<I_PP_Product_Planning> createStorageAttributeKeyFilter(final AttributeSetInstanceId attributeSetInstanceId)
+	private static IQueryFilter<I_PP_Product_Planning> createStorageAttributeKeyFilter(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final AttributesKey attributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
