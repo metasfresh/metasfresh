@@ -433,14 +433,22 @@ export default function windowHandler(state = initialState, action) {
         },
       };
 
-    case INIT_DATA_SUCCESS:
+    case INIT_DATA_SUCCESS: {
+      const layout = state[action.scope].layout ?? {};
+      if (action.notFoundMessage !== undefined) {
+        layout.notFoundMessage = action.notFoundMessage;
+      }
+      if (action.notFoundMessageDetail !== undefined) {
+        layout.notFoundMessageDetail = action.notFoundMessageDetail;
+      }
+
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
           data: action.data,
           docId: action.docId,
-          layout: {},
+          layout,
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
           validStatus: action.validStatus,
@@ -449,6 +457,7 @@ export default function windowHandler(state = initialState, action) {
           hasComments: action.hasComments,
         },
       };
+    }
     case UPDATE_MASTER_DATA:
       return {
         ...state,

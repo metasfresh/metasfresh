@@ -1,8 +1,8 @@
-import { post, get, delete as del } from 'axios';
+import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery } from '../utils';
+import { formatSortingQuery, getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -95,8 +95,18 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**
