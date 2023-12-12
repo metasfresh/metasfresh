@@ -40,11 +40,11 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.springframework.stereotype.Service;
 
-import static org.eevolution.exceptions.ExceptionConstants.PP_PRODUCT_PLANNING_BOM_ATTR_ERROR;
-
 @Service
 public class ProductBOMService
 {
+	private static final AdMessageKey PP_PRODUCT_PLANNING_BOM_ATTR_ERROR = AdMessageKey.of("PP_Product_Planning_BOM_Attribute_Error");
+
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ProductBOMVersionsDAO bomVersionsDAO;
@@ -89,7 +89,7 @@ public class ProductBOMService
 
 		if (!productBOMAttributesKeys.contains(planningAttributesKeys))
 		{
-			throw new AdempiereException(AdMessageKey.of(PP_PRODUCT_PLANNING_BOM_ATTR_ERROR));
+			throw new AdempiereException(PP_PRODUCT_PLANNING_BOM_ATTR_ERROR);
 		}
 	}
 }
