@@ -33,7 +33,7 @@ import org.springframework.core.io.ByteArrayResource;
 import javax.annotation.Nullable;
 import java.util.Comparator;
 
-public class AD_WF_Approval_Request_Download_File extends JavaProcess
+public class Open_AttachmentEntry_TopAction extends JavaProcess
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
