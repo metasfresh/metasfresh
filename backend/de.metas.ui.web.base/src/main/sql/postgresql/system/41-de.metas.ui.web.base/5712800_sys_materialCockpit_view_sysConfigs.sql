@@ -205,3 +205,4 @@ INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, Configuratio
 VALUES (0, 0, 541676, 'O', TO_TIMESTAMP('2023-12-13 09:53:12.043000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', 100, 'Also add quantities of components of the sold product', 'de.metas.material.cockpit', 'Y', 'de.metas.ui.web.material.cockpit.field.QtyOrdered_SalesOrder_AtDate.BOMSupport',
         TO_TIMESTAMP('2023-12-13 09:53:12.043000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', 100, 'Y')
 ;
+
