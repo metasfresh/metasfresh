@@ -109,14 +109,13 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						supplyRequiredDescriptor,
 						mrpContext);
 
-		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
-
 		assertThat(purchaseAdvisedEvent).isPresent();
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
-		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build());
 
 		productPlanning = productPlanningDAO.save(productPlanning.toBuilder().isLotForLot(true).build());
+		mrpContext.setProductPlanning(productPlanning);
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(null).build();
 
 		// invoke the method under test
