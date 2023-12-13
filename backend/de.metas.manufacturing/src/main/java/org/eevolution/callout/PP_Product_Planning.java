@@ -29,6 +29,22 @@ public class PP_Product_Planning extends CalloutEngine
 		this.maturingConfigRepo = maturingConfigRepo;
 	}
 
+	@CalloutMethod(columnNames = I_PP_Product_Planning.COLUMNNAME_IsMatured)
+	public void onIsMatured(final I_PP_Product_Planning productPlanningRecord)
+	{
+		if (productPlanningRecord.isMatured())
+		{
+			final List<MaturingConfigLine> configLines = maturingConfigRepo.getByMaturedProductId(ProductId.ofRepoIdOrNull(productPlanningRecord.getM_Product_ID()));
+			if (configLines.isEmpty() || configLines.size() > 1)
+			{
+				return;
+			}
+
+			final MaturingConfigLine line = configLines.get(0);
+			productPlanningRecord.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(line.getMaturingConfigId()));
+			productPlanningRecord.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(line.getId()));
+		}
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_IsMatured })
