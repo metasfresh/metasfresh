@@ -3236,3 +3236,19 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723258,0,547345,551402,622023,'F',TO_TIMESTAMP('2023-12-13 14:04:58','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'HU',80,0,0,TO_TIMESTAMP('2023-12-13 14:04:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+-- Column: M_Maturing_Configuration_Line.MaturityAge
+-- Column: M_Maturing_Configuration_Line.MaturityAge
+-- 2023-12-13T14:32:04.271Z
+UPDATE AD_Column SET AD_Reference_ID=11,Updated=TO_TIMESTAMP('2023-12-13 16:32:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587749
+;
+
+-- 2023-12-13T14:32:05.792Z
+INSERT INTO t_alter_column values('m_maturing_configuration_line','MaturityAge','NUMERIC(10)',null,'0')
+;
+
+-- 2023-12-13T14:32:05.822Z
+UPDATE M_Maturing_Configuration_Line SET MaturityAge=0 WHERE MaturityAge IS NULL
+;
+

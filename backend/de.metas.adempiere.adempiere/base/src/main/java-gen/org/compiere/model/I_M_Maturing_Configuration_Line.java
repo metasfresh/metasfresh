@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Maturing_Configuration_Line
@@ -141,20 +140,20 @@ public interface I_M_Maturing_Configuration_Line
 	/**
 	 * Set Maturity Age.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMaturityAge (BigDecimal MaturityAge);
+	void setMaturityAge (int MaturityAge);
 
 	/**
 	 * Get Maturity Age.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getMaturityAge();
+	int getMaturityAge();
 
 	ModelColumn<I_M_Maturing_Configuration_Line, Object> COLUMN_MaturityAge = new ModelColumn<>(I_M_Maturing_Configuration_Line.class, "MaturityAge", null);
 	String COLUMNNAME_MaturityAge = "MaturityAge";

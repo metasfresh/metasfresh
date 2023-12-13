@@ -1,7 +1,6 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Maturing_Configuration_Line extends org.compiere.model.PO implements I_M_Maturing_Configuration_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1173833834L;
+	private static final long serialVersionUID = 1613730971L;
 
     /** Standard Constructor */
     public X_M_Maturing_Configuration_Line (final Properties ctx, final int M_Maturing_Configuration_Line_ID, @Nullable final String trxName)
@@ -66,16 +65,15 @@ public class X_M_Maturing_Configuration_Line extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setMaturityAge (final BigDecimal MaturityAge)
+	public void setMaturityAge (final int MaturityAge)
 	{
 		set_Value (COLUMNNAME_MaturityAge, MaturityAge);
 	}
 
 	@Override
-	public BigDecimal getMaturityAge() 
+	public int getMaturityAge() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaturityAge);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_MaturityAge);
 	}
 
 	@Override
