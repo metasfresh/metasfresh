@@ -48,7 +48,7 @@ public class CustomColumnRepository
 				+ " INNER JOIN " + I_AD_Table.Table_Name + " t ON (t.AD_Table_ID=c.AD_Table_ID)"
 				+ " WHERE c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn + "='Y'"
 				+ " AND c.IsActive='Y' AND t.IsActive='Y'"
-				+ " ORDER BY t." + I_AD_Table.Table_Name + ", c." + I_AD_Column.COLUMNNAME_ColumnName;
+				+ " ORDER BY t." + I_AD_Table.COLUMNNAME_TableName + ", c." + I_AD_Column.COLUMNNAME_ColumnName;
 
 		final HashMap<String, RESTApiTableInfoBuilder> builders = new HashMap<>();
 		DB.forEachRow(sql, null, rs -> {
