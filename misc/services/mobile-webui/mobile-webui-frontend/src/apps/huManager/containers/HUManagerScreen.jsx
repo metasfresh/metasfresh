@@ -7,7 +7,7 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { clearLoadedData, handlingUnitLoaded, changeClearanceStatus } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import { huManagerBulkActionsLocation, huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -56,6 +56,9 @@ const HUManagerScreen = () => {
   const onMoveClick = () => {
     history.push(huManagerMoveLocation());
   };
+  const onBulkActionsClick = () => {
+    history.push(huManagerBulkActionsLocation());
+  };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
   };
@@ -96,6 +99,10 @@ const HUManagerScreen = () => {
           <ButtonWithIndicator
             caption={trl('huManager.action.setClearance.buttonCaption')}
             onClick={onSetClearanceClick}
+          />
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
           />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
