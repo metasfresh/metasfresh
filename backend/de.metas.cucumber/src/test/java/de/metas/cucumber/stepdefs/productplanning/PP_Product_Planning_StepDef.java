@@ -103,7 +103,7 @@ public class PP_Product_Planning_StepDef
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 		final WarehouseId warehouseId = tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);
 
-		final boolean isLotForLot = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsLotForLot, false);
+		final boolean isLotForLot = tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsLotForLot).orElse(false);
 
 		final ProductPlanning existingProductPlanning = getExistingProductPlanning(orgId, warehouseId, productId).orElse(null);
 
@@ -116,7 +116,7 @@ public class PP_Product_Planning_StepDef
 		builder.isCreatePlan(tableRow.getAsBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan));
 		builder.isAttributeDependant(tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).orElse(false));
 		builder.isManufactured(true);
-		builder.setIsLotForLot(isLotForLot);
+		builder.isLotForLot(isLotForLot);
 
 		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)

@@ -15,7 +15,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.ProductBOMVersionsId;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -38,12 +37,12 @@ public interface IProductPlanningDAO extends ISingletonService
 		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
-		 * @param orgId                  may be null which means only the * org
-		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
-		 * @param plantId                may be null which means "no plantId"
-		 * @param productId              mandatory
-		 * @param includeWithNullProductId    may be null which means "true". If true we might find results that have M_ProducT_ID=null
-		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
+		 * @param orgId                    may be null which means only the * org
+		 * @param warehouseId              may be null which means "no warehouse" (not any warehouse!)
+		 * @param plantId                  may be null which means "no plantId"
+		 * @param productId                mandatory
+		 * @param includeWithNullProductId may be null which means "true". If true we might find results that have M_ProducT_ID=null
+		 * @param attributeSetInstanceId   mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
 		private ProductPlanningQuery(
@@ -72,19 +71,14 @@ public interface IProductPlanningDAO extends ISingletonService
 	 */
 	Optional<ProductPlanning> find(ProductPlanningQuery productPlanningQuery);
 
+	Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query);
+
 	/**
 	 * Search product plannings to find out which is the plant for given Org/Warehouse/Product.
 	 *
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
 	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
-
-	Stream<ProductPlanning> query(
-			OrgId orgId,
-			WarehouseId warehouseId,
-			ResourceId resourceId,
-			ProductId productId,
-			AttributeSetInstanceId attributeSetInstanceId);
 
 	ProductPlanning save(@NonNull ProductPlanning productPlanning);
 

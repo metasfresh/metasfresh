@@ -1,16 +1,12 @@
 package de.metas.material.planning.impl;
 
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.exception.NoPlantForWarehouseException;
-import de.metas.product.ResourceId;
-import de.metas.resource.ManufacturingResourceType;
-import de.metas.util.Services;
-import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,16 +18,10 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.compiere.model.X_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,13 +60,13 @@ public class ProductPlanningDAO_findPlantTest
 		final int productId = -1; // N/A
 		final int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantIdActual = productPlanningDAO.findPlantId(
 				adOrgId,
 				warehouse,
 				productId,
 				attributeSetInstanceId);
 
-		assertThat(plantActual).isEqualTo(plantId);
+		assertThat(plantIdActual).isEqualTo(plantId);
 	}
 
 	/**
@@ -95,13 +85,13 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct();
 		createProductPlanningWithPlant(org, warehouse, product);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantIdActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		assertThat(plantActual).isEqualTo(plantId);
+		assertThat(plantIdActual).isEqualTo(plantId);
 	}
 
 	/**
@@ -137,13 +127,13 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct();
 		final ProductPlanning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantIdActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		assertThat(plantActual).isEqualTo(productPlanning.getPlantId());
+		assertThat(plantIdActual).isEqualTo(productPlanning.getPlantId());
 	}
 
 	@Test
@@ -180,13 +170,13 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanning(org, warehouse, product, null);
 		createProductPlanning(org, warehouse, product, null);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantIdActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		assertThat(plantActual).isEqualTo(plantId);
+		assertThat(plantIdActual).isEqualTo(plantId);
 	}
 
 	private ResourceId createPlant(final String name)
@@ -223,7 +213,6 @@ public class ProductPlanningDAO_findPlantTest
 		return org;
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private I_M_Product createProduct()
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, context);

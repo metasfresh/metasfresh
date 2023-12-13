@@ -40,6 +40,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.ProductBOMVersionsId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -67,6 +68,7 @@ public class ProductPlanning
 	int transferTimeDays;
 	int leadTimeDays;
 	boolean isDocComplete;
+	boolean isLotForLot;
 
 	//
 	// Manufacturing
@@ -74,6 +76,7 @@ public class ProductPlanning
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
+	@Nullable BigDecimal qtyProcessed_OnDate;
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;

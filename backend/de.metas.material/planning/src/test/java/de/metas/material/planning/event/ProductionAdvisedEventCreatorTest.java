@@ -21,7 +21,6 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -65,7 +64,6 @@ public class ProductionAdvisedEventCreatorTest
 	PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	private I_M_Product product;
-	private ProductPlanning ppProductPlanning;
 	private IOrgDAO orgDAO;
 
 	@BeforeEach
@@ -80,9 +78,6 @@ public class ProductionAdvisedEventCreatorTest
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
-		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
-		saveRecord(ppProductPlanning);
-
 		ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 		ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
 
@@ -93,14 +88,10 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLotInfo()
 	{
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
-		ppProductPlanning.setIsLotForLot(false);
-		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(false).build());
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -122,12 +113,9 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Applied()
 	{
-		ppProductPlanning.setIsLotForLot(true);
-		saveRecord(ppProductPlanning);
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(true).build());
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -156,14 +144,14 @@ public class ProductionAdvisedEventCreatorTest
 	{
 		return PPOrderCandidate.builder()
 				.ppOrderData(PPOrderData.builder()
-									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
-									 .plantId(ResourceId.ofRepoId(1))
-									 .warehouseId(WarehouseId.ofRepoId(1))
-									 .productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
-									 .datePromised(Instant.now())
-									 .dateStartSchedule(Instant.now())
-									 .qtyRequired(new BigDecimal("100"))
-									 .build())
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
+						.plantId(ResourceId.ofRepoId(1))
+						.warehouseId(WarehouseId.ofRepoId(1))
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
+						.datePromised(Instant.now())
+						.dateStartSchedule(Instant.now())
+						.qtyRequired(new BigDecimal("100"))
+						.build())
 				.build();
 	}
 }

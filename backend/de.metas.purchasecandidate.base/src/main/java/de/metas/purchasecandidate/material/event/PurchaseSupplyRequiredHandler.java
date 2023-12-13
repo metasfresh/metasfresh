@@ -13,10 +13,9 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.impl.MaterialPlanningContext;
-import de.metas.material.planning.ProductPlanning;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -25,11 +24,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -66,7 +61,6 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 	private static final Logger logger = LogManager.getLogger(PurchaseSupplyRequiredHandler.class);
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
 	private final PostMaterialEventService postMaterialEventService;
 
@@ -135,7 +129,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
 		final ProductPlanningId ppOrderProductPlanningId = ProductPlanningId.ofRepoIdOrNull((materialDemandEvent.getPpOrderProductPlanningId()));
-		final I_PP_Product_Planning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
+		final ProductPlanning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
 
 		mrpContext.setProductId(ProductId.ofRepoId(materialDescr.getProductId()));
 		mrpContext.setAttributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescr.getAttributeSetInstanceId()));

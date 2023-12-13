@@ -20,7 +20,6 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -63,7 +62,6 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	private DDOrderDemandMatcher ddOrderDemandMatcher;
 	private DDOrderPojoSupplier ddOrderPojoSupplier;
 
-	private ProductPlanning ppProductPlanning;
 	private I_M_Product product;
 
 	private IOrgDAO orgDAO;
@@ -75,9 +73,6 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
-
-		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
-		saveRecord(ppProductPlanning);
 
 		product = newInstance(I_M_Product.class);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
@@ -96,11 +91,8 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
-		ppProductPlanning.setIsLotForLot(false);
-		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(false).build());
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -122,12 +114,9 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot()
 	{
-		ppProductPlanning.setIsLotForLot(true);
-		saveRecord(ppProductPlanning);
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(true).build());
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);

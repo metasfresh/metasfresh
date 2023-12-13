@@ -113,12 +113,14 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.isPickingOrder(record.isPickingOrder())
 				.isPickDirectlyIfFeasible(record.isPickDirectlyIfFeasible())
 				.isDocComplete(record.isDocComplete())
+				.isLotForLot(record.isLotForLot())
 				.seqNo(record.getSeqNo())
 				.transferTimeDays(record.getTransfertTime().intValueExact())
 				.leadTimeDays(record.getDeliveryTime_Promised().intValueExact())
 				.isManufactured(StringUtils.toBoolean(record.getIsManufactured()))
 				.isPurchased(StringUtils.toBoolean(record.getIsPurchased()))
 				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
+				.qtyProcessed_OnDate(record.getQtyProcessed_OnDate())
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
 				.build();
@@ -141,6 +143,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setIsPickingOrder(from.isPickingOrder());
 		record.setIsPickDirectlyIfFeasible(from.isPickDirectlyIfFeasible());
 		record.setIsDocComplete(from.isDocComplete());
+		record.setIsLotForLot(from.isLotForLot());
 		record.setSeqNo(from.getSeqNo());
 		record.setTransfertTime(BigDecimal.valueOf(from.getTransferTimeDays()));
 		record.setDeliveryTime_Promised(BigDecimal.valueOf(from.getLeadTimeDays()));
@@ -148,6 +151,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setIsPurchased(StringUtils.ofBoolean(from.isPurchased()));
 		record.setMaxManufacturedQtyPerOrderDispo(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().toBigDecimal() : null);
 		record.setMaxManufacturedQtyPerOrderDispo_UOM_ID(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().getUomId().getRepoId() : -1);
+		record.setQtyProcessed_OnDate(from.getQtyProcessed_OnDate());
 		record.setDD_NetworkDistribution_ID(DistributionNetworkId.toRepoId(from.getDistributionNetworkId()));
 		record.setOnMaterialReceiptWithDestWarehouse(from.getOnMaterialReceiptWithDestWarehouse() != null ? from.getOnMaterialReceiptWithDestWarehouse().getCode() : null);
 	}
@@ -174,13 +178,20 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	public Optional<ProductPlanning> find(@NonNull final ProductPlanningQuery query)
 	{
 		return toSql(query)
-				.create()
-				.firstOptional(I_PP_Product_Planning.class)
+				.firstOptional()
 				.map(ProductPlanningDAO::fromRecord);
 	}
 
 	@Override
-	public ResourceId findPlant(
+	public Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query)
+	{
+		return toSql(query)
+				.stream()
+				.map(ProductPlanningDAO::fromRecord);
+	}
+
+	@Override
+	public ResourceId findPlantId(
 			final int orgRepoId,
 			final I_M_Warehouse warehouse,
 			final int productRepoId,
@@ -268,7 +279,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();
 	}
 

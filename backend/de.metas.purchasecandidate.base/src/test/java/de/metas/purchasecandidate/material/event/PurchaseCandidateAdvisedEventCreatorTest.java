@@ -59,18 +59,14 @@ import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
-	private ProductPlanning productPlanning;
+	private IProductPlanningDAO productPlanningDAO;
 	private IOrgDAO orgDAO;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-		this.productPlanning = productPlanningDAO.save(ProductPlanning.builder()
-				.isPurchased(true)
-				.build());
+		productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		orgDAO = Mockito.mock(IOrgDAO.class);
 		Services.registerService(IOrgDAO.class, orgDAO);
@@ -98,6 +94,8 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.fullDemandQty(BigDecimal.TEN)
 				.build();
 
+		ProductPlanning productPlanning = productPlanningDAO.save(ProductPlanning.builder().isPurchased(true).build());
+
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
 		mrpContext.setProductPlanning(productPlanning);
 
@@ -118,8 +116,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 
-		productPlanningRecord.setIsLotForLot(true);
-		save(productPlanningRecord);
+		productPlanning = productPlanningDAO.save(productPlanning.toBuilder().isLotForLot(true).build());
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(null).build();
 
 		// invoke the method under test
@@ -134,8 +131,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.build();
 
 		assertThat(purchaseAdvisedEvent2).isPresent();
-		assertThat(purchaseAdvisedEvent2.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent2.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
 		assertThat(purchaseAdvisedEvent2.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvent2.get().getSupplyRequiredDescriptor()).usingRecursiveComparison().isEqualTo(supplyRequiredDescriptor);
 		assertThat(purchaseAdvisedEvent2.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 

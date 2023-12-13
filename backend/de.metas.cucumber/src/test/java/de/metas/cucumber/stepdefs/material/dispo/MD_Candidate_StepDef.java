@@ -467,37 +467,6 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
-	public void deactivate_simulated_md_candidates()
-	{
-		final String traceId = UUID.randomUUID().toString();
-
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
-
-		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-				.build(), null);
-
-		materialEventObserver.awaitProcessing(traceId);
-	}
-
-	@And("delete all simulated candidates")
-	public void delete_simulated_candidates()
-	{
-		simulatedCandidateService.deleteAllSimulatedCandidates();
-	}
-
-	@And("validate there is no simulated md_candidate")
-	public void validate_no_simulated_md_candidate()
-	{
-		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.create()
-				.count();
-
-		assertThat(noOfRecords).isZero();
-	}
-
 	private MaterialDispoDataItem tryAndWaitForCandidate(
 			final int timeoutSec,
 			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
@@ -609,7 +578,7 @@ public class MD_Candidate_StepDef
 				.create()
 				.count();
 
-		assertThat(noOfRecords).isEqualTo(0);
+		assertThat(noOfRecords).isZero();
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

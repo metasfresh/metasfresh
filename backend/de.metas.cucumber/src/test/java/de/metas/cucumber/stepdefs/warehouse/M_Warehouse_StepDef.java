@@ -47,9 +47,8 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -116,7 +115,7 @@ public class M_Warehouse_StepDef
 		{
 			final String value = row.getAsString(COLUMNNAME_Value);
 
-			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliers(
+			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
 							.addEqualsFilter(COLUMNNAME_Value, value)
 							.create()
@@ -127,11 +126,11 @@ public class M_Warehouse_StepDef
 
 			final String name = row.getAsString(I_M_Warehouse.COLUMNNAME_Name);
 
-			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsIssueWarehouse, false);
-			if(isIssueWarehouse)
+			final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
+			if (isIssueWarehouse)
 			{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
 				final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
-				queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse,true).create().updateDirectly(updater);
+				queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).create().updateDirectly(updater);
 			}
 
 			final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
@@ -147,9 +146,9 @@ public class M_Warehouse_StepDef
 					? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId)
 					: StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID;
 
-			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
-			final boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, false);
-			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
+			final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
+			final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+			final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
