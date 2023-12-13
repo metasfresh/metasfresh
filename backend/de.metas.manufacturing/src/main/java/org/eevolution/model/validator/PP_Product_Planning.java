@@ -11,7 +11,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,28 +67,6 @@ public class PP_Product_Planning
 		if (InterfaceWrapperHelper.isValueChanged(productPlanning, I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID))
 		{
 			updateStorageAttributesKey(productPlanning);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_IsMatured })
-	public void validateMandatoryBOMVersionsAndWarehouseId(final I_PP_Product_Planning productPlanningRecord)
-	{
-		final ProductPlanning productPlanning = ProductPlanningDAO.fromRecord(productPlanningRecord);
-
-		if (!productPlanning.isMatured())
-		{
-			return;
-		}
-
-		if (productPlanning.getBomVersionsId() == null)
-		{
-			throw new FillMandatoryException(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID);
-		}
-
-		if (productPlanning.getWarehouseId() == null)
-		{
-			throw new FillMandatoryException(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
 		}
 	}
 
