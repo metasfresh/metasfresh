@@ -17,10 +17,8 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFResponsibleType;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyService.GetUsersToApproveRequest;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
 import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
 import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
-import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -32,7 +30,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.*;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createApprovalStrategy;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createClient;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createJob;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.role;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.user;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DocApprovalStrategyServiceTest
@@ -52,11 +54,7 @@ class DocApprovalStrategyServiceTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
-		this.service = new DocApprovalStrategyService(
-				new DocApprovalStrategyRepository(),
-				new DocApprovalStrategyTypeHandlers(),
-				new CheckSupervisorStrategies()
-		);
+		this.service = DocApprovalStrategyService.newInstanceForUnitTesting();
 		this.userBL = Services.get(IUserBL.class);
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);

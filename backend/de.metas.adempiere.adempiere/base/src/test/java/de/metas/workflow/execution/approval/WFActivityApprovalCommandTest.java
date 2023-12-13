@@ -23,12 +23,9 @@ import de.metas.workflow.execution.WFProcessId;
 import de.metas.workflow.execution.approval.WFActivityApprovalCommand.WFActivityApprovalCommandBuilder;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyLine;
-import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyRepository;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyService;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
 import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
 import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
-import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,8 +36,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.*;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createApprovalStrategy;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createClient;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.createJob;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.role;
+import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.user;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WFActivityApprovalCommandTest
 {
@@ -63,11 +65,7 @@ class WFActivityApprovalCommandTest
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		this.wfApprovalRequestRepository = new WFApprovalRequestRepository();
-		this.docApprovalStrategyService = new DocApprovalStrategyService(
-				new DocApprovalStrategyRepository(),
-				new DocApprovalStrategyTypeHandlers(),
-				new CheckSupervisorStrategies()
-		);
+		this.docApprovalStrategyService = DocApprovalStrategyService.newInstanceForUnitTesting();
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		this.euroCurrencyId = currencyDAO.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
@@ -77,6 +75,50 @@ class WFActivityApprovalCommandTest
 	}
 
 	private Money euro(String value) {return Money.of(value, euroCurrencyId);}
+
+	private WFActivityApprovalCommandBuilder newCommand()
+	{
+		return WFActivityApprovalCommand.builder()
+				.wfApprovalRequestRepository(wfApprovalRequestRepository)
+				.docApprovalStrategyService(docApprovalStrategyService)
+				//
+				.evaluationDate(LocalDate.parse("2023-12-07"))
+				.documentRef(documentRef)
+				.additionalDocumentInfo(WFApprovalRequest.AdditionalDocumentInfo.builder().build())
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
+				//.docApprovalStrategyId(docApprovalStrategyId)
+				//
+				//.documentOwnerId(documentOwnerId)
+				//.requestorId(...)
+				//.projectManagerId(...)
+				//
+				//.amountToApprove(null),
+				//
+				//.wfInvokerId(documentOwnerId)
+				.wfResponsible(WF_RESPONSIBLE_INVOKER)
+				.wfProcessId(wfProcessId)
+				.wfActivityId(wfActivityId)
+				;
+	}
+
+	@Test
+	void noUserForJob()
+	{
+		final UserId userId = user().name("userId").build();
+
+		final WFActivityApprovalCommand command = newCommand()
+				.docApprovalStrategyId(createApprovalStrategy(
+						DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(createJob("CFO"))
+				))
+				.documentOwnerId(userId)
+				.requestorId(userId)
+				.wfInvokerId(userId)
+				.amountToApprove(euro("100"))
+				.build();
+
+		assertThatThrownBy(command::execute)
+				.hasMessageStartingWith("DocApprovalStrategyTypeHandler.NoUsersFoundForJob - CFO");
+	}
 
 	@Nested
 	class multiLevelScenario
@@ -119,14 +161,7 @@ class WFActivityApprovalCommandTest
 
 		private WFActivityApprovalCommandBuilder newCommand()
 		{
-			return WFActivityApprovalCommand.builder()
-					.wfApprovalRequestRepository(wfApprovalRequestRepository)
-					.docApprovalStrategyService(docApprovalStrategyService)
-					//
-					.evaluationDate(LocalDate.parse("2023-12-07"))
-					.documentRef(documentRef)
-					.additionalDocumentInfo(WFApprovalRequest.AdditionalDocumentInfo.builder().build())
-					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
+			return WFActivityApprovalCommandTest.this.newCommand()
 					.docApprovalStrategyId(docApprovalStrategyId)
 					//
 					.documentOwnerId(documentOwnerId)
@@ -135,11 +170,7 @@ class WFActivityApprovalCommandTest
 					//
 					//.amountToApprove(null),
 					//
-					.wfInvokerId(documentOwnerId)
-					.wfResponsible(WF_RESPONSIBLE_INVOKER)
-					.wfProcessId(wfProcessId)
-					.wfActivityId(wfActivityId)
-					;
+					.wfInvokerId(documentOwnerId);
 		}
 
 		private void approveByUserId(final UserId userId)
