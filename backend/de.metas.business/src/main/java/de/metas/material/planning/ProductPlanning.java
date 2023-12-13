@@ -71,6 +71,7 @@ public class ProductPlanning
 	//
 	// Manufacturing
 	boolean isManufactured;
+	boolean isMatured;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;

@@ -130,6 +130,7 @@ public class OrderCheckupTestHelper
 				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
 				.isManufactured(true)
+				.isMatured(false)
 				.workflowId(PPRoutingId.ofRepoId(workflow.getAD_Workflow_ID()))
 				.build());
 	}
