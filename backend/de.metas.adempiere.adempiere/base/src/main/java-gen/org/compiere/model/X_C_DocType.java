@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1092241655L;
+	private static final long serialVersionUID = 1981801740L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -77,6 +77,33 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	}
+
+	@Override
+	public void setC_Doc_Approval_Strategy(final org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class, C_Doc_Approval_Strategy);
+	}
+
+	@Override
+	public void setC_Doc_Approval_Strategy_ID (final int C_Doc_Approval_Strategy_ID)
+	{
+		if (C_Doc_Approval_Strategy_ID < 1) 
+			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, C_Doc_Approval_Strategy_ID);
+	}
+
+	@Override
+	public int getC_Doc_Approval_Strategy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Doc_Approval_Strategy_ID);
+	}
+
+	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
 		if (C_DocTypeDifference_ID < 1) 
@@ -136,14 +163,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1)
+		if (C_DocType_Invoicing_Pool_ID < 1) 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID()
+	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -456,39 +483,26 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_Withholding = "WH";
 	/** InternalVendorInvoice = IVI */
 	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
-	/**
-	 * Delivery Instruction = DI
-	 */
+	/** Delivery Instruction = DI */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
-	/**
-	 * InventoryShortageDocument = ISD
-	 */
+	/** InventoryShortageDocument = ISD */
 	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
-	/**
-	 * InventoryOverageDocument = IOD
-	 */
+	/** InventoryOverageDocument = IOD */
 	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
-	/**
-	 * CorrectionInvoice = CI
-	 */
+	/** CorrectionInvoice = CI */
 	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
-	/**
-	 * Provision = PRV
-	 */
+	/** Provision = PRV */
 	public static final String DOCSUBTYPE_Provision = "PRV";
-	/**
-	 * ProFormaSO = PF
-	 */
+	/** ProFormaSO = PF */
 	public static final String DOCSUBTYPE_ProFormaSO = "PF";
-
 	@Override
-	public void setDocSubType(final @Nullable java.lang.String DocSubType)
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
-		set_Value(COLUMNNAME_DocSubType, DocSubType);
+		set_Value (COLUMNNAME_DocSubType, DocSubType);
 	}
 
 	@Override
-	public java.lang.String getDocSubType()
+	public java.lang.String getDocSubType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
@@ -549,7 +563,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 0)
+		if (GL_Category_ID < 0) 
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -768,14 +782,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
 	{
-		if (LotNo_Sequence_ID < 1)
+		if (LotNo_Sequence_ID < 1) 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
 	}
 
 	@Override
-	public int getLotNo_Sequence_ID()
+	public int getLotNo_Sequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
