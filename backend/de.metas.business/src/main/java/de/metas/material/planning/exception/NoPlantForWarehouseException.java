@@ -13,6 +13,7 @@
  *****************************************************************************/
 package de.metas.material.planning.exception;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
@@ -26,7 +27,7 @@ import de.metas.util.Services;
  * @author Teo Sarca
  */
 @SuppressWarnings("serial")
-public class NoPlantForWarehouseException extends MrpException
+public class NoPlantForWarehouseException extends AdempiereException
 {
 	public NoPlantForWarehouseException(final OrgId adOrgId, final WarehouseId warehouseId, final ProductId productId)
 	{

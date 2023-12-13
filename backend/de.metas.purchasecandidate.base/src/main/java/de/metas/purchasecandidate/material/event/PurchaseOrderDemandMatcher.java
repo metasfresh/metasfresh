@@ -1,14 +1,12 @@
 package de.metas.purchasecandidate.material.event;
 
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -38,9 +36,9 @@ public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 
-		if (StringUtils.toBoolean(productPlanning.getIsPurchased()))
+		if (productPlanning.isPurchased())
 		{
 			return true;
 		}

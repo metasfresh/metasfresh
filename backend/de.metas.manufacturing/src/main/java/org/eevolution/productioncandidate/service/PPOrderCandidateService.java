@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
@@ -53,7 +54,6 @@ import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
@@ -191,7 +191,7 @@ public class PPOrderCandidateService
 			return Optional.empty();
 		}
 
-		final I_PP_Product_Planning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
+		final ProductPlanning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
 
 		final int durationDays = productPlanningService.calculateDurationDays(productPlanningRecord, ppOrderCandidateRecord.getQtyEntered());
 		final Instant dateStartSchedule = ppOrderCandidateRecord.getDateStartSchedule().toInstant();

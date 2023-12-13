@@ -25,6 +25,7 @@ package org.eevolution.productioncandidate.service;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -38,13 +39,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 public class CreateOrderCandidateCommand
@@ -100,7 +100,7 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final ProductPlanning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
 		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
 
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
@@ -126,11 +126,11 @@ public class CreateOrderCandidateCommand
 	{
 		if (productPlanningId != null)
 		{
-			final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
+			final ProductPlanning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 			final Optional<I_PP_Product_BOM> productBOMFromPlanning = Optional.ofNullable(productPlanning)
-					.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
-					.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
+					.map(ProductPlanning::getBomVersionsId)
+					.filter(Objects::nonNull)
 					.flatMap(bomRepo::getLatestBOMRecordByVersionId);
 
 			if (productBOMFromPlanning.isPresent())

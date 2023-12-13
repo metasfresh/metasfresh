@@ -1,7 +1,7 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

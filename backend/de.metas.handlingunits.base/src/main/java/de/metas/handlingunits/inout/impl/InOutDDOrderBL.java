@@ -1,34 +1,33 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_C_DocType;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_DD_Order;
-
+import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
-import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_C_DocType;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.X_DD_Order;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -92,7 +91,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query)
+		final ProductPlanning productPlanning = productPlanningDAO.find(query)
 				.orElseThrow(() -> new AdempiereException("No Product Planning found for " + query));
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
@@ -111,7 +110,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderHeader.setDeliveryViaRule(inout.getDeliveryViaRule());
 		ddOrderHeader.setDeliveryRule(inout.getDeliveryRule());
 		ddOrderHeader.setPriorityRule(inout.getPriorityRule());
-		ddOrderHeader.setM_Warehouse_ID(productPlanning.getM_Warehouse_ID());
+		ddOrderHeader.setM_Warehouse_ID(WarehouseId.toRepoId(productPlanning.getWarehouseId()));
 		ddOrderHeader.setC_DocType_ID(docTypeId);
 		ddOrderHeader.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderHeader.setDocAction(X_DD_Order.DOCACTION_Complete);
