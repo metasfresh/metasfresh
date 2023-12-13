@@ -41,7 +41,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.rest_api.move_hu.HUIdAndQRCode;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
@@ -309,15 +309,14 @@ public class HandlingUnitsRestController
 	@PostMapping("/bulk/move")
 	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
 	{
-		final List<HUIdAndQRCode> huIdAndQRCodes = request.getHuQRCodes().stream()
+		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
 				.map(HUQRCode::fromGlobalQRCodeJsonString)
-				.map(huQRCode -> HUIdAndQRCode.builder()
-						.huQRCode(huQRCode)
-						.huId(huQRCodesService.getHuIdByQRCode(huQRCode))
-						.build())
 				.collect(ImmutableList.toImmutableList());
 
-		handlingUnitsService.bulkMove(huIdAndQRCodes, GlobalQRCode.ofString(request.getTargetQRCode()));
+		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
+											  .huQrCodes(huQrCodes)
+											  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+											  .build());
 	}
 
 	@NonNull

@@ -57,26 +57,18 @@ public class MoveHUCommand
 	{
 		if (LocatorQRCode.isTypeMatching(targetQRCode))
 		{
-			final List<HuId> topLevelHUIds = huIdAndQRCodes.stream()
-					.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
-					.collect(ImmutableList.toImmutableList());
-
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
 			huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
 										 .toLocatorId(locatorQRCode.getLocatorId())
-										 .huIdsToMove(topLevelHUIds)
+										 .huIdsToMove(extractHUIdsToMove())
 										 .movementDate(SystemTime.asInstant())
 										 .build());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
-			final List<HuId> topLevelHUIds = huIdAndQRCodes.stream()
-					.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
-					.collect(ImmutableList.toImmutableList());
-
 			getMoveToTargetHUConsumer(HUQRCode.fromGlobalQRCode(targetQRCode))
-					.accept(topLevelHUIds);
+					.accept(extractHUIdsToMove());
 		}
 		else
 		{
@@ -98,5 +90,13 @@ public class MoveHUCommand
 			final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIdsToMove);
 			huTransformService.tusToExistingLU(husToMove, targetHU);
 		};
+	}
+
+	@NonNull
+	private List<HuId> extractHUIdsToMove()
+	{
+		return huIdAndQRCodes.stream()
+				.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

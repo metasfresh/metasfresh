@@ -34,7 +34,6 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -48,7 +47,9 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.HUIdAndQRCode;
 import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
@@ -115,11 +116,11 @@ public class HandlingUnitsService
 		}
 
 		return toJson(LoadJsonHURequest.builder()
-				.hu(hu)
-				.expectedQRCode(expectedQRCode)
-				.adLanguage(adLanguage)
-				.includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
-				.build());
+							  .hu(hu)
+							  .expectedQRCode(expectedQRCode)
+							  .adLanguage(adLanguage)
+							  .includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+							  .build());
 	}
 
 	@NonNull
@@ -277,19 +278,19 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			list.add(JsonHUAttribute.builder()
-					.code(attributeCode.getCode())
-					.caption(attribute.getName())
-					.value(value)
-					.build());
+							 .code(attributeCode.getCode())
+							 .caption(attribute.getName())
+							 .value(value)
+							 .build());
 		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-					.code(counterAttribute.getAttributeCode())
-					.caption(counterAttribute.getAttributeCode())
-					.value(counterAttribute.getCounter())
-					.build());
+							 .code(counterAttribute.getAttributeCode())
+							 .caption(counterAttribute.getAttributeCode())
+							 .value(counterAttribute.getCounter())
+							 .build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -403,12 +404,22 @@ public class HandlingUnitsService
 				.execute();
 	}
 
-	public void bulkMove(@NonNull final List<HUIdAndQRCode> huIdAndQRCodes, @NonNull final GlobalQRCode targetQRCode)
+	public void bulkMove(@NonNull final BulkMoveHURequest request)
 	{
+		final Map<HUQRCodeUniqueId, HuId> huQrCodeId2HuId = huQRCodeService.getHuIds(request.getHuQrCodes());
+
+		final List<HUIdAndQRCode> huIdAndQRCodes = request.getHuQrCodes()
+				.stream()
+				.map(huQrCode -> HUIdAndQRCode.builder()
+						.huQRCode(huQrCode)
+						.huId(huQrCodeId2HuId.get(huQrCode.getId()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.huIdAndQRCodes(huIdAndQRCodes)
-				.targetQRCode(targetQRCode)
+				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
 	}
