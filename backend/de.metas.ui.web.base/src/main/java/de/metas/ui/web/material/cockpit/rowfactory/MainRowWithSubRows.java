@@ -10,7 +10,6 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.money.CurrencyId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -27,7 +26,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -92,11 +90,9 @@ public class MainRowWithSubRows
 		final String procurementStatus = toHexString(Services.get(IColorRepository.class).getColorById(colorId));
 		this.mainRow.setProcurementStatus(procurementStatus);
 
-		final CurrencyId currencyId = acctSchemaDAO.getByClientAndOrg(Env.getCtx()).getCurrencyId();
 		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
 				.evalDate(productIdAndDate.getDate())
-				.currencyId(currencyId)
 				.build();
 
 		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());

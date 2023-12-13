@@ -37,8 +37,8 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_purchase_prices_in_stock_uom_plv_v;
-import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -76,19 +76,19 @@ public class HighPriceProvider
 		for (final HighPriceRequest request : requests)
 		{
 			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
-			final CurrencyId currencyId = request.getCurrencyId();
 			final I_purchase_prices_in_stock_uom_plv_v record = queryBL.createQueryBuilder(I_purchase_prices_in_stock_uom_plv_v.class)
 					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, productId)
-					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_C_Currency_ID, currencyId)
 					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getEvalDate())
 					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidTo, GREATER, request.getEvalDate())
 					.orderByDescending(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ProductPriceInStockUOM)
 					.create()
 					.first(I_purchase_prices_in_stock_uom_plv_v.class);
 
+			// Currency is taken from de.metas.ui.web.material.cockpit.field.HighestPurchasePrice_AtDate.CurrencyCode in View
 			final BigDecimal price = record != null ? record.getProductPriceInStockUOM() : BigDecimal.ZERO;
+			final CurrencyId currencyId = record != null ? CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()) : null;
 			final HighPriceResponse response = HighPriceResponse.builder()
-					.maxPurchasePrice(Money.of(price, currencyId))
+					.maxPurchasePrice(Money.ofOrNull(price, currencyId))
 					.build();
 			resultMap.put(request, response);
 
@@ -104,13 +104,11 @@ public class HighPriceProvider
 
 	private HighPriceRequest toHighPriceRequest(@NonNull final ProductId productId, @NonNull final LocalDate date)
 	{
-		final CurrencyId currencyId = acctSchemaDAO.getByClientAndOrg(Env.getCtx()).getCurrencyId();
 		return HighPriceRequest.builder()
 				.productDescriptor(ProductDescriptor.forProductAndAttributes(
 						productId.getRepoId(),
 						AttributesKey.NONE))
 				.evalDate(date)
-				.currencyId(currencyId)
 				.build();
 	}
 
@@ -121,15 +119,18 @@ public class HighPriceProvider
 	@Builder
 	public static class HighPriceRequest
 	{
-		@NonNull ProductDescriptor productDescriptor;
-		@NonNull LocalDate evalDate;
-		@NonNull CurrencyId currencyId;
+		@NonNull
+		ProductDescriptor productDescriptor;
+
+		@NonNull
+		LocalDate evalDate;
 	}
 
 	@Value
 	@Builder
 	public static class HighPriceResponse
 	{
-		@NonNull Money maxPurchasePrice;
+		@Nullable
+		Money maxPurchasePrice;
 	}
 }
