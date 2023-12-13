@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 329777100L;
+	private static final long serialVersionUID = 924958051L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -114,6 +114,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setIsMaturing (final boolean IsMaturing)
+	{
+		set_Value (COLUMNNAME_IsMaturing, IsMaturing);
+	}
+
+	@Override
+	public boolean isMaturing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMaturing);
+	}
+
+	@Override
 	public void setIsSimulated (final boolean IsSimulated)
 	{
 		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
@@ -210,6 +222,17 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public void setNumberOfResources_ToProcess (final int NumberOfResources_ToProcess)
+	{
+		throw new IllegalArgumentException ("NumberOfResources_ToProcess is virtual column");	}
+
+	@Override
+	public int getNumberOfResources_ToProcess() 
+	{
+		return get_ValueAsInt(COLUMNNAME_NumberOfResources_ToProcess);
 	}
 
 	@Override
@@ -327,7 +350,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
