@@ -300,5 +300,35 @@ public class ShipmentScheduleEventHandler
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+
+		if (sysConfigBL.getBooleanValue(SYSCFG_BOM_SUPPORT, true))
+		{
+			final ProductBOMRequest bomRequest = ProductBOMRequest.builder()
+					.productDescriptor(identifier.getProductDescriptor())
+					.date(identifier.getDate())
+					.build();
+			final Optional<ProductBOM> productBOMOptional = productBOMBL.retrieveValidProductBOM(bomRequest);
+			if (!productBOMOptional.isPresent())
+			{
+				return;
+			}
+
+			final ProductBOM productBOM = productBOMOptional.get();
+			final I_C_UOM uom = productBL.getStockUOM(identifier.getProductDescriptor().getProductId());
+			final Quantity qty = Quantity.of(oldOrderedQuantity.negate(), uom);
+			final Map<ProductDescriptor, Quantity> components = productBOM.calculateRequiredQtyInStockUOMForComponents(qty);
+			for (final Map.Entry<ProductDescriptor, Quantity> component : components.entrySet())
+			{
+				final MainDataRecordIdentifier bomIdentifier = MainDataRecordIdentifier.builder()
+						.productDescriptor(component.getKey())
+						.date(identifier.getDate())
+						.build();
+				final UpdateMainDataRequest requestForBOM = UpdateMainDataRequest.builder()
+						.identifier(bomIdentifier)
+						.orderedSalesQty(component.getValue().toBigDecimal())
+						.build();
+				dataUpdateRequestHandler.handleDataUpdateRequest(requestForBOM);
+			}
+		}
 	}
 }
