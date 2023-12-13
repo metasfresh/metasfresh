@@ -39,6 +39,7 @@ import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -230,7 +231,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
 		final OrgId orgId = candidate.getOrgId();
 		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
-		final int salesRepId = candidate.getPlanner_ID();
+		final UserId salesRepId = candidate.getPlannerId();
 		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
 		final ResourceId rawMaterialsPlantId = candidate.getRawMaterialsPlantId();
 
@@ -239,7 +240,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setPP_Plant_ID(ResourceId.toRepoId(rawMaterialsPlantId));
 		ddOrder.setC_BPartner_ID(orgBPLocationId != null ? orgBPLocationId.getBpartnerId().getRepoId() : -1);
 		ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(orgBPLocationId));
-		ddOrder.setSalesRep_ID(salesRepId);
+		ddOrder.setSalesRep_ID(UserId.toRepoId(salesRepId));
 
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.DistributionOrder)

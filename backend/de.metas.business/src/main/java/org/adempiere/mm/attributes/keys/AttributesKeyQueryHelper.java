@@ -1,25 +1,8 @@
-package de.metas.material.commons.attributes;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.StringLikeFilter;
-import org.adempiere.model.ModelColumn;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-material-commons
+ * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +19,23 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.mm.attributes.keys;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.StringLikeFilter;
+import org.adempiere.model.ModelColumn;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributesKeyQueryHelper<T>
 {

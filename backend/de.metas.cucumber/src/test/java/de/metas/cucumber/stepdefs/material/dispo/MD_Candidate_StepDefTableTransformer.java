@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
@@ -116,7 +116,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.map(I_M_Warehouse::getM_Warehouse_ID)
 					.map(WarehouseId::ofRepoId)
 					.orElse(null);
-			
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)

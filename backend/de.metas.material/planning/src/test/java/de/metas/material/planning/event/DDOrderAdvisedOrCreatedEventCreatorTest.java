@@ -10,6 +10,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
@@ -19,7 +20,6 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -31,7 +31,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -62,7 +62,6 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	private DDOrderDemandMatcher ddOrderDemandMatcher;
 	private DDOrderPojoSupplier ddOrderPojoSupplier;
 
-	private I_PP_Product_Planning ppProductPlanning;
 	private I_M_Product product;
 
 	private IOrgDAO orgDAO;
@@ -74,9 +73,6 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
-
-		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
-		saveRecord(ppProductPlanning);
 
 		product = newInstance(I_M_Product.class);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
@@ -95,11 +91,8 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
-		ppProductPlanning.setIsLotForLot(false);
-		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(false).build());
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -121,12 +114,9 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot()
 	{
-		ppProductPlanning.setIsLotForLot(true);
-		saveRecord(ppProductPlanning);
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(true).build());
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);

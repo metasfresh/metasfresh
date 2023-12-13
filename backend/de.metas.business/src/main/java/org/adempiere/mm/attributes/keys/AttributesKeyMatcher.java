@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,9 +20,17 @@
  * #L%
  */
 
-package org.eevolution.exceptions;
+package org.adempiere.mm.attributes.keys;
 
-public interface ExceptionConstants
+import java.util.Optional;
+
+import de.metas.material.event.commons.AttributesKey;
+
+public interface AttributesKeyMatcher
 {
-	String PP_PRODUCT_PLANNING_BOM_ATTR_ERROR = "PP_Product_Planning_BOM_Attribute_Error";
+	boolean matches(AttributesKey attributesKey);
+
+	Optional<AttributesKey> toAttributeKeys();
+
+	AttributesKey toAttributeKeys(final AttributesKey context);
 }
