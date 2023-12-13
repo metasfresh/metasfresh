@@ -3,6 +3,7 @@ package de.metas.dunning.api.impl;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.dunning.DunningDocId;
+import de.metas.dunning.DunningLevelId;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
 import de.metas.dunning.api.IDunningBL;
@@ -21,6 +22,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.email.EMailCustomType;
 import de.metas.i18n.Language;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
@@ -286,6 +288,7 @@ public class DunningBL implements IDunningBL
 				.recipient(Recipient.allOrgUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
 				.contentPlain(headerBoilerPlate.evaluateTextSnippet(headerEvaluatee))
 				.subjectPlain(headerBoilerPlate.evaluateSubject(headerEvaluatee))
+				.eMailCustomType(EMailCustomType.MassDunning)
 				.build());
 	}
 
@@ -295,8 +298,14 @@ public class DunningBL implements IDunningBL
 		final Language userLanguage = Env.getLanguage();
 		final BoilerPlate lineBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getLineId(), userLanguage);
 		return dunningDocs.stream()
-				.map(doc -> lineBoilerPlate.evaluateTextSnippet(getPO(doc)))
+				.map(doc -> lineBoilerPlate.evaluateTextSnippet(createEvalContext(doc)))
 				.collect(Collectors.joining("\n"));
+	}
+
+	private Evaluatee createEvalContext(final @NonNull I_C_DunningDoc doc)
+	{
+		return Evaluatees.compose(Evaluatees.ofSingleton("C_DunningLevel", dunningDAO.getDunningLevelName(DunningLevelId.ofRepoId(doc.getC_DunningLevel_ID()))),
+				getPO(doc));
 	}
 
 	@Override
@@ -305,8 +314,6 @@ public class DunningBL implements IDunningBL
 		// refactor of org.compiere.model.MDunningLevel.getPreviousLevels()
 
 		// NOTE: Only DaysAfterDue shall be considered when checking previous levels and not DaysAfterDue+DaysBetweenDunnings.
-
-		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 		final I_C_Dunning dunning = level.getC_Dunning();
 
@@ -338,13 +345,11 @@ public class DunningBL implements IDunningBL
 			@NonNull final I_C_DunningDoc dunningDoc,
 			@NonNull final I_C_DunningDoc_Line_Source source)
 	{
-		final IDunningDAO dao = Services.get(IDunningDAO.class);
-
 		final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
 		candidate.setProcessed(true); // make sure the Processed flag is set
 		candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
 		candidate.setDunningDateEffective(dunningDoc.getDunningDate());
-		dao.save(candidate);
+		dunningDAO.save(candidate);
 
 		source.setProcessed(true);
 		InterfaceWrapperHelper.save(source);

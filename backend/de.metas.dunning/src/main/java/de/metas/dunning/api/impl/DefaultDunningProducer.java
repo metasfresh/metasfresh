@@ -180,7 +180,7 @@ public class DefaultDunningProducer implements IDunningProducer
 	private String getPOReferenceToUse(final I_C_Dunning_Candidate candidate)
 	{
 		final String poReference = candidate.getPOReference();
-		final String actualPOReference;
+		String actualPOReference = poReference;
 		if (systemBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
 		{
 			final String documentNo = candidate.getDocumentNo();
@@ -188,14 +188,6 @@ public class DefaultDunningProducer implements IDunningProducer
 			{
 				actualPOReference = documentNo.substring(0, documentNo.indexOf(poReference) + poReference.length());
 			}
-			else
-			{
-				actualPOReference = null;
-			}
-		}
-		else
-		{
-			actualPOReference = poReference;
 		}
 		return actualPOReference;
 	}

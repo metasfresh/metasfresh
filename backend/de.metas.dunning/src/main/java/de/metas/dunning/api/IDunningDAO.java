@@ -24,6 +24,7 @@ package de.metas.dunning.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.dunning.DunningDocId;
+import de.metas.dunning.DunningLevelId;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -178,4 +179,6 @@ public interface IDunningDAO extends ISingletonService
 	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
 
 	Collection<I_C_DunningDoc> getByIdsInTrx(@NonNull Collection<DunningDocId> dunningDocIds);
+
+	String getDunningLevelName(@NonNull DunningLevelId id);
 }

@@ -233,7 +233,7 @@ public class Recipient
 
 	public NotificationGroupName getNotificationGroupName()
 	{
-		if (type != RecipientType.AllRolesContainingGroup)
+		if (type != RecipientType.AllRolesContainingGroup && type != RecipientType.OrgUsersContainingGroup)
 		{
 			throw new AdempiereException("NotificationGroupName not available: " + this);
 		}

@@ -29,6 +29,7 @@ import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.dunning.DunningDocId;
+import de.metas.dunning.DunningLevelId;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -247,5 +248,12 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	@Cached
+	public String getDunningLevelName(final @NonNull DunningLevelId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_C_DunningLevel.class).getName();
 	}
 }

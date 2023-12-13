@@ -2,7 +2,7 @@ package de.metas.notification.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.service.impl.BPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.email.EMailAddress;
@@ -68,7 +68,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final BPartnerOrgBL bPartnerOrgBL = Services.get(BPartnerOrgBL.class);
+	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	@Override
 	public UserNotificationsConfig getByUserId(final UserId adUserId)

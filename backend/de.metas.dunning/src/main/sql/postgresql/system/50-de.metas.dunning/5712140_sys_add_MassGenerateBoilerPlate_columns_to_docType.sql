@@ -335,3 +335,71 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('AD_NotificationGroup','ALTER TABLE public.AD_NotificationGroup ADD COLUMN IsNotifyOrgBPUsersOnly CHAR(1) DEFAULT ''N'' CHECK (IsNotifyOrgBPUsersOnly IN (''Y'',''N'')) NOT NULL')
 ;
 
+
+-- Field: Belegart -> Belegart -> Textbaustein bei massenhafter Belegerstellung
+-- Column: C_DocType.Mass_Generate_Boilerplate_ID
+-- 2023-12-12T23:09:22.104Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587666,723198,0,167,0,TO_TIMESTAMP('2023-12-13 01:09:21','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Textbaustein bei massenhafter Belegerstellung',0,340,0,1,1,TO_TIMESTAMP('2023-12-13 01:09:21','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-12-12T23:09:22.105Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=723198 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-12-12T23:09:22.107Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582823)
+;
+
+-- 2023-12-12T23:09:22.110Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=723198
+;
+
+-- 2023-12-12T23:09:22.111Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(723198)
+;
+
+-- Field: Belegart -> Belegart -> Textbaustein für Positionen massenhaft erstellter Belege
+-- Column: C_DocType.Mass_Generate_Line_Boilerplate_ID
+-- 2023-12-12T23:09:35.333Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587667,723199,0,167,0,TO_TIMESTAMP('2023-12-13 01:09:35','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Textbaustein für Positionen massenhaft erstellter Belege',0,350,0,1,1,TO_TIMESTAMP('2023-12-13 01:09:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-12-12T23:09:35.335Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=723199 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-12-12T23:09:35.336Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582824)
+;
+
+-- 2023-12-12T23:09:35.338Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=723199
+;
+
+-- 2023-12-12T23:09:35.338Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(723199)
+;
+
+-- UI Element: Belegart -> Belegart.Textbaustein bei massenhafter Belegerstellung
+-- Column: C_DocType.Mass_Generate_Boilerplate_ID
+-- 2023-12-12T23:10:16.564Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723198,0,167,540408,621980,'F',TO_TIMESTAMP('2023-12-13 01:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Textbaustein bei massenhafter Belegerstellung',30,0,0,TO_TIMESTAMP('2023-12-13 01:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Belegart -> Belegart.Textbaustein für Positionen massenhaft erstellter Belege
+-- Column: C_DocType.Mass_Generate_Line_Boilerplate_ID
+-- 2023-12-12T23:10:26.012Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723199,0,167,540408,621981,'F',TO_TIMESTAMP('2023-12-13 01:10:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Textbaustein für Positionen massenhaft erstellter Belege',40,0,0,TO_TIMESTAMP('2023-12-13 01:10:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Belegart -> Belegart -> Textbaustein für Positionen massenhaft erstellter Belege
+-- Column: C_DocType.Mass_Generate_Line_Boilerplate_ID
+-- 2023-12-12T23:12:07.890Z
+UPDATE AD_Field SET DisplayLogic='@DocBaseType@=''DUN''',Updated=TO_TIMESTAMP('2023-12-13 01:12:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=723199
+;
+
+-- Field: Belegart -> Belegart -> Textbaustein bei massenhafter Belegerstellung
+-- Column: C_DocType.Mass_Generate_Boilerplate_ID
+-- 2023-12-12T23:12:13.814Z
+UPDATE AD_Field SET DisplayLogic='@DocBaseType@=''DUN''',Updated=TO_TIMESTAMP('2023-12-13 01:12:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=723198
+;
