@@ -152,9 +152,13 @@ public class ProductDAO implements IProductDAO
 
 	@Override
 	@NonNull
-	public List<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
 	{
-		return loadByRepoIdAwares(productIds, I_M_Product.class);
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, productIds)
+				.create()
+				.listImmutable(I_M_Product.class);
 	}
 
 	@Override
@@ -598,9 +602,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-						.setJoinOr()
-						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
