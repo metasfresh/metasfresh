@@ -26,7 +26,8 @@
       "buttonCaption": "Bulk actions",
       "windowName": "Bulk actions",
       "scan": "Scan",
-      "move": "Move"
+      "move": "Move",
+      "closeScanner": "Close scanner"
     }
   }
 }

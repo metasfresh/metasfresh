@@ -23,10 +23,11 @@
       "buttonCaption": "HU-Freigabe ändern"
     },
     "bulkActions": {
-      "buttonCaption": "Bulk actions",
-      "windowName": "Bulk actions",
-      "scan": "Scan",
-      "move": "Move"
+      "buttonCaption": "Massenaktionen",
+      "windowName": "Massenaktionen",
+      "scan": "Scannen",
+      "move": "Bewegen",
+      "closeScanner": "Scanner schließen"
     }
   }
 }
