@@ -17,6 +17,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.OldShipmentScheduleData;
@@ -25,10 +26,17 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -36,6 +44,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -69,6 +79,11 @@ public class ShipmentScheduleEventHandler
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	private final static String SYSCFG_BOM_SUPPORT = "de.metas.ui.web.material.cockpit.field.QtyOrdered_SalesOrder_AtDate.BOMSupport";
 
 	public ShipmentScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
@@ -124,6 +139,36 @@ public class ShipmentScheduleEventHandler
 			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldShipmentScheduleData.getOldMaterialDescriptor(), timeZone);
 
 			createAndHandleMainDataRequestForOldValues(oldShipmentScheduleData, oldIdentifier);
+		}
+
+		if (sysConfigBL.getBooleanValue(SYSCFG_BOM_SUPPORT, true))
+		{
+			final ProductBOMRequest bomRequest = ProductBOMRequest.builder()
+					.productDescriptor(identifier.getProductDescriptor())
+					.date(identifier.getDate())
+					.build();
+			final Optional<ProductBOM> productBOMOptional = productBOMBL.retrieveValidProductBOM(bomRequest);
+			if (!productBOMOptional.isPresent())
+			{
+				return;
+			}
+
+			final ProductBOM productBOM = productBOMOptional.get();
+			final I_C_UOM uom = productBL.getStockUOM(identifier.getProductDescriptor().getProductId());
+			final Quantity qty = Quantity.of(shipmentScheduleEvent.getOrderedQuantityDelta(), uom);
+			final Map<ProductDescriptor, Quantity> components = productBOM.calculateRequiredQtyInStockUOMForComponents(qty);
+			for (final Map.Entry<ProductDescriptor, Quantity> component : components.entrySet())
+			{
+				final MainDataRecordIdentifier bomIdentifier = MainDataRecordIdentifier.builder()
+						.productDescriptor(component.getKey())
+						.date(identifier.getDate())
+						.build();
+				final UpdateMainDataRequest requestForBOM = UpdateMainDataRequest.builder()
+						.identifier(bomIdentifier)
+						.orderedSalesQty(component.getValue().toBigDecimal())
+						.build();
+				dataUpdateRequestHandler.handleDataUpdateRequest(requestForBOM);
+			}
 		}
 	}
 

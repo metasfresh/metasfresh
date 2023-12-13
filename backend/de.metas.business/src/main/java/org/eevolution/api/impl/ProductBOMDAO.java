@@ -15,6 +15,7 @@ import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -186,20 +187,22 @@ public class ProductBOMDAO implements IProductBOMDAO
 	private Optional<ProductBOM> retrieveValidProductBOM0(@NonNull final ProductBOMRequest request)
 	{
 		final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
-		final UomId uomId = productBL.getStockUOMId(productId);
+		final ICompositeQueryFilter<I_PP_Product_BOM> validToFilter = queryBL.createCompositeQueryFilter(I_PP_Product_BOM.class)
+				.setJoinOr()
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, GREATER, request.getDate())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, null);
 		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_C_UOM_ID, uomId)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.CurrentActive.getCode())
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMUse, BOMUse.Manufacturing.getCode())
-				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getLocalDate())
-				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, GREATER, request.getLocalDate())
-				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_AD_Org_ID)
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getDate())
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_AD_Org_ID)
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
+				.filter(validToFilter)
 				.create()
-				.stream().findFirst()
+				.firstOptional(I_PP_Product_BOM.class)
 				.map(productBOM -> toProductBOM(productBOM, request));
 	}
 
@@ -221,13 +224,15 @@ public class ProductBOMDAO implements IProductBOMDAO
 			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(productId.getRepoId(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
 			final ProductBOMRequest subBOMRequest = ProductBOMRequest.builder()
 					.productDescriptor(productDescriptor)
-					.localDate(request.getLocalDate())
+					.date(request.getDate())
 					.build();
 
 			retrieveValidProductBOM(subBOMRequest).ifPresent(subBOM -> componentsProductBOMs.put(productDescriptor, subBOM));
 		}
 		return ProductBOM.builder()
 				.productBOMId(productBOMId)
+				.productDescriptor(request.getProductDescriptor())
+				.uomId(UomId.ofRepoId(ppProductBom.getC_UOM_ID()))
 				.components(components)
 				.componentsProductBOMs(componentsProductBOMs)
 				.build();

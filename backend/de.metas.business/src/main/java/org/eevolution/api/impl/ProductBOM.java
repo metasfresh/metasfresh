@@ -28,6 +28,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +38,6 @@ import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,30 +53,38 @@ public class ProductBOM
 	ProductDescriptor productDescriptor;
 
 	@NonNull
+	UomId uomId;
+
+	@NonNull
 	List<I_PP_Product_BOMLine> components;
 
 	@NonNull
 	Map<ProductDescriptor, ProductBOM> componentsProductBOMs;
 
-	public Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull final BigDecimal qty)
+	public Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull final Quantity qty)
 	{
 		final Map<ProductDescriptor, Quantity> result = new HashMap<>();
 		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		final IUOMConversionBL uomConversionBL =  Services.get(IUOMConversionBL.class);
 
+		final ProductId productId = ProductId.ofRepoId(productDescriptor.getProductId());
+		final Quantity qtyInBomUom = uomConversionBL.convertQuantityTo(qty, productId, uomId);
+
 		for (final I_PP_Product_BOMLine component : components)
 		{
 			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(component.getM_Product_ID(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
-			final ProductId productId = ProductId.ofRepoId(component.getM_Product_ID());
-			final I_C_UOM componentUOM = uomDAO.getById( component.getC_UOM_ID());
-			final Quantity componentQty = Quantity.of(productBOMBL.computeQtyRequired(component, productId, qty), componentUOM);
+			final ProductId componentProductId = ProductId.ofRepoId(component.getM_Product_ID());
+			final I_C_UOM componentUOM = uomDAO.getById(component.getC_UOM_ID());
+			final Quantity componentQty = Quantity.of(productBOMBL.computeQtyRequired(component, productId, qtyInBomUom.toBigDecimal()), componentUOM);
 			final Quantity componentQtyInStockUOM = uomConversionBL.convertToProductUOM(componentQty, ProductId.ofRepoId(component.getM_Product_ID()));
 			result.put(productDescriptor, componentQtyInStockUOM);
 
 			if (componentsProductBOMs.containsKey(productDescriptor))
 			{
-				result.putAll(componentsProductBOMs.get(productDescriptor).calculateRequiredQtyInStockUOMForComponents(componentQtyInStockUOM.toBigDecimal()));
+				final ProductBOM componentProductBOM = componentsProductBOMs.get(productDescriptor);
+				final Quantity componentQtyInBomUom = uomConversionBL.convertQuantityTo(componentQtyInStockUOM, componentProductId, componentProductBOM.getUomId());
+				result.putAll(componentProductBOM.calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom));
 			}
 		}
 

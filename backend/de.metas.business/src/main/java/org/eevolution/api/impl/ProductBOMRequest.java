@@ -27,7 +27,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -37,5 +37,5 @@ public class ProductBOMRequest
 	ProductDescriptor productDescriptor;
 
 	@NonNull
-	LocalDate localDate;
+	Instant date;
 }

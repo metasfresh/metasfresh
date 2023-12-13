@@ -200,3 +200,8 @@ SET ConfigurationLevel='O', Description='Can be overwritten by "de.metas.ui.web.
 WHERE AD_SysConfig_ID = 541409
 ;
 
+-- 2023-12-13T09:53:12.151Z
+INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel, Created, CreatedBy, Description, EntityType, IsActive, Name, Updated, UpdatedBy, Value)
+VALUES (0, 0, 541676, 'O', TO_TIMESTAMP('2023-12-13 09:53:12.043000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', 100, 'Also add quantities of components of the sold product', 'de.metas.material.cockpit', 'Y', 'de.metas.ui.web.material.cockpit.field.QtyOrdered_SalesOrder_AtDate.BOMSupport',
+        TO_TIMESTAMP('2023-12-13 09:53:12.043000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', 100, 'Y')
+;

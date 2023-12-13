@@ -171,6 +171,7 @@ public class MD_Candidate_StepDef
 												.orderedQuantity(qty)
 												.reservedQuantityDelta(qty)
 												.reservedQuantity(qty)
+												.orderedQuantityDelta(qty)
 												.build())
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
