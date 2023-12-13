@@ -92,7 +92,6 @@ public class MaterialCockpitRowFactory
 	{
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductIdsToListEvenIfEmpty(),
-				request.getWarehouseIds(),
 				request.getDate(),
 				request.isIncludePerPlantDetailRows());
 
@@ -113,7 +112,6 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final ImmutableSet<ProductId> productIds,
-			final List<WarehouseId> warehouseIds,
 			@NonNull final LocalDate timestamp,
 			final boolean includePerPlantDetailRows)
 	{

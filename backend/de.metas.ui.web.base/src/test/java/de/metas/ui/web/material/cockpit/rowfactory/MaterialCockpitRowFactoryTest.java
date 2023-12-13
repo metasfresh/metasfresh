@@ -322,7 +322,7 @@ public class MaterialCockpitRowFactoryTest
 		// invoke method under test
 		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
 				ImmutableSet.of(productId),
-				request.getWarehouseIds(), today,
+				today,
 				true);
 
 		assertThat(result).hasSize(1);
