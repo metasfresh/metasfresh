@@ -214,4 +214,7 @@ public interface IProductDAO extends ISingletonService
 	 * @return true if product is used in orders, invoices, shipments,..
 	 */
 	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

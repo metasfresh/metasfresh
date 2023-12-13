@@ -36,7 +36,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -135,19 +134,13 @@ public class DDOrderLowLevelService
 	}
 
 	@Nullable
-	public Resource getPlantTo(final I_DD_OrderLine ddOrderLine)
+	public ResourceId getPlantTo(final I_DD_OrderLine ddOrderLine)
 	{
-		final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
-		if(plantToId == null)
-		{
-			return null;
-		}
-
-		return resourceService.getResourceById(plantToId);
+		return ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
 	}
 
 	@Nullable
-	public Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
+	public ResourceId findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
 
@@ -166,12 +159,11 @@ public class DDOrderLowLevelService
 
 		try
 		{
-			final ResourceId plantId = productPlanningDAO.findPlantId(
+			return productPlanningDAO.findPlantId(
 					adOrgId,
 					warehouseFrom,
 					ddOrderLine.getM_Product_ID(),
 					ddOrderLine.getM_AttributeSetInstance_ID());
-			return resourceService.getResourceById(plantId);
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -224,8 +216,8 @@ public class DDOrderLowLevelService
 	}
 
 	private void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
-			final int currentPlantId,
-			final IProcessor<I_DD_Order> ddOrderProcessor)
+									  final int currentPlantId,
+									  final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		logger.debug("PP_Plant_ID: {}", currentPlantId);
 		logger.debug("Processor: {}", ddOrderProcessor);

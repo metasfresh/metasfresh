@@ -550,4 +550,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.iterateAndStream();
 	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Processed, false)
+				.create()
+				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderId.class);
+	}
 }

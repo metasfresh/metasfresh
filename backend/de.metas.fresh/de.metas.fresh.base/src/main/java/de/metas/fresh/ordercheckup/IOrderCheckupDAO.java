@@ -22,33 +22,15 @@ package de.metas.fresh.ordercheckup;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_PP_Product_Planning;
-
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Order;
+
+import java.util.List;
 
 public interface IOrderCheckupDAO extends ISingletonService
 {
-	/**
-	 * For the given order line, return a {@link I_PP_Product_Planning} which has either <code>IsManufactured='Y'</code> or, if there is not such, with has <code>IsTraded='Y'</code>.
-	 *
-	 * @return product data planning or <code>null</code>.
-	 */
-	I_PP_Product_Planning retrieveProductPlanningOrNull(I_C_OrderLine orderLine);
-
-	/**
-	 * For the given order line, return those warehouses that are referenced by a manufacturing_<code>PP_Product_Planning</code> record that also references the order line.
-	 *
-	 * @return warehouse or null
-	 */
-	I_M_Warehouse retrieveManufacturingWarehouseOrNull(I_C_OrderLine orderLine);
-
 	/**
 	 * Retrieves all (active or not) reports for given order
 	 */

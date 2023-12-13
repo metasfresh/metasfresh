@@ -8,6 +8,8 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -17,6 +19,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
@@ -26,7 +29,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -60,14 +62,10 @@ import java.util.stream.Collectors;
  * #L%
  */
 @Service
+@RequiredArgsConstructor
 public class DDOrderPojoSupplier
 {
-	private final ModelProductDescriptorExtractor productDescriptorFactory;
-
-	public DDOrderPojoSupplier(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
-	{
-		this.productDescriptorFactory = productDescriptorFactory;
-	}
+	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
 	{
@@ -92,7 +90,7 @@ public class DDOrderPojoSupplier
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
 		final Properties ctx = mrpContext.getCtx();
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanningData = mrpContext.getProductPlanning();
 		final ResourceId plantId = mrpContext.getPlantId();
 
 		// TODO vpj-cd I need to create logic for DRP-040 Shipment Due Action Notice
@@ -103,7 +101,7 @@ public class DDOrderPojoSupplier
 		// Indicates that a shipment for a Order Distribution is past due. You should either delay the orders created the requirement for the product
 		// or expedite them when the product does arrive.
 
-		if (productPlanningData.getDD_NetworkDistribution_ID() <= 0)
+		if (productPlanningData.getDistributionNetworkId() == null)
 		{
 			// Indicates that the Product Planning Data for this product does not specify a valid network distribution.
 			Loggables.addLog(
@@ -113,18 +111,19 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final I_DD_NetworkDistribution network = productPlanningData.getDD_NetworkDistribution();
-		final List<I_DD_NetworkDistributionLine> networkLines = Services.get(IDistributionNetworkDAO.class)
-				.retrieveNetworkLinesByTargetWarehouse(network, productPlanningData.getM_Warehouse_ID());
+		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+		final I_DD_NetworkDistribution network = distributionNetworkDAO.getById(productPlanningData.getDistributionNetworkId());
+		final List<I_DD_NetworkDistributionLine> networkLines = distributionNetworkDAO
+				.retrieveNetworkLinesByTargetWarehouse(network, productPlanningData.getWarehouseId());
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
-			final int warehouseToId = productPlanningData.getM_Warehouse_ID();
+			final WarehouseId warehouseToId = productPlanningData.getWarehouseId();
 			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
 							+ "networkDistribution={}"
 							+ "warehouseToId={}",
-					productPlanningData.getM_Warehouse_ID(), this.getClass(), network, warehouseToId);
+					productPlanningData.getWarehouseId(), this.getClass(), network, warehouseToId);
 			return ImmutableList.of();
 		}
 
@@ -200,8 +199,8 @@ public class DDOrderPojoSupplier
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
 						.orgId(warehouseToOrgId)
-						.plantId(ResourceId.toRepoId(plantId))
-						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
+						.plantId(plantId.getRepoId())
+						.productPlanningId(ProductPlanningId.toRepoId(productPlanningData.getId()))
 						.datePromised(supplyDateFinishSchedule)
 						.shipperId(networkLine.getM_Shipper_ID())
 						.simulated(request.isSimulated());
@@ -237,12 +236,12 @@ public class DDOrderPojoSupplier
 		}
 
 		return builders.stream()
-				.map(b -> b.build())
+				.map(DDOrder.DDOrderBuilder::build)
 				.collect(Collectors.toList());
 	}
 
 	@VisibleForTesting
-	/* package */final BigDecimal calculateQtyToMove(
+	/* package */ final BigDecimal calculateQtyToMove(
 			@NonNull final BigDecimal qtyToMoveRequested,
 			@NonNull final BigDecimal networkLineTransferPercent)
 	{
@@ -283,7 +282,7 @@ public class DDOrderPojoSupplier
 
 		final Quantity qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getProductId());
 
-		final DDOrderLine ddOrderline = DDOrderLine.builder()
+		return DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
@@ -291,8 +290,6 @@ public class DDOrderPojoSupplier
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();
-
-		return ddOrderline;
 	}
 
 }

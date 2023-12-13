@@ -11,6 +11,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -34,15 +35,14 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -91,7 +91,7 @@ final class CreateOrderCommand
 	public I_PP_Order execute()
 	{
 		final ProductPlanningId productPlanningId = request.getProductPlanningId();
-		final I_PP_Product_Planning productPlanning = productPlanningId != null
+		final ProductPlanning productPlanning = productPlanningId != null
 				? productPlanningsRepo.getById(productPlanningId)
 				: null;
 
@@ -185,7 +185,7 @@ final class CreateOrderCommand
 
 	private boolean isCompleteDocument(
 			@NonNull final PPOrderCreateRequest request,
-			@Nullable final I_PP_Product_Planning productPlanning)
+			@Nullable final ProductPlanning productPlanning)
 	{
 		if (request.getCompleteDocument() != null)
 		{
@@ -198,7 +198,7 @@ final class CreateOrderCommand
 	@Nullable
 	private static UserId getPlannerIdOrNull(
 			@NonNull final PPOrderCreateRequest request,
-			@Nullable final I_PP_Product_Planning productPlanning)
+			@Nullable final ProductPlanning productPlanning)
 	{
 		if (request.getPlannerId() != null)
 		{
@@ -207,7 +207,7 @@ final class CreateOrderCommand
 
 		if (productPlanning != null)
 		{
-			final UserId plannerId = UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID());
+			final UserId plannerId = productPlanning.getPlannerId();
 			if (plannerId != null)
 			{
 				return plannerId;
@@ -219,7 +219,7 @@ final class CreateOrderCommand
 	}
 
 	@NonNull
-	private ProductBOMId getBOMId(@Nullable final I_PP_Product_Planning productPlanning)
+	private ProductBOMId getBOMId(@Nullable final ProductPlanning productPlanning)
 	{
 		if (request.getBomId() != null)
 		{
@@ -227,8 +227,8 @@ final class CreateOrderCommand
 		}
 
 		final ProductBOMId productBOMId = Optional.ofNullable(productPlanning)
-				.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
-				.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
+				.map(ProductPlanning::getBomVersionsId)
+				.filter(Objects::nonNull)
  				.flatMap(bomVersionsId -> bomsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, request.getDocBaseType().getBOMTypes()))
 				.orElseGet(() -> bomsRepo.getIdByProductIdAndType(request.getProductId(), request.getDocBaseType().getBOMTypes()).orElse(null));
 
@@ -243,7 +243,7 @@ final class CreateOrderCommand
 				.setParameter("productPlanning", productPlanning);
 	}
 
-	private PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
+	private PPRoutingId getRoutingId(@Nullable final ProductPlanning productPlanning)
 	{
 		if (request.getRoutingId() != null)
 		{
@@ -252,7 +252,7 @@ final class CreateOrderCommand
 
 		if (productPlanning != null)
 		{
-			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
+			final PPRoutingId routingId = productPlanning.getWorkflowId();
 			if (routingId != null)
 			{
 				return routingId;

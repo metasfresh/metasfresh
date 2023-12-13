@@ -35,11 +35,12 @@ import javax.annotation.Nullable;
  * This class contains methods to obtain and work with {@link ILoggable}s.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public final class Loggables
 {
+	private static ILoggable debuggingLoggable;
+
 	/**
 	 * @return the loggable instance currently associated with this thread or the {@link NullLoggable}. Never returns <code>null</code>.
 	 */
@@ -59,7 +60,12 @@ public final class Loggables
 
 	public static ILoggable console()
 	{
-		return ConsoleLoggable.instance;
+		return ConsoleLoggable.withPrefix(null);
+	}
+
+	public static ILoggable console(@Nullable final String prefix)
+	{
+		return ConsoleLoggable.withPrefix(prefix);
 	}
 
 	public static ILoggable logback(@NonNull final Logger logger, @NonNull final Level logLevel)
@@ -69,7 +75,17 @@ public final class Loggables
 
 	public static IAutoCloseable temporarySetLoggable(final ILoggable loggable)
 	{
-		return ThreadLocalLoggableHolder.instance.temporarySetLoggable(loggable);
+		return ThreadLocalLoggableHolder.instance.temporarySetLoggable(composeWithDebuggingLoggable(loggable));
+	}
+
+	public static void setDebuggingLoggable(@Nullable final ILoggable debuggingLoggable)
+	{
+		Loggables.debuggingLoggable = debuggingLoggable;
+	}
+
+	private static ILoggable composeWithDebuggingLoggable(@Nullable final ILoggable loggable)
+	{
+		return CompositeLoggable2.compose(loggable, debuggingLoggable);
 	}
 
 	/**
