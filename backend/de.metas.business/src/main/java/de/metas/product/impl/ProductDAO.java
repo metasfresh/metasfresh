@@ -151,6 +151,13 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return loadByRepoIdAwares(productIds, I_M_Product.class);
+	}
+
+	@Override
 	public I_M_Product retrieveProductByValue(@NonNull final String value)
 	{
 		final ProductId productId = retrieveProductIdByValue(value);
