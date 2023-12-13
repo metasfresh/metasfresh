@@ -12,7 +12,6 @@ import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
-import de.metas.product.impl.ProductDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -28,7 +27,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
