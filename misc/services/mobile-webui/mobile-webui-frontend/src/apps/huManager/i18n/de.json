@@ -27,7 +27,10 @@
       "windowName": "Massenaktionen",
       "scan": "Scannen",
       "move": "Bewegen",
-      "closeScanner": "Scanner schließen"
+      "closeScanner": "Scanner schließen",
+      "scanHUPlaceholder": "Scannen HU",
+      "scanTargetPlaceholder": "Scan-Ziel",
+      "moveSuccess": "Erfolgreich verschoben"
     }
   }
 }

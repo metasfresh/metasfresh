@@ -9,7 +9,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 import * as api from '../api';
-import { toastError } from '../../../utils/toast';
+import { toastError, toastNotification } from '../../../utils/toast';
 
 const HUBulkActionsScreen = () => {
   const dispatch = useDispatch();
@@ -32,7 +32,10 @@ const HUBulkActionsScreen = () => {
   }, []);
 
   const onScannedHUResolved = ({ scannedBarcode }) => {
-    setScannedHandlingUnitQRCodes([...scannedHandlingUnitQRCodes, scannedBarcode]);
+    const huWasAlreadyScanned = scannedHandlingUnitQRCodes.includes(scannedBarcode);
+    if (!huWasAlreadyScanned) {
+      setScannedHandlingUnitQRCodes([...scannedHandlingUnitQRCodes, scannedBarcode]);
+    }
     toggleHUScanner(false);
   };
 
@@ -47,6 +50,7 @@ const HUBulkActionsScreen = () => {
         huQRCodes: scannedHandlingUnitQRCodes,
         targetQRCode: scannedBarcode,
       })
+      .then(() => toastNotification({ messageKey: 'huManager.action.bulkActions.moveSuccess' }))
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => toggleTargetScanner(false));
   };
@@ -70,14 +74,17 @@ const HUBulkActionsScreen = () => {
           onClick={() => removeHUQrCode(handlingUnitQRCode)}
         />
       ))}
-      <br />
       <ButtonWithIndicator
-        caption={
-          showHUScanner ? trl('huManager.action.bulkActions.closeScanner') : trl('huManager.action.bulkActions.scan')
-        }
+        caption={showHUScanner ? trl('huManager.action.bulkActions.closeScanner') : '+'}
         onClick={() => toggleHUScanner(!showHUScanner)}
       />
-      {showHUScanner && <BarcodeScannerComponent onResolvedResult={onScannedHUResolved} />}
+      {showHUScanner && (
+        <BarcodeScannerComponent
+          onResolvedResult={onScannedHUResolved}
+          scannerPlaceholder={'huManager.action.bulkActions.scanHUPlaceholder'}
+        />
+      )}
+      <br />
       {!showHUScanner && (
         <>
           <ButtonWithIndicator
@@ -88,7 +95,12 @@ const HUBulkActionsScreen = () => {
             }
             onClick={() => toggleTargetScanner(!showTargetScanner)}
           />
-          {showTargetScanner && <BarcodeScannerComponent onResolvedResult={onTargetLocationScanned} />}
+          {showTargetScanner && (
+            <BarcodeScannerComponent
+              onResolvedResult={onTargetLocationScanned}
+              scannerPlaceholder={'huManager.action.bulkActions.scanTargetPlaceholder'}
+            />
+          )}
         </>
       )}
     </div>

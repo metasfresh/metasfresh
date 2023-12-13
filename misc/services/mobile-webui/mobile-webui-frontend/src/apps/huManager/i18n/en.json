@@ -27,7 +27,10 @@
       "windowName": "Bulk actions",
       "scan": "Scan",
       "move": "Move",
-      "closeScanner": "Close scanner"
+      "closeScanner": "Close scanner",
+      "scanHUPlaceholder": "Scan HU",
+      "scanTargetPlaceholder": "Scan target",
+      "moveSuccess": "Successfully moved"
     }
   }
 }

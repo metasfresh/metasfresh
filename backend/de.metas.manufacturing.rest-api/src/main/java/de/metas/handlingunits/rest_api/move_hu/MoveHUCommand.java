@@ -50,6 +50,12 @@ public class MoveHUCommand
 
 	public void execute()
 	{
+		if (huIdAndQRCodes.isEmpty())
+		{
+			//nothing to move
+			return;
+		}
+
 		trxManager.runInThreadInheritedTrx(this::executeInTrx);
 	}
 
@@ -83,7 +89,8 @@ public class MoveHUCommand
 
 		if (!handlingUnitsBL.isLoadingUnit(targetHU))
 		{
-			throw new AdempiereException("Invalid target HU! Expecting LU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU));
+			throw new AdempiereException("Invalid target HU! Expecting LU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU))
+					.markAsUserValidationError();
 		}
 
 		return (huIdsToMove) -> {

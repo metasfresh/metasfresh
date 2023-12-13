@@ -151,6 +151,11 @@ public class HUQRCodesRepository
 	@NonNull
 	public List<HUQRCodeAssignment> getHUAssignmentsByQRCode(@NonNull final Collection<HUQRCode> huQRCodes)
 	{
+		if (huQRCodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final Set<String> qrCodeIds = huQRCodes.stream()
 				.map(HUQRCode::getId)
 				.map(HUQRCodeUniqueId::getAsString)
