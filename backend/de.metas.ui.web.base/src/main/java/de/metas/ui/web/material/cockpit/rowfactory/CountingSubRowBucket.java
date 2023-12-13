@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -90,6 +91,8 @@ public class CountingSubRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
+	private WarehouseId warehouseId;
+
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
@@ -120,6 +123,7 @@ public class CountingSubRowBucket
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+		warehouseId = WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID());
 	}
 
 	@NonNull

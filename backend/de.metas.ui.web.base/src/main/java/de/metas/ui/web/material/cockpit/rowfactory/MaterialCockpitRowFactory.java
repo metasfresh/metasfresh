@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +81,10 @@ public class MaterialCockpitRowFactory
 		@Singular
 		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
 
+		@NonNull
+		@Singular
+		List<WarehouseId> warehouseIds;
+
 		boolean includePerPlantDetailRows;
 	}
 
@@ -87,6 +92,7 @@ public class MaterialCockpitRowFactory
 	{
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductIdsToListEvenIfEmpty(),
+				request.getWarehouseIds(),
 				request.getDate(),
 				request.isIncludePerPlantDetailRows());
 
@@ -107,6 +113,7 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final ImmutableSet<ProductId> productIds,
+			final List<WarehouseId> warehouseIds,
 			@NonNull final LocalDate timestamp,
 			final boolean includePerPlantDetailRows)
 	{
