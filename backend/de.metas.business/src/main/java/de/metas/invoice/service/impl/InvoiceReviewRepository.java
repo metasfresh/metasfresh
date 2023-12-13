@@ -26,7 +26,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.organization.OrgId;
-import de.metas.po.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
