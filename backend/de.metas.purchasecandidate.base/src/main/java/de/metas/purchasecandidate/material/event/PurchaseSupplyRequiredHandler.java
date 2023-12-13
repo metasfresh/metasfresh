@@ -15,6 +15,8 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.impl.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -23,8 +25,11 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -61,6 +66,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 	private static final Logger logger = LogManager.getLogger(PurchaseSupplyRequiredHandler.class);
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
 	private final PostMaterialEventService postMaterialEventService;
 
@@ -120,7 +126,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);

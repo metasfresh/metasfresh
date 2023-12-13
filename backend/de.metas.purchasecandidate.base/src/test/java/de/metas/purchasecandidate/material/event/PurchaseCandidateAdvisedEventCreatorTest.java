@@ -8,6 +8,8 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.conditions.BreakValueType;
@@ -20,7 +22,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_DiscountSchema;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,7 +31,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -58,7 +59,7 @@ import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
-	private I_PP_Product_Planning productPlanningRecord;
+	private ProductPlanning productPlanning;
 	private IOrgDAO orgDAO;
 
 	@Before
@@ -66,9 +67,10 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		productPlanningRecord = newInstance(I_PP_Product_Planning.class);
-		productPlanningRecord.setIsPurchased("Y");
-		save(productPlanningRecord);
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+		this.productPlanning = productPlanningDAO.save(ProductPlanning.builder()
+				.isPurchased(true)
+				.build());
 
 		orgDAO = Mockito.mock(IOrgDAO.class);
 		Services.registerService(IOrgDAO.class, orgDAO);
@@ -97,7 +99,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.build();
 
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
-		mrpContext.setProductPlanning(productPlanningRecord);
+		mrpContext.setProductPlanning(productPlanning);
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
 				new PurchaseOrderDemandMatcher(),
@@ -112,7 +114,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 
 		assertThat(purchaseAdvisedEvent).isPresent();
-		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 

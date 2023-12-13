@@ -10,6 +10,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
@@ -31,7 +32,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -62,7 +63,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	private DDOrderDemandMatcher ddOrderDemandMatcher;
 	private DDOrderPojoSupplier ddOrderPojoSupplier;
 
-	private I_PP_Product_Planning ppProductPlanning;
+	private ProductPlanning ppProductPlanning;
 	private I_M_Product product;
 
 	private IOrgDAO orgDAO;

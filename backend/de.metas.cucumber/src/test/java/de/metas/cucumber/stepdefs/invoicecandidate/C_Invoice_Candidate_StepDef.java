@@ -1453,18 +1453,26 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Tax_Departure_Country_ID, taxDepartureCountry.getC_Country_ID());
 		}
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
-				.firstOnlyOptional(I_C_Invoice_Candidate.class);
-
-		if (!invoiceCandidate.isPresent())
+		final IQuery<I_C_Invoice_Candidate> invCandQuery = invCandQueryBuilder.create();
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invCandQuery.list(I_C_Invoice_Candidate.class);
+		if (invoiceCandidates.isEmpty())
 		{
 			return false;
 		}
+		else if (invoiceCandidates.size() == 1)
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidates.get(0));
 
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
-
-		return true;
+			return true;
+		}
+		else
+		{
+			throw new AdempiereException("Got more than one invoice candidate")
+					.appendParametersToMessage()
+					.setParameter("query", invCandQuery)
+					.setParameter("candidates found", invoiceCandidates);
+		}
 	}
 
 	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)

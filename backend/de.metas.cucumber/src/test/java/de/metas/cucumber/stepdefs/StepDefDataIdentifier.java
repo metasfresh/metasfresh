@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +55,8 @@ public final class StepDefDataIdentifier
 	public String toString() {return getAsString();}
 
 	public String getAsString() {return value;}
+
+	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType) {return RepoIdAwares.ofObject(value, idType);}
 
 	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(getAsString());}
 

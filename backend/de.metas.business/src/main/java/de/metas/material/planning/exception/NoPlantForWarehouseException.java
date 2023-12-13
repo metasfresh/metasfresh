@@ -16,6 +16,7 @@ package de.metas.material.planning.exception;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
@@ -26,7 +27,7 @@ import javax.annotation.Nullable;
  *
  * @author Teo Sarca
  */
-public class NoPlantForWarehouseException extends MrpException
+public class NoPlantForWarehouseException extends AdempiereException
 {
 	public NoPlantForWarehouseException(@Nullable final OrgId adOrgId, @Nullable final WarehouseId warehouseId, @Nullable final ProductId productId)
 	{

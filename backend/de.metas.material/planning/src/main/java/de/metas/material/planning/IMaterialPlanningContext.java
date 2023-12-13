@@ -8,9 +8,12 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -39,10 +42,7 @@ public interface IMaterialPlanningContext extends IContextAware
 	//@formatter:off
 	ClientId getClientId();
 
-	@Nullable ResourceId getPlantId();
-	void setPlantId(@Nullable ResourceId plantId);
-
-	void setClientId(@NonNull ClientId clientId);
+	ResourceId getPlantId();
 
 	OrgId getOrgId();
 	void setOrgId(@NonNull OrgId orgId);
@@ -57,7 +57,11 @@ public interface IMaterialPlanningContext extends IContextAware
 	void setAttributeSetInstanceId(@NonNull AttributeSetInstanceId attributeSetInstanceId);
 	//@formatter:on
 
-	I_PP_Product_Planning getProductPlanning();
+	Date getDate();
+
+	Timestamp getDateAsTimestamp();
+
+	ProductPlanning getProductPlanning();
 
 	void setProductPlanning(I_PP_Product_Planning productPlanningRecord);
 

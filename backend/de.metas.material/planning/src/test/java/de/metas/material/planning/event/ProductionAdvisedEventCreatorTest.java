@@ -10,6 +10,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
@@ -32,7 +33,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -64,7 +65,7 @@ public class ProductionAdvisedEventCreatorTest
 	PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	private I_M_Product product;
-	private I_PP_Product_Planning ppProductPlanning;
+	private ProductPlanning ppProductPlanning;
 	private IOrgDAO orgDAO;
 
 	@BeforeEach

@@ -460,10 +460,6 @@ public interface I_PP_Order_Candidate
 	 */
 	int getPP_Product_Planning_ID();
 
-	@Nullable org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
-
-	void setPP_Product_Planning(@Nullable org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
-
 	ModelColumn<I_PP_Order_Candidate, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
