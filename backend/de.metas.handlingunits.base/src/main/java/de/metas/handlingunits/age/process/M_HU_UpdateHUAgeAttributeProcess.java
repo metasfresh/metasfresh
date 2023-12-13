@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.Adempiere;
 
 import java.time.LocalDateTime;
@@ -65,8 +66,15 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 		storage.setSaveOnChange(true);
 
 		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
+
+		int ageOffset = 0;
+		 if (storage.hasAttribute(HUAttributeConstants.ATTR_AgeOffset))
+		 {
+			 ageOffset = storage.getValueAsInt(HUAttributeConstants.ATTR_AgeOffset);
+		 }
+
 		final int age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
-		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
+		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age + ageOffset));
 	}
 
 }

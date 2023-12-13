@@ -3252,3 +3252,12 @@ INSERT INTO t_alter_column values('m_maturing_configuration_line','MaturityAge',
 UPDATE M_Maturing_Configuration_Line SET MaturityAge=0 WHERE MaturityAge IS NULL
 ;
 
+
+
+
+----------------------------------------------------------------------------------------- AgeOffset Attribute -----------------------------------------------------------
+
+-- 2023-12-13T15:05:16.910Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,C_UOM_ID,DescriptionPattern,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,'N',TO_TIMESTAMP('2023-12-13 17:05:16','YYYY-MM-DD HH24:MI:SS'),100,100,'','Y','N','N','N','Y','N','N','N','N','Y','N',540128,'Altersversatz',TO_TIMESTAMP('2023-12-13 17:05:16','YYYY-MM-DD HH24:MI:SS'),100,'Age offset')
+;
+
