@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 924958051L;
+	private static final long serialVersionUID = -62557261L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -138,6 +138,21 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setIssue_HU_ID (final int Issue_HU_ID)
+	{
+		if (Issue_HU_ID < 1) 
+			set_Value (COLUMNNAME_Issue_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Issue_HU_ID, Issue_HU_ID);
+	}
+
+	@Override
+	public int getIssue_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Issue_HU_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
@@ -177,6 +192,60 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getM_HU_PI_Item_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration(final org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class, M_Maturing_Configuration);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
+	{
+		if (M_Maturing_Configuration_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line(final org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class, M_Maturing_Configuration_Line);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
+	{
+		if (M_Maturing_Configuration_Line_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_Line_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
