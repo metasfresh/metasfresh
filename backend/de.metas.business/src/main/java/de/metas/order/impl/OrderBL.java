@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -105,6 +106,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -128,6 +130,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -1407,4 +1411,35 @@ public class OrderBL implements IOrderBL
 		return orderDAO.getPPCostCollectorId(orderLineId);
 	}
 
+	@Override
+	public void setWeightFromLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		final ImmutableSet<ProductId> productIds = lines
+				.stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productId2Product = productBL.getByIdsInTrx(productIds)
+				.stream()
+				.collect(Collectors.toMap(product -> ProductId.ofRepoId(product.getM_Product_ID()), Function.identity()));
+
+		final BigDecimal weight = lines.stream()
+				.map(line -> {
+					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
+
+					return product.getWeight().multiply(line.getQtyOrdered());
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		order.setWeight(weight);
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return orderDAO.getUnprocessedIdsBy(productId);
+	}
 }

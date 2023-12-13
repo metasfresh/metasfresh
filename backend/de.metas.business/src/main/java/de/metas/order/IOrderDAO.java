@@ -3,6 +3,7 @@ package de.metas.order;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -155,4 +156,6 @@ public interface IOrderDAO extends ISingletonService
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
 
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }
