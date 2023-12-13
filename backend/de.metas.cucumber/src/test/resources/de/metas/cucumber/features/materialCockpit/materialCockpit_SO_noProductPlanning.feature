@@ -555,6 +555,55 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
+  @Ignore #also broken on master
+  @Id:S0189_1000
+  @from:cucumber
+  Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | salesProduct_21092022_9 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_21092022_9 | pricing_system_value_21092022_9 | pricing_system_description_21092022_9 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_21092022_9 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_21092022_9 | 2020-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | EndPartner_21092022_9 | Y            | Y              | ps_1                          |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     |
+      | o_1        | true    | endBPartner_1            | 2021-12-01  | 2021-04-15T00:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+    When the order identified by o_1 is completed
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
+      | cp_1       | p_1                     | 2021-04-15  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+    When the order identified by o_1 is reactivated
+    And update order
+      | C_Order_ID.Identifier | OPT.DatePromised     |
+      | o_1                   | 2021-04-17T00:00:00Z |
+    When the order identified by o_1 is completed
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
+      | cp_1       | p_1                     | 2021-04-17  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
+      | cp_2       | p_1                     | 2021-04-15  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
+    And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
+  @Ignore #also broken on master
   @Id:S0189_1100
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=8
