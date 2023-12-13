@@ -3261,3 +3261,620 @@ UPDATE M_Maturing_Configuration_Line SET MaturityAge=0 WHERE MaturityAge IS NULL
 INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,C_UOM_ID,DescriptionPattern,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,'N',TO_TIMESTAMP('2023-12-13 17:05:16','YYYY-MM-DD HH24:MI:SS'),100,100,'','Y','N','N','N','Y','N','N','N','N','Y','N',540128,'Altersversatz',TO_TIMESTAMP('2023-12-13 17:05:16','YYYY-MM-DD HH24:MI:SS'),100,'Age offset')
 ;
 
+
+-- 2023-12-13T15:05:43.690Z
+UPDATE M_Attribute SET IsStorageRelevant='N',Updated=TO_TIMESTAMP('2023-12-13 17:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540128
+;
+
+-- 2023-12-13T15:06:11.370Z
+UPDATE M_Attribute SET C_UOM_ID=NULL, IsAttrDocumentRelevant='Y', IsPricingRelevant='Y',Updated=TO_TIMESTAMP('2023-12-13 17:06:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540128
+;
+
+-- 2023-12-13T15:08:19.723Z
+UPDATE M_Attribute SET Value='AgeOffset',Updated=TO_TIMESTAMP('2023-12-13 17:08:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540128
+;
+
+-----------
+
+
+
+-- Name: Reife Konfiguration
+-- Action Type: W
+-- Window: Reife Konfiguration(541755,D)
+-- 2023-12-13T16:19:03.087Z
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,582861,542133,0,541755,TO_TIMESTAMP('2023-12-13 18:19:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Maturing Config','Y','N','N','Y','N','Reife Konfiguration',TO_TIMESTAMP('2023-12-13 18:19:02','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-12-13T16:19:03.090Z
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Menu_ID=542133 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2023-12-13T16:19:03.094Z
+INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 542133, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542133)
+;
+
+-- 2023-12-13T16:19:03.106Z
+/* DDL */  select update_menu_translation_from_ad_element(582861) 
+;
+
+-- Reordering children of `Settings`
+-- Node name: `Product Planning (PP_Product_Planning)`
+-- 2023-12-13T16:19:11.378Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541392 AND AD_Tree_ID=10
+;
+
+-- Node name: `Product Planning Schema (M_Product_PlanningSchema)`
+-- 2023-12-13T16:19:11.381Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541035 AND AD_Tree_ID=10
+;
+
+-- Node name: `Product Planning (M_Product)`
+-- 2023-12-13T16:19:11.383Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540820 AND AD_Tree_ID=10
+;
+
+-- Node name: `Create Default Product Planning Data (de.metas.product.process.M_ProductPlanning_Create_Default_ProductPlanningData)`
+-- 2023-12-13T16:19:11.385Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541030 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflows (AD_Workflow)`
+-- 2023-12-13T16:19:11.386Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540822 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflow Standard Activity`
+-- 2023-12-13T16:19:11.387Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541409 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflow Transitions (AD_WF_NodeNext)`
+-- 2023-12-13T16:19:11.388Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540823 AND AD_Tree_ID=10
+;
+
+-- Node name: `Resource (S_Resource)`
+-- 2023-12-13T16:19:11.389Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540818 AND AD_Tree_ID=10
+;
+
+-- Node name: `Resource Type (S_ResourceType)`
+-- 2023-12-13T16:19:11.390Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540819 AND AD_Tree_ID=10
+;
+
+-- Node name: `Component Generator (PP_ComponentGenerator)`
+-- 2023-12-13T16:19:11.390Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541571 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Activity (AD_WF_Node)`
+-- 2023-12-13T16:19:11.391Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541609 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reife Konfiguration`
+-- 2023-12-13T16:19:11.392Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542133 AND AD_Tree_ID=10
+;
+
+-- Element: null
+-- 2023-12-13T16:20:02.912Z
+UPDATE AD_Element_Trl SET Name='Reifung Konfiguration', PrintName='Reifung Konfiguration',Updated=TO_TIMESTAMP('2023-12-13 18:20:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582861 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:20:02.914Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582861,'de_CH') 
+;
+
+-- Element: null
+-- 2023-12-13T16:20:35.222Z
+UPDATE AD_Element_Trl SET Name='Reifung Konfiguration', PrintName='Reifung Konfiguration',Updated=TO_TIMESTAMP('2023-12-13 18:20:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582861 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:20:35.224Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582861,'de_DE') 
+;
+
+-- 2023-12-13T16:20:35.225Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582861,'de_DE') 
+;
+
+-- Element: From_Product_ID
+-- 2023-12-13T16:22:06.590Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rohprodukt', PrintName='Rohprodukt',Updated=TO_TIMESTAMP('2023-12-13 18:22:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582860 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:22:06.592Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582860,'de_CH') 
+;
+
+-- Element: From_Product_ID
+-- 2023-12-13T16:22:11.295Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rohprodukt', PrintName='Rohprodukt',Updated=TO_TIMESTAMP('2023-12-13 18:22:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582860 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:22:11.297Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582860,'de_DE') 
+;
+
+-- 2023-12-13T16:22:11.298Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582860,'de_DE') 
+;
+
+-- Element: From_Product_ID
+-- 2023-12-13T16:22:31.019Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Raw Product', PrintName='Raw Product',Updated=TO_TIMESTAMP('2023-12-13 18:22:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582860 AND AD_Language='en_US'
+;
+
+-- 2023-12-13T16:22:31.021Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582860,'en_US') 
+;
+
+-- Element: IsMatured
+-- 2023-12-13T16:23:31.165Z
+UPDATE AD_Element_Trl SET Name='Fertig gereift', PrintName='Fertig gereift',Updated=TO_TIMESTAMP('2023-12-13 18:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582864 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:23:31.168Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582864,'de_CH') 
+;
+
+-- Element: IsMatured
+-- 2023-12-13T16:23:34.022Z
+UPDATE AD_Element_Trl SET Name='Fertig gereift', PrintName='Fertig gereift',Updated=TO_TIMESTAMP('2023-12-13 18:23:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582864 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:23:34.024Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582864,'de_DE') 
+;
+
+-- 2023-12-13T16:23:34.025Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582864,'de_DE') 
+;
+
+-- Element: IsMatured
+-- 2023-12-13T16:23:47.742Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Fully matured', PrintName='Fully matured',Updated=TO_TIMESTAMP('2023-12-13 18:23:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582864 AND AD_Language='en_US'
+;
+
+-- 2023-12-13T16:23:47.744Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582864,'en_US') 
+;
+
+-- Element: IsMaturing
+-- 2023-12-13T16:24:53.789Z
+UPDATE AD_Element_Trl SET Name='Reifung läuft', PrintName='Reifung läuft',Updated=TO_TIMESTAMP('2023-12-13 18:24:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582865 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:24:53.791Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582865,'de_CH') 
+;
+
+-- Element: IsMaturing
+-- 2023-12-13T16:24:56.172Z
+UPDATE AD_Element_Trl SET Name='Reifung läuft', PrintName='Reifung läuft',Updated=TO_TIMESTAMP('2023-12-13 18:24:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582865 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:24:56.174Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582865,'de_DE') 
+;
+
+-- 2023-12-13T16:24:56.175Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582865,'de_DE') 
+;
+
+-- Element: M_Maturing_Configuration_Line_ID
+-- 2023-12-13T16:25:15.655Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Zuordnung Reifeprodukte', PrintName='Zuordnung Reifeprodukte',Updated=TO_TIMESTAMP('2023-12-13 18:25:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582857 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:25:15.658Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582857,'de_CH') 
+;
+
+-- Element: M_Maturing_Configuration_Line_ID
+-- 2023-12-13T16:25:18.474Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Zuordnung Reifeprodukte', PrintName='Zuordnung Reifeprodukte',Updated=TO_TIMESTAMP('2023-12-13 18:25:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582857 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:25:18.478Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582857,'de_DE') 
+;
+
+-- 2023-12-13T16:25:18.481Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582857,'de_DE') 
+;
+
+-- Element: M_Maturing_Configuration_Line_ID
+-- 2023-12-13T16:25:26.533Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Maturing Products Allocation', PrintName='Maturing Products Allocation',Updated=TO_TIMESTAMP('2023-12-13 18:25:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582857 AND AD_Language='en_US'
+;
+
+-- 2023-12-13T16:25:26.535Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582857,'en_US') 
+;
+
+-- 2023-12-13T16:27:18.738Z
+UPDATE AD_Window_Trl SET Name='Reiferdisposition',Updated=TO_TIMESTAMP('2023-12-13 18:27:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Window_ID=541756
+;
+
+-- 2023-12-13T16:27:21.012Z
+UPDATE AD_Window_Trl SET Name='Reiferdisposition',Updated=TO_TIMESTAMP('2023-12-13 18:27:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Window_ID=541756
+;
+
+-- 2023-12-13T16:27:29.870Z
+UPDATE AD_Window_Trl SET Name='Maturing candidate',Updated=TO_TIMESTAMP('2023-12-13 18:27:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Window_ID=541756
+;
+
+-- Name: Reiferdisposition
+-- Action Type: W
+-- Window: Reiferdisposition(541756,EE01)
+-- 2023-12-13T16:27:42.148Z
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,582866,542134,0,541756,TO_TIMESTAMP('2023-12-13 18:27:42','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Maturing candidate','Y','N','N','N','N','Reiferdisposition',TO_TIMESTAMP('2023-12-13 18:27:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-12-13T16:27:42.149Z
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Menu_ID=542134 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2023-12-13T16:27:42.150Z
+INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 542134, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542134)
+;
+
+-- 2023-12-13T16:27:42.152Z
+/* DDL */  select update_menu_translation_from_ad_element(582866) 
+;
+
+-- Reordering children of `Settings`
+-- Node name: `Product Planning (PP_Product_Planning)`
+-- 2023-12-13T16:27:50.429Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541392 AND AD_Tree_ID=10
+;
+
+-- Node name: `Product Planning Schema (M_Product_PlanningSchema)`
+-- 2023-12-13T16:27:50.432Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541035 AND AD_Tree_ID=10
+;
+
+-- Node name: `Product Planning (M_Product)`
+-- 2023-12-13T16:27:50.434Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540820 AND AD_Tree_ID=10
+;
+
+-- Node name: `Create Default Product Planning Data (de.metas.product.process.M_ProductPlanning_Create_Default_ProductPlanningData)`
+-- 2023-12-13T16:27:50.436Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541030 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflows (AD_Workflow)`
+-- 2023-12-13T16:27:50.438Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540822 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflow Standard Activity`
+-- 2023-12-13T16:27:50.439Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541409 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Workflow Transitions (AD_WF_NodeNext)`
+-- 2023-12-13T16:27:50.440Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540823 AND AD_Tree_ID=10
+;
+
+-- Node name: `Resource (S_Resource)`
+-- 2023-12-13T16:27:50.442Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540818 AND AD_Tree_ID=10
+;
+
+-- Node name: `Resource Type (S_ResourceType)`
+-- 2023-12-13T16:27:50.443Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540819 AND AD_Tree_ID=10
+;
+
+-- Node name: `Component Generator (PP_ComponentGenerator)`
+-- 2023-12-13T16:27:50.444Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541571 AND AD_Tree_ID=10
+;
+
+-- Node name: `Manufacturing Activity (AD_WF_Node)`
+-- 2023-12-13T16:27:50.445Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541609 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reife Konfiguration`
+-- 2023-12-13T16:27:50.446Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542133 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reiferdisposition`
+-- 2023-12-13T16:27:50.447Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542134 AND AD_Tree_ID=10
+;
+
+
+
+-- Tab: Reifung Konfiguration -> Maturing Configuration
+-- Table: M_Maturing_Configuration
+-- Tab: Reifung Konfiguration(541755,D) -> Maturing Configuration
+-- Table: M_Maturing_Configuration
+-- 2023-12-13T16:34:29.600Z
+UPDATE AD_Tab SET IsSingleRow='Y',Updated=TO_TIMESTAMP('2023-12-13 18:34:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=547343
+;
+
+-- Tab: Reifung Konfiguration -> Zuordnung Reifeprodukte
+-- Table: M_Maturing_Configuration_Line
+-- Tab: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte
+-- Table: M_Maturing_Configuration_Line
+-- 2023-12-13T16:34:41.825Z
+UPDATE AD_Tab SET IsSingleRow='Y',Updated=TO_TIMESTAMP('2023-12-13 18:34:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=547344
+;
+
+
+-- Table: M_Maturing_Configuration
+-- Table: M_Maturing_Configuration
+-- 2023-12-13T16:36:14.183Z
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2023-12-13 18:36:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542383
+;
+
+-- Table: M_Maturing_Configuration_Line
+-- Table: M_Maturing_Configuration_Line
+-- 2023-12-13T16:36:23.889Z
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2023-12-13 18:36:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542384
+;
+
+
+
+
+
+-- Tab: Reifung Konfiguration -> Maturing Configuration
+-- Table: M_Maturing_Configuration
+-- Tab: Reifung Konfiguration(541755,D) -> Maturing Configuration
+-- Table: M_Maturing_Configuration
+-- 2023-12-13T16:34:29.600Z
+UPDATE AD_Tab SET IsSingleRow='Y',Updated=TO_TIMESTAMP('2023-12-13 18:34:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=547343
+;
+
+-- Tab: Reifung Konfiguration -> Zuordnung Reifeprodukte
+-- Table: M_Maturing_Configuration_Line
+-- Tab: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte
+-- Table: M_Maturing_Configuration_Line
+-- 2023-12-13T16:34:41.825Z
+UPDATE AD_Tab SET IsSingleRow='Y',Updated=TO_TIMESTAMP('2023-12-13 18:34:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=547344
+;
+
+-- Table: M_Maturing_Configuration
+-- Table: M_Maturing_Configuration
+-- 2023-12-13T16:36:14.183Z
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2023-12-13 18:36:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542383
+;
+
+-- Table: M_Maturing_Configuration_Line
+-- Table: M_Maturing_Configuration_Line
+-- 2023-12-13T16:36:23.889Z
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2023-12-13 18:36:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542384
+;
+
+-- Tab: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D)
+-- UI Section: main
+-- 2023-12-13T16:39:40.440Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,547344,545931,TO_TIMESTAMP('2023-12-13 18:39:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2023-12-13 18:39:40','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2023-12-13T16:39:40.441Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_UI_Section_ID=545931 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- UI Section: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main
+-- UI Column: 10
+-- 2023-12-13T16:39:45.338Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,547231,545931,TO_TIMESTAMP('2023-12-13 18:39:45','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2023-12-13 18:39:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Section: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main
+-- UI Column: 20
+-- 2023-12-13T16:39:47.038Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,547232,545931,TO_TIMESTAMP('2023-12-13 18:39:46','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2023-12-13 18:39:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Column: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10
+-- UI Element Group: main
+-- 2023-12-13T16:39:54.705Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,547231,551409,TO_TIMESTAMP('2023-12-13 18:39:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2023-12-13 18:39:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10 -> main.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- 2023-12-13T16:40:10.932Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723215,0,547344,551409,622024,'F',TO_TIMESTAMP('2023-12-13 18:40:10','YYYY-MM-DD HH24:MI:SS'),100,'','Y','N','Y','N','N','Rohprodukt',10,0,0,TO_TIMESTAMP('2023-12-13 18:40:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10 -> main.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- 2023-12-13T16:40:16.647Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=551409, IsDisplayed='Y', SeqNo=20,Updated=TO_TIMESTAMP('2023-12-13 18:40:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=622024
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Maturity Age
+-- Column: M_Maturing_Configuration_Line.MaturityAge
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10 -> main.Maturity Age
+-- Column: M_Maturing_Configuration_Line.MaturityAge
+-- 2023-12-13T16:40:25.448Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723213,0,547344,551409,622025,'F',TO_TIMESTAMP('2023-12-13 18:40:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Maturity Age',30,0,0,TO_TIMESTAMP('2023-12-13 18:40:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Column: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 20
+-- UI Element Group: flag
+-- 2023-12-13T16:40:42.215Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,547232,551410,TO_TIMESTAMP('2023-12-13 18:40:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','flag',10,TO_TIMESTAMP('2023-12-13 18:40:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Column: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 20
+-- UI Element Group: org
+-- 2023-12-13T16:40:46.021Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,547232,551411,TO_TIMESTAMP('2023-12-13 18:40:45','YYYY-MM-DD HH24:MI:SS'),100,'Y','org',20,TO_TIMESTAMP('2023-12-13 18:40:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Aktiv
+-- Column: M_Maturing_Configuration_Line.IsActive
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 20 -> flag.Aktiv
+-- Column: M_Maturing_Configuration_Line.IsActive
+-- 2023-12-13T16:40:54.042Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723210,0,547344,551410,622026,'F',TO_TIMESTAMP('2023-12-13 18:40:53','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','N','N','Aktiv',10,0,0,TO_TIMESTAMP('2023-12-13 18:40:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Sektion
+-- Column: M_Maturing_Configuration_Line.AD_Org_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 20 -> org.Sektion
+-- Column: M_Maturing_Configuration_Line.AD_Org_ID
+-- 2023-12-13T16:41:02.087Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723209,0,547344,551411,622027,'F',TO_TIMESTAMP('2023-12-13 18:41:01','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','N','N','Sektion',10,0,0,TO_TIMESTAMP('2023-12-13 18:41:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Mandant
+-- Column: M_Maturing_Configuration_Line.AD_Client_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 20 -> org.Mandant
+-- Column: M_Maturing_Configuration_Line.AD_Client_ID
+-- 2023-12-13T16:41:08.525Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723208,0,547344,551411,622028,'F',TO_TIMESTAMP('2023-12-13 18:41:08','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','Y','N','N','Mandant',20,0,0,TO_TIMESTAMP('2023-12-13 18:41:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10 -> main.Rohprodukt
+-- Column: M_Maturing_Configuration_Line.From_Product_ID
+-- 2023-12-13T16:42:27.778Z
+UPDATE AD_UI_Element SET SeqNo=10,Updated=TO_TIMESTAMP('2023-12-13 18:42:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=622024
+;
+
+-- UI Element: Reifung Konfiguration -> Zuordnung Reifeprodukte.Matured Product
+-- Column: M_Maturing_Configuration_Line.Matured_Product_ID
+-- UI Element: Reifung Konfiguration(541755,D) -> Zuordnung Reifeprodukte(547344,D) -> main -> 10 -> main.Matured Product
+-- Column: M_Maturing_Configuration_Line.Matured_Product_ID
+-- 2023-12-13T16:42:36.377Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723214,0,547344,551409,622029,'F',TO_TIMESTAMP('2023-12-13 18:42:36','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Matured Product',20,0,0,TO_TIMESTAMP('2023-12-13 18:42:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+-- Element: Matured_Product_ID
+-- 2023-12-13T16:45:59.942Z
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Gereiftes Produkts', PrintName='Gereiftes Produkts',Updated=TO_TIMESTAMP('2023-12-13 18:45:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582859 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:45:59.944Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582859,'de_DE') 
+;
+
+-- 2023-12-13T16:45:59.945Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582859,'de_DE') 
+;
+
+-- Element: Matured_Product_ID
+-- 2023-12-13T16:46:03.677Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Gereiftes Produkt', PrintName='Gereiftes Produkt',Updated=TO_TIMESTAMP('2023-12-13 18:46:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582859 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:46:03.680Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582859,'de_DE') 
+;
+
+-- 2023-12-13T16:46:03.681Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582859,'de_DE') 
+;
+
+-- Element: Matured_Product_ID
+-- 2023-12-13T16:46:08.870Z
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Gereiftes Produk', PrintName='Gereiftes Produk',Updated=TO_TIMESTAMP('2023-12-13 18:46:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582859 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:46:08.872Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582859,'de_CH') 
+;
+
+-- Element: Matured_Product_ID
+-- 2023-12-13T16:46:12.236Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Gereiftes Produkt', PrintName='Gereiftes Produkt',Updated=TO_TIMESTAMP('2023-12-13 18:46:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582859 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:46:12.238Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582859,'de_CH') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:46:30.754Z
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Reifealters',Updated=TO_TIMESTAMP('2023-12-13 18:46:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:46:30.756Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_CH') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:46:32.484Z
+UPDATE AD_Element_Trl SET PrintName='Reifealters',Updated=TO_TIMESTAMP('2023-12-13 18:46:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:46:32.486Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_CH') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:46:36.087Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Reifealter', PrintName='Reifealter',Updated=TO_TIMESTAMP('2023-12-13 18:46:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_CH'
+;
+
+-- 2023-12-13T16:46:36.089Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_CH') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:46:40.157Z
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Reifealte', PrintName='Reifealte',Updated=TO_TIMESTAMP('2023-12-13 18:46:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:46:40.159Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582858,'de_DE') 
+;
+
+-- 2023-12-13T16:46:40.159Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_DE') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:46:47.814Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-12-13 18:46:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:46:47.817Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582858,'de_DE') 
+;
+
+-- 2023-12-13T16:46:47.818Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_DE') 
+;
+
+-- Element: MaturityAge
+-- 2023-12-13T16:47:05.757Z
+UPDATE AD_Element_Trl SET Name='Reifealter', PrintName='Reifealter',Updated=TO_TIMESTAMP('2023-12-13 18:47:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582858 AND AD_Language='de_DE'
+;
+
+-- 2023-12-13T16:47:05.759Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582858,'de_DE') 
+;
+
+-- 2023-12-13T16:47:05.759Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582858,'de_DE') 
+;
+
+
+
+
+---------------
+
