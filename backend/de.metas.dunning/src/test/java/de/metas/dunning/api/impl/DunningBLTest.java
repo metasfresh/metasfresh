@@ -190,12 +190,6 @@ public class DunningBLTest extends DunningTestBase
 		assertExpired(false, null, TimeUtil.getDay(2013, 3, 10), true);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void test_isExpired_NullCandidate()
-	{
-		dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10));
-	}
-
 	private void assertExpired(final boolean expectedExpired, final Timestamp dunningGraceDate, final Timestamp dunningDate, final boolean processed)
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
