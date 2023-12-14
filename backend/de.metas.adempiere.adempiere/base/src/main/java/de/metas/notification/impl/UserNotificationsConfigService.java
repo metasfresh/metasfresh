@@ -92,7 +92,6 @@ public class UserNotificationsConfigService
 		final I_AD_User user = userDAO.getById(adUserId);
 		final UserId userInChargeId = UserId.ofRepoIdOrNull(user.getAD_User_InCharge_ID());
 
-		final IQueryBL queryBL = this.queryBL;
 		final List<UserNotificationsGroup> userNotificationGroups = queryBL.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
 				.addEqualsFilter(I_AD_User_NotificationGroup.COLUMN_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()

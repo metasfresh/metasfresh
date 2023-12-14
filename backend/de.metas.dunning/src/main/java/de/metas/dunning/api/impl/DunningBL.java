@@ -261,11 +261,18 @@ public class DunningBL implements IDunningBL
 	{
 		dunningDAO.getByIdsInTrx(createdDunningDocIds)
 				.stream()
-				.collect(Collectors.groupingBy(doc -> docTypeDAO.getById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification()))
+				.filter(doc -> groupByBoilerPlate(doc) != null)
+				.collect(Collectors.groupingBy(this::groupByBoilerPlate))
 				.forEach((boilerPlateWithLineId, dunningDocs)-> sendMassNotifications(boilerPlateWithLineId,dunningDocs, language));
 	}
 
-	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId,
+	@Nullable
+	private BoilerPlateWithLineId groupByBoilerPlate(final I_C_DunningDoc doc)
+	{
+		return docTypeDAO.getById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification();
+	}
+
+	private void sendMassNotifications(@Nullable final BoilerPlateWithLineId boilerPlateWithLineId,
 			@NonNull final List<I_C_DunningDoc> dunningDocs,
 			@NonNull final Language language)
 	{

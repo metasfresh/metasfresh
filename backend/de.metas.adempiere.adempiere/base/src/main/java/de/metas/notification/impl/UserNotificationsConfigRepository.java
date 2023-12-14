@@ -48,7 +48,9 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 	@Override
 	public void createOrUpdate(@NonNull final UserNotificationGroupCreateRequest request)
 	{
-		final I_AD_User_NotificationGroup userNotificationGroup = CoalesceUtil.coalesceNotNull(loadRecordBy(request.getUserId(),request.getNotificationGroupId()), InterfaceWrapperHelper.newInstance(I_AD_User_NotificationGroup.class));
+		final I_AD_User_NotificationGroup userNotificationGroup = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> loadRecordBy(request.getUserId(), request.getNotificationGroupId()),
+				() -> InterfaceWrapperHelper.newInstance(I_AD_User_NotificationGroup.class));
 		userNotificationGroup.setAD_User_ID(request.getUserId().getRepoId());
 		userNotificationGroup.setAD_Org_ID(request.getOrgId().getRepoId());
 		userNotificationGroup.setAD_NotificationGroup_ID(request.getNotificationGroupId().getRepoId());
