@@ -59,5 +59,4 @@ final class MaturingConfigMap
 	{
 		return byMaturedProductId.get(maturedProductId);
 	}
-
 }

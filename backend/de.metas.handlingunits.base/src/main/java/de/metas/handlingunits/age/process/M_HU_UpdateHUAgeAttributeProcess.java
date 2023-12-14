@@ -22,7 +22,9 @@ package de.metas.handlingunits.age.process;
  * #L%
  */
 
+import de.metas.handlingunits.age.Age;
 import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.age.AgeValues;
 import de.metas.handlingunits.age.HUWithAgeRepository;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -66,15 +68,20 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 		storage.setSaveOnChange(true);
 
 		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
-
-		int ageOffset = 0;
-		 if (storage.hasAttribute(HUAttributeConstants.ATTR_AgeOffset))
-		 {
-			 ageOffset = storage.getValueAsInt(HUAttributeConstants.ATTR_AgeOffset);
-		 }
-
 		final int age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
-		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age + ageOffset));
+		updateAgeAttribute(storage, Age.ofAgeInMonths(age));
 	}
 
+
+	public static void updateAgeAttribute(IAttributeStorage storage, Age age)
+	{
+		Age ageOffset = Age.ZERO;
+		if (storage.hasAttribute(HUAttributeConstants.ATTR_AgeOffset))
+		{
+			ageOffset = Age.ofAgeInMonths(storage.getValueAsInt(HUAttributeConstants.ATTR_AgeOffset));
+		}
+
+		 final Age ageWithOffeset = age.add(ageOffset);
+		storage.setValue(HUAttributeConstants.ATTR_Age, ageWithOffeset.toStringValue());
+	}
 }
