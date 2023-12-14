@@ -21,7 +21,6 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeDAO;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.MetasfreshLastError;
@@ -159,7 +158,7 @@ public class CalloutInvoice extends CalloutEngine
 					if (docTypeId > 0)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-						final I_C_DocType invoiceDocType = docTypeDAO.getById(docTypeId);
+						final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(docTypeId);
 
 						final String docBaseType = invoiceDocType.getDocBaseType();
 

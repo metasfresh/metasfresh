@@ -1,5 +1,6 @@
 package de.metas.dunning.modelvalidator;
 
+import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationType;
 import de.metas.notification.impl.UserNotificationGroupCreateRequest;
@@ -25,6 +26,7 @@ import static de.metas.dunning.api.IDunningBL.MASS_DUNNING_NOTIFICATION_GROUP_NA
 class AD_User
 {
 	private final IUserNotificationsConfigRepository userNotificationsConfigRepository = Services.get(IUserNotificationsConfigRepository.class);
+	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
@@ -34,10 +36,10 @@ class AD_User
 		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
 		if (user.isReceiveMassDunningReports())
 		{
-			userNotificationsConfigRepository.create(UserNotificationGroupCreateRequest.builder()
+			userNotificationsConfigRepository.createOrUpdate(UserNotificationGroupCreateRequest.builder()
 					.userId(userId)
 					.orgId(OrgId.ofRepoId(user.getAD_Org_ID()))
-					.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
+					.notificationGroupId(notificationGroupNamesRepo.getNotificationGroupId(MASS_DUNNING_NOTIFICATION_GROUP_NAME))
 					.notificationType(NotificationType.EMail)
 					.build());
 		}
@@ -45,7 +47,7 @@ class AD_User
 		{
 			userNotificationsConfigRepository.delete(UserNotificationGroupDeleteRequest.builder()
 					.userId(userId)
-					.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
+					.notificationGroupId(notificationGroupNamesRepo.getNotificationGroupId(MASS_DUNNING_NOTIFICATION_GROUP_NAME))
 					.build());
 		}
 	}

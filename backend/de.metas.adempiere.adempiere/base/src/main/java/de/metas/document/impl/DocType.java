@@ -26,14 +26,17 @@ import de.metas.document.DocTypeId;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateWithLineId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class DocType
 {
-	DocTypeId id;
-	BoilerPlateId notification;
-	BoilerPlateWithLineId massGenerateNotification;
+	@NonNull DocTypeId id;
+	@Nullable BoilerPlateId notification;
+	@Nullable BoilerPlateWithLineId massGenerateNotification;
 
 }

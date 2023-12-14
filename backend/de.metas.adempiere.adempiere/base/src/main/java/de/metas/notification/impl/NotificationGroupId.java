@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.dunning
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.dunning;
+package de.metas.notification.impl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import de.metas.util.Check;
@@ -28,24 +28,24 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 @Value
-public class DunningLevelId implements RepoIdAware
+public class NotificationGroupId implements RepoIdAware
 {
 	@JsonCreator
-	public static DunningLevelId ofRepoId(final int repoId)
+	public static NotificationGroupId ofRepoId(final int repoId)
 	{
-		return new DunningLevelId(repoId);
+		return new NotificationGroupId(repoId);
 	}
 
-	public static DunningLevelId ofRepoIdOrNull(final int repoId)
+	public static NotificationGroupId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new DunningLevelId(repoId) : null;
+		return repoId > 0 ? new NotificationGroupId(repoId) : null;
 	}
 
 	int repoId;
 
-	private DunningLevelId(final int repoId)
+	private NotificationGroupId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_DunningLevel_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_NotificationGroup_ID");
 	}
 
 }

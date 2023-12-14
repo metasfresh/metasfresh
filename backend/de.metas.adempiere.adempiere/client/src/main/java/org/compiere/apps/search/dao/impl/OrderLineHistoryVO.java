@@ -22,22 +22,20 @@ package org.compiere.apps.search.dao.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Services;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /**
  * Contains aggregated information of ordered product quantities and their dates
@@ -80,7 +78,7 @@ public class OrderLineHistoryVO
 		partnerName = Services.get(IBPartnerDAO.class).getBPartnerNameById(bpartnerId);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		docBaseType = docType.getDocBaseType();
 
 		documentNo = new StringBuilder(docType.getPrintName())

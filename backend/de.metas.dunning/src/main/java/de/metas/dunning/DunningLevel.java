@@ -22,30 +22,15 @@
 
 package de.metas.dunning;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class DunningLevelId implements RepoIdAware
+@Builder
+public class DunningLevel
 {
-	@JsonCreator
-	public static DunningLevelId ofRepoId(final int repoId)
-	{
-		return new DunningLevelId(repoId);
-	}
-
-	public static DunningLevelId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new DunningLevelId(repoId) : null;
-	}
-
-	int repoId;
-
-	private DunningLevelId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_DunningLevel_ID");
-	}
-
+	@NonNull DunningLevelId id;
+	@NonNull String name;
+	@NonNull String printName;
 }

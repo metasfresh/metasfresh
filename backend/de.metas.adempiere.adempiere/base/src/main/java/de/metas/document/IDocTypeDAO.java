@@ -30,7 +30,6 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_DocType;
 
 import java.util.List;
@@ -39,9 +38,9 @@ import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
-	I_C_DocType getById(int docTypeId);
+	I_C_DocType getRecordById(int docTypeId);
 
-	I_C_DocType getById(DocTypeId docTypeId);
+	I_C_DocType getRecordById(DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
@@ -73,8 +72,7 @@ public interface IDocTypeDAO extends ISingletonService
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
 
-	@Cached
-	DocType loadById(DocTypeId id);
+	DocType getById(DocTypeId id);
 
 	@Value
 	@Builder

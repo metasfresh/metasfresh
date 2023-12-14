@@ -1,5 +1,6 @@
 package de.metas.notification;
 
+import de.metas.notification.impl.NotificationGroupId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
@@ -31,7 +32,7 @@ public interface INotificationGroupNameRepository extends ISingletonService
 {
 	NotificationGroupName getById(int notificationGroupId);
 
-	int getNotificationGroupId(final NotificationGroupName notificationGroupName);
+	NotificationGroupId getNotificationGroupId(final NotificationGroupName notificationGroupName);
 
 	Set<NotificationGroupName> getAll();
 

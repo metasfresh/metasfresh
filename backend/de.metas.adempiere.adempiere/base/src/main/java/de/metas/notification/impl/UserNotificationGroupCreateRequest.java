@@ -22,7 +22,6 @@
 
 package de.metas.notification.impl;
 
-import de.metas.notification.NotificationGroupName;
 import de.metas.notification.NotificationType;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
@@ -36,6 +35,6 @@ public class UserNotificationGroupCreateRequest
 {
 	@NonNull UserId userId;
 	@NonNull OrgId orgId;
-	@NonNull NotificationGroupName notificationGroupName;
+	@NonNull NotificationGroupId notificationGroupId;
 	@NonNull NotificationType notificationType;
 }

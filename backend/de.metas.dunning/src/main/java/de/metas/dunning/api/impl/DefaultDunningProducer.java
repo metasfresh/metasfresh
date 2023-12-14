@@ -22,6 +22,7 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
@@ -51,7 +52,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -68,12 +68,11 @@ public class DefaultDunningProducer implements IDunningProducer
 	private I_C_DunningDoc dunningDoc = null;
 	private I_C_DunningDoc_Line dunningDocLine = null;
 	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
-	private final ISysConfigBL systemBL = Services.get(ISysConfigBL.class);
 	private boolean isFinished = false;
 
 	private final Collection<DunningDocId> createdDunningDocIds = new HashSet<>();
 
-	public final String SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE = "de.metas.dunning.UsePrefixedPoReference";
+	public static final String SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE = "de.metas.dunning.UsePrefixedPoReference";
 
 	@Override
 	public void setDunningContext(IDunningContext context)
@@ -177,11 +176,13 @@ public class DefaultDunningProducer implements IDunningProducer
 	}
 
 	@Nullable
-	private String getPOReferenceToUse(final I_C_Dunning_Candidate candidate)
+	@VisibleForTesting
+	/*package*/ static String getPOReferenceToUse(final I_C_Dunning_Candidate candidate)
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final String poReference = candidate.getPOReference();
 		String actualPOReference = poReference;
-		if (systemBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
 		{
 			final String documentNo = candidate.getDocumentNo();
 			if (Check.isNotBlank(documentNo) && Check.isNotBlank(poReference) && documentNo.contains(poReference))
@@ -346,7 +347,8 @@ public class DefaultDunningProducer implements IDunningProducer
 	@Override
 	public Collection<DunningDocId> getCreatedDunningDocIds()
 	{
-		return isFinished ? createdDunningDocIds : Collections.emptySet();
+		Check.assume(isFinished,"Aggregation is not yet completed.");
+		return createdDunningDocIds;
 	}
 
 }

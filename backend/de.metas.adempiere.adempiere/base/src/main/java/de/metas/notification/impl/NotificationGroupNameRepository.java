@@ -6,8 +6,8 @@ import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_NotificationGroup;
 
 import javax.annotation.Nullable;
@@ -38,6 +38,9 @@ import java.util.Set;
 public class NotificationGroupNameRepository implements INotificationGroupNameRepository
 {
 	private final CCache<Integer, ImmutableBiMap<Integer, NotificationGroupName>> notificationGroupNames = CCache.newCache(I_AD_NotificationGroup.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<NotificationGroupName, UserId> notificationGroupNameToDeadletterUserIds = CCache.<NotificationGroupName, UserId>builder()
+			.tableName(I_AD_NotificationGroup.Table_Name)
+			.build();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -47,9 +50,10 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 	}
 
 	@Override
-	public int getNotificationGroupId(final NotificationGroupName notificationGroupName)
+	@Nullable
+	public NotificationGroupId getNotificationGroupId(final NotificationGroupName notificationGroupName)
 	{
-		return getNotificationGroupInternalNamesById().inverse().getOrDefault(notificationGroupName, -1);
+		return NotificationGroupId.ofRepoIdOrNull(getNotificationGroupInternalNamesById().inverse().getOrDefault(notificationGroupName, -1));
 	}
 
 	@Override
@@ -59,9 +63,14 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 	}
 
 	@Override
-	@Cached
 	@Nullable
-	public UserId getDeadletterUserId(final NotificationGroupName notificationGroupName)
+	public UserId getDeadletterUserId(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		return notificationGroupNameToDeadletterUserIds.getOrLoad(notificationGroupName,this::loadDeadeletterUserID);
+	}
+
+	@Nullable
+	private UserId loadDeadeletterUserID(final @NonNull NotificationGroupName notificationGroupName)
 	{
 		final Integer first = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)
@@ -73,7 +82,7 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 	}
 
 	@Override
-	public boolean isNotifyOrgBpUsersOnly(final NotificationGroupName notificationGroupName)
+	public boolean isNotifyOrgBpUsersOnly(@NonNull final NotificationGroupName notificationGroupName)
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)

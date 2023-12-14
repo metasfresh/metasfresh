@@ -2,12 +2,8 @@ package de.metas.notification;
 
 import de.metas.notification.impl.UserNotificationGroupCreateRequest;
 import de.metas.notification.impl.UserNotificationGroupDeleteRequest;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-
-import java.util.List;
 
 /*
  * #%L
@@ -33,11 +29,7 @@ import java.util.List;
 
 public interface IUserNotificationsConfigRepository extends ISingletonService
 {
-	UserNotificationsConfig getByUserId(UserId adUserId);
-
-	List<UserId> getByNotificationGroupAndOrgId(@NonNull final NotificationGroupName notificationGroupName, @NonNull final OrgId orgId);
-
-	void create(@NonNull UserNotificationGroupCreateRequest request);
+	void createOrUpdate(@NonNull UserNotificationGroupCreateRequest request);
 
 	void delete(UserNotificationGroupDeleteRequest request);
 }

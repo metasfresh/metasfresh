@@ -113,7 +113,7 @@ public class DocTypeService
 			return Optional.empty();
 		}
 		
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 		if (!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
 		{
 			throw new AdempiereException("Invalid base doc type!");

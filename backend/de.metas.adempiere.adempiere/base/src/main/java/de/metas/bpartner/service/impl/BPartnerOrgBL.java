@@ -36,6 +36,8 @@ import static de.metas.util.Check.assume;
 
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
+	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 	@Override
 	public I_C_BPartner retrieveLinkedBPartner(final I_AD_Org org)
 	{
@@ -87,7 +89,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgBPLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(orgBPLocationId);
 		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
 		{
 			return bpLocation.getC_Location();
@@ -117,12 +119,11 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	@Deprecated
 	public org.compiere.model.I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
 	{
-		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
 		org.compiere.model.I_AD_User defaultContact;
 		try
 		{
-			final I_C_BPartner orgBPartner = bPartnerPA.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);
-			defaultContact = bPartnerPA.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
+			final I_C_BPartner orgBPartner = bpartnerDAO.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);
+			defaultContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 		}
 		catch (OrgHasNoBPartnerLinkException e)
 		{
@@ -134,7 +135,6 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	@Override
 	public Collection<UserId> retrieveOrgUsers(final OrgId orgId)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final List<I_AD_User> users = retrieveLinkedBPartnerId(orgId).map(bpartnerDAO::retrieveContacts)
 				.orElse(Collections.emptyList());
 		return users.stream()

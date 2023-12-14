@@ -22,7 +22,6 @@
 
 package de.metas.notification.impl;
 
-import de.metas.notification.NotificationGroupName;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,5 +32,5 @@ import lombok.Value;
 public class UserNotificationGroupDeleteRequest
 {
 	@NonNull UserId userId;
-	@NonNull NotificationGroupName notificationGroupName;
+	@NonNull NotificationGroupId notificationGroupId;
 }

@@ -47,7 +47,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -254,31 +253,34 @@ public class DunningBL implements IDunningBL
 
 		dunningProducer.finish();
 
-		sendMassNotifications(dunningProducer.getCreatedDunningDocIds());
+		sendMassNotifications(dunningProducer.getCreatedDunningDocIds(), Language.getBaseLanguage());
 	}
 
-	private void sendMassNotifications(@NonNull final Collection<DunningDocId> createdDunningDocIds)
+	private void sendMassNotifications(@NonNull final Collection<DunningDocId> createdDunningDocIds,
+			@NonNull final Language language)
 	{
 		dunningDAO.getByIdsInTrx(createdDunningDocIds)
 				.stream()
-				.collect(Collectors.groupingBy(doc -> docTypeDAO.loadById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification()))
-				.forEach(this::sendMassNotifications);
+				.collect(Collectors.groupingBy(doc -> docTypeDAO.getById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification()))
+				.forEach((boilerPlateWithLineId, dunningDocs)-> sendMassNotifications(boilerPlateWithLineId,dunningDocs, language));
 	}
 
-	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId, @NonNull final List<I_C_DunningDoc> dunningDocs)
+	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId,
+			@NonNull final List<I_C_DunningDoc> dunningDocs,
+			@NonNull final Language language)
 	{
 		dunningDocs.stream()
 				.collect(Collectors.groupingBy(doc -> OrgId.ofRepoId(doc.getAD_Org_ID())))
-				.forEach((orgId, docs) -> this.sendMassNotifications(boilerPlateWithLineId, orgId, docs));
+				.forEach((orgId, docs) -> this.sendMassNotifications(boilerPlateWithLineId, orgId, docs, language));
 	}
 
 	private void sendMassNotifications(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId,
 			@NonNull final OrgId orgId,
-			@NonNull final List<I_C_DunningDoc> dunningDocs)
+			@NonNull final List<I_C_DunningDoc> dunningDocs,
+			@NonNull final Language language)
 	{
-		final Language userLanguage = Env.getLanguage();
-		final BoilerPlate headerBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getHeaderId(), userLanguage);
-		final String lines = getMassGenerateLinesPlainString(boilerPlateWithLineId, dunningDocs);
+		final BoilerPlate headerBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getHeaderId(), language);
+		final String lines = getMassGenerateLinesPlainString(boilerPlateWithLineId, dunningDocs, language);
 
 		final Evaluatee headerEvaluatee = Evaluatees.ofSingleton(MASS_GENERATE_LINES_EVALUATEE_PARAM, lines)
 				.andComposeWith(getPO(orgDAO.getById(orgId)));
@@ -293,10 +295,11 @@ public class DunningBL implements IDunningBL
 	}
 
 	@NonNull
-	private String getMassGenerateLinesPlainString(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId, final @NonNull List<I_C_DunningDoc> dunningDocs)
+	private String getMassGenerateLinesPlainString(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId,
+			final @NonNull List<I_C_DunningDoc> dunningDocs,
+			final Language language)
 	{
-		final Language userLanguage = Env.getLanguage();
-		final BoilerPlate lineBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getLineId(), userLanguage);
+		final BoilerPlate lineBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getLineId(), language);
 		return dunningDocs.stream()
 				.map(doc -> lineBoilerPlate.evaluateTextSnippet(createEvalContext(doc)))
 				.collect(Collectors.joining("\n"));
@@ -304,7 +307,7 @@ public class DunningBL implements IDunningBL
 
 	private Evaluatee createEvalContext(final @NonNull I_C_DunningDoc doc)
 	{
-		return Evaluatees.compose(Evaluatees.ofSingleton("C_DunningLevel", dunningDAO.getDunningLevelName(DunningLevelId.ofRepoId(doc.getC_DunningLevel_ID()))),
+		return Evaluatees.compose(Evaluatees.ofSingleton("C_DunningLevel", dunningDAO.getById(DunningLevelId.ofRepoId(doc.getC_DunningLevel_ID())).getPrintName()),
 				getPO(doc));
 	}
 
@@ -385,10 +388,8 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public boolean isExpired(final I_C_Dunning_Candidate candidate, @Nullable final Timestamp dunningGraceDate)
+	public boolean isExpired(final @NonNull I_C_Dunning_Candidate candidate, @Nullable final Timestamp dunningGraceDate)
 	{
-		Check.assumeNotNull(candidate, "candidate not null");
-
 		if (candidate.isProcessed())
 		{
 			// candidate already processed => not expired

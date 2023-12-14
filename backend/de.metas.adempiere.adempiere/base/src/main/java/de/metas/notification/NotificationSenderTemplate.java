@@ -16,6 +16,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.process.AdProcessId;
@@ -86,7 +87,6 @@ public class NotificationSenderTemplate
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
-	private final IUserNotificationsConfigRepository userNotificationsConfigRepository = Services.get(IUserNotificationsConfigRepository.class);
 	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -95,6 +95,7 @@ public class NotificationSenderTemplate
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
+	final UserNotificationsConfigService userNotificationsConfigService = SpringContextHolder.instance.getBean(UserNotificationsConfigService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -213,7 +214,7 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isOrgUsersContainingGroup())
 		{
-			final List<UserId> userIds = userNotificationsConfigRepository.getByNotificationGroupAndOrgId(recipient.getNotificationGroupName(), recipient.getOrgId());
+			final List<UserId> userIds = userNotificationsConfigService.getByNotificationGroupAndOrgId(recipient.getNotificationGroupName(), recipient.getOrgId());
 			if (userIds.isEmpty())
 			{
 				final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(recipient.getNotificationGroupName());
