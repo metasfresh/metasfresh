@@ -98,7 +98,7 @@ public class HighPriceProvider
 		{
 			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
 			final I_M_Product productRecord = productBL.getById(productId);
-			if (!active || !productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
+			if (!productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
 			{
 				resultMap.put(
 						request,
