@@ -45,6 +45,30 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   );
 };
 
+export const toastNotification = ({ messageKey, plainMessage }) => {
+  let message;
+  if (messageKey) {
+    message = trl(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
+  } else {
+    console.error('toastNotification called without any message');
+    return;
+  }
+
+  toast.custom(
+    (t) => (
+      <div className="toastSuccessContainer">
+        <button className="toastCloseButton" onClick={() => toast.dismiss(t.id)}></button>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
+};
+
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   // console.log('extractUserFriendlyErrorMessageFromAxiosError', { axiosError });
 

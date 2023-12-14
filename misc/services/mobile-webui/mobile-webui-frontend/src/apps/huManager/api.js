@@ -63,3 +63,13 @@ export async function assignExternalLotNumber({ huId, qrCode }) {
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 }
+
+export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
+  return axios
+    .post(`${huAPIBasePath}/bulk/move`, {
+      huQRCodes: huQRCodes,
+      targetQRCode: toQRCodeString(targetQRCode),
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
