@@ -78,13 +78,13 @@ public class ProductBOM
 			final I_C_UOM componentUOM = uomDAO.getById(component.getC_UOM_ID());
 			final Quantity componentQty = Quantity.of(productBOMBL.computeQtyRequired(component, productId, qtyInBomUom.toBigDecimal()), componentUOM);
 			final Quantity componentQtyInStockUOM = uomConversionBL.convertToProductUOM(componentQty, ProductId.ofRepoId(component.getM_Product_ID()));
-			result.put(productDescriptor, componentQtyInStockUOM);
+			result.merge(productDescriptor, componentQtyInStockUOM, Quantity::add);
 
 			if (componentsProductBOMs.containsKey(productDescriptor))
 			{
 				final ProductBOM componentProductBOM = componentsProductBOMs.get(productDescriptor);
 				final Quantity componentQtyInBomUom = uomConversionBL.convertQuantityTo(componentQtyInStockUOM, componentProductId, componentProductBOM.getUomId());
-				result.putAll(componentProductBOM.calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom));
+				componentProductBOM.calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom).forEach((key, value) -> result.merge(key, value, Quantity::add));
 			}
 		}
 
