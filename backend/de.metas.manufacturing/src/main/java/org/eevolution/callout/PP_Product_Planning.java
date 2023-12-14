@@ -12,7 +12,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.CalloutEngine;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -20,7 +19,7 @@ import java.util.List;
 
 @Callout(I_PP_Product_Planning.class)
 @Interceptor(I_PP_Product_Planning.class)
-public class PP_Product_Planning extends CalloutEngine
+public class PP_Product_Planning
 {
 	final MaturingConfigRepository maturingConfigRepo;
 
@@ -46,7 +45,7 @@ public class PP_Product_Planning extends CalloutEngine
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_IsMatured })
 	public void validateMandatoryBOMVersionsAndWarehouseId(final I_PP_Product_Planning productPlanningRecord)
 	{

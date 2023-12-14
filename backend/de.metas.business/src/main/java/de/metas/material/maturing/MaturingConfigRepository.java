@@ -47,7 +47,7 @@ public class MaturingConfigRepository
 		return fromRecord(loadOutOfTrx(id, I_M_Maturing_Configuration_Line.class));
 	}
 
-	public MaturingConfigLine fromRecord(@NonNull final I_M_Maturing_Configuration_Line record)
+	private static MaturingConfigLine fromRecord(@NonNull final I_M_Maturing_Configuration_Line record)
 	{
 		return MaturingConfigLine.builder()
 				.id(MaturingConfigLineId.ofRepoIdOrNull(record.getM_Maturing_Configuration_Line_ID())) // accept not saved records
@@ -66,7 +66,7 @@ public class MaturingConfigRepository
 				.addEqualsFilter(I_M_Maturing_Configuration_Line.COLUMNNAME_Matured_Product_ID, maturedProductId)
 				.create()
 				.stream(I_M_Maturing_Configuration_Line.class)
-				.map(this::fromRecord)
+				.map(MaturingConfigRepository::fromRecord)
 				.collect(Collectors.toList());
 	}
 
@@ -89,7 +89,7 @@ public class MaturingConfigRepository
 		record.setMaturityAge(from.getMaturityAge());
 	}
 
-	public static void save(@NonNull final I_M_Maturing_Configuration_Line record)
+	private static void save(@NonNull final I_M_Maturing_Configuration_Line record)
 	{
 		saveRecord(record);
 	}

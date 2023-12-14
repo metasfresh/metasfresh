@@ -114,6 +114,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.bomVersionsId(ProductBOMVersionsId.ofRepoIdOrNull(record.getPP_Product_BOMVersions_ID()))
 				.isPickingOrder(record.isPickingOrder())
 				.isMatured(record.isMatured())
+				.maturingConfigId(MaturingConfigId.ofRepoIdOrNull(record.getM_Maturing_Configuration_ID()))
+				.maturingConfigLineId(MaturingConfigLineId.ofRepoIdOrNull(record.getM_Maturing_Configuration_Line_ID()))
 				.isPickDirectlyIfFeasible(record.isPickDirectlyIfFeasible())
 				.isDocComplete(record.isDocComplete())
 				.seqNo(record.getSeqNo())
