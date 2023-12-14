@@ -78,7 +78,7 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 			ageOffset = Age.ofAgeInMonths(storage.getValueAsInt(HUAttributeConstants.ATTR_AgeOffset));
 		}
 
-		final Age ageWithOffeset = age.add(ageOffset);
-		storage.setValue(HUAttributeConstants.ATTR_Age, ageWithOffeset.toStringValue());
+		final Age ageWithOffset = age.add(ageOffset);
+		storage.setValue(HUAttributeConstants.ATTR_Age, ageWithOffset.toStringValue());
 	}
 }

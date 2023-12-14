@@ -39,13 +39,12 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.assertj.core.api.Assertions.*;
 
 public class AgeOffsetTest extends AbstractHUTest
 {
@@ -127,7 +126,7 @@ public class AgeOffsetTest extends AbstractHUTest
 	}
 
 	@Test
-	public void testNormalPropagation()
+	public void testAgeOffset()
 	{
 		final List<I_M_HU> huPalets = createIncomingPalets();
 
@@ -135,14 +134,16 @@ public class AgeOffsetTest extends AbstractHUTest
 
 		final IAttributeStorageFactory storageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 		final IAttributeStorage attributesStorage = storageFactory.getAttributeStorage(palet1);
+		attributesStorage.setSaveOnChange(true);
 
 		attributesStorage.setValue(attr_AgeOffset, "3");
 
 		M_HU_UpdateHUAgeAttributeProcess.updateAgeAttribute(attributesStorage, Age.ofAgeInMonths(1));
 
 		final IAttributeValue agetAttributeValue = attributesStorage.getAttributeValue(attr_Age);
-		Assert.assertThat("Age are supposed to match: ", agetAttributeValue.getValueAsInt(), comparesEqualTo(4));
-	}
 
+		System.out.println("agetAttributeValue: " + agetAttributeValue);
+		assertThat(agetAttributeValue.getValueAsString()).isEqualTo("4");
+	}
 
 }
