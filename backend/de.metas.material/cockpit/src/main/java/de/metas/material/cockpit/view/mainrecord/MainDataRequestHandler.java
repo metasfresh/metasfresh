@@ -136,21 +136,17 @@ public class MainDataRequestHandler
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
 			dataRecord.setQtyStockEstimateTime_AtDate(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+			dataRecord.setQtyStockEstimateCount_AtDate(dataUpdateRequest.getQtyStockEstimateCount());
 		}
-		else
-		{
-			dataRecord.setQtyStockEstimateTime_AtDate(null);
-		}
-		dataRecord.setQtyStockEstimateCount_AtDate(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
 
 		final Integer qtyStockEstimateSeqNo = dataUpdateRequest.getQtyStockEstimateSeqNo();
-		if (qtyStockEstimateSeqNo == null || qtyStockEstimateSeqNo == 0)
+		if (qtyStockEstimateSeqNo != null && qtyStockEstimateSeqNo == 0)
 		{
 			dataRecord.setQtyStockEstimateSeqNo_AtDate(99999);
 		}
 		else
 		{
-			dataRecord.setQtyStockEstimateSeqNo_AtDate(qtyStockEstimateSeqNo);
+			dataRecord.setQtyStockEstimateSeqNo_AtDate(CoalesceUtil.coalesceNotNull(qtyStockEstimateSeqNo, dataRecord.getQtyStockEstimateSeqNo_AtDate(), 99999));
 		}
 	}
 
