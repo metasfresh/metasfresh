@@ -23,12 +23,10 @@ import de.metas.workflow.execution.WFProcessId;
 import de.metas.workflow.execution.approval.WFActivityApprovalCommand.WFActivityApprovalCommandBuilder;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyLine;
-import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyRepository;
 import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyService;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper;
 import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
 import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyType;
-import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -39,8 +37,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static de.metas.workflow.execution.approval.strategy.DocApprovalStrategyTestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WFActivityApprovalCommandTest
 {
@@ -63,20 +61,60 @@ class WFActivityApprovalCommandTest
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		this.wfApprovalRequestRepository = new WFApprovalRequestRepository();
-		this.docApprovalStrategyService = new DocApprovalStrategyService(
-				new DocApprovalStrategyRepository(),
-				new DocApprovalStrategyTypeHandlers(),
-				new CheckSupervisorStrategies()
-		);
+		this.docApprovalStrategyService = DocApprovalStrategyService.newInstanceForUnitTesting();
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		this.euroCurrencyId = currencyDAO.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 
-		createClient(ClientId.METASFRESH);
+		DocApprovalStrategyTestHelper.createClient(ClientId.METASFRESH);
 		this.orgId = AdempiereTestHelper.createOrgWithTimeZone();
 	}
 
 	private Money euro(String value) {return Money.of(value, euroCurrencyId);}
+
+	private WFActivityApprovalCommandBuilder newCommand()
+	{
+		return WFActivityApprovalCommand.builder()
+				.wfApprovalRequestRepository(wfApprovalRequestRepository)
+				.docApprovalStrategyService(docApprovalStrategyService)
+				//
+				.evaluationDate(LocalDate.parse("2023-12-07"))
+				.documentRef(documentRef)
+				.additionalDocumentInfo(WFApprovalRequest.AdditionalDocumentInfo.builder().build())
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
+				//.docApprovalStrategyId(docApprovalStrategyId)
+				//
+				//.documentOwnerId(documentOwnerId)
+				//.requestorId(...)
+				//.projectManagerId(...)
+				//
+				//.amountToApprove(null),
+				//
+				//.wfInvokerId(documentOwnerId)
+				.wfResponsible(WF_RESPONSIBLE_INVOKER)
+				.wfProcessId(wfProcessId)
+				.wfActivityId(wfActivityId)
+				;
+	}
+
+	@Test
+	void noUserForJob()
+	{
+		final UserId userId = DocApprovalStrategyTestHelper.user().name("userId").build();
+
+		final WFActivityApprovalCommand command = newCommand()
+				.docApprovalStrategyId(DocApprovalStrategyTestHelper.createApprovalStrategy(
+						DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(DocApprovalStrategyTestHelper.createJob("CFO"))
+				))
+				.documentOwnerId(userId)
+				.requestorId(userId)
+				.wfInvokerId(userId)
+				.amountToApprove(euro("100"))
+				.build();
+
+		assertThatThrownBy(command::execute)
+				.hasMessageStartingWith("DocApprovalStrategyTypeHandler.NoUsersFoundForJob - CFO");
+	}
 
 	@Nested
 	class multiLevelScenario
@@ -93,23 +131,23 @@ class WFActivityApprovalCommandTest
 		@BeforeEach
 		void beforeEach()
 		{
-			final JobId job_CFO = createJob("CFO");
-			final JobId job_CEO = createJob("CEO");
+			final JobId job_CFO = DocApprovalStrategyTestHelper.createJob("CFO");
+			final JobId job_CEO = DocApprovalStrategyTestHelper.createJob("CEO");
 
-			this.documentOwnerId = user().name("documentOwnerId").build();
-			this.projectManagerId = user().name("projectManagerId").build();
+			this.documentOwnerId = DocApprovalStrategyTestHelper.user().name("documentOwnerId").build();
+			this.projectManagerId = DocApprovalStrategyTestHelper.user().name("projectManagerId").build();
 
-			final RoleId approvalRole1 = role().name("approvalRole1").approvalAmt(euro("1000")).build();
-			final RoleId approvalRole2 = role().name("approvalRole2").approvalAmt(euro("2000")).build();
-			final RoleId approvalRole3 = role().name("approvalRole3").approvalAmt(euro("3000")).build();
-			this.approvalUserId3 = user().name("approvalUserId3").roleId(approvalRole3).supervisorId(null).build();
-			this.approvalUserId2 = user().name("approvalUserId2").roleId(approvalRole2).supervisorId(approvalUserId3).build();
-			this.approvalUserId1 = user().name("approvalUserId1").roleId(approvalRole1).supervisorId(approvalUserId2).build();
+			final RoleId approvalRole1 = DocApprovalStrategyTestHelper.role().name("approvalRole1").approvalAmt(euro("1000")).build();
+			final RoleId approvalRole2 = DocApprovalStrategyTestHelper.role().name("approvalRole2").approvalAmt(euro("2000")).build();
+			final RoleId approvalRole3 = DocApprovalStrategyTestHelper.role().name("approvalRole3").approvalAmt(euro("3000")).build();
+			this.approvalUserId3 = DocApprovalStrategyTestHelper.user().name("approvalUserId3").roleId(approvalRole3).supervisorId(null).build();
+			this.approvalUserId2 = DocApprovalStrategyTestHelper.user().name("approvalUserId2").roleId(approvalRole2).supervisorId(approvalUserId3).build();
+			this.approvalUserId1 = DocApprovalStrategyTestHelper.user().name("approvalUserId1").roleId(approvalRole1).supervisorId(approvalUserId2).build();
 
-			this.cfoId = user().name("CFO").jobId(job_CFO).build();
-			this.ceoId = user().name("CEO").jobId(job_CEO).build();
+			this.cfoId = DocApprovalStrategyTestHelper.user().name("CFO").jobId(job_CFO).build();
+			this.ceoId = DocApprovalStrategyTestHelper.user().name("CEO").jobId(job_CEO).build();
 
-			this.docApprovalStrategyId = createApprovalStrategy(
+			this.docApprovalStrategyId = DocApprovalStrategyTestHelper.createApprovalStrategy(
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Requestor).checkSupervisorStrategyType(CheckSupervisorStrategyType.AllMathing).isProjectManagerSet(OptionalBoolean.FALSE),
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.ProjectManager).isProjectManagerSet(OptionalBoolean.TRUE),
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(job_CFO).minimumAmountThatRequiresApproval(euro("250")),
@@ -119,14 +157,7 @@ class WFActivityApprovalCommandTest
 
 		private WFActivityApprovalCommandBuilder newCommand()
 		{
-			return WFActivityApprovalCommand.builder()
-					.wfApprovalRequestRepository(wfApprovalRequestRepository)
-					.docApprovalStrategyService(docApprovalStrategyService)
-					//
-					.evaluationDate(LocalDate.parse("2023-12-07"))
-					.documentRef(documentRef)
-					.additionalDocumentInfo(WFApprovalRequest.AdditionalDocumentInfo.builder().build())
-					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
+			return WFActivityApprovalCommandTest.this.newCommand()
 					.docApprovalStrategyId(docApprovalStrategyId)
 					//
 					.documentOwnerId(documentOwnerId)
@@ -135,11 +166,7 @@ class WFActivityApprovalCommandTest
 					//
 					//.amountToApprove(null),
 					//
-					.wfInvokerId(documentOwnerId)
-					.wfResponsible(WF_RESPONSIBLE_INVOKER)
-					.wfProcessId(wfProcessId)
-					.wfActivityId(wfActivityId)
-					;
+					.wfInvokerId(documentOwnerId);
 		}
 
 		private void approveByUserId(final UserId userId)

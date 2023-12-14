@@ -1,19 +1,20 @@
 package de.metas.workflow.execution.approval.strategy;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategy;
-import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
-import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.WFResponsible;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategies;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategy;
+import de.metas.workflow.execution.approval.strategy.check_superior_strategy.CheckSupervisorStrategyType;
+import de.metas.workflow.execution.approval.strategy.type_handlers.DocApprovalStrategyTypeHandlers;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.compiere.Adempiere;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,16 @@ public class DocApprovalStrategyService
 	@NonNull private final DocApprovalStrategyRepository repository;
 	@NonNull private final DocApprovalStrategyTypeHandlers typeHandlers;
 	@NonNull private final CheckSupervisorStrategies checkSupervisorStrategies;
+
+	public static DocApprovalStrategyService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new DocApprovalStrategyService(
+				new DocApprovalStrategyRepository(),
+				DocApprovalStrategyTypeHandlers.newInstanceForUnitTesting(),
+				new CheckSupervisorStrategies()
+		);
+	}
 
 	@Value
 	@Builder
