@@ -468,7 +468,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
 		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 		final ColumnCloningStrategy cloningStrategy = ColumnCloningStrategy.ofCode(rs.getString("columnCloningStrategy"));
 
@@ -492,7 +491,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn,
 				adSequenceID,
 				cloningStrategy);
 		col.IsLazyLoading = IsLazyLoading; // metas
@@ -1390,21 +1388,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		return Optional.ofNullable(singleColumnName);
-	}
-
-	public boolean isRestAPICustomColumn(final int index)
-	{
-		if (index < 0 || index >= m_columns.size())
-		{
-			return false;
-		}
-		return m_columns.get(index).IsRestAPICustomColumn;
-	}
-
-	public boolean isRestAPICustomColumn(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return isRestAPICustomColumn(columnIndex);
 	}
 
 	public boolean isParentLinkColumn(final String columnName)

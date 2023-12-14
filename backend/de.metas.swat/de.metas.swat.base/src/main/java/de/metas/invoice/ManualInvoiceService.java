@@ -47,7 +47,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
-import de.metas.po.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
