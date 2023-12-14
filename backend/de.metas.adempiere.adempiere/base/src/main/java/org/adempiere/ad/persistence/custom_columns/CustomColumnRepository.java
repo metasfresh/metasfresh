@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 @Repository
-class CustomColumnRepository
+public class CustomColumnRepository
 {
 	private final CCache<Integer, RESTApiTableInfoMap> cache = CCache.<Integer, RESTApiTableInfoMap>builder()
 			.tableName(I_AD_Column.Table_Name)

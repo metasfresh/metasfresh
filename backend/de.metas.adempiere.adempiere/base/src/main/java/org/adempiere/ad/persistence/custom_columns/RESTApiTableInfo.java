@@ -10,7 +10,7 @@ import lombok.Value;
 import org.compiere.model.POInfoColumn;
 
 @Value
-class RESTApiTableInfo
+public class RESTApiTableInfo
 {
 	@NonNull String tableName;
 	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNamesUC;
