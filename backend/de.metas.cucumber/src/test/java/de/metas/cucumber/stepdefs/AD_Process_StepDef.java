@@ -7,9 +7,16 @@ import de.metas.process.AdProcessId;
 import de.metas.process.ProcessClassInfo;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
+import io.cucumber.java.en.But;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
@@ -17,8 +24,11 @@ import org.compiere.model.I_AD_Process;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class AD_Process_StepDef
 {
@@ -26,12 +36,36 @@ public class AD_Process_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@And("validate all AD_Processes, except:")
-	public void validateAD_Processes(@NonNull final DataTable dataTable)
-	{
-		final ImmutableSet<AdProcessId> adProcessIdsToSkip = getAdProcessIdsToSkip(dataTable);
+	private final MatchingRules includeRules = new MatchingRules();
+	private final MatchingRules excludeRules = new MatchingRules();
 
-		final AtomicInteger countTotal = new AtomicInteger();
+	@Given("all AD_Processes")
+	public void includeAllProcesses()
+	{
+		includeRules.add(MatchingRule.ALL);
+	}
+
+	@But("exclude AD_Processes")
+	public void excludeProcesses(final DataTable dataTable)
+	{
+		DataTableRow.toRows(dataTable)
+				.forEach(row -> {
+					final MatchingRule rule = MatchingRule.ofDataTableRow(row);
+					if (rule.isMatchAll())
+					{
+						throw new AdempiereException("Exclude all rule is not allowed: " + row);
+					}
+
+					excludeRules.add(rule);
+				});
+	}
+
+	@Then("assert selected AD_Processes are valid")
+	public void assertProcessesAreValid()
+	{
+		includeRules.resetStats();
+		excludeRules.resetStats();
+
 		final ErrorsCollector errorsCollector = new ErrorsCollector();
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -39,18 +73,22 @@ public class AD_Process_StepDef
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process.COLUMNNAME_EntityType)
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
-				.toMap(AD_Process_StepDef::extractAdProcessId);
+				.stream()
+				.filter(includeRules::checkMatching)
+				.collect(ImmutableMap.toImmutableMap(AD_Process_StepDef::extractAdProcessId, adProcess -> adProcess));
+
+		softly.assertThat(adProcesses)
+				.as("At least one AD_Process shall be selected for validation")
+				.isNotEmpty();
 
 		//
 		// Check each AD_Process entry to be valid
 		adProcesses.forEach((adProcessId, adProcess) -> {
-			if (adProcessIdsToSkip.contains(adProcessId))
+			if (excludeRules.checkMatching(adProcess))
 			{
 				logger.info("{} is Skipped", getSummary(adProcess));
 				return;
 			}
-
-			countTotal.incrementAndGet();
 
 			softly.assertThatCode(() -> validateAD_Process(adProcess, errorsCollector))
 					.as(() -> getSummary(adProcess))
@@ -59,20 +97,25 @@ public class AD_Process_StepDef
 
 		//
 		// Hygiene of the skip list:
-		adProcessIdsToSkip.forEach(adProcessId -> {
-			final I_AD_Process adProcess = adProcesses.get(adProcessId);
-			softly.assertThat(adProcess)
-					.as(() -> "Expect skipped " + adProcessId + " to have an AD_Process entry but it's missing. Feel free to remove it from the skip list.")
-					.isNotNull();
+		excludeRules.getRules().forEach(excludeRule -> {
+			softly.assertThat(excludeRule.isHit())
+					.as(() -> "Expect exclude rule " + excludeRule + " to match at least one AD_Process but it didn't. Feel free to remove it from the exclude list.")
+					.isTrue();
 
-			softly.assertThatCode(() -> validateAD_Process(adProcess, null))
-					.as(() -> "Expect skipped " + adProcessId + " to fail but it's a success. NICE! Feel free to remove it from the skip list.")
-					.isInstanceOf(Throwable.class); // any exception
+			final AdProcessId adProcessId = excludeRule.getAdProcessId();
+			if (adProcessId != null)
+			{
+				excludeRule.getHits().forEach(adProcess -> {
+					softly.assertThatCode(() -> validateAD_Process(adProcess, null))
+							.as(() -> "Expect skipped " + getSummary(adProcess) + " to fail but it's a success. NICE! Feel free to remove it from the skip list.")
+							.isInstanceOf(Throwable.class); // any exception
+				});
+			}
 		});
 
 		//
 		// Help developer to skip more records if needed
-		logger.info("{} AD_Process(es) were checked", countTotal);
+		logger.info("{} AD_Process(es) were checked", adProcesses.size());
 		if (!errorsCollector.isEmpty())
 		{
 			logger.info("Found {} errors. To Ignore them, in your feature file use: \n{}", errorsCollector.count(), errorsCollector.toCucumberTable());
@@ -81,6 +124,7 @@ public class AD_Process_StepDef
 		//
 		// IMPORTANT: actually execute all asserts
 		softly.assertAll();
+
 	}
 
 	private void validateAD_Process(@NonNull final I_AD_Process adProcess, @Nullable final ErrorsCollector errorsCollector)
@@ -122,14 +166,6 @@ public class AD_Process_StepDef
 		return adProcess.getValue() + "/" + adProcess.getAD_Process_ID() + "/" + adProcess.getClassname() + "/" + adProcess.getEntityType();
 	}
 
-	private static ImmutableSet<AdProcessId> getAdProcessIdsToSkip(@NonNull final DataTable dataTable)
-	{
-		return DataTableRow.toRows(dataTable)
-				.stream()
-				.map(row -> AdProcessId.ofRepoId(row.getAsInt("AD_Process_ID")))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	private static AdProcessId extractAdProcessId(final I_AD_Process adProcess)
 	{
 		return AdProcessId.ofRepoId(adProcess.getAD_Process_ID());
@@ -138,6 +174,101 @@ public class AD_Process_StepDef
 	//
 	//
 	//
+
+	private static class MatchingRules
+	{
+		private final LinkedHashSet<MatchingRule> rules = new LinkedHashSet<>();
+
+		public void add(final MatchingRule rule)
+		{
+			rules.add(rule);
+		}
+
+		public ImmutableSet<MatchingRule> getRules() {return ImmutableSet.copyOf(rules);}
+
+		public void resetStats()
+		{
+			rules.forEach(MatchingRule::resetStats);
+		}
+
+		public boolean checkMatching(final I_AD_Process adProcess)
+		{
+			if (rules.isEmpty())
+			{
+				return false;
+			}
+
+			for (final MatchingRule rule : rules)
+			{
+				if (rule.checkMatching(adProcess))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+	}
+
+	@Builder
+	@EqualsAndHashCode
+	@ToString
+	private static class MatchingRule
+	{
+		public static MatchingRule ALL = builder().build();
+
+		@Nullable @Getter private final AdProcessId adProcessId;
+		@Nullable private final String entityType;
+
+		private final HashMap<AdProcessId, I_AD_Process> hits = new HashMap<>();
+
+		public static MatchingRule ofDataTableRow(final DataTableRow row)
+		{
+			final String adProcessIdPattern = row.getAsOptionalString("AD_Process_ID").map(StringUtils::trimBlankToNull).orElse(null);
+			final AdProcessId adProcessId;
+			if (adProcessIdPattern == null || adProcessIdPattern.equals("*"))
+			{
+				adProcessId = null;
+			}
+			else
+			{
+				adProcessId = RepoIdAwares.ofObject(adProcessIdPattern, AdProcessId.class);
+			}
+
+			final String entityTypePattern = row.getAsOptionalString("EntityType").map(StringUtils::trimBlankToNull).orElse(null);
+			final String entityType;
+			if (entityTypePattern == null || entityTypePattern.equals("*"))
+			{
+				entityType = null;
+			}
+			else
+			{
+				entityType = entityTypePattern;
+			}
+
+			return builder().adProcessId(adProcessId).entityType(entityType).build();
+		}
+
+		public void resetStats() {hits.clear();}
+
+		public boolean isHit() {return !hits.isEmpty();}
+
+		public Collection<I_AD_Process> getHits() {return hits.values();}
+
+		public boolean checkMatching(final I_AD_Process adProcess)
+		{
+			final boolean isMatching = (adProcessId == null || adProcess.getAD_Process_ID() == adProcessId.getRepoId())
+					&& (entityType == null || Objects.equals(adProcess.getEntityType(), entityType));
+			if (isMatching)
+			{
+				hits.put(extractAdProcessId(adProcess), adProcess);
+			}
+			return isMatching;
+		}
+
+		public boolean isMatchAll() {return this.equals(ALL);}
+	}
 
 	private static class ErrorsCollector
 	{
