@@ -22,25 +22,25 @@ package de.metas.document;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.compiere.model.I_C_DocType;
-
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.impl.DocType;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
-	I_C_DocType getById(int docTypeId);
+	I_C_DocType getRecordById(int docTypeId);
 
-	I_C_DocType getById(DocTypeId docTypeId);
+	I_C_DocType getRecordById(DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
@@ -71,6 +71,8 @@ public interface IDocTypeDAO extends ISingletonService
 	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
+
+	DocType getById(DocTypeId id);
 
 	@Value
 	@Builder

@@ -451,7 +451,7 @@ public final class AggregationEngine
 
 			if (icRecord.getC_DocTypeInvoice_ID() > 0)
 			{
-				final I_C_DocType docTypeInvoice = docTypeDAO.getById(icRecord.getC_DocTypeInvoice_ID());
+				final I_C_DocType docTypeInvoice = docTypeDAO.getRecordById(icRecord.getC_DocTypeInvoice_ID());
 				invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
 			}
 

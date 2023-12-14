@@ -234,7 +234,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
@@ -256,7 +256,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
-			final I_C_DocType docTypeRecord = docTypeDAO.getById(docOutboundLogRecord.getC_DocType_ID());
+			final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(docOutboundLogRecord.getC_DocType_ID());
 			if (docTypeRecord.getAD_BoilerPlate_ID() > 0)
 			{
 				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docTypeRecord.getAD_BoilerPlate_ID());

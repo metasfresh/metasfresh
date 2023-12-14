@@ -22,12 +22,6 @@ package de.metas.banking.callout;
  * #L%
  */
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_DocType;
-
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -35,6 +29,11 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_DocType;
 
 @Callout(I_C_BankStatement.class)
 public class C_BankStatement
@@ -65,7 +64,7 @@ public class C_BankStatement
 		}
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)

@@ -16,35 +16,20 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.swing.JPopupMenu;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -97,21 +82,27 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -765,7 +756,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		final DocTypeId docTypeId = attributeContext.getDocTypeId();
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 			String docBaseType = docType.getDocBaseType();
 			if (MDocType.DOCBASETYPE_MaterialReceipt.equals(docBaseType))
 			{

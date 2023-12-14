@@ -22,17 +22,16 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
+import de.metas.dunning.api.IDunnableDoc;
+import de.metas.dunning.api.impl.DunnableDoc;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
-import de.metas.dunning.api.IDunnableDoc;
-import de.metas.dunning.api.impl.DunnableDoc;
 
 public class DunnableDocBuilder
 {
@@ -51,6 +50,9 @@ public class DunnableDocBuilder
 	private Date graceDate;
 	private int daysDue;
 	private boolean isInDispute;
+
+	@Nullable
+	private String poReference;
 
 	public DunnableDocBuilder()
 	{
@@ -72,7 +74,7 @@ public class DunnableDocBuilder
 				dueDate,
 				graceDate,
 				daysDue,
-				isInDispute);
+				isInDispute, poReference);
 
 		return dunnableDoc;
 	}
@@ -184,6 +186,12 @@ public class DunnableDocBuilder
 	public DunnableDocBuilder setInDispute(boolean isInDispute)
 	{
 		this.isInDispute = isInDispute;
+		return this;
+	}
+
+	public DunnableDocBuilder setPoReference(@Nullable final String poReference)
+	{
+		this.poReference = poReference;
 		return this;
 	}
 }

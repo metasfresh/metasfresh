@@ -103,7 +103,7 @@ public class DocumentReportAdvisorUtil
 
 	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypeDAO.getById(docTypeId);
+		return docTypeDAO.getRecordById(docTypeId);
 	}
 
 	public PrintCopies getDocumentCopies(

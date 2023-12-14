@@ -431,7 +431,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// If document type is set, get it's C_DocTypeShipment_ID (if any)
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+			final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 			final int receiptDocTypeId = docType.getC_DocTypeShipment_ID();
 			if (receiptDocTypeId > 0)
 			{
