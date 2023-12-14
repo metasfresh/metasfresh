@@ -156,7 +156,7 @@ public class ShipmentScheduleEventHandler
 			final ProductBOM productBOM = productBOMOptional.get();
 			final I_C_UOM uom = productBL.getStockUOM(identifier.getProductDescriptor().getProductId());
 			final Quantity qty = Quantity.of(shipmentScheduleEvent.getOrderedQuantityDelta(), uom);
-			final Map<ProductDescriptor, Quantity> components = productBOM.calculateRequiredQtyInStockUOMForComponents(qty);
+			final Map<ProductDescriptor, Quantity> components = productBOMBL.calculateRequiredQtyInStockUOMForComponents(qty, productBOM);
 			for (final Map.Entry<ProductDescriptor, Quantity> component : components.entrySet())
 			{
 				final MainDataRecordIdentifier bomIdentifier = MainDataRecordIdentifier.builder()
@@ -316,7 +316,7 @@ public class ShipmentScheduleEventHandler
 			final ProductBOM productBOM = productBOMOptional.get();
 			final I_C_UOM uom = productBL.getStockUOM(identifier.getProductDescriptor().getProductId());
 			final Quantity qty = Quantity.of(oldOrderedQuantity.negate(), uom);
-			final Map<ProductDescriptor, Quantity> components = productBOM.calculateRequiredQtyInStockUOMForComponents(qty);
+			final Map<ProductDescriptor, Quantity> components = productBOMBL.calculateRequiredQtyInStockUOMForComponents(qty, productBOM);
 			for (final Map.Entry<ProductDescriptor, Quantity> component : components.entrySet())
 			{
 				final MainDataRecordIdentifier bomIdentifier = MainDataRecordIdentifier.builder()
