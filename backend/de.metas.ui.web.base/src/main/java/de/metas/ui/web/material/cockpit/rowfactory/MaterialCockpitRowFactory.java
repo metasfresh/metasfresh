@@ -119,7 +119,7 @@ public class MaterialCockpitRowFactory
 		for (final ProductId productId : productIds)
 		{
 			final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
-			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key, highPriceProvider);
+			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key, highPriceProvider.deactivated());
 
 			for (final I_S_Resource plant : plants)
 			{
@@ -162,7 +162,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider.active()));
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
@@ -176,7 +176,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider.deactivated()));
 			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
@@ -190,7 +190,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider.deactivated()));
 			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}

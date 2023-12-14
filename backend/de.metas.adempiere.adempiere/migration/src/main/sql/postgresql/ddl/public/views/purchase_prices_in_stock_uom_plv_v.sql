@@ -43,7 +43,7 @@ FROM cte,
      m_productprice pp
          JOIN m_pricelist_version plv ON plv.m_pricelist_version_id = pp.m_pricelist_version_id
          JOIN m_pricelist pl ON plv.m_pricelist_id = pl.m_pricelist_id AND pl.issopricelist = 'N'
-         LEFT JOIN m_product p ON p.m_product_id = pp.m_product_id AND p.isactive = 'Y' AND p.ispurchased = 'Y' AND p.discontinued = 'N'
+         JOIN m_product p ON p.m_product_id = pp.m_product_id AND p.isactive = 'Y' AND p.ispurchased = 'Y' AND p.discontinued = 'N'
 WHERE pp.isinvalidprice = 'N'
 ;
 

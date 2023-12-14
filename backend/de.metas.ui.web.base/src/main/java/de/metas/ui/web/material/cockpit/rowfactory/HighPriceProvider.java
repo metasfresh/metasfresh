@@ -60,6 +60,19 @@ public class HighPriceProvider
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(5000)
 			.build();
+	private boolean active;
+
+	public HighPriceProvider active()
+	{
+		this.active = true;
+		return this;
+	}
+
+	public HighPriceProvider deactivated()
+	{
+		this.active = false;
+		return this;
+	}
 
 	public HighPriceResponse getHighestPrice(final HighPriceRequest request)
 	{
@@ -78,7 +91,7 @@ public class HighPriceProvider
 		{
 			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
 			final I_M_Product productRecord = productBL.getById(productId);
-			if (!productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
+			if (!active || !productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
 			{
 				resultMap.put(
 						request,
