@@ -1,13 +1,12 @@
 package org.adempiere.ad.persistence.custom_columns;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo.RESTApiTableInfoBuilder;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo.RESTApiTableInfoBuilder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
@@ -16,11 +15,10 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collector;
 
 @Repository
-public class CustomColumnRepository
+class CustomColumnRepository
 {
 	private final CCache<Integer, RESTApiTableInfoMap> cache = CCache.<Integer, RESTApiTableInfoMap>builder()
 			.tableName(I_AD_Column.Table_Name)
@@ -77,14 +75,6 @@ public class CustomColumnRepository
 		public static Collector<RESTApiTableInfo, ?, RESTApiTableInfoMap> collect()
 		{
 			return GuavaCollectors.collectUsingListAccumulator(RESTApiTableInfoMap::new);
-		}
-
-		public Set<String> getCustomRestAPIColumnNames(final String tableName)
-		{
-			final RESTApiTableInfo tableInfo = getByTableNameOrNull(tableName);
-			return tableInfo != null
-					? tableInfo.getCustomRestAPIColumnNames()
-					: ImmutableSet.of();
 		}
 
 		@Nullable
