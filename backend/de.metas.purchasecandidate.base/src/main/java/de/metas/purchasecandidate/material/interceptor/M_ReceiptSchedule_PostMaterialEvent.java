@@ -135,7 +135,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptSchedule.getC_OrderLine_ID());
 		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
 
-		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
+		return ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.orderLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(orderedMaterial)
@@ -143,8 +143,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.build();
-
-		return event;
 	}
 
 	private OrderLineDescriptor createOrderLineDescriptor(
@@ -216,7 +214,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 													  .add(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity())));
 			}
 			//receiptSchedule closed or receiptSchedule reopen or order closed
-			else if(receiptSchedule.getQtyOrderedOverUnder().signum() != 0)
+			else if (receiptSchedule.getQtyOrderedOverUnder().signum() != 0 || oldReceiptSchedule.getQtyOrderedOverUnder().signum() != 0)
 			{
 				receiptScheduleUpdatedEventBuilder
 						.orderedQuantityDelta(receiptSchedule.getQtyOrderedOverUnder().subtract(oldReceiptSchedule.getQtyOrderedOverUnder()));
@@ -261,14 +259,13 @@ public class M_ReceiptSchedule_PostMaterialEvent
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
 
-		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
+		return ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
-		return event;
 	}
 
 	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
@@ -281,13 +278,12 @@ public class M_ReceiptSchedule_PostMaterialEvent
 
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(receiptSchedule);
 
-		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
+		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
 				.warehouseId(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule))
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();
-		return orderedMaterial;
 	}
 }
