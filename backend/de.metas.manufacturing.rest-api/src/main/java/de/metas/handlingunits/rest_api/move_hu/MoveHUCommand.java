@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class MoveHUCommand
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
@@ -65,11 +68,7 @@ public class MoveHUCommand
 		{
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
-			huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-										 .toLocatorId(locatorQRCode.getLocatorId())
-										 .huIdsToMove(extractHUIdsToMove())
-										 .movementDate(SystemTime.asInstant())
-										 .build());
+			moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
@@ -93,8 +92,12 @@ public class MoveHUCommand
 					.markAsUserValidationError();
 		}
 
+		final LocatorId locatorIdOfTargetHU = warehouseDAO.getLocatorIdByRepoId(targetHU.getM_Locator_ID());
+
 		return (huIdsToMove) -> {
 			final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIdsToMove);
+			moveHUsToLocator(husToMove, locatorIdOfTargetHU);
+
 			huTransformService.tusToExistingLU(husToMove, targetHU);
 		};
 	}
@@ -105,5 +108,31 @@ public class MoveHUCommand
 		return huIdAndQRCodes.stream()
 				.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void moveHUIdsToLocator(@NonNull final List<HuId> huIds, @NonNull final LocatorId locatorId)
+	{
+		final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIds);
+		moveHUsToLocator(husToMove, locatorId);
+	}
+
+	private void moveHUsToLocator(final @NonNull List<I_M_HU> husToMove, @NonNull final LocatorId locatorId)
+	{
+		final List<HuId> huIdsFromDiffLocator = husToMove.stream()
+				.filter(hu -> hu.getM_Locator_ID() != locatorId.getRepoId())
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		if (huIdsFromDiffLocator.isEmpty())
+		{
+			return;
+		}
+
+		huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
+									 .toLocatorId(locatorId)
+									 .huIdsToMove(huIdsFromDiffLocator)
+									 .movementDate(SystemTime.asInstant())
+									 .build());
 	}
 }
