@@ -76,6 +76,13 @@ public class HighPriceProvider
 
 	public HighPriceResponse getHighestPrice(final HighPriceRequest request)
 	{
+		if (!active)
+		{
+			return HighPriceResponse.builder()
+					.maxPurchasePrice(null)
+					.build();
+		}
+
 		return cache.getOrLoad(request, this::computeHighestPrice);
 	}
 
