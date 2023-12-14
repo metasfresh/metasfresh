@@ -13,14 +13,12 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeQuery;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 
 /**
  * Throwed when desired document type was not found
@@ -52,11 +50,11 @@ public class DocTypeNotFoundException extends AdempiereException
 		this.docBaseType = query.getDocBaseType();
 	}
 
-	private static final String buildMsg(final String docBaseType, final String additionalInfo)
+	private static String buildMsg(final String docBaseType, final String additionalInfo)
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		final String docBaseTypeName = adReferenceDAO.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType);
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType);
 
 		final StringBuilder sb = new StringBuilder("@NotFound@ @C_DocType_ID@");
 		sb.append(" - @DocBaseType@ : " + docBaseTypeName);
@@ -67,11 +65,11 @@ public class DocTypeNotFoundException extends AdempiereException
 		return sb.toString();
 	}
 
-	private static final String buildMsg(final DocTypeQuery query)
+	private static String buildMsg(final DocTypeQuery query)
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		final String docBaseTypeName = adReferenceDAO.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType());
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType());
 
 		final StringBuilder sb = new StringBuilder("@NotFound@ @C_DocType_ID@");
 		sb.append(" - @DocBaseType@ : " + docBaseTypeName);

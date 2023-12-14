@@ -62,7 +62,8 @@ public class RepositoryTestHelperTest
 		dimensionService = new DimensionService(dimensionFactories);
 		stockChangeDetailRepo = new StockChangeDetailRepo();
 		SpringContextHolder.registerJUnitBean(dimensionService);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}

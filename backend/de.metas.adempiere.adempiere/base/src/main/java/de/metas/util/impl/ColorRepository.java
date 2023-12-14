@@ -1,19 +1,5 @@
 package de.metas.util.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.awt.Color;
-import java.math.BigDecimal;
-import java.net.URL;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Color;
-import org.compiere.model.MImage;
-import org.compiere.model.X_AD_Color;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.ColorId;
@@ -22,6 +8,20 @@ import de.metas.util.MFColor;
 import de.metas.util.MFColorType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Color;
+import org.compiere.model.MImage;
+import org.compiere.model.X_AD_Color;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.net.URL;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -53,6 +53,7 @@ public class ColorRepository implements IColorRepository
 	private static final CCache<String, ColorId> colorIdByName = CCache.<String, ColorId> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
 
 	@Override
+	@Nullable
 	public MFColor getColorById(final int adColorId)
 	{
 		if (adColorId <= 0)
@@ -63,6 +64,14 @@ public class ColorRepository implements IColorRepository
 		return colorValuesById.getOrLoad(adColorId, () -> createMFColorById(adColorId));
 	}
 
+	@Override
+	@Nullable
+	public MFColor getColorById(@Nullable final ColorId colorId)
+	{
+		return colorId != null ? colorValuesById.getOrLoad(colorId.getRepoId(), () -> createMFColorById(colorId.getRepoId())) : null;
+	}
+
+	@Nullable
 	private static MFColor createMFColorById(final int adColorId)
 	{
 		final I_AD_Color colorRecord = loadOutOfTrx(adColorId, I_AD_Color.class);

@@ -25,10 +25,11 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
+import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -41,18 +42,55 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker) throws InterruptedException
+	/**
+	 * Waits for the given {@code worker} to supply {@code true}.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker,
+			@Nullable final Runnable logContext) throws InterruptedException
 	{
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
-		boolean conditionIsMet = worker.get();
+		boolean conditionIsMet = false;
 
-		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
+		while (deadLineMillis > System.currentTimeMillis() && !conditionIsMet)
 		{
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
 		}
+
+		if (!conditionIsMet && logContext != null)
+		{
+			logContext.run();
+		}
+
+		assertThat(conditionIsMet).as("Condition was not met within the %s second timeout", maxWaitSeconds).isTrue();
+	}
+
+	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
+	{
+		try
+		{
+			return Integer.parseInt(idOrIdentifier);
+		}
+		catch (final NumberFormatException exception)
+		{
+			final Object model = stepDefDataTable.get(idOrIdentifier);
+
+			return InterfaceWrapperHelper.getId(model);
+		}
+	}
+
+	@And("^wait for (.*)s$")
+	public void waitFor(final int waitingTimeSec) throws InterruptedException
+	{
+		final long waitingTimeMillis = waitingTimeSec * 1000L;
+		Thread.sleep(waitingTimeMillis);
 	}
 
 	/**
@@ -61,6 +99,7 @@ public class StepDefUtil
 	 *
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
+	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -99,22 +138,109 @@ public class StepDefUtil
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
 	}
 
-	@NonNull
-	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker) throws InterruptedException
 	{
-		return Arrays.asList(identifiers.split(","));
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
-	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	@Deprecated
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker,
+			@Nullable final Runnable logContext) throws InterruptedException
 	{
-		if (Check.isNotBlank(errorMessage))
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
+
+		try
 		{
-			assertThat(e.getMessage()).contains(errorMessage);
+			while (deadLineMillis > System.currentTimeMillis())
+			{
+				Thread.sleep(checkingIntervalMs);
+				final Optional<T> workerResult = worker.get();
+				if (workerResult.isPresent())
+				{
+					return workerResult.get();
+				}
+			}
 		}
-		else
+		catch (final Exception e)
 		{
+			if (logContext != null)
+			{
+				logContext.run();
+			}
+
 			throw e;
 		}
+
+		if (logContext != null)
+		{
+			logContext.run();
+		}
+		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout");
+		return null;
+	}
+
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker,
+			@Nullable final Supplier<String> logContext) throws InterruptedException
+	{
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
+
+		try
+		{
+			while (deadLineMillis > System.currentTimeMillis())
+			{
+				Thread.sleep(checkingIntervalMs);
+				final Optional<T> workerResult = worker.get();
+				if (workerResult.isPresent())
+				{
+					return workerResult.get();
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			if (logContext != null)
+			{
+				final String contextMessage = logContext.get();
+
+				throw new RuntimeException(contextMessage, e);
+			}
+
+			throw e;
+		}
+
+		final String context = Optional.ofNullable(logContext).map(Supplier::get).orElse("Context not provided!");
+
+		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout! \n Context: " + context);
+		return null;
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
 	}
 
 	/**
@@ -145,38 +271,43 @@ public class StepDefUtil
 
 		final String context = Optional.ofNullable(logContext).map(Supplier::get).orElse("Context not provided!");
 
-		org.junit.jupiter.api.Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
-													  + "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
-													  + "\n Context: " + context);
+		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
+								+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
+								+ "\n Context: " + context);
 		return null;
 
 	}
 
-	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
+	private long computeDeadLineMillis(final long maxWaitSeconds)
 	{
-		try
-		{
-			return Integer.parseInt(idOrIdentifier);
-		}
-		catch (final NumberFormatException exception)
-		{
-			final Object model = stepDefDataTable.get(idOrIdentifier);
-
-			return InterfaceWrapperHelper.getId(model);
-		}
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
+		return deadLineMillis;
 	}
-	
+
+	@NonNull
 	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
 	{
 		return Arrays.stream(identifier.split(","))
 				.map(StringUtils::trim)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
-	private long computeDeadLineMillis(final long maxWaitSeconds)
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
 	{
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
-		return deadLineMillis;
+		return Arrays.asList(identifiers.split(","));
+	}
+
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	{
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
 	}
 }

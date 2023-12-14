@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.adempiere.ad.service;
+package de.metas.ad_reference;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.impl.TooltipType;
@@ -35,7 +35,7 @@ import java.util.function.UnaryOperator;
 
 @Value
 @VisibleForTesting
-public class TableRefInfo
+public class TableRefTable
 {
 	@NonNull String identifier; // used only for debugging
 	@NonNull String tableName;
@@ -54,7 +54,7 @@ public class TableRefInfo
 	@NonNull TooltipType tooltipType;
 
 	@Builder(toBuilder = true)
-	public TableRefInfo(
+	public TableRefTable(
 			@NonNull final String identifier,
 			@NonNull final String tableName,
 			@NonNull final String keyColumn,
@@ -129,7 +129,7 @@ public class TableRefInfo
 		return keyColumn.endsWith("_ID");
 	}
 
-	public TableRefInfo mapWindowIds(@NonNull final UnaryOperator<AdWindowId> adWindowIdMapper)
+	public TableRefTable mapWindowIds(@NonNull final UnaryOperator<AdWindowId> adWindowIdMapper)
 	{
 		final AdWindowId new_zoomSO_window_id = zoomSO_Window_ID != null ? adWindowIdMapper.apply(zoomSO_Window_ID) : null;
 		final AdWindowId new_zoomPO_window_id = zoomPO_Window_ID != null ? adWindowIdMapper.apply(zoomPO_Window_ID) : null;

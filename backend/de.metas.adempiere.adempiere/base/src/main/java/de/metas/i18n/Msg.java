@@ -1,23 +1,20 @@
 package de.metas.i18n;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.Services;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.cache.CCache;
+import de.metas.currency.Amount;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import org.adempiere.ad.service.IADReferenceDAO;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -30,17 +27,18 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CCache;
-import de.metas.currency.Amount;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
-import lombok.Singular;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Reads all Messages and stores them in a HashMap
@@ -461,8 +459,8 @@ public final class Msg
 		final int adReferenceId = ReferenceListAwareEnums.getAD_Reference_ID(referenceListAwareEnum);
 		if(adReferenceId > 0)
 		{
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-			final IADReferenceDAO.ADRefListItem adRefListItem = adReferenceDAO.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final ADRefListItem adRefListItem = adReferenceService.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
 			if(adRefListItem != null)
 			{
 				return adRefListItem.getName().translate(adLanguage);
@@ -975,8 +973,8 @@ public final class Msg
 		}
 	}
 
-	@lombok.Value
-	private static final class Element
+	@Value
+	private static class Element
 	{
 		public static String DEFAULT_LANG = "";
 

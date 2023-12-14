@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -58,7 +59,6 @@ import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -590,7 +590,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public String getDocStatusName()
 	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
+		return ADReferenceService.get().retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
 	} // getDocStatusName
 
 	/**

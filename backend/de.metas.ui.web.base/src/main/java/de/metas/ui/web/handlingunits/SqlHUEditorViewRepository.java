@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -53,7 +54,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -116,7 +116,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
@@ -474,7 +474,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		else
 		{
 			huStatusKey = hu.getHUStatus();
-			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+			huStatusDisplayName = adReferenceService.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
 		}
 
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);

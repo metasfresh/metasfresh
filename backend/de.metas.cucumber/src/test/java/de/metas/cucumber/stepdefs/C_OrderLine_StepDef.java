@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -42,6 +43,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 
@@ -54,6 +56,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -64,38 +67,52 @@ public class C_OrderLine_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
-			final I_M_Product product = productTable.get(productIdentifier);
-			orderLine.setM_Product_ID(product.getM_Product_ID());
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			orderLine.setM_Product_ID(productID);
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				assertThat(attributeSetInstance).isNotNull();
+
+				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			}
+
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			saveRecord(orderLine);
 
-			orderLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
 		}
 	}
 
@@ -193,6 +210,50 @@ public class C_OrderLine_StepDef
 			InterfaceWrapperHelper.refresh(orderLine);
 
 			validateOrderLine(orderLine, row);
+		}
+	}
+
+	@And("update C_OrderLine:")
+	public void update_C_OrderLine(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(orderLineTable.get(olIdentifier), de.metas.handlingunits.model.I_C_OrderLine.class);
+
+			final BigDecimal updatedQtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEntered);
+			if (updatedQtyEntered != null)
+			{
+				orderLine.setQtyEntered(updatedQtyEntered);
+			}
+
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (de.metas.util.Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final String asiIdentifierValue = DataTableUtil.nullToken2Null(attributeSetInstanceIdentifier);
+				if (asiIdentifierValue == null)
+				{
+					orderLine.setM_AttributeSetInstance_ID(-1);
+				}
+				else
+				{
+					final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+					assertThat(attributeSetInstance).isNotNull();
+
+					orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+				}
+			}
+
+			final BigDecimal updatedQtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			if (updatedQtyOrdered != null)
+			{
+				orderLine.setQtyOrdered(updatedQtyOrdered);
+			}
+
+			saveRecord(orderLine);
+
+			orderLineTable.putOrReplace(olIdentifier, orderLine);
 		}
 	}
 

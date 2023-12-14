@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1597829536L;
+	private static final long serialVersionUID = 652030010L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -925,6 +925,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	/** 
+	 * ProcurementStatus AD_Reference_ID=541842
+	 * Reference name: Beschaffungsstatus
+	 */
+	public static final int PROCUREMENTSTATUS_AD_Reference_ID=541842;
+	/** low = low */
+	public static final String PROCUREMENTSTATUS_Low = "low";
+	/** medium = medium */
+	public static final String PROCUREMENTSTATUS_Medium = "medium";
+	/** high = high */
+	public static final String PROCUREMENTSTATUS_High = "high";
+	@Override
+	public void setProcurementStatus (final @Nullable java.lang.String ProcurementStatus)
+	{
+		set_Value (COLUMNNAME_ProcurementStatus, ProcurementStatus);
+	}
+
+	@Override
+	public java.lang.String getProcurementStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProcurementStatus);
 	}
 
 	/** 

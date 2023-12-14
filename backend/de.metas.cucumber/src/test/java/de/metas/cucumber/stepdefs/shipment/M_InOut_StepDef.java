@@ -28,9 +28,12 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.inout.ShipmentScheduleId;
@@ -45,6 +48,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -76,6 +81,7 @@ public class M_InOut_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
@@ -134,40 +140,42 @@ public class M_InOut_StepDef
 	@And("'generate shipments' process is invoked")
 	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
 	{
-		final Map<String, String> tableRow = table.asMaps().get(0);
-
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-		final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
-
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
-
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(pinstanceDAO.createSelectionId())
-				.queryFilters(queryFilter)
-				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
-				.completeShipments(isCompleteShipments)
-				.isShipmentDateToday(isShipToday);
-
-		if (qtyToDeliverOverride != null)
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> tableRow : dataTable)
 		{
-			final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
-					ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
-			workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+			final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+			final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+			final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
+
+			final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
+
+			final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+
+			final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+					.adPInstanceId(pinstanceDAO.createSelectionId())
+					.queryFilters(queryFilter)
+					.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
+					.completeShipments(isCompleteShipments)
+					.isShipmentDateToday(isShipToday);
+
+			if (qtyToDeliverOverride != null)
+			{
+				final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
+						ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
+				workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
+			}
+
+			final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
+					.setContext(Env.getCtx(), Trx.TRXNAME_None)
+					.createWorkpackages(workPackageParametersBuilder.build());
+
+			assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 		}
-
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), Trx.TRXNAME_None)
-				.createWorkpackages(workPackageParametersBuilder.build());
-
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 	}
 
 	@And("^after not more than (.*)s, M_InOut is found:$")
@@ -253,6 +261,59 @@ public class M_InOut_StepDef
 
 		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		shipmentTable.put(customerReturnIdentifier, customerReturnRecord);
+	}
+
+	@And("^the (shipment|material receipt) identified by (.*) is (completed) and an exception with error-code (.*) is thrown")
+	public void complete_inOut_expect_exception(
+			@NonNull final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String action,
+			@NonNull final String errorCode)
+	{
+		try
+		{
+			shipment_action(model_UNUSED, shipmentIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
+	}
+
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
+	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		InterfaceWrapperHelper.refresh(shipment);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case completed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case reactivated:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case reversed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			case voided:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case closed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_InOut action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
 	}
 
 	@NonNull

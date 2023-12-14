@@ -47,11 +47,7 @@ public class MaterialDispoRecordRepository
 	@NonNull
 	public MaterialDispoDataItem getBy(@NonNull final CandidatesQuery query)
 	{
-		if (query.getType().equals(CandidateType.STOCK))
-		{
-			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
-					.setParameter("candidatesQuery", query);
-		}
+		assertNotStockQuery(query);
 
 		final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidate == null)
@@ -59,27 +55,7 @@ public class MaterialDispoRecordRepository
 			throw new AdempiereException("The given candidatesQuery does not match any candidate").appendParametersToMessage()
 					.setParameter("candidatesQuery", query);
 		}
-		final Candidate stockCandidate;
-		switch (candidate.getType())
-		{
-			case DEMAND:
-			case INVENTORY_DOWN:
-				stockCandidate = candidateRepositoryRetrieval
-						.retrieveSingleChild(candidate.getId())
-						.orElseThrow(() -> new AdempiereException("").appendParametersToMessage()
-								.setParameter("candidatesQuery", query)
-								.setParameter("candidate", candidate)
-						);
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
-			case SUPPLY:
-			case INVENTORY_UP:
-				stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getParentId()));
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
-			default:
-				throw new AdempiereException("The CandidateType=" + candidate.getType() + " is not yet supported! Please add").appendParametersToMessage()
-						.setParameter("candidatesQuery", query)
-						.setParameter("candidate", candidate);
-		}
+		return extractMaterialDispoItem(query, candidate);
 	}
 
 	@NonNull
@@ -107,7 +83,7 @@ public class MaterialDispoRecordRepository
 		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNoFor(productId);
 		return asString(null, candidates);
 	}
-	
+
 	@NonNull
 	private String asString(final @Nullable CandidatesQuery query, final @NonNull List<Candidate> candidates)
 	{
@@ -115,7 +91,7 @@ public class MaterialDispoRecordRepository
 		asMaterialDispoDataItem(query, candidates).forEach(item -> sb.append(item + "\n"));
 		return sb.toString();
 	}
-	
+
 	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItem(
 			final @Nullable CandidatesQuery query,
 			final @NonNull List<Candidate> candidates)
@@ -155,7 +131,7 @@ public class MaterialDispoRecordRepository
 						.setParameter("candidate", candidate);
 		}
 	}
-	
+
 	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
 	{
 		if (query.getType().equals(CandidateType.STOCK))

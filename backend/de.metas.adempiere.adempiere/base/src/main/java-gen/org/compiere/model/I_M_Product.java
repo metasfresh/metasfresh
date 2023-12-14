@@ -931,7 +931,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsStocked = "IsStocked";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -941,7 +941,7 @@ public interface I_M_Product
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -1429,7 +1429,28 @@ public interface I_M_Product
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Produktart.
+	 * Set Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcurementStatus (@Nullable java.lang.String ProcurementStatus);
+
+	/**
+	 * Get Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcurementStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ProcurementStatus = new ModelColumn<>(I_M_Product.class, "ProcurementStatus", null);
+	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
+
+	/**
+	 * Set Product Type.
 	 * Type of product
 	 *
 	 * <br>Type: List
@@ -1439,7 +1460,7 @@ public interface I_M_Product
 	void setProductType (java.lang.String ProductType);
 
 	/**
-	 * Get Produktart.
+	 * Get Product Type.
 	 * Type of product
 	 *
 	 * <br>Type: List

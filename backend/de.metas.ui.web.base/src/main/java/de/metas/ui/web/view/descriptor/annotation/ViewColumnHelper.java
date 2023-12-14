@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.descriptor.annotation;
 
+import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -7,11 +8,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -101,6 +102,9 @@ public final class ViewColumnHelper
 				}
 			});
 
+	public static String SYSCFG_DISPLAYED_SUFFIX = ".IsDisplayed";
+	public static String SYSCFG_DISABLED = "-";
+
 	public static void cacheReset()
 	{
 		descriptorsByClass.invalidateAll();
@@ -150,6 +154,30 @@ public final class ViewColumnHelper
 		@Singular
 		ImmutableSet<MediaType> restrictToMediaTypes;
 		boolean hideIfConfiguredSysConfig;
+
+		public static List<ClassViewColumnOverrides> parseCommaSeparatedString(@Nullable final String string)
+		{
+			final String stringNorm = StringUtils.trimBlankToNull(string);
+
+			if (stringNorm == null || SYSCFG_DISABLED.equals(stringNorm))
+			{
+				return ImmutableList.of();
+			}
+
+			final ImmutableList.Builder<ClassViewColumnOverrides> columns = ImmutableList.builder();
+			for (final String part : Splitter.on(",").splitToList(stringNorm))
+			{
+				final String fieldName = StringUtils.trimBlankToNull(part);
+				if (fieldName == null)
+				{
+					throw new AdempiereException("Empty field name not allowed: `" + string + "`");
+				}
+
+				columns.add(builder(fieldName).hideIfConfiguredSysConfig(false).build());
+			}
+
+			return columns.build();
+		}
 	}
 
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
@@ -366,7 +394,7 @@ public final class ViewColumnHelper
 			{
 				return defaultDisplaySysConfig ? DisplayMode.DISPLAYED_BY_SYSCONFIG : DisplayMode.HIDDEN_BY_SYSCONFIG;
 			}
-			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
+			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + SYSCFG_DISPLAYED_SUFFIX;
 
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final boolean isDisplayed = sysConfigBL.getBooleanValue(
