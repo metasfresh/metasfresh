@@ -51,7 +51,7 @@ public final class AgeValues
 	/**
 	 * Find the highest Age AttributeValue which is <= than the productionDate.
 	 */
-	public int computeAgeInMonths(@NonNull final LocalDateTime productionDate)
+	public Age computeAgeInMonths(@NonNull final LocalDateTime productionDate)
 	{
 		final LocalDateTime now = SystemTime.asLocalDateTime();
 		final long months = ChronoUnit.MONTHS.between(productionDate, now);
@@ -66,6 +66,6 @@ public final class AgeValues
 			age = value;
 		}
 
-		return age;
+		return Age.ofAgeInMonths(age);
 	}
 }

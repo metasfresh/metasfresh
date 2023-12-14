@@ -30,48 +30,43 @@ import lombok.Value;
 @EqualsAndHashCode
 public final class Age
 {
-	private final Integer ageInMonths;
+	private final int ageInMonths;
 
 	public static Age ZERO = ofAgeInMonths(0);
 
 	@NonNull
-	public static Age ofAgeInMonths(final Integer ageInMonths)
+	public static Age ofAgeInMonths(final int ageInMonths)
 	{
-		return new Age(ageInMonths);
+		return ZERO.ageInMonths == ageInMonths ? ZERO : new Age(ageInMonths);
 	}
 
-	private Age(final Integer ageInMonths)
+	private Age(final int ageInMonths)
 	{
 		this.ageInMonths = ageInMonths;
 	}
 
 	@NonNull
-	public Age add(final @NonNull Age offset)
+	public Age add(final @NonNull Age other)
 	{
-		if (offset.isZero())
+		if (other.isZero())
 		{
 			return this;
 		}
 		if (isZero())
 		{
-			return offset;
+			return other;
 		}
 
-		return new Age(getAgeInMonths() + offset.getAgeInMonths());
+		return ofAgeInMonths(this.ageInMonths + other.ageInMonths);
 	}
 
 	public boolean isZero()
 	{
-		return ageInMonths.intValue() == 0;
-	}
-
-	public int toIntValue()
-	{
-		return ageInMonths.intValue();
+		return ageInMonths == 0;
 	}
 
 	public String toStringValue()
 	{
-		return String.valueOf(ageInMonths.intValue());
+		return String.valueOf(ageInMonths);
 	}
 }
