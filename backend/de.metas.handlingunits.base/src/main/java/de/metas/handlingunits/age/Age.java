@@ -37,7 +37,7 @@ public final class Age
 	@NonNull
 	public static Age ofAgeInMonths(final int ageInMonths)
 	{
-		return ZERO.ageInMonths == ageInMonths ? ZERO : new Age(ageInMonths);
+		return ageInMonths == 0 ? ZERO : new Age(ageInMonths);
 	}
 
 	private Age(final int ageInMonths)
