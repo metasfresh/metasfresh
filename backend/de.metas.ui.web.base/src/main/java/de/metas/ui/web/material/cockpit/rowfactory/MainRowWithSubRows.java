@@ -86,13 +86,15 @@ public class MainRowWithSubRows
 		final ColorId colorId = adReferenceService.getColorId(product, I_M_Product.COLUMNNAME_ProcurementStatus, product.getProcurementStatus());
 		final String procurementStatus = toHexString(Services.get(IColorRepository.class).getColorById(colorId));
 		this.mainRow.setProcurementStatus(procurementStatus);
+		if (true) // TODO SysConfig
+		{
+			final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
+					.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
+					.evalDate(productIdAndDate.getDate())
+					.build();
 
-		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
-				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
-				.evalDate(productIdAndDate.getDate())
-				.build();
-
-		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
+			this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
+		}
 	}
 
 	@Nullable

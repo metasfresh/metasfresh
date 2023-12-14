@@ -23,18 +23,19 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.cache.CCache;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_purchase_prices_in_stock_uom_plv_v;
 
@@ -51,9 +52,9 @@ import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUA
 
 public class HighPriceProvider
 {
-	@NonNull
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	private final CCache<HighPriceRequest, HighPriceResponse> cache = CCache.<HighPriceRequest, HighPriceResponse> builder()
 			.tableName(I_M_ProductPrice.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -76,6 +77,16 @@ public class HighPriceProvider
 		for (final HighPriceRequest request : requests)
 		{
 			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
+			final I_M_Product productRecord = productBL.getById(productId);
+			if (!productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
+			{
+				resultMap.put(
+						request,
+						HighPriceResponse.builder()
+								.maxPurchasePrice(null)
+								.build());
+			}
+
 			final I_purchase_prices_in_stock_uom_plv_v record = queryBL.createQueryBuilder(I_purchase_prices_in_stock_uom_plv_v.class)
 					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, productId)
 					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getEvalDate())
@@ -98,6 +109,7 @@ public class HighPriceProvider
 
 	public void warmUp(@NonNull final Set<ProductId> productIds, @NonNull final LocalDate date)
 	{
+		//TODO option to warm up with mass compute and result set product_id | ProductPriceInStockUOM ?
 		final Set<HighPriceRequest> requests = productIds.stream().map((productId) -> toHighPriceRequest(productId, date)).collect(Collectors.toSet());
 		cache.getAllOrLoad(requests, this::computeHighestPrices);
 	}

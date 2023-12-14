@@ -157,6 +157,7 @@ public class MaterialCockpitRowFactory
 
 			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 	{
+		// TODO consider only compute price for records with qty
 		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);

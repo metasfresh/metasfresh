@@ -27,7 +27,7 @@ SELECT pl.m_pricelist_id,
                                pp.m_product_id,
                                pp.pricestd,
                                pp.c_uom_id,
-                               (SELECT p.c_uom_id FROM m_product p WHERE pp.m_product_id = p.m_product_id)
+                               p.c_uom_id
                            ),
                        pl.c_currency_id,
                        cte.c_currency_id,
@@ -38,10 +38,13 @@ SELECT pl.m_pricelist_id,
                    ),
                0
            ) AS ProductPriceInStockUOM,
-       (SELECT p.c_uom_id FROM m_product p WHERE pp.m_product_id = p.m_product_id) AS C_UOM_ID
+       p.c_uom_id
 FROM cte,
      m_productprice pp
          JOIN m_pricelist_version plv ON plv.m_pricelist_version_id = pp.m_pricelist_version_id
          JOIN m_pricelist pl ON plv.m_pricelist_id = pl.m_pricelist_id AND pl.issopricelist = 'N'
+         LEFT JOIN m_product p ON p.m_product_id = pp.m_product_id AND p.isactive = 'Y' AND p.ispurchased = 'Y' AND p.discontinued = 'N'
+WHERE pp.isinvalidprice = 'N'
 ;
 
+--TODO migration-script
