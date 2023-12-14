@@ -10,7 +10,15 @@ SELECT pl.m_pricelist_id,
        cte.c_currency_id,
        plv.m_pricelist_version_id,
        plv.validfrom,
-       COALESCE(plv_next.validfrom, '9999-12-31') AS validto,
+       COALESCE(
+               (SELECT plv_next.validfrom
+                FROM m_pricelist_version plv_next
+                WHERE plv_next.m_pricelist_id = plv.m_pricelist_id
+                  AND plv_next.validfrom > plv.validfrom
+                ORDER BY plv_next.validfrom
+                LIMIT 1),
+               '9999-12-31'
+           ) AS validTo,
        pp.m_product_id,
        pp.m_productprice_id,
        COALESCE(
@@ -35,8 +43,5 @@ FROM cte,
      m_productprice pp
          JOIN m_pricelist_version plv ON plv.m_pricelist_version_id = pp.m_pricelist_version_id
          JOIN m_pricelist pl ON plv.m_pricelist_id = pl.m_pricelist_id AND pl.issopricelist = 'N'
-         LEFT JOIN m_pricelist_version plv_next ON pl.m_pricelist_id = plv_next.m_pricelist_id AND plv_next.validfrom > plv.validfrom
-         LEFT JOIN m_pricelist_version plv_between ON pl.m_pricelist_id = plv_between.m_pricelist_id AND plv_between.validfrom > plv.validfrom AND plv_between.validfrom < plv_next.validfrom
-WHERE plv_between.m_pricelist_version_id IS NULL
 ;
 
