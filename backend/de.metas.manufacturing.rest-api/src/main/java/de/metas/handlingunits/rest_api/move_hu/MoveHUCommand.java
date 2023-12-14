@@ -21,7 +21,9 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MoveHUCommand
 {
@@ -118,21 +120,22 @@ public class MoveHUCommand
 
 	private void moveHUsToLocator(final @NonNull List<I_M_HU> husToMove, @NonNull final LocatorId locatorId)
 	{
-		final List<HuId> huIdsFromDiffLocator = husToMove.stream()
+		final Map<Integer, List<HuId>> diffLocatorToHuIds = husToMove.stream()
 				.filter(hu -> hu.getM_Locator_ID() != locatorId.getRepoId())
-				.map(I_M_HU::getM_HU_ID)
-				.map(HuId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.groupingBy(I_M_HU::getM_Locator_ID,
+											   Collectors.mapping(hu -> HuId.ofRepoId(hu.getM_HU_ID()),
+																  Collectors.toList())));
 
-		if (huIdsFromDiffLocator.isEmpty())
+		if (diffLocatorToHuIds.isEmpty())
 		{
 			return;
 		}
 
-		huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-									 .toLocatorId(locatorId)
-									 .huIdsToMove(huIdsFromDiffLocator)
-									 .movementDate(SystemTime.asInstant())
-									 .build());
+		diffLocatorToHuIds.values()
+				.forEach(huIdsSharingTheSameLocator -> huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
+																					.toLocatorId(locatorId)
+																					.huIdsToMove(huIdsSharingTheSameLocator)
+																					.movementDate(SystemTime.asInstant())
+																					.build()));
 	}
 }
