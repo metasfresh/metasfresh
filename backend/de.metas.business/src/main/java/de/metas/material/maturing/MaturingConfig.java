@@ -22,38 +22,24 @@
 
 package de.metas.material.maturing;
 
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.ddorder.DistributionNetworkId;
-import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
-import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPlanningSchemaId;
-import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.ProductBOMVersionsId;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)
-public class MaturingConfigLine
+public class MaturingConfig
 {
-	@NonNull
-	MaturingConfigLineId id;
-	@NonNull
-	MaturingConfigId maturingConfigId;
+	@Nullable
+	MaturingConfigId id;
 
-	@NonNull ProductId fromProductId;
-	@NonNull ProductId maturedProductId;
+	@NonNull String name;
+	@Nullable String description;
 	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
-	@NonNull @Builder.Default Integer maturityAge = Integer.valueOf(0);
-	public MaturingConfigLineId getIdNotNull() {return Check.assumeNotNull(id, "Maturing Config Line is saved: {}", this);}
+	public MaturingConfigId getIdNotNull() {return Check.assumeNotNull(id, "Maturing Config is saved: {}", this);}
 }

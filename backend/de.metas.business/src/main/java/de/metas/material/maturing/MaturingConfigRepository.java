@@ -22,6 +22,8 @@
 
 package de.metas.material.maturing;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -32,9 +34,7 @@ import org.compiere.model.I_M_Maturing_Configuration_Line;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -42,9 +42,36 @@ public class MaturingConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public MaturingConfigLine getById(@NonNull final MaturingConfigLineId id)
+	private final CCache<Integer, MaturingConfigMap> cache = CCache.<Integer, MaturingConfigMap>builder()
+			.tableName(I_M_Maturing_Configuration_Line.Table_Name)
+			.build();
+
+	public MaturingConfigLine getById(@NonNull final MaturingConfigLineId lineId)
 	{
-		return fromRecord(loadOutOfTrx(id, I_M_Maturing_Configuration_Line.class));
+		return getMaturingConfigMap().getById(lineId);
+	}
+
+	public List<MaturingConfigLine> getByMaturedProductId(@NonNull final ProductId maturedProductId)
+	{
+		return getMaturingConfigMap().getByMaturedProductId(maturedProductId);
+	}
+
+	final MaturingConfigMap getMaturingConfigMap()
+	{
+		return cache.getOrLoad(0, this::retrieveMaturingConfigMap);
+	}
+
+	private MaturingConfigMap retrieveMaturingConfigMap()
+	{
+		final ImmutableList<MaturingConfigLine> configs = queryBL
+				.createQueryBuilderOutOfTrx(I_M_Maturing_Configuration_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(MaturingConfigRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new MaturingConfigMap(configs);
 	}
 
 	private static MaturingConfigLine fromRecord(@NonNull final I_M_Maturing_Configuration_Line record)
@@ -57,17 +84,6 @@ public class MaturingConfigRepository
 				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
 				.maturityAge(Integer.valueOf(record.getMaturityAge()))
 				.build();
-	}
-
-	public List<MaturingConfigLine> getByMaturedProductId(@NonNull final ProductId maturedProductId)
-	{
-		return queryBL.createQueryBuilder(I_M_Maturing_Configuration_Line.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Maturing_Configuration_Line.COLUMNNAME_Matured_Product_ID, maturedProductId)
-				.create()
-				.stream(I_M_Maturing_Configuration_Line.class)
-				.map(MaturingConfigRepository::fromRecord)
-				.collect(Collectors.toList());
 	}
 
 	public MaturingConfigLine save(@NonNull final MaturingConfigLine maturingConfigLine)
