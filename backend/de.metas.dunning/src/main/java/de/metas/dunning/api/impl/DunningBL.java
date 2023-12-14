@@ -277,7 +277,7 @@ public class DunningBL implements IDunningBL
 		return null;
 	}
 
-	private void sendMassNotifications(@Nullable final BoilerPlateWithLineId boilerPlateWithLineId,
+	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId,
 			@NonNull final List<I_C_DunningDoc> dunningDocs,
 			@NonNull final Language language)
 	{
