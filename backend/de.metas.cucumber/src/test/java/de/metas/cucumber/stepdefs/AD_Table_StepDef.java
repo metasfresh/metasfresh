@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AD_Table_StepDef
@@ -29,33 +30,40 @@ public class AD_Table_StepDef
 		final TableNamesSkipList tableNamesSkipList = TableNamesSkipList.ofDataTable(dataTable);
 
 		final AtomicInteger countOK = new AtomicInteger(0);
-		final AtomicInteger countErrors = new AtomicInteger(0);
+		final LinkedHashSet<String> tableNamesWithError = new LinkedHashSet<>();
 
 		POInfo.getPOInfoMap()
 				.stream()
 				.forEach(poInfo -> {
-					if (tableNamesSkipList.isSkipped(poInfo.getTableName()))
+					final String tableName = poInfo.getTableName();
+
+					if (tableNamesSkipList.isSkipped(tableName))
 					{
-						logger.info("{} is SKIPPED", poInfo.getTableName());
+						logger.info("{} is SKIPPED", tableName);
 						return;
 					}
 
 					try
 					{
 						tryRetrieveFirstRow(poInfo);
-						logger.info("{} is OK", poInfo.getTableName());
+						logger.info("{} is OK", tableName);
 						countOK.incrementAndGet();
 					}
 					catch (Exception ex)
 					{
-						logger.warn("{} has errors", poInfo.getTableName(), ex);
-						countErrors.incrementAndGet();
+						logger.warn("{} has errors", tableName, ex);
+						tableNamesWithError.add(tableName);
 					}
 				});
 
+		final int countErrors = tableNamesWithError.size();
 		logger.info("Checked all tables. {} are OK, {} are with errors.", countOK, countErrors);
+		if (countErrors > 0)
+		{
+			logger.info("Tables with errors are: {}", tableNamesWithError);
+		}
 
-		Assertions.assertThat(countErrors.intValue()).as("AD_Tables with errors").isZero();
+		Assertions.assertThat(countErrors).as("AD_Table(s) with errors found").isZero();
 	}
 
 	private static void tryRetrieveFirstRow(final @NonNull POInfo poInfo)
