@@ -43,6 +43,10 @@ Feature: invoice review
       | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
       | elementValue_1               | element_1               | 69100 |
 
+    And update AD_Column:
+      | TableName        | ColumnName   | OPT.IsRestAPICustomColumn |
+      | C_Invoice_Review | CustomColumn | true                      |
+
   @from:cucumber
   @Id:S14758_100
   # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
