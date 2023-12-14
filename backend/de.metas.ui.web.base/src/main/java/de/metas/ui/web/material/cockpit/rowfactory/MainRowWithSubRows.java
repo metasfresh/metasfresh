@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -73,8 +72,6 @@ public class MainRowWithSubRows
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull
 	final ADReferenceService adReferenceService = ADReferenceService.get();
-	@NonNull
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate, @NonNull final HighPriceProvider highPriceProvider)
 	{
