@@ -22,7 +22,6 @@
 
 package org.adempiere.ad.persistence.custom_columns;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
@@ -129,7 +128,9 @@ public class CustomColumnService
 
 		if (!notValidColumnNames.isEmpty())
 		{
-			final String notValidColumnNamesStr = Joiner.on(", ").join(notValidColumnNames);
+			final String notValidColumnNamesStr = notValidColumnNames.stream()
+					.map(columnName -> tableName + "." + columnName)
+					.collect(Collectors.joining(", "));
 			throw new AdempiereException(MSG_CUSTOM_REST_API_COLUMN, notValidColumnNamesStr)
 					.markAsUserValidationError();
 		}
