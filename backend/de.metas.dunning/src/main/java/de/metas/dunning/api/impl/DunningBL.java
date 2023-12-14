@@ -269,7 +269,12 @@ public class DunningBL implements IDunningBL
 	@Nullable
 	private BoilerPlateWithLineId groupByBoilerPlate(final I_C_DunningDoc doc)
 	{
-		return docTypeDAO.getById(DocTypeId.ofRepoId(doc.getC_DocType_ID())).getMassGenerateNotification();
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(doc.getC_DocType_ID());
+		if (docTypeId != null)
+		{
+			return docTypeDAO.getById(docTypeId).getMassGenerateNotification();
+		}
+		return null;
 	}
 
 	private void sendMassNotifications(@Nullable final BoilerPlateWithLineId boilerPlateWithLineId,

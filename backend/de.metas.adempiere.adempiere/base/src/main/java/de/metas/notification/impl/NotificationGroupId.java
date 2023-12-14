@@ -23,6 +23,7 @@
 package de.metas.notification.impl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -41,6 +42,7 @@ public class NotificationGroupId implements RepoIdAware
 		return repoId > 0 ? new NotificationGroupId(repoId) : null;
 	}
 
+	@JsonValue
 	int repoId;
 
 	private NotificationGroupId(final int repoId)
