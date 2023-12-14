@@ -54,6 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 /*
@@ -206,25 +207,23 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isAllRolesContainingGroup())
 		{
-			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
-			return roleIds.stream()
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(notificationGroupName);
+			final AtomicBoolean anyUserMatch = new AtomicBoolean(false);
+			final Stream<Recipient> recipientStream = roleIds.stream()
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
+							.peek(userId -> anyUserMatch.set(true))
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
+			return anyUserMatch.get() ? recipientStream : getDeadletterUserStream(notificationGroupName);
 		}
 		else if (recipient.isOrgUsersContainingGroup())
 		{
-			final List<UserId> userIds = userNotificationsConfigService.getByNotificationGroupAndOrgId(recipient.getNotificationGroupName(), recipient.getOrgId());
-			if (userIds.isEmpty())
-			{
-				final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(recipient.getNotificationGroupName());
-				if (deadletterUserId != null)
-				{
-					return Stream.of(Recipient.user(deadletterUserId));
-				}
-			}
-			return userIds.stream()
-					.map(Recipient::user);
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final List<UserId> userIds = userNotificationsConfigService.getByNotificationGroupAndOrgId(notificationGroupName, recipient.getOrgId());
+			return userIds.isEmpty() ?
+					getDeadletterUserStream(notificationGroupName) :
+					userIds.stream().map(Recipient::user);
 		}
 		else if (recipient.isGroup())
 		{
@@ -238,6 +237,16 @@ public class NotificationSenderTemplate
 		{
 			throw new AdempiereException("Recipient type not supported: " + recipient);
 		}
+	}
+
+	private Stream<Recipient> getDeadletterUserStream(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(notificationGroupName);
+		if (deadletterUserId != null)
+		{
+			return Stream.of(Recipient.user(deadletterUserId));
+		}
+		return Stream.empty();
 	}
 
 	private Stream<UserNotificationRequest> explodeByEffectiveNotificationsConfigs(final UserNotificationRequest request)
