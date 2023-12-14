@@ -5,6 +5,7 @@ import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.assertj.core.api.Assertions;
@@ -79,6 +80,8 @@ public class AD_Table_StepDef
 
 	private static String getSqlSelectFirstRow(final @NonNull POInfo poInfo)
 	{
+		final String tableName = poInfo.getTableName();
+
 		final StringBuilder sqlSelectColumns = new StringBuilder();
 		for (final POInfoColumn poInfoColumn : poInfo.getColumns())
 		{
@@ -86,10 +89,12 @@ public class AD_Table_StepDef
 			{
 				sqlSelectColumns.append(",");
 			}
-			sqlSelectColumns.append(poInfoColumn.getColumnSqlForSelect());
+
+			final String columnSql = ColumnSql.ofSql(poInfoColumn.getColumnSqlForSelect(), tableName).toSqlString();
+			sqlSelectColumns.append(columnSql);
 		}
 
-		return "SELECT " + sqlSelectColumns + " FROM " + poInfo.getTableName() + " LIMIT 1";
+		return "SELECT " + sqlSelectColumns + " FROM " + tableName + " LIMIT 1";
 	}
 
 	private static class TableNamesSkipList
