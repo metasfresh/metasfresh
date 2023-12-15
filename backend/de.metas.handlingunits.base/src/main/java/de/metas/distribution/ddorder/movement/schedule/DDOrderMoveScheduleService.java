@@ -1,14 +1,16 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateCommand;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
-import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanLine;
+import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -17,7 +19,6 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,22 +31,25 @@ public class DDOrderMoveScheduleService
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
+
 	private final HUReservationService huReservationService;
 
 	public DDOrderMoveScheduleService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
+			@NonNull final ADReferenceService adReferenceService,
 			@NonNull final HUReservationService huReservationService)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
+		this.adReferenceService = adReferenceService;
 		this.huReservationService = huReservationService;
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
-		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 
 	public void createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)

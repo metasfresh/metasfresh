@@ -25,6 +25,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -103,7 +104,11 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
-				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository(), huReservationService));
+				new DDOrderMoveScheduleService(
+						ddOrderLowLevelDAO,
+						new DDOrderMoveScheduleRepository(),
+						ADReferenceService.newMocked(),
+						huReservationService));
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 

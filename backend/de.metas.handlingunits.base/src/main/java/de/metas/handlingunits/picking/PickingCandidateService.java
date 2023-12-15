@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -45,7 +47,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
@@ -91,7 +92,7 @@ public class PickingCandidateService
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
@@ -368,9 +369,9 @@ public class PickingCandidateService
 		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
-		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 
 	@NonNull

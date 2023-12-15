@@ -154,9 +154,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
 				.getDocumentLineDescriptor();
 
-		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
-				.getDocumentLineDescriptor();
-
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
