@@ -82,7 +82,7 @@ import java.util.Set;
 public class WebuiHUTransformParametersFiller
 {
 	// services
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final ADReferenceService adReferenceService;
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
@@ -95,12 +95,15 @@ public class WebuiHUTransformParametersFiller
 	private final boolean _isMoveToDifferentWarehouseEnabled;
 
 	@Builder
-	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
-											 @NonNull final HUEditorRow selectedRow,
-											 @Nullable final ActionType actionType,
-											 final boolean checkExistingHUsInsideView,
-											 final boolean isMoveToDifferentWarehouseEnabled)
+	private WebuiHUTransformParametersFiller(
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final HUEditorView view,
+			@NonNull final HUEditorRow selectedRow,
+			@Nullable final ActionType actionType,
+			final boolean checkExistingHUsInsideView,
+			final boolean isMoveToDifferentWarehouseEnabled)
 	{
+		this.adReferenceService = adReferenceService;
 		this._view = view;
 		this._selectedRow = selectedRow;
 		this._actionType = actionType;
