@@ -93,6 +93,7 @@ public class MainRowWithSubRows
 				.build();
 
 		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
+
 	}
 
 	@Nullable
