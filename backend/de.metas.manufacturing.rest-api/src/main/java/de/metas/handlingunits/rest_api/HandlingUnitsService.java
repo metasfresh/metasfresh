@@ -277,6 +277,12 @@ public class HandlingUnitsService
 			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 			final Object value = huAttributes.getValue(attributeCode);
 
+			// dev-note: skip null or empty attributes
+			if (Check.isEmpty(value))
+			{
+				continue;
+			}
+
 			list.add(JsonHUAttribute.builder()
 							 .code(attributeCode.getCode())
 							 .caption(attribute.getName())
