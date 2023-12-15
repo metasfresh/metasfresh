@@ -3,9 +3,9 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFroms" : [ {
       "availableQty" : "960.000 Kg",
       "key" : {
-        "huId" : 100237,
-        "locatorId" : "100161_100163",
-        "productId" : 100160
+        "huId" : 100245,
+        "locatorId" : "100169_100171",
+        "productId" : 100168
       }
     } ]
   },
@@ -13,17 +13,17 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100245,
+          "locatorId" : "100169_100171",
+          "productId" : 100168
         } ]
       },
-      "huCode" : "100272",
+      "huCode" : "100280",
       "huReservedForThisLine" : true,
-      "locatorId" : "100161_100163",
-      "topLevelHUId" : 100272
+      "locatorId" : "100169_100171",
+      "topLevelHUId" : 100280
     },
-    "productId" : 100160,
+    "productId" : 100168,
     "qty" : "1.000 Kg",
     "sourceDocumentInfo" : {
       "packToSpec" : {
@@ -40,17 +40,17 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100245,
+          "locatorId" : "100169_100171",
+          "productId" : 100168
         } ]
       },
-      "huCode" : "100165",
+      "huCode" : "100173",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
-      "topLevelHUId" : 100165
+      "locatorId" : "100169_100171",
+      "topLevelHUId" : 100173
     },
-    "productId" : 100160,
+    "productId" : 100168,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "packToSpec" : {
@@ -67,17 +67,17 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100245,
+          "locatorId" : "100169_100171",
+          "productId" : 100168
         } ]
       },
-      "huCode" : "100201",
+      "huCode" : "100209",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
-      "topLevelHUId" : 100201
+      "locatorId" : "100169_100171",
+      "topLevelHUId" : 100209
     },
-    "productId" : 100160,
+    "productId" : 100168,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "packToSpec" : {
@@ -95,12 +95,12 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
       "alternatives" : {
         "keys" : [ ]
       },
-      "huCode" : "100237",
+      "huCode" : "100245",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
-      "topLevelHUId" : 100237
+      "locatorId" : "100169_100171",
+      "topLevelHUId" : 100245
     },
-    "productId" : 100160,
+    "productId" : 100168,
     "qty" : "39.000 Kg",
     "sourceDocumentInfo" : {
       "packToSpec" : {
