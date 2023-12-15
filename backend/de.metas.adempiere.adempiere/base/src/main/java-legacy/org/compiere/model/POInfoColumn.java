@@ -56,14 +56,7 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-<<<<<<< HEAD
-			final boolean isRestAPICustomColumn,
 			final int adSequenceID)
-=======
-			final int adSequenceID,
-			@NonNull final ColumnCloningStrategy cloningStrategy,
-			final boolean isIdentifier)
->>>>>>> d2cb6399b6f (Refactor IsRestAPICustomColumn feature; make it react to AD_Column changes (#16924))
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -266,13 +259,6 @@ public final class POInfoColumn implements Serializable
 	 * Max Value
 	 */
 	final BigDecimal ValueMax_BD;
-
-<<<<<<< HEAD
-	final boolean IsRestAPICustomColumn;
-=======
-	final boolean IsIdentifier;
-	@Getter private final ColumnCloningStrategy cloningStrategy;
->>>>>>> d2cb6399b6f (Refactor IsRestAPICustomColumn feature; make it react to AD_Column changes (#16924))
 
 	/* package */ boolean IsCalculated = false;
 	// metas: us215
