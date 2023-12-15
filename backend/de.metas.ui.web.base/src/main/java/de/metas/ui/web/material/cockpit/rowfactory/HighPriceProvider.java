@@ -22,7 +22,9 @@
 
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -31,31 +33,33 @@ import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Product;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.I_purchase_prices_in_stock_uom_plv_v;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER;
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
 
 public class HighPriceProvider
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final CCache<HighPriceRequest, HighPriceResponse> cache = CCache.<HighPriceRequest, HighPriceResponse> builder()
+	private final CCache<HighPriceRequest, HighPriceResponse> cache = CCache.<HighPriceRequest, HighPriceResponse>builder()
 			.tableName(I_M_ProductPrice.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(5000)
@@ -93,49 +97,66 @@ public class HighPriceProvider
 
 	private Map<HighPriceRequest, HighPriceResponse> computeHighestPrices(final Set<HighPriceRequest> requests)
 	{
-		final Map<HighPriceRequest, HighPriceResponse> resultMap = new HashMap<>();
-		for (final HighPriceRequest request : requests)
+		if (requests.isEmpty())
 		{
-			final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
-			final I_M_Product productRecord = productBL.getById(productId);
-			if (!productRecord.isActive() || !productRecord.isPurchased() || !productRecord.isDiscontinued())
+			return ImmutableMap.of();
+		}
+
+		final LocalDate evalDate = CollectionUtils.extractSingleElement(requests, HighPriceRequest::getEvalDate);
+		final ImmutableMap<ProductId, HighPriceRequest> requestsByProductId = Maps.uniqueIndex(requests, HighPriceRequest::getProductId);
+		final ImmutableSet<ProductId> productIds = requestsByProductId.keySet();
+
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		StringBuilder sql = new StringBuilder("SELECT M_Product_ID"
+													  + ", max(ProductPriceInStockUOM) as ProductPriceInStockUOM"
+													  + ", max(C_Currency_ID) as C_Currency_ID" // expect one single currency anyways
+													  + " FROM purchase_prices_in_stock_uom_plv_v");
+
+		sql.append(" validfrom <= ? AND validto > ?");
+		sqlParams.add(evalDate);
+		sqlParams.add(evalDate);
+
+		sql.append(" AND ").append(DB.buildSqlList("M_Product_ID", productIds, sqlParams));
+
+		sql.append(" GROUP BY M_Product_ID");
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final HashMap<HighPriceRequest, HighPriceResponse> results = new HashMap<>();
+			while (rs.next())
 			{
-				resultMap.put(
-						request,
-						HighPriceResponse.builder()
-								.maxPurchasePrice(null)
-								.build());
+				ProductId productId = ProductId.ofRepoId(rs.getInt("M_Product_ID"));
+				BigDecimal highPrice = rs.getBigDecimal("ProductPriceInStockUOM");
+				CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
+
+				final HighPriceResponse response = HighPriceResponse.builder()
+						.maxPurchasePrice(Money.of(highPrice, currencyId))
+						.build();
+
+				final HighPriceRequest request = requestsByProductId.get(productId);
+				results.put(request, response);
 			}
 
-			final I_purchase_prices_in_stock_uom_plv_v record = queryBL.createQueryBuilder(I_purchase_prices_in_stock_uom_plv_v.class)
-					.addEqualsFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_M_Product_ID, productId)
-					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getEvalDate())
-					.addCompareFilter(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ValidTo, GREATER, request.getEvalDate())
-					.orderByDescending(I_purchase_prices_in_stock_uom_plv_v.COLUMNNAME_ProductPriceInStockUOM)
-					.create()
-					.first(I_purchase_prices_in_stock_uom_plv_v.class);
-
-			// Currency is taken from de.metas.ui.web.material.cockpit.field.HighestPurchasePrice_AtDate.CurrencyCode in View
-			final BigDecimal price = record != null ? record.getProductPriceInStockUOM() : BigDecimal.ZERO;
-			final CurrencyId currencyId = record != null ? CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()) : null;
-			final HighPriceResponse response = HighPriceResponse.builder()
-					.maxPurchasePrice(Money.ofOrNull(price, currencyId))
-					.build();
-			resultMap.put(request, response);
-
+			return results;
 		}
-		return resultMap;
+		catch (Exception ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	public void warmUp(@NonNull final Set<ProductId> productIds, @NonNull final LocalDate date)
 	{
-		//TODO option to warm up with mass compute and result set product_id | ProductPriceInStockUOM ?
-		final String sql = "SELECT m_product_id, max(ProductPriceInStockUOM)"
-				+ "FROM purchase_prices_in_stock_uom_plv_v"
-				+ "WHERE validfrom <= " + date
-				+ "AND validto > " + date
-				+ "GROUP BY m_product_id";
-
 		final Set<HighPriceRequest> requests = productIds.stream().map((productId) -> toHighPriceRequest(productId, date)).collect(Collectors.toSet());
 		cache.getAllOrLoad(requests, this::computeHighestPrices);
 	}
@@ -150,9 +171,6 @@ public class HighPriceProvider
 				.build();
 	}
 
-
-
-
 	@Value
 	@Builder
 	public static class HighPriceRequest
@@ -162,6 +180,11 @@ public class HighPriceProvider
 
 		@NonNull
 		LocalDate evalDate;
+
+		public ProductId getProductId()
+		{
+			return ProductId.ofRepoId(productDescriptor.getProductId());
+		}
 	}
 
 	@Value
