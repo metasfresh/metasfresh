@@ -96,7 +96,7 @@ class PPOrderLinesViewDataLoader
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final ADReferenceService adReferenceService;
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -107,7 +107,8 @@ class PPOrderLinesViewDataLoader
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
@@ -116,6 +117,7 @@ class PPOrderLinesViewDataLoader
 				.huReservationService(huReservationService)
 				.build();
 
+		this.adReferenceService = adReferenceService;
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
 

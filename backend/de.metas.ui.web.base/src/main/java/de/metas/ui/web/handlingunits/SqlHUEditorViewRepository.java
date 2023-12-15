@@ -116,7 +116,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
@@ -124,6 +123,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
 	private final HUReservationService huReservationService;
+	private final ADReferenceService adReferenceService;
 
 	private final boolean showBestBeforeDate;
 	private final boolean showWeightGross;
@@ -139,6 +139,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService,
 			final boolean showBestBeforeDate,
 			final boolean showWeightGross)
 	{
@@ -146,6 +147,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
+		this.adReferenceService = adReferenceService;
 		this.showBestBeforeDate = showBestBeforeDate;
 		this.showWeightGross = showWeightGross;
 
