@@ -182,11 +182,7 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
-																						 .hu(hu)
-																						 .adLanguage(adLanguage)
-																						 .excludeEmptyAttributes(true)
-																						 .build()))
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
 											 .build());
 		}
 		catch (final Exception ex)
