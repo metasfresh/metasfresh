@@ -26,7 +26,16 @@ import java.util.Properties;
 @Service
 public class ADReferenceService
 {
-	public static ADReferenceService get() {return SpringContextHolder.instance.getBean(ADReferenceService.class);}
+	/**
+	 * !! Don't invoke this getter during startup !!
+	 * It is intended to be used only:
+	 * <li>If you are not within a spring component and can't inject it in any other way.</li>
+	 * <li>If your code is not invoked during startup.</li>
+	 */
+	public static ADReferenceService get()
+	{
+		return SpringContextHolder.instance.getBean(ADReferenceService.class);
+	}
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final AdRefListRepository adRefListRepository;
@@ -145,7 +154,7 @@ public class ADReferenceService
 		{
 			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
 			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + " because " + tableRefInfo.getExplanation().getDefaultValue()
-					+ ". Returning null.");
+									   + ". Returning null.");
 			// logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
 			return null;
 		}
@@ -223,19 +232,19 @@ public class ADReferenceService
 	@Nullable
 	public ColorId getColorId(@NonNull final Object model, @NonNull final String columnName, @Nullable final String refListValue)
 	{
-		if(Check.isBlank(refListValue))
+		if (Check.isBlank(refListValue))
 		{
 			return null;
 		}
 
 		final ReferenceId referenceId = ReferenceId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(model).getPOInfo().getColumnReferenceValueId(columnName));
-		if(referenceId == null)
+		if (referenceId == null)
 		{
 			return null;
 		}
 		final ADRefListItem refListItem = retrieveListItemOrNull(referenceId, refListValue);
 
-		return  refListItem != null ? refListItem.getColorId() : null;
+		return refListItem != null ? refListItem.getColorId() : null;
 	}
 }
 
