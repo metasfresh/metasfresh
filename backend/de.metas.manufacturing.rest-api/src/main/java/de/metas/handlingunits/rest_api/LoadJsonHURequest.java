@@ -39,6 +39,8 @@ class LoadJsonHURequest
 	@NonNull String adLanguage;
 	boolean includeAllowedClearanceStatuses;
 
+	boolean excludeEmptyAttributes;
+
 	@NonNull
 	public static LoadJsonHURequest ofHUAndLanguage(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
 	{

@@ -181,8 +181,17 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+<<<<<<< HEAD
 					.result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
 					.build());
+=======
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
+																						 .hu(hu)
+																						 .adLanguage(adLanguage)
+																						 .excludeEmptyAttributes(true)
+																						 .build()))
+											 .build());
+>>>>>>> ae4daea525d (Dynamic output of Mac addresses in REST API (#16947))
 		}
 		catch (final Exception ex)
 		{
