@@ -30,16 +30,15 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
@@ -56,37 +55,22 @@ import java.util.stream.Collectors;
 
 public class HighPriceProvider
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static final String SYSCFG_HIGHPRICEPROVIDER_ACTIVE = "de.metas.ui.web.material.cockpit.rowfactory.HighPriceProvider.isActive";
 
 	private final CCache<HighPriceRequest, HighPriceResponse> cache = CCache.<HighPriceRequest, HighPriceResponse>builder()
 			.tableName(I_M_ProductPrice.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(5000)
 			.build();
-	private boolean active;
 
-	public HighPriceProvider active()
-	{
-		this.active = true;
-		return this;
-	}
-
-	public HighPriceProvider deactivated()
-	{
-		this.active = false;
-		return this;
-	}
 
 	public HighPriceResponse getHighestPrice(final HighPriceRequest request)
 	{
-		if (!active)
+		if (!sysConfigBL.getBooleanValue(SYSCFG_HIGHPRICEPROVIDER_ACTIVE, false))
 		{
-			return HighPriceResponse.builder()
-					.maxPurchasePrice(null)
-					.build();
+			return HighPriceResponse.builder().build();
 		}
-
 		return cache.getOrLoad(request, this::computeHighestPrice);
 	}
 
@@ -107,7 +91,7 @@ public class HighPriceProvider
 		final ImmutableSet<ProductId> productIds = requestsByProductId.keySet();
 
 		final ArrayList<Object> sqlParams = new ArrayList<>();
-		StringBuilder sql = new StringBuilder("SELECT M_Product_ID"
+		final StringBuilder sql = new StringBuilder("SELECT M_Product_ID"
 													  + ", max(ProductPriceInStockUOM) as ProductPriceInStockUOM"
 													  + ", max(C_Currency_ID) as C_Currency_ID" // expect one single currency anyways
 													  + " FROM purchase_prices_in_stock_uom_plv_v");
@@ -131,9 +115,9 @@ public class HighPriceProvider
 			final HashMap<HighPriceRequest, HighPriceResponse> results = new HashMap<>();
 			while (rs.next())
 			{
-				ProductId productId = ProductId.ofRepoId(rs.getInt("M_Product_ID"));
-				BigDecimal highPrice = rs.getBigDecimal("ProductPriceInStockUOM");
-				CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
+				final ProductId productId = ProductId.ofRepoId(rs.getInt("M_Product_ID"));
+				final BigDecimal highPrice = rs.getBigDecimal("ProductPriceInStockUOM");
+				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
 
 				final HighPriceResponse response = HighPriceResponse.builder()
 						.maxPurchasePrice(Money.of(highPrice, currencyId))
@@ -145,7 +129,7 @@ public class HighPriceProvider
 
 			return results;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
@@ -157,6 +141,10 @@ public class HighPriceProvider
 
 	public void warmUp(@NonNull final Set<ProductId> productIds, @NonNull final LocalDate date)
 	{
+		if (!sysConfigBL.getBooleanValue(SYSCFG_HIGHPRICEPROVIDER_ACTIVE, false))
+		{
+			return;
+		}
 		final Set<HighPriceRequest> requests = productIds.stream().map((productId) -> toHighPriceRequest(productId, date)).collect(Collectors.toSet());
 		cache.getAllOrLoad(requests, this::computeHighestPrices);
 	}
