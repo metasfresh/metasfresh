@@ -20,6 +20,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -55,9 +56,8 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 
 	private static final String FIELDNAME_ProductOrBPartner = "ProductOrBPartner";
 
-	public PickingTerminalByWarehouseAndProductViewCustomizer()
+	public PickingTerminalByWarehouseAndProductViewCustomizer(@NonNull final ADReferenceService adReferenceService)
 	{
-		final ADReferenceService adReferenceService = ADReferenceService.get();
 		final ITranslatableString caption = adReferenceService.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct);
 		PROFILE = ViewProfile.of(PROFILE_ID, caption);
 	}
