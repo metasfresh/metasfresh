@@ -23,11 +23,11 @@
 package de.metas.workflow;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
-import de.metas.reflist.ReferenceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -22,9 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -44,6 +44,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class C_BPartner_Location_StepDef
 {
@@ -140,7 +141,7 @@ public class C_BPartner_Location_StepDef
 		{
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
-		saveRecord(locationRecord);
+			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
@@ -169,6 +170,11 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
+		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		{
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+		}
 
 		saveRecord(bPartnerLocationRecord);
 

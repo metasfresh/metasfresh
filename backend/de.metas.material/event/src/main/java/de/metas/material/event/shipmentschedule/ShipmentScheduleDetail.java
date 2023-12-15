@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * metasfresh-material-event
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,41 +20,33 @@
  * #L%
  */
 
-package de.metas.reflist;
+package de.metas.material.event.shipmentschedule;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
-public class ReferenceId implements RepoIdAware
+@Builder
+@Jacksonized
+public class ShipmentScheduleDetail
 {
-	int repoId;
+	@NonNull
+	BigDecimal orderedQuantity;
 
-	@JsonCreator
-	public static ReferenceId ofRepoId(final int repoId)
-	{
-		return new ReferenceId(repoId);
-	}
+	@NonNull
+	BigDecimal orderedQuantityDelta;
+
+	@NonNull
+	BigDecimal reservedQuantity;
+
+	@NonNull
+	BigDecimal reservedQuantityDelta;
 
 	@Nullable
-	public static ReferenceId ofRepoIdOrNull(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? new ReferenceId(repoId) : null;
-	}
-
-	private ReferenceId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Reference_ID");
-	}
-
-	@JsonValue
-	public int toJson()
-	{
-		return getRepoId();
-	}
+	OldShipmentScheduleData oldShipmentScheduleData;
 }

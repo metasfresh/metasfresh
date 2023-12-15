@@ -1,25 +1,10 @@
 package de.metas.costing.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_M_CostElement;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -29,6 +14,19 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_CostElement;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -56,12 +54,14 @@ import lombok.NonNull;
 public class CostElementRepository implements ICostElementRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
-	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
+	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements>builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
 			.build();
+
+	public CostElementRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	private IndexedCostElements getIndexedCostElements()
 	{
@@ -96,6 +96,7 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
+	@NonNull
 	public CostElement getOrCreateMaterialCostElement(final ClientId clientId, @NonNull final CostingMethod costingMethod)
 	{
 		final List<CostElement> costElements = getIndexedCostElements()
@@ -122,7 +123,7 @@ public class CostElementRepository implements ICostElementRepository
 		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
 		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
+		String name = adReferenceService.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
 		if (Check.isEmpty(name, true))
 		{
 			name = costingMethod.name();
@@ -164,7 +165,7 @@ public class CostElementRepository implements ICostElementRepository
 	{
 		return getIndexedCostElements()
 				.streamForClientId(clientId)
-				.filter(ce -> ce.isMaterialCostingMethod())
+				.filter(CostElement::isMaterialCostingMethod)
 				.collect(ImmutableList.toImmutableList());
 	}
 

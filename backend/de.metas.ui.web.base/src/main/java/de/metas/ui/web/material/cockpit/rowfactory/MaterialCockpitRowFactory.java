@@ -9,6 +9,7 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -70,11 +71,20 @@ public class MaterialCockpitRowFactory
 		@Singular
 		List<I_MD_Stock> stockRecords;
 
+		@NonNull
+		@Singular
+		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+
 		boolean includePerPlantDetailRows;
 	}
 
+	@NonNull
+	HighPriceProvider highPriceProvider = new HighPriceProvider();
+
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
 	{
+		highPriceProvider.warmUp(request.getProductIdsToListEvenIfEmpty(), request.getDate());
+
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductIdsToListEvenIfEmpty(),
 				request.getDate(),
@@ -86,6 +96,7 @@ public class MaterialCockpitRowFactory
 
 		addCockpitRowsToResult(request, dimensionSpec, result);
 		addStockRowsToResult(request, dimensionSpec, result);
+		addQuantitiesRowsToResult(request, dimensionSpec, result);
 
 		return result.values()
 				.stream()
@@ -108,7 +119,7 @@ public class MaterialCockpitRowFactory
 		for (final ProductId productId : productIds)
 		{
 			final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
-			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key);
+			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key, highPriceProvider);
 
 			for (final I_S_Resource plant : plants)
 			{
@@ -150,7 +161,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
@@ -164,9 +175,22 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
 			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
 
+	private void addQuantitiesRowsToResult(
+			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
+			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
+	{
+		for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, (key) -> MainRowWithSubRows.create(key, highPriceProvider));
+			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+		}
+	}
 }

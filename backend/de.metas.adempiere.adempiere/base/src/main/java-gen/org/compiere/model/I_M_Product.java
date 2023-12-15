@@ -1452,6 +1452,27 @@ public interface I_M_Product
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcurementStatus (@Nullable java.lang.String ProcurementStatus);
+
+	/**
+	 * Get Procurement Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcurementStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ProcurementStatus = new ModelColumn<>(I_M_Product.class, "ProcurementStatus", null);
+	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
+
+	/**
 	 * Set Product Type.
 	 * Type of product
 	 *

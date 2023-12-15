@@ -25,6 +25,7 @@ package de.metas.contracts.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -104,7 +105,6 @@ import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -231,7 +231,7 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 
-					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+					final ITranslatableString competed = ADReferenceService.get()
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
