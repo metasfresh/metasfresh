@@ -130,6 +130,12 @@ public class HighPriceProvider
 	public void warmUp(@NonNull final Set<ProductId> productIds, @NonNull final LocalDate date)
 	{
 		//TODO option to warm up with mass compute and result set product_id | ProductPriceInStockUOM ?
+		final String sql = "SELECT m_product_id, max(ProductPriceInStockUOM)"
+				+ "FROM purchase_prices_in_stock_uom_plv_v"
+				+ "WHERE validfrom <= " + date
+				+ "AND validto > " + date
+				+ "GROUP BY m_product_id";
+
 		final Set<HighPriceRequest> requests = productIds.stream().map((productId) -> toHighPriceRequest(productId, date)).collect(Collectors.toSet());
 		cache.getAllOrLoad(requests, this::computeHighestPrices);
 	}
