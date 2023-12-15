@@ -127,7 +127,7 @@ public class HandlingUnitsService
 
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
-		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu);
+		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, loadJsonHURequest.isExcludeEmptyAttributes());
 
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
@@ -257,7 +257,8 @@ public class HandlingUnitsService
 	@NonNull
 	private JsonHUAttributes toJsonHUAttributes(
 			@NonNull final IMutableHUContext huContext,
-			@NonNull final I_M_HU hu)
+			@NonNull final I_M_HU hu,
+			final boolean excludeEmptyAttributes)
 	{
 		final ImmutableAttributeSet huAttributes = huContext.getHUAttributeStorageFactory()
 				.getImmutableAttributeSet(hu);
@@ -267,6 +268,12 @@ public class HandlingUnitsService
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 			final Object value = huAttributes.getValue(attributeCode);
+
+			// dev-note: skip null or empty attributes
+			if (excludeEmptyAttributes && Check.isEmpty(value))
+			{
+				continue;
+			}
 
 			list.add(JsonHUAttribute.builder()
 					.code(attributeCode.getCode())
