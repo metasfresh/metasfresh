@@ -96,7 +96,7 @@ public class HighPriceProvider
 													  + ", max(C_Currency_ID) as C_Currency_ID" // expect one single currency anyways
 													  + " FROM purchase_prices_in_stock_uom_plv_v");
 
-		sql.append(" validfrom <= ? AND validto > ?");
+		sql.append(" WHERE validfrom <= ? AND validto > ?");
 		sqlParams.add(evalDate);
 		sqlParams.add(evalDate);
 
@@ -125,6 +125,16 @@ public class HighPriceProvider
 
 				final HighPriceRequest request = requestsByProductId.get(productId);
 				results.put(request, response);
+				requests.remove(request);
+			}
+
+			if (!requests.isEmpty())
+			{
+				final HighPriceResponse emptyResponse = HighPriceResponse.builder().build();
+				for (final HighPriceRequest openRequest : requests)
+				{
+					results.put(openRequest, emptyResponse);
+				}
 			}
 
 			return results;
