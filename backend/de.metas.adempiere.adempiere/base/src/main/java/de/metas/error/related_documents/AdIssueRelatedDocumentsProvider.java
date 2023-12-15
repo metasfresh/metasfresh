@@ -54,10 +54,15 @@ import java.util.function.Supplier;
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final ADReferenceService adReferenceService;
 
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 	private final boolean onlyNotAcknowledged = true;
+
+	public AdIssueRelatedDocumentsProvider(@NonNull final ADReferenceService adReferenceService)
+	{
+		this.adReferenceService = adReferenceService;
+	}
 
 	@Override
 	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
