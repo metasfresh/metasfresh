@@ -39,6 +39,9 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
@@ -60,6 +63,9 @@ public class HighPriceProvider
 
 	private final CCache<HighPriceRequest, HighPriceResponse> cache = CCache.<HighPriceRequest, HighPriceResponse>builder()
 			.tableName(I_M_ProductPrice.Table_Name)
+			.additionalTableNameToResetFor(I_M_Product.Table_Name)
+			.additionalTableNameToResetFor(I_M_PriceList.Table_Name)
+			.additionalTableNameToResetFor(I_M_PriceList_Version.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(5000)
 			.build();
