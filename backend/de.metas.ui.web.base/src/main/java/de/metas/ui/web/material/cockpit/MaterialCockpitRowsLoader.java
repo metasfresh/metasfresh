@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -97,9 +98,17 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
-		final List<I_QtyDemand_QtySupply_V> quantitiesRecords = QtyDemandSupplyFilters
-				.createQuantitiesQueryFor(filters)
-				.list();
+		final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+		{
+			quantitiesRecords = QtyDemandSupplyFilters
+					.createQuantitiesQueryFor(filters)
+					.list();
+		}
+		else
+		{
+			quantitiesRecords = ImmutableList.of();
+		}
 		
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
