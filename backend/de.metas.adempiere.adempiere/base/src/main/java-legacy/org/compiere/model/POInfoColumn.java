@@ -263,11 +263,6 @@ public final class POInfoColumn implements Serializable
 	 */
 	final BigDecimal ValueMax_BD;
 
-<<<<<<< HEAD
-	final boolean IsRestAPICustomColumn;
-=======
-	final boolean IsIdentifier;
->>>>>>> d2cb6399b6f (Refactor IsRestAPICustomColumn feature; make it react to AD_Column changes (#16924))
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
