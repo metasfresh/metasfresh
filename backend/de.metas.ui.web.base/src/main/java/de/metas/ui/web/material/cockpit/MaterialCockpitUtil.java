@@ -47,7 +47,7 @@ public final class MaterialCockpitUtil
 
 	public static final String SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS = "de.metas.ui.web.material.cockpit.DisplayPerPlantDetailRows";
 
-	private static final String SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE = "de.metas.ui.web.material.cockpit..I_QtyDemand_QtySupply_V.IsActive";
+	private static final String SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE = "de.metas.ui.web.material.cockpit.I_QtyDemand_QtySupply_V.IsActive";
 
 	public static final String DONT_FILTER = "DONT_FILTER";
 	public static final String NON_EMPTY = "NON_EMPTY";
