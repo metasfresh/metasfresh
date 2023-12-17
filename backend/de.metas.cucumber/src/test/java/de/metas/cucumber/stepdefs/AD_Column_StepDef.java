@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -38,19 +39,30 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.util.DB;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AD_Column_StepDef
 {
@@ -91,26 +103,66 @@ public class AD_Column_StepDef
 	}
 
 	@And("update AD_Column:")
-	public void update_AD_Column(@NonNull final DataTable dataTable)
+	public void update_AD_Columns(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRow.toRows(dataTable).forEach(this::updateAD_Column);
+	}
+
+
+	private List<Object> retrieve()
+	{
+		final String sql = "select .... where date=? and number=? and isActive=?";
+		final List<Object> sqlParams = Arrays.<Object>asList(LocalDate.now(), 123, true);
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
 		{
-			final String tableName = DataTableUtil.extractStringForColumnName(row, "TableName");
-			final String columnName = DataTableUtil.extractStringForColumnName(row, "ColumnName");
-			final boolean isRestAPICustomColumn = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn, false);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
 
-			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
-			assertThat(tableId).isNotNull();
+			final ArrayList<Object> results = new ArrayList<>();
+			while(rs.next())
+			{
+				ProductId productId = ProductId.ofRepoId(rs.getInt("M_Product_ID"));
+				BigDecimal highPrice = rs.getBigDecimal("Price");
+				//...
+			}
 
-			final I_AD_Column targetColumn = queryBL.createQueryBuilder(I_AD_Column.class)
-					.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
-					.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
-					.create()
-					.firstOnlyNotNull(I_AD_Column.class);
-
-			targetColumn.setIsRestAPICustomColumn(isRestAPICustomColumn);
-			saveRecord(targetColumn);
+			return results;
 		}
+		catch(Exception ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private void updateAD_Column(final DataTableRow row)
+	{
+		final String tableName = row.getAsString("TableName");
+		final String columnName = row.getAsString("ColumnName");
+
+		final I_AD_Column targetColumn = getExistingColumn(tableName, columnName);
+		row.getAsOptionalBoolean("IsRestAPICustomColumn").ifPresent(targetColumn::setIsRestAPICustomColumn);
+
+		saveRecord(targetColumn);
+	}
+
+	@NonNull
+	private I_AD_Column getExistingColumn(final String tableName, final String columnName)
+	{
+		final AdTableId tableId = TableIdsCache.instance.getTableIdNotNull(tableName);
+
+		return queryBL.createQueryBuilder(I_AD_Column.class)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnlyNotNull(I_AD_Column.class);
 	}
 
 	@When("^set custom columns for C_Order( expecting error:|:)$")
@@ -151,7 +203,7 @@ public class AD_Column_StepDef
 			else
 			{
 				throw new RuntimeException("One of " + "OPT." + I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER
-												   + " OR " + "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER + " must be set!");
+						+ " OR " + "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER + " must be set!");
 			}
 
 			final String customColumnJSONValue = DataTableUtil.extractStringForColumnName(row, "CustomColumnJSONValue");
