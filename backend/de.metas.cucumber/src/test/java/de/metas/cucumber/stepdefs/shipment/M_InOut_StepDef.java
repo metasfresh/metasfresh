@@ -523,41 +523,6 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
-	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
-	{
-		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
-		InterfaceWrapperHelper.refresh(shipment);
-
-		switch (StepDefDocAction.valueOf(action))
-		{
-			case completed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-				break;
-			case reactivated:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
-				break;
-			case reversed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
-				break;
-			case voided:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-				break;
-			case closed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
-				break;
-			default:
-				throw new AdempiereException("Unhandled M_InOut action")
-						.appendParametersToMessage()
-						.setParameter("action:", action);
-		}
-	}
-
 	@NonNull
 	private ItemProvider.ProviderResult<I_M_InOut> isCustomerReturnFound(@NonNull final Map<String, String> row)
 	{
