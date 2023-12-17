@@ -473,14 +473,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-<<<<<<< HEAD
-				isRestAPICustomColumn,
 				adSequenceID);
-=======
-				adSequenceID,
-				cloningStrategy,
-				isIdentifier);
->>>>>>> d2cb6399b6f (Refactor IsRestAPICustomColumn feature; make it react to AD_Column changes (#16924))
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -1345,29 +1338,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return Optional.ofNullable(singleColumnName);
 	}
 
-<<<<<<< HEAD
-	public boolean isRestAPICustomColumn(final int index)
-	{
-		if (index < 0 || index >= m_columns.size())
-		{
-			return false;
-		}
-		return m_columns.get(index).IsRestAPICustomColumn;
-	}
-
-	public boolean isRestAPICustomColumn(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return isRestAPICustomColumn(columnIndex);
-	}
-=======
-	public boolean isParentLinkColumn(final String columnName)
-	{
-		final POInfoColumn column = getColumn(columnName);
-		return column != null && column.isParent();
-	}
-
->>>>>>> d2cb6399b6f (Refactor IsRestAPICustomColumn feature; make it react to AD_Column changes (#16924))
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
