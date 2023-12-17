@@ -31,7 +31,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.impl.InvoiceReview;
 import de.metas.invoice.service.impl.InvoiceReviewRepository;
-import de.metas.po.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponse;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceReviewResponseResult;
 import de.metas.rest_api.v2.invoice.JsonInvoiceReviewUpsertItem;
