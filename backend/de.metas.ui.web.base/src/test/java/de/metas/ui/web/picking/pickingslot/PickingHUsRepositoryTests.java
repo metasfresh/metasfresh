@@ -3,6 +3,9 @@ package de.metas.ui.web.picking.pickingslot;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -101,7 +104,7 @@ public class PickingHUsRepositoryTests
 		return huId;
 	}
 
-	private static final PickingSlotId createPickingSlot(final boolean pickingRackSystem)
+	private static PickingSlotId createPickingSlot(final boolean pickingRackSystem)
 	{
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		pickingSlot.setIsPickingRackSystem(pickingRackSystem);
@@ -187,7 +190,8 @@ public class PickingHUsRepositoryTests
 				pickingCandidatesRepo,
 				new HuId2SourceHUsService(new HUTraceRepository()),
 				new HUReservationService(new HUReservationRepository()),
-				Services.get(IBPartnerBL.class));
+				Services.get(IBPartnerBL.class),
+				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
 				() -> huEditorViewRepository,
