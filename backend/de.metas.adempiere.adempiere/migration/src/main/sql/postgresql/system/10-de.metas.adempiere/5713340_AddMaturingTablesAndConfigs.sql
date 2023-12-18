@@ -3878,3 +3878,20 @@ UPDATE AD_Element_Trl SET Name='Reifealter', PrintName='Reifealter',Updated=TO_T
 
 ---------------
 
+
+-- 2023-12-18T10:18:18.146Z
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540782,0,542384,TO_TIMESTAMP('2023-12-18 12:18:17','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Raw_product_unique','N',TO_TIMESTAMP('2023-12-18 12:18:17','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+;
+
+-- 2023-12-18T10:18:18.154Z
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540782 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2023-12-18T10:18:24.921Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,587751,541385,540782,0,TO_TIMESTAMP('2023-12-18 12:18:24','YYYY-MM-DD HH24:MI:SS'),100,'U','Y',10,TO_TIMESTAMP('2023-12-18 12:18:24','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-12-18T10:18:33.568Z
+CREATE UNIQUE INDEX Raw_product_unique ON M_Maturing_Configuration_Line (From_Product_ID) WHERE IsActive='Y'
+;
+
