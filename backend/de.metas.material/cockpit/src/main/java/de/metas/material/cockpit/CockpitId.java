@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.reflist;
+package de.metas.material.cockpit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -31,30 +31,36 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class RefListId implements RepoIdAware
+public class CockpitId implements RepoIdAware
 {
-	int repoId;
-
 	@JsonCreator
-	public static RefListId ofRepoId(final int repoId)
+	public static CockpitId ofRepoId(final int repoId)
 	{
-		return new RefListId(repoId);
+		return new CockpitId(repoId);
 	}
 
 	@Nullable
-	public static RefListId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static CockpitId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId != null && repoId > 0 ? new RefListId(repoId) : null;
+		return repoId > 0 ? new CockpitId(repoId) : null;
 	}
 
-	private RefListId(final int repoId)
+	public static int toRepoId(@Nullable final CockpitId cockpitId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Ref_List_ID");
+		return cockpitId != null ? cockpitId.getRepoId() : -1;
 	}
 
+	int repoId;
+
+	private CockpitId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MD_Cockpit_ID");
+	}
+
+	@Override
 	@JsonValue
-	public int toJson()
+	public int getRepoId()
 	{
-		return getRepoId();
+		return repoId;
 	}
 }

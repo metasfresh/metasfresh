@@ -25,8 +25,10 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -36,6 +38,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.order.IOrderBL;
@@ -115,6 +118,7 @@ public class C_Order_StepDef
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
@@ -123,6 +127,8 @@ public class C_Order_StepDef
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Org_StepDefData orgTable;
+	private final AD_Message_StepDefData messageTable;
+	private final M_InOut_StepDefData inoutTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -131,7 +137,9 @@ public class C_Order_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final M_InOut_StepDefData inoutTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
@@ -140,6 +148,8 @@ public class C_Order_StepDef
 		this.pricingSystemDataTable = pricingSystemDataTable;
 		this.warehouseTable = warehouseTable;
 		this.orgTable = orgTable;
+		this.messageTable = messageTable;
+		this.inoutTable = inoutTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -324,7 +334,7 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) is (reactivated|completed)$")
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -339,10 +349,21 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
-			default:
-				throw new AdempiereException("Unhandled C_Order action")
-						.appendParametersToMessage()
-						.setParameter("action:", action);
+			case closed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
+			case voided:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case reversed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			default: throw new AdempiereException("Unhandled C_Order action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
 		}
 	}
 

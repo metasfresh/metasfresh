@@ -37,8 +37,6 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -110,12 +108,4 @@ public class ApplicationConfiguration
 	{
 		return Services.get(IModelCacheInvalidationService .class);
 	}
-
-	@Bean
-	public IADReferenceDAO referenceDAO()
-	{
-		return Services.get(IADReferenceDAO.class);
-	}
-
-
 }

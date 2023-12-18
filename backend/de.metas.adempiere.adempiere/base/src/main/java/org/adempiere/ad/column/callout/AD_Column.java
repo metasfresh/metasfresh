@@ -1,7 +1,7 @@
 package org.adempiere.ad.column.callout;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;

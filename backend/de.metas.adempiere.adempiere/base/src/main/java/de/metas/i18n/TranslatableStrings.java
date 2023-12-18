@@ -2,13 +2,14 @@ package de.metas.i18n;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.Amount;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.service.IADReferenceDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -226,9 +228,11 @@ public class TranslatableStrings
 		return trl != null ? trl : empty();
 	}
 
-	public ITranslatableString amount(@NonNull final Amount amount)
+	public ITranslatableString amount(@Nullable final Amount amount)
 	{
-		return builder().append(amount).build();
+		return amount != null
+				? builder().append(amount).build()
+				: empty();
 	}
 
 	public NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
@@ -266,6 +270,11 @@ public class TranslatableStrings
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
+	public DateTimeTranslatableString temporal(@NonNull final Temporal date)
+	{
+		return DateTimeTranslatableString.ofObject(date);
+	}
+
 	public ITranslatableString ofMap(final Map<String, String> trlMap)
 	{
 		if (trlMap == null || trlMap.isEmpty())
@@ -274,7 +283,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+			return ImmutableTranslatableString.ofMap(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 		}
 	}
 
@@ -286,7 +295,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, defaultValue);
+			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
 		}
 	}
 
@@ -405,11 +414,11 @@ public class TranslatableStrings
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		return adReferenceDAO.getRefListById(adReferenceId)
+		return adReferenceService.getRefListById(adReferenceId)
 				.getItemByValue(value)
-				.map(IADReferenceDAO.ADRefListItem::getName)
+				.map(ADRefListItem::getName)
 				.orElseGet(() -> anyLanguage(value));
 	}
 

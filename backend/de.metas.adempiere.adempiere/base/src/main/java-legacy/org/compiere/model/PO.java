@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -49,7 +50,6 @@ import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
@@ -1016,7 +1016,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	private final boolean set_Value(final int index, final Object value)
+	private boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1188,7 +1188,7 @@ public abstract class PO
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					valueToUse instanceof String)
 			{
-				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)valueToUse);
+				final boolean hasListValue = ADReferenceService.get().existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)valueToUse);
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();

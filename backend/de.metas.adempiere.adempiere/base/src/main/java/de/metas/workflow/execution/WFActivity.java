@@ -22,6 +22,7 @@
 
 package de.metas.workflow.execution;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
@@ -40,7 +41,6 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.reflist.ReferenceId;
 import de.metas.report.ReportResultData;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.DocumentApprovalConstraint;

@@ -54,6 +54,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
@@ -98,7 +99,7 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class MD_Candidate_StepDef
 {
-	private final static transient Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
+	private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -146,7 +147,12 @@ public class MD_Candidate_StepDef
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
 				.materialDescriptor(descriptor)
 				.shipmentScheduleId(shipmentScheduleId)
-				.reservedQuantity(qty)
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(qty)
+												.reservedQuantityDelta(qty)
+												.reservedQuantity(qty)
+												.orderedQuantityDelta(qty)
+												.build())
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
 
@@ -370,7 +376,7 @@ public class MD_Candidate_StepDef
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
-	
+
 	@And("metasfresh has no MD_Candidate for identifier {string}")
 	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
 	{

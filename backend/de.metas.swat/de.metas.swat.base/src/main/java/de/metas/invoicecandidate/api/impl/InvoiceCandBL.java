@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -143,7 +144,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -677,17 +677,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else
 			{
-				final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+				final ADReferenceService adReferenceService = ADReferenceService.get();
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 				amendSchedulerResult(ic,
-									 msgBL.getMsg(ctx,
-												  MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
-												  new Object[] {
-														  adReferenceDAO.retrieveListNameTrl(
-																  DocStatus.AD_REFERENCE_ID,
-																  ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
-												  }));
+						msgBL.getMsg(ctx,
+								MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
+								new Object[] {
+										 adReferenceService.retrieveListNameTrl(
+												DocStatus.AD_REFERENCE_ID,
+												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
+								}));
 
 				ic.setDiscount(ZERO);
 			}

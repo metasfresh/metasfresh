@@ -101,7 +101,7 @@ public class StockCandidateServiceTests
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);

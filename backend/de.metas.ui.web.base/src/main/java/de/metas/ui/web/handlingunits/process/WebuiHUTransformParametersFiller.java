@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -36,8 +38,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+;
 
 /*
  * #%L
@@ -80,7 +82,7 @@ import java.util.Set;
 public class WebuiHUTransformParametersFiller
 {
 	// services
-	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
@@ -93,12 +95,15 @@ public class WebuiHUTransformParametersFiller
 	private final boolean _isMoveToDifferentWarehouseEnabled;
 
 	@Builder
-	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
-											 @NonNull final HUEditorRow selectedRow,
-											 @Nullable final ActionType actionType,
-											 final boolean checkExistingHUsInsideView,
-											 final boolean isMoveToDifferentWarehouseEnabled)
+	private WebuiHUTransformParametersFiller(
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final HUEditorView view,
+			@NonNull final HUEditorRow selectedRow,
+			@Nullable final ActionType actionType,
+			final boolean checkExistingHUsInsideView,
+			final boolean isMoveToDifferentWarehouseEnabled)
 	{
+		this.adReferenceService = adReferenceService;
 		this._view = view;
 		this._selectedRow = selectedRow;
 		this._actionType = actionType;
@@ -186,7 +191,7 @@ public class WebuiHUTransformParametersFiller
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final I_AD_Process_Para processParameter = adProcessDAO.retrieveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
 		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
-		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
+		final Collection<ADRefListItem> allActiveActionItems = adReferenceService.retrieveListItems(actionsReferenceId);
 
 		final String adLanguage = Env.getAD_Language();
 
