@@ -131,17 +131,9 @@ public class HighPriceProvider
 
 				final HighPriceRequest request = requestsByProductId.get(productId);
 				results.put(request, response);
-				requests.remove(request);
 			}
 
-			if (!requests.isEmpty())
-			{
-				final HighPriceResponse emptyResponse = HighPriceResponse.builder().build();
-				for (final HighPriceRequest openRequest : requests)
-				{
-					results.put(openRequest, emptyResponse);
-				}
-			}
+			requests.forEach(request -> results.computeIfAbsent(request, this::addEmptyResponse));
 
 			return results;
 		}
@@ -153,6 +145,11 @@ public class HighPriceProvider
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	private HighPriceResponse addEmptyResponse(@NonNull final HighPriceRequest request)
+	{
+		return HighPriceResponse.builder().build();
 	}
 
 	public void warmUp(@NonNull final Set<ProductId> productIds, @NonNull final LocalDate date)
