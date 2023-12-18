@@ -69,5 +69,5 @@ Feature: Setting customColumns via SetCustomColumns method
 
     And set custom columns for C_Order expecting error:
       | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |
-      | order                 | DeliveryInfo     | DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
+      | order                 | DeliveryInfo     | C_Order.DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
 
