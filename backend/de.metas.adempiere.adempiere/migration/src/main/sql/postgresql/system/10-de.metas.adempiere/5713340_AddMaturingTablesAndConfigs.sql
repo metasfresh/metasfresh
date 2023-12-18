@@ -3895,3 +3895,17 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 CREATE UNIQUE INDEX Raw_product_unique ON M_Maturing_Configuration_Line (From_Product_ID) WHERE IsActive='Y'
 ;
 
+----
+
+-- 2023-12-18T10:50:02.606Z
+INSERT INTO M_HU_PI_Attribute (AD_Client_ID,AD_Org_ID,Created,CreatedBy,HU_TansferStrategy_JavaClass_ID,IsActive,IsDisplayed,IsInstanceAttribute,IsMandatory,IsOnlyIfInProductAttributeSet,IsReadOnly,M_Attribute_ID,M_HU_PI_Attribute_ID,M_HU_PI_Version_ID,PropagationType,SeqNo,Updated,UpdatedBy,UseInASI) VALUES (0,0,TO_TIMESTAMP('2023-12-18 12:50:02','YYYY-MM-DD HH24:MI:SS'),100,540027,'Y','Y','Y','N','N','N',540128,540117,101,'NONE',130,TO_TIMESTAMP('2023-12-18 12:50:02','YYYY-MM-DD HH24:MI:SS'),100,'Y')
+;
+
+-- 2023-12-18T10:52:16.507Z
+UPDATE M_HU_PI_Attribute SET PropagationType='TOPD',Updated=TO_TIMESTAMP('2023-12-18 12:52:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HU_PI_Attribute_ID=540117
+;
+
+-- 2023-12-18T10:55:20.439Z
+INSERT INTO M_HU_PI_Attribute (AD_Client_ID,AD_Org_ID,Created,CreatedBy,HU_TansferStrategy_JavaClass_ID,IsActive,IsDisplayed,IsInstanceAttribute,IsMandatory,IsOnlyIfInProductAttributeSet,IsReadOnly,M_Attribute_ID,M_HU_PI_Attribute_ID,M_HU_PI_Version_ID,PropagationType,SeqNo,Updated,UpdatedBy,UseInASI) VALUES (0,0,TO_TIMESTAMP('2023-12-18 12:55:20','YYYY-MM-DD HH24:MI:SS'),100,540027,'Y','Y','Y','N','N','N',540128,540118,100,'TOPD',9120,TO_TIMESTAMP('2023-12-18 12:55:20','YYYY-MM-DD HH24:MI:SS'),100,'Y')
+;
+
