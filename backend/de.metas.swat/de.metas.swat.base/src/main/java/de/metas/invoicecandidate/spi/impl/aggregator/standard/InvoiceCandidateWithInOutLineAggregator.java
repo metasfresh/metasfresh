@@ -118,7 +118,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceCandAggregate;
 	}
 
-	private final IInvoiceLineRW createInvoiceLineRW()
+	private IInvoiceLineRW createInvoiceLineRW()
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
@@ -381,7 +381,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	}
 
-	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
+	private void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
 	{
 		if (_initialized)
 		{
