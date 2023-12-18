@@ -57,7 +57,6 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn,
 			final int adSequenceID,
 			@NonNull final ColumnCloningStrategy cloningStrategy)
 	{
@@ -117,7 +116,6 @@ public final class POInfoColumn implements Serializable
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
-		IsRestAPICustomColumn = isRestAPICustomColumn;
 		AD_Sequence_ID = adSequenceID;
 		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
 		this.cloningStrategy = cloningStrategy;
@@ -265,7 +263,6 @@ public final class POInfoColumn implements Serializable
 	 */
 	final BigDecimal ValueMax_BD;
 
-	final boolean IsRestAPICustomColumn;
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
@@ -383,11 +380,6 @@ public final class POInfoColumn implements Serializable
 	public boolean isLookup()
 	{
 		return org.compiere.util.DisplayType.isLookup(displayType);
-	}
-
-	public boolean isRestAPICustomColumn()
-	{
-		return IsRestAPICustomColumn;
 	}
 
 	public int getAD_Sequence_ID()
