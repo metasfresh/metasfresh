@@ -113,7 +113,7 @@ public class C_BPartner_Location_StepDef
 	{
 		final String bPartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).getAsString();
 		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
-		final String gln = row.getAsString(I_C_BPartner_Location.COLUMNNAME_GLN);
+		final String gln = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN).orElse(null);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
