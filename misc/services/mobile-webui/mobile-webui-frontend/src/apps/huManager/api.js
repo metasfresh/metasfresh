@@ -60,3 +60,14 @@ export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
+
+export const changeQty = ({ huQRCode, description, qty }) => {
+  return axios
+    .put(`${huAPIBasePath}/qty`, {
+      huQRCode: toQRCodeString(huQRCode),
+      qty: qty,
+      description: description,
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
