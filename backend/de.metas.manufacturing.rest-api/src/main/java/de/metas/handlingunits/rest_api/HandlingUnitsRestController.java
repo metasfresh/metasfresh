@@ -47,6 +47,7 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +95,9 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
+	@ApiOperation("Retrieves a singular HU by serialNo."
+			+ " By default, takes into consideration only HUs with status = 'Active'. "
+			+ " But custom HU statuses can be set via AD_SysConfig: 'de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses'")
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
