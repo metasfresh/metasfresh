@@ -119,13 +119,10 @@ const reducer = produce((draftState, action) => {
           (filter) => {
             if (filter.filterId === parentFilterId) {
               filter = deepUnfreeze(filter);
-              console.log('filter', { filter, parentFilterId, data });
               if (!filter?.parameters?.length) {
                 filter.parameters = [{ value: data }];
               }
               filter.parameters[0].value = data;
-
-              console.log('filter after set', { filter });
 
               return filter;
             }
