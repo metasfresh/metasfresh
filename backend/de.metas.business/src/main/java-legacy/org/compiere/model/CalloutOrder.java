@@ -1096,10 +1096,10 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
-		Timestamp billDate = ol.getDateOrdered();
+		Timestamp billDate = ol.getDatePromised();
 		if (billDate == null)
 		{
-			billDate = order.getDateOrdered();
+			billDate = order.getDatePromised();
 		}
 		log.debug("Bill Date={}", billDate);
 
