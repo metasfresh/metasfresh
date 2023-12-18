@@ -49,10 +49,12 @@ import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
@@ -68,6 +70,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -76,42 +79,39 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
+@RequiredArgsConstructor
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
+	private static final String SYS_CONFIG_BY_SERIAL_NO_HUStatuses = "de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final InventoryCandidateService inventoryCandidateService;
 	private final HandlingUnitsService handlingUnitsService;
 	private final HUQRCodesService huQRCodesService;
-
-	public HandlingUnitsRestController(
-			@NonNull final InventoryCandidateService inventoryCandidateService,
-			@NonNull final HandlingUnitsService handlingUnitsService,
-			@NonNull final HUQRCodesService huQRCodesService)
-	{
-		this.inventoryCandidateService = inventoryCandidateService;
-		this.handlingUnitsService = handlingUnitsService;
-		this.huQRCodesService = huQRCodesService;
-	}
 
 	@GetMapping("/bySerialNo/{serialNo}")
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo, ImmutableSet.of(X_M_HU.HUSTATUS_Active,
-																							   X_M_HU.HUSTATUS_Planning,
-																							   X_M_HU.HUSTATUS_Repair)));
+		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo));
 	}
 
 	@NonNull
-	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo, final ImmutableSet<String> huStatuses)
+	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo)
 	{
+		final ImmutableSet<String> onlyHUStatuses = Arrays.stream(sysConfigBL.getValueOptional(SYS_CONFIG_BY_SERIAL_NO_HUStatuses)
+																		  .orElse(X_M_HU.HUSTATUS_Active)
+																		  .split(","))
+				.map(String::trim)
+				.collect(ImmutableSet.toImmutableSet());
+
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addHUStatusesToInclude(huStatuses)
+				.addHUStatusesToInclude(onlyHUStatuses)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNo)
 				.list();
 		if (hus.isEmpty())
