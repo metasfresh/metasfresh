@@ -1,6 +1,5 @@
 package de.metas.process;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -340,10 +339,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			final Path targetFile = reportData.writeToDirectory(reportResultDataTarget.getServerTargetDirectoryNotNull());
 			addLog("Saved report file to {}", targetFile);
 		}
-		if (!reportResultDataTarget.isForwardToUserBrowser())
-		{
-			pi.getResult().setReportData((ReportResultData)null);
-		}
+
+		// Do not unset the report data, **even** if reportResultDataTarget.isForwardToUserBrowser() is false.
+		// The data is needed by the archiver, e.g. to facilitate printing
+		// pi.getResult().setReportData((ReportResultData)null);
 	}
 
 	/**
