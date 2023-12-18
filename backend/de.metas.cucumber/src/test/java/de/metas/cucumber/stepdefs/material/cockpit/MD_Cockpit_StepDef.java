@@ -150,6 +150,8 @@ public class MD_Cockpit_StepDef
 		final BigDecimal qtySupplyPPOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate);
 		final BigDecimal qtySupplyDDOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_DD_Order_AtDate);
 		final BigDecimal qtyDemandDDOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_DD_Order_AtDate);
+		final BigDecimal qtyOrderedPurchaseOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate);
+		final BigDecimal qtyOrderedSalesOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyOrdered_SalesOrder_AtDate);
 
 		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_AttributesKey + "." + TABLECOLUMN_IDENTIFIER);
 		final AttributesKey attributeStorageKey = getAttributesKey(asiIdentifier);
@@ -172,7 +174,9 @@ public class MD_Cockpit_StepDef
 				.qtyDemandPPOrderAtDate(qtyDemandPPOrderAtDate)
 				.qtySupplyPPOrderAtDate(qtySupplyPPOrderAtDate)
 				.qtySupplyDDOrderAtDate(qtySupplyDDOrderAtDate)
-				.qtyDemandDDOrderAtDate(qtyDemandDDOrderAtDate);
+				.qtyDemandDDOrderAtDate(qtyDemandDDOrderAtDate)
+				.qtyOrderedPurchaseOrderAtDate(qtyOrderedPurchaseOrderAtDate)
+				.qtyOrderedSalesOrderAtDate(qtyOrderedSalesOrderAtDate);
 
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(warehouseIdentifier))
@@ -317,6 +321,21 @@ public class MD_Cockpit_StepDef
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyDDOrderAtDate={0} but actual is {1}",
 													qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate()));
 		}
+
+		final BigDecimal qtyOrderedPurchaseOrderAtDate = expectedResults.getQtyOrderedPurchaseOrderAtDate();
+		if (qtyOrderedPurchaseOrderAtDate != null && !cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate().equals(qtyOrderedPurchaseOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("Expecting QtyOrderedPurchaseOrderAtDate={0} but actual is {1}",
+													qtyOrderedPurchaseOrderAtDate, cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate()));
+		}
+
+		final BigDecimal qtyOrderedSalesOrderAtDate = expectedResults.getQtyOrderedSalesOrderAtDate();
+		if (qtyOrderedSalesOrderAtDate != null && !cockpitRecord.getQtyOrdered_SalesOrder_AtDate().equals(qtyOrderedSalesOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("Expecting QtyOrderedSalesOrderAtDate={0} but actual is {1}",
+													qtyOrderedSalesOrderAtDate, cockpitRecord.getQtyOrdered_SalesOrder_AtDate()));
+		}
+
 
 		if (!errorCollector.isEmpty())
 		{
@@ -464,6 +483,13 @@ public class MD_Cockpit_StepDef
 
 		@Nullable
 		WarehouseId warehouseId;
+
+		@Nullable
+		BigDecimal qtyOrderedPurchaseOrderAtDate;
+
+		@Nullable
+		BigDecimal qtyOrderedSalesOrderAtDate;
+
 	}
 
 	@Builder
