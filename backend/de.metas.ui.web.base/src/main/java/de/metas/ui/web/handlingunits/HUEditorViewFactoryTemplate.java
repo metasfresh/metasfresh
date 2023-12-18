@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -109,6 +110,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private HUReservationService huReservationService;
+	@Autowired
+	private ADReferenceService adReferenceService;
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -354,7 +357,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
-					.huReservationService(huReservationService);
+					.huReservationService(huReservationService)
+					.adReferenceService(adReferenceService);
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
