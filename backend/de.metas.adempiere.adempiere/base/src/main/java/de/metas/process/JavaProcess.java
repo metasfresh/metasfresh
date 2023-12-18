@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.i18n.AdMessageKey;
@@ -40,6 +41,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
@@ -324,7 +326,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}   // startProcess
 	}
 
-	private void forwardReportDataToRecipients(final ProcessInfo pi)
+	private void forwardReportDataToRecipients(@NonNull final ProcessInfo pi)
 	{
 		final ReportResultData reportData = pi.getResult().getReportData();
 		if (reportData == null)
@@ -340,9 +342,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			addLog("Saved report file to {}", targetFile);
 		}
 
-		// Do not unset the report data, **even** if reportResultDataTarget.isForwardToUserBrowser() is false.
-		// The data is needed by the archiver, e.g. to facilitate printing
-		// pi.getResult().setReportData((ReportResultData)null);
+		final boolean runningOnWebAPI = SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_Webui);
+		if(runningOnWebAPI && !reportResultDataTarget.isForwardToUserBrowser())
+		{
+			// Unset the report data only if we **know** that we want to unset it, i.e. if running on the web-api.
+			// On app, the data is needed by the archiver, e.g. to facilitate printing.
+			pi.getResult().setReportData((ReportResultData)null);
+		}
 	}
 
 	/**
