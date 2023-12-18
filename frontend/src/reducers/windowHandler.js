@@ -424,15 +424,18 @@ export default function windowHandler(state = initialState, action) {
 
     // SCOPED ACTIONS
 
-    case INIT_LAYOUT_SUCCESS:
+    case INIT_LAYOUT_SUCCESS: {
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
-          layout: action.layout,
+          layout: {
+            activeTab: state[action.scope].layout.activeTab, // preserve activeTab. In future consider extracting activeTab out of layout object
+            ...action.layout,
+          },
         },
       };
-
+    }
     case INIT_DATA_SUCCESS: {
       const layout = state[action.scope].layout ?? {};
       if (action.notFoundMessage !== undefined) {
