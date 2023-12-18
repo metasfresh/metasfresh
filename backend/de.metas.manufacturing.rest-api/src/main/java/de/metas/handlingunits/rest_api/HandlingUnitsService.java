@@ -42,8 +42,10 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -57,10 +59,13 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -81,6 +86,7 @@ import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStat
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
 
 @Service
+@RequiredArgsConstructor
 public class HandlingUnitsService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -91,11 +97,7 @@ public class HandlingUnitsService
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	private final HUQRCodesService huQRCodeService;
-
-	public HandlingUnitsService(final @NonNull HUQRCodesService huQRCodeService)
-	{
-		this.huQRCodeService = huQRCodeService;
-	}
+	private final HUQtyService huQtyService;
 
 	@NonNull
 	public JsonHU getFullHU(
@@ -422,6 +424,22 @@ public class HandlingUnitsService
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
+	}
+
+	@NonNull
+	public HuId updateQty(@NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HUQRCode huqrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
+		final HuId huId = huQRCodeService.getHuIdByQRCode(huqrCode);
+		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
+
+		huQtyService.updateQty(UpdateHUQtyRequest.builder()
+									   .huId(huId)
+									   .qty(qty)
+									   .description(request.getDescription())
+									   .build());
+
+		return huId;
 	}
 
 	@NonNull

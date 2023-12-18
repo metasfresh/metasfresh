@@ -319,6 +319,15 @@ public class HandlingUnitsRestController
 											  .build());
 	}
 
+	@PutMapping("/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HuId huId = handlingUnitsService.updateQty(request);
+		return getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.build());
+	}
+
 	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
