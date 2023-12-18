@@ -1,5 +1,4 @@
-DROP VIEW IF EXISTS QtyDemand_QtySupply_V
-;
+-- no need to drop it - we don't change its output
 
 CREATE OR REPLACE VIEW QtyDemand_QtySupply_V AS
 

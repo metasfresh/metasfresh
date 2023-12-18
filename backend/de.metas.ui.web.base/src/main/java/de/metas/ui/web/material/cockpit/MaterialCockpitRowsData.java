@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -137,7 +138,15 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 			final ProductId productId = ProductId.ofRepoId(row.getProductId());
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
+			final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+			if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+			{
+				quantitiesRecords = loadQuantitiesRecords(productId);
+			}
+			else
+			{
+				quantitiesRecords = ImmutableList.of();
+			}
 			builder.quantitiesRecords(quantitiesRecords);
 
 			builder.productIdToListEvenIfEmpty(productId);
