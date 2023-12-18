@@ -179,8 +179,13 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+    const activeTab = master.layout.activeTab;
+    if (!activeTab) {
+      console.log('No active activeTab found', { master });
+      return false;
+    }
 
-    return tabId === master.layout.activeTab;
+    return tabId === activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {
@@ -414,8 +419,6 @@ const isLayoutLoaded = (layout) => {
 };
 
 const getFieldFromLayout = (layout, fieldName) => {
-  console.log('getFieldFromLayout', { layout, fieldName });
-
   for (const section of layout.sections ?? []) {
     // console.log('section', section);
 
