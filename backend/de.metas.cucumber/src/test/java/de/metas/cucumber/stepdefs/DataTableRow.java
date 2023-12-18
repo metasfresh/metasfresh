@@ -59,13 +59,18 @@ public class DataTableRow
 	{
 		return dataTable.asMaps()
 				.stream()
-				.map(DataTableRow::new)
+				.map(DataTableRow::wrap)
 				.collect(Collectors.toList());
+	}
+
+	public static DataTableRow wrap(@NonNull final Map<String, String> map)
+	{
+		return new DataTableRow(map);
 	}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
-		return new DataTableRow(CollectionUtils.singleElement(dataTable.asMaps()));
+		return wrap(CollectionUtils.singleElement(dataTable.asMaps()));
 	}
 
 	@NonNull
