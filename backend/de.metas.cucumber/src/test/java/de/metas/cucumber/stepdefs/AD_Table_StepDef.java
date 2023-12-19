@@ -67,7 +67,8 @@ public class AD_Table_StepDef
 
 		progress.logSummary();
 
-		Assertions.assertThat(progress.countErrors()).as("Expect no errors").isZero();
+		softly.assertThat(progress.countErrors()).as("Expect no errors").isZero();
+		softly.assertAll();
 	}
 
 	private static void tryRetrieveFirstRow(final @NonNull POInfo poInfo, @Nullable final Progress progress)
