@@ -100,33 +100,30 @@ public class DataTableRow
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
-		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
-		{
-			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
-		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			throw new AdempiereException("Missing value for columnName=" + columnName)
-					.appendParametersToMessage()
-					.setParameter("row", map);
-		}
-
-		return StepDefDataIdentifier.ofString(string);
+		return getAsOptionalIdentifier(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
 	}
 
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
+		String string = null;
+
+		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+
 		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
 		}
-		if (string == null && !columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+
+		if (string == null)
 		{
-			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+			string = map.get(columnName);
 		}
 
 		if (string == null || Check.isBlank(string))
