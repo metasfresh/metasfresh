@@ -1,18 +1,5 @@
 package de.metas.email.mailboxes;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.compiere.model.I_AD_MailBox;
-import org.compiere.model.I_AD_MailConfig;
-import org.springframework.stereotype.Repository;
-
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.EMailAddress;
@@ -20,6 +7,19 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_MailBox;
+import org.compiere.model.I_AD_MailConfig;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -55,18 +55,9 @@ public class MailboxRepository
 	@NonNull
 	public Optional<Mailbox> findMailBox(@NonNull final MailboxQuery query)
 	{
-		for (final I_AD_MailConfig mailRouting : retrieveMailRoutings(query))
-		{
-			final OrgId configOrgId = OrgId.ofRepoIdOrAny(mailRouting.getAD_Org_ID());
-
-			if (OrgId.equals(configOrgId, query.getOrgId()) || configOrgId.isAny())
-			{
-				final Mailbox mailbox = getMailbox(mailRouting);
-				return Optional.of(mailbox);
-			}
-		}
-
-		return Optional.empty();
+		return retrieveMailRoutings(query).stream()
+				.findFirst()
+				.map(this::getMailbox);
 	}
 
 	private Mailbox getMailbox(final I_AD_MailConfig mailRouting)
@@ -107,10 +98,12 @@ public class MailboxRepository
 	{
 		final IQueryBuilder<I_AD_MailConfig> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_MailConfig.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, query.getClientId());
+				.addInArrayFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, query.getClientId(), ClientId.SYSTEM)
+				.addInArrayFilter(I_AD_MailConfig.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
 
 		// Order by Org, Desc, Nulls Last
 		queryBuilder.orderBy()
+				.addColumn(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_AD_MailConfig.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_AD_MailConfig.COLUMN_DocSubType, Direction.Ascending, Nulls.Last)
 				.endOrderBy();
