@@ -7,7 +7,6 @@ import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
 const Tab = ({
   children,
-      onChange,
   onChange,
   singleRowView,
   windowId,
