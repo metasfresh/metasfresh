@@ -1,27 +1,35 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.window.datatypes.ColorValue;
+import de.metas.util.ColorId;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
 import de.metas.util.Services;
+import io.micrometer.core.lang.NonNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +58,6 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(of = "productIdAndDate")
-@RequiredArgsConstructor
 public class MainRowWithSubRows
 {
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
@@ -66,6 +73,50 @@ public class MainRowWithSubRows
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull
+	final ADReferenceService adReferenceService = ADReferenceService.get();
+
+	public static MainRowWithSubRows create(
+			@NonNull final MainRowBucketId productIdAndDate,
+			@NonNull final HighPriceProvider highPriceProvider,
+			@NonNull final MaterialCockpitRowLookups rowLookups)
+	{
+		return new MainRowWithSubRows(productIdAndDate, highPriceProvider, rowLookups);
+	}
+
+	private MainRowWithSubRows(
+			@NonNull final MainRowBucketId productIdAndDate,
+			@NonNull final HighPriceProvider highPriceProvider,
+			@NonNull final MaterialCockpitRowLookups rowLookups)
+	{
+		this.productIdAndDate = productIdAndDate;
+		this.rowLookups = rowLookups;
+
+		final I_M_Product product = productBL.getById(productIdAndDate.getProductId());
+		final ColorId colorId = adReferenceService.getColorId(product, I_M_Product.COLUMNNAME_ProcurementStatus, product.getProcurementStatus());
+		final String procurementStatus = colorId != null ? toHexString(Services.get(IColorRepository.class).getColorById(colorId)) : null;
+		this.mainRow.setProcurementStatus(procurementStatus);
+
+		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
+				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
+				.evalDate(productIdAndDate.getDate())
+				.build();
+
+		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
+
+	}
+
+	@Nullable
+	private static String toHexString(@Nullable final MFColor color)
+	{
+		if (color == null)
+		{
+			return null;
+		}
+
+		final Color awtColor = color.toFlatColor().getFlatColor();
+		return ColorValue.toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
@@ -322,6 +373,13 @@ public class MainRowWithSubRows
 				.qtyStockEstimateTimeAtDate(mainRow.getQtyStockEstimateTimeAtDate())
 				.qtyStockEstimateSeqNoAtDate(mainRow.getQtyStockEstimateSeqNoAtDate())
 				.pmmQtyPromisedAtDate(mainRow.getPmmQtyPromisedAtDate())
+				.procurementStatus(mainRow.getProcurementStatus())
+				.highestPurchasePrice_AtDate(mainRow.getHighestPurchasePrice_AtDate())
+				.qtyOrdered_PurchaseOrder_AtDate(mainRow.getQtyOrdered_PurchaseOrder_AtDate())
+				.qtyOrdered_SalesOrder_AtDate(mainRow.getQtyOrdered_SalesOrder_AtDate())
+				.availableQty_AtDate(mainRow.getAvailableQty_AtDate())
+				.remainingStock_AtDate(mainRow.getRemainingStock_AtDate())
+				.pmm_QtyPromised_NextDay(mainRow.getPmm_QtyPromised_NextDay())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
 

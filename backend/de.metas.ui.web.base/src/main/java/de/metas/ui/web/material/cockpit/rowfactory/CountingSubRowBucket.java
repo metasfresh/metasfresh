@@ -61,8 +61,10 @@ import static de.metas.util.Check.assumeNotNull;
 @RequiredArgsConstructor
 public class CountingSubRowBucket
 {
-	@Getter(AccessLevel.NONE) private final transient IProductBL productBL = Services.get(IProductBL.class);
-	@Getter(AccessLevel.NONE) private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@Getter(AccessLevel.NONE)
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE)
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@Nullable private final ResourceId plantId;
@@ -81,9 +83,9 @@ public class CountingSubRowBucket
 	private Quantity qtyStockCurrentAtDate;
 
 	private Quantity qtyOnHandStock;
-	
+
 	private Quantity qtySupplyPurchaseOrder;
-	
+
 	private Quantity qtyDemandSalesOrder;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();

@@ -24,6 +24,7 @@ package de.metas.document.archive.async.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
+import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -72,7 +73,7 @@ import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AU
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
 	private static final Logger logger = LogManager.getLogger(DocOutboundWorkpackageProcessor.class);
-	
+
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
@@ -87,7 +88,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION=Y -> Skipping DocOutboundWorkpackageProcessor!");
-			
+
 			return Result.SUCCESS;
 		}
 

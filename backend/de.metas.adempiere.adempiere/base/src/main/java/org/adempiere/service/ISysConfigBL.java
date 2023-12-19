@@ -13,7 +13,7 @@ import java.util.Map;
 public interface ISysConfigBL extends ISingletonService
 {
 	@Nullable
-	String getValue(String name, String defaultValue);
+	String getValue(String name, @Nullable String defaultValue);
 
 	@Nullable
 	String getValue(String name);

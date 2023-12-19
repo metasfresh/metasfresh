@@ -83,8 +83,13 @@ public class MaterialCockpitRowFactory
 		boolean includePerPlantDetailRows;
 	}
 
+	@NonNull
+	HighPriceProvider highPriceProvider = new HighPriceProvider();
+
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
 	{
+		highPriceProvider.warmUp(request.getProductIdsToListEvenIfEmpty(), request.getDate());
+
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductIdsToListEvenIfEmpty(),
 				request.getDate(),
@@ -138,7 +143,7 @@ public class MaterialCockpitRowFactory
 
 	private MainRowWithSubRows newMainRowWithSubRows(final MainRowBucketId key)
 	{
-		return new MainRowWithSubRows(rowLookups, key);
+		return new MainRowWithSubRows.create(key, highPriceProvider, rowLookups);
 	}
 
 	private List<I_S_Resource> retrieveCountingPlants(final boolean includePerPlantDetailRows)

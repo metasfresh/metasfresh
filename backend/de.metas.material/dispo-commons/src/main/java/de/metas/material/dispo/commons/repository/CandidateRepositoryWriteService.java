@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static de.metas.common.util.IdConstants.toRepoId;
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static java.math.BigDecimal.ZERO;
@@ -816,7 +817,7 @@ public class CandidateRepositoryWriteService
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class);
-		
+
 		if (deleteCandidatesQuery.getIsActive() != null)
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive());
@@ -979,7 +980,7 @@ public class CandidateRepositoryWriteService
 						.setParameter("CandidateId", candidateId))
 				.getId();
 	}
-	
+
 	@NonNull
 	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
 	{
@@ -991,7 +992,7 @@ public class CandidateRepositoryWriteService
 																		 .build(),
 																 candidateRecord.getQty());
 	}
-	
+
 	@Value
 	public static class DeleteResult
 	{
