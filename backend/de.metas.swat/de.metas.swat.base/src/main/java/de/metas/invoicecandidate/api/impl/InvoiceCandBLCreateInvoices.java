@@ -565,7 +565,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and that document type is not a credit memo.
 		{
 			final boolean invoiceHeader_IsCreditMemo = invoiceHeaderDocBaseType != null && invoiceHeaderDocBaseType.isCreditMemo();
-			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+			final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();

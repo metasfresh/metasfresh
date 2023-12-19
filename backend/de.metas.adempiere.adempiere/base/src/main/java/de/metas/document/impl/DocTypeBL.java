@@ -44,7 +44,7 @@ public class DocTypeBL implements IDocTypeBL
 	@NonNull
 	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypesRepo.getById(docTypeId);
+		return docTypesRepo.getRecordById(docTypeId);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getRecordById(docTypeId);
 		return InterfaceWrapperHelper.getModelTranslationMap(docType)
 				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
 	}
@@ -78,7 +78,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesQuotation(dt);
 	}
 
@@ -99,7 +99,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposal(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesProposal(dt);
 	}
 
@@ -113,7 +113,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposalOrQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesProposalOrQuotation(dt);
 	}
 
@@ -126,7 +126,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getRecordById(docTypeId);
 		return isPrepay(docType);
 	}
 
@@ -140,13 +140,13 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean hasRequestType(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypesRepo.getById(docTypeId).getR_RequestType_ID() > 0;
+		return docTypesRepo.getRecordById(docTypeId).getR_RequestType_ID() > 0;
 	}
 
 	@Override
 	public boolean isRequisition(final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return X_C_DocType.DOCSUBTYPE_Requisition.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
 	}
@@ -154,7 +154,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isMediated(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return X_C_DocType.DOCSUBTYPE_Mediated.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
 	}
@@ -162,7 +162,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isCallOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return (X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType()) || X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
 				&& X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType());

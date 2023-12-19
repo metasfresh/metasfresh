@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.document.impl.DocType;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -41,13 +42,14 @@ import java.util.Properties;
 public interface IDocTypeDAO extends ISingletonService
 {
 	@NonNull
-	I_C_DocType getById(int docTypeId);
+	I_C_DocType getRecordById(int docTypeId);
 
 	@NonNull
-	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+	I_C_DocType getRecordById(DocTypeId docTypeId);
 
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
+
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
@@ -82,6 +84,8 @@ public interface IDocTypeDAO extends ISingletonService
 	DocTypeId createDocType(DocTypeCreateRequest request);
 
 	void save(@NonNull I_C_DocType dt);
+
+	DocType getById(DocTypeId id);
 
 	@Value
 	@Builder

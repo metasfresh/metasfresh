@@ -639,7 +639,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_M_InOut inOut)
 	{
-		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		final I_C_DocType docType = docTypeDAO.getRecordById(inOut.getC_DocType_ID());
 
 		if (docType.getR_RequestType_ID() <= 0)
 		{
