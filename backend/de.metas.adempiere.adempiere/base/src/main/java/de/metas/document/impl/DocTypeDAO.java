@@ -8,9 +8,9 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateWithLineId;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -343,7 +343,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public DocBaseType getDocBaseTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docTypeRecord = getById(docTypeId);
+		final I_C_DocType docTypeRecord = getRecordById(docTypeId);
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 

@@ -278,18 +278,6 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
 		if (M_SectionCode_ID < 1)

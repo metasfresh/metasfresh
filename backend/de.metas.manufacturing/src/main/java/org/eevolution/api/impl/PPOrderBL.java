@@ -730,7 +730,7 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public PPOrderDocBaseType getPPOrderDocBaseType(@NonNull final I_PP_Order ppOrder)
 	{
-		final I_C_DocType docTypeTarget = docTypesRepo.getById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+		final I_C_DocType docTypeTarget = docTypesRepo.getRecordById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
 		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
 	}
 }

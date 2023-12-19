@@ -171,7 +171,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
@@ -180,7 +180,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isProFormaSO(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
@@ -189,7 +189,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isDownPayment(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
@@ -204,7 +204,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
 	}

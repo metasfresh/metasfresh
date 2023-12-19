@@ -561,7 +561,7 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = receiptSchedule.getC_Order();
 		if (order != null && order.getC_Order_ID() > 0)
 		{
-			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			final I_C_DocType orderDoctype = docTypeDAO.getRecordById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
 			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
 			{
 				return orderDoctype.getC_DocTypeShipment_ID();
