@@ -62,6 +62,9 @@ Feature: AD_Table consistency checks
       | RV_Printing_Bericht_List_Per_Print_Job | ERROR: column "document" does not exist                                                                                          |
       | RV_Prt_Bericht_Statistik_List_Per_Org  | ERROR: column "address1" does not exist                                                                                          |
       | RV_Storage                             | ERROR: column "guaranteedate" does not exist Hint: Perhaps you meant to reference the column "rv_storage.guaranteedays".         |
-
+      | C_Order_LineTax_v                      | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
+      | M_InOut_Line_v                         | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
+      | RV_InOutDetails                        | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
+      | RV_OrderDetail                         | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
 
 
