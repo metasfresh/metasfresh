@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.money.CurrencyId;
 import org.compiere.model.I_C_Currency;
 
 /**
@@ -33,4 +34,6 @@ public class C_Currency_StepDefData extends StepDefData<I_C_Currency>
 	{
 		super(I_C_Currency.class);
 	}
+
+	public CurrencyId getId(final StepDefDataIdentifier identifier) {return CurrencyId.ofRepoId(get(identifier).getC_Currency_ID());}
 }
