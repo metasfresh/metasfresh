@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -99,6 +100,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -113,9 +115,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -141,7 +147,6 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -679,9 +684,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -728,11 +733,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -1236,5 +1241,44 @@ public class OrderBL implements IOrderBL
 	public String getDocumentNoById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDocumentNo();
+	}
+
+	@Override
+	public void setWeightFromLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		final ImmutableSet<ProductId> productIds = lines
+				.stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productId2Product = productBL.getByIdsInTrx(productIds)
+				.stream()
+				.collect(Collectors.toMap(product -> ProductId.ofRepoId(product.getM_Product_ID()), Function.identity()));
+
+		final BigDecimal weight = lines.stream()
+				.map(line -> {
+					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
+
+					return product.getWeight().multiply(line.getQtyOrdered());
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		order.setWeight(weight);
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return orderDAO.getUnprocessedIdsBy(productId);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return orderDAO.getByIds(orderIds);
 	}
 }
