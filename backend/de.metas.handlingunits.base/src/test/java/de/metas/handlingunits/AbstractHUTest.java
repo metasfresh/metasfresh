@@ -22,6 +22,7 @@ import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactor
 import de.metas.money.MoneyService;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
@@ -165,6 +166,7 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(new UserNotificationsConfigService());
 
 		final HUUniqueAttributesRepository huUniqueAttributeRepo = new HUUniqueAttributesRepository();
 		SpringContextHolder.registerJUnitBean(new HUUniqueAttributesService(huUniqueAttributeRepo));

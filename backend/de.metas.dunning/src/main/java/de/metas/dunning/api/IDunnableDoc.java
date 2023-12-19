@@ -65,8 +65,7 @@ public interface IDunnableDoc
 
 	default int getTableId()
 	{
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(getTableName());
-		return tableId;
+		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
 	}
 
 	int getRecordId();
@@ -78,4 +77,6 @@ public interface IDunnableDoc
 	String getDocumentNo();
 
 	int getM_SectionCode_ID();
+
+	String getPoReference();
 }

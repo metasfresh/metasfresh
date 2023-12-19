@@ -49,7 +49,7 @@ public class M_Requisition
 			return;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)

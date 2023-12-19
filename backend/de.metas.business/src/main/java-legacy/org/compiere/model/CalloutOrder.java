@@ -124,7 +124,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final DocTypeId newDocTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		final I_C_DocType newDocType = newDocTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(newDocTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(newDocTypeId)
 				: null;
 
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)

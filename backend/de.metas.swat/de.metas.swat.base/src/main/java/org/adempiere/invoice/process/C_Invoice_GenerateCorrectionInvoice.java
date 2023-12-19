@@ -138,7 +138,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 	private void createUserNotification(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoiceRecord);
-		final I_C_DocType docTypeRecord = docTypeDAO.getById(invoiceRecord.getC_DocTypeTarget_ID());
+		final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(invoiceRecord.getC_DocTypeTarget_ID());
 		final AdWindowId targetWindow = getProcessInfo().getAdWindowId();
 		final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docTypeRecord);
 		final Optional<String> docTypeTrl = docTypeTrlMap.translateColumn(I_C_DocType.COLUMNNAME_Name, userBL.getUserLanguage(getUserId()).getAD_Language());

@@ -17,6 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.process.AdProcessId;
@@ -54,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 /*
@@ -87,6 +89,7 @@ public class NotificationSenderTemplate
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
+	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
@@ -94,6 +97,7 @@ public class NotificationSenderTemplate
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
+	final UserNotificationsConfigService userNotificationsConfigService = SpringContextHolder.instance.getBean(UserNotificationsConfigService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -204,11 +208,23 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isAllRolesContainingGroup())
 		{
-			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
-			return roleIds.stream()
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(notificationGroupName);
+			final AtomicBoolean anyUserMatch = new AtomicBoolean(false);
+			final Stream<Recipient> recipientStream = roleIds.stream()
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
+							.peek(userId -> anyUserMatch.set(true))
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
+			return anyUserMatch.get() ? recipientStream : getDeadletterUserStream(notificationGroupName);
+		}
+		else if (recipient.isOrgUsersContainingGroup())
+		{
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final List<UserId> userIds = userNotificationsConfigService.getByNotificationGroupAndOrgId(notificationGroupName, recipient.getOrgId());
+			return userIds.isEmpty() ?
+					getDeadletterUserStream(notificationGroupName) :
+					userIds.stream().map(Recipient::user);
 		}
 		else if (recipient.isGroup())
 		{
@@ -222,6 +238,16 @@ public class NotificationSenderTemplate
 		{
 			throw new AdempiereException("Recipient type not supported: " + recipient);
 		}
+	}
+
+	private Stream<Recipient> getDeadletterUserStream(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(notificationGroupName);
+		if (deadletterUserId != null)
+		{
+			return Stream.of(Recipient.user(deadletterUserId));
+		}
+		return Stream.empty();
 	}
 
 	private Stream<UserNotificationRequest> explodeByEffectiveNotificationsConfigs(final UserNotificationRequest request)
