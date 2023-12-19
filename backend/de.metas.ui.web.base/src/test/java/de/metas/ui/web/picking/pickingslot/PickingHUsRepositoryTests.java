@@ -104,7 +104,7 @@ public class PickingHUsRepositoryTests
 		return huId;
 	}
 
-	private static final PickingSlotId createPickingSlot(final boolean pickingRackSystem)
+	private static PickingSlotId createPickingSlot(final boolean pickingRackSystem)
 	{
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		pickingSlot.setIsPickingRackSystem(pickingRackSystem);

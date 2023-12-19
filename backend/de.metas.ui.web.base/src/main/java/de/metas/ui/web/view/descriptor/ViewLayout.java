@@ -724,6 +724,20 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType, @Nullable final String commaSeparatedFields)
+		{
+			final List<ViewColumnHelper.ClassViewColumnOverrides> columnOverrides = ViewColumnHelper.ClassViewColumnOverrides.parseCommaSeparatedString(commaSeparatedFields);
+			if (!columnOverrides.isEmpty())
+			{
+				final ViewColumnHelper.ClassViewColumnOverrides[] columnOverridesArray = columnOverrides.toArray(new ViewColumnHelper.ClassViewColumnOverrides[0]);
+				return addElementsFromViewRowClassAndFieldNames(viewRowClass, viewType, columnOverridesArray);
+			}
+			else
+			{
+				return addElementsFromViewRowClass(viewRowClass, viewType);
+			}
+		}
+
 		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType);

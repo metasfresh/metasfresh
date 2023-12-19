@@ -66,7 +66,7 @@ public class ColorRepository implements IColorRepository
 	}
 
 	@Override
-	public ColorId saveFlatColorAndReturnId(@NonNull String flatColorHexString)
+	public ColorId saveFlatColorAndReturnId(@NonNull final String flatColorHexString)
 	{
 		final Color flatColor = Color.decode(flatColorHexString);
 

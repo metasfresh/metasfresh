@@ -1,20 +1,16 @@
 package de.metas.ui.web.material.cockpit.process;
 
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
-import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -66,17 +62,6 @@ public class MD_Cockpit_DocumentDetail_Display extends MaterialCockpitViewBasedP
 		getResult().setRecordsToOpen(cockpitDetailRecords, MaterialCockpitUtil.WINDOWID_MaterialCockpit_Detail_String);
 
 		return MSG_OK;
-	}
-
-	private Set<Integer> getSelectedCockpitRecordIdsRecursively()
-	{
-		final MaterialCockpitView materialCockpitView = getView();
-
-		return getSelectedRowIds()
-				.stream()
-				.map(materialCockpitView::getById)
-				.flatMap(row -> row.getAllIncludedCockpitRecordIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private List<TableRecordReference> retrieveCockpitDetailRecordReferences(final Set<Integer> cockpitRowIds)
