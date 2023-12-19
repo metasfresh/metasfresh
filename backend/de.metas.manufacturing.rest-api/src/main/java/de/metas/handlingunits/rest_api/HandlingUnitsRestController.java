@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.ad_reference.ADRefList;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
