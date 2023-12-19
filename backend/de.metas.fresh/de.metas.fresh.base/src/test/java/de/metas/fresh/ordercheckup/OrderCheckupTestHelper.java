@@ -5,6 +5,10 @@ import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -15,12 +19,16 @@ import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
@@ -32,9 +40,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
-import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,13 +55,14 @@ import static org.junit.Assert.assertThat;
 public class OrderCheckupTestHelper
 {
 	private Properties ctx;
-
+	private IProductPlanningDAO productPlanningDAO;
 	private PrintOutputFacade printOutputFacade;
 
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		ctx = Env.getCtx();
+		productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
 
@@ -118,14 +124,14 @@ public class OrderCheckupTestHelper
 	{
 		final I_AD_Workflow workflow = createManufacturingRouting(responsibleUser);
 
-		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(ctx, I_PP_Product_Planning.class, ITrx.TRXNAME_None);
-		productPlanning.setM_Product_ID(product.getM_Product_ID());
-		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		productPlanning.setAD_Org_ID(warehouse.getAD_Org_ID());
-		productPlanning.setS_Resource_ID(warehouse.getPP_Plant_ID());
-		productPlanning.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
-		productPlanning.setAD_Workflow_ID(workflow.getAD_Workflow_ID());
-		InterfaceWrapperHelper.save(productPlanning);
+		productPlanningDAO.save(ProductPlanning.builder()
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
+				.isManufactured(true)
+				.workflowId(PPRoutingId.ofRepoId(workflow.getAD_Workflow_ID()))
+				.build());
 	}
 
 	private I_AD_Workflow createManufacturingRouting(final I_AD_User responsibleUser)
@@ -193,12 +199,12 @@ public class OrderCheckupTestHelper
 		for (final I_C_Order_MFGWarehouse_ReportLine reportLine : reportLines)
 		{
 			final I_C_OrderLine expectedOrderLine = expectedOrderLinesMap.remove(reportLine.getC_OrderLine_ID());
-			Assert.assertNotNull("Unexpected report line: " + reportLine, expectedOrderLine);
+			Assertions.assertThat(expectedOrderLine).as("Unexpected report line: " + reportLine).isNotNull();
 
-			Assert.assertEquals("Product for " + reportLine, expectedOrderLine.getM_Product_ID(), reportLine.getM_Product_ID());
+			Assertions.assertThat(reportLine.getM_Product_ID()).as("Product for " + reportLine).isEqualTo(expectedOrderLine.getM_Product_ID());
 		}
 
-		Assert.assertTrue("All expected order lines were found in report lines: " + expectedOrderLinesMap, expectedOrderLinesMap.isEmpty());
+		Assertions.assertThat(expectedOrderLinesMap).as("All expected order lines were found in report lines: " + expectedOrderLinesMap).isEmpty();
 	}
 
 	public void generateReportsAndEnqueueToPrinting(final I_C_Order order)
@@ -242,8 +248,8 @@ public class OrderCheckupTestHelper
 				.list(I_C_Printing_Queue_Recipient.class);
 
 		// Validate the printing queue item
-		Assert.assertTrue("Printing queue item - PrintoutForOtherUser", printingItem.isPrintoutForOtherUser());
-		Assert.assertTrue("Printing queue item - IsActive", printingItem.isActive());
+		Assertions.assertThat(printingItem.isPrintoutForOtherUser()).as("Printing queue item - PrintoutForOtherUser").isTrue();
+		Assertions.assertThat(printingItem.isActive()).as("Printing queue item - IsActive").isTrue();
 
 		assertThat("Printout recipients - wrong number", printoutRecipients.size(), is(1));
 		assertThat("Printout recipient - wrong AD_User_ToPrint_ID", printoutRecipients.get(0).getAD_User_ToPrint_ID(), is(report.getAD_User_Responsible_ID()));

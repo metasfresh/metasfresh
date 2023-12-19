@@ -1,20 +1,8 @@
-package de.metas.material.commons.attributes;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.material.event.commons.AttributesKey;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
-import java.util.List;
-import java.util.Set;
-
 /*
  * #%L
- * metasfresh-material-commons
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +19,19 @@ import java.util.Set;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.mm.attributes.keys;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.material.event.commons.AttributesKey;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.util.List;
+import java.util.Set;
+
 @UtilityClass
 public class AttributesKeyPatternsUtil
 {

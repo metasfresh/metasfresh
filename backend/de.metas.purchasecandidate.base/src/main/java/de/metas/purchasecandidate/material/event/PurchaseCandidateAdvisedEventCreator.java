@@ -4,13 +4,14 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -70,14 +71,14 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
-				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
+				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
 

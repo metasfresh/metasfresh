@@ -3,6 +3,7 @@ package de.metas.material.planning;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
@@ -10,26 +11,29 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMVersionsId;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
+	Optional<ProductPlanning> retrieveManufacturingOrTradingPlanning(@NonNull ProductId productId, @NonNull OrgId orgId);
+
 	@Value
-	public static class ProductPlanningQuery
+	class ProductPlanningQuery
 	{
-		OrgId orgId;
-		WarehouseId warehouseId;
-		ResourceId plantId;
-		ProductId productId;
-		AttributeSetInstanceId attributeSetInstanceId;
+		@Nullable OrgId orgId;
+		@Nullable WarehouseId warehouseId;
+		@Nullable ResourceId plantId;
+		@Nullable ProductId productId;
+		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
 		 * @param orgId                  may be null which means only the * org
@@ -44,35 +48,46 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
-				@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+				@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
-			this.attributeSetInstanceId = attributeSetInstanceId;
+			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		}
 	}
 
-	I_PP_Product_Planning getById(ProductPlanningId ppProductPlanningId);
+	ProductPlanning getById(ProductPlanningId id);
+
+	void deleteById(@NonNull ProductPlanningId id);
 
 	/**
 	 * Find best matching product planning.
 	 */
-	Optional<I_PP_Product_Planning> find(ProductPlanningQuery productPlanningQuery);
+	Optional<ProductPlanning> find(ProductPlanningQuery productPlanningQuery);
 
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
 	 *
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
-	I_S_Resource findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+	ResourceId findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
 
-	void save(I_PP_Product_Planning productPlanningRecord);
+	ProductPlanning save(@NonNull ProductPlanning productPlanning);
 
 	void setProductBOMVersionsIdIfAbsent(ProductId productId, ProductBOMVersionsId bomVersionsId);
 
 	Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds();
 
-	List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(final ProductBOMVersionsId bomId);
+	List<ProductPlanning> retrieveProductPlanningForBomVersions(final ProductBOMVersionsId bomId);
+
+	List<ProductPlanning> retrieveActiveProductPlanningsBySchemaId(@NonNull ProductPlanningSchemaId schemaId);
+
+	Optional<ProductPlanning> retrieveActiveProductPlanningByProductAndSchemaId(@NonNull ProductId productId, @NonNull ProductPlanningSchemaId schemaId);
+
+	/**
+	 * @return Products that don't have PP_ProductPlanning entries
+	 */
+	Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector();
 }

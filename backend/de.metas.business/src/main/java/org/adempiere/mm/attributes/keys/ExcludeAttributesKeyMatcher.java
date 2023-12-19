@@ -1,21 +1,8 @@
-package de.metas.material.commons.attributes;
-
-import java.util.Collection;
-import java.util.Optional;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.material.event.commons.AttributesKey;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
- * metasfresh-material-commons
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,19 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.mm.attributes.keys;
+
+import java.util.Collection;
+import java.util.Optional;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.material.event.commons.AttributesKey;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
