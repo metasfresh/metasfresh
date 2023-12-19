@@ -40,7 +40,6 @@ Feature: AD_Table consistency checks
       | C_Recurring                            | ERROR: column "datedoc" does not exist                                                                                           |
       | DLM_Partition_Record_V                 | ERROR: column "dlm_level" does not exist                                                                                         |
       | DLM_Partition_Size_Per_Table_V         | ERROR: column "dlm_level" does not exist                                                                                         |
-      | Fact_Acct_Transactions_View            | ERROR: column "c_harvesting_calendar_id" does not exist                                                                          |
       | I_Payment                              | ERROR: column "c_bp_bankaccount_id" does not exist Hint: Perhaps you meant to reference the column "i_payment.c_bankaccount_id". |
       | M_InOut_LineConfirm_v                  | ERROR: column "guaranteedate" does not exist                                                                                     |
       | M_Product_Stock_V                      | ERROR: column "name" does not exist                                                                                              |
