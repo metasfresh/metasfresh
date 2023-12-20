@@ -1092,7 +1092,7 @@ public class WindowRestController
 	}
 
 	@GetMapping("/health")
-	public JsonWindowsHealthResponse testWindows(
+	public JsonWindowsHealthResponse healthCheck(
 			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
 	)
 	{
@@ -1154,9 +1154,8 @@ public class WindowRestController
 		stopwatch.stop();
 
 		return JsonWindowsHealthResponse.builder()
-				.countTotal(countTotal)
-				.countErrors(errors.size())
 				.took(stopwatch.toString())
+				.countTotal(countTotal)
 				.errors(errors)
 				.build();
 	}
