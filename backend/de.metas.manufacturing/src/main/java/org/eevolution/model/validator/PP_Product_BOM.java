@@ -27,6 +27,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -131,42 +132,22 @@ public class PP_Product_BOM
 			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
 		}
 
-		final BOMType bomType = BOMType.ofNullableCode(productBom.getBOMType());
+		final List<I_PP_Product_BOM> allBOMVersions = bomDAO.retrieveAllBomVersions(productBom);
 
-		final Optional<I_PP_Product_BOM> latestBOMVersions;
+		for (final I_PP_Product_BOM existingBOMVersion : allBOMVersions) {
 
-		if (bomType == null)
-		{
-			latestBOMVersions = bomDAO.getPreviousVersion(productBom, null, null);
-		}
-		else
-		{
-			latestBOMVersions = bomDAO.getPreviousVersion(productBom, ImmutableSet.of(bomType), null);
-		}
+			if (productBom.getPP_Product_BOM_ID() == existingBOMVersion.getPP_Product_BOM_ID()) {
+				continue;
+			}
 
-		if (!latestBOMVersions.isPresent())
-		{
-			return;
-		}
-		else
-		{
-			final I_PP_Product_BOM latestBOMVersion = latestBOMVersions.get();
+			final Timestamp newValidFrom = productBom.getValidFrom();
+			final Timestamp newValidTo = productBom.getValidTo();
+			final Timestamp existingValidFrom = existingBOMVersion.getValidFrom();
+			final Timestamp existingValidTo = existingBOMVersion.getValidTo();
 
-			// Check if the BOM being updated is the same as the latest BOM version
-			if (productBom.getPP_Product_BOM_ID() != latestBOMVersion.getPP_Product_BOM_ID())
-			{
-				final Timestamp newValidFrom = productBom.getValidFrom();
-				final Timestamp newValidTo = productBom.getValidTo();
-				final Timestamp existingValidFrom = latestBOMVersion.getValidFrom();
-				final Timestamp existingValidTo = latestBOMVersion.getValidTo();
-
-				// Check for overlap
-				if (isOverlapping(newValidFrom, newValidTo, existingValidFrom, existingValidTo))
-				{
-					throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING,
-												 productBom.getName())
-							.markAsUserValidationError();
-				}
+			if (isOverlapping(newValidFrom, newValidTo, existingValidFrom, existingValidTo)) {
+				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, productBom.getName())
+						.markAsUserValidationError();
 			}
 		}
 	}
