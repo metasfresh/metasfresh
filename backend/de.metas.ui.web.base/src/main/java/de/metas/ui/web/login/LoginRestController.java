@@ -11,10 +11,13 @@ import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
+import de.metas.security.user_2fa.User2FAService;
+import de.metas.security.user_2fa.totp.OTP;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.login.json.JSONLoginAuth2FARequest;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
@@ -205,7 +208,7 @@ public class LoginRestController
 			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
 			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw convertToUserFriendlyException(ex);
 		}
