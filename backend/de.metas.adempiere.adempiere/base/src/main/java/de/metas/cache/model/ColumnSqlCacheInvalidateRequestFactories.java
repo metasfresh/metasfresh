@@ -50,8 +50,6 @@ import java.util.List;
 @UtilityClass
 final class ColumnSqlCacheInvalidateRequestFactories
 {
-	private final static Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestFactories.class);
-
 	@Nullable
 	public static ModelCacheInvalidateRequestFactory ofDescriptorOrNull(@NonNull final ColumnSqlSourceDescriptor descriptor)
 	{
