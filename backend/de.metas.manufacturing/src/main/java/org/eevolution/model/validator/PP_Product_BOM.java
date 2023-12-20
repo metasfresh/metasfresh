@@ -129,7 +129,7 @@ public class PP_Product_BOM
 			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
 		}
 
-		final List<I_PP_Product_BOM> allBOMVersions = bomDAO.retrieveAllBomVersions(productBom);
+		final List<I_PP_Product_BOM> allBOMVersions = bomDAO.getSiblings(productBom);
 
 		for (final I_PP_Product_BOM existingBOMVersion : allBOMVersions) {
 
