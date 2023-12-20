@@ -115,5 +115,7 @@ public interface IADWindowDAO extends ISingletonService
 
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
 
+	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
+
 	Optional<QuickInputConfigLayout> getQuickInputConfigLayout(AdTabId adTabId);
 }

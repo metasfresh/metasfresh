@@ -307,7 +307,7 @@ public class MLookupFactory
 		// do we have basic info?
 		if (info == null)
 		{
-			s_log.error("No SQL - {}", ctxColumnName);
+			s_log.warn("No SQL for `{}`. Returning null MLookupInfo.", ctxColumnName);
 			return null;
 		}
 
@@ -486,7 +486,7 @@ public class MLookupFactory
 		// Do we have columns ?
 		if (displayColumns.isEmpty())
 		{
-			s_log.error("No Identifier records found for tableRefInfo={}", tableRefInfo);
+			s_log.warn("No display columns defined for the identifier of tableRefInfo={}. Returning null", tableRefInfo);
 			return null;
 		}
 
@@ -567,14 +567,14 @@ public class MLookupFactory
 							+ "\n Those have very bad performances and are not optimized well."
 							+ "\n Consider using dynamic validation rules for that purpose."
 							+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
-							+ "\n tableRefInfo=" + tableRefInfo);
+							+ "\n tableRefInfo={}", tableRefInfo);
 				}
 			}
 			else
 			{
 				if (whereClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
+					s_log.warn("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
 							tableRefInfo.getIdentifier(), whereClause, tableRefInfo);
 				}
 				sqlWhereClauseStatic = whereClause;
@@ -610,7 +610,7 @@ public class MLookupFactory
 				sqlOrderBy = orderByClause;
 				if (orderByClause.indexOf('.') == -1)
 				{
-					s_log.error("ORDER BY must fully qualified: {}", tableRefInfo);
+					s_log.warn("ORDER BY must fully qualified: {}", tableRefInfo);
 				}
 			}
 			else
