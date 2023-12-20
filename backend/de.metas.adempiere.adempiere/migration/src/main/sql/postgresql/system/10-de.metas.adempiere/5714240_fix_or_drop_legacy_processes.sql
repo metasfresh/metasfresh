@@ -400,3 +400,35 @@ DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=53159
 DELETE FROM AD_Process WHERE AD_Process_ID=53159
 ;
 
+
+
+
+
+
+
+
+-- Name: Calculate Forecast
+-- Action Type: P
+-- Process: M_Forecast Calculate(@script:beanshell:)
+-- 2023-12-20T20:39:12.205Z
+DELETE FROM  AD_Menu_Trl WHERE AD_Menu_ID=53182
+;
+
+-- 2023-12-20T20:39:12.209Z
+DELETE FROM AD_Menu WHERE AD_Menu_ID=53182
+;
+
+-- 2023-12-20T20:39:12.213Z
+DELETE FROM AD_TreeNodeMM n WHERE Node_ID=53182 AND EXISTS (SELECT * FROM AD_Tree t WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=116)
+;
+
+-- Value: M_Forecast Calculate
+-- Classname: @script:beanshell:
+-- 2023-12-20T20:39:15.753Z
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=53148
+;
+
+-- 2023-12-20T20:39:15.757Z
+DELETE FROM AD_Process WHERE AD_Process_ID=53148
+;
+
