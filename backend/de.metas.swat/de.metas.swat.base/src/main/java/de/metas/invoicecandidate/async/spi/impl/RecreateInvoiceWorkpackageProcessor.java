@@ -24,6 +24,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,11 +65,11 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	{
 		final int pinstanceInt = getParameters().getParameterAsInt(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, workpackage.getAD_PInstance_ID());
 		Check.assume(pinstanceInt > 0, "pinstanceInt>=0 on workpackage={}", workpackage);
-
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(pinstanceInt);
 
 		Check.assume(workpackage.getC_Async_Batch_ID() > 0, "workpackage.getC_Async_Batch_ID() > 0 for workpackage=", workpackage);
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(workpackage.getC_Async_Batch_ID());
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final ILockCommand elementsLocker = lockManager.lock()
 				.setOwner(LockOwner.newOwner(getClass().getSimpleName()))
@@ -76,45 +77,53 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_C_Invoice_Candidate.class, pinstanceId);
 
-		try (final ILockAutoCloseable lock = elementsLocker.acquire().asAutoCloseable())
+		try (final ILockAutoCloseable ignored = elementsLocker.acquire().asAutoCloseable())
 		{
-			processWorkPackage0(pinstanceId, asyncBatchId);
+			processWorkPackage0(pinstanceId, asyncBatch);
 		}
 
 		return Result.SUCCESS;
 	}
 
-	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final AsyncBatchId asyncBatchId)
+	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
+		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
 		while (invoiceIterator.hasNext())
 		{
 			final I_C_Invoice invoice = invoiceIterator.next();
 
 			if (!canVoidPaidInvoice(invoice))
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
-			final Set<InvoiceCandidateId> invoiceCandIds = invoiceCandBL.voidAndReturnInvoiceCandIds(invoice);
-
+			final Set<InvoiceCandidateId> invoiceCandIds = getVoidAndReturnInvoiceCandIds(invoice);
 			if (invoiceCandIds.isEmpty())
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
-			final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-
-			invoiceCandBL.enqueueForInvoicing()
-					.setContext(getCtx())
-					.setC_Async_Batch(asyncBatch)
-					.setInvoicingParams(getIInvoicingParams())
-					.setFailIfNothingEnqueued(true)
-					.enqueueInvoiceCandidateIds(invoiceCandIds);
+			enqueueForInvoicing(invoiceCandIds, asyncBatch);
 		}
+	}
+
+	private Set<InvoiceCandidateId> getVoidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
+	{
+		return invoiceCandBL.voidAndReturnInvoiceCandIds(invoice);
+	}
+
+	private void enqueueForInvoicing(final Set<InvoiceCandidateId> invoiceCandIds, final @NonNull I_C_Async_Batch asyncBatch)
+	{
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setC_Async_Batch(asyncBatch)
+				.setInvoicingParams(getIInvoicingParams())
+				.setFailIfNothingEnqueued(true)
+				.enqueueInvoiceCandidateIds(invoiceCandIds);
 	}
 
 	@NonNull
