@@ -35,7 +35,6 @@ Feature: AD_Table consistency checks
       | X_EventStoreTemplate                   | template table                                                                                                                   |
       | X_ImportTableTemplate                  | template table                                                                                                                   |
       | X_TableTemplate                        | template table                                                                                                                   |
-      | C_Invoice_LineTax_v                    | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
       | C_Payment_v                            | ERROR: column "oprocessing" does not exist Hint: Perhaps you meant to reference the column "c_payment_v.processing".             |
       | C_Recurring                            | ERROR: column "datedoc" does not exist                                                                                           |
       | DLM_Partition_Record_V                 | ERROR: column "dlm_level" does not exist                                                                                         |
@@ -45,25 +44,10 @@ Feature: AD_Table consistency checks
       | M_Product_Stock_V                      | ERROR: column "name" does not exist                                                                                              |
       | MSV3_Tour                              | ERROR: column "msv3_bestellunganteil_id" does not exist                                                                          |
       | RV_Allocation                          | ERROR: column "c_order_id" does not exist                                                                                        |
-      | RV_C_Invoice_CustomerProdQtr           | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_CustomerVendQtr           | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_Day                       | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_InvoiceLine                       | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_Month                     | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_ProdMonth                 | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_ProductMonth              | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_ProductQtr                | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_ProdWeek                  | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_VendorMonth               | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_C_Invoice_Week                      | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
       | RV_PP_Cost_BOMLine                     | ERROR: column "costingmethod" does not exist                                                                                     |
       | RV_PP_Order_Transactions               | ERROR: column "ad_user_id" does not exist                                                                                        |
       | RV_Printing_Bericht_List_Per_Print_Job | ERROR: column "document" does not exist                                                                                          |
       | RV_Prt_Bericht_Statistik_List_Per_Org  | ERROR: column "address1" does not exist                                                                                          |
       | RV_Storage                             | ERROR: column "guaranteedate" does not exist Hint: Perhaps you meant to reference the column "rv_storage.guaranteedays".         |
-      | C_Order_LineTax_v                      | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | M_InOut_Line_v                         | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_InOutDetails                        | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
-      | RV_OrderDetail                         | ERROR: invalid type name "M_AttributeSetInstance.Lot%TYPE"                                                                       |
 
 
