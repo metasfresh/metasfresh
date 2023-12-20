@@ -2110,4 +2110,24 @@ public class TimeUtil
 	{
 		return timestamp2.getTime() - timestamp1.getTime();
 	}
+
+	public static boolean isOverlapping(@NonNull final Timestamp newValidFrom, @Nullable final Timestamp newValidTo, @NonNull final Timestamp existingValidFrom, @Nullable final Timestamp existingValidTo)
+	{
+		if (newValidTo != null && existingValidTo != null)
+		{
+			return newValidFrom.before(existingValidTo) || newValidTo.before(existingValidTo);
+		}
+
+		if (newValidTo == null && existingValidTo != null)
+		{
+			return newValidFrom.before(existingValidTo);
+		}
+
+		if (newValidTo != null)
+		{
+			return newValidTo.before(existingValidFrom) || newValidFrom.before(existingValidFrom);
+		}
+
+		return newValidFrom.before(existingValidFrom);
+	}
 }    // TimeUtil

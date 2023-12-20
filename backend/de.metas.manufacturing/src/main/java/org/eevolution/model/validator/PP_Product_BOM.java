@@ -14,6 +14,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
@@ -142,35 +143,11 @@ public class PP_Product_BOM
 			final Timestamp existingValidFrom = existingBOMVersion.getValidFrom();
 			final Timestamp existingValidTo = existingBOMVersion.getValidTo();
 
-			if (isOverlapping(newValidFrom, newValidTo, existingValidFrom, existingValidTo)) {
+			if (TimeUtil.isOverlapping(newValidFrom, newValidTo, existingValidFrom, existingValidTo)) {
 				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, productBom.getName())
 						.markAsUserValidationError();
 			}
 		}
-	}
-
-	private boolean isOverlapping(final Timestamp newFrom, final Timestamp newTo, final Timestamp existingFrom, final Timestamp existingTo)
-	{
-		// Scenario 1: Both ValidTo dates are not null
-		if (newTo != null && existingTo != null)
-		{
-			return newFrom.before(existingTo) || newTo.before(existingTo);
-		}
-
-		// Scenario 2: Only newTo is null (open-ended new range)
-		if (newTo == null && existingTo != null)
-		{
-			return newFrom.before(existingTo);
-		}
-
-		// Scenario 3: Only existingTo is null (open-ended existing range)
-		if (newTo != null)
-		{
-			return newTo.before(existingFrom) || newFrom.before(existingFrom);
-		}
-
-		// Scenario 4: Both ValidTo dates are null (both ranges are open-ended)
-		return newFrom.before(existingFrom);
 	}
 
 }
