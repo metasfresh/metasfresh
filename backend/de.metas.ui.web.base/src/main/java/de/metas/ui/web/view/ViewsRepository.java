@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
@@ -256,10 +258,16 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId,
+			@Nullable final IUserRolePermissions permissions)
 	{
-		final String viewId = null; // N/A
-		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
+		if (permissions != null)
+		{
+			DocumentPermissionsHelper.assertViewAccess(windowId, null, permissions);
+		}
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		return factory.getViewLayout(windowId, viewDataType, profileId)
