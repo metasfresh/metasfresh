@@ -60,6 +60,9 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO_DEFAULT;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO_DEFAULT;
+
 @Service
 public class BPartnerBL implements IBPartnerBL
 {
@@ -758,7 +761,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -800,5 +802,58 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		{
+			return Optional.of(bpartnerLocation.getVATaxID());
+		}
+
+		final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
+		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+		{
+			return Optional.of(bPartner.getVATaxID());
+		}
+
+		return Optional.empty();
+	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
+	}
+
+	@NonNull
+	@Override
+	public Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBPartnerLocation(bPartnerId, SHIP_TO_DEFAULT);
+	}
+
+	@NonNull
+	@Override
+	public Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBPartnerLocation(bPartnerId, BILL_TO_DEFAULT);
+
+	}
+
+	@NonNull
+	private Optional<I_C_BPartner_Location> retrieveBPartnerLocation(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final IBPartnerDAO.BPartnerLocationQuery.Type type)
+	{
+		return Optional.ofNullable(bpartnersRepo.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery
+																				  .builder()
+																				  .type(type)
+																				  .bpartnerId(bPartnerId)
+																				  .build()));
 	}
 }

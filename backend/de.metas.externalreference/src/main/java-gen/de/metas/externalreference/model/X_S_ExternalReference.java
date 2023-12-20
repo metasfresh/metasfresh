@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -837092087L;
+	private static final long serialVersionUID = 1810181895L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -215,6 +215,14 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
+	/** UOM = UOM */
+	public static final String TYPE_UOM = "UOM";
+	/** Allergen = Allergen */
+	public static final String TYPE_Allergen = "Allergen";
+	/** BankAccount = BankAccount */
+	public static final String TYPE_BankAccount = "BankAccount";
+	/** Greeting = Greeting */
+	public static final String TYPE_Greeting = "Greeting";
 	@Override
 	public void setType (final String Type)
 	{

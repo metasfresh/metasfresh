@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
@@ -53,12 +54,11 @@ import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -81,18 +81,16 @@ public class PPOrderCandidateService
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	private final ProductPlanningService productPlanningService;
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
 	{
 		this.productPlanningService = productPlanningService;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 	}
 
@@ -164,7 +162,7 @@ public class PPOrderCandidateService
 
 		for (final Map.Entry<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLineEntry : orderLineCandidate2BOMLine.entrySet())
 		{
-			final boolean isOrderLineOutdated = !orderLineCandidate2BOMLineEntry.getValue().isPresent();
+			final boolean isOrderLineOutdated = orderLineCandidate2BOMLineEntry.getValue().isEmpty();
 			if (isOrderLineOutdated)
 			{
 				handleOutdatedLine(orderLineCandidate2BOMLineEntry.getKey());
@@ -191,7 +189,7 @@ public class PPOrderCandidateService
 			return Optional.empty();
 		}
 
-		final I_PP_Product_Planning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
+		final ProductPlanning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
 
 		final int durationDays = productPlanningService.calculateDurationDays(productPlanningRecord, ppOrderCandidateRecord.getQtyEntered());
 		final Instant dateStartSchedule = ppOrderCandidateRecord.getDateStartSchedule().toInstant();

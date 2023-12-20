@@ -24,6 +24,7 @@ package de.metas.contracts;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -33,8 +34,10 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -46,6 +49,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
@@ -60,8 +64,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -158,6 +164,10 @@ public interface IFlatrateDAO extends ISingletonService
 
 	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
 
+	I_C_Flatrate_Term retrieveFirstFlatrateTerm(@NonNull I_C_Invoice invoice);
+
+	boolean isExistsModularOrInterimContract(@NonNull IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter);
+
 	@Value
 	@Builder
 	class TermsQuery
@@ -252,4 +262,17 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
+
+	@NonNull
+	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@NonNull
+	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId);
+
+	@NonNull
+	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 }

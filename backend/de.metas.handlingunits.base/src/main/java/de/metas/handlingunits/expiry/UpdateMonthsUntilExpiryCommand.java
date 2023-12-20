@@ -5,18 +5,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.OptionalInt;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.util.Services;
+import lombok.Getter;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.compiere.util.Env;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.model.I_M_HU;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -46,107 +40,16 @@ final class UpdateMonthsUntilExpiryCommand
 {
 	// services
 	private final HUWithExpiryDatesRepository huWithExpiryDatesRepository;
-	private final IHandlingUnitsBL handlingUnitsBL;
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	@Getter
 	private final LocalDate today;
 
 	@Builder
-	public UpdateMonthsUntilExpiryCommand(
-			@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			//
+	public UpdateMonthsUntilExpiryCommand(@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository,
 			@NonNull final LocalDate today)
 	{
 		this.huWithExpiryDatesRepository = huWithExpiryDatesRepository;
-		this.handlingUnitsBL = handlingUnitsBL;
-
 		this.today = today;
-	}
-
-	public static class UpdateMonthsUntilExpiryCommandBuilder
-	{
-		public UpdateMonthsUntilExpiryResult execute()
-		{
-			return build().execute();
-		}
-	}
-
-	public UpdateMonthsUntilExpiryResult execute()
-	{
-		int countChecked = 0;
-		int countUpdated = 0;
-
-		final Iterator<HuId> husWithExpiryDates = huWithExpiryDatesRepository.getAllWithBestBeforeDate();
-		while (husWithExpiryDates.hasNext())
-		{
-			final HuId huId = husWithExpiryDates.next();
-			countChecked++;
-
-			final boolean updated = updateTopLevelHU(huId);
-			if (updated)
-			{
-				countUpdated++;
-			}
-		}
-
-		return UpdateMonthsUntilExpiryResult.builder()
-				.countChecked(countChecked)
-				.countUpdated(countUpdated)
-				.build();
-	}
-
-	private boolean updateTopLevelHU(@NonNull final HuId topLevelHUId)
-	{
-		final ClientAndOrgId clientAndOrgId = handlingUnitsDAO.getClientAndOrgId(topLevelHUId);
-		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), clientAndOrgId);
-		final IAttributeStorage huAttributes = getHUAttributes(topLevelHUId, huContext);
-		return updateRecursive(huAttributes);
-	}
-
-	private boolean updateRecursive(@NonNull final IAttributeStorage huAttributes)
-	{
-		boolean updated = update(huAttributes);
-
-		for (final IAttributeStorage childHUAttributes : huAttributes.getChildAttributeStorages(true))
-		{
-			if (updateRecursive(childHUAttributes))
-			{
-				updated = true;
-			}
-		}
-
-		return updated;
-	}
-
-	private boolean update(@NonNull final IAttributeStorage huAttributes)
-	{
-		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
-		{
-			return false;
-		}
-
-		final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, today);
-		final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
-		if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
-		{
-			return false;
-		}
-
-		huAttributes.setSaveOnChange(true);
-		
-		if (monthsUntilExpiry.isPresent())
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
-		}
-		else
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
-		}
-
-		huAttributes.saveChangesIfNeeded();
-
-		return true;
 	}
 
 	static OptionalInt computeMonthsUntilExpiry(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
@@ -161,12 +64,45 @@ final class UpdateMonthsUntilExpiryCommand
 		return OptionalInt.of(monthsUntilExpiry);
 	}
 
-	private IAttributeStorage getHUAttributes(@NonNull final HuId huId, @NonNull final IHUContext huContext)
+	public static class UpdateMonthsUntilExpiryCommandBuilder
 	{
-		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		public UpdateMonthsResult execute()
+		{
+			final UpdateMonthsUntilExpiryCommand cmd = build();
 
-		return huContext
-				.getHUAttributeStorageFactory()
-				.getAttributeStorage(hu);
+			final Iterator<HuId> huIdIterator = huWithExpiryDatesRepository.getAllWithBestBeforeDate();
+
+			final UpdateAttributesHelper helper = new UpdateAttributesHelper();
+
+			return helper.execute(huIdIterator, huAttributes -> {
+				if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
+				{
+					return false;
+				}
+
+				final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, cmd.getToday());
+				final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
+				if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
+				{
+					return false;
+				}
+
+				huAttributes.setSaveOnChange(true);
+
+				if (monthsUntilExpiry.isPresent())
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+				}
+				else
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+				}
+
+				huAttributes.saveChangesIfNeeded();
+
+				return true;
+			});
+		}
+
 	}
 }

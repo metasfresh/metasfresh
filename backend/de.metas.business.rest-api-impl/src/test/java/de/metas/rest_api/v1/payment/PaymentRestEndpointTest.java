@@ -37,6 +37,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.project.service.ProjectService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -44,6 +45,8 @@ import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -134,10 +137,13 @@ class PaymentRestEndpointTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 
 		// run the "before_complete" interceptor
-		new C_Order(bpartnerBL, 
-					new OrderLineDetailRepository(), 
-					documentLocationBL, 
-					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
+		new C_Order(bpartnerBL,
+				new OrderLineDetailRepository(),
+				documentLocationBL,
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				productWarehouseAssignmentService,
+				ProjectService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

@@ -1,30 +1,30 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_User
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
+public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1217883274L;
+	private static final long serialVersionUID = 1027701730L;
 
-	/** Standard Constructor */
-	public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
-	{
-		super (ctx, AD_User_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
+    {
+      super (ctx, AD_User_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_AD_User (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_AD_User (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -34,7 +34,22 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/**
+	@Override
+	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
+	{
+		if (AD_BoilerPlate_Default_ID < 1) 
+			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
+	}
+
+	@Override
+	public int getAD_BoilerPlate_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
+	}
+
+	/** 
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
 	 */
@@ -46,7 +61,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getAD_Language()
+	public java.lang.String getAD_Language() 
 	{
 		return get_ValueAsString(COLUMNNAME_AD_Language);
 	}
@@ -66,14 +81,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
 	{
-		if (AD_Org_Mapping_ID < 1)
+		if (AD_Org_Mapping_ID < 1) 
 			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
 	}
 
 	@Override
-	public int getAD_Org_Mapping_ID()
+	public int getAD_Org_Mapping_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
 	}
@@ -81,14 +96,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
-		if (AD_OrgTrx_ID < 1)
+		if (AD_OrgTrx_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
 	}
 
 	@Override
-	public int getAD_OrgTrx_ID()
+	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
 	}
@@ -96,14 +111,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_User_ID (final int AD_User_ID)
 	{
-		if (AD_User_ID < 0)
+		if (AD_User_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
-	public int getAD_User_ID()
+	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
@@ -111,19 +126,43 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
 	{
-		if (AD_User_InCharge_ID < 1)
+		if (AD_User_InCharge_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
 	}
 
 	@Override
-	public int getAD_User_InCharge_ID()
+	public int getAD_User_InCharge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
-	/**
+	/** 
+	 * Alberta_Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int ALBERTA_GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String ALBERTA_GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String ALBERTA_GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String ALBERTA_GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String ALBERTA_GENDER_Divers = "3";
+	@Override
+	public void setAlberta_Gender (final @Nullable java.lang.String Alberta_Gender)
+	{
+		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
+
+	@Override
+	public java.lang.String getAlberta_Gender() 
+	{
+		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
+	}
+
+	/** 
 	 * AlbertaTitle AD_Reference_ID=541318
 	 * Reference name: Title_List
 	 */
@@ -162,7 +201,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("AlbertaTitle is virtual column");	}
 
 	@Override
-	public java.lang.String getAlbertaTitle()
+	public java.lang.String getAlbertaTitle() 
 	{
 		return get_ValueAsString(COLUMNNAME_AlbertaTitle);
 	}
@@ -182,14 +221,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAvatar_ID (final int Avatar_ID)
 	{
-		if (Avatar_ID < 1)
+		if (Avatar_ID < 1) 
 			set_Value (COLUMNNAME_Avatar_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Avatar_ID, Avatar_ID);
 	}
 
 	@Override
-	public int getAvatar_ID()
+	public int getAvatar_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Avatar_ID);
 	}
@@ -201,7 +240,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getBirthday()
+	public java.sql.Timestamp getBirthday() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Birthday);
 	}
@@ -209,14 +248,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_BPartner_Alt_Location_ID (final int C_BPartner_Alt_Location_ID)
 	{
-		if (C_BPartner_Alt_Location_ID < 1)
+		if (C_BPartner_Alt_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Alt_Location_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_Alt_Location_ID, C_BPartner_Alt_Location_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Alt_Location_ID()
+	public int getC_BPartner_Alt_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Alt_Location_ID);
 	}
@@ -224,14 +263,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1)
+		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
@@ -239,29 +278,44 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1)
+		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID()
+	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
+	public void setC_Flatrate_Conditions_Default_ID (final int C_Flatrate_Conditions_Default_ID)
+	{
+		if (C_Flatrate_Conditions_Default_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, C_Flatrate_Conditions_Default_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Conditions_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Default_ID);
+	}
+
+	@Override
 	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
-		if (C_Greeting_ID < 1)
+		if (C_Greeting_ID < 1) 
 			set_Value (COLUMNNAME_C_Greeting_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Greeting_ID, C_Greeting_ID);
 	}
 
 	@Override
-	public int getC_Greeting_ID()
+	public int getC_Greeting_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Greeting_ID);
 	}
@@ -281,16 +335,101 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Job_ID (final int C_Job_ID)
 	{
-		if (C_Job_ID < 1)
+		if (C_Job_ID < 1) 
 			set_Value (COLUMNNAME_C_Job_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Job_ID, C_Job_ID);
 	}
 
 	@Override
-	public int getC_Job_ID()
+	public int getC_Job_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Job_ID);
+	}
+
+	@Override
+	public void setComments (final @Nullable java.lang.String Comments)
+	{
+		set_Value (COLUMNNAME_Comments, Comments);
+	}
+
+	@Override
+	public java.lang.String getComments() 
+	{
+		return get_ValueAsString(COLUMNNAME_Comments);
+	}
+
+	@Override
+	public void setCompanyname (final @Nullable java.lang.String Companyname)
+	{
+		throw new IllegalArgumentException ("Companyname is virtual column");	}
+
+	@Override
+	public java.lang.String getCompanyname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Companyname);
+	}
+
+	/** 
+	 * ConnectionProfile AD_Reference_ID=364
+	 * Reference name: AD_User ConnectionProfile
+	 */
+	public static final int CONNECTIONPROFILE_AD_Reference_ID=364;
+	/** LAN = L */
+	public static final String CONNECTIONPROFILE_LAN = "L";
+	/** TerminalServer = T */
+	public static final String CONNECTIONPROFILE_TerminalServer = "T";
+	/** VPN = V */
+	public static final String CONNECTIONPROFILE_VPN = "V";
+	/** WAN = W */
+	public static final String CONNECTIONPROFILE_WAN = "W";
+	@Override
+	public void setConnectionProfile (final @Nullable java.lang.String ConnectionProfile)
+	{
+		set_Value (COLUMNNAME_ConnectionProfile, ConnectionProfile);
+	}
+
+	@Override
+	public java.lang.String getConnectionProfile() 
+	{
+		return get_ValueAsString(COLUMNNAME_ConnectionProfile);
+	}
+
+	/** 
+	 * ContactLimitation AD_Reference_ID=540089
+	 * Reference name: ContactLimitation
+	 */
+	public static final int CONTACTLIMITATION_AD_Reference_ID=540089;
+	/** keine Anrufe = B */
+	public static final String CONTACTLIMITATION_KeineAnrufe = "B";
+	/** keine Anrufe und eMails = C */
+	public static final String CONTACTLIMITATION_KeineAnrufeUndEMails = "C";
+	/** keine Anrufe, eMails und Post = D */
+	public static final String CONTACTLIMITATION_KeineAnrufeEMailsUndPost = "D";
+	/** keine eMail und Post = E */
+	public static final String CONTACTLIMITATION_KeineEMailUndPost = "E";
+	@Override
+	public void setContactLimitation (final @Nullable java.lang.String ContactLimitation)
+	{
+		set_Value (COLUMNNAME_ContactLimitation, ContactLimitation);
+	}
+
+	@Override
+	public java.lang.String getContactLimitation() 
+	{
+		return get_ValueAsString(COLUMNNAME_ContactLimitation);
+	}
+
+	@Override
+	public void setContactLimitationReason (final @Nullable java.lang.String ContactLimitationReason)
+	{
+		set_Value (COLUMNNAME_ContactLimitationReason, ContactLimitationReason);
+	}
+
+	@Override
+	public java.lang.String getContactLimitationReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
 	}
 
 	@Override
@@ -321,98 +460,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public void setComments (final @Nullable java.lang.String Comments)
-	{
-		set_Value (COLUMNNAME_Comments, Comments);
-	}
-
-	@Override
-	public java.lang.String getComments()
-	{
-		return get_ValueAsString(COLUMNNAME_Comments);
-	}
-
-	@Override
-	public void setCompanyname (final @Nullable java.lang.String Companyname)
-	{
-		throw new IllegalArgumentException ("Companyname is virtual column");	}
-
-	@Override
-	public java.lang.String getCompanyname()
-	{
-		return get_ValueAsString(COLUMNNAME_Companyname);
-	}
-
-	/**
-	 * ConnectionProfile AD_Reference_ID=364
-	 * Reference name: AD_User ConnectionProfile
-	 */
-	public static final int CONNECTIONPROFILE_AD_Reference_ID=364;
-	/** LAN = L */
-	public static final String CONNECTIONPROFILE_LAN = "L";
-	/** TerminalServer = T */
-	public static final String CONNECTIONPROFILE_TerminalServer = "T";
-	/** VPN = V */
-	public static final String CONNECTIONPROFILE_VPN = "V";
-	/** WAN = W */
-	public static final String CONNECTIONPROFILE_WAN = "W";
-	@Override
-	public void setConnectionProfile (final @Nullable java.lang.String ConnectionProfile)
-	{
-		set_Value (COLUMNNAME_ConnectionProfile, ConnectionProfile);
-	}
-
-	@Override
-	public java.lang.String getConnectionProfile()
-	{
-		return get_ValueAsString(COLUMNNAME_ConnectionProfile);
-	}
-
-	/**
-	 * ContactLimitation AD_Reference_ID=540089
-	 * Reference name: ContactLimitation
-	 */
-	public static final int CONTACTLIMITATION_AD_Reference_ID=540089;
-	/** keine Anrufe = B */
-	public static final String CONTACTLIMITATION_KeineAnrufe = "B";
-	/** keine Anrufe und eMails = C */
-	public static final String CONTACTLIMITATION_KeineAnrufeUndEMails = "C";
-	/** keine Anrufe, eMails und Post = D */
-	public static final String CONTACTLIMITATION_KeineAnrufeEMailsUndPost = "D";
-	/** keine eMail und Post = E */
-	public static final String CONTACTLIMITATION_KeineEMailUndPost = "E";
-	@Override
-	public void setContactLimitation (final @Nullable java.lang.String ContactLimitation)
-	{
-		set_Value (COLUMNNAME_ContactLimitation, ContactLimitation);
-	}
-
-	@Override
-	public java.lang.String getContactLimitation()
-	{
-		return get_ValueAsString(COLUMNNAME_ContactLimitation);
-	}
-
-	@Override
-	public void setContactLimitationReason (final @Nullable java.lang.String ContactLimitationReason)
-	{
-		set_Value (COLUMNNAME_ContactLimitationReason, ContactLimitationReason);
-	}
-
-	@Override
-	public java.lang.String getContactLimitationReason()
-	{
-		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
-	}
-
-	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
 	}
 
 	@Override
-	public java.sql.Timestamp getDelDate()
+	public java.sql.Timestamp getDelDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DelDate);
 	}
@@ -424,7 +478,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -436,7 +490,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -448,7 +502,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail2()
+	public java.lang.String getEMail2() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail2);
 	}
@@ -460,64 +514,9 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail3()
+	public java.lang.String getEMail3() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail3);
-
-	}
-
-	@Override
-	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
-	{
-		if (AD_BoilerPlate_Default_ID < 1)
-			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
-	}
-
-	@Override
-	public int getAD_BoilerPlate_Default_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
-	}
-
-	/**
-	 * Alberta_Gender AD_Reference_ID=541317
-	 * Reference name: Gender_List
-	 */
-	public static final int ALBERTA_GENDER_AD_Reference_ID=541317;
-	/** Unbekannt = 0 */
-	public static final String ALBERTA_GENDER_Unbekannt = "0";
-	/** Weiblich = 1 */
-	public static final String ALBERTA_GENDER_Weiblich = "1";
-	/** Männlich = 2 */
-	public static final String ALBERTA_GENDER_Maennlich = "2";
-	/** Divers = 3 */
-	public static final String ALBERTA_GENDER_Divers = "3";
-	@Override
-	public void setAlberta_Gender (final @Nullable java.lang.String Alberta_Gender)
-	{
-		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
-
-	@Override
-	public java.lang.String getAlberta_Gender()
-	{
-		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
-	}
-
-	@Override
-	public void setC_Flatrate_Conditions_Default_ID (final int C_Flatrate_Conditions_Default_ID)
-	{
-		if (C_Flatrate_Conditions_Default_ID < 1)
-			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, C_Flatrate_Conditions_Default_ID);
-	}
-
-	@Override
-	public int getC_Flatrate_Conditions_Default_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Default_ID);
 	}
 
 	@Override
@@ -527,7 +526,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEmail_private()
+	public java.lang.String getEmail_private() 
 	{
 		return get_ValueAsString(COLUMNNAME_Email_private);
 	}
@@ -539,7 +538,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMailUser()
+	public java.lang.String getEMailUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMailUser);
 	}
@@ -551,7 +550,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMailUserPW()
+	public java.lang.String getEMailUserPW() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMailUserPW);
 	}
@@ -563,7 +562,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEMailVerify()
+	public java.lang.String getEMailVerify() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMailVerify);
 	}
@@ -575,7 +574,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getEMailVerifyDate()
+	public java.sql.Timestamp getEMailVerifyDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_EMailVerifyDate);
 	}
@@ -587,7 +586,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getExternalId()
+	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
@@ -599,7 +598,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getFax()
+	public java.lang.String getFax() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fax);
 	}
@@ -611,12 +610,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getFirstname()
+	public java.lang.String getFirstname() 
 	{
 		return get_ValueAsString(COLUMNNAME_Firstname);
 	}
 
-	/**
+	/** 
 	 * Fresh_xmas_Gift AD_Reference_ID=540504
 	 * Reference name: fresh_xmas_list
 	 */
@@ -632,11 +631,24 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getFresh_xmas_Gift()
+	public java.lang.String getFresh_xmas_Gift() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
+	/**
+	 * Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String GENDER_Divers = "3";
 	@Override
 	public void setHobbies_interests (final @Nullable java.lang.String Hobbies_interests)
 	{
@@ -644,7 +656,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getHobbies_interests()
+	public java.lang.String getHobbies_interests() 
 	{
 		return get_ValueAsString(COLUMNNAME_Hobbies_interests);
 	}
@@ -656,7 +668,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getIncluded_Tab_ID()
+	public java.lang.String getIncluded_Tab_ID() 
 	{
 		return get_ValueAsString(COLUMNNAME_Included_Tab_ID);
 	}
@@ -668,7 +680,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isAccountLocked()
+	public boolean isAccountLocked() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAccountLocked);
 	}
@@ -679,7 +691,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("IsActivePartner is virtual column");	}
 
 	@Override
-	public boolean isActivePartner()
+	public boolean isActivePartner() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsActivePartner);
 	}
@@ -691,7 +703,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isAuthorizedSignatory()
+	public boolean isAuthorizedSignatory() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAuthorizedSignatory);
 	}
@@ -703,7 +715,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isBackofficeContact()
+	public boolean isBackofficeContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBackofficeContact);
 	}
@@ -715,7 +727,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isBillToContact_Default()
+	public boolean isBillToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToContact_Default);
 	}
@@ -726,7 +738,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
 
 	@Override
-	public boolean isCustomUserRestriction()
+	public boolean isCustomUserRestriction() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
 	}
@@ -738,9 +750,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isDefaultContact()
+	public boolean isDefaultContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefaultContact);
+	}
+
+	@Override
+	public void setIsDunningContact (final boolean IsDunningContact)
+	{
+		set_Value (COLUMNNAME_IsDunningContact, IsDunningContact);
+	}
+
+	@Override
+	public boolean isDunningContact() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
 	}
 
 	@Override
@@ -750,7 +774,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean IsDunningDefault()
+	public boolean isDunningDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
@@ -762,7 +786,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isFullBPAccess()
+	public boolean isFullBPAccess() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFullBPAccess);
 	}
@@ -774,12 +798,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isInPayroll()
+	public boolean isInPayroll() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInPayroll);
 	}
 
-	/**
+	/** 
 	 * IsInvoiceEmailEnabled AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -795,7 +819,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getIsInvoiceEmailEnabled()
+	public java.lang.String getIsInvoiceEmailEnabled() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
@@ -807,7 +831,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isLoginAsHostKey()
+	public boolean isLoginAsHostKey() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLoginAsHostKey);
 	}
@@ -819,7 +843,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isLogisticContact()
+	public boolean isLogisticContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLogisticContact);
 	}
@@ -831,7 +855,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isMembershipContact()
+	public boolean isMembershipContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMembershipContact);
 	}
@@ -843,7 +867,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isNewsletter()
+	public boolean isNewsletter() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNewsletter);
 	}
@@ -855,7 +879,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isPurchaseContact()
+	public boolean isPurchaseContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPurchaseContact);
 	}
@@ -867,9 +891,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isPurchaseContact_Default()
+	public boolean isPurchaseContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPurchaseContact_Default);
+	}
+
+	@Override
+	public void setIsReceiveMassDunningReports (final boolean IsReceiveMassDunningReports)
+	{
+		set_Value (COLUMNNAME_IsReceiveMassDunningReports, IsReceiveMassDunningReports);
+	}
+
+	@Override
+	public boolean isReceiveMassDunningReports()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReceiveMassDunningReports);
 	}
 
 	@Override
@@ -879,7 +915,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isSalesContact()
+	public boolean isSalesContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSalesContact);
 	}
@@ -891,7 +927,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isSalesContact_Default()
+	public boolean isSalesContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSalesContact_Default);
 	}
@@ -903,7 +939,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isShipToContact_Default()
+	public boolean isShipToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShipToContact_Default);
 	}
@@ -915,7 +951,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isSubjectMatterContact()
+	public boolean isSubjectMatterContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSubjectMatterContact);
 	}
@@ -927,7 +963,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isSystemUser()
+	public boolean isSystemUser() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSystemUser);
 	}
@@ -939,7 +975,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getLastname()
+	public java.lang.String getLastname() 
 	{
 		return get_ValueAsString(COLUMNNAME_Lastname);
 	}
@@ -951,7 +987,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getLockedFromIP()
+	public java.lang.String getLockedFromIP() 
 	{
 		return get_ValueAsString(COLUMNNAME_LockedFromIP);
 	}
@@ -963,7 +999,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getLogin()
+	public java.lang.String getLogin() 
 	{
 		return get_ValueAsString(COLUMNNAME_Login);
 	}
@@ -975,7 +1011,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public int getLoginFailureCount()
+	public int getLoginFailureCount() 
 	{
 		return get_ValueAsInt(COLUMNNAME_LoginFailureCount);
 	}
@@ -987,7 +1023,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getLoginFailureDate()
+	public java.sql.Timestamp getLoginFailureDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_LoginFailureDate);
 	}
@@ -999,9 +1035,24 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getMemo()
+	public java.lang.String getMemo() 
 	{
 		return get_ValueAsString(COLUMNNAME_Memo);
+	}
+
+	@Override
+	public void setMKTG_Campaign_Default_ID (final int MKTG_Campaign_Default_ID)
+	{
+		if (MKTG_Campaign_Default_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, MKTG_Campaign_Default_ID);
+	}
+
+	@Override
+	public int getMKTG_Campaign_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_Default_ID);
 	}
 
 	@Override
@@ -1011,7 +1062,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getMobilePhone()
+	public java.lang.String getMobilePhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_MobilePhone);
 	}
@@ -1023,12 +1074,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/**
+	/** 
 	 * NotificationType AD_Reference_ID=344
 	 * Reference name: AD_User NotificationType
 	 */
@@ -1050,7 +1101,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getNotificationType()
+	public java.lang.String getNotificationType() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotificationType);
 	}
@@ -1062,7 +1113,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPassword()
+	public java.lang.String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
 	}
@@ -1074,7 +1125,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getpasswordportal()
+	public java.lang.String getpasswordportal() 
 	{
 		return get_ValueAsString(COLUMNNAME_passwordportal);
 	}
@@ -1086,7 +1137,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPasswordResetCode()
+	public java.lang.String getPasswordResetCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_PasswordResetCode);
 	}
@@ -1098,7 +1149,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPhone()
+	public java.lang.String getPhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone);
 	}
@@ -1110,7 +1161,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPhone2()
+	public java.lang.String getPhone2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone2);
 	}
@@ -1130,14 +1181,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setPhoto_ID (final int Photo_ID)
 	{
-		if (Photo_ID < 1)
+		if (Photo_ID < 1) 
 			set_Value (COLUMNNAME_Photo_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Photo_ID, Photo_ID);
 	}
 
 	@Override
-	public int getPhoto_ID()
+	public int getPhoto_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Photo_ID);
 	}
@@ -1149,7 +1200,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPrevious_company()
+	public java.lang.String getPrevious_company() 
 	{
 		return get_ValueAsString(COLUMNNAME_Previous_company);
 	}
@@ -1161,7 +1212,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isProcessing()
+	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
@@ -1173,9 +1224,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getRegistry()
+	public java.lang.String getRegistry() 
 	{
 		return get_ValueAsString(COLUMNNAME_Registry);
+	}
+
+	@Override
+	public void setSecretKey_2FA (final @Nullable java.lang.String SecretKey_2FA)
+	{
+		set_Value (COLUMNNAME_SecretKey_2FA, SecretKey_2FA);
+	}
+
+	@Override
+	public java.lang.String getSecretKey_2FA() 
+	{
+		return get_ValueAsString(COLUMNNAME_SecretKey_2FA);
 	}
 
 	@Override
@@ -1185,7 +1248,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -1193,14 +1256,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setSupervisor_ID (final int Supervisor_ID)
 	{
-		if (Supervisor_ID < 1)
+		if (Supervisor_ID < 1) 
 			set_Value (COLUMNNAME_Supervisor_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Supervisor_ID, Supervisor_ID);
 	}
 
 	@Override
-	public int getSupervisor_ID()
+	public int getSupervisor_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Supervisor_ID);
 	}
@@ -1211,7 +1274,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("Timestamp is virtual column");	}
 
 	@Override
-	public java.sql.Timestamp getTimestamp()
+	public java.sql.Timestamp getTimestamp() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Timestamp);
 	}
@@ -1223,7 +1286,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getTitle()
+	public java.lang.String getTitle() 
 	{
 		return get_ValueAsString(COLUMNNAME_Title);
 	}
@@ -1235,7 +1298,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getUnlockAccount()
+	public java.lang.String getUnlockAccount() 
 	{
 		return get_ValueAsString(COLUMNNAME_UnlockAccount);
 	}
@@ -1247,7 +1310,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getUserPIN()
+	public java.lang.String getUserPIN() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserPIN);
 	}
@@ -1259,7 +1322,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getValue()
+	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

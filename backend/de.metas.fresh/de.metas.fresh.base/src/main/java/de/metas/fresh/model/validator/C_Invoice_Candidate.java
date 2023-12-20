@@ -22,15 +22,13 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.model.ModelValidator;
-
 import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -39,18 +37,18 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setProduzentenabrechnung(final I_C_Invoice_Candidate candidate)
 	{
-		if(candidate.isProcessed())
+		if (candidate.isProcessed())
 		{
 			// #335: if the IC was just invoiced, then don't consider changing its C_DocTypeInvoice, but leave whatever doctype was propagated to the invoice
 			return;
 		}
-		
+
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-		if(invoiceCandBL.extractProcessedOverride(candidate).isTrue())
+		if (invoiceCandBL.extractProcessedOverride(candidate).isTrue())
 		{
 			return; // #183 FRESH-511: nothing to check or update, if the user wants the IC to be "processed"
 		}
-		
+
 		// set DocType invoice Produzentenabrechnung based on the flag Produzentenabrechnung from c_BPartner
 		Services.get(IFreshInvoiceCandBL.class).updateC_DocTypeInvoice(candidate);
 	}

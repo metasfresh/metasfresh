@@ -112,11 +112,16 @@ class PPOrderLinesViewDataLoader
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			final boolean serialNoFromSequence)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
-				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).attributeSourceDocument(AttributeSourceDocument.ManufacturingOrder).build())
+				.attributesProvider(HUEditorRowAttributesProvider.builder()
+											.readonly(false)
+											.serialNoFromSequence(serialNoFromSequence)
+											.attributeSourceDocument(AttributeSourceDocument.ManufacturingOrder)
+											.build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
 				.adReferenceService(adReferenceService)
@@ -345,6 +350,7 @@ class PPOrderLinesViewDataLoader
 	{
 		return ppOrderQtys.stream()
 				.map(ppOrderQty -> createForPPOrderQty(ppOrderQty, readOnly))
+				.sorted(Comparator.comparing(PPOrderLineRow::getCode, Comparator.nullsLast(Comparator.naturalOrder())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -369,6 +375,7 @@ class PPOrderLinesViewDataLoader
 						includedHUEditorRow,
 						huEditorRow,
 						readonly))
+				.sorted(Comparator.comparing(PPOrderLineRow::getCode, Comparator.nullsLast(Comparator.naturalOrder())))
 				.collect(ImmutableList.toImmutableList());
 
 		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(parentHUEditorRow != null ? parentHUEditorRow.getId() : null, huEditorRow.getHuId());

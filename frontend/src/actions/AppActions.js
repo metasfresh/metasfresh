@@ -9,6 +9,7 @@ import {
   getNotificationsEndpointRequest,
   getUserSession,
 } from '../api';
+import { updateDefaultPrecisionsFromUserSettings } from '../utils/tableHelpers';
 
 // TODO: All requests should be moved to API
 
@@ -341,6 +342,7 @@ export function loginSuccess(auth) {
           setCurrentActiveLocale(data.language['key']);
           initNumeralLocales(data.language['key'], data.locale);
           MomentTZ.tz.setDefault(data.timeZone);
+          updateDefaultPrecisionsFromUserSettings(data.settings);
 
           auth.initSessionClient(data.websocketEndpoint, (msg) => {
             const me = JSON.parse(msg.body);

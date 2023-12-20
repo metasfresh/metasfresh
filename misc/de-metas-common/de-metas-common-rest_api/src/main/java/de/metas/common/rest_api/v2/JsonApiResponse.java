@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -37,12 +37,12 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonDeserialize(builder = JsonApiResponse.JsonApiResponseBuilder.class)
 public class JsonApiResponse
 {
-	@ApiModelProperty("The `API_Request_Audit_ID` of the request created by the invoker. Might be `null` if metasfresh was configured to not create an audit log at all.")
+	@Schema(description = "The `API_Request_Audit_ID` of the request created by the invoker. Might be `null` if metasfresh was configured to not create an audit log at all.")
 	@JsonProperty("requestId")
 	@JsonInclude(NON_NULL)
 	JsonMetasfreshId requestId;
 
-	@ApiModelProperty("The response body as returned by the actual endpoint (e.g. BPartnerRestController).\n" +
+	@Schema(description = "The response body as returned by the actual endpoint (e.g. BPartnerRestController).\n" +
 			"This property is set only if the matched `API_Audit_Config` record has `IsInvokerWaitsForResult = 'Y'`")
 	@JsonProperty("endpointResponse")
 	@JsonInclude(NON_NULL)

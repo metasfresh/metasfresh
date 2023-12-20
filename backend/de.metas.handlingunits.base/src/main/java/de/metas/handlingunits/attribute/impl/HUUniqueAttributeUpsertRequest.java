@@ -42,4 +42,5 @@ public class HUUniqueAttributeUpsertRequest
 	@NonNull AttributeId attributeId;
 
 	@NonNull String attributeValue;
+
 }

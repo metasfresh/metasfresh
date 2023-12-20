@@ -18,6 +18,7 @@ public class SimulationPlanRef
 
 	@NonNull SimulationPlanDocStatus docStatus;
 	boolean processed;
+	boolean isMainSimulation;
 
 	@NonNull Instant created;
 

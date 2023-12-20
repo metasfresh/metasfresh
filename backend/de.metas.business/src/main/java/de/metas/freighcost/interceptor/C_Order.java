@@ -92,16 +92,4 @@ public class C_Order
 			order.setFreightAmt(deletedFreightAmt);
 		}
 	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_M_SectionCode_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_SectionCode_ID)
-	public void updateSectionCode(@NonNull final I_C_Order order)
-	{
-		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(order))
-		{
-			orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
-			ordersRepo.save(orderLine);
-		}
-	}
 }

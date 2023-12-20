@@ -41,6 +41,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -114,6 +115,17 @@ class ResourceRepository
 	{
 		return getResourcesMap().getResourceIdsByUserId(userId);
 	}
+	
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstIdOnlyOptional(ResourceId::ofRepoId);
+	}
 
 	private ResourcesMap getResourcesMap()
 	{
@@ -148,6 +160,7 @@ class ResourceRepository
 				.manufacturingResourceType(ManufacturingResourceType.ofNullableCode(record.getManufacturingResourceType()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.internalName(record.getInternalName())
+				.humanResourceTestGroupId(HumanResourceTestGroupId.ofRepoIdOrNull(record.getS_HumanResourceTestGroup_ID()))
 				.build();
 	}
 

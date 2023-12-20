@@ -2,6 +2,9 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -14,17 +17,22 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -47,7 +55,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -92,6 +100,8 @@ public class MaterialCockpitRowFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.class, ADReferenceService.newMocked());
+
 		attributesTestHelper = new AttributesTestHelper();
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
@@ -100,6 +110,11 @@ public class MaterialCockpitRowFactoryTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+		save(acctSchema);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
 
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");
@@ -116,7 +131,13 @@ public class MaterialCockpitRowFactoryTest
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
 		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		materialCockpitRowFactory = new MaterialCockpitRowFactory();
+		materialCockpitRowFactory = new MaterialCockpitRowFactory(
+				MaterialCockpitRowLookups.builder()
+						.uomLookup(MockedLookupDataSource.withNamePrefix("UOM"))
+						.bpartnerLookup(MockedLookupDataSource.withNamePrefix("BP"))
+						.productLookup(MockedLookupDataSource.withNamePrefix("Product"))
+						.build()
+		);
 	}
 
 	private void initDimensionSpec_notEmpty()
@@ -131,7 +152,7 @@ public class MaterialCockpitRowFactoryTest
 
 		dimensionspecGroup_attr1_value1 = groups.get(1);
 		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getId()));
-	
+
 		dimensionspecGroup_attr2_value1 = groups.get(2);
 		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey())
 				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", dimensionspecGroup_attr1_value1.getAttributesKey())
@@ -248,7 +269,7 @@ public class MaterialCockpitRowFactoryTest
 		// 1: both stock records are added to a counting record
 		assertThat(includedRows).hasSize(4);
 
-		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty); 
+		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty);
 		assertThat(emptyGroupRow.getAllIncludedStockRecordIds()).contains(stockRecordWithEmptyAttributesKey.getMD_Stock_ID());
 		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo(TWELVE);
 		assertThat(emptyGroupRow.getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(ONE);
@@ -335,7 +356,7 @@ public class MaterialCockpitRowFactoryTest
 	public void createRows_empty_dimension_spec_includePerPlantDetailRows()
 	{
 		final CreateRowsRequest request = setup(true);
-		
+
 		// when
 		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
 
@@ -349,7 +370,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
 		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isNull();
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
-		
+
 		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
 		assertThat(result.get(0).getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
@@ -376,7 +397,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 	}
-	
+
 	private CreateRowsRequest setup(boolean includePerPlantDetailRows)
 	{
 		// given

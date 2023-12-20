@@ -1,8 +1,9 @@
 package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 
-import java.util.Iterator;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.materialtracking.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,10 +14,7 @@ import org.adempiere.model.PlainContextAware;
 import org.compiere.model.IQuery;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.document.engine.IDocument;
-import de.metas.materialtracking.model.I_C_Invoice_Detail;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.util.Services;
+import java.util.Iterator;
 
 /*
  * #%L

@@ -154,10 +154,10 @@ public class CostRevaluationRepository
 		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
 
 		final CostPrice costPrice = from.getCostPrice();
-		record.setCurrentCostPrice(costPrice.getOwnCostPrice().getValue());
+		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
 		if (record.getM_CostRevaluationLine_ID() <= 0)
 		{
-			record.setNewCostPrice(costPrice.getOwnCostPrice().getValue());
+			record.setNewCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
 		}
 		record.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
 

@@ -1,13 +1,18 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature:product get/create/update using metasfresh api
-
+  As a REST-API invoker
+  I want want to be able to upsert products
+  
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And remove external reference if exists:
       | ExternalSystem | ExternalReference | Type     |
       | ALBERTA        | 345               | Product  |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+    And no M_Quality_Attribute data is found
     And no product with value 'code345' exists
 
   @from:cucumber
@@ -15,9 +20,9 @@ Feature:product get/create/update using metasfresh api
   I want to be able to upsert products
 
     Given metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
@@ -59,6 +64,10 @@ Feature:product get/create/update using metasfresh api
         "syncAdvise": null,
         "sectionCode":"ALBERTA_345_sectionCode",
         "sectionCodeSet": true,
+        "purchased":true,
+        "purchasedSet":true,
+        "sapProductHierarchy": "HH",
+        "sapProductHierarchySet": true,
         "bpartnerProductItems": [
           {
             "bpartnerIdentifier": "ext-ALBERTA-345",
@@ -79,8 +88,8 @@ Feature:product get/create/update using metasfresh api
             "customerLabelNameSet": true,
             "ingredients": "test",
             "ingredientsSet": true,
-            "currentVendor": null,
-            "currentVendorSet": false,
+            "currentVendor": true,
+            "currentVendorSet": true,
             "excludedFromSales": true,
             "excludedFromSalesSet": true,
             "exclusionFromSalesReason": "Test",
@@ -128,7 +137,17 @@ Feature:product get/create/update using metasfresh api
             "usedForVendor": null,
             "usedForVendorSet": false
           }
-        ]
+        ],
+        "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "BIO",
+              "EU_NON_EU_AGRICULTURE"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+         }
       }
     }
   ],
@@ -142,8 +161,8 @@ Feature:product get/create/update using metasfresh api
       | M_Product_ID.Identifier | externalIdentifier |
       | p_1                     | ext-ALBERTA-345    |
     Then verify product info
-      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive | OPT.M_SectionCode_ID.Value |
-      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | ALBERTA_345_sectionCode    |
+      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive | OPT.M_SectionCode_ID.Value | OPT.IsPurchased | OPT.SAP_ProductHierarchy |
+      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | ALBERTA_345_sectionCode    | true            | HH                       |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
       | bpartner_1               | ext-ALBERTA-345    |
@@ -153,21 +172,80 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | p_1                     | bpartner_1               |
       | bp_2                             | p_1                     | bpartner_2               |
     And verify bpartner product info
-      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
-      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        |
-      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        |
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
+    And validate created M_Quality_Attributes for product: p_1
+      | OPT.QualityAttribute  |
+      | BearbeitetBio         |
+      | EU/Non-EU-Agriculture |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
+"""
+{
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-345",
+      "requestProduct": {
+        "code": "code345",
+        "codeSet": true,
+        "bpartnerProductItems": [
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-345",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          },
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-456",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          }
+        ],
+        "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "HALAL"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+         }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+
+    Then locate bpartner product by product and bpartner
+      | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
+      | bp_1                             | p_1                     | bpartner_1               |
+      | bp_2                             | p_1                     | bpartner_2               |
+
+    And verify bpartner product info
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | false               |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | true                |
+    And validate created M_Quality_Attributes for product: p_1
+      | OPT.QualityAttribute |
+      | Halal                |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
 
     And metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -303,3 +381,120 @@ Feature:product get/create/update using metasfresh api
     Then validate retrieve product response
       | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
       | product_1               | productName | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |
+
+  @from:cucumber
+  @Id:S0295_100
+  Scenario: as a REST-API invoker
+  I want to be able to create product warehouse assignments
+
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                     | Name                     |
+      | warehouse_1               | warehouseValue_07122023_1 | warehouseName_07122023_1 |
+      | warehouse_2               | warehouseValue_07122023_2 | warehouseName_07122023_2 |
+      | warehouse_3               | warehouseValue_07122023_3 | warehouseName_07122023_3 |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-07122023",
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07122023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "purchased":true,
+        "purchasedSet":true,
+        "warehouseAssignments": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_1", "val-warehouseValue_07122023_2" ],
+          "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+
+    Then locate product by external identifier
+      | M_Product_ID.Identifier | externalIdentifier   |
+      | p_1                     | ext-ALBERTA-07122023 |
+
+    And locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_1,a_2                           |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_1                               | warehouse_1               | p_1                     |
+      | a_2                               | warehouse_2               | p_1                     |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
+  """
+  {
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-07122023",
+      "requestProduct": {
+        "code": "code346",
+        "codeSet": true,
+        "name": "Product_Test_07122023",
+        "nameSet": true,
+        "type": "ITEM",
+        "typeSet": true,
+        "uomCode": "PCE",
+        "uomCodeSet": true,
+        "discontinued": null,
+        "discontinuedSet": false,
+        "active": true,
+        "activeSet": true,
+        "stocked": null,
+        "stockedSet": false,
+        "productCategoryIdentifier": null,
+        "productCategoryIdentifierSet": false,
+        "syncAdvise": null,
+        "purchased":true,
+        "purchasedSet":true,
+        "warehouseAssignments": {
+          "warehouseIdentifiers": [ "name-warehouseName_07122023_3"],
+          "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+  """
+    Then locate warehouse assignments
+      | M_Product_ID.Identifier | M_Product_Warehouse_ID.Identifier |
+      | p_1                     | a_3                               |
+
+    And validate warehouse assignments
+      | M_Product_Warehouse_ID.Identifier | M_Warehouse_ID.Identifier | M_Product_ID.Identifier |
+      | a_3                               | warehouse_3               | p_1                     |

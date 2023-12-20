@@ -30,6 +30,7 @@ public class JsonRawMaterialsIssueLineStep
 	@Nullable BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
+	@Nullable JsonScaleTolerance scaleTolerance;
 
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
 	{
@@ -57,6 +58,26 @@ public class JsonRawMaterialsIssueLineStep
 			}
 		}
 
+		if (step.getScaleTolerance() != null)
+		{
+			final JsonScaleTolerance jsonScaleTolerance = JsonScaleTolerance.builder()
+					.negativeTolerance(step.getScaleTolerance().getNegativeTolerance().toBigDecimal())
+					.positiveTolerance(step.getScaleTolerance().getPositiveTolerance().toBigDecimal())
+					.build();
+
+			builder.scaleTolerance(jsonScaleTolerance);
+		}
+
 		return builder.build();
+	}
+
+	@Value
+	@Builder
+	public static class JsonScaleTolerance
+	{
+		@NonNull
+		BigDecimal positiveTolerance;
+		@NonNull
+		BigDecimal negativeTolerance;
 	}
 }

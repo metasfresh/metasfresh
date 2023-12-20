@@ -22,13 +22,9 @@
 
 package de.metas.treenode;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValue;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.model.tree.AdTreeId;
 import org.springframework.stereotype.Service;

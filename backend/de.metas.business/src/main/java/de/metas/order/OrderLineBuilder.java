@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -8,6 +10,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -28,6 +31,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -101,12 +105,18 @@ public class OrderLineBuilder
 	@Nullable
 	private ActivityId activityId;
 
+	@Nullable
+	private ImmutableList<Consumer<I_C_OrderLine>> afterSaveHooks;
+
+	@Nullable
+	private PricingSystemId overridingPricingSystemId;
+
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
 		this.parent = parent;
 	}
 
-	/* package */void build()
+	/* package */ void build()
 	{
 		assertNotBuilt();
 		built = true;
@@ -143,7 +153,7 @@ public class OrderLineBuilder
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
-		orderLineBL.updatePrices(orderLine);
+		orderLineBL.updatePrices(getUpdatePriceRequest(orderLine));
 
 		if (!Check.isBlank(description))
 		{
@@ -174,6 +184,8 @@ public class OrderLineBuilder
 		}
 
 		this.createdOrderLine = orderLine;
+
+		getAfterSaveHooks().forEach(hook -> hook.accept(createdOrderLine));
 	}
 
 	private void assertNotBuilt()
@@ -184,11 +196,20 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent() { return parent; }
+	private OrderFactory getParent()
+	{
+		return parent;
+	}
 
-	public OrderFactory endOrderLine() { return getParent(); }
+	public OrderFactory endOrderLine()
+	{
+		return getParent();
+	}
 
-	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
+	public OrderAndLineId getCreatedOrderAndLineId()
+	{
+		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
+	}
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
@@ -321,5 +342,51 @@ public class OrderLineBuilder
 	{
 		this.activityId = activityId;
 		return this;
+	}
+
+	@NonNull
+	public OrderLineBuilder afterSaveHook(@NonNull final Consumer<I_C_OrderLine> afterSaveHook)
+	{
+		assertNotBuilt();
+
+		final ImmutableList.Builder<Consumer<I_C_OrderLine>> hooksBuilder = ImmutableList.builder();
+
+		this.afterSaveHooks = hooksBuilder
+				.addAll(getAfterSaveHooks())
+				.add(afterSaveHook)
+				.build();
+
+		return this;
+	}
+
+	@NonNull
+	public OrderLineBuilder overridingPricingSystemId(@Nullable final PricingSystemId overridingPricingSystemId)
+	{
+		assertNotBuilt();
+
+		this.overridingPricingSystemId = overridingPricingSystemId;
+
+		return this;
+	}
+
+	@NonNull
+	private ImmutableList<Consumer<I_C_OrderLine>> getAfterSaveHooks()
+	{
+		return CoalesceUtil.coalesceNotNull(afterSaveHooks, ImmutableList.of());
+	}
+
+	@NonNull
+	private OrderLinePriceUpdateRequest getUpdatePriceRequest(@NonNull final I_C_OrderLine orderLine)
+	{
+		OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
+
+		if (overridingPricingSystemId != null)
+		{
+			request = request.toBuilder()
+					.pricingSystemIdOverride(overridingPricingSystemId)
+					.build();
+		}
+
+		return request;
 	}
 }

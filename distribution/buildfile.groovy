@@ -10,6 +10,7 @@ Map build(final MvnConf mvnConf) {
     stage('Resolve all distribution artifacts')
             {
                 final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
+                final String GH_METASFRESH_DOCKER_BRANCH = "master_gh82_java_to_17"
 
                 final Misc misc = new Misc()
 
@@ -85,10 +86,10 @@ Map build(final MvnConf mvnConf) {
                 // See
                 //  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
                 //  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-                String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>"
+                String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithTextAndBranch(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/, GH_METASFRESH_DOCKER_BRANCH)}</li>"
                 if (env.BRANCH_NAME == 'release') {
                     releaseLinkWithText = """	${releaseLinkWithText}
-<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>"""
+<li>..aaand ${misc.createWeeklyReleaseLinkWithTextAndBranch(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/, GH_METASFRESH_DOCKER_BRANCH)}</li>"""
                 }
                 // echo "DONE calling misc.createReleaseLinkWithText"
 

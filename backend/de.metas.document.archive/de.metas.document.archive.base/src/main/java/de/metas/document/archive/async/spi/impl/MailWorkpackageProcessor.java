@@ -28,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -91,6 +92,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
 	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -232,7 +234,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
@@ -254,7 +256,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
-			final I_C_DocType docTypeRecord = docTypeDAO.getById(docOutboundLogRecord.getC_DocType_ID());
+			final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(docOutboundLogRecord.getC_DocType_ID());
 			if (docTypeRecord.getAD_BoilerPlate_ID() > 0)
 			{
 				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docTypeRecord.getAD_BoilerPlate_ID());
@@ -331,8 +333,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final Evaluatee modelCtx = modelRef != null
 				? TableModelLoader.instance.getPO(modelRef)
 				: Evaluatees.empty();
-
-		return modelCtx
+		final String orgName = orgDAO.retrieveOrgName(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()));
+		final Evaluatee orgEvaluatee = Evaluatees.mapBuilder()
+				.put("AD_Org.Name", orgName)
+				.build();
+		return orgEvaluatee.andComposeWith(modelCtx)
 				.andComposeWith(InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord));
 	}
 

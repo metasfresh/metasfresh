@@ -28,10 +28,8 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 @Builder
 @Value
@@ -51,7 +49,7 @@ public class ClearanceStatusInfo
 	{
 		return ClearanceStatus.ofCodeOptional(hu.getClearanceStatus())
 				.map(status -> ClearanceStatusInfo.builder()
-						.clearanceDate(InstantAndOrgId.ofTimestamp(hu.getClearanceDate(), OrgId.ofRepoId(hu.getAD_Org_ID())))
+						.clearanceDate(InstantAndOrgId.ofTimestampOrNull(hu.getClearanceDate(), OrgId.ofRepoId(hu.getAD_Org_ID())))
 						.clearanceNote(hu.getClearanceNote())
 						.clearanceStatus(status)
 						.build())

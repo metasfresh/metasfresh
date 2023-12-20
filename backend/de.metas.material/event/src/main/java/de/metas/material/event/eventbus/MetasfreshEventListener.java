@@ -18,6 +18,7 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Properties;
 
 /*
@@ -62,7 +63,7 @@ public class MetasfreshEventListener
 			final MaterialEvent lightWeightEvent = materialEventConverter.toMaterialEvent(event);
 			try (final MDCCloseable ignored = MDC.putCloseable("MaterialEventClass", lightWeightEvent.getClass().getName()))
 			{
-				logger.info("Received MaterialEvent={}", lightWeightEvent);
+				logger.info("Received MaterialEvent={}, Timestamp={}, TheadId={}", lightWeightEvent, Instant.now(), Thread.currentThread().getId());
 
 				// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 				final Properties temporaryCtx = Env.copyCtx(Env.getCtx());

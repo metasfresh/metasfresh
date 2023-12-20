@@ -44,7 +44,7 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_R_StatusCategory;
-import org.elasticsearch.common.collect.List;
+import org.elasticsearch.core.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -89,6 +89,7 @@ public class ProjectServiceTest
 		projectTypeRecord.setProjectCategory("N");
 		projectTypeRecord.setAD_Org_ID(1000000);
 		projectTypeRecord.setR_StatusCategory_ID(statusCategory.getR_StatusCategory_ID());
+		projectTypeRecord.setName("projectTypeName");
 
 		saveRecord(projectTypeRecord);
 

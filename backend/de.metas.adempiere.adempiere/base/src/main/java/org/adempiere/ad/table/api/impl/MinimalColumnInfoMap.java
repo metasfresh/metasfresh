@@ -39,4 +39,6 @@ public interface MinimalColumnInfoMap
 	}
 
 	ImmutableList<MinimalColumnInfo> getByIds(Collection<AdColumnId> adColumnIds);
+
+	ImmutableList<MinimalColumnInfo> getByColumnName(String columnName);
 }

@@ -1,6 +1,6 @@
 package de.metas.marketing.base.process;
 
-import de.metas.marketing.base.CampaignSyncService;
+import de.metas.marketing.base.PlatformSyncService;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.SyncDirection;
@@ -34,7 +34,7 @@ import org.compiere.SpringContextHolder;
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class MKTG_Campaign_Platform_Import_From extends JavaProcess
 {
-	private final CampaignSyncService syncService = SpringContextHolder.instance.getBean(CampaignSyncService.class);
+	private final PlatformSyncService syncService = SpringContextHolder.instance.getBean(PlatformSyncService.class);
 
 	@Param(mandatory = true, parameterName = I_MKTG_Platform.COLUMNNAME_MKTG_Platform_ID)
 	private PlatformId platformId;

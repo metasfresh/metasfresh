@@ -56,7 +56,8 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
-import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.udp.SendToUDPRouteBuilder.SEND_TO_UDP_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -97,6 +98,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 
 				.process(new ReadPluFileProcessor(processLogger))
 				.to(direct(SEND_TO_TCP_ROUTE_ID))
+				//.to(direct(SEND_TO_UDP_ROUTE_ID))
 
 				.choice()
 					.when(ExportPPOrderHelper.isPluFileExportAuditEnabled())

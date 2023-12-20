@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -42,14 +41,17 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -57,6 +59,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -88,6 +91,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -373,10 +377,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
 
 			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
+					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()) :
 					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
 
-			if (invoiceRule!= null)
+			if (invoiceRule != null)
 			{
 				icRecord.setInvoiceRule(invoiceRule.getCode());
 			}
@@ -392,7 +396,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			//
 			// Set C_Activity from Product (07442)
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(clientId, orgId, productId);
 			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
 		}
 
@@ -429,12 +433,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
 		icRecord.setIncotermLocation(inOut.getIncotermLocation());
 
-		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
-
 		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
 
+		setWarehouseId(icRecord);
+		setHarvestingDetails(icRecord);
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
+		invoiceCandBL.setPaymentTermIfMissing(icRecord);
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
@@ -466,6 +471,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
 
 			saveRecord(iciol);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Setting qtyDelivered={} on icIol_ID={}",
+							icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
 		}
 		else
 		{
@@ -485,7 +493,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutRecord.getC_DocType_ID() > 0)
 		{
-			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID());
 			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
 			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
 			{
@@ -522,6 +530,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return null;
 	}
 
+	@NonNull
 	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
 	{
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
@@ -590,7 +599,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 		final String movementType = inout.getMovementType();
 
-		if (inOutBL.isReturnMovementType(movementType))
+		if (MovementType.isMaterialReturn(movementType))
 		{
 			return ONE.negate();
 		}
@@ -817,6 +826,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
+
 		return orderLineBL.getPaymentTermId(ol);
 	}
 
@@ -912,9 +922,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			);
 
 			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																		   .bpartnerId(billLocationFromInOut.getBpartnerId())
-																		   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-																		   .build());
+					.bpartnerId(billLocationFromInOut.getBpartnerId())
+					.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+					.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;
@@ -968,8 +978,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Tax from Product (07442)
 		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
-		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(icRecord.getC_VAT_Code_Override_ID(), icRecord.getC_VAT_Code_ID()));
 
 		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOutRecord)
@@ -983,7 +993,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()),
 				deliveryLocation, // shipC_BPartner_Location_ID
-				SOTrx.ofBoolean(inOutRecord.isSOTrx()));
+				SOTrx.ofBoolean(inOutRecord.isSOTrx()),
+				vatCodeId);
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final ProductPrice pp = inoutLineRecord.getC_OrderLine_ID() != 0 ? orderLineBL.getPriceActual(inoutLineRecord.getC_OrderLine()) : null;
@@ -1049,5 +1060,32 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_AD_Note note = null; // we don't have a note
 		Services.get(IInvoiceCandBL.class).setError(ic, ex.getLocalizedMessage(), note, askForDeleteRegeneration);
+	}
+
+	@Override
+	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = ic.getC_Order();
+		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
+	}
+
+	@Override
+	public void setHarvestingDetails(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = ic.getC_Order();
+		ic.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		ic.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 	}
 }

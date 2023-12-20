@@ -100,4 +100,16 @@ public class Product
 
 	@Nullable
 	SectionCodeId sectionCodeId;
+
+	boolean purchased;
+
+	@Nullable
+	String sapProductHierarchy;
+
+
+	@Nullable
+	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }

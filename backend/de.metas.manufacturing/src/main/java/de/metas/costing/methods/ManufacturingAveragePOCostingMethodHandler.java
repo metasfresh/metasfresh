@@ -8,6 +8,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
@@ -36,7 +37,7 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -99,7 +100,22 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+		}
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -126,6 +142,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if (actualResourceId.isNoResource())
+			{
+				return null;
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -163,7 +184,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
-		return Optional.ofNullable(result);
+		return CostDetailCreateResultsList.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)

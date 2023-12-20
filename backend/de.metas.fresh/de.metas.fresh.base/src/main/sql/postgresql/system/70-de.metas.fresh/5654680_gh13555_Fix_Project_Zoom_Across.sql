@@ -8,12 +8,18 @@ UPDATE ad_window SET zoomintopriority = 1 WHERE ad_window_id=540668
 
 -- Table: C_Project
 -- 2022-09-06T14:33:57.260Z
-UPDATE AD_Table SET AD_Window_ID=540668,Updated=TO_TIMESTAMP('2022-09-06 15:33:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=203
+UPDATE AD_Table
+SET AD_Window_ID=540668, Updated=TO_TIMESTAMP('2022-09-06 15:33:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Table_ID = 203
+  AND EXISTS(SELECT 1 FROM ad_window WHERE ad_window_id = 540668)
 ;
 
 -- Table: C_Project
 -- 2022-09-06T14:48:33.627Z
-UPDATE AD_Table SET PO_Window_ID=540668,Updated=TO_TIMESTAMP('2022-09-06 15:48:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=203
+UPDATE AD_Table
+SET PO_Window_ID=540668, Updated=TO_TIMESTAMP('2022-09-06 15:48:33', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Table_ID = 203
+  AND EXISTS(SELECT 1 FROM ad_window WHERE ad_window_id = 540668)
 ;
 
 -- Window: Projekt (Verkauf), InternalName=286

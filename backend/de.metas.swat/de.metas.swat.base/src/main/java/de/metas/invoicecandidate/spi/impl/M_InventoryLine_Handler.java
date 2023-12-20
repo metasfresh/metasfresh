@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -28,12 +27,14 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.User;
@@ -60,6 +61,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -202,7 +204,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Activity from Product (07442)
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(clientId, orgId, productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
@@ -213,6 +215,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOut)
 				.getBPartnerLocationAndCaptureId();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ic,
@@ -222,7 +225,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				inoutBPLocationId, // shipC_BPartner_Location_ID
-				SOTrx.PURCHASE); // isSOTrx same as in vendor return
+				SOTrx.PURCHASE,
+				vatCodeId); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//
@@ -337,9 +341,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billUser = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-												   .bpartnerId(billLocationFromInOut.getBpartnerId())
-												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-												   .build());
+							.bpartnerId(billLocationFromInOut.getBpartnerId())
+							.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+							.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;

@@ -1,9 +1,11 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and validate created order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:

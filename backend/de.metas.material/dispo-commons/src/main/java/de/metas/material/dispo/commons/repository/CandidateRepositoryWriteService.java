@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-commons
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.commons.repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -45,12 +67,12 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
+import org.reflections.util.Utils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -68,28 +90,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * metasfresh-material-dispo-commons
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 public class CandidateRepositoryWriteService
@@ -237,6 +238,14 @@ public class CandidateRepositoryWriteService
 		public Candidate toCandidateWithQtyDelta()
 		{
 			return candidate.withQuantity(getQtyDelta());
+		}
+
+		public Candidate toCandidateWithUpdateInfo()
+		{
+			return candidate.toBuilder()
+					.deltaQuantity(getQtyDelta())
+					.updated(true)
+					.build();
 		}
 
 		/**
@@ -398,6 +407,12 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+
+		final String lotForLot = candidate.getLotForLot();
+		if(!Utils.isEmpty(lotForLot))
+		{
+			candidateRecord.setIsLotForLot(candidate.getLotForLot());
+		}
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 
@@ -800,7 +815,7 @@ public class CandidateRepositoryWriteService
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class);
-		
+
 		if (deleteCandidatesQuery.getIsActive() != null)
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive());
@@ -817,6 +832,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		queryBuilder
+				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
@@ -851,29 +867,22 @@ public class CandidateRepositoryWriteService
 			@NonNull final I_MD_Candidate candidate,
 			@NonNull final Set<CandidateId> alreadySeenIds)
 	{
-		final IQueryFilter<I_MD_Candidate> stockQueryFilter;
+		final CandidateId parentCandidateId = CandidateId.ofRepoIdOrNull(candidate.getMD_Candidate_Parent_ID());
 
-		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		if (parentCandidateId != null
+				&& parentCandidateId.getRepoId() != candidate.getMD_Candidate_ID()
+				&& !alreadySeenIds.contains(parentCandidateId))
 		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.setJoinOr()
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID())
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_Parent_ID());
-		}
-		else
-		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID());
-		}
+			// remove parent link
+			candidate.setMD_Candidate_Parent_ID(-1);
+			saveRecord(candidate);
 
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.filter(stockQueryFilter)
-				.create()
-				.iterateAndStreamIds(CandidateId::ofRepoId)
-				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
-				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+			deleteCandidateById(parentCandidateId, alreadySeenIds);
+		}
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+
+		deleteChildCandidates(candidateId, alreadySeenIds);
 
 		deleteDemandDetailsRecords(candidateId);
 		deleteDistDetailsRecords(candidateId);
@@ -931,6 +940,16 @@ public class CandidateRepositoryWriteService
 				.delete();
 	}
 
+	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+	}
+
 	public void deactivateSimulatedCandidates()
 	{
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
@@ -959,7 +978,7 @@ public class CandidateRepositoryWriteService
 						.setParameter("CandidateId", candidateId))
 				.getId();
 	}
-	
+
 	@NonNull
 	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
 	{
@@ -971,7 +990,7 @@ public class CandidateRepositoryWriteService
 																		 .build(),
 																 candidateRecord.getQty());
 	}
-	
+
 	@Value
 	public static class DeleteResult
 	{

@@ -52,6 +52,7 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.RoleId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserGroupUserAssignment;
@@ -469,8 +470,10 @@ public class ApiAuditService
 
 		if (apiAuditConfig.isPerformAuditAsync())
 		{
+			// process the request right now..
 			filterChain.doFilter(contentCachedRequest, contentCachedResponse);
 
+			// ..but create the API_Request_Audit asynchronously to save time for the caller!
 			auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
 
 			contentCachedResponse.copyBodyToResponse();
@@ -509,6 +512,21 @@ public class ApiAuditService
 			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final Status status)
 	{
+		final UserAndRoleId userAndRoleId = UserAndRoleId.createFromCurrentEnv();
+
+		return logRequest(
+				apiRequest,
+				apiAuditConfig,
+				userAndRoleId,
+				status);
+	}
+
+	private ApiRequestAudit logRequest(
+			@NonNull final ApiRequest apiRequest,
+			@NonNull final ApiAuditConfig apiAuditConfig,
+			@NonNull final UserAndRoleId userAndRoleId,
+			@NonNull final Status status)
+	{
 		try
 		{
 			final HttpHeadersWrapper requestHeaders = HttpHeadersWrapper.of(apiRequest.getHeaders());
@@ -522,8 +540,8 @@ public class ApiAuditService
 			final ApiRequestAudit apiRequestAudit = ApiRequestAudit.builder()
 					.apiAuditConfigId(apiAuditConfig.getApiAuditConfigId())
 					.orgId(apiAuditConfig.getOrgId())
-					.roleId(Env.getLoggedRoleId())
-					.userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM)) // there might be no logged in user yet in the case of /api/v2/auth
+					.roleId(userAndRoleId.getRoleId())
+					.userId(userAndRoleId.getUserId())
 					.status(status)
 					.body(apiRequest.getBody())
 					.method(HttpMethod.ofCodeOptional(apiRequest.getHttpMethod()).orElse(null))
@@ -544,6 +562,20 @@ public class ApiAuditService
 					.appendParametersToMessage()
 					.setParameter("Path", apiRequest.getFullPath())
 					.setParameter("Method", apiRequest.getHttpMethod());
+		}
+	}
+
+	@Value
+	private static class UserAndRoleId
+	{
+		@NonNull UserId userId;
+		@NonNull RoleId roleId;
+
+		private static UserAndRoleId createFromCurrentEnv()
+		{
+			return new UserAndRoleId(
+					Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM), // there might be no logged in user yet in the case of /api/v2/auth
+					Env.getLoggedRoleId());
 		}
 	}
 
@@ -639,12 +671,16 @@ public class ApiAuditService
 			final ApiResponse apiResponse = ApiResponseMapper.map(response);
 			final ApiRequest apiRequest = ApiRequestMapper.map(executedRequest);
 
+			// when creating the audit in another thread, we still want the user and role that was authenticated
+			final UserAndRoleId userAndRoleId = UserAndRoleId.createFromCurrentEnv(); // ..get them from the current threadlocal context
+
 			CompletableFuture.runAsync(() -> {
 				try
 				{
 					final Status status = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
 
-					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
+					// pass the user and role here, within the other thread
+					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, userAndRoleId, status);
 
 					auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
 

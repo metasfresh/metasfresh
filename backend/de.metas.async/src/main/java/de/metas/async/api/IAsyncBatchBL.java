@@ -13,11 +13,11 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**

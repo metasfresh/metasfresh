@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetrieveExternalSystemInfoCamelRequest;
+import de.metas.camel.externalsystems.common.v2.VerifyBOMCamelRequest;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
@@ -59,6 +60,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BOM_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_VERIFY_BOM_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.ATTACH_FILE_TO_BOM_PRODUCT_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_PROCESSOR_ID;
@@ -68,6 +70,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_PUSH_BOM_PRODUCTS = "mock:pushBOMProductsRoute";
+	private static final String MOCK_VERIFY_BOM_PRODUCTS = "mock:verifyBOMProductsRoute";
 	private static final String MOCK_UPSERT_PRODUCTS = "mock:upsertProductsRoute";
 	private static final String MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO = "mock:retrieveExternalSysInfo";
 	private static final String MOCK_ATTACH_FILE = "mock:attachFile";
@@ -75,6 +78,7 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_BOM = "0_JsonBOM.json";
 	private static final String JSON_UPSERT_CAMEL_PRODUCT_REQ = "10_ProductUpsertCamelRequest.json";
 	private static final String JSON_BOM_UPSERT_CAMEL_REQ = "20_BOMUpsertCamelRequest.json";
+	private static final String JSON_VERIFY_BOM_CAMEL_REQ = "25_VerifyBOMRequest.json";
 
 	private static final String JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ_BOMs = "30_RetrieveExternalSystemInfoCamelRequestBOMs.json";
 	private static final String JSON_EXTERNAL_SYSTEM_INFO_RES_BOMs = "30_JsonExternalSystemInfo.json";
@@ -160,6 +164,10 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 		final InputStream bomUpsertCamelReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_BOM_UPSERT_CAMEL_REQ);
 		pushBOMProductsMockEP.expectedBodiesReceived(objectMapper.readValue(bomUpsertCamelReq, BOMUpsertCamelRequest.class));
 
+		final MockEndpoint verifyBOMEp = getMockEndpoint(MOCK_VERIFY_BOM_PRODUCTS);
+		final InputStream verifyBOMCamelRequest = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_VERIFY_BOM_CAMEL_REQ);
+		verifyBOMEp.expectedBodiesReceived(objectMapper.readValue(verifyBOMCamelRequest, VerifyBOMCamelRequest.class));
+
 		final String requestBodyAsString = loadAsString(JSON_BOM);
 
 		//when
@@ -196,6 +204,10 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_BOM_V2_CAMEL_URI)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockPushBOMsEP);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_VERIFY_BOM_V2_CAMEL_URI)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_VERIFY_BOM_PRODUCTS);
 							  });
 
 		AdviceWith.adviceWith(context, ATTACH_FILE_TO_BOM_PRODUCT_ROUTE_ID,

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -47,7 +48,6 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
@@ -171,6 +171,8 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -221,6 +223,8 @@ public class DocumentEntityDescriptor
 		queryIfNoFilters = builder.queryIfNoFilters;
 
 		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -229,7 +233,7 @@ public class DocumentEntityDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("tableName", tableName.orElse(null))
-				.add("fields.count", fields.size()) // only fields count because else it's to long
+				.add("fields.count", fields.size()) // only fields count because else it's too long
 				// .add("entityDataBinding", dataBinding) // skip it because it's too long
 				.add("includedEntitites.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
 				.toString();
@@ -459,9 +463,9 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _caption = TranslatableStrings.empty();
 		private ITranslatableString _description = TranslatableStrings.empty();
 
-		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
-		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
+		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
 
@@ -486,8 +490,6 @@ public class DocumentEntityDescriptor
 
 		private AdProcessId _printProcessId = null;
 
-		private Boolean _cloneEnabled = null;
-
 		@Getter
 		private boolean singleRowDetail = false;
 
@@ -501,6 +503,8 @@ public class DocumentEntityDescriptor
 		private int viewPageLength;
 
 		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -1164,10 +1168,6 @@ public class DocumentEntityDescriptor
 
 		private boolean isCloneEnabled()
 		{
-			if (_cloneEnabled != null)
-			{
-				return _cloneEnabled;
-			}
 			return isCloneEnabled(_tableName);
 		}
 
@@ -1178,10 +1178,6 @@ public class DocumentEntityDescriptor
 				return false;
 			}
 
-			if (!CopyRecordFactory.isEnabled())
-			{
-				return false;
-			}
 			return CopyRecordFactory.isEnabledForTableName(tableName.get());
 		}
 
@@ -1198,6 +1194,12 @@ public class DocumentEntityDescriptor
 		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
 		{
 			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 	}

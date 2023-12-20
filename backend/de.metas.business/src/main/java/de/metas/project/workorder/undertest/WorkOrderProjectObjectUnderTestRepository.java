@@ -25,7 +25,9 @@ package de.metas.project.workorder.undertest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -33,7 +35,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project_WO_ObjectUnderTest;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -46,7 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class WorkOrderProjectObjectUnderTestRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public List<WOProjectObjectUnderTest> getByProjectId(@NonNull final ProjectId projectId)
@@ -96,6 +100,9 @@ public class WorkOrderProjectObjectUnderTestRepository
 			record.setWOObjectType(objectUnderTest.getWoObjectType());
 			record.setWOObjectName(objectUnderTest.getWoObjectName());
 			record.setWOObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts());
+			record.setM_Product_ID(ProductId.toRepoId(objectUnderTest.getProductId()));
+			record.setC_OrderLine_Provision_ID(OrderLineId.toRepoId(objectUnderTest.getOrderLineProvisionId()));
+			record.setObjectDeliveredDate(TimeUtil.asTimestamp(objectUnderTest.getObjectDeliveredDate()));
 
 			saveRecord(record);
 
@@ -140,6 +147,17 @@ public class WorkOrderProjectObjectUnderTestRepository
 	}
 
 	@NonNull
+	public ImmutableList<WOProjectObjectUnderTest> getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_ObjectUnderTest.class)
+				.addEqualsFilter(I_C_Project_WO_ObjectUnderTest.COLUMNNAME_C_OrderLine_Provision_ID, orderLineId.getRepoId())
+				.create()
+				.stream()
+				.map(WorkOrderProjectObjectUnderTestRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	private static WOProjectObjectUnderTest ofRecord(@NonNull final I_C_Project_WO_ObjectUnderTest record)
 	{
 		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
@@ -156,6 +174,9 @@ public class WorkOrderProjectObjectUnderTestRepository
 				.woObjectType(record.getWOObjectType())
 				.woObjectName(record.getWOObjectName())
 				.woObjectWhereabouts(record.getWOObjectWhereabouts())
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.objectDeliveredDate(TimeUtil.asInstant(record.getObjectDeliveredDate()))
+				.orderLineProvisionId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLine_Provision_ID()))
 				.build();
 	}
 }

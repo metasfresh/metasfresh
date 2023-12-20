@@ -23,9 +23,12 @@
 package de.metas.project.budget.interceptor;
 
 import de.metas.project.ProjectCategory;
+import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
+import de.metas.project.budget.BudgetProjectService;
+import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,10 +45,17 @@ import java.util.Optional;
 public class C_Project
 {
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
+	private final WOProjectService woProjectService;
+	private final BudgetProjectService budgetProjectService;
 
-	public C_Project(@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository)
+	public C_Project(
+			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
+			@NonNull final WOProjectService woProjectService,
+			@NonNull final BudgetProjectService budgetProjectService)
 	{
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
+		this.woProjectService = woProjectService;
+		this.budgetProjectService = budgetProjectService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -65,4 +75,22 @@ public class C_Project
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged =
+			{ I_C_Project.COLUMNNAME_BPartnerDepartment,
+					I_C_Project.COLUMNNAME_SalesRep_ID,
+					I_C_Project.COLUMNNAME_Specialist_Consultant_ID,
+					I_C_Project.COLUMNNAME_C_Project_Reference_Ext,
+					I_C_Project.COLUMNNAME_InternalPriority })
+	public void propagateValuesToWOChildProjects(@NonNull final I_C_Project record)
+	{
+		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())
+		{
+			return;
+		}
+
+		final BudgetProject budgetProject = budgetProjectService.getById(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + record.getC_Project_ID()));
+
+		woProjectService.updateWOChildProjectsFromParent(budgetProject);
+	}
 }

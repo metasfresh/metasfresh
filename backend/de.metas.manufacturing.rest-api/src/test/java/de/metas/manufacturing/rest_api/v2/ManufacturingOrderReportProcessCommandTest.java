@@ -65,6 +65,77 @@ class ManufacturingOrderReportProcessCommandTest
 		testHelper = HUTestHelper.newInstanceOutOfTrx();
 	}
 
+	@Builder(builderMethodName = "hu", builderClassName = "$HUBuilder")
+	private HuId createHU(
+			@Nullable final String huValue,
+			@Nullable final String lotNumber,
+			@Nullable final LocalDate bestBeforeDate,
+			@Nullable final String serialNo)
+	{
+		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		if (huValue != null && !Check.isBlank(huValue))
+		{
+			hu.setM_HU_ID(HuId.ofHUValue(huValue).getRepoId());
+			hu.setValue(huValue);
+		}
+		InterfaceWrapperHelper.saveRecord(hu);
+
+		//
+		// Storage
+		final I_M_HU_Storage huStorage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
+		huStorage.setM_HU_ID(hu.getM_HU_ID());
+		huStorage.setM_Product_ID(productId.getRepoId());
+		huStorage.setQty(new BigDecimal("100"));
+		huStorage.setC_UOM_ID(testHelper.uomEachId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(huStorage);
+
+		//
+		// Attributes
+		if (lotNumber != null && !Check.isBlank(lotNumber))
+		{
+			createHULotNumberAttribute(hu, lotNumber);
+		}
+		if (bestBeforeDate != null)
+		{
+			createHUBestBeforeDateAttribute(hu, bestBeforeDate);
+		}
+		if (serialNo != null && !Check.isBlank(serialNo))
+		{
+			createHUSerialNoAttribute(hu, serialNo);
+		}
+
+		return HuId.ofRepoId(hu.getM_HU_ID());
+	}
+
+	private void createHULotNumberAttribute(final I_M_HU hu, final String lotNumber)
+	{
+		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
+		huAttribute.setM_HU_ID(hu.getM_HU_ID());
+		huAttribute.setM_Attribute_ID(testHelper.attr_LotNumber.getM_Attribute_ID());
+		huAttribute.setValue(lotNumber);
+		InterfaceWrapperHelper.saveRecord(huAttribute);
+	}
+
+	private void createHUBestBeforeDateAttribute(final I_M_HU hu, final LocalDate bestBeforeDate)
+	{
+		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
+		huAttribute.setM_HU_ID(hu.getM_HU_ID());
+		huAttribute.setM_Attribute_ID(testHelper.attr_BestBeforeDate.getM_Attribute_ID());
+		huAttribute.setValueDate(TimeUtil.asTimestamp(bestBeforeDate));
+		InterfaceWrapperHelper.saveRecord(huAttribute);
+	}
+
+	private void createHUSerialNoAttribute(final I_M_HU hu, final String serialNo)
+	{
+		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
+		huAttribute.setM_HU_ID(hu.getM_HU_ID());
+		huAttribute.setM_Attribute_ID(testHelper.attr_SerialNo.getM_Attribute_ID());
+		huAttribute.setValue(serialNo);
+		InterfaceWrapperHelper.saveRecord(huAttribute);
+	}
+
 	@Nested
 	public class resolveHUId
 	{
@@ -82,77 +153,6 @@ class ManufacturingOrderReportProcessCommandTest
 							.issues(ImmutableList.of())
 							.build())
 					.build();
-		}
-
-		@Builder(builderMethodName = "hu", builderClassName = "$HUBuilder")
-		private HuId createHU(
-				@Nullable final String huValue,
-				@Nullable final String lotNumber,
-				@Nullable final LocalDate bestBeforeDate,
-				@Nullable final String serialNo)
-		{
-			final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
-			hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
-			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-			if (huValue != null && !Check.isBlank(huValue))
-			{
-				hu.setM_HU_ID(HuId.ofHUValue(huValue).getRepoId());
-				hu.setValue(huValue);
-			}
-			InterfaceWrapperHelper.saveRecord(hu);
-
-			//
-			// Storage
-			final I_M_HU_Storage huStorage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-			huStorage.setM_HU_ID(hu.getM_HU_ID());
-			huStorage.setM_Product_ID(productId.getRepoId());
-			huStorage.setQty(new BigDecimal("100"));
-			huStorage.setC_UOM_ID(testHelper.uomEachId.getRepoId());
-			InterfaceWrapperHelper.saveRecord(huStorage);
-
-			//
-			// Attributes
-			if (lotNumber != null && !Check.isBlank(lotNumber))
-			{
-				createHULotNumberAttribute(hu, lotNumber);
-			}
-			if (bestBeforeDate != null)
-			{
-				createHUBestBeforeDateAttribute(hu, bestBeforeDate);
-			}
-			if (serialNo != null && !Check.isBlank(serialNo))
-			{
-				createHUSerialNoAttribute(hu, serialNo);
-			}
-
-			return HuId.ofRepoId(hu.getM_HU_ID());
-		}
-
-		private void createHULotNumberAttribute(final I_M_HU hu, final String lotNumber)
-		{
-			final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
-			huAttribute.setM_HU_ID(hu.getM_HU_ID());
-			huAttribute.setM_Attribute_ID(testHelper.attr_LotNumber.getM_Attribute_ID());
-			huAttribute.setValue(lotNumber);
-			InterfaceWrapperHelper.saveRecord(huAttribute);
-		}
-
-		private void createHUBestBeforeDateAttribute(final I_M_HU hu, final LocalDate bestBeforeDate)
-		{
-			final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
-			huAttribute.setM_HU_ID(hu.getM_HU_ID());
-			huAttribute.setM_Attribute_ID(testHelper.attr_BestBeforeDate.getM_Attribute_ID());
-			huAttribute.setValueDate(TimeUtil.asTimestamp(bestBeforeDate));
-			InterfaceWrapperHelper.saveRecord(huAttribute);
-		}
-
-		private void createHUSerialNoAttribute(final I_M_HU hu, final String serialNo)
-		{
-			final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
-			huAttribute.setM_HU_ID(hu.getM_HU_ID());
-			huAttribute.setM_Attribute_ID(testHelper.attr_SerialNo.getM_Attribute_ID());
-			huAttribute.setValue(serialNo);
-			InterfaceWrapperHelper.saveRecord(huAttribute);
 		}
 
 		@Test

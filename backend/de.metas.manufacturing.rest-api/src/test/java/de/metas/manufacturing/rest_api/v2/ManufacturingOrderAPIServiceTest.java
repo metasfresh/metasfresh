@@ -537,10 +537,46 @@ public class ManufacturingOrderAPIServiceTest
 		}
 	}
 
+	private HUTestHelper huTestHelper;
+
+	@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
+	private HuId createVHU(
+			@NonNull final ProductId productId,
+			@NonNull final String qty,
+			@Nullable final String lotNumber,
+			@Nullable final String bestBeforeDate)
+	{
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
+				.setHUStatus(X_M_HU.HUSTATUS_Active);
+		huTestHelper.load(TestHelperLoadRequest.builder()
+				.producer(producer)
+				.cuProductId(productId)
+				.loadCuQty(new BigDecimal(qty))
+				.loadCuUOM(uom)
+				.build());
+
+		final I_M_HU vhu = producer.getSingleCreatedHU().get();
+
+		if (lotNumber != null
+				|| bestBeforeDate != null)
+		{
+			final IMutableHUContext huContext = huTestHelper.getHUContext();
+			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory()
+					.getAttributeStorage(vhu);
+			huAttributes.setSaveOnChange(true);
+
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, LocalDate.parse(bestBeforeDate));
+		}
+
+		return HuId.ofRepoId(vhu.getM_HU_ID());
+	}
+
 	@Nested
 	public class report
 	{
-		private HUTestHelper huTestHelper;
 		private I_C_UOM uomEach;
 		private LocatorId locatorId;
 		private ResourceId plantId;
@@ -578,41 +614,6 @@ public class ManufacturingOrderAPIServiceTest
 			docType.setName(docBaseType);
 			docType.setDocBaseType(docBaseType);
 			saveRecord(docType);
-		}
-
-		@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
-		private HuId createVHU(
-				@NonNull final ProductId productId,
-				@NonNull final String qty,
-				@Nullable final String lotNumber,
-				@Nullable final String bestBeforeDate)
-		{
-			final I_C_UOM uom = productBL.getStockUOM(productId);
-
-			final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
-					.setHUStatus(X_M_HU.HUSTATUS_Active);
-			huTestHelper.load(TestHelperLoadRequest.builder()
-					.producer(producer)
-					.cuProductId(productId)
-					.loadCuQty(new BigDecimal(qty))
-					.loadCuUOM(uom)
-					.build());
-
-			final I_M_HU vhu = producer.getSingleCreatedHU().get();
-
-			if (lotNumber != null
-					|| bestBeforeDate != null)
-			{
-				final IMutableHUContext huContext = huTestHelper.getHUContext();
-				final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory()
-						.getAttributeStorage(vhu);
-				huAttributes.setSaveOnChange(true);
-
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, LocalDate.parse(bestBeforeDate));
-			}
-
-			return HuId.ofRepoId(vhu.getM_HU_ID());
 		}
 
 		@Test

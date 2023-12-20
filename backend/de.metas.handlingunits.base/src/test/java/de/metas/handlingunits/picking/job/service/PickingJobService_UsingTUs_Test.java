@@ -1,10 +1,13 @@
 package de.metas.handlingunits.picking.job.service;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
@@ -16,21 +19,19 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
-import org.adempiere.test.AdempiereTestHelper;
+import de.metas.util.collections.CollectionUtils;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
 @SuppressWarnings("OptionalGetWithoutIsPresent")
+@ExtendWith(SnapshotExtension.class)
 public class PickingJobService_UsingTUs_Test
 {
 	private PickingJobTestHelper helper;
@@ -42,11 +43,7 @@ public class PickingJobService_UsingTUs_Test
 
 	private TestRecorder results;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -93,6 +90,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickerId(UserId.ofRepoId(1234))
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
+						.isAllowPickingAnyHU(false) // we need a plan built
 						.build());
 		results.reportStep("Created Picking Job", pickingJob);
 		results.reportStepWithAllHUs("HUs after created Picking Job");
@@ -103,7 +101,7 @@ public class PickingJobService_UsingTUs_Test
 	void createJobAndGet()
 	{
 		final PickingJob pickingJob = createJob();
-		results.assertMatchesSnapshot();
+		expect.toMatchSnapshot(results);
 
 		final PickingJob jobLoaded = helper.pickingJobService.getById(pickingJob.getId());
 		Assertions.assertThat(jobLoaded)
@@ -119,19 +117,21 @@ public class PickingJobService_UsingTUs_Test
 
 		results.reportStep("Picking Job after ABORT", pickingJob);
 		results.reportStepWithAllHUs("HUs after Picking Job ABORT");
-		results.assertMatchesSnapshot();
+		expect.toMatchSnapshot(results);
 	}
 
 	@Test
 	void completeJob()
 	{
 		PickingJob pickingJob = createJob();
-		final ImmutableList<PickingJobStep> steps = pickingJob.streamSteps().collect(ImmutableList.toImmutableList());
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		final ImmutableList<PickingJobStep> steps = line.getSteps();
 		Assertions.assertThat(steps).hasSize(2);
 
 		pickingJob = helper.pickingJobService.processStepEvent(
 				pickingJob,
 				PickingJobStepEvent.builder()
+						.pickingLineId(line.getId())
 						.pickingStepId(steps.get(0).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
@@ -143,6 +143,7 @@ public class PickingJobService_UsingTUs_Test
 		pickingJob = helper.pickingJobService.processStepEvent(
 				pickingJob,
 				PickingJobStepEvent.builder()
+						.pickingLineId(line.getId())
 						.pickingStepId(steps.get(1).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
@@ -155,7 +156,7 @@ public class PickingJobService_UsingTUs_Test
 		results.reportStep("Picking Job after Complete", pickingJob);
 		results.reportStepWithAllHUs("HUs after Complete");
 
-		results.assertMatchesSnapshot();
+		expect.toMatchSnapshot(results);
 	}
 
 }

@@ -23,19 +23,24 @@
 package org.eevolution.api;
 
 import de.metas.document.DocBaseType;
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 {
 	MANUFACTURING_ORDER(DocBaseType.ManufacturingOrder),
 	QUALITY_ORDER(DocBaseType.QualityOrder),
 	MAINTENANCE_ORDER(DocBaseType.MaintenanceOrder),
-	REPAIR_ORDER(DocBaseType.ServiceRepairOrder);
+	REPAIR_ORDER(DocBaseType.ServiceRepairOrder),
+	MODULAR_ORDER(DocBaseType.ModularOrder);
 
 	private final DocBaseType docBaseType;
 
@@ -66,4 +71,21 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
 
 	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
+
+	@NonNull
+	public Set<BOMType> getBOMTypes()
+	{
+		switch (this)
+		{
+			case REPAIR_ORDER:
+				return ImmutableSet.of(BOMType.PreviousSpare);
+			case QUALITY_ORDER:
+			case MAINTENANCE_ORDER:
+			case MANUFACTURING_ORDER:
+			case MODULAR_ORDER:
+				return ImmutableSet.of(BOMType.CurrentActive, BOMType.MakeToOrder);
+			default:
+				throw new AdempiereException("Unsupported type=" + this);
+		}
+	}
 }

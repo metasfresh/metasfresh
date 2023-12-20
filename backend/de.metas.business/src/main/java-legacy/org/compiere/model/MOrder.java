@@ -31,6 +31,7 @@ import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
@@ -46,6 +47,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -62,6 +64,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -71,7 +74,8 @@ import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.CalculateTaxResult;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -97,6 +101,7 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -570,7 +575,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param fromLine
 	 * @return <code>1</code>
 	 */
-	public int copyLineFrom(
+	private int copyLineFrom(
 			final boolean counter,
 			final boolean copyASI,
 			final MOrderLine fromLine)
@@ -674,7 +679,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 			documentInfo.append(docType.getName());
 		}
 
@@ -987,12 +992,14 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)
 		{
-			final PaymentTermId defaultPaymentTermId = Services.get(IPaymentTermRepository.class)
-					.getDefaultPaymentTermIdOrNull();
-			if (defaultPaymentTermId != null)
-			{
-				setC_PaymentTerm_ID(defaultPaymentTermId.getRepoId());
-			}
+			final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(
+					BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(getBill_BPartner_ID(), getC_BPartner_ID())),
+					SOTrx.ofBoolean(isSOTrx()));
+
+			final Optional<PaymentTermId> paymentTermId = Services.get(IPaymentTermRepository.class)
+					.retrievePaymentTermId(paymentTermQuery);
+
+			paymentTermId.ifPresent(termId -> setC_PaymentTerm_ID(termId.getRepoId()));
 		}
 		return true;
 	}    // beforeSave
@@ -1176,7 +1183,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(getC_DocTypeTarget_ID());
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
@@ -1213,7 +1220,7 @@ public class MOrder extends X_C_Order implements IDocument
 			// Cannot change Std to anything else if different warehouses
 			if (getC_DocType_ID() != 0)
 			{
-				final I_C_DocType dtOld = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+				final I_C_DocType dtOld = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 				if (X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dtOld.getDocSubType())        // From SO
 						&& !X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType()))    // To !SO
 				{
@@ -1314,7 +1321,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		final I_C_DocType dt = docType == null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
 				: docType;
 
 		// Binding
@@ -1508,29 +1515,28 @@ public class MOrder extends X_C_Order implements IDocument
 			final MTax tax = oTax.getTax();
 			if (tax.isSummary())
 			{
-				final MTax[] cTaxes = tax.getChildTaxes(false);
-				for (final MTax cTax : cTaxes)
+				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
 				{
+					final Tax childTax = TaxUtils.from(childTaxRecord);
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
-					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+					final boolean taxIncluded = orderBL.isTaxIncluded(this, childTax);
+					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
 					newOTax.setC_Order_ID(getC_Order_ID());
-					newOTax.setC_Tax_ID(cTax.getC_Tax_ID());
+					newOTax.setC_Tax_ID(childTax.getTaxId().getRepoId());
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
+					newOTax.setIsReverseCharge(childTax.isReverseCharge());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
-					newOTax.setTaxAmt(taxAmt);
-					if (!newOTax.save(trxName))
-					{
-						return false;
-					}
+					newOTax.setTaxAmt(calculateTaxResult.getTaxAmount());
+					newOTax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
+					InterfaceWrapperHelper.save(newOTax);
 					//
 					if (!newOTax.isTaxIncluded())
 					{
-						grandTotal = grandTotal.add(taxAmt);
+						grandTotal = grandTotal.add(calculateTaxResult.getTaxAmount());
 					}
 				}
 				if (!oTax.delete(true, trxName))
@@ -1604,7 +1610,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return DocStatus.InProgress;
 		}
 
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 		final String docSubType = dt.getDocSubType();
 
 		//
@@ -1765,7 +1771,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 
 		if (docType.isOverwriteDateOnComplete())
 		{
@@ -2287,7 +2293,7 @@ public class MOrder extends X_C_Order implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		final String docSubType = dt.getDocSubType();
 
 		if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType))

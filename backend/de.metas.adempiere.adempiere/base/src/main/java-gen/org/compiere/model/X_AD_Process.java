@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
@@ -630,6 +630,43 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isLogWarning()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
+	@Override
+	public void setStoreProcessResultFileOn (final @Nullable java.lang.String StoreProcessResultFileOn)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFileOn, StoreProcessResultFileOn);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFileOn()
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFileOn);
+	}
+
+	/**
+	 * StoreProcessResultFileOn AD_Reference_ID=541841
+	 * Reference name: AD_Process_StoreProcessResultFileOn
+	 */
+	public static final int STOREPROCESSRESULTFILEON_AD_Reference_ID=541841;
+	/** Server = S */
+	public static final String STOREPROCESSRESULTFILEON_Server = "S";
+	/** Browser = D */
+	public static final String STOREPROCESSRESULTFILEON_Browser = "D";
+	/** Both = B */
+	public static final String STOREPROCESSRESULTFILEON_Both = "B";
+
+
+	@Override
+	public void setStoreProcessResultFilePath (final @Nullable java.lang.String StoreProcessResultFilePath)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFilePath, StoreProcessResultFilePath);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFilePath()
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFilePath);
 	}
 
 }

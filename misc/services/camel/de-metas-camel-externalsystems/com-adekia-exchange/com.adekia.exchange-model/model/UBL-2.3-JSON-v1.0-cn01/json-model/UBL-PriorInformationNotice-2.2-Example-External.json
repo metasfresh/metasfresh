@@ -1,0 +1,34 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:PriorInformationNotice-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "PriorInformationNotice":{
+ "IssueDate":{"_":"2016-05-29"},
+ "ContractingParty":[{
+  "Party":{
+   "PartyIdentification":[{
+    "ID":{"_":"Other"}
+   }]
+  }
+ }],
+ "TenderingTerms":{
+  "TenderPreparation":[{
+   "TenderEnvelopeID":{"_":"abc"},
+   "TenderEncryptionData":[{
+    "MessageFormat":{"_":"1.2.840.113549.1.9.16.0.1"},
+    "EncryptionCertificateAttachment":{
+     "ExternalReference":{
+      "URI":{"_":"www.digst.dk/udbud/NemID.cer "}
+     }
+    },
+    "EncryptionCertificatePathChain":[{
+     "URI":{"_":"https://www.trust2408/certPaths/Trust2408_issuingCA12_chain.p7c"}
+    }],
+    "EncryptionSymmetricAlgorithm":[{
+     "OID":{"_":"2.16.840.1.101.3.4.1.2"}
+    },{
+     "OID":{"_":"2.16.840.1.101.3.4.1.42"}
+    }]
+   }]
+  }]
+ }
+}}

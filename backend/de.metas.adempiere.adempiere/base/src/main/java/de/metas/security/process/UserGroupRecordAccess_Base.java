@@ -1,16 +1,7 @@
 package de.metas.security.process;
 
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -25,6 +16,12 @@ import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -111,11 +108,6 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 				.issuer(PermissionIssuer.MANUAL)
 				.requestedBy(getUserId())
 				.build());
-	}
-
-	private TableRecordReference getRecordRef()
-	{
-		return TableRecordReference.of(getTableName(), getRecord_ID());
 	}
 
 	private Principal getPrincipal()

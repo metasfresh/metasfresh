@@ -78,7 +78,11 @@ public class M_ProductPrice
 	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID })
 	public void validateUOM(final I_M_ProductPrice productPrice)
 	{
-		final UomId uomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
+		if(uomId == null)
+		{
+			return;
+		}
 
 		if (uomDAO.isUOMForTUs(uomId))
 		{

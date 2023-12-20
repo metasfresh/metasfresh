@@ -298,6 +298,13 @@ public class CountryDAO implements ICountryDAO
 		return CurrencyId.optionalOfRepoId(country.getC_Currency_ID());
 	}
 
+	@Override
+	public boolean isEnforceCorrectionInvoice(final CountryId countryId)
+	{
+		final I_C_Country country = getById(countryId);
+		return country.isEnforceCorrectionInvoice();
+	}
+
 	private static final class IndexedCountries
 	{
 		private final ImmutableList<I_C_Country> countries;

@@ -30,6 +30,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PROJECT_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BUDGET_PROJECT_V2_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BUDGET_PROJECT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BUDGET_PROJECT_V2_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
@@ -48,13 +50,11 @@ public class BudgetProjectRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var upsertRequest = exchange.getIn().getBody();
-					if (!(upsertRequest instanceof JsonBudgetProjectUpsertRequest))
+					if (!(upsertRequest instanceof final JsonBudgetProjectUpsertRequest jsonBudgetProjectUpsertRequest))
 					{
 						throw new RuntimeCamelException("The route " + MF_UPSERT_BUDGET_PROJECT_V2_ROUTE_ID + " requires the body to be instance of JsonBudgetProjectUpsertRequest."
 																+ " However, it is " + (upsertRequest == null ? "null" : upsertRequest.getClass().getName()));
 					}
-
-					final JsonBudgetProjectUpsertRequest jsonBudgetProjectUpsertRequest = ((JsonBudgetProjectUpsertRequest)upsertRequest);
 
 					log.info("Budget-Project upsert route invoked");
 					exchange.getIn().setBody(jsonBudgetProjectUpsertRequest);
@@ -63,6 +63,16 @@ public class BudgetProjectRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{" + MF_UPSERT_BUDGET_PROJECT_V2_CAMEL_URI + "}}")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
+
+		from(direct(MF_GET_BUDGET_PROJECT_V2_ROUTE_ID))
+				.routeId(MF_GET_BUDGET_PROJECT_V2_ROUTE_ID)
+				.streamCaching()
+				.log("Route invoked")
+				.removeHeaders("CamelHttp*")
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.toD("{{metasfresh.budget-project-v2-baseurl.camel.uri}}/${header." + HEADER_PROJECT_ID + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

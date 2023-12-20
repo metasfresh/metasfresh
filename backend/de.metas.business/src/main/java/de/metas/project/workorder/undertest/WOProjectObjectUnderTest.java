@@ -22,7 +22,9 @@
 
 package de.metas.project.workorder.undertest;
 
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
 @Builder(toBuilder = true)
@@ -64,4 +67,13 @@ public class WOProjectObjectUnderTest
 
 	@Nullable
 	String woObjectWhereabouts;
+
+	@Nullable
+	OrderLineId orderLineProvisionId;
+
+	@Nullable
+	ProductId productId;
+
+	@Nullable
+	Instant objectDeliveredDate;
 }

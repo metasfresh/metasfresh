@@ -43,7 +43,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
@@ -127,6 +127,9 @@ public class OrderService
 
 		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
 				.ifPresent(noAsyncBatchOLCands -> {
+
+					// the asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
+					// If will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
 					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);
@@ -158,17 +161,14 @@ public class OrderService
 	{
 		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
 
-		asyncBatchService.executeEnqueuedBatch(action, asyncBatchId);
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
 	{
 		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 
-		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
-			return null;
-		};
+		final Supplier<IEnqueueResult> action = () -> CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
 
 		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}

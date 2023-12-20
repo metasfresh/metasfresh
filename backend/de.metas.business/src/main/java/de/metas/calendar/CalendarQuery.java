@@ -54,6 +54,8 @@ public class CalendarQuery
 	@Nullable Instant startDate;
 	@Nullable Instant endDate;
 
+	boolean skipAllocatedResources;
+
 	public boolean isMatchingSimulationId(@Nullable final SimulationPlanId simulationId)
 	{
 		return SimulationPlanId.equals(this.simulationId, simulationId);
@@ -76,7 +78,7 @@ public class CalendarQuery
 
 	public boolean isMatchingDateRange(@NonNull final CalendarDateRange dateRange)
 	{
-		return dateRange.isConnectedTo(this.startDate, this.endDate);
+		return dateRange.isOverlappingWith(this.startDate, this.endDate);
 	}
 
 	public boolean isMatchingEntry(@NonNull final CalendarEntry entry)

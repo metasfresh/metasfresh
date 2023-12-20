@@ -36,6 +36,7 @@ public class CostAmountTest
 {
 	private final CurrencyId currencyId1 = CurrencyId.ofRepoId(123);
 	private final CurrencyId currencyId2 = CurrencyId.ofRepoId(4);
+	private final CurrencyId currencyId3 = CurrencyId.ofRepoId(5);
 
 	private CostAmount amt(final String amountStr)
 	{
@@ -45,6 +46,15 @@ public class CostAmountTest
 	private CostAmount amt(final String amountStr, final CurrencyId currencyId)
 	{
 		return CostAmount.of(new BigDecimal(amountStr), currencyId);
+	}
+
+	private CostAmount amt(final String amountStr, final CurrencyId currencyId, final String sourceAmtStr, final CurrencyId sourceCurrencyId)
+	{
+		return CostAmount.of(
+				new BigDecimal(amountStr),
+				currencyId,
+				sourceAmtStr != null ? new BigDecimal(sourceAmtStr) : null,
+				sourceCurrencyId);
 	}
 
 	@Test
@@ -164,5 +174,26 @@ public class CostAmountTest
 
 		@Test
 		void multipleAmountDifferentCurrencyAndSomeNulls() {assertNotMatching(amt("123", currencyId1), null, amt("126", currencyId2), null);}
+	}
+
+	@Nested
+	class add
+	{
+		@Test
+		void sameSourceCurrency()
+		{
+			assertThat(amt("1", currencyId1, "10", currencyId2)
+					.add(amt("2", currencyId1, "20", currencyId2))
+			).isEqualTo(amt("3", currencyId1, "30", currencyId2));
+		}
+
+		@Test
+		void differentSourceCurrency()
+		{
+			assertThat(amt("1", currencyId1, "10", currencyId2)
+					.add(amt("2", currencyId1, "20", currencyId3))
+			).isEqualTo(amt("3", currencyId1, null, null));
+		}
+
 	}
 }

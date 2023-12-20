@@ -23,14 +23,16 @@
 package de.metas.inout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.PrintFormatId;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -94,10 +96,18 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 
 		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+				.adTableId(recordRef.getAdTableId())
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
+				.docTypeId(docTypeId)
+				.onlyCopiesGreaterZero(true)
+				.build();
+
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(inout.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

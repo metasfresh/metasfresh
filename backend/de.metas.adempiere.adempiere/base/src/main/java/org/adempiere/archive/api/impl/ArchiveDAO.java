@@ -29,13 +29,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,18 +46,21 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ArchiveDAO implements IArchiveDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	// private static final transient Logger logger = CLogMgt.getLogger(ArchiveDAO.class);
+
+	@Override
+	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
+	{
+		return load(id, I_AD_Archive.class);
+	}
 
 	@Override
 	public List<I_AD_Archive> retrieveArchives(final Properties ctx, final String whereClause)
@@ -147,20 +147,6 @@ public class ArchiveDAO implements IArchiveDAO
 	public I_AD_Archive retrieveArchive(@NonNull final ArchiveId archiveId)
 	{
 		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
-	}
-
-	@Override
-	public <T> Stream<AdArchive> streamArchivesForFilter(@NonNull final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass)
-	{
-		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(objectClass)
-				.addOnlyActiveRecordsFilter().filter(outboundLogFilter);
-
-		return queryBuilder.create()
-				.iterateAndStream()
-				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), QueryLimit.ONE).stream().findFirst())
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(arch -> AdArchive.builder().id(ArchiveId.ofRepoId(arch.getAD_Archive_ID())).archiveData(archiveBL.getBinaryData(arch)).build());
 	}
 
 	@Override

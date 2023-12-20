@@ -62,6 +62,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.report.PrintFormatId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -75,6 +76,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -134,6 +136,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
 	private final CCache<BPartnerId, BPartnerPrintFormatMap> printFormatsCache = CCache.<BPartnerId, BPartnerPrintFormatMap>builder()
 			.tableName(I_C_BP_PrintFormat.Table_Name)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(100)
+			.build();
+
+	private final CCache<BPartnerId, BPGroupId> bpartnerId2bpGroupIdCache = CCache.<BPartnerId, BPGroupId>builder()
+			.tableName(I_C_BPartner.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(100)
 			.build();
@@ -936,8 +944,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1027,7 +1035,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return query.first(I_C_BP_Relation.class);
 	}
-	
+
 	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
@@ -1364,11 +1372,15 @@ public class BPartnerDAO implements IBPartnerDAO
 		switch (type)
 		{
 			case BILL_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsBillTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsBillTo;
 			case SHIP_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsShipTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsShipTo;
 			case REMIT_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsRemitTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsRemitTo;
+			case SHIP_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsShipToDefault;
+			case BILL_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsBillToDefault;
 			default:
 				Check.fail("Unexpected type={}", type);
 				return null;
@@ -1583,7 +1595,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPGroupId getBPGroupIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID());
+		return bpartnerId2bpGroupIdCache.getOrLoad(bpartnerId, () -> BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID()));
 	}
 
 	@Override
@@ -1920,7 +1932,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				previousLocationId = currentLocationId;
 			}
 		}
-		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(),previousLocationId);
+		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(), previousLocationId);
 	}
 
 	@Override
@@ -1945,5 +1957,40 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+	}
+
+	@Override
+	public Set<Integer> retrieveForSectionGroupPartner(@NonNull final BPartnerId sectionGroupPartnerId)
+	{
+
+		final @NonNull IQueryFilter<I_C_BPartner> filter = queryBL.createCompositeQueryFilter(I_C_BPartner.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, sectionGroupPartnerId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, sectionGroupPartnerId);
+
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(filter)
+				.create()
+				.listIds()
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull final String sapBPartnerCode)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, sapBPartnerCode)
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
 	}
 }

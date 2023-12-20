@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -110,6 +111,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
@@ -320,8 +325,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
 				.setFilters(all)
 				//
@@ -365,6 +370,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 												.readonly(attributesAlwaysReadonly)
+												.serialNoFromSequence(false)
 												.attributeSourceDocument(getAttributeSourceDocument())
 												.build())
 					.sqlViewBinding(sqlViewBinding)

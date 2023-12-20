@@ -15,7 +15,10 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.manufacturing.generatedcomponents.ComponentGeneratorRepository;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
@@ -42,12 +45,15 @@ class ManufacturingJobServiceTest
 
 		this.manufacturingJobService = new ManufacturingJobService(
 				ResourceService.newInstanceForJUnitTesting(),
+				new ManufacturingComponentGeneratorService(new ComponentGeneratorRepository()),
 				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
 				new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 				new DeviceWebsocketNamingStrategy("/test/"),
-				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())
+				new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance))
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

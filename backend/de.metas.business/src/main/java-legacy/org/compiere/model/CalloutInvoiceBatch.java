@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.tax.api.ITaxBL;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -413,7 +414,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 			{
 				final int C_Tax_ID = taxID.intValue();
 				final MTax tax = new MTax (ctx, C_Tax_ID, null);
-				TaxAmt = tax.calculateTax(LineNetAmt, IsTaxIncluded, StdPrecision);
+				TaxAmt = Services.get(ITaxBL.class).calculateTaxAmt(tax, LineNetAmt, IsTaxIncluded, StdPrecision);
 				mTab.setValue("TaxAmt", TaxAmt);
 			}
 		}

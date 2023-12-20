@@ -123,19 +123,19 @@ public interface I_C_Project_WO_Step
 	 * Set Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateEnd (java.sql.Timestamp DateEnd);
+	void setDateEnd (@Nullable java.sql.Timestamp DateEnd);
 
 	/**
 	 * Get Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateEnd();
+	@Nullable java.sql.Timestamp getDateEnd();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step.class, "DateEnd", null);
 	String COLUMNNAME_DateEnd = "DateEnd";
@@ -145,20 +145,20 @@ public interface I_C_Project_WO_Step
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateStart (java.sql.Timestamp DateStart);
+	void setDateStart (@Nullable java.sql.Timestamp DateStart);
 
 	/**
 	 * Get Start Date.
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateStart();
+	@Nullable java.sql.Timestamp getDateStart();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step.class, "DateStart", null);
 	String COLUMNNAME_DateStart = "DateStart";
@@ -227,6 +227,27 @@ public interface I_C_Project_WO_Step
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Project_WO_Step.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Manually locked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManuallyLocked (boolean IsManuallyLocked);
+
+	/**
+	 * Get Manually locked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManuallyLocked();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_IsManuallyLocked = new ModelColumn<>(I_C_Project_WO_Step.class, "IsManuallyLocked", null);
+	String COLUMNNAME_IsManuallyLocked = "IsManuallyLocked";
 
 	/**
 	 * Set Name.
@@ -300,10 +321,52 @@ public interface I_C_Project_WO_Step
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+	 * Set ACTUAL facility hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWOActualFacilityHours (int WOActualFacilityHours);
+
+	/**
+	 * Get ACTUAL facility hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWOActualFacilityHours();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOActualFacilityHours = new ModelColumn<>(I_C_Project_WO_Step.class, "WOActualFacilityHours", null);
+	String COLUMNNAME_WOActualFacilityHours = "WOActualFacilityHours";
+
+	/**
+	 * Set ACTUAL person hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWOActualManHours (int WOActualManHours);
+
+	/**
+	 * Get ACTUAL person hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWOActualManHours();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOActualManHours = new ModelColumn<>(I_C_Project_WO_Step.class, "WOActualManHours", null);
+	String COLUMNNAME_WOActualManHours = "WOActualManHours";
+
+	/**
 	 * Set Delivery date.
 	 * Delivery date to test facility
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -313,7 +376,7 @@ public interface I_C_Project_WO_Step
 	 * Get Delivery date.
 	 * Delivery date to test facility
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -323,10 +386,31 @@ public interface I_C_Project_WO_Step
 	String COLUMNNAME_WODeliveryDate = "WODeliveryDate";
 
 	/**
+	 * Set Due date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWODueDate (@Nullable java.sql.Timestamp WODueDate);
+
+	/**
+	 * Get Due date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWODueDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WODueDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WODueDate", null);
+	String COLUMNNAME_WODueDate = "WODueDate";
+
+	/**
 	 * Set Findings created.
 	 * Date on which the report was created.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -336,7 +420,7 @@ public interface I_C_Project_WO_Step
 	 * Get Findings created.
 	 * Date on which the report was created.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -349,7 +433,7 @@ public interface I_C_Project_WO_Step
 	 * Set Findings released.
 	 * Date on which the report was released.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -359,7 +443,7 @@ public interface I_C_Project_WO_Step
 	 * Get Findings released.
 	 * Date on which the report was released.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -372,7 +456,7 @@ public interface I_C_Project_WO_Step
 	 * Set Partial report date.
 	 * Date of the partial report
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -382,7 +466,7 @@ public interface I_C_Project_WO_Step
 	 * Get Partial report date.
 	 * Date of the partial report
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -457,7 +541,7 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Set TARGET end date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -466,7 +550,7 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Get TARGET end date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -478,7 +562,7 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Set TARGET start date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -487,7 +571,7 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Get TARGET start date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

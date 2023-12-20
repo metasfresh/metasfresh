@@ -1,5 +1,4 @@
 package de.metas.picking.api.impl;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -17,15 +16,16 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -64,9 +64,9 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: Customer
-		if (query.getCustomerId() != null)
+		if (!query.getCustomerIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerId());
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerIds());
 		}
 
 		//
@@ -91,13 +91,14 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: DeliveryDate
-		if (query.getDeliveryDate() != null)
+		// Filter: DeliveryDays
+		if (!query.getDeliveryDays().isEmpty())
 		{
-			queryBuilder.addCompositeQueryFilter()
+			final ICompositeQueryFilter<I_M_Packageable_V> deliveryDaysFilter = queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, query.getDeliveryDate(), DateTruncQueryFilterModifier.DAY)
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
+
+			query.getDeliveryDays().forEach(deliveryDay -> deliveryDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, deliveryDay, DateTruncQueryFilterModifier.DAY));
 		}
 
 		//
@@ -211,7 +212,7 @@ public class PackagingDAO implements IPackagingDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
-		final PackageableBuilder packageable = Packageable.builder();
+		final Packageable.PackageableBuilder packageable = Packageable.builder();
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		packageable.orgId(orgId);
 		packageable.customerId(bpartnerId);
@@ -227,6 +228,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.qtyPickedAndDelivered(Quantity.of(record.getQtyPickedAndDelivered(), uom));
 		packageable.qtyPickedNotDelivered(Quantity.of(record.getQtyPickedNotDelivered(), uom));
 		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
+		packageable.catchWeightUomId(record.isCatchWeight() ? UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()) : null);
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());

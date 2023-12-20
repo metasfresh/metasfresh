@@ -13,8 +13,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -159,11 +159,11 @@ public class MenuRestController
 		return JSONMenuNode.ofList(changedMenuNodesById.values(), menuTreeRepository);
 	}
 
-	@ApiOperation("Gets node's path (from root node) ")
+	@Operation(summary = "Gets node's path (from root node) ")
 	@GetMapping("/node/{nodeId}/path")
 	public JSONMenuNode getPath(
 			@PathVariable(PARAM_NodeId) final String nodeId,
-			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
+			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @Parameter(description = "Shall we include the last node") final boolean includeLastNode //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -174,7 +174,7 @@ public class MenuRestController
 		return JSONMenuNode.ofPath(path, includeLastNode, menuTreeRepository);
 	}
 
-	@ApiOperation("Gets breadcrumb menu to be displayed when user clicks on that node in the breadcrumb")
+	@Operation(summary = "Gets breadcrumb menu to be displayed when user clicks on that node in the breadcrumb")
 	@GetMapping("/node/{nodeId}/breadcrumbMenu")
 	public List<JSONMenuNode> getNodeBreadcrumbMenu(@PathVariable(PARAM_NodeId) final String nodeId)
 	{
@@ -193,7 +193,7 @@ public class MenuRestController
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_Type) final JSONMenuNodeType jsonType,
 			@RequestParam(name = PARAM_ElementId) final String elementIdStr,
-			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode)
+			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @Parameter(description = "Shall we include the last node") final boolean includeLastNode)
 	{
 		userSession.assertLoggedIn();
 
@@ -230,7 +230,7 @@ public class MenuRestController
 	public JSONMenuNode query(
 			@RequestParam(name = PARAM_NameQuery) final String nameQuery,
 			@RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit,
-			@RequestParam(name = "childrenInclusive", required = false, defaultValue = "false") @ApiParam("true if groups that were matched shall be populated with it's leafs, even if those leafs are not matching") final boolean includeLeafsIfGroupAccepted)
+			@RequestParam(name = "childrenInclusive", required = false, defaultValue = "false") @Parameter(description = "true if groups that were matched shall be populated with it's leafs, even if those leafs are not matching") final boolean includeLeafsIfGroupAccepted)
 	{
 		userSession.assertLoggedIn();
 

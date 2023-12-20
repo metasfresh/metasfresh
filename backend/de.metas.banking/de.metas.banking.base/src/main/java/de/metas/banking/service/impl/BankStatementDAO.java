@@ -214,7 +214,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
 
 		// query Builder for the bank statement
 
@@ -326,6 +326,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
 		record.setCurrencyRate(request.getCurrencyRate());
+		record.setIsMultiplePayment(request.isMultiPayment());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)

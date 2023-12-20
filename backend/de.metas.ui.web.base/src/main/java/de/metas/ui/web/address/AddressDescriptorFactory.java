@@ -236,7 +236,8 @@ public class AddressDescriptorFactory
 													   DocumentFieldWidgetType.Lookup,
 													   IntegerLookupValue.class,
 													   true /*mandatory*/,
-													   false /*allowUsingAutoSequence*/);
+													   false /*allowUsingAutoSequence*/,
+													   null /*DocSequenceId*/);
 			}
 			else
 			{

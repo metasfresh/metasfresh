@@ -6,11 +6,14 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.DisplayType;
@@ -57,7 +60,11 @@ public class LookupDescriptorProviders
 	 */
 	public static final LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private ADReferenceService _adReferenceService;
+
+	private static final String SYSCONFIG_PageLength = "webui.lookup.pageLength";
+	private static final int DEFAULT_PageLength = 10;
 
 	public LookupDescriptorProviders(
 			@Nullable final ADReferenceService adReferenceService)
@@ -75,7 +82,11 @@ public class LookupDescriptorProviders
 		return adReferenceService;
 	}
 
-	public SqlLookupDescriptorProviderBuilder sql() {return new SqlLookupDescriptorProviderBuilder(getAdReferenceService());}
+	public SqlLookupDescriptorProviderBuilder sql()
+	{
+		return new SqlLookupDescriptorProviderBuilder(getAdReferenceService())
+				.setPageLength(sysConfigBL.getIntValue(SYSCONFIG_PageLength, DEFAULT_PageLength));
+	}
 
 	public LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			@NonNull final ReferenceId AD_Reference_Value_ID,
@@ -91,14 +102,30 @@ public class LookupDescriptorProviders
 				.build();
 	}
 
-	public LookupDescriptorProvider searchInTable(final String lookupTableName)
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName)
+	{
+		return prepareSearchInTable(lookupTableName).build();
+	}
+
+	@NonNull
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final AdValRuleId ruleId)
+	{
+		return prepareSearchInTable(lookupTableName).setAD_Val_Rule_ID(ruleId).build();
+	}
+
+	@NonNull
+	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final IValidationRule rule)
+	{
+		return prepareSearchInTable(lookupTableName).addValidationRule(rule).build();
+	}
+
+	private SqlLookupDescriptorProviderBuilder prepareSearchInTable(@NonNull final String lookupTableName)
 	{
 		return sql()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
 				.setDisplayType(DisplayType.Search)
-				.setReadOnlyAccess()
-				.build();
+				.setReadOnlyAccess();
 	}
 
 	public LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)

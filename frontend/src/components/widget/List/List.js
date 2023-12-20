@@ -74,6 +74,27 @@ class ListWidget extends Component {
     }
   }
 
+  requestListDataIfNotLoaded = (autoSelectIfSingleOption = null) => {
+    const { list, loading } = this.state;
+
+    // Do nothing if loading in progress...
+    if (loading) {
+      return;
+    }
+
+    // Already loaded
+    if (list && list.length > 0) {
+      return;
+    }
+
+    const autoSelectIfSingleOptionEffective =
+      autoSelectIfSingleOption != null
+        ? !!autoSelectIfSingleOption
+        : this.props.mandatory;
+
+    this.requestListData(autoSelectIfSingleOptionEffective, true);
+  };
+
   requestListData = (forceSelection = false, ignoreFocus = false) => {
     const {
       properties,
@@ -92,6 +113,13 @@ class ListWidget extends Component {
       doNotOpenOnFocus,
       dropdownValuesSupplier,
     } = this.props;
+
+    // console.trace('requestListData', {
+    //   forceSelection,
+    //   ignoreFocus,
+    //   state: this.state,
+    //   props: this.props,
+    // });
 
     this.setState(
       {
@@ -189,14 +217,8 @@ class ListWidget extends Component {
   };
 
   handleFocus = () => {
-    const { mandatory } = this.props;
-    const { list, loading } = this.state;
-
     this.focus();
-
-    if (!list.length && !loading) {
-      this.requestListData(mandatory, true);
-    }
+    this.requestListDataIfNotLoaded();
   };
 
   focus = () => {
@@ -221,6 +243,7 @@ class ListWidget extends Component {
   };
 
   handleOpenDropdownRequest = () => {
+    this.requestListDataIfNotLoaded();
     this.activate();
   };
 

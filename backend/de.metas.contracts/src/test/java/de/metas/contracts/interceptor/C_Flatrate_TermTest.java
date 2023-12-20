@@ -1,9 +1,11 @@
 package de.metas.contracts.interceptor;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.organization.OrgId;
@@ -13,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +52,7 @@ public class C_Flatrate_TermTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 	}
 
 	@Test
@@ -74,7 +78,8 @@ public class C_Flatrate_TermTest
 			final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(
 					new ContractOrderService(),
 					new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-					ADReferenceService.newMocked());
+					ADReferenceService.newMocked(),
+					new GLCategoryRepository());
 			flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term);
 			fail("Expected an AdempiereExeception");
 		}
@@ -96,7 +101,8 @@ public class C_Flatrate_TermTest
 		final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(
 				new ContractOrderService(),
 				new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-				ADReferenceService.newMocked());
+				ADReferenceService.newMocked(),
+				new GLCategoryRepository());
 		flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term); // shall return with no exception
 	}
 

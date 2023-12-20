@@ -22,7 +22,9 @@
 
 package de.metas.common.product.v2.request;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import lombok.NonNull;
 
 import java.util.Collections;
 
@@ -65,6 +67,7 @@ public class JsonRequestUtil
 		jsonRequestProduct.setProductCategoryIdentifier("test");
 		jsonRequestProduct.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		jsonRequestProduct.setBpartnerProductItems(Collections.singletonList(getJsonRequestBPartnerProductUpsert()));
+		jsonRequestProduct.setSAPProductHierarchy("SAPProductHierarchy");
 
 		return jsonRequestProduct;
 	}
@@ -82,6 +85,15 @@ public class JsonRequestUtil
 		return JsonRequestProductUpsertItem.builder()
 				.requestProduct(getJsonRequestProduct())
 				.productIdentifier("test")
+				.build();
+	}
+
+	@NonNull
+	public static JsonRequestProductWarehouseAssignmentSave getJsonRequestWarehouseAssignmentUpsert()
+	{
+		return JsonRequestProductWarehouseAssignmentSave.builder()
+				.warehouseIdentifiers(ImmutableList.of("name"))
+				.syncAdvise(SyncAdvise.REPLACE)
 				.build();
 	}
 }

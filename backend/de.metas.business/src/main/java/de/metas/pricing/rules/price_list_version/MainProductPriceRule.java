@@ -120,7 +120,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
-		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(productPrice.getInvoicableQtyBasedOn()));
 		result.setCalculated(true);
 
 		//

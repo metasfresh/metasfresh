@@ -1,189 +1,84 @@
-de.metas.dataentry.rest_api.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.dataentry.rest_api.DataEntryRestControllerTest.badWindowGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '55555'."
-  }
-]
-
-
-de.metas.dataentry.rest_api.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
 de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
   {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badWindowGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '55555'."
+    "error": "No dataentry for windowId '123' and recordId '5'.",
+    "status": 404
   }
 ]
 
 
 de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
   {
-    "result" : {
-      "tabs" : [
+    "result": {
+      "tabs": [
         {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
+          "caption": "tabRecord1_tabName",
+          "description": "tabRecord1_description",
+          "id": 100003,
+          "subtabs": [
             {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
+              "caption": "subTabRecord1_2_tabName",
+              "description": "subTabRecord1_2_description - seqNo10",
+              "id": 100009,
+              "sections": [
                 {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
+                  "caption": "sectionRecord1_2_1_sectionName",
+                  "description": "sectionRecord1_2_1_description - seqNo20",
+                  "id": 100010,
                   "initially_closed": true,
-                  "lines" : [
+                  "lines": [
                     {
-                      "fields" : [
+                      "fields": [
                         {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
+                          "caption": "fieldRecord1_2_1_1_1_name",
+                          "description": "fieldRecord1_2_1_1_1_description - seqNo10",
+                          "id": 100012,
+                          "list_values": [ ],
+                          "mandatory": false,
+                          "type": "DATE"
                         },
                         {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
+                          "caption": "fieldRecord1_2_1_1_2_name",
+                          "description": "fieldRecord1_2_1_1_2_description",
+                          "id": 100013,
                           "list_values": [
                             {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
+                              "description": "listValueRecord1_2_1_1_2_2_description - seqNo10",
+                              "id": 100015,
+                              "name": "listValueRecord1_2_1_1_2_2_name"
                             },
                             {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
+                              "description": "listValueRecord1_2_1_1_2_1_description - seqNo20",
+                              "id": 100014,
+                              "name": "listValueRecord1_2_1_1_2_1_name"
                             }
-                          ]
+                          ],
+                          "mandatory": false,
+                          "type": "LIST"
                         },
                         {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
+                          "caption": "fieldRecord1_2_1_1_3_name",
+                          "description": "fieldRecord1_2_1_1_3_description",
+                          "id": 100016,
+                          "list_values": [ ],
+                          "mandatory": false,
+                          "type": "YESNO"
                         },
                         {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
+                          "caption": "fieldRecord1_2_1_1_4_name",
+                          "description": "fieldRecord1_2_1_1_4_description",
+                          "id": 100017,
+                          "list_values": [ ],
+                          "mandatory": true,
+                          "type": "TEXT"
                         },
                         {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
+                          "caption": "fieldRecord1_2_1_1_5_name",
+                          "description": "fieldRecord1_2_1_1_5_description",
+                          "id": 100018,
+                          "list_values": [ ],
+                          "mandatory": true,
+                          "type": "LONG_TEXT",
+                          "value": "someText"
                         }
                       ]
                     }
@@ -195,657 +90,6 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotCha
         }
       ]
     },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
-  {
-    "status" : 404,
-    "error" : "No dataentry for windowId '123' and recordId '5'."
-  }
-]
-
-
-de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
-  {
-    "result" : {
-      "tabs" : [
-        {
-          "id" : 100003,
-          "caption" : "tabRecord1_tabName",
-          "description" : "tabRecord1_description",
-          "subtabs" : [
-            {
-              "id" : 100009,
-              "caption" : "subTabRecord1_2_tabName",
-              "description" : "subTabRecord1_2_description - seqNo10",
-              "sections" : [
-                {
-                  "id" : 100010,
-                  "caption" : "sectionRecord1_2_1_sectionName",
-                  "description" : "sectionRecord1_2_1_description - seqNo20",
-                  "initially_closed": true,
-                  "lines" : [
-                    {
-                      "fields" : [
-                        {
-                          "id" : 100012,
-                          "caption" : "fieldRecord1_2_1_1_1_name",
-                          "description" : "fieldRecord1_2_1_1_1_description - seqNo10",
-                          "type" : "DATE",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100013,
-                          "caption" : "fieldRecord1_2_1_1_2_name",
-                          "description" : "fieldRecord1_2_1_1_2_description",
-                          "type" : "LIST",
-                          "mandatory" : false,
-                          "list_values": [
-                            {
-                              "id" : 100015,
-                              "name" : "listValueRecord1_2_1_1_2_2_name",
-                              "description" : "listValueRecord1_2_1_1_2_2_description - seqNo10"
-                            },
-                            {
-                              "id" : 100014,
-                              "name" : "listValueRecord1_2_1_1_2_1_name",
-                              "description" : "listValueRecord1_2_1_1_2_1_description - seqNo20"
-                            }
-                          ]
-                        },
-                        {
-                          "id" : 100016,
-                          "caption" : "fieldRecord1_2_1_1_3_name",
-                          "description" : "fieldRecord1_2_1_1_3_description",
-                          "type" : "YESNO",
-                          "mandatory" : false
-                        },
-                        {
-                          "id" : 100017,
-                          "caption" : "fieldRecord1_2_1_1_4_name",
-                          "description" : "fieldRecord1_2_1_1_4_description",
-                          "type" : "TEXT",
-                          "mandatory" : true
-                        },
-                        {
-                          "id" : 100018,
-                          "caption" : "fieldRecord1_2_1_1_5_name",
-                          "description" : "fieldRecord1_2_1_1_5_description",
-                          "type" : "LONG_TEXT",
-                          "mandatory" : true,
-                          "value" : "someText"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "status" : 200
+    "status": 200
   }
 ]

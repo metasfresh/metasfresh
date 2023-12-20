@@ -67,7 +67,7 @@ public class ContractChangeBL implements IContractChangeBL
 	@Override
 	public void cancelContract(
 			@NonNull final I_C_Flatrate_Term currentTerm,
-			final @NonNull ContractChangeParameters contractChangeParameters)
+			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
 		if (initialContract == null || contractChangeParameters.isVoidSingleContract())
@@ -142,7 +142,10 @@ public class ContractChangeBL implements IContractChangeBL
 			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT, currentTerm);
 		}
 
+
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
+
+
 		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());

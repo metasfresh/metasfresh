@@ -46,6 +46,7 @@ public class WOProjectResourceSimulation
 		}
 	}
 
+	@NonNull
 	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
 	{
 		Check.assumeEquals(resource.getWoProjectResourceId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
@@ -56,7 +57,8 @@ public class WOProjectResourceSimulation
 				.build();
 	}
 
-	public WOProjectResourceSimulation markingAsApplied(@NonNull final CalendarDateRange dateRangeBeforeApplying)
+	@NonNull
+	public WOProjectResourceSimulation markingAsApplied(@Nullable final CalendarDateRange dateRangeBeforeApplying)
 	{
 		if (isAppliedOnActualData)
 		{

@@ -1,17 +1,16 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costrevaluation.CostRevaluation;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.document.DocBaseType;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
@@ -29,7 +28,7 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 	{
 		super(ctx, DocBaseType.CostRevaluation);
 
-		final I_M_CostRevaluation costRevaluationRecord = InterfaceWrapperHelper.create(ctx.getDocumentModel(), I_M_CostRevaluation.class);
+		final I_M_CostRevaluation costRevaluationRecord = ctx.getDocumentModel().unboxAs(I_M_CostRevaluation.class);
 		this.costRevaluation = CostRevaluationRepository.fromRecord(costRevaluationRecord);
 	}
 
@@ -82,14 +81,14 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 		{
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.Asset, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
 					.setAmtSource(costs, null)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
 
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.Revenue, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_Revenue_Acct, acctSchema))
 					.setAmtSource(null, costs)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
@@ -103,14 +102,14 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 		{
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.Asset, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
 					.setAmtSource(null, costs.negate())
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
 
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.Asset, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
 					.setAmtSource(costs.negate(), null)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();

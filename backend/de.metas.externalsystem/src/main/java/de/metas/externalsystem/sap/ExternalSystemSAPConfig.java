@@ -22,26 +22,26 @@
 
 package de.metas.externalsystem.sap;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
+import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
+import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
+import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
+import java.util.Optional;
 
 @Value
 public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 {
-	private static final AdMessageKey MSG_DUPLICATE_SFTP_FILE_LOOKUP_DETAILS = AdMessageKey.of("ExternalSystemConfigSAPDuplicateSFTPFileLookupDetails");
-
 	@NonNull
 	ExternalSystemSAPConfigId id;
 
@@ -51,80 +51,69 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@NonNull
 	String value;
 
-	@NonNull
-	String sftpHostName;
-
-	@NonNull
-	String sftpPort;
-
-	@NonNull
-	String sftpUsername;
-
-	@NonNull
-	String sftpPassword;
-
-	@NonNull
-	String processedDirectory;
-
-	@NonNull
-	String erroredDirectory;
-
-	@NonNull
-	Duration pollingFrequency;
-
-	//product
 	@Nullable
-	String sftpTargetDirectoryProduct;
-	@Nullable
-	String sftpFileNamePatternProduct;
+	SAPContentSourceSFTP contentSourceSFTP;
 
-	//bpartner
 	@Nullable
-	String sftpTargetDirectoryBPartner;
-	@Nullable
-	String sftpFileNamePatternBPartner;
+	SAPContentSourceLocalFile contentSourceLocalFile;
 
-	//credit limit
+	boolean checkDescriptionForMaterialType;
+
 	@Nullable
-	String sftpCreditLimitTargetDirectory;
+	String baseURL;
+
 	@Nullable
-	String sftpCreditLimitFileNamePattern;
+	String postAcctDocumentsPath;
+
+	@Nullable
+	String signedVersion;
+
+	@Nullable
+	String signedPermissions;
+
+	@Nullable
+	String signature;
+
+	@Nullable
+	String apiVersion;
+
+	@NonNull
+	ImmutableList<SAPExportAcctConfig> exportAcctConfigList;
+
+	@NonNull
+	ImmutableList<SAPBPartnerImportSettings> bPartnerImportSettings;
 
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
-			@NonNull final String sftpHostName,
-			@NonNull final String sftpPort,
-			@NonNull final String sftpUsername,
-			@NonNull final String sftpPassword,
-			@Nullable final String sftpTargetDirectoryProduct,
-			@Nullable final String sftpTargetDirectoryBPartner,
-			@NonNull final String processedDirectory,
-			@NonNull final String erroredDirectory,
-			@NonNull final Duration pollingFrequency,
-			@Nullable final String sftpFileNamePatternProduct,
-			@Nullable final String sftpFileNamePatternBPartner,
-			@Nullable final String sftpCreditLimitTargetDirectory,
-			@Nullable final String sftpCreditLimitFileNamePattern)
+			@Nullable final SAPContentSourceSFTP contentSourceSFTP,
+			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile,
+			final boolean checkDescriptionForMaterialType,
+			@Nullable final ImmutableList<SAPExportAcctConfig> exportAcctConfigList,
+			@Nullable final ImmutableList<SAPBPartnerImportSettings> bPartnerImportSettings,
+			@Nullable final String baseURL,
+			@Nullable final String postAcctDocumentsPath,
+			@Nullable final String signedVersion,
+			@Nullable final String signedPermissions,
+			@Nullable final String signature,
+			@Nullable final String apiVersion)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
-		this.sftpHostName = sftpHostName;
-		this.sftpPort = sftpPort;
-		this.sftpUsername = sftpUsername;
-		this.sftpPassword = sftpPassword;
-		this.sftpTargetDirectoryProduct = sftpTargetDirectoryProduct;
-		this.sftpTargetDirectoryBPartner = sftpTargetDirectoryBPartner;
-		this.processedDirectory = processedDirectory;
-		this.erroredDirectory = erroredDirectory;
-		this.pollingFrequency = pollingFrequency;
-		this.sftpFileNamePatternProduct = sftpFileNamePatternProduct;
-		this.sftpFileNamePatternBPartner = sftpFileNamePatternBPartner;
-		this.sftpCreditLimitTargetDirectory = sftpCreditLimitTargetDirectory;
-		this.sftpCreditLimitFileNamePattern = sftpCreditLimitFileNamePattern;
+		this.contentSourceSFTP = contentSourceSFTP;
+		this.contentSourceLocalFile = contentSourceLocalFile;
+		this.checkDescriptionForMaterialType = checkDescriptionForMaterialType;
+		this.exportAcctConfigList = CoalesceUtil.coalesceNotNull(exportAcctConfigList, ImmutableList.of());
+		this.bPartnerImportSettings = CoalesceUtil.coalesceNotNull(bPartnerImportSettings, ImmutableList.of());
+		this.postAcctDocumentsPath = postAcctDocumentsPath;
+		this.signedVersion = signedVersion;
+		this.signedPermissions = signedPermissions;
+		this.signature = signature;
+		this.baseURL = baseURL;
+		this.apiVersion = apiVersion;
 	}
 
 	@NonNull
@@ -134,47 +123,30 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	}
 
 	@NonNull
-	public BooleanWithReason isStartServicePossible(@NonNull final SAPExternalRequest sapExternalRequest, @NonNull final IMsgBL msgBL)
+	public Optional<SAPExportAcctConfig> getExportConfigFor(@Nullable final DocTypeId docTypeId)
 	{
-		if (!sapExternalRequest.isStartService())
+		if (docTypeId == null)
 		{
-			return BooleanWithReason.TRUE;
+			return Optional.empty();
 		}
 
-		final String productFileLookupInfo = Strings.nullToEmpty(sftpTargetDirectoryProduct)
-				.concat(Strings.nullToEmpty(sftpFileNamePatternProduct));
+		return exportAcctConfigList.stream()
+				.filter(config -> config.getDocTypeId().equals(docTypeId))
+				.findFirst();
+	}
 
-		final String bpartnerFileLookupInfo = Strings.nullToEmpty(sftpTargetDirectoryBPartner)
-				.concat(Strings.nullToEmpty(sftpFileNamePatternBPartner));
-
-		final String creditLimitFileLookupInfo = Strings.nullToEmpty(sftpCreditLimitTargetDirectory)
-				.concat(Strings.nullToEmpty(sftpCreditLimitFileNamePattern));
-
-		final boolean isFileLookupInfoDuplicated;
-		switch (sapExternalRequest)
+	public boolean isExportEnabledForDocType(@Nullable final DocTypeId docTypeId)
+	{
+		if (Check.isBlank(baseURL)
+				|| Check.isBlank(signature)
+				|| Check.isBlank(signedVersion)
+				|| Check.isBlank(signedPermissions)
+				|| Check.isBlank(postAcctDocumentsPath)
+				|| Check.isBlank(apiVersion))
 		{
-			case START_BPARTNER_SYNC:
-				isFileLookupInfoDuplicated = bpartnerFileLookupInfo.equals(productFileLookupInfo) || bpartnerFileLookupInfo.equals(creditLimitFileLookupInfo);
-				break;
-			case START_PRODUCT_SYNC:
-				isFileLookupInfoDuplicated = productFileLookupInfo.equals(bpartnerFileLookupInfo) || productFileLookupInfo.equals(creditLimitFileLookupInfo);
-				break;
-			case START_CREDIT_LIMITS_SYNC:
-				isFileLookupInfoDuplicated = creditLimitFileLookupInfo.equals(productFileLookupInfo) || creditLimitFileLookupInfo.equals(bpartnerFileLookupInfo);
-				break;
-			default:
-				throw new AdempiereException("Unexpected sapExternalRequest=" + sapExternalRequest.getCode());
+			return false;
 		}
 
-		if (isFileLookupInfoDuplicated)
-		{
-			final ITranslatableString duplicateFileLookupInfoErrorMsg = msgBL.getTranslatableMsgText(MSG_DUPLICATE_SFTP_FILE_LOOKUP_DETAILS,
-																									 sapExternalRequest.getCode(),
-																									 parentId.getRepoId());
-
-			return BooleanWithReason.falseBecause(duplicateFileLookupInfoErrorMsg);
-		}
-
-		return BooleanWithReason.TRUE;
+		return getExportConfigFor(docTypeId).isPresent();
 	}
 }

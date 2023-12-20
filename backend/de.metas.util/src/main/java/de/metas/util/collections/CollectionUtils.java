@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -168,6 +169,68 @@ public final class CollectionUtils
 		return result.get(0);
 	}
 
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection)
+	{
+		return singleElementOrEmpty(collection, e -> true);
+	}
+
+	/**
+	 * @param filter filter used to match the element
+	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
+	 */
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		T singleElement = null;
+		boolean singleElementSet = false;
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				if (singleElementSet)
+				{
+					// We already have an element => return empty
+					return Optional.empty();
+				}
+				else
+				{
+					singleElementSet = true;
+					singleElement = e;
+				}
+			}
+		}
+
+		return singleElementSet
+				? Optional.of(singleElement)
+				: Optional.empty();
+	}
+
+	public static <T> Optional<T> singleElementOrEmptyIfNotFound(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		final List<T> result = new ArrayList<>();
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				result.add(e);
+			}
+		}
+
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			throw Check.mkEx("Only one matching element was expected but we got more: " + result);
+		}
+	}
+
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
@@ -204,7 +267,7 @@ public final class CollectionUtils
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
-	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
+	public static <T> T singleElementOrDefault(@Nullable final Collection<T> collection, @Nullable final T defaultValue)
 	{
 		if (collection == null)
 		{
@@ -243,6 +306,11 @@ public final class CollectionUtils
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
+		if (collection.isEmpty())
+		{
+			return defaultValue;
+		}
+
 		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
@@ -264,9 +332,15 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
+		if (collection.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return collection
 				.stream()
 				.map(extractFunction)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -296,9 +370,15 @@ public final class CollectionUtils
 		for (final T item : collection)
 		{
 			final R changedItem = mappingFunction.apply(item);
-			result.add(changedItem);
-
-			if (!hasChanges && !Objects.equals(item, changedItem))
+			if (changedItem != null)
+			{
+				result.add(changedItem);
+				if (!hasChanges && !Objects.equals(item, changedItem))
+				{
+					hasChanges = true;
+				}
+			}
+			else
 			{
 				hasChanges = true;
 			}
@@ -395,6 +475,13 @@ public final class CollectionUtils
 		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
 	}
 
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final Function<V, W> mappingFunction)
+	{
+		return mapValues(map, (k, v) -> mappingFunction.apply(v));
+	}
+
 	/**
 	 * Removes first element from {@link Set} and returns it.
 	 * <p>
@@ -450,6 +537,46 @@ public final class CollectionUtils
 		return values;
 	}
 
+	public static <K, V> Map<K, V> getAllOrLoadReturningMap(
+			@NonNull final Map<K, V> map,
+			@NonNull final Collection<K> keys,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final HashMap<K, V> result = new HashMap<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = map.get(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				result.put(key, value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			map.putAll(valuesLoaded); // add loaded values to cache
+			result.putAll(valuesLoaded); // add loaded values to the map we will return
+		}
+
+		//
+		return result;
+	}
+
 	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
 			@NonNull final Stream<V> stream,
 			@NonNull final Function<? super V, ? extends K> keyFunction)
@@ -501,17 +628,16 @@ public final class CollectionUtils
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Nullable
-	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
+	public static <T> Optional<T> emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
 		final int size = collection.size();
 		if (size == 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (size == 1)
 		{
-			return collection.iterator().next();
+			return Optional.of(collection.iterator().next());
 		}
 		else
 		{
@@ -526,7 +652,7 @@ public final class CollectionUtils
 		return list1;
 	}
 
-	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
+	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable final Collection<T> excludes)
 	{
 		if (set.isEmpty())
 		{
@@ -609,4 +735,23 @@ public final class CollectionUtils
 
 		return ImmutableMap.copyOf(key2Values);
 	}
+
+	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
+	{
+		return collection.stream()
+				.filter(elem -> value.equals(elem))
+				.count() > 1;
+	}
+
+	@Nullable
+	public static <T> T first(@NonNull final Collection<T> collection)
+	{
+		return !collection.isEmpty() ? collection.iterator().next() : null;
+	}
+
+	public static <T> Optional<T> firstOptional(@NonNull final Collection<T> collection)
+	{
+		return Optional.ofNullable(first(collection));
+	}
+
 }

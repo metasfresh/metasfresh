@@ -162,6 +162,11 @@
 			<artifactId>marketing-cleverreach</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-activecampaign</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.marketing</groupId>
@@ -349,6 +354,12 @@
 		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

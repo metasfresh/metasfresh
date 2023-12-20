@@ -35,7 +35,7 @@ import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.RStatusId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;

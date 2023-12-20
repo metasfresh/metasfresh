@@ -24,20 +24,15 @@ package org.eevolution.productioncandidate.service;
 
 import de.metas.material.commons.disposition.SimulatedCleanUpService;
 import de.metas.order.OrderLineId;
-import lombok.NonNull;
+import de.metas.util.Services;
 import org.eevolution.productioncandidate.model.dao.DeletePPOrderCandidatesQuery;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SimulatedPPOrderCandidateCleanUpService implements SimulatedCleanUpService
 {
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
-
-	public SimulatedPPOrderCandidateCleanUpService(@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
-	{
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
-	}
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	@Override
 	public void cleanUpSimulated()

@@ -31,32 +31,17 @@ import de.metas.externalsystem.externalservice.process.AlterExternalSystemServic
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
-import de.metas.externalsystem.sap.SAPExternalRequest;
-import de.metas.i18n.BooleanWithReason;
+import de.metas.externalsystem.sap.InvokeSAPService;
 import de.metas.process.IProcessPreconditionsContext;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_USERNAME;
 
 public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 {
+	private final InvokeSAPService invokeSAPService = SpringContextHolder.instance.getBean(InvokeSAPService.class);
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -84,26 +69,7 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 	{
 		final ExternalSystemSAPConfig sapConfig = ExternalSystemSAPConfig.cast(externalSystemParentConfig.getChildConfig());
 
-		validateExternalSystemConfig(sapConfig);
-
-		final Map<String, String> parameters = new HashMap<>();
-
-		parameters.put(PARAM_SFTP_HOST_NAME, sapConfig.getSftpHostName());
-		parameters.put(PARAM_SFTP_PORT, sapConfig.getSftpPort());
-		parameters.put(PARAM_SFTP_USERNAME, sapConfig.getSftpUsername());
-		parameters.put(PARAM_SFTP_PASSWORD, sapConfig.getSftpPassword());
-		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
-		parameters.put(PARAM_SFTP_PRODUCT_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryProduct());
-		parameters.put(PARAM_SFTP_BPARTNER_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryBPartner());
-		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
-		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
-		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));
-		parameters.put(PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternProduct());
-		parameters.put(PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternBPartner());
-		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, sapConfig.getSftpCreditLimitTargetDirectory());
-		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, sapConfig.getSftpCreditLimitFileNamePattern());
-
-		return parameters;
+		return invokeSAPService.getParameters(sapConfig, externalRequest);
 	}
 
 	@Override
@@ -125,17 +91,5 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_SAP.Table_Name.equals(recordRef.getTableName()))
 				.count();
-	}
-
-	private void validateExternalSystemConfig(@NonNull final ExternalSystemSAPConfig sapConfig)
-	{
-		final SAPExternalRequest sapExternalRequest = SAPExternalRequest.ofCode(externalRequest);
-
-		final BooleanWithReason isStartServicePossible = sapConfig.isStartServicePossible(sapExternalRequest, msgBL);
-
-		if (isStartServicePossible.isFalse())
-		{
-			throw new AdempiereException(isStartServicePossible.getReason()).markAsUserValidationError();
-		}
 	}
 }

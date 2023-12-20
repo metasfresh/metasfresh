@@ -3,16 +3,18 @@ package de.metas.order.interceptor;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.project.service.ProjectService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -62,7 +64,9 @@ public class OrderTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
+		final ProjectService projectService = ProjectService.newInstanceForUnitTesting();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, productWarehouseAssignmentService, projectService));
 	}
 
 	@Test
@@ -150,4 +154,5 @@ public class OrderTest
 
 		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
+
 }

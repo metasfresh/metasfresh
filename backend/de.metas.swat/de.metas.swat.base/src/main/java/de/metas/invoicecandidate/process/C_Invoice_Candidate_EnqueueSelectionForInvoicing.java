@@ -30,9 +30,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -69,7 +68,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
 	// Parameters
-	private IInvoicingParams invoicingParams;
+	private InvoicingParams invoicingParams;
 	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	private int selectionCount = 0;
@@ -98,7 +97,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
 		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
+		this.invoicingParams = InvoicingParams.ofParams(params);
 
 		//
 		// Create and check invoice candidate selection
@@ -118,7 +117,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	 * Before enqueuing the candidates, check how many partners they have.
 	 * In case there are more that one partner, ask the user if he really wants to invoice for so many partners.
 	 *
-	 * task 08961
+	 * @task 08961
 	 * @throws ProcessCanceledException if user canceled
 	 */
 	private void checkPerformEnqueuing() throws ProcessCanceledException
@@ -161,7 +160,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
 				// .setFailOnChanges(true) // NOTE: use the standard settings (which will fallback on SysConfig)
 				//
-				.enqueueSelection(pinstanceId);
+				.prepareAndEnqueueSelection(pinstanceId);
 
 		return enqueueResult.getSummaryTranslated(getCtx());
 	}
@@ -256,7 +255,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
 		return createICQueryBuilder(selectionFilter)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInEffect, true)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
 	}

@@ -31,6 +31,7 @@ import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
 import de.metas.serviceprovider.eventbus.EffortControlEventBusService;
 import de.metas.serviceprovider.eventbus.EffortControlEventRequest;
 import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueQuery;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -43,6 +44,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -98,17 +100,18 @@ public class EffortControlService
 		while (budgetRecordIterator.hasNext())
 		{
 			final I_S_Issue budgetRecord = budgetRecordIterator.next();
-
-			final List<I_C_Invoice_Candidate> existingCandidates = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(budgetRecord));
-			if (existingCandidates.isEmpty())
-			{
-				invoiceCandidateHandlerBL.scheduleCreateMissingCandidatesFor(budgetRecord);
-			}
-			else
-			{
-				invoiceCandDAO.invalidateCands(existingCandidates);
-			}
+			generateInvoiceCandidate(budgetRecord);
 		}
+	}
+
+	public void createOrUpdateInvoiceCandidateForLinkedSubIssues(@NonNull final IssueId issueId)
+	{
+		issueRepository.getDirectlyLinkedSubIssues(issueId)
+				.stream()
+				.map(IssueEntity::getIssueId)
+				.filter(Objects::nonNull)
+				.map(issueRepository::getRecordById)
+				.forEach(this::generateInvoiceCandidate);
 	}
 
 	@NonNull
@@ -123,6 +126,19 @@ public class EffortControlService
 				.build();
 
 		return issueRepository.iterateRecordsByQuery(query);
+	}
+
+	private void generateInvoiceCandidate(@NonNull final I_S_Issue issueRecord)
+	{
+		final List<I_C_Invoice_Candidate> existingCandidates = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(issueRecord));
+		if (existingCandidates.isEmpty())
+		{
+			invoiceCandidateHandlerBL.scheduleCreateMissingCandidatesFor(issueRecord);
+		}
+		else
+		{
+			invoiceCandDAO.invalidateCands(existingCandidates);
+		}
 	}
 
 	@NonNull

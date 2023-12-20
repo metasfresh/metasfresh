@@ -28,14 +28,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
+import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -48,10 +52,13 @@ public class PickingJobLine
 
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@NonNull Quantity qtyToPick;
+	@NonNull OrderAndLineId salesOrderAndLineId;
+	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
 
 	// computed values
-	@NonNull Quantity qtyToPick;
 	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
@@ -59,25 +66,22 @@ public class PickingJobLine
 			@NonNull final PickingJobLineId id,
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps)
 	{
-		Check.assumeNotEmpty(steps, "steps not empty");
-
 		this.id = id;
-
 		this.productId = productId;
 		this.productName = productName;
+		this.qtyToPick = qtyToPick;
+		this.salesOrderAndLineId = salesOrderAndLineId;
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.catchUomId = catchUomId;
 		this.steps = steps;
 
 		this.progress = computeProgress(steps);
-		this.qtyToPick = computeQtyToPick(steps);
-	}
-
-	@NonNull
-	private static Quantity computeQtyToPick(final @NonNull ImmutableList<PickingJobStep> steps)
-	{
-		//noinspection OptionalGetWithoutIsPresent
-		return steps.stream().map(PickingJobStep::getQtyToPick).reduce(Quantity::add).get();
 	}
 
 	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
@@ -86,9 +90,15 @@ public class PickingJobLine
 		return PickingJobProgress.reduce(stepProgresses);
 	}
 
+	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
+
 	Stream<ShipmentScheduleId> streamShipmentScheduleId()
 	{
-		return steps.stream().map(PickingJobStep::getShipmentScheduleId);
+		return Stream.concat(
+						Stream.of(shipmentScheduleId),
+						streamSteps().map(PickingJobStep::getShipmentScheduleId)
+				)
+				.filter(Objects::nonNull);
 	}
 
 	public Stream<PickingJobStep> streamSteps() {return steps.stream();}
@@ -119,5 +129,34 @@ public class PickingJobLine
 				step -> stepIds.contains(step.getId())
 						? stepMapper.apply(step)
 						: step);
+	}
+
+	public PickingJobLine withNewStep(@NonNull final PickingJob.AddStepRequest request)
+	{
+		final PickingJobStep newStep = PickingJobStep.builder()
+				.id(request.getNewStepId())
+				.isGeneratedOnFly(request.isGeneratedOnFly())
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.productId(productId)
+				.productName(productName)
+				.qtyToPick(request.getQtyToPick())
+				.pickFroms(PickingJobStepPickFromMap.ofList(ImmutableList.of(
+						PickingJobStepPickFrom.builder()
+								.pickFromKey(PickingJobStepPickFromKey.MAIN)
+								.pickFromLocator(request.getPickFromLocator())
+								.pickFromHU(request.getPickFromHU())
+								.build()
+				)))
+				.packToSpec(request.getPackToSpec())
+				.build();
+
+		return toBuilder()
+				.steps(ImmutableList.<PickingJobStep>builder()
+						.addAll(this.steps)
+						.add(newStep)
+						.build())
+				.build();
+
 	}
 }

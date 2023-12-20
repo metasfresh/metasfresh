@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
@@ -274,16 +275,23 @@ public class OrderCandidateRestControllerService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
+	/**
+	 * Enqueue and wait for a {@link  de.metas.salesorder.candidate.ProcessOLCandsWorkpackageProcessor}-Workpackage to take care of creating orders, shipments and invoices as required.
+	 */
+	private void processValidOlCands(
+			@NonNull final JsonOLCandProcessRequest request,
+			@NonNull final Set<OLCandId> validOlCandIds)
 	{
 		if (validOlCandIds.isEmpty())
 		{
 			return;
 		}
 
+		// start another async-batch - just to wait for
+		// ProcessOLCandsWorkpackageProcessor to finish doing the work and enqueing sub-processors.
 		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
 
-		final Supplier<Void> action = () -> {
+		final Supplier<IEnqueueResult> action = () -> {
 			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
 
 			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
@@ -295,7 +303,7 @@ public class OrderCandidateRestControllerService
 
 			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
 
-			return null;
+			return () -> 1; // we always enqueue one workpackage
 		};
 
 		asyncBatchService.executeBatch(action, processOLCandsAsyncBatchId);

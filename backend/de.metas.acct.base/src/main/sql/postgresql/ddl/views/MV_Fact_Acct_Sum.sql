@@ -1,3 +1,5 @@
+DROP MATERIALIZED VIEW MV_Fact_Acct_Sum ;
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS MV_Fact_Acct_Sum AS
 select fa.AD_Client_ID
      , fa.AD_Org_ID

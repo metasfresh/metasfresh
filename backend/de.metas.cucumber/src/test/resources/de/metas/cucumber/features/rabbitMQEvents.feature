@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventBus
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: Distributed event is sent to all bound queues

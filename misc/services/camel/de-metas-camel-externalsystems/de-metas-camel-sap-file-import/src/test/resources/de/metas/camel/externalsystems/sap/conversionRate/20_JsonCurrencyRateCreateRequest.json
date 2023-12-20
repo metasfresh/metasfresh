@@ -1,0 +1,27 @@
+{
+  "orgCode": "orgCode",
+  "currencyCodeFrom": "currencyFrom",
+  "requestItems": [
+    {
+      "currencyCodeTo": "currencyTo1",
+      "conversionType": "Company",
+      "validFrom": "2023-02-20",
+      "validTo": null,
+      "divideRate": "1.523"
+    },
+    {
+      "currencyCodeTo": "currencyTo1",
+      "conversionType": null,
+      "validFrom": "2023-04-19",
+      "validTo": null,
+      "divideRate": "1.46124"
+    },
+    {
+      "currencyCodeTo": "currencyTo2",
+      "conversionType": "Company",
+      "validFrom": "2023-02-25",
+      "validTo": null,
+      "divideRate": "1.6"
+    }
+  ]
+}

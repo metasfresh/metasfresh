@@ -10,7 +10,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -73,7 +72,7 @@ public class InvoiceCandidateRecordService
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
+		final InvoiceCandidate.InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -107,7 +106,7 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))

@@ -97,6 +97,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	// Services
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	/**
 	 * Just Prepared Flag
@@ -300,6 +301,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 					.qtyRejectedToAdd(qtys.getRejectedQty())
 					.date(TimeUtil.asZonedDateTime(getMovementDate()))
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
+					.roundToScaleQuantity(ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(getPP_Order_ID())).orElse(null))
 					.build());
 		}
 		else if (costCollectorType.isMaterialReceipt())
@@ -324,7 +326,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		//
-		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this);
+		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this)
+				.negateIf(X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus.equals(mtrxMovementType));
 		final MTransaction mtrx = new MTransaction(getCtx(),
 				getAD_Org_ID(),
 				mtrxMovementType,

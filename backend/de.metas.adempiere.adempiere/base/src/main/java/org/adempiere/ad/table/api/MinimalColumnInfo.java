@@ -30,4 +30,9 @@ public class MinimalColumnInfo
 	@NonNull String entityType;
 	int fieldLength;
 	boolean isDLMPartitionBoundary;
+
+	public boolean isColumnNameMatching(final String columnName)
+	{
+		return this.columnName.equalsIgnoreCase(columnName);
+	}
 }

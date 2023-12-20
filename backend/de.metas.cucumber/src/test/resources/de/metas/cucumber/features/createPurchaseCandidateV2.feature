@@ -1,10 +1,12 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: create or update Purchase Candidate
   As a user
   I want create a Purchase Candidate record
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                | Value               |

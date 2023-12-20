@@ -7,6 +7,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostSegment;
@@ -26,8 +27,8 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -116,30 +117,15 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
+	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
-		return costDetailsRepo.firstOnly(CostDetailQuery.builder()
+		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
+				.amtType(request.getAmtType())
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.build());
-	}
-
-	@Override
-	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
-	{
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
-		return costDetailsRepo.stream(CostDetailQuery.builder()
-				.acctSchemaId(costDetail.getAcctSchemaId())
-				.costElementId(costDetail.getCostElementId())
-				.productId(costDetail.getProductId())
-				.attributeSetInstanceId(costingLevel.effectiveValueOrNull(costDetail.getAttributeSetInstanceId()))
-				.clientId(costingLevel.effectiveValue(costDetail.getClientId()))
-				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
-				.afterCostDetailId(costDetail.getId())
-				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 				.build());
 	}
 
@@ -161,9 +147,16 @@ public class CostDetailService implements ICostDetailService
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
-				.amt(costDetail.getAmt())
-				.qty(costDetail.getQty())
+				.amtAndQty(costDetail.getAmtAndQtyDetailed())
 				.build();
+	}
+
+	@Override
+	public CostDetailCreateResultsList toCostDetailCreateResultsList(final Collection<CostDetail> costDetails)
+	{
+		return costDetails.stream()
+				.map(this::toCostDetailCreateResult)
+				.collect(CostDetailCreateResultsList.collect());
 	}
 
 	private CostSegment extractCostSegment(final CostDetail costDetail)

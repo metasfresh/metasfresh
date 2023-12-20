@@ -2,6 +2,7 @@ package de.metas.handlingunits.trace;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -10,9 +11,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.OptionalInt;
 
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.quantity.Quantity;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,19 +61,21 @@ import de.metas.util.StringUtils;
  * Leans on {@link HUTransformTestsBase} and verifies that the correct {@link HUTraceEvent}s were created.
  * To test additional use cases, move the respective testing code from {@link HUTransformServiceTests} to {@link HUTransformTestsBase}.
  *
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUTransformTracingTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
+	/**
+	 * Watches the current tests and dumps the database to console in case of failure
+	 */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private HUTraceRepository huTraceRepository;
 
 	private HUTransformTestsBase testsBase;
+
+	private static I_C_UOM uomRecord;
 
 	@Before
 	public void init()
@@ -78,7 +84,7 @@ public class HUTransformTracingTests
 
 		// with this, we can avoid having to start the spring context
 		huTraceRepository = new HUTraceRepository();
-		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(huTraceRepository, new HUAccessService());
+		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(huTraceRepository, new HUAccessService(), new InventoryRepository());
 		HUTraceModuleInterceptor.INSTANCE.setHUTraceEventsService(huTraceEventsService);
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
@@ -89,6 +95,8 @@ public class HUTransformTracingTests
 		sysConfig.setValue(StringUtils.ofBoolean(true));
 		save(sysConfig);
 		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
+
+		uomRecord = testsBase.getData().helper.uomEach;
 	}
 
 	@Test
@@ -106,7 +114,7 @@ public class HUTransformTracingTests
 			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getVhuSourceId(), nullValue());
 			assertThat(huTraceEvent.getTopLevelHuId().getRepoId(), is(result.getInititalParent().getM_HU_ID()));
-			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE.negate()));
+			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE.negate()));
 		}
 
 		{
@@ -116,14 +124,13 @@ public class HUTransformTracingTests
 			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getOutput().get(0).getM_HU_ID()));
 			assertThat(huTraceEvent.getVhuSourceId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getTopLevelHuId(), is(huTraceEvent.getVhuId()));
-			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE));
+			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE));
 		}
 	}
 
 	/**
 	 * Calls {@link HUTransformServiceTests#testCU_To_NewCU_MaxValueParent()} and then verifies the tracing info.
 	 * There shall be two tracing events; one shall have the old TU as {@code topLevelHuId} the other one the now-standalone CU.
-	 *
 	 */
 	@Test
 	public void testCU_To_NewCU_MaxValueParent()
@@ -152,10 +159,10 @@ public class HUTransformTracingTests
 		// when comparing with "common", we needs to keep the ID out
 		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(tuTraceEventToCompareWith,
-				is(common
-						.qty(new BigDecimal("-3"))
-						.topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
-						.build()));
+				   is(common
+							  .qty(Quantity.of(new BigDecimal("-3"), uomRecord))
+							  .topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
+							  .build()));
 
 		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID())).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
@@ -164,10 +171,10 @@ public class HUTransformTracingTests
 		// when comparing with "common", we needs to keep the ID out
 		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(cuTraceEventToCompareWith,
-				is(common
-						.qty(new BigDecimal("3"))
-						.topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
-						.build()));
+				   is(common
+							  .qty(Quantity.of(new BigDecimal("3"), uomRecord))
+							  .topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
+							  .build()));
 	}
 
 	@Test

@@ -1,0 +1,9 @@
+{
+  "externalSystemConfigType": "metasfresh",
+  "externalSystemChildConfigValue": "metasfresh",
+  "serviceValue": "defaultRestAPIMetasfresh",
+  "jsonStatusRequest": {
+    "status": "Inactive",
+    "adPInstanceId": 123
+  }
+}

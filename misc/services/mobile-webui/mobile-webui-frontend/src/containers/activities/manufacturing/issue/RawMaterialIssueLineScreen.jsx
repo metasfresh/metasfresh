@@ -14,7 +14,7 @@ import {
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
-import { formatQtyToHumanReadable } from '../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -26,9 +26,10 @@ const RawMaterialIssueLineScreen = () => {
     caption,
     userInstructions,
     productName,
+    productValue,
     uom,
     qtyToIssue,
-    qtyToIssueTolerancePerc,
+    qtyToIssueTolerance,
     qtyToIssueRemaining,
     qtyIssued,
     steps,
@@ -43,9 +44,10 @@ const RawMaterialIssueLineScreen = () => {
           caption,
           userInstructions,
           productName,
+          productValue,
           uom,
           qtyToIssue,
-          qtyToIssueTolerancePerc,
+          qtyToIssueTolerance,
           qtyToIssueRemaining,
           qtyIssued,
         })
@@ -93,11 +95,12 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: activity?.caption ?? 'Issue',
-    userInstructions: activity?.userInstructions,
+    userInstructions: line?.userInstructions || activity?.userInstructions,
     productName: line?.productName,
+    productValue: line?.productValue,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
+    qtyToIssueTolerance: line?.qtyToIssueTolerance,
     // qtyToIssueMin: line?.qtyToIssueMin,
     // qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,
@@ -111,9 +114,10 @@ const computeHeaderEntriesFromParams = ({
   caption,
   userInstructions,
   productName,
+  productValue,
   uom,
   qtyToIssue,
-  qtyToIssueTolerancePerc,
+  qtyToIssueTolerance,
   qtyToIssueRemaining,
   qtyIssued,
 }) => {
@@ -122,19 +126,23 @@ const computeHeaderEntriesFromParams = ({
     caption: caption,
     userInstructions,
     values: [
+      {
+        caption: trl('general.ProductValue'),
+        value: productValue,
+      },
       { caption: trl('general.Product'), value: productName },
       {
         caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssue,
           uom,
-          tolerancePercent: qtyToIssueTolerancePerc,
+          tolerance: qtyToIssueTolerance,
           precision: 999,
         }),
       },
       {
         caption: trl('activities.mfg.issues.qtyToIssueRemaining'),
-        value: formatQtyToHumanReadable({
+        value: formatQtyToHumanReadableStr({
           qty: qtyToIssueRemaining,
           uom,
           precision: 999,
@@ -142,7 +150,7 @@ const computeHeaderEntriesFromParams = ({
       },
       {
         caption: trl('activities.mfg.issues.qtyIssued'),
-        value: formatQtyToHumanReadable({ qty: qtyIssued, uom, precision: 999 }),
+        value: formatQtyToHumanReadableStr({ qty: qtyIssued, uom, precision: 999 }),
       },
     ],
   };

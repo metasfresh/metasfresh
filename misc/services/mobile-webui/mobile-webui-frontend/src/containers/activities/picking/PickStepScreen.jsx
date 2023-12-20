@@ -15,6 +15,7 @@ import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const PickStepScreen = () => {
   const {
@@ -36,7 +37,7 @@ const PickStepScreen = () => {
         values: [
           {
             caption: trl('general.Locator'),
-            value: pickFrom.locatorName,
+            value: pickFrom?.locatorName,
           },
           {
             caption: trl('general.QtyToPick'),
@@ -58,21 +59,12 @@ const PickStepScreen = () => {
     postStepUnPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       huQRCode: toQRCodeString(pickFrom.huQRCode),
     })
-      .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: 0,
-            qtyRejected: 0,
-            qtyRejectedReasonCode: null,
-          })
-        );
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
         history.push(location);
       })
       .catch((axiosError) => toastError({ axiosError }));
@@ -84,6 +76,7 @@ const PickStepScreen = () => {
     postStepPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       qtyPicked: 0,
       qtyRejected,
@@ -117,14 +110,14 @@ const PickStepScreen = () => {
       })
     );
 
-  const isPickedFromHU = pickFrom.qtyPicked > 0;
+  const isPickedFromHU = pickFrom?.qtyPicked > 0;
 
   const scanButtonCaption = isPickedFromHU
     ? `${toQRCodeDisplayable(pickFrom.huQRCode)}`
     : trl('activities.picking.scanQRCode');
 
   const scanButtonStatus = isPickedFromHU ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-  const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
+  const nothingPicked = !isPickedFromHU && !pickFrom?.qtyRejectedReasonCode;
 
   return (
     <div className="section pt-2">
@@ -140,12 +133,14 @@ const PickStepScreen = () => {
           disabled={nothingPicked}
           onClick={onUnpickButtonClick}
         />
-        <ConfirmButton
-          caption={trl('activities.confirmButton.notFound')}
-          isDangerousAction={true}
-          isUserEditable={nothingPicked}
-          onUserConfirmed={handleNotFound}
-        />
+        {nothingPicked && (
+          <ConfirmButton
+            caption={trl('activities.confirmButton.notFound')}
+            isDangerousAction={true}
+            isUserEditable={nothingPicked}
+            onUserConfirmed={handleNotFound}
+          />
+        )}
       </div>
     </div>
   );
@@ -154,9 +149,9 @@ const PickStepScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, altStepId }) => {
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
   return {
-    pickFrom: getPickFrom({ stepProps, altStepId }),
-    qtyToPick: getQtyToPick({ stepProps, altStepId }),
-    uom: stepProps.uom,
+    pickFrom: stepProps != null ? getPickFrom({ stepProps, altStepId }) : null,
+    qtyToPick: stepProps != null ? getQtyToPick({ stepProps, altStepId }) : 0,
+    uom: stepProps?.uom ?? '',
   };
 };
 

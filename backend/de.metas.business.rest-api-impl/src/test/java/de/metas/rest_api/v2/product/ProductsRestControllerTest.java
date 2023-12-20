@@ -22,12 +22,20 @@
 
 package de.metas.rest_api.v2.product;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -37,34 +45,49 @@ import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.repository.IncotermsRepository;
+import de.metas.job.JobService;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.ProductQualityAttributeRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
+import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.sectionCode.SectionCodeService;
+import de.metas.title.TitleRepository;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
-import io.github.jsonSnapshot.SnapshotMatcher;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +98,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
@@ -83,20 +107,12 @@ public class ProductsRestControllerTest
 	private UomId kgUomId;
 	private SectionCodeId sectionCodeId;
 
+	private Expect expect;
+
 	@BeforeAll
 	static void initStatic()
 	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-
 		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -108,7 +124,6 @@ public class ProductsRestControllerTest
 
 		final SectionCodeRepository sectionCodeRepository = new SectionCodeRepository();
 
-		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository);
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
 		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
@@ -126,9 +141,42 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, new SectionCodeService(sectionCodeRepository));
+		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository);
 
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new TitleRepository(),
+				currencyRepository,
+				JobService.newInstanceForUnitTesting(),
+				Mockito.mock(ExternalReferenceRestControllerService.class),
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new SectionCodeService(sectionCodeRepository),
+				new IncotermsRepository(),
+				new BPartnerCreditLimitRepository(),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
+
+		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
+
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
+		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(productWarehouseAssignmentService, externalIdentifierResolver);
+		//
+		final ProductRestService productRestService = new ProductRestService(productRepository,
+																			 productWarehouseAssignmentRestService,
+																			 externalReferenceRestControllerService,
+																			 new SectionCodeService(sectionCodeRepository),
+																			 Mockito.mock(ProductAllergenRestService.class),
+																			 new QualityAttributeService(new ProductQualityAttributeRepository()),
+																			 jsonServiceFactory,
+																			 externalIdentifierResolver);
+		//
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
 	}
 
 	private void createMasterData()
@@ -244,7 +292,7 @@ public class ProductsRestControllerTest
 								   .build());
 
 		//
-		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)

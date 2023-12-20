@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

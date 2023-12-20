@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 329777100L;
+	private static final long serialVersionUID = 856767801L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -78,6 +78,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setCapacityPerProductionCycleOverride (final @Nullable BigDecimal CapacityPerProductionCycleOverride)
+	{
+		set_Value (COLUMNNAME_CapacityPerProductionCycleOverride, CapacityPerProductionCycleOverride);
+	}
+
+	@Override
+	public BigDecimal getCapacityPerProductionCycleOverride()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycleOverride);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setDatePromised (final java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
@@ -111,6 +124,27 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	/**
+	 * IsLotForLot AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISLOTFORLOT_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISLOTFORLOT_Yes = "Y";
+	/** No = N */
+	public static final String ISLOTFORLOT_No = "N";
+	@Override
+	public void setIsLotForLot (final @Nullable java.lang.String IsLotForLot)
+	{
+		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+	}
+
+	@Override
+	public java.lang.String getIsLotForLot()
+	{
+		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
 
 	@Override
@@ -252,18 +286,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getPP_Product_BOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
-	}
-
-	@Override
-	public void setPP_Product_Planning(final org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
 	}
 
 	@Override

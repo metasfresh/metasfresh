@@ -1,11 +1,14 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: credit limit
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7005149571/job/19056393153
   @from:cucumber
   Scenario: validate the error thrown by the credit limit set on business partner when generating the shipments,
   then remove the credit limit, generate shipments and validate them

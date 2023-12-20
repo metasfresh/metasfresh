@@ -2,7 +2,7 @@ import React, { useState, useContext, createContext } from 'react';
 import { useDispatch, useStore } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { loginWithToken, checkLoginRequest, logoutRequest } from '../api';
+import { loginWithToken, checkLoginRequest, logoutRequest } from '../api/login';
 
 import history from '../services/History';
 import Auth from '../services/Auth';

@@ -201,7 +201,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
 				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" } //
 				, { "Qty" }
 		});

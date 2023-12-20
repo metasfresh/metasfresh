@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Line_Alloc
  *  @author metasfresh (generated) 

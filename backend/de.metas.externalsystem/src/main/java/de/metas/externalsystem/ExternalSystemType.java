@@ -5,8 +5,10 @@ import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.process.InvokeAlbertaAction;
+import de.metas.externalsystem.process.InvokeAmazonAction;
 import de.metas.externalsystem.process.InvokeEbayAction;
 import de.metas.externalsystem.process.InvokeGRSSignumAction;
+import de.metas.externalsystem.process.InvokeMetasfreshAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokeSAPAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
@@ -51,7 +53,10 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
 	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
 	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
-	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName())
+	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName()),
+	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName()),
+	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName()),
+	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
 	;
 
 	@Getter
@@ -63,7 +68,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	@Getter
 	private final String externalSystemProcessClassName;
 
-	ExternalSystemType(@NonNull final String code, final String name, final String externalSystemProcessClassName)
+	ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
 	{
 		this.code = code;
 		this.name = name;

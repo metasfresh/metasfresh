@@ -24,12 +24,14 @@ package org.adempiere.ad.table.api.impl;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.StringUtils;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
@@ -45,10 +47,13 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.ColumnName;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.MinimalColumnInfo;
+import org.adempiere.ad.table.api.TableName;
+import org.adempiere.ad.table.api.ViewSourceDescriptor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -58,6 +63,8 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_ViewSource;
+import org.compiere.model.I_AD_ViewSource_Column;
 import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -130,7 +137,7 @@ public class ADTableDAO implements IADTableDAO
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
 		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName));
-		if(adTableId == null)
+		if (adTableId == null)
 		{
 			return false;
 		}
@@ -158,6 +165,12 @@ public class ADTableDAO implements IADTableDAO
 	public String retrieveTableName(@NonNull final AdTableId adTableId)
 	{
 		return TableIdsCache.instance.getTableName(adTableId);
+	}
+
+	@Override
+	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
+	{
+		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
 	}
 
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
@@ -338,7 +351,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
-		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+		return Math.max(typeaheadMinLength, 0);
 	}
 
 	@Override
@@ -369,8 +382,8 @@ public class ADTableDAO implements IADTableDAO
 
 	private ColumnSqlSourceDescriptor toColumnSqlSourceDescriptor(final I_AD_SQLColumn_SourceTableColumn record)
 	{
-		final String targetTableName = retrieveTableName(record.getAD_Table_ID());
-		final String sourceTableName = retrieveTableName(record.getSource_Table_ID());
+		final String targetTableName = retrieveTableName(AdTableId.ofRepoId(record.getAD_Table_ID()));
+		final String sourceTableName = retrieveTableName(AdTableId.ofRepoId(record.getSource_Table_ID()));
 		final String fetchTargetRecordsMethod = record.getFetchTargetRecordsMethod();
 
 		if (X_AD_SQLColumn_SourceTableColumn.FETCHTARGETRECORDSMETHOD_SQL.equals(fetchTargetRecordsMethod))
@@ -388,7 +401,7 @@ public class ADTableDAO implements IADTableDAO
 					.targetTableName(targetTableName)
 					.sourceTableName(sourceTableName)
 					.fetchTargetRecordsMethod(FetchTargetRecordsMethod.LINK_COLUMN)
-					.linkColumnName(retrieveColumnName(record.getLink_Column_ID()))
+					.sourceLinkColumnName(retrieveColumnName(record.getLink_Column_ID()))
 					.build();
 		}
 		else
@@ -445,6 +458,13 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return getMinimalColumnInfoMap().getByIds(adColumnIds);
 	}
+
+	@Override
+	public ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull final String columnName)
+	{
+		return getMinimalColumnInfoMap().getByColumnName(columnName);
+	}
+
 
 	private MinimalColumnInfoMap getMinimalColumnInfoMap()
 	{
@@ -503,4 +523,78 @@ public class ADTableDAO implements IADTableDAO
 				.isDLMPartitionBoundary(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary)))
 				.build();
 	}
+
+	@Override
+	public List<ViewSourceDescriptor> retrieveViewSourceDescriptors()
+	{
+		final ImmutableListMultimap<Integer, I_AD_ViewSource_Column> viewSourceColumnRecordsMap = queryBL.createQueryBuilder(I_AD_ViewSource_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						I_AD_ViewSource_Column::getAD_ViewSource_ID,
+						record -> record
+				));
+
+		return queryBL.createQueryBuilder(I_AD_ViewSource.class)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(viewSourceRecord -> toViewSourceDescriptor(viewSourceRecord, viewSourceColumnRecordsMap.get(viewSourceRecord.getAD_ViewSource_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private ViewSourceDescriptor toViewSourceDescriptor(
+			@NonNull final I_AD_ViewSource viewSourceRecord,
+			@NonNull final Collection<I_AD_ViewSource_Column> viewSourceColumnRecords)
+	{
+		final AdTableId viewId = AdTableId.ofRepoId(viewSourceRecord.getAD_Table_ID());
+
+		return ViewSourceDescriptor.builder()
+				.viewId(viewId)
+				.viewName(TableName.ofString(retrieveTableName(viewId)))
+				.sourceTableName(TableName.ofString(retrieveTableName(AdTableId.ofRepoId(viewSourceRecord.getSource_Table_ID()))))
+				.sourceLinkColumnName(ColumnName.ofString(retrieveColumnName(viewSourceRecord.getSource_LinkColumn_ID())))
+				.viewLinkColumnName(ColumnName.ofString(retrieveColumnName(viewSourceRecord.getParent_LinkColumn_ID())))
+				.invalidateOnTimings(extractInvalidateOnTimings(viewSourceRecord))
+				.invalidateOnChangeOnlyForColumnNames(extractColumnNames(viewSourceColumnRecords))
+				.build();
+	}
+
+	private ImmutableSet<ColumnName> extractColumnNames(final @NonNull Collection<I_AD_ViewSource_Column> viewSourceColumnRecords)
+	{
+		return viewSourceColumnRecords.stream()
+				.map(I_AD_ViewSource_Column::getAD_Column_ID)
+				.map(adColumnId -> ColumnName.ofString(retrieveColumnName(adColumnId)))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private static ImmutableSet<ModelCacheInvalidationTiming> extractInvalidateOnTimings(final @NonNull I_AD_ViewSource viewSourceRecord)
+	{
+		final ImmutableSet.Builder<ModelCacheInvalidationTiming> result = ImmutableSet.builder();
+		if (viewSourceRecord.isInvalidateOnBeforeNew())
+		{
+			result.add(ModelCacheInvalidationTiming.BEFORE_NEW);
+		}
+		if (viewSourceRecord.isInvalidateOnAfterNew())
+		{
+			result.add(ModelCacheInvalidationTiming.AFTER_NEW);
+		}
+		if (viewSourceRecord.isInvalidateOnBeforeChange())
+		{
+			result.add(ModelCacheInvalidationTiming.BEFORE_CHANGE);
+		}
+		if (viewSourceRecord.isInvalidateOnAfterChange())
+		{
+			result.add(ModelCacheInvalidationTiming.AFTER_CHANGE);
+		}
+		if (viewSourceRecord.isInvalidateOnAfterDelete())
+		{
+			result.add(ModelCacheInvalidationTiming.AFTER_DELETE);
+		}
+
+		return result.build();
+	}
+
 }

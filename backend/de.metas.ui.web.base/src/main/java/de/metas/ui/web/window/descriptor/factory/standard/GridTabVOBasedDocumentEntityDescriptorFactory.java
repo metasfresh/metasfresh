@@ -5,9 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
@@ -27,6 +31,8 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.NotFoundMessages;
+import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -45,6 +51,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -56,8 +63,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -77,9 +83,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -107,7 +118,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
+	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
@@ -117,11 +129,16 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+	private static final String SYSCONFIG_QUANTITY_DEFAULT_PRECISION = "webui.frontend.widget.Quantity.defaultPrecision";
+
 	//
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final LabelFieldNameFactory labelFieldNameFactory = new LabelFieldNameFactory();
+
+	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
 
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
@@ -232,8 +249,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic()
 				.evaluatePartial(Evaluatees.mapBuilder()
-						.put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
-						.build());
+										 .put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
+										 .build());
 
 		//
 		// Entity descriptor
@@ -265,7 +282,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
 				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
-				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters())
+				.notFoundMessages(extractNotFoundMessages(gridTabVO));
 
 		// Fields descriptor
 		gridTabVO
@@ -282,6 +300,20 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
+	}
+
+	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO) {
+		final ITranslatableString message = gridTabVO.getNotFoundMessage();
+		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
+		if(TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+		{
+			return null;
+		}
+
+		return NotFoundMessages.builder()
+				.message(message)
+				.detail(detail)
+				.build();
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
@@ -313,7 +345,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
-					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+																"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
 			builder.setTooltipIconName(tooltipIconName);
 		}
 		return builder;
@@ -408,7 +440,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 					widgetType,
 					valueClass,
 					gridFieldVO.isMandatory(),
-					gridFieldVO.isUseDocSequence());
+					gridFieldVO.isUseDocSequence(),
+					DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
 
 			final OptionalBoolean tabAllowsCreateNew = entityDescriptorBuilder.getAllowCreateNewLogic().toOptionalBoolean();
 			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn, tabAllowsCreateNew);
@@ -459,6 +492,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
+				.setMinPrecision(getStandardNumberPrecision().getMinPrecision(widgetType))
 				.setValueClass(valueClass)
 				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
 				.setLookupDescriptor(lookupDescriptor.orElse(null))
@@ -484,6 +518,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setValueClass(fieldBinding.getValueClass())
 				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
+				.setForbidNewRecordCreation(gridFieldVO.isForbidNewRecordCreation())
 				//
 				.setDefaultValueExpression(defaultValueExpression)
 				//
@@ -640,7 +675,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final Class<?> valueClass,
 			@Nullable final LookupDescriptor lookupDescriptor)
 	{
-		if (gridFieldDefaultFilterInfo == null)
+		if (gridFieldDefaultFilterInfo == null || isSkipField(fieldName))
 		{
 			return null;
 		}
@@ -755,7 +790,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
 		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
-				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+													 trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
 		);
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
@@ -778,6 +813,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	public String getLabelsFieldName(@NonNull final AdUIElementId uiElementId)
+	{
+		return labelFieldNameFactory.getFieldName(uiElementId);
 	}
 
 	@Nullable
@@ -872,8 +912,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
+		final String fieldName = labelFieldNameFactory.createFieldName(AdUIElementId.ofRepoId(labelsUIElement.getAD_UI_Element_ID()), labelsTableName);
+
 		return LabelsLookup.builder()
-				.fieldName(extractLabelsFieldName(labelsUIElement))
+				.fieldName(fieldName)
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesUseNumericKey(labelsValuesLookupDescriptor.isNumericKey())
@@ -883,12 +925,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
-	}
-
-	@NonNull
-	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
-	{
-		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable
@@ -1050,5 +1086,35 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	public Map<Characteristic, DocumentFieldDescriptor.Builder> getSpecialField_DocSatusAndDocAction()
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
+	}
+
+	private WidgetTypeStandardNumberPrecision getStandardNumberPrecision()
+	{
+		WidgetTypeStandardNumberPrecision standardNumberPrecision = this._standardNumberPrecision;
+		if (standardNumberPrecision == null)
+		{
+			standardNumberPrecision = this._standardNumberPrecision = WidgetTypeStandardNumberPrecision.builder()
+					.quantityPrecision(getPrecisionFromSysConfigs(SYSCONFIG_QUANTITY_DEFAULT_PRECISION))
+					.build()
+					.fallbackTo(WidgetTypeStandardNumberPrecision.DEFAULT);
+		}
+		return standardNumberPrecision;
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private OptionalInt getPrecisionFromSysConfigs(@NonNull final String sysconfigName)
+	{
+		final int precision = sysConfigBL.getIntValue(sysconfigName, -1);
+		return precision > 0 ? OptionalInt.of(precision) : OptionalInt.empty();
+	}
+
+	private boolean isSkipField(@NonNull final String fieldName)
+	{
+		return switch (fieldName)
+				{
+					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+					default -> false;
+				};
 	}
 }

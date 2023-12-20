@@ -1,7 +1,7 @@
 package de.metas.rest_api.utils;
 
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest.OrderDocType;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -47,23 +47,23 @@ public class DocTypeService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final JsonDocTypeInfo invoiceDocType,
+			@Nullable final DocBaseAndSubType docBaseAndSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (invoiceDocType == null)
+		if (docBaseAndSubType == null)
 		{
 			return null;
 		}
 
+		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
 		final String docSubType = firstNotEmptyTrimmed(
-				invoiceDocType.getDocSubType(),
+				docBaseAndSubType.getDocSubType(),
 				DocTypeQuery.DOCSUBTYPE_NONE);
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
-
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
-				.docBaseType(DocBaseType.ofCode(invoiceDocType.getDocBaseType()))
+				.docBaseType(docBaseType)
 				.docSubType(docSubType)
 				.adClientId(orgRecord.getAD_Client_ID())
 				.adOrgId(orgRecord.getAD_Org_ID())

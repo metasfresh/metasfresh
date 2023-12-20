@@ -10,18 +10,24 @@ package org.eevolution.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -34,14 +40,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.LiberoException;
 import org.eevolution.api.PPOrderId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine
@@ -107,6 +107,10 @@ public class PP_Order_BOMLine
 				orderBOMLine.setM_Locator_ID(locatorIdToUse.getRepoId());
 			}
 		}
+
+		//
+		// Validate Issuing Tolerance
+		PPOrderBOMBL.extractIssuingToleranceSpec(orderBOMLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

@@ -29,6 +29,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -58,4 +59,7 @@ public class JsonWorkOrderObjectsUnderTestResponse
 
 	@Nullable
 	String woObjectWhereabouts;
+
+	@Nullable
+	LocalDate objectDeliveredDate;
 }

@@ -4,9 +4,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
@@ -36,13 +36,16 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -61,6 +64,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -99,24 +107,16 @@ public class LayoutFactory
 
 	// services
 	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ImmutableList<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
 	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
+
+	private final IMsgBL msgBL = SpringContextHolder.instance.getBean(IMsgBL.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
-			.defaultValue("There are no detail rows")
-			.trl("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
-			.trl("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
-			.build();
-
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
-			.defaultValue("You can create them in this window.")
-			.trl("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.trl("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.build();
+	public static final AdMessageKey TAB_EMPTY_RESULT_HINT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_HINT");
+	public static final AdMessageKey TAB_EMPTY_RESULT_TEXT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_TEXT");
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
 
@@ -263,6 +263,7 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
+				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
@@ -576,7 +577,11 @@ public class LayoutFactory
 			// add the "primary" field
 			{
 				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
-				if (field != null)
+				if (field != null && isSkipField(field))
+				{
+					logger.trace("Skip field {} because it's not displayed", field.getFieldName());
+				}
+				else if (field != null)
 				{
 					fields.add(field);
 				}
@@ -607,7 +612,7 @@ public class LayoutFactory
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
+			final String labelsFieldName = descriptorsFactory.getLabelsFieldName(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID()));
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
 			if (field == null)
 			{
@@ -638,8 +643,8 @@ public class LayoutFactory
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT))
 				.setPageLength(entityDescriptor.getViewPageLength())
 				.setIdFieldName(entityDescriptor.getSingleIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
@@ -751,7 +756,8 @@ public class LayoutFactory
 				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())
-				.trackField(field);
+				.trackField(field)
+				.setForbidNewRecordCreation(field.isForbidNewRecordCreation());
 
 		if (!Check.isEmpty(field.getTooltipIconName()))
 		{
@@ -767,8 +773,8 @@ public class LayoutFactory
 	{
 		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WindowId.of(getAdWindowId()))
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
+				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT));
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
@@ -853,5 +859,15 @@ public class LayoutFactory
 				.addField(layoutElementField(docStatusField).setFieldType(FieldType.ActionButtonStatus))
 				.addField(layoutElementField(docActionField).setFieldType(FieldType.ActionButton))
 				.build();
+	}
+
+	private boolean isSkipField(@NonNull final DocumentFieldDescriptor.Builder field)
+	{
+		return switch (field.getFieldName())
+				{
+					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+					default -> false;
+				};
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
@@ -36,6 +37,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -88,4 +90,20 @@ public class BudgetProject
 
 	@Nullable
 	LocalDate dateFinish;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	UserId specialistConsultantID;
+
+	@Nullable
+	InternalPriority internalPriority;
+
+	@NonNull
+	public Optional<String> getExternalIdAsString()
+	{
+		return Optional.ofNullable(externalId)
+				.map(ExternalId::getValue);
+	}
 }

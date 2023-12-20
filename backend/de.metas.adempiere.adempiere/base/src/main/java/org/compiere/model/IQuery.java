@@ -235,6 +235,8 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
+	T firstOnlyNotNull() throws DBException;
+
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
@@ -284,6 +286,12 @@ public interface IQuery<T>
 	 * @param clazz model interface class
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
+
+	default <ET extends T> Iterator<ET> iterateWithGuaranteedIterator(final Class<ET> clazz) throws DBException
+	{
+		setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
+		return iterate(clazz);
+	}
 
 	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
 	{
@@ -408,7 +416,7 @@ public interface IQuery<T>
 	/**
 	 * Directly execute DELETE FROM database.
 	 * <p>
-	 * Models, won't be loaded so no model interceptor will be triggered.
+	 * WARNING: Models, won't be loaded so no model interceptor will be triggered!
 	 * <p>
 	 * Also, models will be deleted even if they were marked as Processed=Y.
 	 * <p>
@@ -541,6 +549,8 @@ public interface IQuery<T>
 	 * @return list multimap indexed by a key provided by <code>keyFunction</code>.
 	 */
 	<K, ET extends T> ListMultimap<K, ET> listMultimap(Class<ET> modelClass, Function<ET, K> keyFunction);
+
+	default <K> ListMultimap<K, T> listMultimap(@NonNull Function<T, K> keyFunction) {return listMultimap(getModelClass(), keyFunction);}
 
 	/**
 	 * Retrieves the records and then splits them in groups based on the indexing key provided by <code>keyFunction</code>.

@@ -1,5 +1,8 @@
 package de.metas.acct.gljournal;
 
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.GLCategoryRepository;
+import de.metas.acct.GLCategoryType;
 import de.metas.acct.process.GLJournalRequest;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -7,15 +10,13 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_GL_Category;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.model.MGLCategory;
-import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,6 +49,7 @@ public class GL_Journal_Builder
 
 	// services
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final GLCategoryRepository glCategoryRepository = GLCategoryRepository.get();
 
 	private final I_GL_Journal glJournal;
 
@@ -74,15 +76,14 @@ public class GL_Journal_Builder
 		glJournal.setC_ConversionType_ID(conversionTypeDefaultId.getRepoId());
 
 		final GLCategoryId glCategoryId = request.getGlCategoryId();
-
 		if (glCategoryId != null)
 		{
 			glJournal.setGL_Category_ID(glCategoryId.getRepoId());
 		}
 		else
 		{
-			final GLCategoryId glCategoryIdForCategoryType = getGLCategoryIdForCategoryType(X_GL_Category.CATEGORYTYPE_Manual);
-			glJournal.setGL_Category_ID(GLCategoryId.toRepoId(glCategoryIdForCategoryType));
+			final GLCategoryId defaultGLCategoryId = getDefaultGLCategoryId(request.getClientId()).orElse(null);
+			glJournal.setGL_Category_ID(GLCategoryId.toRepoId(defaultGLCategoryId));
 		}
 	}
 
@@ -118,10 +119,8 @@ public class GL_Journal_Builder
 				request.getDateAcct());
 	}
 
-	public GLCategoryId getGLCategoryIdForCategoryType(final String categoryType)
+	private Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
-		final I_GL_Category glCategory = MGLCategory.getDefault(ctx, categoryType);
-		return GLCategoryId.ofRepoIdOrNull(glCategory.getGL_Category_ID());
+		return glCategoryRepository.getDefaultId(clientId, GLCategoryType.Manual);
 	}
 }

@@ -24,26 +24,24 @@ package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@ApiModel(description = "A BPartner with one contact (optional) and one location.")
+@Schema(description = "A BPartner with one contact (optional) and one location.")
 @Value
 public class JsonVendor
 {
-	@ApiModelProperty(required = true, value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
+	@Schema(required = true, description = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(required = true, value = SwaggerDocConstants.LOCATION_IDENTIFIER_DOC)
+	@Schema(required = true, description = SwaggerDocConstants.LOCATION_IDENTIFIER_DOC)
 	String locationIdentifier;
 
-	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	String contactIdentifier;
 
 	@Builder(toBuilder = true)

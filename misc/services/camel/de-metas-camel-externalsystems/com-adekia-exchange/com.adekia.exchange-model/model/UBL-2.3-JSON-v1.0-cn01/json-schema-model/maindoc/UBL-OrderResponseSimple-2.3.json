@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-model/maindoc/UBL-OrderResponseSimple-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-model/maindoc/UBL-OrderResponseSimple-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "OrderResponseSimple"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "OrderResponseSimple": {
+      "description": "A document used to indicate simple acceptance or rejection of an entire Order.",
+      "$ref": "#/definitions/OrderResponseSimple"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "OrderResponseSimple": {
+      "title": "Order Response Simple. Details",
+      "description": "A document used to indicate simple acceptance or rejection of an entire Order.",
+      "required": [
+        "ID",
+        "IssueDate",
+        "AcceptedIndicator",
+        "OrderReference",
+        "SellerSupplierParty",
+        "BuyerCustomerParty"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Order Response Simple. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+          },
+        "CustomizationID": {
+          "title": "Order Response Simple. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+          },
+        "ProfileID": {
+          "title": "Order Response Simple. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the customization of UBL being used.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+          },
+        "ProfileExecutionID": {
+          "title": "Order Response Simple. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+          },
+        "ID": {
+          "title": "Order Response Simple. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+          },
+        "CopyIndicator": {
+          "title": "Order Response Simple. Copy_ Indicator. Indicator",
+          "description": "Indicates whether this document is a copy (true) or not (false).",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CopyIndicator"
+          },
+        "UUID": {
+          "title": "Order Response Simple. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+          },
+        "IssueDate": {
+          "title": "Order Response Simple. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+          },
+        "IssueTime": {
+          "title": "Order Response Simple. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+          },
+        "Note": {
+          "title": "Order Response Simple. Note. Text",
+          "description": "Free-form text pertinent to this document, conveying information that is not contained explicitly in other structures.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Note"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AcceptedIndicator": {
+          "title": "Order Response Simple. Accepted_ Indicator. Indicator",
+          "description": "Indicates whether the Order is accepted (true) or rejected (false).",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AcceptedIndicator"
+          },
+        "RejectionNote": {
+          "title": "Order Response Simple. Rejection_ Note. Text",
+          "description": "The reason for rejection if the order was not accepted.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/RejectionNote"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "CustomerReference": {
+          "title": "Order Response Simple. Customer_ Reference. Text",
+          "description": "A supplementary reference for the transaction (e.g., when using a purchasing card).",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomerReference"
+          },
+        "AccountingCostCode": {
+          "title": "Order Response Simple. Accounting Cost Code. Code",
+          "description": "An accounting cost code applied to the order as a whole.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AccountingCostCode"
+          },
+        "AccountingCost": {
+          "title": "Order Response Simple. Accounting Cost. Text",
+          "description": "An accounting cost code applied to the order as a whole, expressed as text.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AccountingCost"
+          },
+        "OrderReference": {
+          "title": "Order Response Simple. Order Reference",
+          "description": "A reference to the Order being responded to.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OrderReference"
+          },
+        "OrderChangeDocumentReference": {
+          "title": "Order Response Simple. Order Change_ Document Reference. Document Reference",
+          "description": "A reference to an Order Change being responded to.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OrderChangeDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AdditionalDocumentReference": {
+          "title": "Order Response Simple. Additional_ Document Reference. Document Reference",
+          "description": "A reference to an additional document associated with this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AdditionalDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Order Response Simple. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "SellerSupplierParty": {
+          "title": "Order Response Simple. Seller_ Supplier Party. Supplier Party",
+          "description": "The seller.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/SellerSupplierParty"
+          },
+        "BuyerCustomerParty": {
+          "title": "Order Response Simple. Buyer_ Customer Party. Customer Party",
+          "description": "The buyer.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/BuyerCustomerParty"
+          },
+        "OriginatorCustomerParty": {
+          "title": "Order Response Simple. Originator_ Customer Party. Customer Party",
+          "description": "The originator.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OriginatorCustomerParty"
+          },
+        "AccountingSupplierParty": {
+          "title": "Order Response Simple. Accounting_ Supplier Party. Supplier Party",
+          "description": "The accounting supplier party.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AccountingSupplierParty"
+          },
+        "AccountingCustomerParty": {
+          "title": "Order Response Simple. Accounting_ Customer Party. Customer Party",
+          "description": "The accounting customer party.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AccountingCustomerParty"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

@@ -268,49 +268,6 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 				MAllocationLine.class);
 	}
 
-	// /**
-	// * Get Lines
-	// * @param requery if true requery
-	// * @return lines
-	// */
-	// public MAllocationLine[] getLines (boolean requery)
-	// {
-	// if (m_lines != null && m_lines.length != 0 && !requery) {
-	// set_TrxName(m_lines, get_TrxName());
-	// return m_lines;
-	// }
-	// //
-	// String sql = "SELECT * FROM C_AllocationLine WHERE C_AllocationHdr_ID=?";
-	// ArrayList<MAllocationLine> list = new ArrayList<MAllocationLine>();
-	// PreparedStatement pstmt = null;
-	// ResultSet rs = null;
-	// try
-	// {
-	// pstmt = DB.prepareStatement (sql, get_TrxName());
-	// pstmt.setInt (1, getC_AllocationHdr_ID());
-	// rs = pstmt.executeQuery ();
-	// while (rs.next ())
-	// {
-	// MAllocationLine line = new MAllocationLine(getCtx(), rs, get_TrxName());
-	// line.setParent(this);
-	// list.add (line);
-	// }
-	// }
-	// catch (Exception e)
-	// {
-	// log.error(sql, e);
-	// }
-	// finally
-	// {
-	// DB.close(rs, pstmt);
-	// rs = null; pstmt = null;
-	// }
-	// //
-	// m_lines = new MAllocationLine[list.size ()];
-	// list.toArray (m_lines);
-	// return m_lines;
-	// } // getLines
-
 	/**
 	 * Set Processed
 	 *
@@ -951,8 +908,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	{
 		final MAllocationHdr reversal = new MAllocationHdr(getCtx(), 0, get_TrxName());
 
-		final boolean copyHonorIsCalculated = true;
-		copyValues(this, reversal, copyHonorIsCalculated);
+		copyValues(this, reversal, true);
 
 		//
 		// 07570: Keep AD_Org of original document
@@ -977,7 +933,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		for (final MAllocationLine line : getLines(true))
 		{
 			final MAllocationLine reversalLine = new MAllocationLine(reversal);
-			PO.copyValues(line, reversalLine, copyHonorIsCalculated);
+			PO.copyValues(line, reversalLine, true);
 
 			//
 			// 07570: Keep AD_Org of original document

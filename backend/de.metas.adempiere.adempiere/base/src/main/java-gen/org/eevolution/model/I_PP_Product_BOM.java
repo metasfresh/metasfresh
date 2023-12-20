@@ -1,7 +1,8 @@
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for PP_Product_BOM
  *  @author metasfresh (generated) 
@@ -51,7 +52,7 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Stücklisten-Zugehörigkeit.
+	 * Set BOM Type.
 	 * Type of BOM
 	 *
 	 * <br>Type: List
@@ -61,7 +62,7 @@ public interface I_PP_Product_BOM
 	void setBOMType (@Nullable java.lang.String BOMType);
 
 	/**
-	 * Get Stücklisten-Zugehörigkeit.
+	 * Get BOM Type.
 	 * Type of BOM
 	 *
 	 * <br>Type: List
@@ -119,30 +120,8 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -151,8 +130,8 @@ public interface I_PP_Product_BOM
 	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
-	 * Get Copy From.
-	 * Copy From Record
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -187,6 +166,28 @@ public interface I_PP_Product_BOM
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Document Date.
@@ -344,6 +345,31 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
+
+	/**
+	 * Get Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLotNo_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
+
+	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
+
+	ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_PP_Product_BOM.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -371,7 +397,7 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Änderungsmeldung.
+	 * Set Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -381,7 +407,7 @@ public interface I_PP_Product_BOM
 	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
-	 * Get Änderungsmeldung.
+	 * Get Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -466,7 +492,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Set BOM & Formula.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -475,7 +501,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Get BOM & Formula.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -667,4 +693,25 @@ public interface I_PP_Product_BOM
 
 	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Value = new ModelColumn<>(I_PP_Product_BOM.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Preferred Resource.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_PreferredResource_ID(int S_PreferredResource_ID);
+
+	/**
+	 * Get Preferred Resource.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_PreferredResource_ID();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_S_PreferredResource_ID = new ModelColumn<>(I_PP_Product_BOM.class, "S_PreferredResource_ID", null);
+	String COLUMNNAME_S_PreferredResource_ID = "S_PreferredResource_ID";
 }

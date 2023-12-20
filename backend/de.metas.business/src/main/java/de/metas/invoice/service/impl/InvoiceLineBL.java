@@ -23,6 +23,8 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -38,6 +40,7 @@ import de.metas.pricing.tax.LookupTaxCategoryRequest;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
@@ -47,6 +50,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -67,7 +71,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MTax;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -130,7 +133,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}
@@ -211,6 +214,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 												 .dateOfInterest(taxDate)
 												 .taxCategoryId(taxCategoryId)
 												 .soTrx(SOTrx.ofBoolean(isSOTrx))
+												 .vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
 												 .build());
 
 			if (tax == null)
@@ -575,13 +579,29 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	@NonNull
 	@Override
-	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 
 		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
 
 		return Quantity.of(qtyInvoiced, stockUOM);
+	}
+
+	@Override
+	@NonNull
+	public ProductPrice getPriceActual(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		final UomId productUomId = getPriceUomId(invoiceLine);
+		final BigDecimal priceActual = invoiceLine.getPriceActual();
+		final org.compiere.model.I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(productUomId)
+				.money(Money.of(priceActual, CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID())))
+				.build();
 	}
 
 	@Nullable
@@ -593,5 +613,32 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		Check.assumeNotNull(bpartnerAndLocation, "Order {} has no C_BPartner_ID", order);
 
 		return partnerBL.getCountryId(bpartnerAndLocation);
+	}
+
+	@NonNull
+	private UomId getPriceUomId(@NonNull final I_C_InvoiceLine ilRecord)
+	{
+		final UomId priceUomId = UomId.ofRepoIdOrNull(ilRecord.getPrice_UOM_ID());
+		if (priceUomId != null)
+		{
+			return priceUomId;
+		}
+
+		final UomId uomId = UomId.ofRepoIdOrNull(ilRecord.getC_UOM_ID());
+		if (uomId != null)
+		{
+			return uomId;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(ilRecord.getM_Product_ID());
+		if (productId != null)
+		{
+			return productBL.getStockUOMId(productId);
+		}
+
+		throw new AdempiereException("No UOM can be determined for line!")
+				.appendParametersToMessage()
+				.setParameter("C_InvoiceLine_ID", ilRecord.getC_InvoiceLine_ID())
+				.setParameter("C_Invoice_ID", ilRecord.getC_Invoice_ID());
 	}
 }

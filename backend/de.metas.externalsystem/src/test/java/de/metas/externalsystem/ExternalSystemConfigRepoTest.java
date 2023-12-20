@@ -22,28 +22,28 @@
 
 package de.metas.externalsystem;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.ebay.ApiMode;
 import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
-import de.metas.externalsystem.leichmehl.ReplacementSource;
-import de.metas.externalsystem.leichmehl.TargetFieldType;
+import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -51,50 +51,36 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.shopware6.OrderProcessingConfig;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
 import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 class ExternalSystemConfigRepoTest
 {
-
 	private ExternalSystemConfigRepo externalSystemConfigRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -119,7 +105,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -149,6 +135,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		childRecord.setIsSyncAvailableForSalesToShopware6(true);
 		childRecord.setPercentageOfAvailableForSalesToSync(BigDecimal.TEN);
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -167,7 +154,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -190,7 +177,32 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_Metasfresh_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
+				.build();
+
+		final I_ExternalSystem_Config_Metasfresh childRecord = newInstance(I_ExternalSystem_Config_Metasfresh.class);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setFeedbackResourceURL("feedbackURL");
+		childRecord.setFeedbackResourceAuthToken("feedbackAuthToke");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue("externalSystemValue");
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemMetasfreshConfigId id = ExternalSystemMetasfreshConfigId.ofRepoId(childRecord.getExternalSystem_Config_Metasfresh_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -212,6 +224,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -230,7 +243,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -257,7 +270,34 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_Metasfresh_getTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
+				.build();
+
+		final String value = "externalSystemValue";
+
+		final I_ExternalSystem_Config_Metasfresh childRecord = newInstance(I_ExternalSystem_Config_Metasfresh.class);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setFeedbackResourceURL("feedbackURL");
+		childRecord.setFeedbackResourceAuthToken("feedbackAuthToke");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue(value);
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Metasfresh, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -284,7 +324,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -337,7 +377,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Alberta_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -359,6 +399,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
@@ -395,7 +436,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -420,7 +461,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -443,7 +484,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -473,7 +514,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -522,7 +563,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Ebay_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -553,7 +594,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -603,7 +644,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -627,7 +668,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -674,7 +715,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -699,7 +740,35 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_Metasfresh_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Metasfresh);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_Metasfresh childRecord = newInstance(I_ExternalSystem_Config_Metasfresh.class);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setFeedbackResourceURL("feedbackURL");
+		childRecord.setFeedbackResourceAuthToken("feedbackAuthToke");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue("externalSystemValue");
+		saveRecord(childRecord);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Metasfresh)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -726,7 +795,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -771,6 +840,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setIsActive(false);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -794,7 +864,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -816,6 +886,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setM_PriceList_ID(1);
 		initialChildRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		initialChildRecord.setIsActive(false);
+		initialChildRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(initialChildRecord);
 
 		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
@@ -846,7 +917,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 		assertThat(updatedChildConfig).isNotNull();
-		expect(updatedChildConfig).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updatedChildConfig);
 
 		assertThat(updatedChildConfig.isActive()).isTrue();
 
@@ -877,9 +948,30 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
+	@Test
+	void externalSystem_Config_getActiveByType_Metasfresh()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.Metasfresh.getCode())
+				.build();
+
+		ExternalSystemTestUtil.createMetasfreshConfigBuilder()
+				.value("value")
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Metasfresh);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
 
 	@Test
 	void externalSystem_Config_getActiveByType_NoRecord()
@@ -915,13 +1007,21 @@ class ExternalSystemConfigRepoTest
 				.value(value)
 				.build();
 
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
 		// when
 		final ExternalSystemSAPConfigId id = ExternalSystemSAPConfigId.ofRepoId(childRecord.getExternalSystem_Config_SAP_ID());
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -934,9 +1034,17 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testSAPValue";
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		// when
@@ -945,7 +1053,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -966,7 +1074,7 @@ class ExternalSystemConfigRepoTest
 		// when
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
 
-		//then
+		// then
 		assertThat(externalSystemParentConfig).isEmpty();
 	}
 
@@ -978,8 +1086,16 @@ class ExternalSystemConfigRepoTest
 				.type(ExternalSystemType.SAP.getCode())
 				.build();
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		// when
@@ -988,7 +1104,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1001,9 +1117,17 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testSAPValue";
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
@@ -1014,7 +1138,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1058,7 +1182,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1086,7 +1210,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1140,7 +1264,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1181,51 +1305,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
-	}
-
-	@Test
-	void givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo()
-	{
-		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
-				.build();
-
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
-		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		leichMehlConfig.setExternalSystemValue("LeichMehl");
-		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
-		leichMehlConfig.setTCP_PortNumber(8080);
-		leichMehlConfig.setTCP_Host("tcpHost");
-
-		saveRecord(leichMehlConfig);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-		productMappingRecord.setSeqNo(10);
-		productMappingRecord.setM_Product_ID(1);
-		productMappingRecord.setM_Product_Category_ID(2);
-		productMappingRecord.setC_BPartner_ID(3);
-		productMappingRecord.setPLU_File("plufile");
-
-		saveRecord(productMappingRecord);
-
-		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
-		pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-		pluFileConfig.setTargetFieldName("targetFileName");
-		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
-		pluFileConfig.setReplacement("replacement");
-		pluFileConfig.setReplaceRegExp("replacePattern");
-		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
-
-		saveRecord(pluFileConfig);
-
-		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
-
-		// then
-		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }
+

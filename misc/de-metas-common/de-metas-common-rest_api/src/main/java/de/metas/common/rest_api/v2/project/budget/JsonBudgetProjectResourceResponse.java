@@ -25,7 +25,7 @@ package de.metas.common.rest_api.v2.project.budget;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,67 +40,66 @@ import java.time.LocalDate;
 @Jacksonized
 public class JsonBudgetProjectResourceResponse
 {
-	@ApiModelProperty( //
-			required = true, //
-			value = "This translates to C_Project_Resource_Budget.C_Project_Resource_Budget_ID")
+	@Schema(required = true,
+			description = "This translates to C_Project_Resource_Budget.C_Project_Resource_Budget_ID")
 	@NonNull
 	JsonMetasfreshId budgetProjectResourceId;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Project_ID`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.C_Project_ID`.")
 	@NonNull
 	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_UOM_Time_ID`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.C_UOM_Time_ID`.")
 	@NonNull
 	JsonMetasfreshId uomTimeId;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.DateStartPlan`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.DateStartPlan`.")
 	@NonNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateStartPlan;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.DateFinishPlan`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.DateFinishPlan`.")
 	@NonNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateFinishPlan;
 
-	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.Description`.")
+	@Schema(description = "This translates to `C_Project_Resource_Budget.Description`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String description;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PlannedAmt`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.PlannedAmt`.")
 	@NonNull
 	BigDecimal plannedAmt;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Currency_ID.Iso_Code`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.C_Currency_ID.Iso_Code`.")
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PlannedDuration`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.PlannedDuration`.")
 	@NonNull
 	BigDecimal plannedDuration;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PricePerTimeUOM`.")
+	@Schema(required = true, description = "This translates to `C_Project_Resource_Budget.PricePerTimeUOM`.")
 	@NonNull
 	BigDecimal pricePerTimeUOM;
 
-	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.S_Resource_Group_ID`.")
+	@Schema(description = "This translates to `C_Project_Resource_Budget.S_Resource_Group_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId resourceGroupId;
 
-	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.S_Resource_ID`.")
+	@Schema(description = "This translates to `C_Project_Resource_Budget.S_Resource_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId resourceId;
 
-	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.ExternalId`.")
+	@Schema(description = "This translates to `C_Project_Resource_Budget.ExternalId`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String externalId;
 
-	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.IsActive`.")
+	@Schema(description = "This translates to `C_Project_Resource_Budget.IsActive`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isActive;

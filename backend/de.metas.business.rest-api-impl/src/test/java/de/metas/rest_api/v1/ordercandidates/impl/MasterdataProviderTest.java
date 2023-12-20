@@ -2,8 +2,8 @@ package de.metas.rest_api.v1.ordercandidates.impl;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
@@ -29,7 +29,6 @@ import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,14 +44,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -92,18 +87,6 @@ public class MasterdataProviderTest
 	private JsonRequestLocation jsonBPartnerLocation;
 
 	private I_C_Country countryRecord;
-
-	@BeforeAll
-	public static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
 
 	@BeforeEach
 	public void beforeEach()

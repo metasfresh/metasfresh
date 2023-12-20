@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -161525088L;
+	private static final long serialVersionUID = -1714280892L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -910,6 +910,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
 	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
 	{
 		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
@@ -1062,18 +1077,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getPP_Product_BOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
-	}
-
-	@Override
-	public void setPP_Product_Planning(final org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
 	}
 
 	@Override

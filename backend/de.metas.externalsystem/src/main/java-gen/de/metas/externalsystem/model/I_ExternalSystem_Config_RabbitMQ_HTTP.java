@@ -2,6 +2,10 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
+
 /** Generated Interface for ExternalSystem_Config_RabbitMQ_HTTP
  *  @author metasfresh (generated) 
  */

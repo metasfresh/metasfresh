@@ -209,6 +209,7 @@ final class BPartnerCompositesLoader
 		countryIds.forEach(countryId -> allTableRecordRefs.add(TableRecordReference.of(I_C_Country.Table_Name, countryId)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = bpBankAccountDAO.getAllByBPartnerIds(bPartnerIds);
+		bpBankAccounts.values().forEach(bankAccount -> allTableRecordRefs.add(TableRecordReference.of(bankAccount)));
 
 		final ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpCreditLimits = bPartnerCreditLimitRepository.getAllByBPartnerIds(bPartnerIds);
 		bpCreditLimits.forEach((bpartnerId, bPartnerCreditLimitRecord) -> allTableRecordRefs.add(TableRecordReference.of(bPartnerCreditLimitRecord)));
@@ -368,6 +369,12 @@ final class BPartnerCompositesLoader
 				.incotermsVendorId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Vendor_ID()))
 				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
+				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
+				.prospect(bpartnerRecord.isProspect())
+				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
+				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
+				.sectionPartner(bpartnerRecord.isSectionPartner())
+				.urproduzent(bpartnerRecord.isFresh_Urproduzent())
 				.build();
 	}
 
@@ -408,6 +415,9 @@ final class BPartnerCompositesLoader
 				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
 				.remitTo(bPartnerLocationRecord.isRemitTo())
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
+				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
+				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
+				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -450,7 +460,7 @@ final class BPartnerCompositesLoader
 			@NonNull final ICountryDAO countryDAO)
 	{
 		final CountryId countryId = CountryId.ofRepoId(locationRecord.getC_Country_ID());
-		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(countryId);
+		final I_C_Country country = countryDAO.getById(countryId);
 
 		final PostalId postalId = PostalId.ofRepoIdOrNull(locationRecord.getC_Postal_ID());
 		final String district;
@@ -472,11 +482,12 @@ final class BPartnerCompositesLoader
 				.address3(trimBlankToNull(locationRecord.getAddress3()))
 				.address4(trimBlankToNull(locationRecord.getAddress4()))
 				.city(trimBlankToNull(locationRecord.getCity()))
-				.countryCode(countryCode)
+				.countryCode(country.getCountryCode())
 				.poBox(trimBlankToNull(locationRecord.getPOBox()))
 				.postal(trimBlankToNull(locationRecord.getPostal()))
 				.region(trimBlankToNull(locationRecord.getRegionName()))
 				.district(district)
+				.countryName(country.getName())
 				.build();
 	}
 
@@ -589,6 +600,9 @@ final class BPartnerCompositesLoader
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.active(bankAccountRecord.isActive())
 				.iban(iban)
+				.qrIban(bankAccountRecord.getQR_IBAN())
+				.name(bankAccountRecord.getName())
+				.isDefault(bankAccountRecord.isDefault())
 				.swiftCode(bankAccountRecord.getSwiftCode())
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))

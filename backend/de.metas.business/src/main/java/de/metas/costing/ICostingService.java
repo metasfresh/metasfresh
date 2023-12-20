@@ -29,11 +29,15 @@ import java.util.Optional;
 
 public interface ICostingService
 {
-	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
+	CostElement getCostElementById(@NonNull CostElementId costElementId);
 
-	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+	CostDetailCreateResultsList createCostDetail(CostDetailCreateRequest request);
 
-	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
+	ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
+
+	CostDetailCreateResultsList createReversalCostDetails(CostDetailReverseRequest request);
+
+	ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
 
 	MoveCostsResult moveCosts(MoveCostsRequest request);
 

@@ -12,11 +12,15 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -84,8 +88,17 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_CostElement_ID(cd.getCostElementId().getRepoId());
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
-		record.setAmt(cd.getAmt().getValue());
+
+		record.setM_CostDetail_Type(cd.getAmtType().getCode());
+		record.setAmt(cd.getAmt().toBigDecimal());
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
+
+		final Money sourceAmt = cd.getAmt().toSourceMoney();
+		if (sourceAmt != null)
+		{
+			record.setSourceAmt(sourceAmt.toBigDecimal());
+			record.setSource_Currency_ID(sourceAmt.getCurrencyId().getRepoId());
+		}
 
 		record.setQty(cd.getQty().toBigDecimal());
 		record.setC_UOM_ID(cd.getQty().getUomId().getRepoId());
@@ -94,11 +107,11 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
 		if (previousAmounts != null)
 		{
-			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
-			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
+			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal());
+			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal());
 			record.setPrev_CurrentQty(previousAmounts.getQty().toBigDecimal());
 
-			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().getValue());
+			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().toBigDecimal());
 			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().toBigDecimal());
 		}
 
@@ -147,6 +160,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(tableName))
 		{
 			record.setM_MatchPO_ID(recordId);
+		}
+		else if (CostingDocumentRef.TABLE_NAME_M_Shipping_NotificationLine.equals(tableName))
+		{
+			record.setM_Shipping_NotificationLine_ID(recordId);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(tableName))
 		{
@@ -233,6 +250,13 @@ public class CostDetailRepository implements ICostDetailRepository
 			}
 		}
 
+		// AmtType
+		final CostAmountType amtType = query.getAmtType();
+		if (amtType != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostDetail_Type, amtType.getCode());
+		}
+
 		// Product
 		if (query.getProductId() != null)
 		{
@@ -299,7 +323,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		return queryBuilder;
 	}
 
-	private CostDetail toCostDetail(final I_M_CostDetail record)
+	@NonNull
+	private CostDetail toCostDetail(@NonNull final I_M_CostDetail record)
 	{
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 
@@ -307,8 +332,9 @@ public class CostDetailRepository implements ICostDetailRepository
 		final I_C_UOM productUOM = uomDAO.getById(record.getC_UOM_ID());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
-		final Quantity qty = Quantity.of(record.getQty(), productUOM);
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(record.getSource_Currency_ID());
+		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId, record.getSourceAmt(), sourceCurrencyId);
+		final Quantity qty = Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 
 		return CostDetail.builder()
 				.id(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))
@@ -318,6 +344,7 @@ public class CostDetailRepository implements ICostDetailRepository
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.amtType(CostAmountType.ofCode(record.getM_CostDetail_Type()))
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(record.isChangingCosts())
@@ -347,6 +374,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (record.getM_MatchInv_ID() > 0)
 		{
 			return CostingDocumentRef.ofMatchInvoiceId(record.getM_MatchInv_ID());
+		}
+		else if (record.getM_Shipping_NotificationLine_ID() > 0)
+		{
+			return CostingDocumentRef.ofShippingNotificationLineId(ShippingNotificationLineId.ofRepoId(record.getM_Shipping_NotificationLine_ID()));
 		}
 		else if (record.getM_InOutLine_ID() > 0)
 		{

@@ -14,7 +14,6 @@ import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
-import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -22,6 +21,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.project.workorder.conflicts.WOProjectCalendarConflictsConverters.toEvent;
@@ -143,21 +143,13 @@ class WOProjectConflictsCheckerCommand
 
 		for (final WOProjectResource projectResource : projectResources)
 		{
-			final WOProjectResourceSimulation projectResourceSimulation = simulation != null
-					? simulation.getProjectResourceByIdOrNull(projectResource.getWoProjectResourceId())
-					: null;
-
-			final ResourceAllocation resourceAllocation;
-			if (projectResourceSimulation != null)
-			{
-				resourceAllocation = toResourceAllocation(projectResource.getResourceId(), projectResourceSimulation.applyOn(projectResource), simulation.getSimulationPlanId());
-			}
-			else
-			{
-				resourceAllocation = toResourceAllocation(projectResource.getResourceId(), projectResource, null);
-			}
-
-			result.add(resourceAllocation);
+			Optional.ofNullable(simulation)
+					.map(simulationPlan -> simulationPlan.getProjectResourceByIdOrNull(projectResource.getWoProjectResourceId()))
+					.map(projectResourceSimulation -> toResourceAllocation(projectResource.getResourceId(),
+																		   projectResourceSimulation.applyOn(projectResource),
+																		   simulation.getSimulationPlanId()))
+					.orElseGet(() -> toResourceAllocation(projectResource.getResourceId(), projectResource, null))
+					.ifPresent(result::add);
 		}
 
 		return ResourceAllocations.of(
@@ -165,17 +157,18 @@ class WOProjectConflictsCheckerCommand
 				result.build());
 	}
 
-	private static ResourceAllocation toResourceAllocation(
-			@NonNull ResourceId resourceId,
+	private static Optional<ResourceAllocation> toResourceAllocation(
+			@NonNull final ResourceId resourceId,
 			@NonNull final WOProjectResource projectResource,
 			@Nullable final SimulationPlanId appliedSimulationId)
 	{
-		return ResourceAllocation.builder()
-				.resourceId(resourceId)
-				.projectResourceId(projectResource.getWoProjectResourceId())
-				.appliedSimulationId(appliedSimulationId)
-				.dateRange(projectResource.getDateRange())
-				.build();
+		return Optional.ofNullable(projectResource.getDateRange())
+				.map(dateRange -> ResourceAllocation.builder()
+						.resourceId(resourceId)
+						.projectResourceId(projectResource.getWoProjectResourceId())
+						.appliedSimulationId(appliedSimulationId)
+						.dateRange(dateRange)
+						.build());
 	}
 
 }

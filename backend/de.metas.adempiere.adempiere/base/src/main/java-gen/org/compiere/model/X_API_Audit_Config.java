@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1905427436L;
+	private static final long serialVersionUID = 1706010029L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -131,7 +131,7 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public int getKeepErroredRequestDays()
+	public int getKeepErroredRequestDays() 
 	{
 		return get_ValueAsInt(COLUMNNAME_KeepErroredRequestDays);
 	}

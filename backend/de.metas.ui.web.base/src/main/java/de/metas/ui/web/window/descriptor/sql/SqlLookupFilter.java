@@ -48,13 +48,13 @@ class SqlLookupFilter
 		}
 		if (postQueryPredicate != null)
 		{
-			builder.addAll(postQueryPredicate.getParameters());
+			builder.addAll(postQueryPredicate.getParameters(null));
 		}
 
 		return builder.build();
 	}
 
-	static SqlLookupFilter of(@NonNull IValidationRule valRule, @Nullable LookupDescriptorProvider.LookupScope onlyScope)
+	static SqlLookupFilter of(@NonNull final IValidationRule valRule, @Nullable final LookupDescriptorProvider.LookupScope onlyScope)
 	{
 		return builder()
 				.onlyScope(onlyScope)

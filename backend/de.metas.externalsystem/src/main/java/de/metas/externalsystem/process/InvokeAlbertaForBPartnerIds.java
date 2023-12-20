@@ -143,7 +143,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	@NonNull
 	private List<I_C_BPartner> getSelectedBPartnerRecords()
 	{
-		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveActiveSelectedRecordsQueryBuilder(I_C_BPartner.class);
 
 		if (orgId > 0)
 		{

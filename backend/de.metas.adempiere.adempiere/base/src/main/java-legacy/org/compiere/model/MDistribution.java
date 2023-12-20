@@ -43,6 +43,8 @@ public class MDistribution extends X_GL_Distribution
 			//
 			setAnyAcct (true);	// Y
 			setAnyActivity (true);	// Y
+			setAnyOrder(true);
+			setAnySectionCode(true);
 			setAnyBPartner (true);	// Y
 			setAnyCampaign (true);	// Y
 			setAnyLocFrom (true);	// Y

@@ -22,7 +22,6 @@
 
 package de.metas.location;
 
-import de.metas.location.CountryDisplaySequenceHelper;
 import lombok.NonNull;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;

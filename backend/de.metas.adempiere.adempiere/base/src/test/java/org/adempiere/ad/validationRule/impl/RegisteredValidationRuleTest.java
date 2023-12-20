@@ -20,6 +20,7 @@ import org.compiere.util.ValueNamePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -232,13 +233,13 @@ public class RegisteredValidationRuleTest
 		private ValRuleTest() {}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<String> getParameters(@Nullable final String contextTableName)
 		{
 			return ImmutableSet.of(param1, param2);
 		}
 
 		@Override
-		public boolean accept(IValidationContext evalCtx, NamePair item)
+		public boolean accept(final IValidationContext evalCtx, final NamePair item)
 		{
 			return false; // always reject
 		}

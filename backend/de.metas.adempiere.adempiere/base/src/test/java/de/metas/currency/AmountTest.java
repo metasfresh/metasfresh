@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -149,4 +150,28 @@ public class AmountTest
 			assertThat(money).isEqualTo(Money.of("1.23456789", CurrencyId.ofRepoId(555)));
 		}
 	}
+
+	@Nested
+	class getCommonCurrencyCodeOfAll
+	{
+		@SuppressWarnings("SameParameterValue")
+		Amount amt(String amt, String currency) {return Amount.of(amt, CurrencyCode.ofThreeLetterCode(currency));}
+
+		@Test
+		void sameCurrency_and_nulls()
+		{
+			final CurrencyCode currency = Amount.getCommonCurrencyCodeOfAll(
+							amt("1", "EUR"),
+							null,
+							amt("2", "EUR"),
+							null,
+							null,
+							amt("3", "EUR")
+					)
+					.orElse(null);
+			assertThat(currency).isEqualTo(CurrencyCode.EUR);
+		}
+
+	}
+
 }

@@ -14,6 +14,9 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Objects;
 
+/**
+ * IMPORTANT: keep in sync with huQRCodes.js/parseQRCodePayload_HU_v1
+ */
 @UtilityClass
 public class JsonConverterV1
 {

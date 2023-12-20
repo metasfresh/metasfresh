@@ -26,4 +26,15 @@ public class ProductAllergensService
 		final ImmutableSet<AllergenId> AllergenIds = productAllergensRepository.getByProductId(productId).getAllergenIds();
 		return allergenRepository.getByIds(AllergenIds);
 	}
+
+	@NonNull
+	public ProductAllergens getProductAllergens(@NonNull final ProductId productId)
+	{
+		return productAllergensRepository.getByProductId(productId);
+	}
+
+	public void save(@NonNull final SaveProductAllergenRequest request)
+	{
+		productAllergensRepository.save(request);
+	}
 }

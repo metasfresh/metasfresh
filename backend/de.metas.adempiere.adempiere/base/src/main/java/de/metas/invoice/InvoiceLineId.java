@@ -26,6 +26,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -88,5 +89,13 @@ public class InvoiceLineId implements RepoIdAware
 	public static boolean equals(final InvoiceLineId id1, final InvoiceLineId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	public void assertInvoiceId(@NonNull final InvoiceId expectedInvoiceId)
+	{
+		if (!InvoiceId.equals(this.invoiceId, expectedInvoiceId))
+		{
+			throw new AdempiereException("InvoiceId does not match for " + this + ". Expected invoiceId was " + expectedInvoiceId);
+		}
 	}
 }

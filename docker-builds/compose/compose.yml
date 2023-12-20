@@ -3,9 +3,11 @@
 services:
 
   db:
-    image: $mfregistry/metas-db:$mfversion-preloaded
+    image: $mfregistry/metas-db:$mfversion-$dbqualifier
     ports:
       - "15432:5432"
+    volumes:
+      - ./db-data:/var/lib/postgresql/customdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 5s
@@ -30,7 +32,7 @@ services:
       replicas: 1
 
   search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    image: elasticsearch:7.17.8
     ports:
       - "9200:9200"
       - "9300:9300"

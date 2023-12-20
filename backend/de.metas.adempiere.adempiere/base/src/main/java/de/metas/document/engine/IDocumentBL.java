@@ -1,8 +1,10 @@
 package de.metas.document.engine;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 
@@ -154,6 +156,8 @@ public interface IDocumentBL extends ISingletonService
 	InstantAndOrgId getDocumentDate(final Properties ctx, final int adTableID, final int recordId);
 
 	Optional<DocTypeId> getDocTypeId(Object model);
+
+	Optional<DocBaseType> getDocBaseType(@NonNull Object model);
 
 	/**
 	 * @return document summary or toString() in case the model is not a document.

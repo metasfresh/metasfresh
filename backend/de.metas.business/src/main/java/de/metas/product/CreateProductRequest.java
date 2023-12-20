@@ -85,4 +85,13 @@ public class CreateProductRequest
 
 	@Nullable
 	SectionCodeId sectionCodeId;
+
+	@Nullable
+	String sapProductHierarchy;
+
+	@Nullable
+	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }

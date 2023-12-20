@@ -2,6 +2,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -12,7 +13,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -107,7 +107,7 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
-	
+
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
@@ -120,6 +120,8 @@ public interface IProductDAO extends ISingletonService
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
+
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@Value
 	class ProductQuery
@@ -204,7 +206,15 @@ public interface IProductDAO extends ISingletonService
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
-	int getGuaranteeMonthsInDays(ProductId productId);
-
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
+
+	/**
+	 *
+	 * @param productId
+	 * @return true if product is used in orders, invoices, shipments,..
+	 */
+	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

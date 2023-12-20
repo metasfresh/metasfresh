@@ -12,6 +12,9 @@ import de.metas.calendar.continuous_query.CalendarContinuousQueryListener;
 import de.metas.calendar.continuous_query.EntryChangedEvent;
 import de.metas.calendar.continuous_query.EntryDeletedEvent;
 import de.metas.calendar.continuous_query.Event;
+import de.metas.calendar.plan_optimizer.SimulationOptimizerStatusDispatcher;
+import de.metas.calendar.plan_optimizer.SimulationOptimizerStatusListener;
+import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.simulation.SimulationPlanChangesListener;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
@@ -19,9 +22,11 @@ import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatusType;
 import de.metas.ui.web.calendar.websocket.json.JsonAddOrChangeWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonConflictsChangedWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonRemoveWebsocketEvent;
+import de.metas.ui.web.calendar.websocket.json.JsonSimulationOptimizerStatusChangedEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonSimulationPlanChangedEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonWebsocketEventsList;
@@ -47,12 +52,14 @@ class CalendarWebSocketProducer
 		WebSocketProducer,
 		CalendarContinuousQueryListener,
 		CalendarConflictEventsListener,
-		SimulationPlanChangesListener
+		SimulationPlanChangesListener,
+		SimulationOptimizerStatusListener
 {
 	// services:
 	@NonNull private final MultiCalendarService multiCalendarService;
 	@NonNull private final CalendarConflictEventsDispatcher calendarConflictEventsDispatcher;
 	@NonNull private final SimulationPlanService simulationPlanService;
+	@NonNull private final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher;
 
 	// params:
 	@NonNull private final WebsocketTopicName topicName;
@@ -68,12 +75,14 @@ class CalendarWebSocketProducer
 			final @NonNull MultiCalendarService multiCalendarService,
 			final @NonNull CalendarConflictEventsDispatcher calendarConflictEventsDispatcher,
 			final @NonNull SimulationPlanService simulationPlanService,
+			final @NonNull SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher,
 			//
 			final @NonNull ParsedCalendarWebsocketTopicName calendarTopicName)
 	{
 		this.multiCalendarService = multiCalendarService;
 		this.calendarConflictEventsDispatcher = calendarConflictEventsDispatcher;
 		this.simulationPlanService = simulationPlanService;
+		this.simulationOptimizerStatusDispatcher = simulationOptimizerStatusDispatcher;
 
 		this.topicName = calendarTopicName.getTopicName();
 		this.adLanguage = calendarTopicName.getAdLanguage();
@@ -107,6 +116,7 @@ class CalendarWebSocketProducer
 		if (simulationId != null)
 		{
 			simulationPlanService.subscribe(simulationId, this);
+			simulationOptimizerStatusDispatcher.subscribe(simulationId, this);
 		}
 	}
 
@@ -126,6 +136,7 @@ class CalendarWebSocketProducer
 		if (simulationId != null)
 		{
 			simulationPlanService.unsubscribe(simulationId, this);
+			simulationOptimizerStatusDispatcher.unsubscribe(simulationId, this);
 		}
 	}
 
@@ -141,6 +152,40 @@ class CalendarWebSocketProducer
 		sendToWebsocket(JsonWebsocketEventsList.ofEvent(JsonSimulationPlanChangedEvent.builder()
 				.simulationId(simulationRef.getId())
 				.processed(simulationRef.isProcessed())
+				.build()));
+	}
+
+	@Override
+	public void onSimulationOptimizerStarted(@NonNull final SimulationPlanId simulationId)
+	{
+		sendToWebsocket(JsonWebsocketEventsList.ofEvent(JsonSimulationOptimizerStatusChangedEvent.builder()
+				.simulationId(simulationId)
+				.status(JsonSimulationOptimizerStatusType.STARTED)
+				.build()));
+	}
+
+	@Override
+	public void onSimulationOptimizerProgress(@NonNull final Plan solution)
+	{
+		sendToWebsocket(JsonWebsocketEventsList.ofEvent(JsonSimulationOptimizerStatusChangedEvent.builder()
+				.simulationId(solution.getSimulationId())
+				.status(JsonSimulationOptimizerStatusType.STARTED)
+				.simulationPlanChanged(true)
+				//
+				.score(solution.getScore() != null ? solution.getScore().toString() : null)
+				.scoreExplanation(solution.getScoreExplanation() != null ? solution.getScoreExplanation().getSummary() : null)
+				.isFinalSolution(solution.isFinalSolution())
+				.timeSpent(solution.getTimeSpent() != null ? solution.getTimeSpent().toString() : null)
+				//
+				.build()));
+	}
+
+	@Override
+	public void onSimulationOptimizerStopped(@NonNull final SimulationPlanId simulationId)
+	{
+		sendToWebsocket(JsonWebsocketEventsList.ofEvent(JsonSimulationOptimizerStatusChangedEvent.builder()
+				.simulationId(simulationId)
+				.status(JsonSimulationOptimizerStatusType.STOPPED)
 				.build()));
 	}
 
@@ -161,16 +206,15 @@ class CalendarWebSocketProducer
 
 	private JsonWebsocketEvent toJsonWebsocketEvent(final Event event)
 	{
-		if (event instanceof EntryChangedEvent)
+		if (event instanceof final EntryChangedEvent entryChangedEvent)
 		{
-			final CalendarEntry entry = ((EntryChangedEvent)event).getEntry();
+			final CalendarEntry entry = entryChangedEvent.getEntry();
 			return JsonAddOrChangeWebsocketEvent.builder()
 					.entry(JsonCalendarEntry.of(entry, SystemTime.zoneId(), adLanguage))
 					.build();
 		}
-		else if (event instanceof EntryDeletedEvent)
+		else if (event instanceof final EntryDeletedEvent entryDeletedEvent)
 		{
-			final EntryDeletedEvent entryDeletedEvent = (EntryDeletedEvent)event;
 			return JsonRemoveWebsocketEvent.builder()
 					.simulationId(entryDeletedEvent.getSimulationId())
 					.entryId(entryDeletedEvent.getEntryId())

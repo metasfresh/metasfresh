@@ -18,10 +18,22 @@
 		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
 		<metasfresh-common.version>10.0.0</metasfresh-common.version>
+		<version.org.optaplanner>8.37.0.Final</version.org.optaplanner>
 	</properties>
 
-	<dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.optaplanner</groupId>
+				<artifactId>optaplanner-bom</artifactId>
+				<version>${version.org.optaplanner}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
+	<dependencies>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -77,6 +89,16 @@
 			<groupId>de.metas.common.product</groupId>
 			<artifactId>de-metas-common-product</artifactId>
 			<version>${metasfresh-common.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.optaplanner</groupId>
+			<artifactId>optaplanner-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.optaplanner</groupId>
+			<artifactId>optaplanner-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

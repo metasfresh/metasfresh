@@ -51,6 +51,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -187,6 +188,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 				.taxCategoryId(getTaxCategoryId(invoice, invoiceLine, taxCountryId))
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))
+				.vatCodeId(VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID()))
 				.build();
 
 		final PlainStringLoggable loggable = Loggables.newPlainStringLoggable();

@@ -285,6 +285,7 @@ public class ReferenceListAwareEnums
 	{
 		private final String typeName;
 		private final ImmutableMap<String, T> typesByCode;
+		private final ImmutableMap<String, T> typesByName;
 
 		private ValuesIndex(@NonNull final T[] values)
 		{
@@ -293,7 +294,24 @@ public class ReferenceListAwareEnums
 				throw new IllegalArgumentException("values not allowed to be empty");
 			}
 			this.typeName = values[0].getClass().getSimpleName();
+
 			typesByCode = Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
+			this.typesByName = indexByName(values);
+		}
+
+		@NonNull
+		private static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByName(@NonNull final T @NonNull [] values)
+		{
+			final ImmutableMap.Builder<String, T> typesByName = ImmutableMap.builder();
+			for (final T value : values)
+			{
+				if (value instanceof Enum)
+				{
+					final String name = ((Enum<?>)value).name();
+					typesByName.put(name, value);
+				}
+			}
+			return typesByName.build();
 		}
 
 		@Nullable
@@ -316,5 +334,20 @@ public class ReferenceListAwareEnums
 			}
 			return type;
 		}
+
+		public T ofCodeOrName(@NonNull final String code)
+		{
+			T type = typesByCode.get(code);
+			if (type == null)
+			{
+				type = typesByName.get(code);
+			}
+			if (type == null)
+			{
+				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
+			}
+			return type;
+		}
+
 	}
 }

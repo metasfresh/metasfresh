@@ -32,15 +32,18 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -62,17 +65,20 @@ public class BOMRestService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final ProductBOMService bomService;
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final JsonAttributeService jsonAttributeService;
+	private final ResourceService resourceService;
 
 	public BOMRestService(
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final ProductBOMService bomService,
-			@NonNull final JsonAttributeService jsonAttributeService)
+			@NonNull final JsonAttributeService jsonAttributeService,
+			@NonNull final ResourceService resourceService)
 	{
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.bomService = bomService;
 		this.jsonAttributeService = jsonAttributeService;
+		this.resourceService = resourceService;
 	}
 
 	@NonNull
@@ -85,7 +91,7 @@ public class BOMRestService
 
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
 
-		final ProductId finishedProductId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId finishedProductId = externalIdentifierResolver.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException(request.getProductIdentifier()));
 
 		final I_M_Product finishedProduct = productDAO.getById(finishedProductId);
@@ -100,8 +106,16 @@ public class BOMRestService
 		final AttributeSetInstanceId attributeSetInstanceId = jsonAttributeService.computeAttributeSetInstanceFromJson(request.getAttributeSetInstance())
 				.orElse(null);
 
+		final ResourceId resourceId = request.getResourceCode() == null
+				? null
+				: resourceService.getResourceIdByValue(request.getResourceCode(), orgId)
+				.orElseThrow(() -> new AdempiereException("No S_Resource found for org & value!")
+						.appendParametersToMessage()
+						.setParameter("OrgId", orgId.getRepoId())
+						.setParameter("ResourceCode", request.getResourceCode()));
+
 		final BOMCreateRequest bomRequest = BOMCreateRequest.builder()
-				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgId(orgId)
 				.productId(finishedProductId)
 				.productValue(finishedProduct.getValue())
 				.productName(request.getName())
@@ -110,6 +124,7 @@ public class BOMRestService
 				.validFrom(request.getValidFrom())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.lines(bomLines)
+				.resourceId(resourceId)
 				.build();
 
 		final I_PP_Product_BOM createdBOM = bomService.createBOM(bomRequest);
@@ -124,7 +139,7 @@ public class BOMRestService
 	{
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(lineRequest.getProductIdentifier());
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException(lineRequest.getProductIdentifier()));
 
 		final X12DE355 uomCode = X12DE355.ofCode(lineRequest.getQtyBom().getUomCode());
@@ -140,6 +155,18 @@ public class BOMRestService
 				.isQtyPercentage(lineRequest.getIsQtyPercentage())
 				.qty(Quantity.of(lineRequest.getQtyBom().getQty(), uom))
 				.attributeSetInstanceId(attributeSetInstanceId)
+				.help(lineRequest.getHelp())
 				.build();
+	}
+
+	public void verifyDefaultBOM(@NonNull final String productExternalIdentifier, @NonNull final String orgCode)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(productExternalIdentifier);
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+
+		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(externalIdentifier, orgId)
+				.orElseThrow(() -> new InvalidIdentifierException(productExternalIdentifier));
+
+		bomService.verifyDefaultBOMFor(productId);
 	}
 }

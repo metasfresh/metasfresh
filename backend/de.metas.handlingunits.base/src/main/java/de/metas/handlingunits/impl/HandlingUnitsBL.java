@@ -31,7 +31,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -78,6 +77,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -86,7 +86,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -94,7 +94,9 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -109,12 +111,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
+	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -127,6 +130,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -160,6 +165,18 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
 		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
+	}
+
+	@Override
+	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return handlingUnitsRepo.getBySelectionId(selectionId);
+	}
+
+	@Override
+	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
 	}
 
 	@Override
@@ -296,6 +313,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
+	public void saveHU(final I_M_HU hu)
+	{
 		handlingUnitsRepo.saveHU(hu);
 	}
 
@@ -656,9 +679,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				Check.errorIf(maxDepth <= 0, "We navigated more than {} levels deep to get the top level of hu={}. It seems like a data error", maxDepth, hu);
 			}
 		}
-		
+
 		husResult.sort(Comparator.comparing(I_M_HU::getM_HU_ID)); // make sure that our result is in defined ordering
-		
+
 		return husResult;
 	}
 
@@ -807,6 +830,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(piVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsVersionId huPackingInstructionsVersionId = Optional.ofNullable(getEffectivePIVersion(hu))
+				.map(I_M_HU_PI_Version::getM_HU_PI_Version_ID)
+				.map(HuPackingInstructionsVersionId::ofRepoId)
+				.orElse(HuPackingInstructionsVersionId.VIRTUAL);
+
+		return getPackingInstructionsId(huPackingInstructionsVersionId);
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -844,7 +878,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsRepo.getPackingInstructionById(id);}
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id)
+	{
+		return handlingUnitsRepo.getPackingInstructionById(id);
+	}
 
 	@Override
 	public String getPIName(@NonNull final HuPackingInstructionsId id)
@@ -888,9 +925,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		return getPI(piVersionId);
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsVersionId piVersionId)
+	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
 	}
+
 
 	@NonNull
 	@Override
@@ -1173,5 +1217,42 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
+	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.getClientAndOrgId(huId);
+	}
+
+	@Override
+	@NonNull
+	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
+	{
+		final WarehouseId warehouseIdByLocatorRepoId = warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
+		Check.assumeNotNull(warehouseIdByLocatorRepoId, "Warehouse cannot be determined for hu: {}", huId);
+		return warehouseIdByLocatorRepoId;
+	}
+
+	@Override
+	public LocatorId getLocatorId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return IHandlingUnitsBL.extractLocatorId(hu);
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 	}
 }

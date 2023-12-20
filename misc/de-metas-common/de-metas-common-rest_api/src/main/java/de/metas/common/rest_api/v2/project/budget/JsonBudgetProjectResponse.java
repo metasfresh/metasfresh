@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,77 +41,76 @@ import java.util.Map;
 @Value
 public class JsonBudgetProjectResponse
 {
-	@ApiModelProperty( //
-			required = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_Project.C_Project_ID`.")
+	@Schema( //
+			required = true,
+			description = "This translates to `C_Project.C_Project_ID`.")
 	@NonNull
 	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.AD_Org_ID.Value`.")
+	@Schema(required = true, description = "This translates to `C_Project.AD_Org_ID.Value`.")
 	@NonNull
 	String orgCode;
 
-	@ApiModelProperty("This translates to `C_Project.External`.")
+	@Schema(description = "This translates to `C_Project.External`.")
 	JsonExternalId externalId;
 	
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
+	@Schema(required = true, description = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.Name`.")
+	@Schema(required = true, description = "This translates to `C_Project.Name`.")
 	@NonNull
 	String name;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.Value`.")
+	@Schema(required = true, description = "This translates to `C_Project.Value`.")
 	@NonNull
 	String value;
 
-	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
+	@Schema(description = "This translates to `C_BPartner.IsActive`.")
 	@Nullable
 	Boolean isActive;
 
-	@ApiModelProperty(value = "This translates to `C_Project.M_PriceList_Version_ID`.")
+	@Schema(description = "This translates to `C_Project.M_PriceList_Version_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId priceListVersionId;
 
-	@ApiModelProperty(value = "This translates to `C_Project.Description`.")
+	@Schema(description = "This translates to `C_Project.Description`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String description;
 
-	@ApiModelProperty(value = "This translates to `C_Project.C_Project_Parent_ID`.")
+	@Schema(description = "This translates to `C_Project.C_Project_Parent_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId projectParentId;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_ProjectType_ID`.")
+	@Schema(required = true, description = "This translates to `C_Project.C_ProjectType_ID`.")
 	@NonNull
 	JsonMetasfreshId projectTypeId;
 
-	@ApiModelProperty(value = "This translates to `C_Project.C_Project_Reference_Ext`.")
+	@Schema(description = "This translates to `C_Project.C_Project_Reference_Ext`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String projectReferenceExt;
 
-	@ApiModelProperty(value = "This translates to `C_Project.C_BPartner_ID`.")
+	@Schema(description = "This translates to `C_Project.C_BPartner_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty(value = "This translates to `C_Project.SalesRep_ID`.")
+	@Schema(description = "This translates to `C_Project.SalesRep_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId salesRepId;
 
-	@ApiModelProperty(value = "This translates to `C_Project.DateContract`.")
+	@Schema(description = "This translates to `C_Project.DateContract`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateContract;
 
-	@ApiModelProperty(value = "This translates to `C_Project.DateFinish`.")
+	@Schema(description = "This translates to `C_Project.DateFinish`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

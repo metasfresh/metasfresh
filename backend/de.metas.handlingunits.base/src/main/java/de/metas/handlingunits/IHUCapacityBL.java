@@ -1,19 +1,17 @@
 package de.metas.handlingunits;
 
-import java.time.ZonedDateTime;
-
-import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 public interface IHUCapacityBL extends ISingletonService
 {

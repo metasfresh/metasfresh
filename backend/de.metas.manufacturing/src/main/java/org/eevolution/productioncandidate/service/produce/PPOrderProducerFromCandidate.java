@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service.produce;
 
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -33,10 +34,9 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.PPOrderCandidateProcessRequest;
 
 import javax.annotation.Nullable;
@@ -48,11 +48,11 @@ public class PPOrderProducerFromCandidate
 {
 	private final OrderGenerateResult result;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
-	private final PPOrderCandidateDAO ppOrderCandidatesDAO;
+	private final IPPOrderCandidateDAO ppOrderCandidatesDAO;
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
-	private final Map<ProductPlanningId, I_PP_Product_Planning> productPlanningCache;
+	private final Map<ProductPlanningId, ProductPlanning> productPlanningCache;
 	private final boolean createEachPPOrderInOwnTrx;
 
 	@Builder
@@ -60,7 +60,7 @@ public class PPOrderProducerFromCandidate
 			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
 			@NonNull final IPPOrderBL ppOrderService,
 			@NonNull final ITrxManager trxManager,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidatesDAO,
+			@NonNull final IPPOrderCandidateDAO ppOrderCandidatesDAO,
 			@NonNull final IProductPlanningDAO productPlanningsRepo,
 			final boolean createEachPPOrderInOwnTrx)
 	{

@@ -1,10 +1,10 @@
 package org.adempiere.server.rpl.exceptions;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * @author ad
@@ -46,10 +46,11 @@ public class ReplicationException extends AdempiereException
 	protected ITranslatableString buildMessage()
 	{
 		final TranslatableStringBuilder message = TranslatableStrings.builder();
-		
-		message.appendADMessage(adMessage);
-		
-		appendParameters(message);
+		if(Check.isNotBlank(adMessage)) // avoide NPE
+		{
+			message.appendADMessage(adMessage);
+			appendParameters(message);
+		}
 		
 		if (cause != null)
 		{

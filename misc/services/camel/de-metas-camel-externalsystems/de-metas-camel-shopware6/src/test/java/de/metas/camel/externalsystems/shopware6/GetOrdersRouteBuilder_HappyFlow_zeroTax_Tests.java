@@ -169,9 +169,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
-				successfullyCreatedOLCandProcessor,
+							   successfullyCreatedOLCandProcessor,
 							   successfullyProcessOLCandProcessor,
-				runtimeParamsProcessor,
+							   runtimeParamsProcessor,
 							   createPaymentProcessor,
 							   successfullyCalledGetOrderPage);
 
@@ -231,7 +231,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
-						.replace()
+									  .replace()
 									  .process(new MockBuildOrdersContextProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
@@ -265,7 +265,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
-						.skipSendToOriginalEndpoint()
+									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_OL_CAND_PROCESS)
 									  .process(processOLCandProcessor));
 

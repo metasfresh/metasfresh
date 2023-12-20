@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -129,7 +130,9 @@ public class PaymentRow implements IViewRow
 		this.paymentAmtMultiplier = paymentAmtMultiplier;
 		this.payAmt = payAmt;
 		this.openAmt = openAmt;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(payAmt, openAmt).toThreeLetterCode();
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(payAmt, openAmt)
+				.orElseThrow(() -> new AdempiereException("Cannot determine currency"))
+				.toThreeLetterCode();
 
 		rowId = convertPaymentIdToDocumentId(paymentId);
 		this.paymentId = paymentId;

@@ -1,14 +1,5 @@
 package de.metas.document.archive.storage.attachments.process;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.SpringContextHolder;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
@@ -22,6 +13,14 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.SpringContextHolder;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class C_Doc_Outbound_Log_StoreAttachments
 		extends JavaProcess
@@ -49,8 +48,7 @@ public class C_Doc_Outbound_Log_StoreAttachments
 		}
 
 		final boolean atLeastOneRecordAttachmentsToStore = context
-				.getSelectedModels(I_C_Doc_Outbound_Log.class)
-				.stream()
+				.streamSelectedModels(I_C_Doc_Outbound_Log.class)
 				.anyMatch(this::hasAttachmentToStore);
 		if (!atLeastOneRecordAttachmentsToStore)
 		{

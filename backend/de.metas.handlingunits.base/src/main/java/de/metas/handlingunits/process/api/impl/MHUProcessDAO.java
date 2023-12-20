@@ -1,23 +1,21 @@
 package de.metas.handlingunits.process.api.impl;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.cache.CCache;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Process;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.HUProcessDescriptor.HUProcessDescriptorBuilder;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+
+import java.util.Collection;
+import java.util.List;
 
 public class MHUProcessDAO implements IMHUProcessDAO
 {
@@ -47,7 +45,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_M_HU_Process.class)
-				.map(huProcessRecord -> toHUProcessDescriptor(huProcessRecord))
+				.map(MHUProcessDAO::toHUProcessDescriptor)
 				.collect(ImmutableList.toImmutableList());
 
 		return new IndexedHUProcessDescriptors(huProcessDescriptors);
@@ -61,15 +59,15 @@ public class MHUProcessDAO implements IMHUProcessDAO
 
 		if (huProcessRecord.isApplyToLUs())
 		{
-			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			builder.acceptHUUnitType(HuUnitType.LU);
 		}
 		if (huProcessRecord.isApplyToTUs())
 		{
-			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			builder.acceptHUUnitType(HuUnitType.TU);
 		}
 		if (huProcessRecord.isApplyToCUs())
 		{
-			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
+			builder.acceptHUUnitType(HuUnitType.VHU);
 		}
 
 		builder.provideAsUserAction(huProcessRecord.isProvideAsUserAction());

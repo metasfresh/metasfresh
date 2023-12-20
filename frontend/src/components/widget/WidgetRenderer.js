@@ -434,7 +434,7 @@ class WidgetRenderer extends PureComponent {
             >
               {renderContent}
             </div>
-            {charsTyped && charsTyped >= 0 ? (
+            {maxLength > 0 && charsTyped && charsTyped >= 0 ? (
               <CharacterLimitInfo
                 charsTyped={charsTyped}
                 maxLength={maxLength}
@@ -696,7 +696,6 @@ WidgetRenderer.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
 
   //
   // from RawWidget

@@ -27,8 +27,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -57,6 +60,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -64,12 +68,14 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -87,11 +93,16 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -103,8 +114,12 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -121,6 +136,10 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -436,7 +455,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -465,13 +484,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(orderRecord)
-						.orderActivity(activity)
-						.movementDate(reportDate)
-						.qtyMoved(qtyToProcess)
-						.durationSetup(setupTimeRemaining)
-						.duration(durationRemaining.getDuration())
-						.build());
+																	.order(orderRecord)
+																	.orderActivity(activity)
+																	.movementDate(reportDate)
+																	.qtyMoved(qtyToProcess)
+																	.durationSetup(setupTimeRemaining)
+																	.duration(durationRemaining.getDuration())
+																	.build());
 			}
 		}
 	}
@@ -613,10 +632,19 @@ public class PPOrderBL implements IPPOrderBL
 
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrder);
 
+		final ImmutableList<I_PP_OrderCandidate_PP_Order> orderAllocations = ppOrderDAO.getPPOrderAllocations(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+		String lotForLot = "";
+		if (orderAllocations.size() == 1)
+		{
+			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(orderAllocations.get(0).getPP_Order_Candidate_ID());
+			lotForLot = ppOrderCandidateDAO.getById(ppOrderCandidateId).getIsLotForLot();
+		}
+
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID()))
 				.ppOrder(ppOrderPojo)
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
+				.lotForLot(lotForLot)
 				.build();
 
 		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
@@ -630,5 +658,79 @@ public class PPOrderBL implements IPPOrderBL
 		Loggables.addLog(
 				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
 				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
+	}
+
+	@Override
+	public boolean hasSerialNumberSequence(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getProductIdsToIssue(ppOrderId);
+	}
+
+	@Override
+	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
+	{
+		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
+				.forEach(draftedOrder -> {
+					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
+					try
+					{
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));
+					}
+					catch (final Exception e)
+					{
+						Loggables.withLogger(logger, Level.ERROR)
+								.addLog("Failed updating PP_Order (PP_Order_ID = {}) with the latest PP_Product_BOM version (PP_Product_BOM = {})",
+										draftedOrder.getPP_Order_ID(), newVersionId, e);
+					}
+				});
+	}
+
+	public boolean isModularOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = getById(ppOrderId);
+
+		return docTypeBL.isModularManufacturingOrder(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+	}
+	@NonNull
+	public Optional<Quantity> getRoundingToScale(@NonNull final PPOrderId ppOrderId)
+	{
+		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+
+		return Optional.ofNullable(getById(ppOrderId).getCurrentScaleDeviceId())
+				.filter(Check::isNotBlank)
+				.map(DeviceId::ofString)
+				.flatMap(deviceAccessorsHubFactory::getDeviceAccessorById)
+				.map(deviceAccessor -> {
+					final BigDecimal roundingToScale = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+							.filter(Check::isNotBlank)
+							.map(BigDecimal::new)
+							.orElse(null);
+					final UomId roundingToScaleUomId = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
+							.map(Integer::parseInt)
+							.map(UomId::ofRepoId)
+							.orElse(null);
+
+					if (roundingToScale == null || roundingToScaleUomId == null)
+					{
+						return null;
+					}
+
+					return Quantitys.create(roundingToScale, roundingToScaleUomId);
+				});
+	}
+
+	@Override
+	public PPOrderDocBaseType getPPOrderDocBaseType(@NonNull final I_PP_Order ppOrder)
+	{
+		final I_C_DocType docTypeTarget = docTypesRepo.getRecordById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
 	}
 }

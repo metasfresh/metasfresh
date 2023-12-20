@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDetail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1761612431L;
+	private static final long serialVersionUID = 802035805L;
 
     /** Standard Constructor */
     public X_M_CostDetail (final Properties ctx, final int M_CostDetail_ID, @Nullable final String trxName)
@@ -302,6 +302,29 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		return get_ValueAsInt(COLUMNNAME_M_CostDetail_ID);
 	}
 
+	/** 
+	 * M_CostDetail_Type AD_Reference_ID=541722
+	 * Reference name: M_CostDetail_Type
+	 */
+	public static final int M_COSTDETAIL_TYPE_AD_Reference_ID=541722;
+	/** Main = M */
+	public static final String M_COSTDETAIL_TYPE_Main = "M";
+	/** Cost Adjustment = A */
+	public static final String M_COSTDETAIL_TYPE_CostAdjustment = "A";
+	/** Already Shipped = S */
+	public static final String M_COSTDETAIL_TYPE_AlreadyShipped = "S";
+	@Override
+	public void setM_CostDetail_Type (final java.lang.String M_CostDetail_Type)
+	{
+		set_Value (COLUMNNAME_M_CostDetail_Type, M_CostDetail_Type);
+	}
+
+	@Override
+	public java.lang.String getM_CostDetail_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_M_CostDetail_Type);
+	}
+
 	@Override
 	public org.compiere.model.I_M_CostElement getM_CostElement()
 	{
@@ -534,6 +557,21 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	}
 
 	@Override
+	public void setM_Shipping_NotificationLine_ID (final int M_Shipping_NotificationLine_ID)
+	{
+		if (M_Shipping_NotificationLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Shipping_NotificationLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Shipping_NotificationLine_ID, M_Shipping_NotificationLine_ID);
+	}
+
+	@Override
+	public int getM_Shipping_NotificationLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipping_NotificationLine_ID);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
@@ -660,5 +698,33 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSourceAmt (final @Nullable BigDecimal SourceAmt)
+	{
+		set_Value (COLUMNNAME_SourceAmt, SourceAmt);
+	}
+
+	@Override
+	public BigDecimal getSourceAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SourceAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSource_Currency_ID (final int Source_Currency_ID)
+	{
+		if (Source_Currency_ID < 1) 
+			set_Value (COLUMNNAME_Source_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_Source_Currency_ID, Source_Currency_ID);
+	}
+
+	@Override
+	public int getSource_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Source_Currency_ID);
 	}
 }

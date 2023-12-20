@@ -63,6 +63,7 @@ public class PPOrderCandidateCreateRequest
 	boolean simulated;
 	String traceId;
 	HUPIItemProductId packingMaterialId;
+	String lotForLot;
 
 	@Builder
 	public PPOrderCandidateCreateRequest(
@@ -80,7 +81,8 @@ public class PPOrderCandidateCreateRequest
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
 			final boolean simulated,
 			@Nullable final String traceId,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@Nullable final HUPIItemProductId packingMaterialId,
+			@Nullable final String lotForLot)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -99,6 +101,7 @@ public class PPOrderCandidateCreateRequest
 		this.simulated = simulated;
 		this.traceId = traceId;
 		this.packingMaterialId = packingMaterialId;
+		this.lotForLot = lotForLot;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

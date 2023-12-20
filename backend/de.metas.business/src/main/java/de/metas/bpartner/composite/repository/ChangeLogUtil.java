@@ -11,6 +11,8 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -22,8 +24,6 @@ import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -108,6 +108,12 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsStorageWarehouse, BPartner.STORAGE_WAREHOUSE)
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID, BPartner.INCOTERMS_CUSTOMER_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID, BPartner.INCOTERMS_VENDOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, BPartner.SECTION_GROUP_PARTNER_ID)
+			.put(I_C_BPartner.COLUMNNAME_IsProspect, BPartner.PROSPECT)
+			.put(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, BPartner.SAP_BPARTNER_CODE)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionGroupPartner, BPartner.SECTION_GROUP_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionPartner, BPartner.SECTION_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_Fresh_Urproduzent, BPartner.URPRODUZENT)
 			.build();
 
 	@VisibleForTesting
@@ -167,6 +173,9 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, BPartnerLocation.HANDOVER_LOCATION)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsRemitTo, BPartnerLocation.REMIT_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, BPartnerLocation.REPLICATION_LOOKUP_DEFAULT)
+			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_PaymentMethod, BPartnerLocation.SAP_PAYMENT_METHOD)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_BPartnerCode, BPartnerLocation.SAP_BPARTNER_CODE)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,
@@ -190,6 +199,7 @@ final class ChangeLogUtil
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
 			.<String, String>builder()
 			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
+			.put(I_C_Country.COLUMNNAME_Name, BPartnerLocation.COUNTRY_NAME)
 			.build();
 
 	@VisibleForTesting
@@ -200,6 +210,10 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_Name, BPartnerBankAccount.NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, BPartnerBankAccount.QR_IBAN)
+			.put(I_C_BP_BankAccount.COLUMNNAME_SwiftCode, BPartnerBankAccount.SWIFT_CODE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_IsDefault, BPartnerBankAccount.IS_DEFAULT)
 			.build();
 
 	@VisibleForTesting

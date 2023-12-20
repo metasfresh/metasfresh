@@ -267,7 +267,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ? OnTrxMissingPolicy.CreateNew
 				: OnTrxMissingPolicy.ReturnTrxNone // backward compatibility
-		;
+				;
 
 		return get(trxName, onTrxMissingPolicy);
 	}
@@ -359,7 +359,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			trxName2trxLock.unlock();
 		}
-	}	// get
+	}    // get
 
 	@Override
 	public boolean remove(final ITrx trx)
@@ -430,7 +430,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 
 		return trxName;
-	}	// createTrxName
+	}    // createTrxName
 
 	/**
 	 * Create unique Transaction Name
@@ -441,7 +441,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		final String prefix = null;
 		return createTrxName(prefix);
-	}	// createTrxName
+	}    // createTrxName
 
 	@Override
 	public <T> T callInNewTrx(@NonNull final Callable<T> callable)
@@ -771,13 +771,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		catch (final Throwable runException)
 		{
 			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
-			if(AdempiereException.isThrowableLoggedInTrxManager(runException))
-			{
-				loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
-								runException.getClass(), runException.getMessage(),
-								runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
-			}
-			
+
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
 			boolean rollback = true;
@@ -789,6 +783,12 @@ public abstract class AbstractTrxManager implements ITrxManager
 			catch (final Throwable doCatchException)
 			{
 				exceptionToThrow = doCatchException;
+
+				if (exceptionToThrow != runException)
+				{
+					exceptionToThrow.addSuppressed(runException);
+				}
+
 				rollback = true;
 			}
 

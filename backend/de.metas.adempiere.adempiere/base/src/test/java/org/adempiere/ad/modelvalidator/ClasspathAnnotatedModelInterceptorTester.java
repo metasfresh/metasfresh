@@ -46,6 +46,8 @@ public class ClasspathAnnotatedModelInterceptorTester
 
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
+				//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+				.forPackages("de")
 				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
 
 		// IMPORTANT: make sure JUnit test is enabled because we are about to load all classes,

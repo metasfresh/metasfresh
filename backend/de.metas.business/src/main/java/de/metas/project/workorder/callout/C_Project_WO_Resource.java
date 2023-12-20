@@ -49,6 +49,8 @@ import java.time.Instant;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
+
 @Callout(I_C_Project_WO_Resource.class)
 @Component
 public class C_Project_WO_Resource
@@ -56,8 +58,6 @@ public class C_Project_WO_Resource
 	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
-
-	private static final Duration DEFAULT_DURATION = Duration.ofHours(1);
 
 	public C_Project_WO_Resource(
 			final ResourceService resourceService,

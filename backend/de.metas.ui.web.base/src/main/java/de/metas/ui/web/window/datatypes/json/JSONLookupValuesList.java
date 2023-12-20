@@ -14,7 +14,7 @@ import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-@ApiModel(value = "lookup-values-list", description = "[ { field : value} ]")
+@Schema(name = "lookup-values-list", description = "[ { field : value} ]")
 @EqualsAndHashCode
 public class JSONLookupValuesList
 {

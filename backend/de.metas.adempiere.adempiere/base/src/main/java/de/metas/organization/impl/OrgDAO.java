@@ -386,4 +386,10 @@ public class OrgDAO implements IOrgDAO
 
 	}
 
+	@Override
+	public String getOrgCode(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getValue();
+	}
+
 }

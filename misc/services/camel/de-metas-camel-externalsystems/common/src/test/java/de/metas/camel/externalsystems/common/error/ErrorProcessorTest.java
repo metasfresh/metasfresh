@@ -61,7 +61,7 @@ public class ErrorProcessorTest
 		ex.setProperty(Exchange.EXCEPTION_CAUGHT, httpOperationFailedException);
 
 		//when
-		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(ex);
+		final JsonError jsonError = ErrorProcessor.processMetasfreshHttpError(ex);
 
 		//then
 		assertThat(jsonError.getRequestId()).isEqualTo(errorJsonApiResponse.getRequestId());
@@ -89,7 +89,7 @@ public class ErrorProcessorTest
 		ex.setProperty(Exchange.EXCEPTION_CAUGHT, httpOperationFailedException);
 
 		//when
-		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(ex);
+		final JsonError jsonError = ErrorProcessor.processMetasfreshHttpError(ex);
 
 		//then
 		assertThat(jsonError.getRequestId()).isNull();
@@ -115,7 +115,7 @@ public class ErrorProcessorTest
 		ex.setProperty(Exchange.EXCEPTION_CAUGHT, httpOperationFailedException);
 
 		//when
-		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(ex);
+		final JsonError jsonError = ErrorProcessor.processMetasfreshHttpError(ex);
 
 		//then
 		assertThat(jsonError.getRequestId()).isNull();
@@ -141,7 +141,7 @@ public class ErrorProcessorTest
 		ex.setProperty(Exchange.EXCEPTION_CAUGHT, httpOperationFailedException);
 
 		//when
-		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(ex);
+		final JsonError jsonError = ErrorProcessor.processMetasfreshHttpError(ex);
 
 		//then
 		assertThat(jsonError.getRequestId()).isNull();

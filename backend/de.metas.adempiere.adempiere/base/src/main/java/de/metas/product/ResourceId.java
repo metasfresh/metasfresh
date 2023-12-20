@@ -41,16 +41,25 @@ import java.util.Optional;
 @Value
 public class ResourceId implements RepoIdAware
 {
+	public static final ResourceId NO_RESOURCE = new ResourceId(540011);
+
 	@JsonCreator
 	public static ResourceId ofRepoId(final int repoId)
 	{
-		return new ResourceId(repoId);
+		if (repoId == NO_RESOURCE.repoId)
+		{
+			return NO_RESOURCE;
+		}
+		else
+		{
+			return new ResourceId(repoId);
+		}
 	}
 
 	@Nullable
 	public static ResourceId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ResourceId(repoId) : null;
+		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static Optional<ResourceId> optionalOfRepoId(final int repoId)
@@ -90,4 +99,6 @@ public class ResourceId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public boolean isNoResource() {return this.repoId == NO_RESOURCE.repoId;}
 }

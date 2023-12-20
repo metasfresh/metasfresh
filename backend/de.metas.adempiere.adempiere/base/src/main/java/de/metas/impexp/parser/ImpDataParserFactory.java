@@ -1,7 +1,12 @@
 package de.metas.impexp.parser;
 
 import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.parser.csv.CsvImpDataParserFactory;
+import de.metas.impexp.parser.xls.Excel97ImpDataParser;
+import de.metas.util.FileUtil;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -13,12 +18,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,18 +32,20 @@ import lombok.NonNull;
 
 public class ImpDataParserFactory
 {
-	private final ImpDataLineParserFactory lineParserFactory = new ImpDataLineParserFactory();
-
-	public ImpDataParser createParser(@NonNull final ImpFormat impFormat)
+	public ImpDataParser createParser(@NonNull final ImpFormat impFormat, @Nullable String filename)
 	{
-		final ImpDataLineParser lineParser = lineParserFactory.createParser(impFormat);
+		final String fileExtension = FileUtil.getFileExtension(filename);
 
-		return ImpDataParser.builder()
-				.multiline(impFormat.isMultiLine())
-				.lineParser(lineParser)
-				.charset(impFormat.getCharset())
-				.skipFirstNRows(impFormat.getSkipFirstNRows())
-				.build();
+		if ("xls".equalsIgnoreCase(fileExtension))
+		{
+			return Excel97ImpDataParser.builder()
+					.skipFirstNRows(impFormat.getSkipFirstNRows())
+					.build();
+		}
+		else
+		{
+			return CsvImpDataParserFactory.createParser(impFormat);
+		}
 	}
 
 }

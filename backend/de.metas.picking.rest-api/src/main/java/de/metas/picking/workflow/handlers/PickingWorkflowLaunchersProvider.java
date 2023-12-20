@@ -5,79 +5,94 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.config.MobileUIPickingUserProfile;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Set;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
 class PickingWorkflowLaunchersProvider
 {
 	private final PickingJobRestService pickingJobRestService;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	private final WorkplaceService workplaceService;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
 
 	PickingWorkflowLaunchersProvider(
-			@NonNull final PickingJobRestService pickingJobRestService)
+			@NonNull final PickingJobRestService pickingJobRestService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
+		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
+		this.workplaceService = workplaceService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		return launchersCache.getOrLoad(userId, SynchronizedMutable::empty)
-				.compute(previousLaunchers -> checkStateAndComputeLaunchers(userId, suggestedLimit, maxStaleAccepted, previousLaunchers));
+		return launchersCache.getOrLoad(query.getUserId(), SynchronizedMutable::empty)
+				.compute(previousLaunchers -> checkStateAndComputeLaunchers(query, previousLaunchers));
 	}
 
 	private WorkflowLaunchersList checkStateAndComputeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit suggestedLimit,
-			final @NonNull Duration maxStaleAccepted,
-			final @Nullable WorkflowLaunchersList previousLaunchers)
+			@NonNull WorkflowLaunchersQuery query,
+			@Nullable WorkflowLaunchersList previousLaunchers)
 	{
-		if (previousLaunchers == null)
+		if (previousLaunchers == null || previousLaunchers.isStaled(query.getMaxStaleAccepted()))
 		{
-			//System.out.println("*** No previous value. A new value will be computed!");
-			return computeLaunchers(userId, suggestedLimit);
-		}
-		else if (previousLaunchers.isStaled(maxStaleAccepted))
-		{
-			//System.out.println("*** Value staled. A new value will be computed!");
-			return computeLaunchers(userId, suggestedLimit);
+			return computeLaunchers(query);
 		}
 		else
 		{
-			//System.out.println("*** Value NOT staled");
 			return previousLaunchers;
 		}
 	}
 
-	private WorkflowLaunchersList computeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit limit)
+	private WorkflowLaunchersList computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
+		final UserId userId = query.getUserId();
+		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
+		final PickingJobFacetsQuery facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
+
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
+				.map(Workplace::getWarehouseId)
+				.orElse(null);
 		//
 		// Already started launchers
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId)
+		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
+						PickingJobReferenceQuery.builder()
+								.pickerId(userId)
+								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+								.warehouseId(workplaceWarehouseId)
+								.build())
+				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
 				.map(PickingWorkflowLaunchersProvider::toExistingWorkflowLauncher)
@@ -87,11 +102,17 @@ class PickingWorkflowLaunchersProvider
 		// New launchers
 		if (!limit.isLimitHitOrExceeded(existingPickingJobs))
 		{
-			final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
 					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
 					.collect(ImmutableSet.toImmutableSet());
 
-			pickingJobRestService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
+			pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
+																	 .userId(userId)
+																	 .excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+																	 .facets(facets)
+																	 .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																	 .warehouseId(workplaceWarehouseId)
+																	 .build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
 					.forEach(currentResult::add);
@@ -127,6 +148,22 @@ class PickingWorkflowLaunchersProvider
 						.build())
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
 				.build();
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+	{
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
+				.map(Workplace::getWarehouseId)
+				.orElse(null);
+
+		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.builder()
+																					   .userId(userId)
+																					   .onlyBPartnerIds(profile.getOnlyBPartnerIds())
+																					   .warehouseId(workplaceWarehouseId)
+																					   .build());
+
+		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets);
 	}
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)

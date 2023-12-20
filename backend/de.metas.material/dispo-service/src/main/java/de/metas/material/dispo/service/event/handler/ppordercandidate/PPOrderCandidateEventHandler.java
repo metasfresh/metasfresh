@@ -86,12 +86,14 @@ public abstract class PPOrderCandidateEventHandler
 				supplyRequiredDescriptor,
 				headerCandidateMaterialDescriptor).ifPresent(builder::additionalDemandDetail);
 
+
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				// .groupId(null) // will be set after save
+				.lotForLot(ppOrderCandidate.getPpOrderData().getLotForLot())
 				.build();
 
 		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
@@ -129,7 +131,8 @@ public abstract class PPOrderCandidateEventHandler
 					.businessCaseDetail(lineCandidateProductionDetail)
 					.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()))
 					.materialDescriptor(materialDescriptor)
-					.simulated(simulated);
+					.simulated(simulated)
+					.lotForLot(headerCandidate.getLotForLot());
 
 			if (groupId != null)
 			{

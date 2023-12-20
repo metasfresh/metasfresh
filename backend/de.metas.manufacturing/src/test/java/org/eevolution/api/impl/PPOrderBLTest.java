@@ -20,6 +20,9 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.concurrent.TimeUnit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -84,7 +87,7 @@ public class PPOrderBLTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			now = ZonedDateTime.now();
+			now = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 			SystemTime.setFixedTimeSource(now);
 		}
 

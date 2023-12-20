@@ -1,6 +1,8 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -41,30 +43,29 @@ import java.time.Instant;
 @Value
 public class CostDetail
 {
-	@With
-	CostDetailId id;
+	@With CostDetailId id;
 
-	ClientId clientId;
-	OrgId orgId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 
-	AcctSchemaId acctSchemaId;
-	CostElementId costElementId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostElementId costElementId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
-	CostAmount amt;
-	Quantity qty;
+	@NonNull CostAmountType amtType;
+	@NonNull CostAmount amt;
+	@NonNull @With Quantity qty;
 
-	boolean changingCosts;
+	@With boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;
 
-	CostingDocumentRef documentRef;
+	@NonNull CostingDocumentRef documentRef;
 
-	String description;
+	@Nullable String description;
 
-	@With
-	Instant dateAcct;
+	@NonNull @With Instant dateAcct;
 
 	@Builder
 	private CostDetail(
@@ -75,6 +76,7 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
@@ -90,6 +92,7 @@ public class CostDetail
 		this.costElementId = costElementId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.amtType = amtType;
 		this.amt = amt;
 		this.qty = qty;
 		this.changingCosts = changingCosts;
@@ -122,4 +125,6 @@ public class CostDetail
 			return getQty().signum() < 0;
 		}
 	}
+
+	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
 }

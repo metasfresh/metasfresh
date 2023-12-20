@@ -1,8 +1,5 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
@@ -186,6 +183,33 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
 
 	/**
+	 * Set Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Sequence_ID (int AD_Sequence_ID);
+
+	/**
+	 * Get Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getAD_Sequence();
+
+	void setAD_Sequence(@Nullable org.compiere.model.I_AD_Sequence AD_Sequence);
+
+	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Column.class, "AD_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
+
+	/**
 	 * Set Table.
 	 * Database Table information
 	 *
@@ -233,6 +257,27 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
+	 * Set Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCloningStrategy (java.lang.String CloningStrategy);
+
+	/**
+	 * Get Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCloningStrategy();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_CloningStrategy = new ModelColumn<>(I_AD_Column.class, "CloningStrategy", null);
+	String COLUMNNAME_CloningStrategy = "CloningStrategy";
+
+	/**
 	 * Set DB Column Name.
 	 * Name of the column in the database
 	 *
@@ -240,7 +285,7 @@ public interface I_AD_Column
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setColumnName (java.lang.String ColumnName);
+	void setColumnName(@Nullable java.lang.String ColumnName);
 
 	/**
 	 * Get DB Column Name.
@@ -440,33 +485,6 @@ public interface I_AD_Column
 	String COLUMNNAME_FieldLength = "FieldLength";
 
 	/**
-	 * Set Filter Validation Rule.
-	 * Validation Rule used for filtering
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFilter_Val_Rule_ID (int Filter_Val_Rule_ID);
-
-	/**
-	 * Get Filter Validation Rule.
-	 * Validation Rule used for filtering
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFilter_Val_Rule_ID();
-
-	@Nullable org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule();
-
-	void setFilter_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule Filter_Val_Rule);
-
-	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Val_Rule> COLUMN_Filter_Val_Rule_ID = new ModelColumn<>(I_AD_Column.class, "Filter_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
-	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
-
-	/**
 	 * Set Filter Default Value.
 	 *
 	 * <br>Type: String
@@ -507,6 +525,33 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_FilterOperator = new ModelColumn<>(I_AD_Column.class, "FilterOperator", null);
 	String COLUMNNAME_FilterOperator = "FilterOperator";
+
+	/**
+	 * Set Filter Validation Rule.
+	 * Validation Rule used for filtering
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilter_Val_Rule_ID (int Filter_Val_Rule_ID);
+
+	/**
+	 * Get Filter Validation Rule.
+	 * Validation Rule used for filtering
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFilter_Val_Rule_ID();
+
+	@Nullable org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule();
+
+	void setFilter_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule Filter_Val_Rule);
+
+	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Val_Rule> COLUMN_Filter_Val_Rule_ID = new ModelColumn<>(I_AD_Column.class, "Filter_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
+	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
 
 	/**
 	 * Set Format Pattern.
@@ -625,7 +670,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -635,7 +680,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

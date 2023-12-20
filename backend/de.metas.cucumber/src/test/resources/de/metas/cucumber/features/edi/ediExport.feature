@@ -1,12 +1,14 @@
+@ghActions:run_on_executor5
 Feature: EDI_cctop_invoic_v export format
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   #   Convenience Salat 250g
     And load M_Product:
-      | M_Product_ID.Identifier | M_Product_ID |
+      | M_Product_ID.Identifier | OPT.M_Product_ID |
       | convenienceSalate       | 2005577          |
 
   Scenario: As a user I want to export C_Invoice using EDI_cctop_invoic_v export format
@@ -22,8 +24,8 @@ Feature: EDI_cctop_invoic_v export format
 
   # Test Kunde 1
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID     | OPT.EdiDesadvRecipientGLN  | OPT.EdiInvoicRecipientGLN  | OPT.IsEdiInvoicRecipient | OPT.DeliveryRule |
-      | 2156425                  | name2     | bPartnerVaTaxID | bPartnerDesadvRecipientGLN | bPartnerInvoicRecipientGLN | true                     | F                |
+      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID     | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  | OPT.EdiInvoicRecipientGLN  | OPT.IsEdiInvoicRecipient | OPT.DeliveryRule |
+      | 2156425                  | name2     | bPartnerVaTaxID | true                     | bPartnerDesadvRecipientGLN | bPartnerInvoicRecipientGLN | true                     | F                |
 
   # metasfresh AG
     And the following c_bpartner is changed
@@ -67,7 +69,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
-      | o_1        | true    | 2156425                  | 2021-04-17  | po_ref_mock     |
+      | o_1        | true    | 2156425                  | 2021-04-17  | po_ref_23062023 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_1       | o_1                   | convenienceSalate       | 10         | 3010001                                |
@@ -86,17 +88,29 @@ Feature: EDI_cctop_invoic_v export format
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    Then enqueue candidate for invoicing and after not more than 60s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1                   | invoice_1               |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 10 Tage 1 % | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference     | paymentTerm | processed | docStatus |
+      | invoice_1               | 2156425                  | 2205175                           | po_ref_23062023 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_1               | convenienceSalate       | 10          | true      |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | d_1                      | 2156425                  | o_1                   |
 
     And invoice is EDI exported
       | C_Invoice_ID.Identifier |
@@ -105,6 +119,10 @@ Feature: EDI_cctop_invoic_v export format
     And RabbitMQ receives a EDI_cctop_invoic_v
       | EDI_cctop_invoic_v_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
       | ic_1                             | ep_1                        | routingKey                   |
+
+    And validate EDI_cctop_invoic_v:
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.EDIDesadvDocumentNo.Identifier |
+      | ic_1                             | d_1                                |
 
     And EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated
       | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU   | OPT.Buyer_EAN_CU     | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
@@ -212,8 +230,8 @@ Feature: EDI_cctop_invoic_v export format
       | e_d_1                        | ep_1                        | routingKey                   |
 
     And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
-      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
-      | e_d_1                        | 10                                 | 100                                      | 10                                 |
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_d_1                        | 10                                       | 100                                      | 10                                 |
 
      #  Test Kunde 1
     And the following c_bpartner is changed

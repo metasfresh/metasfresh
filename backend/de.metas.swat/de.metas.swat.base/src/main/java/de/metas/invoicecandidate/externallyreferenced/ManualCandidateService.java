@@ -1,36 +1,8 @@
-package de.metas.invoicecandidate.externallyreferenced;
-
-import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
-import de.metas.organization.IOrgDAO;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductPrice;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,6 +20,36 @@ import java.util.Optional;
  * #L%
  */
 
+package de.metas.invoicecandidate.externallyreferenced;
+
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.money.Money;
+import de.metas.order.InvoiceRule;
+import de.metas.organization.IOrgDAO;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductPrice;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Optional;
+
 @Service
 public class ManualCandidateService
 {
@@ -63,9 +65,12 @@ public class ManualCandidateService
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
 	 */
-	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
+	public InvoiceCandidate createInvoiceCandidate(@NonNull final NewInvoiceCandidate newIC)
 	{
-		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
+		final InvoiceCandidate.InvoiceCandidateBuilder candidate = InvoiceCandidate.createBuilder(newIC);
+
+		final ProductPrice priceEnteredOverride = newIC.getPriceEnteredOverride();
+		final Percent discountOverride = newIC.getDiscountOverride();
 
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
@@ -97,6 +102,10 @@ public class ManualCandidateService
 		candidate.priceEntered(priceEntered);
 		candidate.discount(pricingResult.getDiscount());
 
+		candidate.priceEnteredOverride(priceEnteredOverride);
+		candidate.discountOverride(discountOverride);
+
+
 		final BigDecimal priceActualBD = pricingResult.getDiscount()
 				.subtractFromBase(
 						pricingResult.getPriceStd(),
@@ -109,6 +118,7 @@ public class ManualCandidateService
 		candidate.priceActual(priceActual);
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				newIC,
@@ -118,7 +128,8 @@ public class ManualCandidateService
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
 				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
-				newIC.getSoTrx());
+				newIC.getSoTrx(),
+				vatCodeId);
 		candidate.taxId(taxId);
 
 		final BPartner bpartner = bpartnerComp.getBpartner();
@@ -130,6 +141,9 @@ public class ManualCandidateService
 
 		candidate.invoiceRule(CoalesceUtil.coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
 		candidate.recordReference(newIC.getRecordReference());
+
+		candidate.descriptionBottom(newIC.getDescriptionBottom());
+		candidate.userInChargeId(newIC.getUserInChargeId());
 
 		return candidate.build();
 

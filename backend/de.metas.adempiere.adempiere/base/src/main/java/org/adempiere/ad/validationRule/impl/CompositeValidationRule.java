@@ -76,7 +76,7 @@ public final class CompositeValidationRule implements IValidationRule
 				.collect(ImmutableSet.toImmutableSet());
 		this.allParameters = ImmutableSet.<String>builder()
 				.addAll(this.prefilterWhereClause.getParameterNames())
-				.addAll(this.postQueryPredicates.getParameters())
+				.addAll(this.postQueryPredicates.getParameters(null))
 				.build();
 	}
 
@@ -161,7 +161,7 @@ public final class CompositeValidationRule implements IValidationRule
 		}
 
 		final ArrayList<IValidationRule> result = new ArrayList<>();
-		for (IValidationRule rule : rules)
+		for (final IValidationRule rule : rules)
 		{
 			unboxAndAppendToList(rule, result);
 		}

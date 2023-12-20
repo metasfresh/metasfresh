@@ -12,10 +12,12 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +34,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -111,7 +112,7 @@ public class DDOrderProducer
 			@Nullable final String ddOrderRequestedEventTrace)
 	{
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrder.getProductPlanningId());
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
+		final ProductPlanning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(ddOrder.getOrgId());
 
@@ -125,8 +126,8 @@ public class DDOrderProducer
 		ddOrderRecord.setPP_Plant_ID(ddOrder.getPlantId());
 		ddOrderRecord.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
 		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
-		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
-		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
+		ddOrderRecord.setAD_User_ID(UserId.toRepoId(productPlanning.getPlannerId())); // FIXME: improve performances/cache and retrive Primary BP's User
+		ddOrderRecord.setSalesRep_ID(UserId.toRepoId(productPlanning.getPlannerId()));
 
 		ddOrderRecord.setC_DocType_ID(getDocTypeId(ddOrder.getOrgId()).getRepoId());
 
@@ -150,7 +151,7 @@ public class DDOrderProducer
 		ddOrderRecord.setM_Warehouse_From_ID(fromToWarehouse.getWarehouseFromId().getRepoId());
 		ddOrderRecord.setM_Warehouse_To_ID(fromToWarehouse.getWarehouseToId().getRepoId());
 
-		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
+		ddOrderRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
 
 		ddOrderLowLevelService.save(ddOrderRecord);
 

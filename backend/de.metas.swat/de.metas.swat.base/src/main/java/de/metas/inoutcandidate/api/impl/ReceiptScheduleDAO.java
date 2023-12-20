@@ -62,6 +62,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public <T extends I_M_ReceiptSchedule> T getById(@NonNull final ReceiptScheduleId id, @NonNull final Class<T> modelClass)
+	{
+		return Check.assumeNotNull(InterfaceWrapperHelper.load(id, modelClass), "Receipt Schedule exists for {}", id);
+	}
+
+	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
 	{
 		// Note that we can't filter by IsError in the where clause, because it wouldn't work with pagination.

@@ -1,141 +1,132 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType_Sequence
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_DocType_Sequence extends org.compiere.model.PO implements I_C_DocType_Sequence, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -567091569L;
+	private static final long serialVersionUID = -1980434955L;
 
     /** Standard Constructor */
-    public X_C_DocType_Sequence (Properties ctx, int C_DocType_Sequence_ID, String trxName)
+    public X_C_DocType_Sequence (final Properties ctx, final int C_DocType_Sequence_ID, @Nullable final String trxName)
     {
       super (ctx, C_DocType_Sequence_ID, trxName);
-      /** if (C_DocType_Sequence_ID == 0)
-        {
-			setC_DocType_ID (0);
-			setC_DocType_Sequence_ID (0);
-			setDocNoSequence_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_DocType_Sequence (Properties ctx, ResultSet rs, String trxName)
+    public X_C_DocType_Sequence (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	public org.compiere.model.I_C_Country getC_Country()
 	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_Country(final org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	@Override
+	public void setC_Country_ID (final int C_Country_ID)
+	{
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, C_Country_ID);
+	}
+
+	@Override
+	public int getC_Country_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
+	}
+
+	@Override
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
-	/** Set Document Type Sequence assignment.
-		@param C_DocType_Sequence_ID Document Type Sequence assignment	  */
 	@Override
-	public void setC_DocType_Sequence_ID (int C_DocType_Sequence_ID)
+	public void setC_DocType_Sequence_ID (final int C_DocType_Sequence_ID)
 	{
 		if (C_DocType_Sequence_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_Sequence_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_Sequence_ID, Integer.valueOf(C_DocType_Sequence_ID));
+			set_ValueNoCheck (COLUMNNAME_C_DocType_Sequence_ID, C_DocType_Sequence_ID);
 	}
 
-	/** Get Document Type Sequence assignment.
-		@return Document Type Sequence assignment	  */
 	@Override
-	public int getC_DocType_Sequence_ID () 
+	public int getC_DocType_Sequence_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_Sequence_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_Sequence_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Sequence getDocNoSequence() throws RuntimeException
+	public org.compiere.model.I_AD_Sequence getDocNoSequence()
 	{
 		return get_ValueAsPO(COLUMNNAME_DocNoSequence_ID, org.compiere.model.I_AD_Sequence.class);
 	}
 
 	@Override
-	public void setDocNoSequence(org.compiere.model.I_AD_Sequence DocNoSequence)
+	public void setDocNoSequence(final org.compiere.model.I_AD_Sequence DocNoSequence)
 	{
 		set_ValueFromPO(COLUMNNAME_DocNoSequence_ID, org.compiere.model.I_AD_Sequence.class, DocNoSequence);
 	}
 
-	/** Set Nummernfolgen für Belege.
-		@param DocNoSequence_ID 
-		Document sequence determines the numbering of documents
-	  */
 	@Override
-	public void setDocNoSequence_ID (int DocNoSequence_ID)
+	public void setDocNoSequence_ID (final int DocNoSequence_ID)
 	{
 		if (DocNoSequence_ID < 1) 
 			set_Value (COLUMNNAME_DocNoSequence_ID, null);
 		else 
-			set_Value (COLUMNNAME_DocNoSequence_ID, Integer.valueOf(DocNoSequence_ID));
+			set_Value (COLUMNNAME_DocNoSequence_ID, DocNoSequence_ID);
 	}
 
-	/** Get Nummernfolgen für Belege.
-		@return Document sequence determines the numbering of documents
-	  */
 	@Override
-	public int getDocNoSequence_ID () 
+	public int getDocNoSequence_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DocNoSequence_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DocNoSequence_ID);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

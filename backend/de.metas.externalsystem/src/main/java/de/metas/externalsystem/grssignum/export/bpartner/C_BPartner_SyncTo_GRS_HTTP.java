@@ -23,13 +23,16 @@
 package de.metas.externalsystem.grssignum.export.bpartner;
 
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.bpartner.C_BPartner_SyncTo_ExternalSystem;
 import de.metas.externalsystem.grssignum.ExportBPartnerToGRSService;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.process.Param;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 public class C_BPartner_SyncTo_GRS_HTTP extends C_BPartner_SyncTo_ExternalSystem
@@ -62,5 +65,13 @@ public class C_BPartner_SyncTo_GRS_HTTP extends C_BPartner_SyncTo_ExternalSystem
 	protected ExportToExternalSystemService getExportToBPartnerExternalSystem()
 	{
 		return exportToGRSService;
+	}
+
+	@Override
+	protected boolean isExportAllowed(@NonNull final IExternalSystemChildConfig childConfig)
+	{
+		final ExternalSystemGRSSignumConfig grsSignumConfig = ExternalSystemGRSSignumConfig.cast(childConfig);
+
+		return grsSignumConfig.isSyncBPartnersToRestEndpoint();
 	}
 }

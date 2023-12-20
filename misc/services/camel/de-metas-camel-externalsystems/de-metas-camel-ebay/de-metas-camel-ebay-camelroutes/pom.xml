@@ -15,9 +15,9 @@
 	<artifactId>de-metas-camel-ebay-camelroutes</artifactId>
 
 	<properties>
-		<java.version>14</java.version>
-		<spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-		<camel.version>3.7.3</camel.version>
+		<java.version>17</java.version>
+		<spring-boot.version>2.7.11</spring-boot.version>
+		<camel.version>3.14.7</camel.version>
 		<guava.version>30.1.1-jre</guava.version>
 		<smooks.version>1.7.1</smooks.version>
 		<!-- 3.8.0 is currently the latest and greatest. Spring boot declares some 
@@ -187,7 +187,7 @@
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-commons</artifactId>
-			<version>1.7.1</version>
+			<version>1.9.1</version>
 			<scope>test</scope>
 		</dependency>
 

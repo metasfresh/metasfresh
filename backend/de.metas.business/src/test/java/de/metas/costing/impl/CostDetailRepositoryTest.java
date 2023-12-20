@@ -9,8 +9,9 @@ import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLineId;
-import de.metas.invoice.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.money.CurrencyId;
 import de.metas.order.MatchPOId;
 import de.metas.organization.OrgId;
@@ -88,7 +89,7 @@ class CostDetailRepositoryTest
 				.costElementId(costElementId)
 				.productId(ProductId.ofRepoId(3))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(4))
-				.amt(CostAmount.of("100", currencyId))
+				.amt(CostAmount.of(100, currencyId)).amtType(CostAmountType.MAIN)
 				.qty(Quantity.of("10", uomKg))
 				.changingCosts(true)
 				.previousAmounts(zeroPreviousAmounts())
@@ -106,7 +107,7 @@ class CostDetailRepositoryTest
 				.costElementId(CostElementId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(3))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(4))
-				.amt(CostAmount.of("100", currencyId))
+				.amt(CostAmount.of(100, currencyId)).amtType(CostAmountType.MAIN)
 				.qty(Quantity.of("10", uomKg))
 				.changingCosts(true)
 				.previousAmounts(zeroPreviousAmounts())
@@ -201,4 +202,5 @@ class CostDetailRepositoryTest
 			assertThat(costingDocumentRef2).isEqualTo(costingDocumentRef);
 		}
 	}
+
 }

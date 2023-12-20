@@ -1,9 +1,11 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: invoice payment allocation
 
   Background:
 
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And metasfresh contains M_PricingSystems
       | Identifier                | Name                      | Value                     |
@@ -601,7 +603,7 @@ Feature: invoice payment allocation
 
     And create credit memo for C_Invoice
       | CreditMemo.Identifier | C_Invoice_ID.Identifier | CreditMemo.PriceEntered | CreditMemo.C_DocType_ID.Name |
-      | credit_memo_220       | inv_220                 | 2.00                    | Gutschrift                   |
+      | credit_memo_220       | inv_220                 | 2.00                    | Gutschrift (Lieferant)       |
     And the invoice identified by credit_memo_220 is completed
 
     And validate C_AllocationLines

@@ -59,7 +59,7 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

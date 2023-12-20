@@ -146,8 +146,7 @@ public class RolePermRevokeAccess
 			final DocTypeId docTypeId = DocTypeId.ofRepoId(request.getC_DocType_ID());
 			final String docAction = request.getDocAction();
 
-			final ADReferenceService adReferenceService = ADReferenceService.get();
-			final ADRefListItem docActionItem = adReferenceService.retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
+			final ADRefListItem docActionItem = ADReferenceService.get().retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
 			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
 			final int docActionRefListId = docActionItem.getRefListId().getRepoId();
 
@@ -159,7 +158,7 @@ public class RolePermRevokeAccess
 					.docActionRefListId(docActionRefListId)
 					.build());
 
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 			logRevoked(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName());
 		}
 		else

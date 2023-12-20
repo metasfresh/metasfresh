@@ -20,7 +20,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
@@ -166,7 +165,8 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
+	private ViewLayout(
+			@NonNull final ViewLayout from,
 					   final WindowId windowId,
 					   final ViewProfileId profileId,
 					   final ImmutableList<DocumentFilterDescriptor> filters,
@@ -582,8 +582,8 @@ public class ViewLayout implements ETagAware
 		private DetailId detailId;
 		@Nullable private ITranslatableString caption;
 		@Nullable private ITranslatableString description;
-		private ITranslatableString emptyResultText = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT;
-		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
+		private ITranslatableString emptyResultText;
+		private ITranslatableString emptyResultHint;
 		private int pageLength = 0;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
@@ -722,6 +722,20 @@ public class ViewLayout implements ETagAware
 		{
 			elementBuilders.forEach(this::addElement);
 			return this;
+		}
+
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType, @Nullable final String commaSeparatedFields)
+		{
+			final List<ViewColumnHelper.ClassViewColumnOverrides> columnOverrides = ViewColumnHelper.ClassViewColumnOverrides.parseCommaSeparatedString(commaSeparatedFields);
+			if (!columnOverrides.isEmpty())
+			{
+				final ViewColumnHelper.ClassViewColumnOverrides[] columnOverridesArray = columnOverrides.toArray(new ViewColumnHelper.ClassViewColumnOverrides[0]);
+				return addElementsFromViewRowClassAndFieldNames(viewRowClass, viewType, columnOverridesArray);
+			}
+			else
+			{
+				return addElementsFromViewRowClass(viewRowClass, viewType);
+			}
 		}
 
 		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)

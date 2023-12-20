@@ -352,6 +352,10 @@ public class M_InOut
 		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())
 		{
+			if (returnsServiceFacade.isServiceRepair(customerReturn))
+			{
+				existingHandlingUnits.forEach(hu -> hu.setIsExternalProperty(true));
+			}
 			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(customerReturn);
 
 			//make sure they all have status active
@@ -368,6 +372,10 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
+		if (returnsServiceFacade.isServiceRepair(returnInOut))
+		{
+			return;
+		}
 		if (!(returnsServiceFacade.isVendorReturn(returnInOut) || returnsServiceFacade.isCustomerReturn(returnInOut)))
 		{
 			return; // nothing to do

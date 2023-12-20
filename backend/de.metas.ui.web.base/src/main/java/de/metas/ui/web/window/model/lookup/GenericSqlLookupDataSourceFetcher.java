@@ -25,7 +25,7 @@ package de.metas.ui.web.window.model.lookup;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.cache.CCache.CCacheStats;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.WindowConstants;
@@ -57,6 +57,7 @@ import java.util.Optional;
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
+	private static final int DEFAULT_PAGE_SIZE = 1000;
 
 	@NonNull private final String lookupTableName;
 	@Getter private final boolean numericKey;
@@ -65,6 +66,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Nullable private final INamePairPredicate postQueryPredicate;
 	@Getter @NonNull private final Optional<WindowId> zoomIntoWindowId;
 	@NonNull private final TooltipType tooltipType;
+
+	private final int pageLength;
 
 	//
 	// Computed:
@@ -78,7 +81,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			@NonNull final SqlForFetchingLookupById sqlForFetchingLookupById,
 			@Nullable final INamePairPredicate postQueryPredicate,
 			@NonNull final Optional<WindowId> zoomIntoWindowId,
-			@NonNull final TooltipType tooltipType)
+			@NonNull final TooltipType tooltipType,
+			@Nullable final Integer pageLength)
 	{
 		this.lookupTableName = lookupTableName.getAsString();
 		this.numericKey = sqlForFetchingLookupById.isNumericKey();
@@ -87,6 +91,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		this.postQueryPredicate = postQueryPredicate;
 		this.zoomIntoWindowId = zoomIntoWindowId;
 		this.tooltipType = tooltipType;
+		this.pageLength = CoalesceUtil.coalesceNotNull(pageLength, -1);
 
 		this.lookupTableNameAsOptional = Optional.of(this.lookupTableName);
 		this.isTranslatable = this.sqlForFetchingLookupById.requiresParameter(LookupDataSourceContext.PARAM_AD_Language.getName());
@@ -128,12 +133,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	}
 
 	@Override
-	public List<CCacheStats> getCacheStats()
-	{
-		return ImmutableList.of();
-	}
-
-	@Override
 	public final LookupDataSourceContext.Builder newContextForFetchingById(@Nullable final Object id)
 	{
 		return LookupDataSourceContext.builder(lookupTableName)
@@ -163,7 +162,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtxParam)
 	{
 		final int offset = evalCtxParam.getOffset(0);
-		final int pageLength = evalCtxParam.getLimit(1000);
+		final int pageLength = getPageLength(evalCtxParam);
+
 		final LookupDataSourceContext evalCtxEffective = evalCtxParam
 				.withOffset(offset)
 				.withLimit(pageLength < Integer.MAX_VALUE ? pageLength + 1 : pageLength); // add 1 to pageLength to be able to recognize if there are more items
@@ -194,6 +194,23 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
 			return LookupValuesPage.ofValuesAndHasMoreFlag(values, hasMoreResults);
+		}
+	}
+
+	private int getPageLength(final LookupDataSourceContext evalCtxParam)
+	{
+		final int ctxPageLength = evalCtxParam.getLimit(0);
+		if (ctxPageLength > 0)
+		{
+			return ctxPageLength;
+		}
+		if (this.pageLength > 0)
+		{
+			return this.pageLength;
+		}
+		else
+		{
+			return DEFAULT_PAGE_SIZE;
 		}
 	}
 

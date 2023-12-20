@@ -47,6 +47,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -68,9 +71,12 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -84,7 +90,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
@@ -98,6 +103,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -106,6 +112,11 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -157,8 +168,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -200,7 +209,6 @@ import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer.OnMissingCandidate.I_VETO;
-import static de.metas.invoicecandidate.api.impl.InvoiceLineAllocType.InvoiceVoided;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -227,8 +235,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
-
-	final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 
 	/**
 	 * Blueprint for a cache that is used by {@link #isAllOtherICsInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
@@ -278,8 +284,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
-
+	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -652,6 +660,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Nullable
 	private Quantity extractQtyInvoiced(@NonNull final I_C_Invoice_Line_Alloc ila)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
@@ -726,7 +735,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public IInvoiceGenerator generateInvoices()
 	{
-		return new InvoiceCandBLCreateInvoices();
+		return new InvoiceCandBLCreateInvoices(matchInvoiceServiceHolder.get());
 	}
 
 	@Override
@@ -736,12 +745,34 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final String trxName)
 	{
-		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveIcForSelection(ctx, AD_PInstance_ID, trxName);
+		final Iterator<I_C_Invoice_Candidate> candidates =
+				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
 		return generateInvoices()
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
 				.generateInvoices(candidates);
+	}
+
+
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 	}
 
 	@Override
@@ -1071,6 +1102,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@Nullable
 	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -1231,10 +1263,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
 	}
 
-	/**
-	 * For class-internal use
-	 */
-	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
+	@Override
+	public Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
 		if (dateToInvoiceOverride != null)
@@ -1285,12 +1315,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			translateAndPrependNote(existingIla, note);
 			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
-			// 2022-10-27 metas-ts: 
+			// 2022-10-27 metas-ts:
 			// We ignore requests with existing ila with and requested qtysInvoiced:=zero for a long time and IDK why exactly,
 			// though it's very probably related to issue "#5664 Rest endpoint which allows the client to create invoices"
 			// I'm going to leave it like that for now, *unless* we are voiding the invoice in question.
 			final boolean invoiceVoided = InvoiceLineAllocType.InvoiceVoided.equals(request.getInvoiceLineAllocType());
-			
+
 			//
 			// FIXME in follow-up task! (06162)
 			if (qtysInvoiced.signum() == 0 && !invoiceVoided)
@@ -1758,7 +1788,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 						// task 08927
-						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						note = "@C_DocType_ID@=" + docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 						if (creditMemoReinvoicable)
 						{
 							qtysInvoiced = StockQtyAndUOMQtys
@@ -2154,7 +2184,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				if (inout != null)
 				{
-					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					if (MovementType.isMaterialReturn(inout.getMovementType()))
 					{
 						qty = qty.negate();
 					}
@@ -2454,7 +2484,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		iciol.setQtyDelivered(getActualDeliveredQty(inOutLine));
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(iciol.getC_Invoice_Candidate().getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(iciol.getC_Invoice_Candidate().getInvoicableQtyBasedOn());
 		if (inOutLine.getCatch_UOM_ID() > 0 && invoicableQtyBasedOn.isCatchWeight())
 		{
 			// only if the ic is about catch-weight, then we attempt to record it in the iciol.
@@ -2481,6 +2511,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setC_UOM_ID(assumeGreaterThanZero(inOutLine.getC_UOM_ID(), "inOutLine.getC_UOM_ID()"));
 			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
+
+		createMatchInvForInOutLine(inOutLine);
+
 		saveRecord(iciol);
 	}
 
@@ -2489,7 +2522,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds,
 			@NonNull final PInstanceId pInstanceId)
 	{
-		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+		final InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
 		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
 		{
 			multiQuery.query(InvoiceCandidateQuery.builder()
@@ -2625,8 +2658,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
 		invoiceCandDAO.save(invoiceCandidate);
 	}
 
@@ -2724,11 +2755,68 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final org.compiere.model.I_M_InOut inOut = inoutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 
-		if (docStatus.equals(DocStatus.InProgress) || docStatus.equals(DocStatus.Reversed))
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("DocStatus for M_InOutLine_ID={} is {}", inOutLine.getM_InOutLine_ID(), docStatus.getCode());
+
+		if (docStatus.equals(DocStatus.Completed) || docStatus.equals(DocStatus.Closed))
 		{
-			return ZERO;
+			return inOutLine.getMovementQty();
 		}
 
-		return inOutLine.getMovementQty();
+		return ZERO;
+	}
+
+	@Override
+	public Timestamp getBaseLineDate(@NonNull final PaymentTerm paymentTerm, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
+
+		final Timestamp baseLineDate;
+
+		switch (baseLineType)
+		{
+
+			case AfterDelivery:
+				baseLineDate = ic.getDeliveryDate();
+				break;
+			case AfterBillOfLanding:
+				baseLineDate = ic.getActualLoadingDate();
+				break;
+			case InvoiceDate:
+				baseLineDate = getDateToInvoiceTS(ic);
+				break;
+			default:
+				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
+		}
+
+		return baseLineDate;
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+
+	}
+
+	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.getOfInOutLine(inOutLine);
+
+		if (invoiceLine == null)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		matchInvoiceServiceHolder.get()
+				.newMatchInvBuilder(MatchInvType.Material)
+				.invoiceLine(invoiceLine)
+				.inoutLine(inOutLine)
+				.dateTrx(invoice.getDateInvoiced())
+				.considerQtysAlreadyMatched(true)
+				.build();
 	}
 }

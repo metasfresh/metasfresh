@@ -34,6 +34,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -64,7 +65,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -86,7 +86,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -149,7 +148,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : Instant.now())
+				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
 				.build();

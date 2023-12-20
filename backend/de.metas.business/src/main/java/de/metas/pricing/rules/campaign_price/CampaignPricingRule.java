@@ -1,10 +1,5 @@
 package de.metas.pricing.rules.campaign_price;
 
-import de.metas.util.ILoggable;
-import de.metas.util.lang.Percent;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -14,12 +9,17 @@ import de.metas.money.Money;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /*
  * #%L
@@ -166,6 +166,10 @@ public class CampaignPricingRule implements IPricingRule
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
 		result.setInvoicableQtyBasedOn(campaignPrice.getInvoicableQtyBasedOn());
 		result.setCampaignPrice(true);
+
+		Optional.ofNullable(campaignPrice.getPriceList())
+				.map(Money::toBigDecimal)
+				.ifPresent(result::setPriceList);
 	}
 
 	private static CurrencyPrecision extractPrecisionFromPrice(final Money amt)

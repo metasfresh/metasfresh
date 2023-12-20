@@ -196,6 +196,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.bPartnerIdentifier(bPartnerIdentifier)
 				.externalSystemConfigId(externalSystemConfigId)
 				.adPInstanceId(adPInstanceId)
+				.noCache(Boolean.TRUE)
 				.build();
 
 		exchange.getIn().setBody(retrieveCamelRequest);

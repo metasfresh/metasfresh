@@ -7,7 +7,12 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { clearLoadedData, handlingUnitLoaded, changeClearanceStatus } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import {
+  huManagerAssignExternalLotNo,
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -56,6 +61,9 @@ const HUManagerScreen = () => {
   const onMoveClick = () => {
     history.push(huManagerMoveLocation());
   };
+  const onBulkActionsClick = () => {
+    history.push(huManagerBulkActionsLocation());
+  };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
   };
@@ -66,6 +74,9 @@ const HUManagerScreen = () => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).finally(() => {
       toggleClearanceModal(false);
     });
+  };
+  const onAssignExternalLotNoClicked = () => {
+    history.push(huManagerAssignExternalLotNo());
   };
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
@@ -96,6 +107,14 @@ const HUManagerScreen = () => {
           <ButtonWithIndicator
             caption={trl('huManager.action.setClearance.buttonCaption')}
             onClick={onSetClearanceClick}
+          />
+          <ButtonWithIndicator
+            caption={trl('components.huManager.action.assignExternalLotNumber.buttonCaption')}
+            onClick={onAssignExternalLotNoClicked}
+          />
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
           />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>

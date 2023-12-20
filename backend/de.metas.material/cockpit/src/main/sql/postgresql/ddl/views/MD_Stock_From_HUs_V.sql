@@ -39,6 +39,7 @@ FROM MD_Stock s
 
             /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
           AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
+        AND hu.isExternalProperty='N'
         GROUP BY hu.AD_Client_ID,
                  hu.AD_Org_ID,
                  l.M_Warehouse_ID,

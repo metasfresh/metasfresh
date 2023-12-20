@@ -149,7 +149,10 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_EDI_Desadv desadvRecord,
 			@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLineRecord.getLine());
+		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(
+				desadvRecord,
+				orderLineRecord.getLine(),
+				BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()));
 		if (existingDesadvLine != null)
 		{
 			return existingDesadvLine; // done
@@ -243,6 +246,7 @@ public class DesadvBL implements IDesadvBL
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
 				order.getPOReference(),
+				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
 				InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
@@ -293,7 +297,7 @@ public class DesadvBL implements IDesadvBL
 		}
 		else if (!Check.isEmpty(inOut.getPOReference(), true))
 		{
-			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), InterfaceWrapperHelper.getContextAware(inOut));
+			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), InterfaceWrapperHelper.getContextAware(inOut));
 		}
 		else
 		{
@@ -337,7 +341,7 @@ public class DesadvBL implements IDesadvBL
 
 		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
@@ -382,7 +386,7 @@ public class DesadvBL implements IDesadvBL
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(
 				inOutLineRecord,
-				InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn()));
+				InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn()));
 
 		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null/*orderLine*/, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
@@ -599,6 +603,12 @@ public class DesadvBL implements IDesadvBL
 			createSingleMsg(desadvsRecords, minimumSumPercentage).ifPresent(result::add);
 		}
 		return result.build();
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
+	{
+		return desadvDAO.retrieveAllInOutLines(desadvLine);
 	}
 
 	private Optional<ITranslatableString> createSingleMsg(

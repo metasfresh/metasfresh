@@ -22,25 +22,23 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-import java.util.List;
-
+import de.metas.adempiere.model.I_AD_Printer;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import de.metas.adempiere.model.I_AD_PrinterRouting;
 import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class PrinterRoutingDAO implements IPrinterRoutingDAO
 {
@@ -102,6 +100,7 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID)

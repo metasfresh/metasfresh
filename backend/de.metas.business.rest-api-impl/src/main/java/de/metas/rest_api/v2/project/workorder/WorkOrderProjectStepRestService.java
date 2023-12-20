@@ -169,7 +169,7 @@ public class WorkOrderProjectStepRestService
 				.externalId(ExternalId.of(request.getExternalId()))
 				.name(request.getName())
 				.description(request.getDescription())
-				.dateStart(TimeUtil.asInstant(request.getDateStart(), zoneId))
+				.dateStart(TimeUtil.asStartOfDayInstant(request.getDateStart(), zoneId))
 				.dateEnd(TimeUtil.asEndOfDayInstant(request.getDateEnd(), zoneId))
 				.woPartialReportDate(TimeUtil.asInstant(request.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(request.getWoPlannedResourceDurationHours())
@@ -192,7 +192,8 @@ public class WorkOrderProjectStepRestService
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 		final WOProjectStep.WOProjectStepBuilder stepBuilder = existingWOProjectStep.toBuilder()
-				.name(request.getName());
+				.name(request.getName())
+				.dateRange(getDateRange(zoneId, request, existingWOProjectStep));
 
 		if (request.isSeqNoSet())
 		{
@@ -204,22 +205,6 @@ public class WorkOrderProjectStepRestService
 			final ExternalId externalId = ExternalId.ofOrNull(request.getExternalId());
 			stepBuilder.externalId(externalId);
 		}
-
-		final CalendarDateRange.CalendarDateRangeBuilder calendarDateRangeBuilder = existingWOProjectStep.getDateRange().toBuilder();
-
-		if (request.isDateStartSet())
-		{
-			final Instant startDate = TimeUtil.asInstant(request.getDateStart(), zoneId);
-			calendarDateRangeBuilder.startDate(startDate);
-		}
-
-		if (request.isDateEndSet())
-		{
-			final Instant endDate = TimeUtil.asInstant(request.getDateEnd(), zoneId);
-			calendarDateRangeBuilder.endDate(endDate);
-		}
-
-		stepBuilder.dateRange(calendarDateRangeBuilder.build());
 
 		if (request.isDescriptionSet())
 		{
@@ -319,8 +304,14 @@ public class WorkOrderProjectStepRestService
 				.projectId(JsonMetasfreshId.of(woProjectStep.getProjectId().getRepoId()))
 				.description(woProjectStep.getDescription())
 				.seqNo(woProjectStep.getSeqNo())
-				.dateStart(TimeUtil.asLocalDate(woProjectStep.getDateRange().getStartDate(), zoneId))
-				.dateEnd(TimeUtil.asLocalDate(woProjectStep.getDateRange().getEndDate(), zoneId))
+
+				.dateStart(woProjectStep.getStartDate()
+								   .map(startDate -> TimeUtil.asLocalDate(startDate, zoneId))
+								   .orElse(null))
+				.dateEnd(woProjectStep.getEndDate()
+								 .map(endDate -> TimeUtil.asLocalDate(endDate, zoneId))
+								 .orElse(null))
+
 				.externalId(ExternalId.toValue(woProjectStep.getExternalId()))
 				.woPartialReportDate(TimeUtil.asLocalDate(woProjectStep.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(woProjectStep.getWoPlannedResourceDurationHours())
@@ -675,5 +666,47 @@ public class WorkOrderProjectStepRestService
 		});
 
 		return stepId2Resources;
+	}
+
+	@Nullable
+	private CalendarDateRange getDateRange(
+			@NonNull final ZoneId zoneId,
+			@NonNull final JsonWorkOrderStepUpsertItemRequest request,
+			@NonNull final WOProjectStep existingWOProjectStep)
+	{
+		final Instant actualDateStart = request.isDateStartSet()
+				? TimeUtil.asInstant(request.getDateStart(), zoneId)
+				: existingWOProjectStep.getStartDate().orElse(null);
+
+		final Instant actualDateEnd = request.isDateEndSet()
+				? TimeUtil.asInstant(request.getDateEnd(), zoneId)
+				: existingWOProjectStep.getEndDate().orElse(null);
+
+		if (actualDateStart == null && actualDateEnd != null)
+		{
+			throw new AdempiereException("DateStart cannot be missing when DateEnd is set!")
+					.appendParametersToMessage()
+					.setParameter("WOProjectStepId", existingWOProjectStep.getWoProjectStepId());
+		}
+		else if (actualDateStart == null)
+		{
+			return null;
+		}
+
+		final boolean isSameDate = actualDateStart.equals(actualDateEnd);
+
+		final Instant computedDateStart = isSameDate
+				? TimeUtil.asStartOfDayInstant(actualDateStart, zoneId)
+				: actualDateStart;
+
+		final Instant computedDateEnd = isSameDate
+				? TimeUtil.asEndOfDayInstant(actualDateEnd, zoneId)
+				: Optional.ofNullable(actualDateEnd).orElse(Instant.MAX);
+
+		return CalendarDateRange.builder()
+				.startDate(computedDateStart)
+				.endDate(computedDateEnd)
+				.allDay(Boolean.FALSE)
+				.build();
 	}
 }

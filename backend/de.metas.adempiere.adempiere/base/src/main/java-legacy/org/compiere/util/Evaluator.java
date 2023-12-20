@@ -139,12 +139,12 @@ public class Evaluator
 			int second = expression.indexOf('@', first+1);
 			if (second == -1)
 			{
-				s_log.error("No second @ in Logic: " + expression);
+				s_log.error("No second @ in Logic: {}", expression);
 				return null;
 			}
 			String variable = expression.substring(first+1, second);
 			String eval = getValue(source, variable);
-			s_log.trace(variable + "=" + eval);
+			s_log.trace("{}={}", variable, eval);
 			if (Check.isEmpty(eval, true))
 			{
 				eval = Env.getContext(Env.getCtx(), variable);

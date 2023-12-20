@@ -38,52 +38,32 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 {
 	/**
 	 * Retrieves those {@link I_M_ReceiptSchedule_Alloc} which have M_HU_ID set.
-	 *
-	 * @param schedule
-	 * @param trxName
-	 * @return
 	 */
-	List<I_M_ReceiptSchedule_Alloc> retrieveHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, String trxName);
+	List<I_M_ReceiptSchedule_Alloc> retrieveAllHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, String trxName);
 
 	/**
 	 * Delete all handling units allocations
-	 *
-	 * @param schedule
-	 * @param trxName
 	 */
 	void deleteHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, String trxName);
 
 	/**
 	 * Delete all handling units allocations which are about any of the given HUs.
-	 *
-	 * @param receiptSchedule
-	 * @param husToUnassign
-	 * @param trxName
 	 */
 	void deleteHandlingUnitAllocations(de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule, Collection<I_M_HU> husToUnassign, String trxName);
 
 	/**
 	 * Delete all Trading Unit Allocations for any of the given HUs.
-	 *
-	 * @param receiptSchedule
-	 * @param tusToUnassign
-	 * @param trxName
 	 */
 	void deleteTradingUnitAllocations(I_M_ReceiptSchedule receiptSchedule, Collection<I_M_HU> tusToUnassign, String trxName);
 
 	/**
 	 * Sum-up all {@link I_M_ReceiptSchedule_Alloc#COLUMNNAME_HU_QtyAllocated} values.
-	 *
-	 * @param schedule
-	 * @return
 	 */
 	BigDecimal getQtyAllocatedOnHUs(I_M_ReceiptSchedule schedule);
 
 	/**
 	 * Retrieve NOT processed packing material receipt schedules for given <code>headerAggregationKey</code> and given product.
 	 *
-	 * @param ctx
-	 * @param headerAggregationKey
 	 * @param packingMaterialProductId packing material's M_Product_ID
 	 * @return packing material receipt schedules
 	 */
@@ -94,7 +74,6 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 	/**
 	 * 
 	 * @param vhu may not be {@code null} and has to be a virtual HU according to {@link IHandlingUnitsBL#isVirtual(I_M_HU)}
-	 * @return
 	 */
 	I_M_ReceiptSchedule retrieveReceiptScheduleForVHU(I_M_HU vhu);
 }

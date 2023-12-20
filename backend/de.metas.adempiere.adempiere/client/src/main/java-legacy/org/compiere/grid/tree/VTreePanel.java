@@ -301,7 +301,7 @@ public final class VTreePanel extends CPanel
 					final TreeNode expandedNode = (TreeNode)event.getPath().getLastPathComponent();
 
 					@SuppressWarnings("unchecked")
-					final Enumeration<TreeNode> children = expandedNode.children();
+					final Enumeration<? extends TreeNode> children = expandedNode.children();
 
 					while (children.hasMoreElements())
 					{

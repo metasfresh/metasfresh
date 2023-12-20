@@ -99,7 +99,7 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/camt.054.001.06</schemaDirectory>
                             <generatePackage>de.metas.payment.camt054_001_06</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc/camt054_001_06</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_06</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -111,10 +111,18 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/camt.054.001.02</schemaDirectory>
                             <generatePackage>de.metas.payment.camt054_001_02</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc/camt054_001_02</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_02</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!-- Create tests JAR -->

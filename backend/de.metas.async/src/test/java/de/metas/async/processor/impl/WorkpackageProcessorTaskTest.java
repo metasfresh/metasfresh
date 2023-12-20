@@ -59,17 +59,17 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		private boolean afterWorkpackageProcessedInvoked = false;
 
 		public TestableWorkpackageProcessorTask(
-				IQueueProcessor queueProcessor,
-				IWorkpackageProcessor workPackageProcessor,
-				I_C_Queue_WorkPackage workPackage,
-				IWorkpackageLogsRepository logsRepository,
+				final IQueueProcessor queueProcessor,
+				final IWorkpackageProcessor workPackageProcessor,
+				final I_C_Queue_WorkPackage workPackage,
+				final IWorkpackageLogsRepository logsRepository,
 				PerformanceMonitoringService perfMonService)
 		{
 			super(queueProcessor, workPackageProcessor, workPackage, logsRepository, perfMonService);
 		}
 
 		@Override
-		protected void afterWorkpackageProcessed(boolean IGNORED)
+		protected void afterWorkpackageProcessed()
 		{
 			afterWorkpackageProcessedInvoked = true;
 		}

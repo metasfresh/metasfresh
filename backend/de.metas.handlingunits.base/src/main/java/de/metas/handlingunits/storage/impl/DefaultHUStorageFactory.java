@@ -99,4 +99,12 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 				&& ProductId.equals(productStorages.get(0).getProductId(), productId)
 				&& productStorages.get(0).getQty(qty.getUOM()).compareTo(qty) == 0;
 	}
+
+	@Override
+	public boolean isSingleProductStorageMatching(@NonNull final I_M_HU hu, @NonNull final ProductId productId)
+	{
+		final List<IHUProductStorage> productStorages = getStorage(hu).getProductStorages();
+		return productStorages.size() == 1
+				&& ProductId.equals(productStorages.get(0).getProductId(), productId);
+	}
 }

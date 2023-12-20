@@ -148,7 +148,7 @@ public class DunningRunCreate extends JavaProcess
 		String sql = "SELECT i.C_Invoice_ID, i.C_Currency_ID,"
 			+ " i.GrandTotal*i.MultiplierAP,"
 			+ " invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID)*MultiplierAP,"
-			+ " COALESCE(daysBetween(?,ips.DueDate),paymentTermDueDays(i.C_PaymentTerm_ID,i.DateInvoiced,?))," // ##1/2
+			+ " daysBetween(?,coalesce(ips.DueDate, i.DueDate))," // ##1/2
 			+ " i.IsInDispute, i.C_BPartner_ID, i.C_InvoicePaySchedule_ID "
 			+ "FROM C_Invoice_v i "
 			+ " LEFT OUTER JOIN C_InvoicePaySchedule ips ON (i.C_InvoicePaySchedule_ID=ips.C_InvoicePaySchedule_ID) "

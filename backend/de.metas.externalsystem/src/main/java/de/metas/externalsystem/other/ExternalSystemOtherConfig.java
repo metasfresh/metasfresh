@@ -23,12 +23,14 @@
 package de.metas.externalsystem.other;
 
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 @Value
 public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
@@ -59,5 +61,41 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	public String getValue()
 	{
 		return value.getStringValue();
+	}
+
+	public boolean isSyncBudgetProjectsEnabled()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BUDGET_PROJECT.getDbName());
+	}
+
+	public boolean isSyncWOProjectsEnabled()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_WO_PROJECT.getDbName());
+	}
+
+	public boolean isSyncBPartnerEnabled()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BPARTNER.getDbName());
+	}
+
+	public boolean isAutoSendDefaultShippingAddress()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.AUTO_EXPORT_DEFAULT_SHIPPING_ADDRESS.getDbName());
+	}
+
+	@NonNull
+	private Optional<ExternalSystemOtherConfigParameter> getParameterByName(@NonNull final String name)
+	{
+		return parameters.stream()
+				.filter(parameter -> parameter.getName().equals(name))
+				.findFirst();
+	}
+
+	private boolean getBooleanValueForParam(@NonNull final String paramName)
+	{
+		return getParameterByName(paramName)
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.map(value -> StringUtils.toBoolean(value, false))
+				.orElse(false);
 	}
 }

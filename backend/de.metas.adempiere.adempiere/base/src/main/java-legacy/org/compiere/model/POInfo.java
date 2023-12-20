@@ -26,6 +26,10 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+import org.compiere.model.copy.ColumnCloningStrategy;
+import org.compiere.model.copy.TableCloningEnabled;
+import org.compiere.model.copy.TableDownlineCloningStrategy;
+import org.compiere.model.copy.TableWhenChildCloningStrategy;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -50,6 +54,7 @@ import java.util.stream.Stream;
  * @author Jorg Janke
  * @author Victor Perez, e-Evolution SC
  * <li>[ 2195894 ] Improve performance in PO engine
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335">http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335</a>
  */
 public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
@@ -92,12 +97,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
 	{
-		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
-		if (poInfo == null)
-		{
-			throw new AdempiereException("No POInfo found for " + tableName);
-		}
-		return poInfo;
+		return getPOInfoMap().getByTableName(tableName);
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -166,12 +166,15 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final int firstValidId;
 
 	/**
-	 * Table needs keep log
+	 * Table needs to keep log
 	 */
 	private final boolean m_IsChangeLog;
 
 	private final boolean m_HasStaleableColumns;
 	@Getter private final int webuiViewPageLength;
+	@Getter private final TableCloningEnabled cloningEnabled;
+	@Getter private final TableWhenChildCloningStrategy whenChildCloningStrategy;
+	@Getter private final TableDownlineCloningStrategy downlineCloningStrategy;
 
 	private final String sqlWhereClauseByKeys;
 	private final String sqlSelectByKeys;
@@ -180,7 +183,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 	private final POTrlInfo trlInfo;
 
-	private static POInfoMap getPOInfoMap()
+	public static POInfoMap getPOInfoMap()
 	{
 		return poInfoMapCache.getOrLoad(0, POInfo::retrievePOInfoMap);
 	}
@@ -189,7 +192,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final String sql = "SELECT "
+		final StringBuilder sql = new StringBuilder();
+		sql.append("SELECT "
 				+ "t.TableName, " // 1
 				+ "c.ColumnName, " // 2
 				+ "c.AD_Reference_ID, "        // 3
@@ -216,25 +220,33 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
 				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
+				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn              // 31
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
-				+ " FROM AD_Table t "
+				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
+				+ ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
+				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
+				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
+				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+				+ ", c." + I_AD_Column.COLUMNNAME_IsIdentifier + " AS columnIsIdentifier"
+		);
+		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
 				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
 				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
 				+ " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
 				+ " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
 				+ " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
-				+ " WHERE t.IsActive='Y' AND c.IsActive='Y'"
-				+ " ORDER BY t.TableName, c.ColumnName";
+		);
+		sql.append(" WHERE t.IsActive='Y' AND c.IsActive='Y'");
+		sql.append(" ORDER BY t.TableName, c.ColumnName");
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 
 			final ArrayList<POInfo> poInfos = new ArrayList<>();
@@ -312,10 +324,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		this.m_columns = ImmutableList.copyOf(columns);
 		this.m_HasStaleableColumns = hasStaleableColumns;
 		this.webuiViewPageLength = header.getWebuiViewPageLength();
+		this.cloningEnabled = header.getCloningEnabled();
+		this.whenChildCloningStrategy = header.getWhenChildCloningStrategy();
+		this.downlineCloningStrategy = header.getDownlineCloningStrategy();
 
 		//
 		// Iterate columns and build pre-calculated values and indexes
-		// NOTE: we would like to have the columnNames searched case insensitive
+		// NOTE: we would like to have the columnNames searched case-insensitive
 		// because role's addAccessSQL parsers are using POInfo for checking column availability,
 		// and ofc in SQL queries could be with ANY case...
 		final ImmutableSortedMap.Builder<String, Integer> columnName2columnIndexBuilder = ImmutableSortedMap.orderedBy(String.CASE_INSENSITIVE_ORDER);
@@ -380,13 +395,27 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		//
+		// Correct IsLazyLoading,
+		// i.e. Always load effective Key columns (Key or Parent)
+		for (final POInfoColumn column : m_columns)
+		{
+			if (column.IsLazyLoading && m_keyColumnNames.contains(column.getColumnName()))
+			{
+				column.IsLazyLoading = false;
+				logger.info("Column {}.{} was marked as IsLazyLoading but effectively it is an key column, we we set IsLazyLoading=false.", this.m_TableName, column.getColumnName());
+			}
+		}
+
+		//
 		// Setup some pre-built SQLs which are frequently used
 		sqlSelectColumns = buildSqlSelectColumns();
 		sqlSelect = buildSqlSelect();
 		sqlWhereClauseByKeys = buildSqlWhereClauseByKeys();
 		sqlSelectByKeys = buildSqlSelectByKeys();
 
-		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames);
+		trlInfo = !translatedColumnNames.isEmpty()
+				? POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames)
+				: POTrlInfo.NOT_TRANSLATED;
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
@@ -398,6 +427,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.isView(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsView)))
 				.isChangeLog(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsChangeLog)))
 				.webuiViewPageLength(Math.max(rs.getInt(I_AD_Table.COLUMNNAME_WEBUI_View_PageLength), 0))
+				.cloningEnabled(TableCloningEnabled.ofCode(rs.getString(I_AD_Table.COLUMNNAME_CloningEnabled)))
+				.whenChildCloningStrategy(TableWhenChildCloningStrategy.ofCode(rs.getString(I_AD_Table.COLUMNNAME_WhenChildCloningStrategy)))
+				.downlineCloningStrategy(TableDownlineCloningStrategy.ofCode(rs.getString(I_AD_Table.COLUMNNAME_DownlineCloningStrategy)))
 				.build();
 	}
 
@@ -432,7 +464,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
+		final boolean isIdentifier = StringUtils.toBoolean(rs.getString("columnIsIdentifier"));
+		final ColumnCloningStrategy cloningStrategy = ColumnCloningStrategy.ofCode(rs.getString("columnCloningStrategy"));
 
 		final POInfoColumn col = new POInfoColumn(
 				AD_Column_ID,
@@ -454,7 +488,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn);
+				adSequenceID,
+				cloningStrategy,
+				isIdentifier);
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -538,6 +574,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * @return list column names which compose the primary key or empty list; never return null
 	 */
+	@NonNull
 	public List<String> getKeyColumnNames()
 	{
 		return m_keyColumnNames;
@@ -660,7 +697,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return column
 	 */
-	// metas: making getColumn public to enable easier testing (was protected)
 	@Nullable
 	public POInfoColumn getColumn(final int index)
 	{
@@ -669,7 +705,25 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return null;
 		}
 		return m_columns.get(index);
-	}   // getColumn
+	}
+
+	@Nullable
+	public POInfoColumn getColumn(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return columnIndex >= 0 ? m_columns.get(columnIndex) : null;
+	}
+
+	@NonNull
+	public POInfoColumn getColumnNotNull(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new AdempiereException("No column info found for " + getTableName() + "." + columnName);
+		}
+		return m_columns.get(columnIndex);
+	}
 
 	/**
 	 * @return immutable set of all column names
@@ -691,6 +745,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		if (index < 0 || index >= m_columns.size())
 		{
 			return null;
+		}
+		return m_columns.get(index).getColumnName();
+	}
+
+	@NonNull
+	public String getColumnNameNotNull(final int index)
+	{
+		if (index < 0 || index >= m_columns.size())
+		{
+			throw new AdempiereException("index out of bound");
 		}
 		return m_columns.get(index).getColumnName();
 	}   // getColumnName
@@ -961,6 +1025,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return true if column is allowed to be logged
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isAllowLogging(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
@@ -1188,6 +1253,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns.get(index).IsUseDocumentSequence;
 	}
 
+	public boolean isUseDocSequence(final String columnName)
+	{
+		return isUseDocSequence(getColumnIndex(columnName));
+	}
+
 	/**
 	 * @return true if we shall re-load the model after save
 	 */
@@ -1318,20 +1388,14 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return Optional.ofNullable(singleColumnName);
 	}
 
-	public boolean isRestAPICustomColumn(final int index)
+	public boolean isParentLinkColumn(final String columnName)
 	{
-		if (index < 0 || index >= m_columns.size())
-		{
-			return false;
-		}
-		return m_columns.get(index).IsRestAPICustomColumn;
+		final POInfoColumn column = getColumn(columnName);
+		return column != null && column.isParent();
 	}
 
-	public boolean isRestAPICustomColumn(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return isRestAPICustomColumn(columnIndex);
-	}
+	@NonNull
+	public ImmutableList<POInfoColumn> getColumns() {return m_columns;}
 
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
@@ -1350,9 +1414,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		boolean isView;
 		boolean isChangeLog;
 		int webuiViewPageLength;
+		@NonNull TableCloningEnabled cloningEnabled;
+		@NonNull TableWhenChildCloningStrategy whenChildCloningStrategy;
+		@NonNull TableDownlineCloningStrategy downlineCloningStrategy;
 	}
 
-	private static class POInfoMap
+	public static class POInfoMap
 	{
 		private final ImmutableMap<AdTableId, POInfo> byTableId;
 		private final ImmutableMap<String, POInfo> byTableNameUC;
@@ -1382,5 +1449,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
+
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
+		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
 	}
 }   // POInfo

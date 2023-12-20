@@ -13,18 +13,21 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
+import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
@@ -100,6 +103,27 @@ public class PPOrderDAO implements IPPOrderDAO
 		return SeqNo.ofInt(lastSeqNo).next().toInt();
 	}
 
+	@NonNull
+	public Stream<I_PP_Order> streamDraftedPPOrdersFor(@NonNull final ProductBOMVersionsId bomVersionsId)
+	{
+		final ManufacturingOrderQuery query = ManufacturingOrderQuery.builder()
+				.bomVersionsId(bomVersionsId)
+				.onlyDrafted(true)
+				.build();
+
+		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = toSqlQueryBuilder(query);
+
+		//dev-note: make sure there are no material transactions already created
+		final IQuery<I_PP_Cost_Collector> withMaterialTransactionsQuery = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addInSubQueryFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderQueryBuilder.create())
+				.create();
+
+		return ppOrderQueryBuilder
+				.addNotInSubQueryFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, withMaterialTransactionsQuery)
+				.create()
+				.iterateAndStream();
+	}
+
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
@@ -127,6 +151,22 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed);
 		}
 
+		//
+		if (query.isOnlyDrafted())
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_Processed, false);
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Drafted, DocStatus.InProgress);
+		}
+
+		if (query.getBomVersionsId() != null)
+		{
+			final IQuery<I_PP_Product_BOM> bomVersionsQuery = queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+					.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, query.getBomVersionsId())
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, bomVersionsQuery);
+		}
+
 		// Export Status
 		if (query.getExportStatus() != null)
 		{
@@ -144,9 +184,19 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
+		if (query.getOnlyPlanningStatuses() != null)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PlanningStatus, query.getOnlyPlanningStatuses());
+		}
+
 		//
 		// Order BYs
-		queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo);
+		query.getSortingOptions()
+				.stream()
+				.map(PPOrderDAO::sortingOption2ColumnName)
+				.forEach(queryBuilder::orderBy);
+
+		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_DocumentNo);
 		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID);
 
 		// Limit
@@ -272,5 +322,28 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
 				.create()
 				.listImmutable(I_PP_Order.class);
+	}
+
+	@Override
+	public Stream<I_PP_Order> stream(@NonNull final IQueryFilter<I_PP_Order> filter)
+	{
+		return queryBL.createQueryBuilder(I_PP_Order.class)
+				.filter(filter)
+				.create()
+				.iterateAndStream();
+	}
+
+	@NonNull
+	private static String sortingOption2ColumnName(@NonNull final ManufacturingOrderQuery.SortingOption sortingOption)
+	{
+		switch (sortingOption)
+		{
+			case SEQ_NO:
+				return I_PP_Order.COLUMNNAME_SeqNo;
+			default:
+				throw new AdempiereException("Given sortingOption is not supported!")
+						.appendParametersToMessage()
+						.setParameter("SortingOption", sortingOption);
+		}
 	}
 }

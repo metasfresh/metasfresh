@@ -13,7 +13,7 @@ import java.util.Map;
 public interface ISysConfigBL extends ISingletonService
 {
 	@Nullable
-	String getValue(String name, String defaultValue);
+	String getValue(String name, @Nullable String defaultValue);
 
 	@Nullable
 	String getValue(String name);
@@ -57,6 +57,8 @@ public interface ISysConfigBL extends ISingletonService
 	int getIntValue(String name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
+
+	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
 
 	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 

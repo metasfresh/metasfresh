@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Locked HUs can not be picked
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-31T13:30:13+01:00[Europe/Berlin]
 
     And destroy existing M_HUs

@@ -109,6 +109,8 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			}
 		}
 
+
+
 		return MSG_OK;
 	}
 

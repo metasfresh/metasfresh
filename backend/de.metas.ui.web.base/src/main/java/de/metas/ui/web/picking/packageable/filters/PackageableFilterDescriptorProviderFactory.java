@@ -28,7 +28,6 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;

@@ -27,6 +27,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.PostMaterialEventService;
@@ -38,9 +39,12 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -65,6 +69,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -77,6 +82,9 @@ import java.util.Properties;
 public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
+
+	private static final AdMessageKey MSG_CannotVoidDueToTransactions = AdMessageKey.of("CannotVoidDueToTransactions");
+	private static final AdMessageKey MSG_CannotReactivateDueToTransactions = AdMessageKey.of("CannotReactivateDueToTransactions");
 
 	@SuppressWarnings("unused")
 	public MPPOrder(
@@ -174,9 +182,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				if (line.getM_Warehouse_ID() != getM_Warehouse_ID())
 				{
 					throw new LiberoException("@CannotChangeDocType@"
-							+ "\n@PP_Order_BOMLine_ID@: " + line
-							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
-							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
+													  + "\n@PP_Order_BOMLine_ID@: " + line
+													  + "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
+													  + "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
 				}
 			}
 		}
@@ -292,7 +300,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		if (ppOrderBL.isSomethingProcessed(this))
 		{
-			throw new LiberoException("Cannot void this document because exist transactions"); // TODO: Create Message for Translation
+			throw new LiberoException(MSG_CannotVoidDueToTransactions);
 		}
 
 		//
@@ -365,7 +373,15 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Validate BOM Lines before closing them
 		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		getLines().forEach(ppOrderBOMLineBL::validateBeforeClose);
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Optional<Quantity> roundingToScaleQty = ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(getPP_Order_ID()));
+
+		getLines().forEach(line -> ppOrderBOMLineBL.validateBeforeClose(line,
+																		roundingToScaleQty.flatMap(scaleQtyRound -> uomConversionBL
+																				.convertQtyTo(scaleQtyRound, UomId.ofRepoId(line.getC_UOM_ID())))
+																				.orElse(null)));
 
 		//
 		// Create usage variances
@@ -381,7 +397,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Close all the activity do not reported
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		ppOrderBL.closeAllActivities(orderId);
 
@@ -433,7 +448,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		if (ppOrderBL.isSomethingProcessed(this))
 		{
-			throw new LiberoException("Cannot re-activate this document because exist transactions"); // TODO: Create Message for Translation
+			throw new LiberoException(MSG_CannotReactivateDueToTransactions);
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
@@ -536,12 +551,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 					&& (activity.isSubcontracting() || orderRouting.isFirstActivity(activity)))
 			{
 				ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(this)
-						.orderActivity(activity)
-						.qtyMoved(activity.getQtyToDeliver())
-						.durationSetup(Duration.ZERO)
-						.duration(Duration.ZERO)
-						.build());
+																.order(this)
+																.orderActivity(activity)
+																.qtyMoved(activity.getQtyToDeliver())
+																.durationSetup(Duration.ZERO)
+																.duration(Duration.ZERO)
+																.build());
 			}
 		}
 	}

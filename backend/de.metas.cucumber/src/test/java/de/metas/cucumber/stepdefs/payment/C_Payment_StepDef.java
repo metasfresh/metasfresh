@@ -22,6 +22,10 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -31,6 +35,8 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
@@ -40,12 +46,15 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -66,6 +75,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -76,15 +86,19 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_DateTrx;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
 public class C_Payment_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -94,6 +108,8 @@ public class C_Payment_StepDef
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final C_DocType_StepDefData docTypeTable;
+	private final TestContext testContext;
 
 	public C_Payment_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -103,7 +119,9 @@ public class C_Payment_StepDef
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final C_BankStatement_StepDefData bankStatementTable,
 			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.currencyRepository = currencyRepository;
@@ -113,6 +131,8 @@ public class C_Payment_StepDef
 		this.bankStatementTable = bankStatementTable;
 		this.bankStatementLineTable = bankStatementLineTable;
 		this.invoiceTable = invoiceTable;
+		this.docTypeTable = docTypeTable;
+		this.testContext = testContext;
 	}
 
 	@And("metasfresh contains C_Payment")
@@ -185,10 +205,12 @@ public class C_Payment_StepDef
 				softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
 			}
 
-			final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
+			final LocalDate dateTrx = DataTableUtil.extractLocalDateOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
 			if (dateTrx != null)
 			{
-				softly.assertThat(payment.getDateTrx()).isEqualTo(dateTrx);
+				final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
+				final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+				softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
 			}
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -213,6 +235,26 @@ public class C_Payment_StepDef
 				softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt);
 			}
 
+			final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_DocType_ID);
+			if (Check.isNotBlank(docTypeIdentifier))
+			{
+				final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+
+				softly.assertThat(payment.getC_DocType_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
+			}
+
+			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_DiscountAmt);
+			if (discountAmt != null)
+			{
+				softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt);
+			}
+
+			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_WriteOffAmt);
+			if (writeOffAmt != null)
+			{
+				softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt);
+			}
+
 			softly.assertAll();
 		}
 	}
@@ -227,6 +269,18 @@ public class C_Payment_StepDef
 		}
 	}
 
+	@Then("validate payment api response error message")
+	public void validate_payment_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
+
+			final JsonErrorItem jsonErrorItem = mapper.readValue(testContext.getApiResponse().getContent(), JsonErrorItem.class);
+			assertThat(jsonErrorItem.getMessage()).contains(message);
+		}
+	}
+	
 	private void findPayment(
 			final int timeoutSec,
 			@NonNull final Map<String, String> row) throws InterruptedException
@@ -258,6 +312,12 @@ public class C_Payment_StepDef
 			assertThat(bankStatementLineRecord).isNotNull();
 
 			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineRecord.getC_BankStatementLine_ID());
+		}
+
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Payment.COLUMNNAME_ExternalId);
+		if (Check.isNotBlank(externalId))
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalId, externalId);
 		}
 
 		final I_C_Payment paymentRecord = queryBuilder
@@ -310,7 +370,7 @@ public class C_Payment_StepDef
 
 		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
 		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
-		
+
 		paymentDAO.save(payment);
 
 		final String paymentIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);

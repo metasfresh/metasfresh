@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,50 +26,58 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.product.ProductId;
-import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
 	private final M_Product_StepDefData productTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
-	public MD_Candidate_StepDefTableTransformer(@NonNull final M_Product_StepDefData productTable)
+	public MD_Candidate_StepDefTableTransformer(
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.productTable = productTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@DataTableType
 	@Override
-	public MD_Candidate_StepDefTable transform(@NonNull final DataTable dataTable)
+	public MD_Candidate_StepDefTable transform(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
 		final MD_Candidate_StepDefTable.MD_Candidate_StepDefTableBuilder materialDispoTableBuilder = MD_Candidate_StepDefTable.builder();
 
-		final List<Map<String, String>> dataTableRows = dataTable.asMaps();
+		final List<Map<String, String>> dataTableRows = dataTable.entries();
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
 
 			final String candidateTypeStr = dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
-			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s",I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
+			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s", I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
 			final CandidateType type = CandidateType.ofCode(candidateTypeStr);
 
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
@@ -103,6 +111,12 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final boolean simulated = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated, false);
 
+			final WarehouseId warehouseId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.flatMap(warehouseTable::getOptional)
+					.map(I_M_Warehouse::getM_Warehouse_ID)
+					.map(WarehouseId::ofRepoId)
+					.orElse(null);
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
@@ -113,6 +127,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.atp(atp)
 					.attributeSetInstanceId(attributeSetInstanceIdentifier)
 					.simulated(simulated)
+					.warehouseId(warehouseId)
 					.build();
 			materialDispoTableBuilder.row(identifier, tableRow);
 		}

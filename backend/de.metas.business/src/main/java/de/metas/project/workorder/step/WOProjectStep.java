@@ -32,6 +32,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -49,7 +50,7 @@ public class WOProjectStep
 	@NonNull
 	OrgId orgId;
 
-	@NonNull CalendarDateRange dateRange;
+	@Nullable CalendarDateRange dateRange;
 
 	@Nullable
 	String description;
@@ -84,5 +85,30 @@ public class WOProjectStep
 	@Nullable
 	Instant woFindingsCreatedDate;
 
+	@Nullable
+	Instant woDueDate;
+
+	boolean manuallyLocked;
+
 	public ProjectId getProjectId() {return woProjectStepId.getProjectId();}
+
+	@NonNull
+	public Optional<Instant> getStartDate()
+	{
+		return Optional.ofNullable(dateRange)
+				.map(CalendarDateRange::getStartDate);
+	}
+
+	@NonNull
+	public Optional<Instant> getEndDate()
+	{
+		return Optional.ofNullable(dateRange)
+				.map(CalendarDateRange::getEndDate)
+				.filter(Instant.MAX::isAfter);
+	}
+
+	public boolean inTesting()
+	{
+		return WOStepStatus.INTESTING.equals(woStepStatus);
+	}
 }

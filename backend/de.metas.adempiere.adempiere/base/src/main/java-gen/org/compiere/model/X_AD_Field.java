@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Field
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 255643045L;
+	private static final long serialVersionUID = -1789221161L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -183,6 +183,33 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public int getAD_Reference_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getAD_Sequence()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setAD_Sequence(final org.compiere.model.I_AD_Sequence AD_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class, AD_Sequence);
+	}
+
+	@Override
+	public void setAD_Sequence_ID (final int AD_Sequence_ID)
+	{
+		if (AD_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_AD_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
+	}
+
+	@Override
+	public int getAD_Sequence_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
 	}
 
 	@Override
@@ -356,6 +383,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
+	public void setIsForbidNewRecordCreation (final boolean IsForbidNewRecordCreation)
+	{
+		set_Value (COLUMNNAME_IsForbidNewRecordCreation, IsForbidNewRecordCreation);
+	}
+
+	@Override
+	public boolean isForbidNewRecordCreation() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsForbidNewRecordCreation);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -425,7 +464,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isDisplayed() 
+	public boolean isDisplayed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
 	}

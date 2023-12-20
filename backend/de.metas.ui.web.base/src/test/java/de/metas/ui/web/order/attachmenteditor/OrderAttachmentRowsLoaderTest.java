@@ -36,6 +36,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.impl.OrderDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -59,12 +60,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -76,7 +76,7 @@ import java.util.List;
 import static de.metas.ui.web.order.attachmenteditor.OrderAttachmentRowsLoader.buildRowId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -88,7 +88,7 @@ public class OrderAttachmentRowsLoaderTest
 	private AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -118,12 +118,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(bpartnerAttachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isFalse();
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(bpartnerAttachmentEntry.getFilename());
@@ -150,12 +150,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(attachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
@@ -186,12 +186,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(attachmentEntry.getId(), prescriptionRef));
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 		assertThat(orderAttachmentRow.getPatient().getIdAsInt()).isEqualTo(prescriptionRequest.getC_BPartner_Patient_ID());
 		assertThat(orderAttachmentRow.getDatePromised()).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
@@ -224,7 +224,7 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(2);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(2);
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), prescriptionRef1))).isNotNull();
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), prescriptionRef2))).isNotNull();
 
@@ -236,7 +236,7 @@ public class OrderAttachmentRowsLoaderTest
 
 			assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(attachmentEntry.getId(), TableRecordReference.of(currentPrescription)));
 
-			assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+			assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 			assertThat(orderAttachmentRow.getDatePromised()).isNull();
 
 			assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
@@ -273,12 +273,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), salesOrderRef))).isNotNull();
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
 
@@ -310,12 +310,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), purchaseOrderRef))).isNotNull();
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getPatient()).isNull();
@@ -346,12 +346,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), prescriptionRecordRef))).isNotNull();
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isFalse();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getPatient().getIdAsInt()).isEqualTo(prescriptionRequest.getC_BPartner_Patient_ID());
@@ -381,12 +381,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 		assertThat(orderAttachmentRows.getById(buildRowId(attachmentEntry.getId(), TableRecordReference.of(purchaseOrder)))).isNotNull();
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isTrue();
 
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
 
@@ -416,12 +416,12 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRows orderAttachmentRows = loader.load();
 
 		//then
-		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+		assertThat(orderAttachmentRows.getAllRows()).hasSize(1);
 
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(bpartnerAttachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isFalse();
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(bpartnerAttachmentEntry.getFilename());
@@ -477,10 +477,10 @@ public class OrderAttachmentRowsLoaderTest
 				.firstOnlyNotNull(I_C_OrderLine.class);
 		save(purchaseOrderLine);
 
-		final I_C_PO_OrderLine_Alloc poOrderLineAlloc = newInstance(I_C_PO_OrderLine_Alloc.class);
-		poOrderLineAlloc.setC_SO_OrderLine(salesOrderLine);
-		poOrderLineAlloc.setC_PO_OrderLine(purchaseOrderLine);
-		save(poOrderLineAlloc);
+		new OrderDAO().allocatePOLineToSOLine(
+				OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()),
+				OrderAndLineId.ofRepoIds(salesOrderLine.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID())
+		);
 
 		return salesOrder;
 	}
@@ -500,7 +500,7 @@ public class OrderAttachmentRowsLoaderTest
 		save(salesOrderLine);
 
 		return OrderAndLineId.of(OrderId.ofRepoId(salesOrder.getC_Order_ID()),
-								 OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+				OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
 	}
 
 	private I_C_BPartner createPartner(@NonNull final String name)
@@ -513,7 +513,7 @@ public class OrderAttachmentRowsLoaderTest
 		return partner;
 	}
 
-	private I_C_BPartner_AlbertaPatient createAlbertaPatient(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId payerBPartnerId)
+	private void createAlbertaPatient(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId payerBPartnerId)
 	{
 		final I_C_BPartner_AlbertaPatient albertaPatient = newInstance(I_C_BPartner_AlbertaPatient.class);
 		albertaPatient.setC_BPartner_ID(bPartnerId.getRepoId());
@@ -524,8 +524,6 @@ public class OrderAttachmentRowsLoaderTest
 		}
 
 		save(albertaPatient);
-
-		return albertaPatient;
 	}
 
 	private I_Alberta_PrescriptionRequest createPrescriptionRequest(final int prescriptionIndex, @NonNull final OrderId orderId, final boolean withPayer)

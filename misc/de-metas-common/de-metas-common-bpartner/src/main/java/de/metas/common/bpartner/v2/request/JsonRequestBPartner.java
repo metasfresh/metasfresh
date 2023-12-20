@@ -28,8 +28,7 @@ import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -44,227 +43,233 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENT
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
+@Schema(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
-	@ApiModelProperty(position = 20,  //
-			value = BPARTNER_VALUE_DOC)
+	@Schema(description = BPARTNER_VALUE_DOC)
 	private String code;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 25,  //
-			value = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
+	@Schema(description = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 30,  //
-			value = "This translates to `C_BPartner.Name`.\n"
+	@Schema(description = "This translates to `C_BPartner.Name`.\n"
 					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40,  //
-			value = "This translates to `C_BPartner.Name2`.")
+	@Schema(description = "This translates to `C_BPartner.Name2`.")
 	private String name2;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean name2Set;
 
-	@ApiModelProperty(position = 50,  //
-			value = "This translates to `C_BPartner.Name3`.")
+	@Schema(description = "This translates to `C_BPartner.Name3`.")
 	private String name3;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean name3Set;
 
-	@ApiModelProperty(position = 60, //
-			value = "This translates to `C_BPartner.CompanyName`.\n"
+	@Schema(description = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	private String companyName;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean companyNameSet;
 
 	private Boolean vendor;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean vendorSet;
 
 	private Boolean customer;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean customerSet;
 
-	@ApiModelProperty(position = 70, //
-			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
-			dataType = "java.lang.Integer")
+	@Schema(description = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company")
 	private JsonMetasfreshId parentId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean parentIdSet;
 
-	@ApiModelProperty(position = 80, //
-			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@Schema(description = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	private String phone;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean phoneSet;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	private String language;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean languageSet;
 
-	@ApiModelProperty(position = 100, //
-			value = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
+	@Schema(description = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
 	private JsonInvoiceRule invoiceRule;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean invoiceRuleSet;
 
-	@ApiModelProperty(position = 105, //
-			value = "Optional; if specified, it will be used, e.g. when a purchase order is created for this business partner.")
+	@Schema(description = "Optional; if specified, it will be used, e.g. when a purchase order is created for this business partner.")
 	private JsonInvoiceRule poInvoiceRule;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean poInvoiceRuleSet;
 
-	@ApiModelProperty(position = 110)
+	@Schema
 	private String url;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean urlSet;
 
-	@ApiModelProperty(position = 120)
+	@Schema
 	private String url2;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean url2Set;
 
-	@ApiModelProperty(position = 130)
+	@Schema
 	private String url3;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean url3Set;
 
-	@ApiModelProperty(position = 140, //
-			value = "Name of the business partner's group")
+	@Schema(description = "Name of the business partner's group")
 	private String group;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean groupSet;
 
-	@ApiModelProperty(position = 150, //
-			value = "Translates to `C_BPartner.GlobalId`")
+	@Schema(description = "Translates to `C_BPartner.GlobalId`")
 	private String globalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean globalIdset;
 
-	@ApiModelProperty(position = 155, //
-			value = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
+	@Schema(description = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
 	private JsonMetasfreshId priceListId;
 
 	private boolean priceListIdSet;
 
-	@ApiModelProperty(position = 160, //
-			value = "Translates to `C_BPartner.VATaxId`")
+	@Schema(description = "Translates to `C_BPartner.VATaxId`")
 	private String vatId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean vatIdSet;
 
-	@ApiModelProperty(position = 165, //
-			value = "This translates to `C_BPartner.memo`")
+	@Schema(description = "This translates to `C_BPartner.memo`")
 	private String memo;
 
 	private boolean memoIsSet;
 
-	@ApiModelProperty(position = 170, //
-			value = "Translates to `M_SectionCode.Value` and it's mapped to `C_BPartner.M_SectionCode_ID`")
+	@Schema(description = "Translates to `M_SectionCode.Value` and it's mapped to `C_BPartner.M_SectionCode_ID`")
 	private String sectionCodeValue;
 
 	private boolean sectionCodeValueSet;
 
-	@ApiModelProperty(position = 180, //
-			value = "Translates to `C_BPartner.Description`")
+	@Schema(description = "Translates to `C_BPartner.Description`")
 	private String description;
 
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 190, //
-			value = "Translates to `C_BPartner.DeliveryRule`")
+	@Schema(description = "Translates to `C_BPartner.DeliveryRule`")
 	private JsonDeliveryRule deliveryRule;
 
 	private boolean deliveryRuleSet;
 
-	@ApiModelProperty(position = 200, //
-			value = "Translates to `C_BPartner.DeliveryViaRule`")
+	@Schema(description = "Translates to `C_BPartner.DeliveryViaRule`")
 	private JsonDeliveryViaRule deliveryViaRule;
 
 	private boolean deliveryViaRuleSet;
 
-	@ApiModelProperty(position = 210, //
-			value = "Translates to `C_BPartner.IsStorageWarehouse`")
+	@Schema(description = "Translates to `C_BPartner.IsStorageWarehouse`")
 	private Boolean storageWarehouse;
 
 	private boolean storageWarehouseSet;
 
-	@ApiModelProperty(position = 220, //
-			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Customer_ID`")
+	@Schema(description = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Customer_ID`")
 	private String incotermsCustomerValue;
 
 	private boolean incotermsCustomerValueSet;
 
-	@ApiModelProperty(position = 230, //
-			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Vendor_ID`")
+	@Schema(description = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Vendor_ID`")
 	private String incotermsVendorValue;
 
 	private boolean incotermsVendorValueSet;
 
-	@ApiModelProperty(position = 240, //
-			value = "Mapped to `C_BPartner.C_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	@Schema(description = "Mapped to `C_BPartner.C_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
 	private String customerPaymentTermIdentifier;
 
 	private boolean customerPaymentTermIdentifierSet;
 
-	@ApiModelProperty(position = 250, //
-			value = "Mapped to `C_BPartner.PO_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	@Schema(description = "Mapped to `C_BPartner.PO_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
 	private String vendorPaymentTermIdentifier;
 
 	private boolean vendorPaymentTermIdentifierSet;
 
-	@ApiModelProperty(position = 260, //
-			value = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	@Schema(description = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + BPARTNER_IDENTIFIER_DOC)
 	private String parentIdentifier;
 
 	private boolean parentIdentifierSet;
 
-	@ApiModelProperty(position = 270, //
-			value = "Translates to `C_BPartner.PaymentRule`")
+	@Schema(description = "Translates to `C_BPartner.PaymentRule`")
 	private JsonPaymentRule paymentRule;
 
 	private boolean paymentRuleSet;
 
-	@ApiModelProperty(position = 280, //
-			value = "Translates to `C_BPartner.PaymentRulePO`")
+	@Schema(description = "Translates to `C_BPartner.PaymentRulePO`")
 	private JsonPaymentRule paymentRulePO;
 
 	private boolean paymentRulePOSet;
 
-	@ApiModelProperty(position = 290, // shall be last
-			value = "Sync advise about this bPartner's individual properties.\n"
+	@Schema(description = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@Schema(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
+
+	@Schema(description = "Translates to `C_BPartner.IsProspect`")
+	private Boolean prospect;
+
+	private boolean prospectSet;
+
+	@Schema(description = "This translates to `C_BPartner.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@Schema(hidden = true)
+	private boolean sapBPartnerCodeSet;
+
+	@Schema(description = "This translates to `C_BPartner.IsSectionGroupPartner`.")
+	private boolean sectionGroupPartner;
+
+	@Schema(hidden = true)
+	private boolean sectionGroupPartnerSet;
+
+	@Schema(description = "This translates to `C_BPartner.IsSectionPartner`.")
+	private boolean sectionPartner;
+
+	@Schema(hidden = true)
+	private boolean sectionPartnerSet;
+
+	@Schema(description = "This translates to `C_BPartner.Fresh_Urproduzent`.")
+	private boolean urproduzent;
+
+	@Schema(hidden = true)
+	private boolean urproduzentSet;
+
+	@Schema(description = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setCode(final String code)
@@ -472,5 +477,41 @@ public class JsonRequestBPartner
 	{
 		this.paymentRulePO = paymentRulePO;
 		this.paymentRulePOSet = true;
+	}
+
+	public void setSectionGroupPartnerIdentifier(final String sectionGroupPartnerIdentifier)
+	{
+		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
+		this.sectionGroupPartnerIdentifierSet = true;
+	}
+
+	public void setProspect(final Boolean prospect)
+	{
+		this.prospect = prospect;
+		this.prospectSet = true;
+	}
+
+	public void setSapBPartnerCode(final String sapBPartnerCode)
+	{
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sapBPartnerCodeSet = true;
+	}
+
+	public void setSectionGroupPartner(final boolean sectionGroupPartner)
+	{
+		this.sectionGroupPartner = sectionGroupPartner;
+		this.sectionGroupPartnerSet = true;
+	}
+
+	public void setSectionPartner(final boolean sectionPartner)
+	{
+		this.sectionPartner = sectionPartner;
+		this.sectionPartnerSet = true;
+	}
+
+	public void setUrproduzent(final boolean urproduzent)
+	{
+		this.urproduzent = urproduzent;
+		this.urproduzentSet = true;
 	}
 }

@@ -47,6 +47,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -99,6 +100,7 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
  * #L%
  */
 
+@RequiredArgsConstructor
 final class BPartnerCompositeSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -108,13 +110,6 @@ final class BPartnerCompositeSaver
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
-	BPartnerCompositeSaver(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
-	}
 
 	/**
 	 * @param validatePermissions Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
@@ -268,6 +263,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
+
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -280,6 +276,12 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setIsStorageWarehouse(bpartner.isStorageWarehouse());
 		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
 		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
+		bpartnerRecord.setSection_Group_Partner_ID(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId()));
+		bpartnerRecord.setIsProspect(bpartner.isProspect());
+		bpartnerRecord.setSAP_BPartnerCode(bpartner.getSapBPartnerCode());
+		bpartnerRecord.setIsSectionGroupPartner(bpartner.isSectionGroupPartner());
+		bpartnerRecord.setIsSectionPartner(bpartner.isSectionPartner());
+		bpartnerRecord.setFresh_Urproduzent(bpartner.isUrproduzent());
 
 		saveRecord(bpartnerRecord);
 
@@ -382,6 +384,10 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(partnerLocation.getOrgMappingId()));
 
 			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
+
+			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatTaxId());
+			bpartnerLocationRecord.setSAP_PaymentMethod(partnerLocation.getSapPaymentMethod());
+			bpartnerLocationRecord.setSAP_BPartnerCode(partnerLocation.getSapBPartnerCode());
 
 			saveRecord(bpartnerLocationRecord);
 
@@ -618,7 +624,7 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
-			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartnerContact.getGreetingId()));
 			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
@@ -683,9 +689,12 @@ final class BPartnerCompositeSaver
 			record.setC_BPartner_ID(bpartnerId.getRepoId());
 
 			record.setIBAN(bankAccount.getIban());
+			record.setQR_IBAN(bankAccount.getQrIban());
+			record.setName(bankAccount.getName());
 			record.setSwiftCode(bankAccount.getSwiftCode());
 			record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 			record.setIsActive(bankAccount.isActive());
+			record.setIsDefault(bankAccount.isDefault());
 
 			record.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bankAccount.getOrgMappingId()));
 

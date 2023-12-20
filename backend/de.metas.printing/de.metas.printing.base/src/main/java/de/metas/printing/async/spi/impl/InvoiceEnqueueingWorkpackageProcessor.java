@@ -24,19 +24,14 @@ package de.metas.printing.async.spi.impl;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
 
-import java.time.LocalDate;
 
 public class InvoiceEnqueueingWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -45,22 +40,20 @@ public class InvoiceEnqueueingWorkpackageProcessor extends WorkpackageProcessorA
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
-		final IParams parameters = getParameters();
-
 		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch();
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(InterfaceWrapperHelper.getCtx(workpackage))
-				.setInvoicingParams(getInvoicingParams(parameters))
+				.setInvoicingParams(getInvoicingParams())
 				.setFailIfNothingEnqueued(true)
 				.setC_Async_Batch(asyncBatch)
-				.enqueueSelection(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()));
+				.prepareAndEnqueueSelection(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()));
 
 		return Result.SUCCESS;
 	}
 
 	@NonNull
-	private IInvoicingParams getInvoicingParams(@NonNull final IParams parameters)
+	private InvoicingParams getInvoicingParams()
 	{
-		return new InvoicingParams(getParameters());
+		return InvoicingParams.ofParams(getParameters());
 	}
 }

@@ -39,15 +39,21 @@ public class ProductRow
 	@DataField(pos = 4)
 	private String name;
 
-	//FIXME: pending mappings ? might be that the SAP UOM format will not match ours
 	@DataField(pos = 5)
 	private String uom;
 
-	//FIXME: pending mappings -> MF.ProductCategory
-	@DataField(pos = 13)
-	private String materialCategory;
+	@DataField(pos = 6)
+	private String productHierarchy;
 
-	//FIXME: pending mappings -> MF.ProductType
+	@DataField(pos = 9)
+	private String description;
+
+	@DataField(pos = 13)
+	private String materialType;
+
+	@DataField(pos = 14)
+	private String warehouseName;
+
 	@DataField(pos = 17)
 	private String materialGroup;
 }

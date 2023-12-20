@@ -23,8 +23,9 @@
 package de.metas.printing;
 
 import de.metas.process.ProcessInfo;
-import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
+import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveInfo;
+import org.springframework.core.io.Resource;
 
 public interface IMassPrintingService
 {
@@ -33,5 +34,5 @@ public interface IMassPrintingService
 	 */
 	String PARAM_PrintCopies = "PrintCopies";
 
-	void print(ExecuteReportResult executeReportResult, ProcessInfo pi);
+	void print(@NonNull Resource reportData, @NonNull ArchiveInfo archiveInfo);
 }

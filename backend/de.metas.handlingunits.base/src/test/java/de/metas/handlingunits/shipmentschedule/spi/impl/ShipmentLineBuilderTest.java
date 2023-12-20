@@ -1,21 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_C_UOM_Conversion;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -28,7 +14,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -36,11 +21,28 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 import lombok.Builder;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -79,8 +81,8 @@ public class ShipmentLineBuilderTest
 		catchUOMConversionRecord.setM_Product_ID(huTestHelper.pTomatoProductId.getRepoId());
 		catchUOMConversionRecord.setC_UOM_ID(huTestHelper.uomEachId.getRepoId());
 		catchUOMConversionRecord.setC_UOM_To_ID(huTestHelper.uomKgId.getRepoId());
-		catchUOMConversionRecord.setMultiplyRate(TEN);
-		catchUOMConversionRecord.setDivideRate(ONE.divide(TEN));
+		catchUOMConversionRecord.setMultiplyRate(new BigDecimal("10"));
+		catchUOMConversionRecord.setDivideRate(new BigDecimal("0.1"));
 		catchUOMConversionRecord.setIsCatchUOMForProduct(true);
 		catchUOMConversionRecord.setIsActive(true);
 		saveRecord(catchUOMConversionRecord);
@@ -108,23 +110,33 @@ public class ShipmentLineBuilderTest
 	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
 	private I_M_ShipmentSchedule createShipmentSchedule(
 			final int qtyCUsPerTU,
-			final BigDecimal qtyTUsCalculated)
+			final BigDecimal qtyTUsCalculated,
+			@Nullable final OrderAndLineId orderAndLineId)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = createPickingInstructions(qtyCUsPerTU);
 
-		final I_C_Order order = newInstance(I_C_Order.class);
-		saveRecord(order);
+		final OrderAndLineId orderAndLineIdEffective;
+		if (orderAndLineId != null)
+		{
+			orderAndLineIdEffective = orderAndLineId;
+		}
+		else
+		{
+			final I_C_Order order = newInstance(I_C_Order.class);
+			saveRecord(order);
 
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setM_Product_ID(huTestHelper.pTomato.getM_Product_ID());
-		saveRecord(orderLine);
+			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			orderLine.setC_Order_ID(order.getC_Order_ID());
+			orderLine.setM_Product_ID(huTestHelper.pTomato.getM_Product_ID());
+			saveRecord(orderLine);
+			orderAndLineIdEffective = OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
+		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setM_Warehouse_ID(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
-		shipmentSchedule.setC_Order_ID(order.getC_Order_ID());
-		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+		shipmentSchedule.setC_Order_ID(orderAndLineIdEffective.getOrderRepoId());
+		shipmentSchedule.setC_OrderLine_ID(orderAndLineIdEffective.getOrderLineRepoId());
+		shipmentSchedule.setRecord_ID(orderAndLineIdEffective.getOrderLineRepoId());
 		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
 
 		shipmentSchedule.setM_Product_ID(huTestHelper.pTomato.getM_Product_ID());
@@ -338,5 +350,74 @@ public class ShipmentLineBuilderTest
 
 		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
 		assertThat(shipmentLine.getQtyDeliveredCatch()).isEqualByComparingTo("1.2");
+	}
+
+	@Nested
+	class testDimension
+	{
+		I_M_InOutLine createShipmentLineFromShipmentSchedulesWithBPartner2(final Integer... bpartner2RepoIds)
+		{
+			final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+			shipmentLineBuilder.setManualPackingMaterial(true);
+
+			OrderAndLineId orderAndLineId = null;
+			for (final Integer bpartner2RepoId : bpartner2RepoIds)
+			{
+				final BPartnerId bpartner2Id = BPartnerId.ofRepoIdOrNull(bpartner2RepoId);
+
+				final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
+						.qtyCUsPerTU(8)
+						.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
+						.orderAndLineId(orderAndLineId)
+						.build();
+				shipmentSchedule.setC_BPartner2_ID(BPartnerId.toRepoId(bpartner2Id));
+				InterfaceWrapperHelper.save(shipmentSchedule);
+
+				final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+						huContext,
+						shipmentSchedule,
+						StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId),
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+				shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+
+				orderAndLineId = OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+			}
+
+			return shipmentLineBuilder.createShipmentLine();
+		}
+
+		@Test
+		void bpartner2id_101()
+		{
+			final I_M_InOutLine shipmentLine = createShipmentLineFromShipmentSchedulesWithBPartner2(101);
+			assertThat(shipmentLine).isNotNull();
+			assertThat(shipmentLine.getC_BPartner2_ID()).isEqualTo(101);
+		}
+
+		@Test
+		void bpartner2id_101_null()
+		{
+			final I_M_InOutLine shipmentLine = createShipmentLineFromShipmentSchedulesWithBPartner2(101, null);
+			assertThat(shipmentLine).isNotNull();
+			assertThat(shipmentLine.getC_BPartner2_ID()).isEqualTo(101);
+		}
+
+		@Test
+		void bpartner2id_101_null_101()
+		{
+			final I_M_InOutLine shipmentLine = createShipmentLineFromShipmentSchedulesWithBPartner2(101, null, 101);
+			assertThat(shipmentLine).isNotNull();
+			assertThat(shipmentLine.getC_BPartner2_ID()).isEqualTo(101);
+		}
+
+		@Test
+		void bpartner2id_101_102()
+		{
+			final I_M_InOutLine shipmentLine = createShipmentLineFromShipmentSchedulesWithBPartner2(101, 102);
+			assertThat(shipmentLine).isNotNull();
+			assertThat(shipmentLine.getC_BPartner2_ID()).isLessThanOrEqualTo(0);
+		}
+
 	}
 }

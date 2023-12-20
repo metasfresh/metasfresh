@@ -12,4 +12,10 @@ app_1       |                   at org.compiere.util.DB.executeUpdateEx(DB.java:
    NOTE: we might consider dropping that column at all, but here i am just hotfixing the issue.
  */
 
-alter table c_incoterms_trl alter column c_incoterms_trl_id set default nextval('c_incoterms_trl_seq');
+DO $$
+    BEGIN
+        alter table c_incoterms_trl alter column c_incoterms_trl_id set default nextval('c_incoterms_trl_seq');
+    EXCEPTION WHEN SQLSTATE '42703' THEN
+        RAISE NOTICE 'Setting the default value failed as the column c_incoterms_trl_id does not exist, which is fine; Ignoring; Error-Code %, Message=%', SQLSTATE, SQLERRM;
+    END
+$$;

@@ -6,12 +6,13 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -48,6 +49,7 @@ public interface IDocumentFieldView
 	DocumentPath getDocumentPath();
 	default String getFieldName() { return getDescriptor().getFieldName(); }
 	default DocumentFieldWidgetType getWidgetType() { return getDescriptor().getWidgetType(); }
+	default OptionalInt getMinPrecision() { return getDescriptor().getMinPrecision(); }
 	default boolean isKey() { return getDescriptor().isKey(); }
 	default boolean isCalculated() { return getDescriptor().isCalculated(); }
 	default boolean isReadonlyVirtualField() { return getDescriptor().isReadonlyVirtualField(); }

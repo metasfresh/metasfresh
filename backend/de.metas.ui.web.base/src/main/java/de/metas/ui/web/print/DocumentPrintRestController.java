@@ -30,8 +30,9 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@Api
+@Tag(name = "DocumentPrintRestController")
 @RestController
 @RequestMapping(value = DocumentPrintRestController.ENDPOINT)
 public class DocumentPrintRestController
@@ -72,17 +73,21 @@ public class DocumentPrintRestController
 	{
 		userSession.assertLoggedIn();
 
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		return documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
+						.flavor(DocumentReportFlavor.EMAIL)
+						.documentPath(DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentIdStr))
+						.userId(userSession.getLoggedUserId())
+						.roleId(userSession.getLoggedRoleId())
+						.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
+						.build())
+				.filter(report -> !report.isEmpty())
+				.map(documentPrint -> toResponseEntity(documentPrint, filename))
+				.orElseGet(() -> ResponseEntity.ok().build());
+	}
 
-		final ReportResultData documentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
-				.flavor(DocumentReportFlavor.EMAIL)
-				.documentPath(documentPath)
-				.userId(userSession.getLoggedUserId())
-				.roleId(userSession.getLoggedRoleId())
-				.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
-				.build());
-
+	@NotNull
+	private static ResponseEntity<Resource> toResponseEntity(@NonNull final ReportResultData documentPrint, @NonNull final String filename)
+	{
 		final Resource reportData = documentPrint.getReportData();
 		final String reportContentType = documentPrint.getReportContentType();
 

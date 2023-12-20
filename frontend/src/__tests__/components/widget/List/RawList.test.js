@@ -164,7 +164,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
+      const requestFocusSpy = jest.spyOn(RawListBare.prototype, 'requestFocus');
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
       const wrapper = mount(<RawListBare {...props} />);
@@ -175,7 +175,7 @@ describe('RawList component', () => {
       expect(onSelectSpy).toHaveBeenCalledWith(fixtures.data1.listData[0]);
       expect(onCloseDropdownSpy).toHaveBeenCalled();
       expect(setTimeout).toHaveBeenCalledTimes(1);
-      expect(focusDropdownSpy).toHaveBeenCalled();
+      expect(requestFocusSpy).toHaveBeenCalled();
     });
 
     it('list blurs and stays hidden after selecting an option', () => {
@@ -196,8 +196,8 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const focusDropdownSpy = jest.spyOn(
-        RawListBare.prototype, 'focusDropdown'
+      const requestFocusSpy = jest.spyOn(
+        RawListBare.prototype, 'requestFocus'
       );
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
@@ -207,14 +207,14 @@ describe('RawList component', () => {
       jest.advanceTimersByTime(1);
       wrapper.update();
 
-      expect(focusDropdownSpy).toHaveBeenCalled();
+      expect(requestFocusSpy).toHaveBeenCalled();
 
-      focusDropdownSpy.mockClear();
+      requestFocusSpy.mockClear();
 
       wrapper.setProps({ isFocused: false });
       wrapper.update();
 
-      expect(focusDropdownSpy).not.toHaveBeenCalled();
+      expect(requestFocusSpy).not.toHaveBeenCalled();
     });
 
     describe('with elements attached to dummy element', function () {

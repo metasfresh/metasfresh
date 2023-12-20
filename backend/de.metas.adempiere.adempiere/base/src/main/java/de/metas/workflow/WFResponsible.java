@@ -25,6 +25,7 @@ package de.metas.workflow;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,29 +36,24 @@ import javax.annotation.Nullable;
 @Builder
 public class WFResponsible
 {
-	@NonNull
-	WFResponsibleId id;
+	@NonNull WFResponsibleId id;
+	@NonNull WFResponsibleType type;
+	@NonNull String name;
+	@Nullable UserId userId;
+	@Nullable RoleId roleId;
+	@Nullable OrgId orgId;
+
+	public boolean isInvoker() {return userId == null && roleId == null;}
+
+	public boolean isHuman() {return type == WFResponsibleType.Human && userId != null;}
+
+	public boolean isRole() {return type == WFResponsibleType.Role && roleId != null;}
+
+	public boolean isOrganization() {return type == WFResponsibleType.Organization && orgId != null;}
 
 	@NonNull
-	WFResponsibleType type;
+	public UserId getUserIdNotNull() {return Check.assumeNotNull(userId, "Expected an user based responsible: {}", this);}
 
 	@NonNull
-	String name;
-
-	@Nullable
-	UserId userId;
-
-	@Nullable
-	RoleId roleId;
-
-	@Nullable
-	OrgId orgId;
-
-	public boolean isInvoker() { return userId == null && roleId == null; }
-
-	public boolean isHuman() { return type == WFResponsibleType.Human && userId != null; }
-
-	public boolean isRole() { return type == WFResponsibleType.Role && roleId != null; }
-
-	public boolean isOrganization() { return type == WFResponsibleType.Organization && orgId != null; }
+	public RoleId getRoleIdNotNull() {return Check.assumeNotNull(roleId, "Expected a role based responsible: {}", this);}
 }

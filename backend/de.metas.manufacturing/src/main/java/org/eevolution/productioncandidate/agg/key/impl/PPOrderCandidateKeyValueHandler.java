@@ -70,6 +70,7 @@ public class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHand
 		values.add(orderCandidateRecord.getDatePromised());
 		values.add(orderCandidateRecord.getDateStartSchedule());
 		values.add(orderCandidateRecord.getC_UOM_ID());
+		values.add(orderCandidateRecord.getCapacityPerProductionCycleOverride());
 
 		return values;
 	}
@@ -98,6 +99,7 @@ public class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHand
 												 I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID,
 												 I_PP_Order_Candidate.COLUMNNAME_DatePromised,
 												 I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule,
-												 I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID);
+												 I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID,
+												 I_PP_Order_Candidate.COLUMNNAME_CapacityPerProductionCycleOverride);
 	}
 }

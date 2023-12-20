@@ -2,10 +2,13 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 
@@ -20,7 +23,14 @@ public class PickingJobStepPickFrom
 
 	@Nullable PickingJobStepPickedTo pickedTo;
 
+	public LocatorId getPickFromLocatorId() {return getPickFromLocator().getId();}
+
+	public WarehouseId getPickFromWarehouseId() {return getPickFromLocatorId().getWarehouseId();}
+
+	public HuId getPickFromHUId() {return getPickFromHU().getId();}
+
 	public boolean isPicked() {return pickedTo != null;}
+	public boolean isNotPicked() {return pickedTo == null;}
 
 	public void assertPicked()
 	{
@@ -45,7 +55,7 @@ public class PickingJobStepPickFrom
 				.build();
 	}
 
-	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo unpicked)
+	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo ignoredUnpicked)
 	{
 		return toBuilder().pickedTo(null).build();
 	}

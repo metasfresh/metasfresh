@@ -22,58 +22,118 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.rest_api.v2.SwaggerDocConstants;
+import de.metas.common.util.NumberUtils;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = JsonPaymentAllocationLine.JsonPaymentAllocationLineBuilder.class)
+@Jacksonized
 public class JsonPaymentAllocationLine
 {
 	@NonNull
-	@ApiModelProperty(required = true,
-			dataType = "java.lang.String",
-			value = "Identifier of the Invoice in question. Can be\n"
-					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-					+ "* or something like `doc-<C_Invoice.documentNo>`"
-					+ "* or something like `ext-<C_Invoice.ExternalId>`")
+	@Schema(required = true,
+			description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Nullable
 	String docBaseType;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	@Nullable
 	String docSubType;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	@Nullable
 	BigDecimal amount;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@Nullable
 	BigDecimal discountAmt;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@Nullable
 	BigDecimal writeOffAmt;
 
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonPaymentAllocationLineBuilder
+	@JsonIgnore
+	public boolean isAtLeastOneAmtSet()
 	{
+		return amount != null || discountAmt != null || writeOffAmt != null;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public BigDecimal getTotalAmt()
+	{
+		BigDecimal totalAmt = BigDecimal.ZERO;
+		if (amount != null)
+		{
+			totalAmt = totalAmt.add(amount);
+		}
+
+		if (discountAmt != null)
+		{
+			totalAmt = totalAmt.add(discountAmt);
+		}
+
+		if (writeOffAmt != null)
+		{
+			totalAmt = totalAmt.add(writeOffAmt);
+		}
+
+		return totalAmt;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public InvoiceIdentifier getInvIdentifier()
+	{
+		return InvoiceIdentifier.builder()
+				.invoiceIdentifier(invoiceIdentifier)
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.build();
+	}
+
+	@JsonIgnore
+	@NonNull
+	public JsonPaymentAllocationLine aggregate(@NonNull final JsonPaymentAllocationLine line)
+	{
+		if (!getInvIdentifier().equals(line.getInvIdentifier()))
+		{
+			throw new RuntimeException("JsonPaymentAllocationLines must share the same InvoiceIdentifier in order to be able to aggregate!"
+					+ " this.InvoiceIdentifier=" + this.getInvIdentifier()
+					+ " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
+		}
+
+		return JsonPaymentAllocationLine.builder()
+				.invoiceIdentifier(invoiceIdentifier)
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.amount(NumberUtils.sumNullSafe(amount, line.amount))
+				.discountAmt(NumberUtils.sumNullSafe(discountAmt, line.discountAmt))
+				.writeOffAmt(NumberUtils.sumNullSafe(writeOffAmt, line.writeOffAmt))
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class InvoiceIdentifier
+	{
+		@NonNull
+		String invoiceIdentifier;
+		@Nullable
+		String docBaseType;
+		@Nullable
+		String docSubType;
 	}
 }

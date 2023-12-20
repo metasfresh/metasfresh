@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getQueryString } from '../utils';
 import {
   allActionsRequest,
+  getViewFieldDropdown,
   getViewFilterParameterDropdown,
   getViewFilterParameterTypeahead,
 } from '../api/view';
@@ -23,19 +24,19 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
-  console.log('autocompleteRequest', {
-    attribute,
-    docId,
-    docType,
-    entity,
-    propertyName,
-    query,
-    rowId,
-    subentity,
-    subentityId,
-    tabId,
-    viewId,
-  });
+  // console.log('autocompleteRequest', {
+  //   attribute,
+  //   docId,
+  //   docType,
+  //   entity,
+  //   propertyName,
+  //   query,
+  //   rowId,
+  //   subentity,
+  //   subentityId,
+  //   tabId,
+  //   viewId,
+  // });
 
   // NOTE: following cases are already handled elsewhere:
   // * view attributes
@@ -94,13 +95,22 @@ export function dropdownRequest({
   tabId,
   viewId,
 }) {
-  if (entity === 'documentView' && subentity === 'filter') {
-    return getViewFilterParameterDropdown({
-      windowId: docType,
-      viewId,
-      filterId: subentityId,
-      parameterName: propertyName,
-    });
+  if (entity === 'documentView') {
+    if (subentity === 'filter') {
+      return getViewFilterParameterDropdown({
+        windowId: docType,
+        viewId,
+        filterId: subentityId,
+        parameterName: propertyName,
+      });
+    } else {
+      return getViewFieldDropdown({
+        windowId: docType,
+        viewId,
+        rowId,
+        fieldName: propertyName,
+      });
+    }
   } else {
     return axios.get(`
     ${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
@@ -199,28 +209,10 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function attachmentsRequest(entity, docType, docId) {
-  return axios.get(
-    `${config.API_URL}/${entity}/${docType}/${docId}/attachments`
-  );
-}
-
 export function processNewRecord(entity, docType, docId) {
   return axios.get(
     `${config.API_URL}/${entity}/${docType}/${docId}/processNewRecord`
   );
-}
-
-export function openFile(entity, docType, docId, fileType, fileId, options) {
-  let filenameNorm = fileId.replace(/[/\\?%*:|"<>]/g, '-');
-  filenameNorm = encodeURIComponent(filenameNorm);
-
-  let url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${filenameNorm}`;
-  if (options) {
-    url += '?' + options;
-  }
-
-  window.open(url, '_blank');
 }
 
 export function getRequest() {

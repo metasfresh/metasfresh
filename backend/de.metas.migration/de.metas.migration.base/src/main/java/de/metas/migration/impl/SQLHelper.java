@@ -22,6 +22,13 @@ package de.metas.migration.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -35,15 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableSet;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 public class SQLHelper
 {

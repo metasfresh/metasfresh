@@ -30,7 +30,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT;
 
 public class CreateBPartnerUpsertRequestProcessor implements Processor
 {

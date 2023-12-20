@@ -1,0 +1,499 @@
+# ......................................................................
+
+# DocBook XML DTD V4.5 .................................................
+
+# File docbookx.dtd ....................................................
+
+# Copyright 1992-2006 HaL Computer Systems, Inc.,
+# O'Reilly & Associates, Inc., ArborText, Inc., Fujitsu Software
+# Corporation, Norman Walsh, Sun Microsystems, Inc., and the
+# Organization for the Advancement of Structured Information
+# Standards (OASIS).
+# 
+# See also http://docbook.org/specs/
+# 
+# $Id: docbookx.dtd 6340 2006-10-03 13:23:24Z nwalsh $
+# 
+# Permission to use, copy, modify and distribute the DocBook XML DTD
+# and its accompanying documentation for any purpose and without fee
+# is hereby granted in perpetuity, provided that the above copyright
+# notice and this paragraph appear in all copies.  The copyright
+# holders make no representation about the suitability of the DTD for
+# any purpose.  It is provided "as is" without expressed or implied
+# warranty.
+# 
+# If you modify the DocBook DTD in any way, except for declaring and
+# referencing additional sets of general entities and declaring
+# additional notations, label your DTD as a variant of DocBook.  See
+# the maintenance documentation for more information.
+# 
+# Please direct all questions, bug reports, or suggestions for
+# changes to the docbook@lists.oasis-open.org mailing list. For more
+# information, see http://www.oasis-open.org/docbook/.
+
+# ......................................................................
+
+# This is the driver file for V4.5 of the DocBook DTD.
+# Please use the following formal public identifier to identify it:
+# 
+# "-//OASIS//DTD DocBook XML V4.5//EN"
+# 
+# For example, if your document's top-level element is Book, and
+# you are using DocBook directly, use the FPI in the DOCTYPE
+# declaration:
+# 
+# <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+#                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+#                [...]>
+# 
+# Or, if you have a higher-level driver file that customizes DocBook,
+# use the FPI in the parameter entity declaration:
+# 
+# <!ENTITY % DocBookDTD PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+#            "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+# %DocBookDTD;
+# 
+# See the documentation for detailed information on the parameter
+# entity and module scheme used in DocBook, customizing DocBook and
+# planning for interchange, and changes made since the last release
+# of DocBook.
+
+# ......................................................................
+
+# Enable SGML features .................................................
+
+# ......................................................................
+
+# Notation declarations ................................................
+
+include "rnc/dbnotnx.mod.rnc"
+# ......................................................................
+
+# ISO character entity sets ............................................
+
+# euro sign, U+20AC NEW
+
+# ......................................................................
+
+# DTD modules ..........................................................
+
+# Information pool ..............
+include "rnc/dbpoolx.mod.rnc"
+# Redeclaration placeholder .....
+
+# Document hierarchy ............
+include "rnc/dbhierx.mod.rnc"
+start =
+  refclass
+  | sect5
+  | sect4
+  | mediaobject
+  | sect3
+  | msgsub
+  | surname
+  | refname
+  | preface
+  | mediaobjectco
+  | itermset
+  | sect1
+  | sect2
+  | biblioset
+  | answer
+  | firstterm
+  | orderedlist
+  | editor
+  | funcprototype
+  | termdef
+  | programlistingco
+  | informalfigure
+  | attribution
+  | personblurb
+  | funcsynopsis
+  | secondary
+  | referenceinfo
+  | othername
+  | colophon
+  | \token
+  | isbn
+  | imageobjectco
+  | emphasis
+  | objectinfo
+  | citetitle
+  | glosslist
+  | member
+  | taskrelated
+  | errortext
+  | biblioref
+  | firstname
+  | ooclass
+  | qandadiv
+  | errorcode
+  | setinfo
+  | edition
+  | inlinemediaobject
+  | sgmltag
+  | menuchoice
+  | informaltable
+  | classsynopsisinfo
+  | literallayout
+  | partinfo
+  | confnum
+  | returnvalue
+  | optional
+  | oointerface
+  | collabname
+  | programlisting
+  | orgdiv
+  | structfield
+  | sbr
+  | fax
+  | lineage
+  | label
+  | code
+  | country
+  | co
+  | printhistory
+  | example
+  | sect1info
+  | authorgroup
+  | set
+  | msgaud
+  | author
+  | jobtitle
+  | chapter
+  | area
+  | areaset
+  | alt
+  | refsect3
+  | refsect2
+  | refentry
+  | legalnotice
+  | refsect1
+  | calloutlist
+  | constant
+  | indexentry
+  | ooexception
+  | keycode
+  | highlights
+  | replaceable
+  | seg
+  | volumenum
+  | stepalternatives
+  | tbody
+  | see
+  | bibliocoverage
+  | varlistentry
+  | revdescription
+  | tocpart
+  | systemitem
+  | glossdiv
+  | textobject
+  | corpauthor
+  | funcparams
+  | street
+  | package
+  | productnumber
+  | segmentedlist
+  | videoobject
+  | msgexplan
+  | entrytbl
+  | collab
+  | bibliodiv
+  | refentryinfo
+  | tocentry
+  | refsect3info
+  | revhistory
+  | screen
+  | bibliolist
+  | guiicon
+  | classname
+  | simplelist
+  | olink
+  | row
+  | simplemsgentry
+  | synopfragment
+  | confdates
+  | revnumber
+  | bookinfo
+  | refmiscinfo
+  | tocback
+  | primaryie
+  | glossseealso
+  | destructorsynopsis
+  | corpcredit
+  | hardware
+  | paramdef
+  | subject
+  | publisher
+  | secondaryie
+  | graphicco
+  | coref
+  | note
+  | methodparam
+  | mousebutton
+  | informalexample
+  | void
+  | refdescriptor
+  | errortype
+  | glosssee
+  | keysym
+  | confgroup
+  | warning
+  | markup
+  | methodsynopsis
+  | manvolnum
+  | accel
+  | type
+  | phrase
+  | primary
+  | action
+  | glossentry
+  | shortaffil
+  | imageobject
+  | sect3info
+  | issuenum
+  | screenshot
+  | funcdef
+  | superscript
+  | bibliomset
+  | biblioentry
+  | biblioid
+  | inlinegraphic
+  | tocchap
+  | refpurpose
+  | msgentry
+  | glossterm
+  | ulink
+  | releaseinfo
+  | refnamediv
+  | taskprerequisites
+  | othercredit
+  | productname
+  | abstract
+  | application
+  | callout
+  | bibliographyinfo
+  | acronym
+  | important
+  | task
+  | keycombo
+  | cmdsynopsis
+  | interface
+  | medialabel
+  | database
+  | section
+  | refsynopsisdiv
+  | sidebarinfo
+  | qandaentry
+  | subtitle
+  | msgtext
+  | footnoteref
+  | keycap
+  | step
+  | textdata
+  | seealso
+  | interfacename
+  | envar
+  | guimenuitem
+  | prefaceinfo
+  | formalpara
+  | refsection
+  | pob
+  | year
+  | appendixinfo
+  | option
+  | imagedata
+  | screeninfo
+  | confsponsor
+  | copyright
+  | postcode
+  | indexinfo
+  | guibutton
+  | trademark
+  | modespec
+  | msginfo
+  | lot
+  | sect2info
+  | bibliomixed
+  | graphic
+  | citebiblioid
+  | articleinfo
+  | publishername
+  | date
+  | colspec
+  | simplesect
+  | figure
+  | conftitle
+  | equation
+  | procedure
+  | setindex
+  | holder
+  | blockquote
+  | para
+  | structname
+  | msgset
+  | xref
+  | abbrev
+  | prompt
+  | part
+  | blockinfo
+  | citerefentry
+  | col
+  | glossary
+  | seglistitem
+  | tr
+  | beginpage
+  | td
+  | glossdef
+  | th
+  | tertiaryie
+  | tertiary
+  | msgrel
+  | sectioninfo
+  | refentrytitle
+  | areaspec
+  | index
+  | userinput
+  | bibliorelation
+  | sect5info
+  | tgroup
+  | ackno
+  | uri
+  | msg
+  | titleabbrev
+  | modifier
+  | refmeta
+  | email
+  | refsynopsisdivinfo
+  | revremark
+  | classsynopsis
+  | contractnum
+  | toc
+  | invpartnumber
+  | guisubmenu
+  | seealsoie
+  | chapterinfo
+  | synopsis
+  | subjectset
+  | subjectterm
+  | question
+  | seeie
+  | exceptionname
+  | thead
+  | tocfront
+  | indexterm
+  | guimenu
+  | keywordset
+  | pagenums
+  | bridgehead
+  | reference
+  | mathphrase
+  | methodname
+  | msgorig
+  | artpagenums
+  | toclevel5
+  | toclevel4
+  | toclevel1
+  | bibliomisc
+  | colgroup
+  | toclevel3
+  | toclevel2
+  | tip
+  | bibliography
+  | city
+  | arg
+  | revision
+  | affiliation
+  | audioobject
+  | variablelist
+  | citation
+  | pubdate
+  | honorific
+  | synopfragmentref
+  | sidebar
+  | table
+  | refsect2info
+  | subscript
+  | footnote
+  | varname
+  | epigraph
+  | spanspec
+  | issn
+  | informalequation
+  | wordasword
+  | link
+  | constructorsynopsis
+  | sect4info
+  | title
+  | videodata
+  | command
+  | otheraddr
+  | refsect1info
+  | screenco
+  | simpara
+  | dedication
+  | caption
+  | itemizedlist
+  | qandaset
+  | article
+  | glossaryinfo
+  | contrib
+  | pubsnumber
+  | appendix
+  | refsectioninfo
+  | initializer
+  | phone
+  | remark
+  | bibliosource
+  | function
+  | anchor
+  | authorblurb
+  | orgname
+  | lineannotation
+  | symbol
+  | listitem
+  | property
+  | tfoot
+  | msgmain
+  | contractsponsor
+  | varargs
+  | personname
+  | indexdiv
+  | tasksummary
+  | authorinitials
+  | caution
+  | foreignphrase
+  | funcsynopsisinfo
+  | state
+  | setindexinfo
+  | inlineequation
+  | substeps
+  | shortcut
+  | msglevel
+  | parameter
+  | quote
+  | computeroutput
+  | audiodata
+  | seriesvolnums
+  | errorname
+  | keyword
+  | corpname
+  | fieldsynopsis
+  | address
+  | term
+  | entry
+  | book
+  | filename
+  | guilabel
+  | group
+  | partintro
+  | segtitle
+  | lotentry
+  | literal
+# ......................................................................
+
+# Other general entities ...............................................
+
+# End of DocBook XML DTD V4.5 ..........................................
+
+# ......................................................................

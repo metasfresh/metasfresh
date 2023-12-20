@@ -23,19 +23,24 @@
 package de.metas.project.workorder.project;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -46,6 +51,9 @@ public class WOProject
 
 	@NonNull
 	OrgId orgId;
+
+	@NonNull
+	ClientId clientId;
 
 	@NonNull
 	CurrencyId currencyId;
@@ -106,4 +114,34 @@ public class WOProject
 
 	@Nullable
 	Instant woProjectCreatedDate;
+
+	@Nullable
+	UserId specialistConsultantID;
+
+	@Nullable
+	InternalPriority internalPriority;
+
+	@Nullable
+	RStatusId statusId;
+
+	@NonNull
+	public Optional<CalendarDateRange> getCalendarDateRange()
+	{
+		if (dateContract == null || dateFinish == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(CalendarDateRange.builder()
+								   .startDate(dateContract)
+								   .endDate(dateFinish)
+								   .build());
+	}
+
+	@NonNull
+	public Optional<String> getExternalIdAsString()
+	{
+		return Optional.ofNullable(externalId)
+				.map(ExternalId::getValue);
+	}
 }

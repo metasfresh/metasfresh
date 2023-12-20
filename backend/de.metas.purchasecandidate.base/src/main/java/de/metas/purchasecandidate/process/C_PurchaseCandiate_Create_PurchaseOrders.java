@@ -1,17 +1,6 @@
 package de.metas.purchasecandidate.process;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.DocStatus;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
-import de.metas.purchasecandidate.command.CreatePurchaseOrderFromRequisitionCommand;
-import de.metas.order.process.C_Order_CreationProcess;
-import de.metas.process.Param;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -21,10 +10,8 @@ import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrd
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.model.I_C_Order;
-
-import java.sql.Timestamp;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 
 /*
  * #%L
@@ -59,13 +46,12 @@ public class C_PurchaseCandiate_Create_PurchaseOrders
 	{
 		if (!I_C_PurchaseCandidate.Table_Name.equals(context.getTableName()))
 		{
-			ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class)
-				.stream()
-				.filter(I_C_PurchaseCandidate::isPrepared)
-				.findAny().isPresent();
+		final boolean containsEligibleRecords = context
+				.streamSelectedModels(I_C_PurchaseCandidate.class)
+				.anyMatch(I_C_PurchaseCandidate::isPrepared);
 
 		return ProcessPreconditionsResolution.acceptIf(containsEligibleRecords);
 	}
@@ -78,11 +64,9 @@ public class C_PurchaseCandiate_Create_PurchaseOrders
 		final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.filter(getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)))
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsPrepared, true)
 				.create()
-				.stream()
-				.filter(I_C_PurchaseCandidate::isPrepared)
-				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
-				.map(PurchaseCandidateId::ofRepoId)
+				.iterateAndStreamIds(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		createPurchaseOrders(purchaseCandidateIds);
 

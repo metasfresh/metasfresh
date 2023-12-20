@@ -22,12 +22,11 @@
 
 package de.metas.banking.camt53;
 
+import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.io.InputStream;
 
 @Value
 @Builder
@@ -35,9 +34,9 @@ public class ImportBankStatementRequest
 {
 	@NonNull
 	BankStatementImportFileId bankStatementImportFileId;
-	
+
 	@NonNull
-	InputStream camt53File;
+	AttachmentEntryDataResource camt53File;
 
 	boolean isMatchAmounts;
 }

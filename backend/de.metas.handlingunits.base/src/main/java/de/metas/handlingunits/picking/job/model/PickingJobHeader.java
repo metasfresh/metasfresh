@@ -16,9 +16,11 @@ public class PickingJobHeader
 {
 	@NonNull String salesOrderDocumentNo;
 	@NonNull ZonedDateTime preparationDate;
+	@NonNull ZonedDateTime deliveryDate;
 	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
+	boolean isAllowPickingAnyHU;
 	@Nullable UserId lockedBy;
 	boolean isPickingReviewRequired;
 }

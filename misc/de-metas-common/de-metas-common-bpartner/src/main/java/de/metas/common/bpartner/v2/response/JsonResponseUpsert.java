@@ -24,14 +24,14 @@ package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
 
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
+@Schema(description = "Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
 @JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)

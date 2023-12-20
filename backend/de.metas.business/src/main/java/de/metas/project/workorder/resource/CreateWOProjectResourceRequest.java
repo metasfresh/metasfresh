@@ -45,10 +45,10 @@ public class CreateWOProjectResourceRequest
 	@NonNull
 	WOProjectStepId woProjectStepId;
 
-	@NonNull
+	@Nullable
 	Instant assignDateFrom;
 
-	@NonNull
+	@Nullable
 	Instant assignDateTo;
 
 	@NonNull

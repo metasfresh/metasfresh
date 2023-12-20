@@ -157,6 +157,6 @@ public class PPOrderCostsTest
 			final PPOrderCosts orderCosts,
 			final ProductId productId)
 	{
-		return assertThat(getPostCalculationCostAmt(orderCosts, productId).getValue());
+		return assertThat(getPostCalculationCostAmt(orderCosts, productId).toBigDecimal());
 	}
 }

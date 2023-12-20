@@ -1,9 +1,11 @@
 @from:cucumber
 @topic:invoiceAddress
+@ghActions:run_on_executor5
 Feature: Compensation Group
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-02-25T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -136,7 +138,7 @@ Feature: Compensation Group
       | invoice_1               | customer_bp_30_02        | bpLocation_2                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_1               | test_product_30_01      | 1           | true      |
       | il2                         | invoice_1               | test_product_30_02      | 1           | true      |
 
@@ -240,7 +242,7 @@ Feature: Compensation Group
       | invoice_2               | customer_bp_30_02        | bpLocation_2                      | ref_12302       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_2               | test_product_30_01      | 1           | true      |
       | il2                         | invoice_2               | test_product_30_02      | 1           | true      |
 

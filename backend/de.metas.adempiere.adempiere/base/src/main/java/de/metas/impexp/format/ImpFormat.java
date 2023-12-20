@@ -1,14 +1,19 @@
 package de.metas.impexp.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
+import de.metas.report.ReportResultData;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Import Format Definition
@@ -77,8 +82,32 @@ public final class ImpFormat
 		return getImportTableDescriptor().getTableName();
 	}
 
-	public String getImportKeyColumnName()
+	public char getCellDelimiterChar()
 	{
-		return getImportTableDescriptor().getKeyColumnName();
+		return formatType.getCellDelimiterChar();
+	}
+
+	@NonNull
+	public String getContentType()
+	{
+		return formatType.getContentType();
+	}
+
+	public ReportResultData generateTabularTemplate()
+	{
+		final String delimiter = String.valueOf(getCellDelimiterChar());
+
+		final String content = columns
+				.stream()
+				.sorted(Comparator.comparing(ImpFormatColumn::getStartNo))
+				.map(ImpFormatColumn::getName)
+				.collect(Collectors.joining(delimiter));
+
+		return ReportResultData.builder()
+				.reportData(new ByteArrayResource(content.getBytes(charset)))
+				.reportFilename("Template_" + name + "_" + SystemTime.asInstant() + formatType.getFileExtensionIncludingDot())
+				.reportContentType(getContentType())
+				.build();
+
 	}
 }

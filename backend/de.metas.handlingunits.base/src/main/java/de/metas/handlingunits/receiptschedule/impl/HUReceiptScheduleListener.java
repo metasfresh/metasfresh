@@ -51,7 +51,7 @@ public class HUReceiptScheduleListener extends ReceiptScheduleListenerAdapter
 		final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
-		final List<I_M_ReceiptSchedule_Alloc> allocs = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, trxName);
+		final List<I_M_ReceiptSchedule_Alloc> allocs = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, trxName);
 
 		huReceiptScheduleBL.destroyHandlingUnits(allocs, trxName);
 	}

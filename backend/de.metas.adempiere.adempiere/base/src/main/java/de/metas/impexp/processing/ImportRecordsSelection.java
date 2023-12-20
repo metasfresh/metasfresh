@@ -3,6 +3,7 @@ package de.metas.impexp.processing;
 import de.metas.process.PInstanceId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.service.ClientId;
@@ -38,6 +39,8 @@ public final class ImportRecordsSelection
 	private final String importTableName;
 	private final String importKeyColumnName;
 	private final ClientId clientId;
+
+	@Getter
 	private final PInstanceId selectionId;
 
 	@Builder

@@ -62,6 +62,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	@NonNull final TooltipType tooltipType;
 	@Nullable final WindowId zoomIntoWindowId;
 
+	@Nullable final Integer pageLength;
+
 	@Builder(toBuilder = true)
 	private SqlLookupDescriptor(
 			@NonNull final CompositeSqlLookupFilter filters,
@@ -71,7 +73,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			@NonNull final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression,
 			@NonNull final SqlForFetchingLookups sqlForFetchingExpression,
 			@NonNull final TooltipType tooltipType,
-			@Nullable final WindowId zoomIntoWindowId)
+			@Nullable final WindowId zoomIntoWindowId,
+			@Nullable final Integer pageLength)
 	{
 		this.filters = filters;
 		this.highVolume = highVolume;
@@ -82,6 +85,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		this.lookupTableName = lookupTableName;
 		this.tooltipType = tooltipType;
 		this.zoomIntoWindowId = zoomIntoWindowId;
+		this.pageLength = pageLength;
 
 		this.lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.builder()
 				.lookupTableName(lookupTableName)
@@ -90,6 +94,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.postQueryPredicate(this.filters.getPostQueryPredicate())
 				.zoomIntoWindowId(Optional.ofNullable(zoomIntoWindowId))
 				.tooltipType(tooltipType)
+				.pageLength(pageLength)
 				.build();
 	}
 

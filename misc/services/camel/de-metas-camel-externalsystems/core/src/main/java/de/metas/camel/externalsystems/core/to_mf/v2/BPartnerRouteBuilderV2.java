@@ -29,20 +29,25 @@ import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_BASE_URL;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
+import static de.metas.common.rest_api.v2.APIConstants.CACHE_CONTROL_NO_CACHE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -90,28 +95,11 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				.routeId(RETRIEVE_BPARTNER_ROUTE_ID)
 				.streamCaching()
 
-				.process(exchange -> {
-					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof BPRetrieveCamelRequest))
-					{
-						throw new RuntimeCamelException("The route " + RETRIEVE_BPARTNER_ROUTE_ID + " requires the body to be instanceof BPRetrieveCamelRequest."
-																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
-					}
-
-					final BPRetrieveCamelRequest retrieveCamelRequest = ((BPRetrieveCamelRequest)lookupRequest);
-
-					exchange.getIn().setHeader(HEADER_BPARTNER_IDENTIFIER, retrieveCamelRequest.getBPartnerIdentifier());
-					exchange.getIn().setHeader(HEADER_EXTERNALSYSTEM_CONFIG_ID, retrieveCamelRequest.getExternalSystemConfigId().getValue());
-
-					if (retrieveCamelRequest.getAdPInstanceId() != null)
-					{
-						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, retrieveCamelRequest.getAdPInstanceId().getValue());
-					}
-				}).id(RETRIEVE_BPARTNER_PROCESSOR_ID)
+				.process(this::processBPRetrieveCamelRequest).id(RETRIEVE_BPARTNER_PROCESSOR_ID)
 
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
-				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
+				.toD("${header." + HEADER_TARGET_URI + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
@@ -152,5 +140,40 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				+ "?includingProcessed=" + creditLimitDeleteRequest.isIncludingProcessed();
 
 		exchange.getIn().setHeader(HEADER_TARGET_URI, deleteCreditLimitURL);
+	}
+
+	private void processBPRetrieveCamelRequest(@NonNull final Exchange exchange)
+	{
+		final var lookupRequest = exchange.getIn().getBody();
+		if (!(lookupRequest instanceof BPRetrieveCamelRequest))
+		{
+			throw new RuntimeCamelException("The route " + RETRIEVE_BPARTNER_ROUTE_ID + " requires the body to be instanceof BPRetrieveCamelRequest."
+													+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+		}
+
+		final BPRetrieveCamelRequest retrieveCamelRequest = ((BPRetrieveCamelRequest)lookupRequest);
+
+		exchange.getIn().setHeader(HEADER_EXTERNALSYSTEM_CONFIG_ID, retrieveCamelRequest.getExternalSystemConfigId().getValue());
+
+		if (retrieveCamelRequest.getAdPInstanceId() != null)
+		{
+			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, retrieveCamelRequest.getAdPInstanceId().getValue());
+		}
+
+		if (retrieveCamelRequest.isNoCache())
+		{
+			exchange.getIn().setHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
+		}
+
+		final String bpartnerBaseURL = exchange.getContext().getPropertiesComponent().resolveProperty(MF_UPSERT_BPARTNER_V2_BASE_URL)
+				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + MF_UPSERT_BPARTNER_V2_BASE_URL));
+
+		final String retrieveBPartnerURL = Stream.of(bpartnerBaseURL,
+													 retrieveCamelRequest.getOrgCode(),
+													 retrieveCamelRequest.getBPartnerIdentifier())
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining("/"));
+
+		exchange.getIn().setHeader(HEADER_TARGET_URI, retrieveBPartnerURL);
 	}
 }

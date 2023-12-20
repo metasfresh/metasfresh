@@ -1,10 +1,12 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: create production simulation
   As a user
   I want to simulate the production of a Sales Order's line
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
 
     And load M_AttributeSet:

@@ -22,22 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -45,18 +29,30 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 
-/**
- * @see AbstractDoubleReceiptQtyOverride
- */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,/* ShutdownListener.class,*/ InvoiceCandidateRecordService.class, MoneyService.class, CurrencyRepository.class })
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 public class TestDoubleShipmentsInvoiceJustOne extends AbstractDoubleReceiptQtyOverride
 {
 	@Override
+	public void init()
+	{
+		super.init();
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+	}
+
+	@Override
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		Assertions.assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 
 		final IInvoiceHeader invoice1 = invoices.remove(0);
 
@@ -65,14 +61,14 @@ public class TestDoubleShipmentsInvoiceJustOne extends AbstractDoubleReceiptQtyO
 
 		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-		assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
+		Assertions.assertThat(invoiceLines1).as("We are expecting one invoice line: " + invoiceLines1).hasSize(1);
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
-		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
+		Assertions.assertThat(il1).as("Missing IInvoiceLineRW for iol111=" + iol111).isNotNull();
 		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol121);
-		assertNull("Unexpected IInvoiceLineRW for iol121=" + iol121, il2);
+		Assertions.assertThat(il2).as("Unexpected IInvoiceLineRW for iol121=" + iol121).isNull();
 	}
 
 	@Override

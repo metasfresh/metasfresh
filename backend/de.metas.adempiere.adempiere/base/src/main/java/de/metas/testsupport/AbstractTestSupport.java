@@ -42,6 +42,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +50,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -113,22 +116,6 @@ public class AbstractTestSupport
 		}
 
 		return productPrice;
-
-	}
-
-	protected I_M_DiscountSchemaLine discountSchemaLine(final int discountSchemaLineId)
-	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_DiscountSchemaLine discountSchemaLine = db.getFirstOnly(I_M_DiscountSchemaLine.class, pojo -> Objects.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId));
-
-		if (discountSchemaLine == null)
-		{
-			discountSchemaLine = db.newInstance(Env.getCtx(), I_M_DiscountSchemaLine.class);
-			discountSchemaLine.setM_DiscountSchemaLine_ID(discountSchemaLineId);
-			InterfaceWrapperHelper.save(discountSchemaLine);
-		}
-
-		return discountSchemaLine;
 
 	}
 
@@ -388,5 +375,26 @@ public class AbstractTestSupport
 		}
 
 		return InterfaceWrapperHelper.create(inOutLine, clazz);
+	}
+
+	public I_C_PaymentTerm paymentTerm(final String name)
+	{
+		final POJOLookupMap db = POJOLookupMap.get();
+		I_C_PaymentTerm paymentTerm = db.getFirstOnly(I_C_PaymentTerm.class, pojo -> Objects.equals(pojo.getName(), name));
+
+		if (paymentTerm == null)
+		{
+			paymentTerm = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+			paymentTerm.setValue(name);
+			paymentTerm.setName(name);
+			paymentTerm.setNetDays(10);
+			paymentTerm.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+			paymentTerm.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
+
+			paymentTerm.setAD_Org_ID(0);
+			InterfaceWrapperHelper.save(paymentTerm);
+		}
+
+		return paymentTerm;
 	}
 }

@@ -68,6 +68,8 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAllowMultiDebitAndCredit;
+
 	boolean isAutoSetDebtoridAndCreditorid;
 	int debtorIdPrefix;
 	int creditorIdPrefix;
@@ -104,6 +106,11 @@ public class AcctSchema
 	public boolean isDisallowPostingForOrg(@NonNull final OrgId orgId)
 	{
 		return !isAllowPostingForOrg(orgId);
+	}
+
+	public boolean isElementEnabled(@NonNull final AcctSchemaElementType elementType)
+	{
+		return getSchemaElements().isElementEnabled(elementType);
 	}
 
 	public AcctSchemaElement getSchemaElementByType(@NonNull final AcctSchemaElementType elementType)

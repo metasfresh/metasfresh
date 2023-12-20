@@ -1,10 +1,19 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
+import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -16,11 +25,12 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_DocType;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -36,9 +46,16 @@ import java.util.Set;
  *
  * @author tsa
  */
+@ToString
 public class InvoiceHeaderImplBuilder
 {
-	private I_C_DocType docTypeInvoice = null;
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
+
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
+
+	private boolean isTakeDocTypeFromPool = false;
+
+	private DocTypeId docTypeInvoiceId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -46,6 +63,7 @@ public class InvoiceHeaderImplBuilder
 
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
+	private LocalDate _overrideDueDate;
 
 	private int AD_Org_ID;
 
@@ -64,7 +82,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID;
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -82,8 +100,6 @@ public class InvoiceHeaderImplBuilder
 
 	private Boolean taxIncluded = null;
 
-	private int C_Async_Batch_ID;
-
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
@@ -94,29 +110,45 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_Activity_ID;
 
-	/* package */ InvoiceHeaderImplBuilder()
-	{
-		super();
-	}
+	@Nullable
+	private ForexContractRef forexContractRef;
 
-	@Override
-	public String toString()
+	private String invoiceAdditionalText;
+	private boolean notShowOriginCountry;
+
+	private int C_PaymentInstruction_ID;
+
+	private int auctionId;
+
+	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
+	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
+	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
+
+	private Dimension dimension;
+
+	private int C_Tax_Departure_Country_ID;
+
+	@Getter
+	private int bankAccountId;
+
+	InvoiceHeaderImplBuilder()
 	{
-		return ObjectUtils.toString(this);
 	}
 
 	public InvoiceHeaderImpl build()
 	{
 		final InvoiceHeaderImpl invoiceHeader = new InvoiceHeaderImpl();
 		invoiceHeader.setOrgId(OrgId.ofRepoId(getAD_Org_ID()));
-		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
-		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());
+		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
+		invoiceHeader.setDocTypeInvoiceId(getDocTypeInvoiceId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
+		invoiceHeader.setIsTakeDocTypeFromPool(isTakeDocTypeFromPool());
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
+		invoiceHeader.setForexContractRef(forexContractRef);
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax
@@ -125,6 +157,7 @@ public class InvoiceHeaderImplBuilder
 		// Dates
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
+		invoiceHeader.setOverrideDueDate(getOverrideDueDate());
 
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
@@ -156,6 +189,19 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setProjectId(ProjectId.ofRepoIdOrNull(getC_Project_ID()));
 		invoiceHeader.setActivityId(ActivityId.ofRepoIdOrNull(getC_Activity_ID()));
 
+		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
+		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
+		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+		invoiceHeader.setC_Tax_Departure_Country_ID(CountryId.ofRepoIdOrNull(getC_Tax_Departure_Country_ID()));
+		invoiceHeader.setBankAccountId(BankAccountId.ofRepoIdOrNull(getBankAccountId()));
+
+		invoiceHeader.setDimension(this.dimension);
+
+		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
+		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
+		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
+		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+
 		return invoiceHeader;
 	}
 
@@ -163,16 +209,6 @@ public class InvoiceHeaderImplBuilder
 	String getExternalId()
 	{
 		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
-	}
-
-	private int getC_Async_Batch_ID()
-	{
-		return C_Async_Batch_ID;
-	}
-
-	public void setC_Async_Batch_ID(final int asyncBatchId)
-	{
-		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
 	}
 
 	private int getC_Incoterms_ID()
@@ -195,14 +231,53 @@ public class InvoiceHeaderImplBuilder
 		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
-	public I_C_DocType getC_DocTypeInvoice()
+	@Nullable
+	public DocTypeInvoicingPoolId getDocTypeInvoicingPoolId()
 	{
-		return docTypeInvoice;
+		return docTypeInvoicingPoolId;
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docTypeInvoice)
+	public void setDocTypeInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
-		this.docTypeInvoice = checkOverrideModel("DocTypeInvoice", this.docTypeInvoice, docTypeInvoice);
+		if (this.docTypeInvoicingPoolId != null && !this.docTypeInvoicingPoolId.equals(docTypeInvoicingPoolId))
+		{
+			throw new AdempiereException("DocTypeInvoicingPoolIds do not match!")
+					.appendParametersToMessage()
+					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
+					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
+		}
+
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Nullable
+	public DocTypeId getDocTypeInvoiceId()
+	{
+		return docTypeInvoiceId;
+	}
+
+	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
+	{
+		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId, docTypeInvoiceId))
+		{
+			if (isEnforceUnique)
+			{
+				throw new AdempiereException("DocTypeInvoiceIds do not match!")
+						.appendParametersToMessage()
+						.setParameter("this.docTypeInvoiceId", this.docTypeInvoiceId)
+						.setParameter("docTypeInvoiceId", docTypeInvoiceId);
+			}
+
+			else
+			{
+				this.isTakeDocTypeFromPool = true;
+			}
+		}
+
+		else
+		{
+			this.docTypeInvoiceId = docTypeInvoiceId;
+		}
 	}
 
 	public String getPOReference()
@@ -247,6 +322,11 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
+	public LocalDate getOverrideDueDate()
+	{
+		return _overrideDueDate;
+	}
+
 	public void setPaymentRule(@Nullable final String paymentRule)
 	{
 		this.paymentRule = paymentRule;
@@ -260,6 +340,11 @@ public class InvoiceHeaderImplBuilder
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
 	}
 
 	public int getAD_Org_ID()
@@ -314,8 +399,7 @@ public class InvoiceHeaderImplBuilder
 			}
 		}
 
-
-		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		if (this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
 		{
 			this.billTo = billTo.withContactId(null);
 		}
@@ -331,21 +415,26 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
-	public int get_SaleRep_ID ()
+	public int get_SaleRep_ID()
 	{
 		return SalesRep_User_ID;
 	}
-
 
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
 
-
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
+		}
+		else if (salesRep_ID != SalesRep_User_ID)
+		{
+			SalesRep_User_ID = -1;
+		}
 	}
 
 	public int getC_Currency_ID()
@@ -406,6 +495,16 @@ public class InvoiceHeaderImplBuilder
 	public void setIsSOTrx(final boolean isSOTrx)
 	{
 		this.isSOTrx = checkOverrideBoolean("IsSOTrx", this.isSOTrx, isSOTrx);
+	}
+
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
 	}
 
 	public int getM_InOut_ID()
@@ -597,5 +696,121 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Activity_ID(final int activityId)
 	{
 		C_Activity_ID = checkOverrideID("C_Activity_ID", C_Activity_ID, activityId);
+	}
+
+	public void setForexContractRef(@Nullable final ForexContractRef forexContractRef)
+	{
+		this.forexContractRef = forexContractRef;
+	}
+
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
+	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setDimension(@NonNull final Dimension dimension)
+	{
+		this.dimension = dimension;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
+	}
+
+	public int getC_PaymentInstruction_ID()
+	{
+		return C_PaymentInstruction_ID;
+	}
+
+	public void setC_PaymentInstruction_ID(final int c_PaymentInstruction_ID)
+	{
+		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
+	}
+
+	private int getAuctionId()
+	{
+		return auctionId;
+	}
+
+	public void setAuctionId(final int auctionId)
+	{
+		this.auctionId = checkOverrideID("C_Auction_ID", this.auctionId, auctionId);
+	}
+
+	public int getC_Harvesting_Calendar_ID()
+	{
+		return C_Harvesting_Calendar_ID;
+	}
+
+	public void setC_Harvesting_Calendar_ID(final int calendarId)
+	{
+		if (C_Harvesting_Calendar_ID == REPO_ID_UNSET_VALUE)
+		{
+			C_Harvesting_Calendar_ID = calendarId;
+		}
+		else if (calendarId != C_Harvesting_Calendar_ID)
+		{
+			C_Harvesting_Calendar_ID = -1;
+		}
+	}
+
+	public int getHarvesting_Year_ID()
+	{
+		return Harvesting_Year_ID;
+	}
+
+	public void setHarvesting_Year_ID(final int yearId)
+	{
+		if (Harvesting_Year_ID == REPO_ID_UNSET_VALUE)
+		{
+			Harvesting_Year_ID = yearId;
+		}
+		else if (yearId != Harvesting_Year_ID)
+		{
+			Harvesting_Year_ID = -1;
+		}
+	}
+
+	public int getM_Warehouse_ID()
+	{
+		return M_Warehouse_ID;
+	}
+
+	public void setM_Warehouse_ID(final int warehouseId)
+	{
+		if (M_Warehouse_ID == REPO_ID_UNSET_VALUE)
+		{
+			M_Warehouse_ID = warehouseId;
+		}
+		else if (warehouseId != M_Warehouse_ID)
+		{
+			M_Warehouse_ID = -1;
+		}
+	}
+
+	public int getC_Tax_Departure_Country_ID()
+	{
+		return C_Tax_Departure_Country_ID;
+	}
+
+	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
+	{
+		this.C_Tax_Departure_Country_ID = checkOverrideID("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	public void setBankAccountId(final int bankAccountId)
+	{
+		this.bankAccountId = checkOverrideID("C_BP_BankAccount_ID", this.bankAccountId, bankAccountId);
 	}
 }

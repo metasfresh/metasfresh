@@ -22,15 +22,13 @@ package de.metas.currency.impl;
  * #L%
  */
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -38,10 +36,11 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
-import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,6 +51,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -84,15 +84,13 @@ public class CurrencyBL implements ICurrencyBL
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId)
 	{
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-		final AcctSchema as = acctSchemaDAO.getByClientAndOrg(adClientId, adOrgId);
-		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
-
-		return as.getCurrencyId();
+		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+		return acctSchemaBL.getAcctCurrencyId(adClientId, adOrgId);
 	}
 
 	@Override
-	public @NonNull BigDecimal convertBase(
+	@NonNull
+	public BigDecimal convertBase(
 			final BigDecimal amt,
 			final CurrencyId currencyFromId,
 			@NonNull final Instant convDate,
@@ -177,9 +175,16 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}    // convert
 
-	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
+	@Override
+	public CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
+	}
+
+	@Override
+	public CurrencyPrecision getCostingPrecision(final CurrencyId currencyId)
+	{
+		return currencyDAO.getCostingPrecision(currencyId);
 	}
 
 	@Override
@@ -227,9 +232,9 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	@NonNull
 	public CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull LocalDateAndOrgId conversionDate,
-			@Nullable CurrencyConversionTypeId conversionTypeId,
-			@NonNull ClientId clientId)
+			@NonNull final LocalDateAndOrgId conversionDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId)
 	{
 		final Instant conversionDateEffective = conversionDate.toInstant(orgDAO::getTimeZone);
 		final OrgId orgId = conversionDate.getOrgId();
@@ -243,6 +248,15 @@ public class CurrencyBL implements ICurrencyBL
 				.clientId(clientId)
 				.orgId(orgId)
 				.build();
+	}
+
+	@Override
+	public @NonNull CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull final Instant conversionDate,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		return createCurrencyConversionContext(conversionDate, (CurrencyConversionTypeId)null, clientId, orgId);
 	}
 
 	@Override
@@ -326,6 +340,7 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}
 
+	@NonNull
 	private CurrencyConversionTypeId getDefaultConversionTypeId(
 			final ClientId adClientId,
 			final OrgId adOrgId,
@@ -338,6 +353,22 @@ public class CurrencyBL implements ICurrencyBL
 	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
 	{
 		return currencyDAO.getConversionTypeId(type);
+	}
+
+	@Override
+	@NonNull
+	public CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull final OrgId orgId, @Nullable final String conversionTypeName)
+	{
+		if (Check.isBlank(conversionTypeName))
+		{
+			final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
+
+			return getDefaultConversionTypeId(clientId, orgId, SystemTime.asInstant());
+		}
+
+		final ConversionTypeMethod conversionTypeMethod = ConversionTypeMethod.ofName(conversionTypeName);
+
+		return getCurrencyConversionTypeId(conversionTypeMethod);
 	}
 
 	@Nullable
@@ -446,13 +477,43 @@ public class CurrencyBL implements ICurrencyBL
 		return Money.of(currencyConversionResult.getAmount(), currencyToId);
 	}
 
-	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
+	private static CurrencyConversionResult.CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()
 				.clientId(conversionCtx.getClientId())
 				.orgId(conversionCtx.getOrgId())
 				.conversionDate(conversionCtx.getConversionDate())
 				.conversionTypeId(conversionCtx.getConversionTypeId());
+	}
+
+	@Override
+	public Money convert(
+			@NonNull final Money amount,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final LocalDate conversionDate,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
+		{
+			return amount;
+		}
+		else if(amount.isZero())
+		{
+			return Money.zero(toCurrencyId);
+		}
+
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				LocalDateAndOrgId.ofLocalDate(conversionDate, clientAndOrgId.getOrgId()),
+				(CurrencyConversionTypeId)null,
+				clientAndOrgId.getClientId());
+
+		final CurrencyConversionResult conversionResult = convert(
+				conversionCtx,
+				amount.toBigDecimal(),
+				amount.getCurrencyId(),
+				toCurrencyId);
+
+		return Money.of(conversionResult.getAmount(), toCurrencyId);
 	}
 
 }

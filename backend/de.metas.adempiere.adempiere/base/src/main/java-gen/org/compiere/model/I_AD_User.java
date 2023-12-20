@@ -701,6 +701,7 @@ public interface I_AD_User
 
 	/**
 	 * Set EMail User ID.
+	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -1106,6 +1107,27 @@ public interface I_AD_User
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
 
 	/**
+	 * Set Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningContact (boolean IsDunningContact);
+
+	/**
+	 * Get Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDunningContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
+	String COLUMNNAME_IsDunningContact = "IsDunningContact";
+
+	/**
 	 * Set Dunning Default.
 	 * Dunning Default
 	 *
@@ -1123,7 +1145,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean IsDunningDefault();
+	boolean isDunningDefault();
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
 	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
@@ -1322,6 +1344,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact_Default = new ModelColumn<>(I_AD_User.class, "IsPurchaseContact_Default", null);
 	String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
+
+	/**
+	 * Set Receive Mass Dunning Reports.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceiveMassDunningReports (boolean IsReceiveMassDunningReports);
+
+	/**
+	 * Get Receive Mass Dunning Reports.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceiveMassDunningReports();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsReceiveMassDunningReports = new ModelColumn<>(I_AD_User.class, "IsReceiveMassDunningReports", null);
+	String COLUMNNAME_IsReceiveMassDunningReports = "IsReceiveMassDunningReports";
 
 	/**
 	 * Set Sales Contact.
@@ -1565,6 +1608,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
 	String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_Default_ID (int MKTG_Campaign_Default_ID);
+
+	/**
+	 * Get Standard-Werbemassnahme.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_MKTG_Campaign_Default_ID = new ModelColumn<>(I_AD_User.class, "MKTG_Campaign_Default_ID", null);
+	String COLUMNNAME_MKTG_Campaign_Default_ID = "MKTG_Campaign_Default_ID";
 
 	/**
 	 * Set Mobile Phone.
@@ -1829,6 +1893,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Registry = new ModelColumn<>(I_AD_User.class, "Registry", null);
 	String COLUMNNAME_Registry = "Registry";
+
+	/**
+	 * Set 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSecretKey_2FA (@Nullable java.lang.String SecretKey_2FA);
+
+	/**
+	 * Get 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSecretKey_2FA();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SecretKey_2FA = new ModelColumn<>(I_AD_User.class, "SecretKey_2FA", null);
+	String COLUMNNAME_SecretKey_2FA = "SecretKey_2FA";
 
 	/**
 	 * Set SeqNo.

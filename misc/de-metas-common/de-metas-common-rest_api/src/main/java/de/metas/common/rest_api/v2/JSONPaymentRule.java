@@ -22,39 +22,39 @@
 
 package de.metas.common.rest_api.v2;
 
-import de.metas.common.util.Check;
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
+@Schema(enumAsRef = true, description = "JSONPaymentRule: \n" +
+		"* `Paypal` - Specifies that the order will have paymentRule = Paypal\n" +
+		"* `OnCredit` - Specifies that the order will have paymentRule = On Credit\n" +
+		"* `Cash` - Specifies that the order will have paymentRule = Cash\n" +
+		"* `CreditCard` - Specifies that the order will have paymentRule = CreditCard\n" +
+		"* `DirectDeposit` - Specifies that the order will have paymentRule = DirectDeposit\n" +
+		"* `Check` - Specifies that the order will have paymentRule = Check\n" +
+		"* `Mixed` - Specifies that the order will have paymentRule = Mixed\n" +
+		"* `DirectDebit` - Specifies that the order will have paymentRule = Direct Debit\n" +
+		"")
 public enum JSONPaymentRule
 {
-
-	@ApiEnum("Specifies that the order will have paymentRule = Paypal")
 	Paypal("L"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
 	OnCredit("P"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = Cash")
 	Cash("B"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = CreditCard")
 	CreditCard("K"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = DirectDeposit")
 	DirectDeposit("T"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = Check")
 	Check("S"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = Mixed")
 	Mixed("M"),
 
-	@ApiEnum("Specifies that the order will have paymentRule = Direct Debit")
 	DirectDebit("D");
 
 	@Getter

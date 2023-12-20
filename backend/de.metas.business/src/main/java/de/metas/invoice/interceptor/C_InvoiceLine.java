@@ -4,12 +4,18 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -27,6 +33,14 @@ public class C_InvoiceLine
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
+	private final DimensionService dimensionService;
+
+	public C_InvoiceLine(@NonNull final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
@@ -91,9 +105,35 @@ public class C_InvoiceLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void updateSectionCode(final I_C_InvoiceLine invoiceLine)
+	public void copyDimensionFromHeader(final I_C_InvoiceLine invoiceLine)
 	{
-		invoiceLine.setM_SectionCode_ID(invoiceLine.getC_Invoice().getM_SectionCode_ID());
+		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the invoice header to the lines
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		invoiceLine.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+
+		final Dimension invoiceDimension = dimensionService.getFromRecord(invoice);
+		dimensionService.updateRecordUserElements(invoiceLine, invoiceDimension);
+		invoiceLine.setC_Harvesting_Calendar_ID(invoice.getC_Harvesting_Calendar_ID());
+		invoiceLine.setHarvesting_Year_ID(invoice.getHarvesting_Year_ID());
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID })
+	public void updateTaxFromVatCodeId(final I_C_InvoiceLine invoiceLine)
+	{
+		if (invoiceLine.isProcessed())
+		{
+			return;
+		}
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
+		if (vatCodeId == null)
+		{
+			return;
+		}
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+		if (tax != null)
+		{
+			invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		}
+	}
 }

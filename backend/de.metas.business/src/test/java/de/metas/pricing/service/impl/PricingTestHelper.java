@@ -124,6 +124,7 @@ public class PricingTestHelper
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
 		return ImmutableList.of(
+				// note: maybe consider to also add AttributePricing? it was added in soft_panda_uat..but maybe it's superflous here..
 				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}

@@ -18,6 +18,8 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -85,7 +87,7 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
@@ -451,7 +453,7 @@ public class HUTestHelper
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
@@ -555,6 +557,7 @@ public class HUTestHelper
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
 	{
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
 	}

@@ -108,6 +108,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final I_M_HU hu,
 			final boolean readonly,
+			final boolean serialNoFromSequence,
 			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.documentPath = documentPath;
@@ -141,6 +142,10 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
+			if (serialNoFromSequence && AttributeConstants.ATTR_SerialNo.equals(attributeCode))
+			{
+				readonlyAttributeNames.add(attributeCode);
+			}
 			if (!attributesStorage.isDisplayedUI(attribute, productIds))
 			{
 				hiddenAttributeNames.add(attributeCode);
@@ -159,6 +164,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
 	}
+
+
 
 	/*
 	Introduced in #gh11244
@@ -431,9 +438,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
 	}
 
-
 	@NonNull
-	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote, @NonNull final JSONOptions jsonOpts)
 	{
 		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
 

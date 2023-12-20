@@ -1,7 +1,11 @@
 @from:cucumber
+@flaky
+@ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
 
   Background:
+    Given infrastructure and metasfresh are running
+    And metasfresh has current date and time
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value                     | OPT.IsActive |
       | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
@@ -65,6 +69,6 @@ Feature: Setting customColumns via SetCustomColumns method
       |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                               |
 
     And set custom columns for C_Order expecting error:
-      | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |
-      | order                 | DeliveryInfo     | DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
+      | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                                   |
+      | order                 | DeliveryInfo     | C_Order.DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
 

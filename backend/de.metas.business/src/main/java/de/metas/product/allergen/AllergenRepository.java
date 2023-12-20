@@ -28,6 +28,18 @@ public class AllergenRepository
 		return getAll().getByIds(ids);
 	}
 
+	@NonNull
+	public Allergen save(@NonNull final SaveAllergenRequest request)
+	{
+		final I_M_Allergen allergen = InterfaceWrapperHelper.loadOrNew(request.getId(), I_M_Allergen.class);
+		allergen.setName(request.getName());
+		allergen.setAD_Org_ID(request.getOrgId().getRepoId());
+
+		InterfaceWrapperHelper.save(allergen);
+
+		return fromRecord(allergen);
+	}
+
 	private AllergenMap getAll()
 	{
 		return cache.getOrLoad(0, this::retrieveAll);

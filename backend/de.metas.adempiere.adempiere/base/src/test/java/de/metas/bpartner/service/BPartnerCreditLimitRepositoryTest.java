@@ -213,7 +213,7 @@ public class BPartnerCreditLimitRepositoryTest
 				.bpartnerId(BPartnerId.ofRepoId(1))
 				.orgId(OrgId.ofRepoId(2))
 				.creditLimit(BPartnerCreditLimit.builder()
-									 .amount(Money.of(10, CurrencyId.ofRepoId(100008)))
+									 .amount(Money.of(10, mockOrgCurrencyId))
 									 .creditLimitTypeId(CreditLimitTypeId.ofRepoId(3))
 									 .build())
 				.build();

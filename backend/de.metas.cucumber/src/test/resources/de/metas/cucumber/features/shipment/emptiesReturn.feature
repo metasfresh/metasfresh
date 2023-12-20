@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Empties returns
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-11T13:30:13+01:00[Europe/Berlin]
 
     And load M_Product_Category:

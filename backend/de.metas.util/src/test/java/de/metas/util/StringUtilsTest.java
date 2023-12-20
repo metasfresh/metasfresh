@@ -2,7 +2,7 @@ package de.metas.util;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.util.StringUtils.TruncateAt;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +132,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull()
 	{
-		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
+		final IPair<String, String> result = de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Carretera Nueva Jarilla");
@@ -142,7 +142,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_2()
 	{
-		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
+		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
@@ -152,7 +152,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_3()
 	{
-		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
+		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");

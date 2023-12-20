@@ -7,6 +7,8 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 
+import java.util.OptionalInt;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -34,6 +36,8 @@ public interface IProcessInstanceParameter
 	String getParameterName();
 
 	DocumentFieldWidgetType getWidgetType();
+
+	OptionalInt getMinPrecision();
 
 	Object getValueAsJsonObject(JSONOptions jsonOpts);
 

@@ -1,19 +1,18 @@
 package de.metas.document.archive.async.spi.impl;
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Iterates the workpackage's POs and for each po retrieves the referencing {@code AD_Archive} records

@@ -21,7 +21,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -110,13 +109,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		final BankAccountId bpBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 		final BankAccount bankAccount = services.getBankAccountById(bpBankAccountId);
-		final String bankAccountName = bankAccount.getAccountName();
-		if (Check.isNotBlank(bankAccountName))
+		final String bankAccountName = StringUtils.trimBlankToNull(bankAccount.getAccountName());
+		if (bankAccountName != null)
 		{
-			documentInfo.append(bankAccountName.trim());
+			documentInfo.append(bankAccountName);
 		}
 
-		if (documentInfo.length() > 0)
+		if (!documentInfo.isEmpty())
 		{
 			documentInfo.append(" ");
 		}
@@ -166,7 +165,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String prepareIt(final DocumentTableFields docFields)
+	public DocStatus prepareIt(final DocumentTableFields docFields)
 	{
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
@@ -214,15 +213,15 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress;
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
@@ -256,7 +255,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		services.markBankStatementLinesAsProcessed(bankStatementId);
 
 		bankStatement.setDocAction(IDocument.ACTION_Close);
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	private HashSet<PaymentId> extractCurrentPaymentIds(final List<I_C_BankStatementLine> lines)
@@ -298,7 +297,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final List<PaymentReconcileRequest> lineRefRequests = services
 				.getBankStatementLineReferences(bankStatementLineIds)
 				.stream()
-				.map(lineRef -> extractPaymentReconcileRequest(lineRef))
+				.map(BankStatementDocumentHandler::extractPaymentReconcileRequest)
 				.collect(ImmutableList.toImmutableList());
 
 		requests.addAll(lineRefRequests);
@@ -419,12 +418,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		description += ")";
 		return description;
-	}
-
-	@Override
-	public void reactivateIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	private static void addDescription(final I_C_BankStatement bankStatement, final String description)

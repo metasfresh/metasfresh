@@ -3,6 +3,7 @@ package de.metas.calendar.simulation;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 @Repository
 public class SimulationPlanRepository
@@ -29,15 +32,18 @@ public class SimulationPlanRepository
 			.tableName(I_C_SimulationPlan.Table_Name)
 			.build();
 
+	@NonNull
 	public SimulationPlanRef createNewSimulation(
-			@NonNull String name,
-			@NonNull UserId responsibleUserId)
+			@NonNull final SimulationPlanCreateRequest simulationPlanCreateRequest, 
+			@NonNull final Supplier<String> defaultNameSupplier)
 	{
 		final I_C_SimulationPlan record = InterfaceWrapperHelper.newInstance(I_C_SimulationPlan.class);
-		record.setName(name);
-		record.setAD_User_Responsible_ID(responsibleUserId.getRepoId());
+		record.setAD_Org_ID(simulationPlanCreateRequest.getOrgId().getRepoId());
+		record.setName(simulationPlanCreateRequest.getName().orElseGet(defaultNameSupplier));
+		record.setAD_User_Responsible_ID(simulationPlanCreateRequest.getResponsibleUserId().getRepoId());
 		record.setDocStatus(SimulationPlanDocStatus.Drafted.getCode());
 		record.setProcessed(SimulationPlanDocStatus.Drafted.isProcessed());
+		record.setIsMainSimulation(simulationPlanCreateRequest.isMainSimulationPlan());
 		InterfaceWrapperHelper.saveRecord(record);
 
 		final SimulationPlanRef simulation = fromRecord(record);
@@ -46,6 +52,7 @@ public class SimulationPlanRepository
 		return simulation;
 	}
 
+	@NonNull
 	private static SimulationPlanRef fromRecord(@NonNull final I_C_SimulationPlan record)
 	{
 		return SimulationPlanRef.builder()
@@ -54,10 +61,12 @@ public class SimulationPlanRepository
 				.responsibleUserId(UserId.ofRepoId(record.getAD_User_Responsible_ID()))
 				.docStatus(SimulationPlanDocStatus.ofCode(record.getDocStatus()))
 				.processed(record.isProcessed())
+				.isMainSimulation(record.isMainSimulation())
 				.created(record.getCreated().toInstant())
 				.build();
 	}
 
+	@NonNull
 	public SimulationPlanRef changeDocStatus(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanDocStatus docStatus)
 	{
 		final I_C_SimulationPlan record = retrieveRecordById(simulationId);
@@ -89,6 +98,19 @@ public class SimulationPlanRepository
 		}
 
 		return cacheById.getAllOrLoad(simulationIds, this::retrieveByIds);
+	}
+	
+	@NonNull
+	public Optional<SimulationPlanRef> getCurrentMainSimulationPlan(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_SimulationPlan.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_IsMainSimulation, true)
+				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_Processed, false)
+				.create()
+				.firstOnlyOptional(I_C_SimulationPlan.class)
+				.map(SimulationPlanRepository::fromRecord);
 	}
 
 	private SimulationPlanRef retrieveById(@NonNull final SimulationPlanId id)

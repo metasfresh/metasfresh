@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Validate tax calculation for orders taking into account dropship location
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-18T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -77,7 +79,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -104,7 +106,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -131,7 +133,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -158,7 +160,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -185,7 +187,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -212,7 +214,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -239,7 +241,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -266,7 +268,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -293,7 +295,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
@@ -320,7 +322,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
       | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:

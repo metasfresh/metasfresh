@@ -22,39 +22,34 @@
 
 package de.metas.common.changelog;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 @Value
 public class JsonChangeInfo
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	Long createdMillis;
 
-	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was created", //
-			dataType = "java.lang.Integer", position = 20)
+	@Schema(description = "Might be `null` if no `#AD_User_ID` was in the application context while the record was created")
 	JsonMetasfreshId createdBy;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	Long lastUpdatedMillis;
 
-	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", //
-			allowEmptyValue = true, dataType = "java.lang.Integer", position = 30)
+	@Schema(description = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated",
+			nullable = true)
 	JsonMetasfreshId lastUpdatedBy;
 
 	@JsonInclude(Include.NON_EMPTY)

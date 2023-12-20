@@ -71,6 +71,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -183,7 +184,7 @@ public class WOProjectCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		final ArrayList<CalendarEntry> result = new ArrayList<>();
 		result.addAll(
@@ -199,8 +200,8 @@ public class WOProjectCalendarService implements CalendarService
 						.simulationId(calendarQuery.getSimulationId())
 						.startDate(calendarQuery.getStartDate())
 						.endDate(calendarQuery.getEndDate())
-						//
-						.build().execute());
+						.skipAllocatedResources(calendarQuery.isSkipAllocatedResources())
+						.execute());
 		result.addAll(
 				BudgetProjectsCalendarQueryExecutor.builder()
 						.resourceService(resourceService)
@@ -265,7 +266,10 @@ public class WOProjectCalendarService implements CalendarService
 	}
 
 	@Override
-	public CalendarEntry addEntry(final CalendarEntryAddRequest request) {throw new UnsupportedOperationException();}
+	public CalendarEntry addEntry(final CalendarEntryAddRequest request)
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public CalendarEntryUpdateResult updateEntry(final CalendarEntryUpdateRequest request)
@@ -283,6 +287,7 @@ public class WOProjectCalendarService implements CalendarService
 				projectResourceId -> updateEntry_WOProjectResource(request, projectResourceId));
 	}
 
+	@NonNull
 	private CalendarEntryUpdateResult updateEntry_BudgetProjectResource(
 			@NonNull final CalendarEntryUpdateRequest request,
 			@NonNull final BudgetProjectResourceId projectResourceId)
@@ -296,7 +301,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectResourceId);
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		final OldAndNewValues<CalendarEntry> result = budgetProjectSimulationService
 				.createOrUpdate(
@@ -331,11 +336,9 @@ public class WOProjectCalendarService implements CalendarService
 				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
 				.build();
 
-		if (request.getDateRange() != null)
-		{
-			final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);
-			simulationEditor.changeResourceDateRangeAndShiftSteps(projectResourceId, request.getDateRange(), stepId);
-		}
+		final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);
+		simulationEditor.changeResourceDateRangeAndShiftSteps(projectResourceId, request.getDateRange(), stepId);
+
 		if (!Check.isBlank(request.getTitle()))
 		{
 			throw new AdempiereException("Changing title is not supported yet");
@@ -357,7 +360,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		//
 		// toCalendarEntry converter:
-		final Function<WOProjectResource, CalendarEntry> toCalendarEntry = new ToCalendarEntryConverter().asFunction(simulationPlanHeader, simulationEditor);
+		final Function<WOProjectResource, CalendarEntry> toCalendarEntry = new ToCalendarEntryConverter(woProjectService).asFunction(simulationPlanHeader, simulationEditor);
 
 		//
 		return CalendarEntryUpdateResult.builder()
@@ -378,7 +381,8 @@ public class WOProjectCalendarService implements CalendarService
 	}
 
 	@Override
-	public CalendarEntry getEntryById(
+	@NonNull
+	public Optional<CalendarEntry> getEntryById(
 			@NonNull final CalendarEntryId entryId,
 			@Nullable final SimulationPlanId simulationId)
 	{
@@ -386,10 +390,11 @@ public class WOProjectCalendarService implements CalendarService
 
 		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
 				entryId,
-				budgetProjectResourceId -> getEntryByBudgetResourceId(budgetProjectResourceId, simulationPlanHeader),
+				budgetProjectResourceId -> Optional.of(getEntryByBudgetResourceId(budgetProjectResourceId, simulationPlanHeader)),
 				woProjectResourceId -> getEntryByWOProjectResourceId(woProjectResourceId, simulationPlanHeader));
 	}
 
+	@NonNull
 	private CalendarEntry getEntryByBudgetResourceId(
 			@NonNull final BudgetProjectResourceId budgetProjectResourceId,
 			@Nullable final SimulationPlanRef simulationPlanHeader)
@@ -403,12 +408,13 @@ public class WOProjectCalendarService implements CalendarService
 		final BudgetProject project = budgetProjectService.getById(budgetProjectResourceId.getProjectId())
 				.orElseThrow(() -> new AdempiereException("No project found for " + budgetProjectResourceId));
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 
 		return toCalendarEntry.from(budget, project, simulationPlanHeader);
 	}
 
-	private CalendarEntry getEntryByWOProjectResourceId(
+	@NonNull
+	private Optional<CalendarEntry> getEntryByWOProjectResourceId(
 			@NonNull final WOProjectResourceId projectResourceId,
 			@Nullable final SimulationPlanRef simulationPlanHeader)
 	{
@@ -423,7 +429,7 @@ public class WOProjectCalendarService implements CalendarService
 			resource = woProjectSimulationService.getSimulationPlanById(simulationPlanHeader.getId()).applyOn(resource);
 		}
 
-		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
+		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter(woProjectService);
 		return toCalendarEntry.from(
 				resource,
 				woProjectService.getStepsByProjectId(projectId).getById(stepId),

@@ -53,7 +53,7 @@ import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.pricing.command.SearchProductPricesCommand;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -85,7 +85,7 @@ public class ProductPriceRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
 	private final PriceListRestService priceListRestService;
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 	private final JsonRetrieverService jsonRetrieverService;
 
@@ -93,14 +93,14 @@ public class ProductPriceRestService
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final ProductPriceRepository productPriceRepository,
 			@NonNull final PriceListRestService priceListRestService,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productPriceRepository = productPriceRepository;
 		this.priceListRestService = priceListRestService;
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
@@ -127,7 +127,7 @@ public class ProductPriceRestService
 	public JsonResponseProductPriceQuery productPriceSearch(@NonNull final JsonRequestProductPriceQuery request, @Nullable final String orgCode)
 	{
 		return SearchProductPricesCommand.builder()
-				.productRestService(productRestService)
+				.externalIdentifierResolver(externalIdentifierResolver)
 				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
 				.jsonRetrieverService(jsonRetrieverService)
 				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))

@@ -323,7 +323,7 @@ class OrderAttachmentRowsLoader
 	private Optional<List<I_C_Order>> getSalesOrders()
 	{
 		final ImmutableSet.Builder<OrderId> salesOrderIds = ImmutableSet.builder();
-		salesOrderIds.addAll(orderDAO.getSalesOrderIdsViaPOAllocation(selectedPurchaseOrderId));
+		salesOrderIds.addAll(orderDAO.getSalesOrderIdsByPurchaseOrderId(selectedPurchaseOrderId));
 
 		if (purchaseOrder.getLink_Order_ID() > 0) // C_OrderLine.Link_OrderLine_ID might be null, but there might be a 1:1 linked sales order
 		{

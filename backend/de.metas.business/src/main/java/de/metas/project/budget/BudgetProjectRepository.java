@@ -28,6 +28,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
@@ -47,6 +48,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -121,6 +123,9 @@ public class BudgetProjectRepository
 				.salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
 				.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
 				.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
+				.bpartnerDepartment(record.getBPartnerDepartment())
+				.specialistConsultantID(UserId.ofRepoIdOrNullIfSystem(record.getSpecialist_Consultant_ID()))
+				.internalPriority(InternalPriority.ofNullableCode(record.getInternalPriority()))
 				.build();
 	}
 
@@ -176,6 +181,9 @@ public class BudgetProjectRepository
 		projectRecord.setDateContract(TimeUtil.asTimestamp(budgetProject.getDateContract()));
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
+		projectRecord.setBPartnerDepartment(budgetProject.getBpartnerDepartment());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(budgetProject.getSpecialistConsultantID()));
+		projectRecord.setInternalPriority(InternalPriority.toCode(budgetProject.getInternalPriority()));
 
 		InterfaceWrapperHelper.saveRecord(projectRecord);
 
@@ -227,6 +235,16 @@ public class BudgetProjectRepository
 		final I_C_Project projectRecord = getRecordByIdNotNull(projectId);
 
 		return mapProject.apply(projectRecord);
+	}
+
+	@NonNull
+	public Iterator<I_C_Project> iterateAllActive()
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
+				.create()
+				.iterate(I_C_Project.class);
 	}
 
 	@NonNull

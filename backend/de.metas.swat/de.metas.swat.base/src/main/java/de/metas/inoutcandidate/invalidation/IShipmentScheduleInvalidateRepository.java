@@ -1,24 +1,8 @@
-package de.metas.inoutcandidate.invalidation;
-
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.IQuery;
-
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.process.PInstanceId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,21 @@ import de.metas.util.ISingletonService;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inoutcandidate.invalidation;
+
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+
+import java.util.Collection;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getAvatar } from '../../api';
+import { getAvatar } from '../../api/login';
 import defaultAvatar from '../../assets/images/default-avatar.png';
 
 class Avatar extends Component {

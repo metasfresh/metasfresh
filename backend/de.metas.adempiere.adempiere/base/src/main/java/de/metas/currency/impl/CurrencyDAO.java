@@ -181,7 +181,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	{
 		return CurrencyConversionType.builder()
 				.id(CurrencyConversionTypeId.ofRepoId(record.getC_ConversionType_ID()))
-				.method(ConversionTypeMethod.forCode(record.getValue()))
+				.method(ConversionTypeMethod.ofCode(record.getValue()))
 				.build();
 	}
 

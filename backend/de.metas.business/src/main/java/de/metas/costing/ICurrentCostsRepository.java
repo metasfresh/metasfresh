@@ -1,6 +1,8 @@
 package de.metas.costing;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyId;
 import lombok.NonNull;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
@@ -64,4 +66,6 @@ public interface ICurrentCostsRepository
 	Stream<CurrentCost> stream(CurrentCostQuery query);
 
 	ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query);
+
+	boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId);
 }

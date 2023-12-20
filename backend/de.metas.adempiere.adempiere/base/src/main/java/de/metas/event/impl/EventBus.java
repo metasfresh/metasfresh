@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -236,7 +237,7 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			logger.debug("{} - Posting event: {}", this, event);
+			logger.debug("{} - Posting event: {}, Timestamp={}, ThreadId={}", this, event, Instant.now(), Thread.currentThread().getId());
 			eventBus.post(event);
 
 			micrometerEventBusStatsCollector.incrementEventsEnqueued();

@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,28 +40,31 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel(description = "Contains a product external identifier and the actual bom formula to insert.")
+@Schema(description = "Contains a product external identifier and the actual bom formula to insert.")
 public class JsonBOMCreateRequest
 {
-	@ApiModelProperty(position = 10, value = PRODUCT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
 	String productIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `PP_Product_BOM.C_UOM_ID`", required = true)
+	@Schema(description = "Corresponding to `PP_Product_BOM.C_UOM_ID`", required = true)
 	String uomCode;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `PP_Product_BOM.Name`", required = true)
+	@Schema(description = "Corresponding to `PP_Product_BOM.Name`", required = true)
 	String name;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `PP_Product_BOM.isActive`")
+	@Schema(description = "Corresponding to `PP_Product_BOM.isActive`")
 	Boolean isActive;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `PP_Product_BOM.validFrom")
+	@Schema(description = "Corresponding to `PP_Product_BOM.validFrom")
 	Instant validFrom;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `M_AttributeSetInstance`")
+	@Schema(description = "Corresponding to `M_AttributeSetInstance`")
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 70, required = true)
+	@Schema(description = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
+	String resourceCode;
+
+	@Schema(required = true)
 	List<JsonCreateBOMLine> bomLines;
 
 	@Builder
@@ -74,6 +76,7 @@ public class JsonBOMCreateRequest
 			@JsonProperty("isActive") @NonNull final Boolean isActive,
 			@JsonProperty("validFrom") @NonNull final Instant validFrom,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
+			@JsonProperty("resourceCode") final String resourceCode,
 			@JsonProperty("bomLines") @Singular final List<JsonCreateBOMLine> bomLines)
 	{
 
@@ -83,6 +86,7 @@ public class JsonBOMCreateRequest
 		this.isActive = isActive;
 		this.validFrom = validFrom;
 		this.attributeSetInstance = attributeSetInstance;
+		this.resourceCode = resourceCode;
 		this.bomLines = coalesce(bomLines, ImmutableList.of());
 	}
 }

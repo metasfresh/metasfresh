@@ -105,6 +105,7 @@ public class HUSplitBuilderCoreEngine
 			huAllocationDestination.setC_BPartner_Location_ID(huToSplit.getC_BPartner_Location_ID());
 			huAllocationDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(huToSplit.getM_Locator_ID()));
 			huAllocationDestination.setHUClearanceStatusInfo(ClearanceStatusInfo.ofHU(huToSplit));
+			huAllocationDestination.setIsExternalProperty(huToSplit.isExternalProperty());
 		}
 
 		return this;

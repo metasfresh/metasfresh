@@ -27,6 +27,7 @@ import de.metas.user.UserId;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface CalendarService
@@ -45,7 +46,7 @@ public interface CalendarService
 			@NonNull CalendarEntryId entryId,
 			@Nullable SimulationPlanId simulationId);
 
-	CalendarEntry getEntryById(
+	Optional<CalendarEntry> getEntryById(
 			@NonNull CalendarEntryId entryId,
 			@Nullable SimulationPlanId simulationId);
 }

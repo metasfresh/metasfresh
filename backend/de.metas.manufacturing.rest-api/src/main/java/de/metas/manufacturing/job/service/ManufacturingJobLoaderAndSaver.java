@@ -18,20 +18,18 @@ import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ProductInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
-import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -107,9 +105,8 @@ public class ManufacturingJobLoaderAndSaver
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
 	}
 
-	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final List<PPOrderIssueSchedule> schedules)
 	{
-		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}
@@ -146,16 +143,9 @@ public class ManufacturingJobLoaderAndSaver
 				return prepareJobActivity(from)
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
-			case WorkReport:
-			case ActivityConfirmation:
-			case GenerateHUQRCodes:
-			case ScanScaleDevice:
-			case CallExternalSystem:
-			case RawMaterialsIssueAdjustment:
+			default:
 				return prepareJobActivity(from)
 						.build();
-			default:
-				throw new AdempiereException("Unknown type: " + from);
 		}
 	}
 
@@ -172,7 +162,6 @@ public class ManufacturingJobLoaderAndSaver
 				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
 				.userInstructions(from.getUserInstructions())
 				.scannedQRCode(from.getScannedQRCode());
-
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
@@ -203,16 +192,19 @@ public class ManufacturingJobLoaderAndSaver
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final Quantity qtyToIssue = supportingServices.getQuantities(orderBOMLine).getQtyRequired();
+		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
+		final Quantity qtyToIssue = quantities.getQtyRequired();
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
+		final ProductInfo productInfo = supportingServices.getProductInfo(productId);
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
-				.productName(supportingServices.getProductName(productId))
+				.productName(productInfo.getName())
+				.productValue(productInfo.getValue())
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
-				.qtyToIssueTolerance(PPOrderBOMBL.extractQtyToIssueTolerance(orderBOMLine))
-				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
+				.userInstructions(orderBOMLine.getHelp())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()
@@ -226,6 +218,7 @@ public class ManufacturingJobLoaderAndSaver
 	{
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
+				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
 				.isAlternativeIssue(schedule.isAlternativeIssue())
 				.productId(schedule.getProductId())
 				.productName(supportingServices.getProductName(schedule.getProductId()))

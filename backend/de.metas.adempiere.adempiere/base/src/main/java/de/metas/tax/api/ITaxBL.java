@@ -33,6 +33,7 @@ import org.compiere.model.I_C_Tax;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -57,20 +58,18 @@ public interface ITaxBL extends ISingletonService
 			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			SOTrx soTrx);
+			SOTrx soTrx,
+			@Nullable VatCodeId vatCodeId);
 
 	/**
-	 * Calculate Tax - no rounding
-	 *
-	 * @param taxIncluded if true tax is calculated from gross otherwise from net
-	 * @return tax amount
+	 * @param taxIncluded if true tax is included in given amount
 	 */
-	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
-	 * Calculate base amount, excluding tax
+	 * @return tax amount (only actual tax amount, NOT reverse charge tax amt)
 	 */
-	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
 	 * Get Tax ID - converts parameters to call Get Tax.
@@ -98,7 +97,8 @@ public interface ITaxBL extends ISingletonService
 			int AD_Org_ID, int M_Warehouse_ID,
 			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
 			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
-			boolean IsSOTrx);
+			boolean IsSOTrx,
+			@Nullable VatCodeId vatCodeId);
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.
@@ -108,4 +108,6 @@ public interface ITaxBL extends ISingletonService
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	List<Tax> getChildTaxes(@NonNull TaxId taxId);
 }

@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +44,13 @@ public class ADRefList
 
 	public Collection<ADRefListItem> getItems() {return itemsByValue.values();}
 
-	public Optional<ADRefListItem> getItemByValue(final String value) {return Optional.ofNullable(itemsByValue.get(value));}
+	public Optional<ADRefListItem> getItemByValue(@Nullable final String value)
+	{
+		return Optional.ofNullable(itemsByValue.get(value));
+	}
 
-	public boolean containsValue(String value) {return itemsByValue.get(value) != null;}
+	public boolean containsValue(final String value)
+	{
+		return itemsByValue.get(value) != null;
+	}
 }

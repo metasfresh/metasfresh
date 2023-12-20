@@ -17,24 +17,28 @@
           "uomCodeSet": true,
           "ean": null,
           "eanSet": false,
-          "gtin": "12345678",
+          "gtin": "additional_gtin",
           "gtinSet": true,
           "description": null,
           "descriptionSet": false,
           "discontinued": null,
           "discontinuedSet": false,
-          "active": true,
+          "active": false,
           "activeSet": true,
           "stocked": null,
           "stockedSet": false,
           "productCategoryIdentifier": null,
           "productCategoryIdentifierSet": false,
+          "warehouseTemperature": "warehouse_temperature",
+          "warehouseTemperatureSet": true,
+          "guaranteeMonths": "12",
+          "guaranteeMonthsSet": true,
           "syncAdvise": null,
           "bpartnerProductItems": [
             {
               "bpartnerIdentifier": "100",
               "bpartnerSet": true,
-              "active": true,
+              "active": false,
               "activeSet": true,
               "seqNo": null,
               "seqNoSet": false,
@@ -52,20 +56,42 @@
               "ingredientsSet": false,
               "currentVendor": null,
               "currentVendorSet": false,
-              "excludedFromSales": null,
-              "excludedFromSalesSet": false,
-              "exclusionFromSalesReason": null,
-              "exclusionFromSalesReasonSet": false,
-              "excludedFromPurchase": null,
-              "excludedFromPurchaseSet": false,
-              "exclusionFromPurchaseReason": null,
-              "exclusionFromPurchaseReasonSet": false,
+              "excludedFromSales": true,
+              "excludedFromSalesSet": true,
+              "exclusionFromSalesReason": "Imported setting",
+              "exclusionFromSalesReasonSet": true,
+              "excludedFromPurchase": true,
+              "excludedFromPurchaseSet": true,
+              "exclusionFromPurchaseReason": "Imported setting",
+              "exclusionFromPurchaseReasonSet": true,
               "dropShip": null,
               "dropShipSet": false,
               "usedForVendor": null,
               "usedForVendorSet": false
             }
-          ]
+          ],
+          "productAllergens": {
+            "allergenList": [
+              {
+                "identifier": "ext-GRSSignum-1",
+                "name": "AllergenName"
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          },
+          "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "BIO",
+              "EU_NON_EU_AGRICULTURE"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          }
         }
       }
     ],

@@ -12,12 +12,10 @@
 
 package io.swagger.client.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import io.swagger.client.model.Patient;
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 /**
  * Eine Auflistung von Patienten
  */

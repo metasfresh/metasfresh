@@ -91,16 +91,10 @@ public class MDocType extends X_C_DocType
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(C_DocType_ID);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(C_DocType_ID);
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
 
-	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_DocType_ID id
-	 *	@param trxName transaction
-	 */
 	public MDocType(Properties ctx, int C_DocType_ID, String trxName)
 	{
 		super(ctx, C_DocType_ID, trxName);
@@ -125,46 +119,10 @@ public class MDocType extends X_C_DocType
 		}
 	}	//	MDocType
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
 	public MDocType(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MDocType
-
-	/**
-	 * 	New Constructor
-	 *	@param ctx context
-	 *	@param DocBaseType document base type
-	 *	@param Name name
-	 *	@param trxName transaction
-	 */
-	public MDocType (Properties ctx, String DocBaseType, String Name, String trxName)
-	{
-		this (ctx, 0, trxName);
-		setAD_Org_ID(0);
-		setDocBaseType (DocBaseType);
-		setName (Name);
-		setPrintName (Name);
-		setGL_Category_ID ();
-	}	//	MDocType
-
-	/**
-	 * 	Set Default GL Category
-	 */
-	public void setGL_Category_ID()
-	{
-		final String sql = "SELECT GL_Category_ID FROM GL_Category"
-						+" WHERE AD_Client_ID=?"
-						+" ORDER BY IsDefault DESC, GL_Category_ID";
-		int GL_Category_ID = DB.getSQLValue(get_TrxName(), sql, getAD_Client_ID());
-		setGL_Category_ID(GL_Category_ID);
-	}	//	setGL_Category_ID
-
+	}
 
 	/**
 	 * 	Set SOTrx based on document base type

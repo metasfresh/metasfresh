@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -112,6 +113,16 @@ public class CtxNames
 	}
 
 	@Nullable
+	public static CtxName ofNullableNameAndDefaultValue(
+			@Nullable final String name,
+			@Nullable final String defaultValue)
+	{
+		return Optional.ofNullable(name)
+				.map(n -> CtxNames.ofNameAndDefaultValue(n, defaultValue))
+				.orElse(null);
+	}
+
+	@Nullable
 	public static CtxName parse(@Nullable final String contextWithoutMarkers)
 	{
 		if (contextWithoutMarkers == null)
@@ -119,6 +130,12 @@ public class CtxNames
 			return null;
 		}
 
+		return parseNotNull(contextWithoutMarkers);
+	}
+
+	@NonNull
+	public static CtxName parseNotNull(@NonNull final String contextWithoutMarkers)
+	{
 		final ArrayList<String> modifiers = new ArrayList<>();
 		final String name = extractNameAndModifiers(contextWithoutMarkers, modifiers);
 
@@ -128,7 +145,7 @@ public class CtxNames
 	}
 
 	/**
-	 * @param modifiers             found modifiers are added to this list
+	 * @param modifiers found modifiers are added to this list
 	 */
 	private static String extractNameAndModifiers(
 			@NonNull final String contextWithoutMarkers,

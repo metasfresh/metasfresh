@@ -29,8 +29,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.v1.JsonProduct;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,75 +40,68 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ApiModel(description = "Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
+@Schema(description = "Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
 @Value
 public class JsonResponseShipmentCandidate
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	JsonMetasfreshId id;
 
-	@ApiModelProperty(position = 30, required = true)
+	@Schema(required = true)
 	String orgCode;
 
-	@ApiModelProperty(position = 40,
-			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
+	@Schema(description = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@ApiModelProperty(position = 60)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@ApiModelProperty(position = 70,
-			value = "This is the number of overall exportable items that would end up in the same shipment.\n"
+	@Schema(description = "This is the number of overall exportable items that would end up in the same shipment.\n"
 					+ "Useful if due to `limit`, not all items of one shipment are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsForSameShipment;
 
-	@ApiModelProperty(position = 80, required = true)
+	@Schema(required = true)
 	JsonProduct product;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 100, required = true)
+	@Schema(required = true)
 	JsonCustomer shipBPartner;
 
-	@ApiModelProperty(position = 105)
+	@Schema
 	JsonCustomer billBPartner;
 
-	@ApiModelProperty(position = 110, required = true,
-			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
+	@Schema(required = true,
+			description = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
-	@ApiModelProperty(position = 120, required = true,
-			value = "The shipment schedule's ordered quantity, possibly in different UOMs")
+	@Schema(required = true,
+			description = "The shipment schedule's ordered quantity, possibly in different UOMs")
 	List<JsonQuantity> orderedQty;
 
-	@ApiModelProperty(position = 130,
-			value = "The internal search key of the assigned shipper")
+	@Schema(description = "The internal search key of the assigned shipper")
 	String shipperInternalSearchKey;
 
-	@ApiModelProperty(position = 140,
-			value = "The net price of the ordered quantity")
+	@Schema(description = "The net price of the ordered quantity")
 	BigDecimal orderedQtyNetPrice;
 
-	@ApiModelProperty(position = 150,
-			value = "The net price of the quantity currently to deliver")
+	@Schema(description = "The net price of the quantity currently to deliver")
 	@Nullable
 	BigDecimal qtyToDeliverNetPrice;
 
-	@ApiModelProperty(position = 160,
-			value = "The net price of the delivered quantity ")
+	@Schema(description = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
 
-	@ApiModelProperty(position = 170,
-			value = "Delivery information")
+	@Schema(description = "Delivery information")
 	String deliveryInfo;
 
 	@JsonCreator

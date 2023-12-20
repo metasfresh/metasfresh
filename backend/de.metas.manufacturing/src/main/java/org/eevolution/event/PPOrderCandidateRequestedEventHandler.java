@@ -114,6 +114,7 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 															   .simulated(isSimulated)
 															   .traceId(traceId)
 															   .packingMaterialId(ppOrderData.getPackingMaterialId())
+															   .lotForLot(ppOrderData.getLotForLot())
 															   .build());
 	}
 }

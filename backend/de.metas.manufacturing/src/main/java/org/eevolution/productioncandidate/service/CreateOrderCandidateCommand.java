@@ -25,9 +25,9 @@ package org.eevolution.productioncandidate.service;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -35,17 +35,17 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 
 public class CreateOrderCandidateCommand
@@ -53,7 +53,7 @@ public class CreateOrderCandidateCommand
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 
-	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	private final PPOrderCandidateCreateRequest request;
 
@@ -101,7 +101,7 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final ProductPlanning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
 		final BigDecimal qtyProcessed_OnDate = productPlanning.getQtyProcessed_OnDate();
 		ppOrderCandidateRecord.setQtyProcessed_OnDate(qtyProcessed_OnDate);
 		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
@@ -114,6 +114,11 @@ public class CreateOrderCandidateCommand
 		}
 
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
+
+		if(!Utils.isEmpty(request.getLotForLot()))
+		{
+			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
+		}
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 
@@ -129,22 +134,19 @@ public class CreateOrderCandidateCommand
 	{
 		if (productPlanningId != null)
 		{
-			final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
+			final ProductPlanning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
-			final Optional<I_PP_Product_BOM> productBOMFromPlanning = Optional.ofNullable(productPlanning)
-					.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
-					.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
-					.flatMap(bomRepo::getLatestBOMRecordByVersionId);
-
-			if (productBOMFromPlanning.isPresent())
-			{
-				return productBOMFromPlanning.get();
-			}
+			return Optional.ofNullable(productPlanning)
+					.map(ProductPlanning::getBomVersionsId)
+					.filter(Objects::nonNull)
+					.flatMap(bomVersionsId -> bomRepo.getLatestBOMRecordByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes()))
+					.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
+							.appendParametersToMessage()
+							.setParameter("request", request)
+							.setParameter("productPlanningId", productPlanningId));
 		}
 
-		final ProductId productId = request.getProductId();
-
-		return bomRepo.getDefaultBOMByProductId(productId)
+		return bomRepo.getDefaultBOMByProductId(request.getProductId())
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
 						.appendParametersToMessage()
 						.setParameter("request", request)

@@ -22,44 +22,32 @@
 
 package de.metas.audit.apirequest.request;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-
+@ExtendWith(SnapshotExtension.class)
 public class ApiRequestAuditRepositoryTest
 {
 	private ApiRequestAuditRepository apiRequestAuditRepository;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		apiRequestAuditRepository = new ApiRequestAuditRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -87,6 +75,6 @@ public class ApiRequestAuditRepositoryTest
 		final ApiRequestAudit result = apiRequestAuditRepository.save(apiRequestAudit);
 
 		//then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

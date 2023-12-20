@@ -22,7 +22,7 @@
 
 package de.metas.common.rest_api.v1;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -34,15 +34,13 @@ public class JsonUnsettableNumber extends JsonUnsettableValue
 {
 	public static final JsonUnsettableNumber EMPTY = new JsonUnsettableNumber(null, null);
 
-	@ApiModelProperty(position = 10, required = false, //
-			value = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
+	@Schema(description = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
 					+ "To unset an existing candiate's override value, you can:\n"
 					+ "- either use `SyncAdvice.IfExists.UPDATE_REMOVE` and set this property to `null`"
 					+ "- or (preferred) use `\"unsetValue\" : true`")
 	BigDecimal value;
 
-	@ApiModelProperty(position = 20, required = false, //
-			value = "Optional property to *explicitly* unset a candidate's override property.\n"
+	@Schema(description = "Optional property to *explicitly* unset a candidate's override property.\n"
 					+ "If set to `true`, it takes precedence to a possibly set `value`")
 	Boolean unsetValue;
 }

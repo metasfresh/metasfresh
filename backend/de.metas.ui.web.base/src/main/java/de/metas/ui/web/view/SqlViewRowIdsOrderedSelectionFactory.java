@@ -213,78 +213,83 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	@Override
 	public ViewRowIdsOrderedSelection addRowIdsToSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
-		if (rowIds.isEmpty())
-		{
-			// nothing changed
-			return selection;
-		}
-		else if (rowIds.isAll())
-		{
-			throw new IllegalArgumentException("Cannot add ALL to selection");
-		}
-
-		//
-		// Add
-		boolean hasChanges = false;
-		final String selectionId = selection.getSelectionId();
-		// TODO: add all rowIds in one query!!! Not so urgent because usually there are added just a couple of rowIds, not much
-		for (final DocumentId rowId : rowIds.toSet())
-		{
-			final SqlAndParams sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(selectionId, rowId);
-			final int added = DB.executeUpdateAndThrowExceptionOnFail(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
-			if (added <= 0)
-			{
-				continue;
-			}
-
-			hasChanges = true;
-		}
-		if (!hasChanges)
-		{
-			// nothing changed
-			return selection;
-		}
-
-		//
-		// Retrieve current size
-		// NOTE: we are querying it instead of adding how many we added to current "size" because it might be that the size is staled
-		final int size = retrieveSize(selectionId);
-
-		return selection.withSize(size);
+		return !rowIds.isEmpty()
+				? removeAndAddRowIdsFromSelection(selection, DocumentIdsSelection.EMPTY, rowIds, AddRemoveChangedRowIdsCollector.NOT_RECORDING)
+				: selection;
 	}
 
 	@Override
 	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
-		if (rowIds.isEmpty())
+		return !rowIds.isEmpty()
+				? removeAndAddRowIdsFromSelection(selection, rowIds, DocumentIdsSelection.EMPTY, AddRemoveChangedRowIdsCollector.NOT_RECORDING)
+				: selection;
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection removeAndAddRowIdsFromSelection(
+			@NonNull final ViewRowIdsOrderedSelection selection,
+			@NonNull final DocumentIdsSelection rowIdsToRemove,
+			@NonNull final DocumentIdsSelection rowIdsToAdd,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
+	{
+		boolean hasChanges = false;
+
+		//
+		// Remove
+		if (!rowIdsToRemove.isEmpty())
 		{
-			// nothing changed
+			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIdsToRemove);
+			if (sqlDelete != null)
+			{
+				final int deleted = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+				if (deleted > 0)
+				{
+					changesCollector.collectRemovedRowIds(rowIdsToRemove.toSet());
+					hasChanges = true;
+				}
+			}
+		}
+
+		//
+		// Add
+		if (!rowIdsToAdd.isEmpty())
+		{
+			// shall not happen
+			if (rowIdsToAdd.isAll())
+			{
+				throw new IllegalArgumentException("Cannot add ALL to selection");
+			}
+
+			final String selectionId = selection.getSelectionId();
+			// TODO: add all rowIds in one query!!! Not so urgent because usually there are added just a couple of rowIds, not much
+			for (final DocumentId rowId : rowIdsToAdd.toSet())
+			{
+				final SqlAndParams sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(selectionId, rowId);
+				final int added = DB.executeUpdateAndThrowExceptionOnFail(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+				if (added > 0)
+				{
+					changesCollector.collectAddedRowId(rowId);
+					hasChanges = true;
+				}
+			}
+		}
+
+		//
+		//
+		if (hasChanges)
+		{
+			//
+			// Retrieve current size
+			// NOTE: we are querying it instead of subtracting removed/adding inserted rows count from current "size" because it might be that the size is staled
+			final int size = retrieveSize(selection.getSelectionId());
+			return selection.withSize(size);
+		}
+		else
+		{
 			return selection;
 		}
 
-		//
-		// Delete
-		{
-			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
-			if (sqlDelete == null)
-			{
-				return selection;
-			}
-
-			final int deleted = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
-			if (deleted <= 0)
-			{
-				// nothing changed
-				return selection;
-			}
-		}
-
-		//
-		// Retrieve current size
-		// NOTE: we are querying it instead of subtracting "deleted" from current "size" because it might be that the size is staled
-		final int size = retrieveSize(selection.getSelectionId());
-
-		return selection.withSize(size);
 	}
 
 	private int retrieveSize(final String selectionId)
@@ -339,7 +344,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	public static Set<DocumentId> retrieveRowIdsForLineIds(
-			@NonNull SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final ViewId viewId,
 			final Set<Integer> lineIds)
 	{
@@ -356,7 +361,10 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			while (rs.next())
 			{
 				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", false);
-				rowIds.add(rowId);
+				if(rowId != null)
+				{
+					rowIds.add(rowId);
+				}
 			}
 			return rowIds.build();
 		}

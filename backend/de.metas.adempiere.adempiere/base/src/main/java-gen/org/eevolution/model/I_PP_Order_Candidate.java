@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -77,26 +78,25 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
+	 * Set Capacity Per Production Cycle.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID (int C_UOM_ID);
+	void setCapacityPerProductionCycleOverride (@Nullable BigDecimal CapacityPerProductionCycleOverride);
 
 	/**
-	 * Get UOM.
-	 * Unit of Measure
+	 * Get Capacity Per Production Cycle.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_UOM_ID();
+	BigDecimal getCapacityPerProductionCycleOverride();
 
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_CapacityPerProductionCycleOverride = new ModelColumn<>(I_PP_Order_Candidate.class, "CapacityPerProductionCycleOverride", null);
+	String COLUMNNAME_CapacityPerProductionCycleOverride = "CapacityPerProductionCycleOverride";
 
 	/**
 	 * Get Created.
@@ -122,6 +122,28 @@ public interface I_PP_Order_Candidate
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date Promised.
@@ -212,6 +234,29 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsClosed = new ModelColumn<>(I_PP_Order_Candidate.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotForLot (@Nullable java.lang.String IsLotForLot);
+
+	/**
+	 * Get Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsLotForLot();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_PP_Order_Candidate.class, "IsLotForLot", null);
+	String COLUMNNAME_IsLotForLot = "IsLotForLot";
 
 	/**
 	 * Set Simulated.
@@ -414,10 +459,6 @@ public interface I_PP_Order_Candidate
 	 * <br>Virtual Column: false
 	 */
 	int getPP_Product_Planning_ID();
-
-	@Nullable org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
-
-	void setPP_Product_Planning(@Nullable org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
 
 	ModelColumn<I_PP_Order_Candidate, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";

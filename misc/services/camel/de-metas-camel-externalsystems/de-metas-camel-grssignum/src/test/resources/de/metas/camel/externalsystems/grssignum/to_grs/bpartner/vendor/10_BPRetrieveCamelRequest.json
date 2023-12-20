@@ -1,5 +1,6 @@
 {
   "bpartnerIdentifier": "bpIdentifier",
   "externalSystemConfigId": 1,
-  "adPInstanceId": 2
+  "adPInstanceId": 2,
+  "noCache": true
 }

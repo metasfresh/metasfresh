@@ -22,16 +22,20 @@ package de.metas.acct.callout;
  * #L%
  */
 
+import de.metas.acct.Account;
+import de.metas.acct.accounts.TaxAccountsRepository;
+import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.tax.ITaxAccountable;
-import de.metas.acct.tax.ITaxAcctBL;
-import de.metas.acct.tax.TaxAcctType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -43,17 +47,18 @@ import java.math.BigDecimal;
  * Callout for {@link ITaxAccountable} records
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29
+ * @implSpec task <a href="http://dewiki908/mediawiki/index.php/08351_Automatikibuchung_Steuer_in_Hauptbuchjournal_%28106598648165%29">...</a>
  */
 /* package */class TaxAccountableCallout
 {
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final TaxAccountsRepository taxAccountsRepository = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
+
 	// NOTE: no status fields are allowed because it's assume this is stateless
 
 	/**
 	 * Called when Tax Base Account is set.
-	 *
-	 * @param taxAccountable
 	 */
 	public void onTaxBaseAccount(final ITaxAccountable taxAccountable)
 	{
@@ -68,8 +73,6 @@ import java.math.BigDecimal;
 	 * Called when TaxBaseAmt is changed.
 	 * <p>
 	 * Sets TaxAmt and TaxTotalAmt.
-	 *
-	 * @param taxAccountable
 	 */
 	public void onTaxBaseAmt(final ITaxAccountable taxAccountable)
 	{
@@ -78,13 +81,17 @@ import java.math.BigDecimal;
 		{
 			return;
 		}
+		if (tax.isReverseCharge())
+		{
+			throw new AdempiereException("Reverse Charge Tax is not supported");
+		}
 
 		//
 		// Calculate Tax Amt
 		final BigDecimal taxBaseAmt = taxAccountable.getTaxBaseAmt();
 		final boolean taxIncluded = false;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final BigDecimal taxAmt = tax.calculateTax(taxBaseAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxBaseAmt, taxIncluded, precision.toInt()).getTaxAmount();
 
 		final BigDecimal totalAmt = taxBaseAmt.add(taxAmt);
 
@@ -96,8 +103,6 @@ import java.math.BigDecimal;
 	 * Called when TaxAmt is changed.
 	 * <p>
 	 * Sets TaxTotalAmt.
-	 *
-	 * @param taxAccountable
 	 */
 	public void onTaxAmt(final ITaxAccountable taxAccountable)
 	{
@@ -111,8 +116,6 @@ import java.math.BigDecimal;
 	 * Called when TaxTotalAmt is changed.
 	 * <p>
 	 * Sets TaxAmt and TaxBaseAmt.
-	 *
-	 * @param taxAccountable
 	 */
 	public void onTaxTotalAmt(final ITaxAccountable taxAccountable)
 	{
@@ -121,13 +124,17 @@ import java.math.BigDecimal;
 		{
 			return;
 		}
+		if (tax.isReverseCharge())
+		{
+			throw new AdempiereException("Reverse Charge Tax is not supported");
+		}
 
 		//
 		// Calculate TaxAmt
 		final BigDecimal taxTotalAmt = taxAccountable.getTaxTotalAmt();
 		final boolean taxIncluded = true;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final BigDecimal taxAmt = tax.calculateTax(taxTotalAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxTotalAmt, taxIncluded, precision.toInt()).getTaxAmount();
 
 		final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
 
@@ -139,8 +146,6 @@ import java.math.BigDecimal;
 	 * Called when C_Tax_ID is changed.
 	 * <p>
 	 * Sets Tax_Acct, TaxAmt.
-	 *
-	 * @param taxAccountable
 	 */
 	public void onC_Tax_ID(final ITaxAccountable taxAccountable)
 	{
@@ -165,8 +170,11 @@ import java.math.BigDecimal;
 		if (taxId != null)
 		{
 			final AcctSchemaId acctSchemaId = taxAccountable.getAcctSchemaId();
-			final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-			final MAccount taxAccount = taxAcctBL.getAccount(taxId, acctSchemaId, taxAcctType);
+			final MAccount taxAccount = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
+					.getAccount(taxAcctType)
+					.map(Account::getAccountId)
+					.map(accountDAO::getById)
+					.orElseThrow(() -> new AdempiereException("@NotFound@ " + taxAcctType + " (" + taxId + ", " + acctSchemaId + ")"));
 			taxAccountable.setTax_Acct(taxAccount);
 		}
 		else
@@ -179,7 +187,7 @@ import java.math.BigDecimal;
 		onTaxBaseAmt(taxAccountable);
 	}
 
-	private final I_C_Tax getTaxOrNull(final I_C_ValidCombination accountVC)
+	private I_C_Tax getTaxOrNull(final I_C_ValidCombination accountVC)
 	{
 		if (accountVC == null)
 		{

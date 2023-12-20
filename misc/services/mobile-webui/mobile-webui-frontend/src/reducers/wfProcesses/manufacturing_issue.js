@@ -163,6 +163,7 @@ const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
       productName: line.productName,
+      productValue: line.productValue,
       uom: line.uom,
       hazardSymbols: line.hazardSymbols ?? [],
       allergens: line.allergens ?? [],
@@ -170,7 +171,8 @@ const normalizeLines = (lines) => {
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,
-      qtyToIssueTolerancePerc: line.qtyToIssueTolerancePerc,
+      qtyToIssueTolerance: line.qtyToIssueTolerance,
+      userInstructions: line.userInstructions,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;

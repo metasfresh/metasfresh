@@ -59,8 +59,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
@@ -187,9 +187,9 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/card")
-	@ApiOperation("gets cards indexed by cardId")
+	@Operation(summary = "gets cards indexed by cardId")
 	public Map<Integer, JSONBoardCard> getCards(@PathVariable("boardId") final int boardId,
-												@RequestParam("cardIds") @ApiParam("comma separated cardIds") final String cardIdsListStr)
+												@RequestParam("cardIds") @Parameter(description = "comma separated cardIds") final String cardIdsListStr)
 	{
 		userSession.assertLoggedIn();
 

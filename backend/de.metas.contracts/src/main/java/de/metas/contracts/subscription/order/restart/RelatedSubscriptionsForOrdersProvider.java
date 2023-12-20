@@ -3,9 +3,9 @@ package de.metas.contracts.subscription.order.restart;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;

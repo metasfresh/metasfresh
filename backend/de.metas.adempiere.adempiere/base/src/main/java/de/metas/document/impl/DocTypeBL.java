@@ -1,10 +1,34 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -17,9 +41,17 @@ public class DocTypeBL implements IDocTypeBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	@Override
-	public I_C_DocType getById(final DocTypeId docTypeId)
+	@NonNull
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypesRepo.getById(docTypeId);
+		return docTypesRepo.getRecordById(docTypeId);
+	}
+
+	@Override
+	@NonNull
+	public I_C_DocType getByIdInTrx(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getByIdInTrx(docTypeId);
 	}
 
 	@Override
@@ -29,9 +61,16 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
+	}
+
+	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getRecordById(docTypeId);
 		return InterfaceWrapperHelper.getModelTranslationMap(docType)
 				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
 	}
@@ -39,7 +78,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesQuotation(dt);
 	}
 
@@ -60,7 +99,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposal(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesProposal(dt);
 	}
 
@@ -74,7 +113,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposalOrQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return isSalesProposalOrQuotation(dt);
 	}
 
@@ -87,7 +126,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getRecordById(docTypeId);
 		return isPrepay(docType);
 	}
 
@@ -101,13 +140,13 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean hasRequestType(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypesRepo.getById(docTypeId).getR_RequestType_ID() > 0;
+		return docTypesRepo.getRecordById(docTypeId).getR_RequestType_ID() > 0;
 	}
 
 	@Override
 	public boolean isRequisition(final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return X_C_DocType.DOCSUBTYPE_Requisition.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
 	}
@@ -115,7 +154,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isMediated(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 		return X_C_DocType.DOCSUBTYPE_Mediated.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isPurchaseOrder();
 	}
@@ -123,9 +162,50 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isCallOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return (X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType()) || X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
 				&& X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType());
+	}
+
+	@Override
+	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
+
+		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
+	}
+
+	@Override
+	public boolean isProFormaSO(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocSubType())
+				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+	}
+
+	@Override
+	public boolean isDownPayment(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
+	}
+
+	@Override
+	public void save(@NonNull final I_C_DocType dt)
+	{
+		docTypesRepo.save(dt);
+	}
+
+	@Override
+	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
+
+		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
 	}
 }

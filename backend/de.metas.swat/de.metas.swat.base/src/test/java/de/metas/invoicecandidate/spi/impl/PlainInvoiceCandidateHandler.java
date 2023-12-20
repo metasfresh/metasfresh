@@ -22,15 +22,14 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
-
-import java.util.Collections;
-import java.util.Iterator;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import org.adempiere.ad.dao.QueryLimit;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 public class PlainInvoiceCandidateHandler extends AbstractInvoiceCandidateHandler
 {

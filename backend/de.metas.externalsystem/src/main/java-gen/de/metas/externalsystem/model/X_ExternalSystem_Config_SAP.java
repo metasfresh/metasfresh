@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1886505240L;
+	private static final long serialVersionUID = -177110671L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -35,15 +35,27 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setErroredDirectory (final String ErroredDirectory)
+	public void setApiVersion (final @Nullable String ApiVersion)
 	{
-		set_Value (COLUMNNAME_ErroredDirectory, ErroredDirectory);
+		set_Value (COLUMNNAME_ApiVersion, ApiVersion);
 	}
 
 	@Override
-	public String getErroredDirectory()
+	public String getApiVersion()
 	{
-		return get_ValueAsString(COLUMNNAME_ErroredDirectory);
+		return get_ValueAsString(COLUMNNAME_ApiVersion);
+	}
+
+	@Override
+	public void setBaseURL (final @Nullable String BaseURL)
+	{
+		set_Value (COLUMNNAME_BaseURL, BaseURL);
+	}
+
+	@Override
+	public String getBaseURL()
+	{
+		return get_ValueAsString(COLUMNNAME_BaseURL);
 	}
 
 	@Override
@@ -101,146 +113,62 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setPollingFrequencyInMs (final int PollingFrequencyInMs)
+	public void setIsCheckDescriptionForMaterialType (final boolean IsCheckDescriptionForMaterialType)
 	{
-		set_Value (COLUMNNAME_PollingFrequencyInMs, PollingFrequencyInMs);
+		set_Value (COLUMNNAME_IsCheckDescriptionForMaterialType, IsCheckDescriptionForMaterialType);
 	}
 
 	@Override
-	public int getPollingFrequencyInMs() 
+	public boolean isCheckDescriptionForMaterialType() 
 	{
-		return get_ValueAsInt(COLUMNNAME_PollingFrequencyInMs);
+		return get_ValueAsBoolean(COLUMNNAME_IsCheckDescriptionForMaterialType);
 	}
 
 	@Override
-	public void setProcessedDirectory (final String ProcessedDirectory)
+	public void setPost_Acct_Documents_Path (final @Nullable String Post_Acct_Documents_Path)
 	{
-		set_Value (COLUMNNAME_ProcessedDirectory, ProcessedDirectory);
+		set_Value (COLUMNNAME_Post_Acct_Documents_Path, Post_Acct_Documents_Path);
 	}
 
 	@Override
-	public String getProcessedDirectory()
+	public String getPost_Acct_Documents_Path()
 	{
-		return get_ValueAsString(COLUMNNAME_ProcessedDirectory);
+		return get_ValueAsString(COLUMNNAME_Post_Acct_Documents_Path);
 	}
 
 	@Override
-	public void setSFTP_BPartner_FileName_Pattern (final @Nullable String SFTP_BPartner_FileName_Pattern)
+	public void setSignatureSAS (final @Nullable String SignatureSAS)
 	{
-		set_Value (COLUMNNAME_SFTP_BPartner_FileName_Pattern, SFTP_BPartner_FileName_Pattern);
+		set_Value (COLUMNNAME_SignatureSAS, SignatureSAS);
 	}
 
 	@Override
-	public String getSFTP_BPartner_FileName_Pattern()
+	public String getSignatureSAS()
 	{
-		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_FileName_Pattern);
+		return get_ValueAsString(COLUMNNAME_SignatureSAS);
 	}
 
 	@Override
-	public void setSFTP_BPartner_TargetDirectory (final @Nullable String SFTP_BPartner_TargetDirectory)
+	public void setSignedPermissions (final @Nullable String SignedPermissions)
 	{
-		set_Value (COLUMNNAME_SFTP_BPartner_TargetDirectory, SFTP_BPartner_TargetDirectory);
+		set_Value (COLUMNNAME_SignedPermissions, SignedPermissions);
 	}
 
 	@Override
-	public String getSFTP_BPartner_TargetDirectory()
+	public String getSignedPermissions()
 	{
-		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_TargetDirectory);
+		return get_ValueAsString(COLUMNNAME_SignedPermissions);
 	}
 
 	@Override
-	public void setSFTP_CreditLimit_FileName_Pattern (final @Nullable String SFTP_CreditLimit_FileName_Pattern)
+	public void setSignedVersion (final @Nullable String SignedVersion)
 	{
-		set_Value (COLUMNNAME_SFTP_CreditLimit_FileName_Pattern, SFTP_CreditLimit_FileName_Pattern);
+		set_Value (COLUMNNAME_SignedVersion, SignedVersion);
 	}
 
 	@Override
-	public String getSFTP_CreditLimit_FileName_Pattern()
+	public String getSignedVersion()
 	{
-		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_FileName_Pattern);
-	}
-
-	@Override
-	public void setSFTP_CreditLimit_TargetDirectory (final @Nullable String SFTP_CreditLimit_TargetDirectory)
-	{
-		set_Value (COLUMNNAME_SFTP_CreditLimit_TargetDirectory, SFTP_CreditLimit_TargetDirectory);
-	}
-
-	@Override
-	public String getSFTP_CreditLimit_TargetDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_TargetDirectory);
-	}
-
-	@Override
-	public void setSFTP_HostName (final String SFTP_HostName)
-	{
-		set_Value (COLUMNNAME_SFTP_HostName, SFTP_HostName);
-	}
-
-	@Override
-	public String getSFTP_HostName()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_HostName);
-	}
-
-	@Override
-	public void setSFTP_Password (final String SFTP_Password)
-	{
-		set_Value (COLUMNNAME_SFTP_Password, SFTP_Password);
-	}
-
-	@Override
-	public String getSFTP_Password()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Password);
-	}
-
-	@Override
-	public void setSFTP_Port (final String SFTP_Port)
-	{
-		set_Value (COLUMNNAME_SFTP_Port, SFTP_Port);
-	}
-
-	@Override
-	public String getSFTP_Port()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Port);
-	}
-
-	@Override
-	public void setSFTP_Product_FileName_Pattern (final @Nullable String SFTP_Product_FileName_Pattern)
-	{
-		set_Value (COLUMNNAME_SFTP_Product_FileName_Pattern, SFTP_Product_FileName_Pattern);
-	}
-
-	@Override
-	public String getSFTP_Product_FileName_Pattern()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Product_FileName_Pattern);
-	}
-
-	@Override
-	public void setSFTP_Product_TargetDirectory (final @Nullable String SFTP_Product_TargetDirectory)
-	{
-		set_Value (COLUMNNAME_SFTP_Product_TargetDirectory, SFTP_Product_TargetDirectory);
-	}
-
-	@Override
-	public String getSFTP_Product_TargetDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Product_TargetDirectory);
-	}
-
-	@Override
-	public void setSFTP_Username (final String SFTP_Username)
-	{
-		set_Value (COLUMNNAME_SFTP_Username, SFTP_Username);
-	}
-
-	@Override
-	public String getSFTP_Username()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Username);
+		return get_ValueAsString(COLUMNNAME_SignedVersion);
 	}
 }

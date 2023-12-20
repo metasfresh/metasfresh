@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,28 +37,31 @@ import java.math.BigDecimal;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @Value
-@ApiModel
+@Schema
 public class JsonCreateBOMLine
 {
-	@ApiModelProperty(position = 10, value = PRODUCT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
 	String productIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to 'PP_Product_BOMLine.QtyBom' and 'PP_Product_BOMLine.C_UOM_ID' ", required = true)
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.QtyBom' and 'PP_Product_BOMLine.C_UOM_ID' ", required = true)
 	JsonQuantity qtyBom;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to 'PP_Product_BOMLine.Line")
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.Line")
 	Integer line;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to 'PP_Product_BOMLine.IsQtyPercentage")
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.IsQtyPercentage")
 	Boolean isQtyPercentage;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to 'PP_Product_BOMLine.Scrap")
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.Scrap")
 	BigDecimal scrap;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to 'PP_Product_BOMLine.IssueMethod")
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.IssueMethod")
 	String issueMethod;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `M_AttributeSetInstance`")
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.Help")
+	String help;
+
+	@Schema(description = "Corresponding to `M_AttributeSetInstance`")
 	JsonAttributeSetInstance attributeSetInstance;
 
 	@Builder
@@ -71,6 +73,7 @@ public class JsonCreateBOMLine
 			@JsonProperty("isQtyPercentage") @Nullable final Boolean isQtyPercentage,
 			@JsonProperty("scrap") final BigDecimal scrap,
 			@JsonProperty("issueMethod") @Nullable final String issueMethod,
+			@JsonProperty("help") @Nullable final String help,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance)
 	{
 
@@ -80,6 +83,7 @@ public class JsonCreateBOMLine
 		this.isQtyPercentage = isQtyPercentage;
 		this.scrap = scrap;
 		this.issueMethod = issueMethod;
+		this.help = help;
 		this.attributeSetInstance = attributeSetInstance;
 	}
 }

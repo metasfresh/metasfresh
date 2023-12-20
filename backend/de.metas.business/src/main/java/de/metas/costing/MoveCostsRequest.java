@@ -70,9 +70,9 @@ public class MoveCostsRequest
 	@NonNull
 	CostingDocumentRef inboundDocumentRef;
 
-	public boolean isAllCostElements()
+	public boolean isExplicitCostElement()
 	{
-		return costElement == null;
+		return costElement != null;
 	}
 
 	public CostElementId getCostElementId()

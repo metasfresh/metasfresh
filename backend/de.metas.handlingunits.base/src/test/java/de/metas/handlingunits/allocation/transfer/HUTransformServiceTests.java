@@ -1,6 +1,7 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -17,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.product.IProductActivityProvider;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -104,6 +106,8 @@ public class HUTransformServiceTests
 		testsBase = new HUTransformTestsBase();
 
 		huTransformService = HUTransformService.newInstance(testsBase.getData().helper.getHUContext());
+
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 	}
 
 	/**
@@ -224,8 +228,6 @@ public class HUTransformServiceTests
 	/**
 	 * Run {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
-	 *
-	 * @param isOwnPackingMaterials
 	 */
 	@Theory
 	public void testRealCU_To_NewTUs_40Tomatoes_TU_Capacity_8(
@@ -494,7 +496,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Similar to {@link #testSplitAggregateTU_To_NewTUs_MaxValue()}, but here the source TU is on a pallet.<br>
+	 * Similar to {@link #testRealTU_To_NewTUs_MaxValue()}, but here the source TU is on a pallet.<br>
 	 * So this time, it shall be taken off the pallet.
 	 */
 	@Theory
@@ -848,7 +850,7 @@ public class HUTransformServiceTests
 	 * <li>move 1.6kg of the salad to the TU
 	 * </ul>
 	 *
-	 * @task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
+	 * @implSpec task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
 	 */
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_partialCU()
@@ -967,7 +969,7 @@ public class HUTransformServiceTests
 	 * Verifies the splitting off an aggregate HU with a non-int storage value.
 	 * If this test shows problems, also see {@link LUTUProducerDestinationLoadTests#testAggregateSingleLUFullyLoaded_non_int()}.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
+	 * @implNote task https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
 	 */
 	@Test
 	public void testAggregateSingleLUFullyLoaded_non_int()

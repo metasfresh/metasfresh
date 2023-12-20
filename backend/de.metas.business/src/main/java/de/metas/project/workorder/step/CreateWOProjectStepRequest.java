@@ -51,10 +51,10 @@ public class CreateWOProjectStepRequest
 	@NonNull
 	Integer seqNo;
 
-	@NonNull
+	@Nullable
 	Instant dateStart;
 
-	@NonNull
+	@Nullable
 	Instant dateEnd;
 
 	@Nullable

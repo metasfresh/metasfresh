@@ -51,7 +51,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -109,4 +109,5 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+
 }

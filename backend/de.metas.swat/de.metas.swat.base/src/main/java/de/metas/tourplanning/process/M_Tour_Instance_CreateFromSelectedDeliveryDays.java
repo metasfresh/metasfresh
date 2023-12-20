@@ -22,13 +22,6 @@ package de.metas.tourplanning.process;
  * #L%
  */
 
-import java.util.Iterator;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -42,6 +35,12 @@ import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import java.util.Iterator;
 
 public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 {
@@ -247,7 +246,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 
 	private Iterator<I_M_DeliveryDay> retrieveSelectedDeliveryDays()
 	{
-		return retrieveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class)
+		return retrieveActiveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class)
 				//
 				.orderBy()
 				.clear()

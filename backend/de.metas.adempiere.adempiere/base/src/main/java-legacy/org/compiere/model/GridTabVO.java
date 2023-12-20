@@ -26,6 +26,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -344,6 +345,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
+			vo.quickInputLayout = QuickInputConfigLayout.parse(rs.getString(I_AD_Tab.COLUMNNAME_QuickInputLayout)).orElse(null);
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
 			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
@@ -370,7 +372,6 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		this.captions.loadCurrentLanguage(rs);
 	}
-
 
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
@@ -461,7 +462,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			I_AD_Tab.COLUMNNAME_Help,
 			I_AD_Tab.COLUMNNAME_CommitWarning,
 			I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption,
-			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);
+			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption,
+			I_AD_Tab.COLUMNNAME_NotFound_Message,
+			I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);
 
 	private String entityType = null;
 	/**
@@ -521,9 +524,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
-	/** Detect default date filter	*/
+	/**
+	 * Detect default date filter
+	 */
 	private boolean IsAutodetectDefaultDateFilter;
-	
+
 	/**
 	 * Where
 	 */
@@ -588,6 +593,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
+	@Getter @Nullable QuickInputConfigLayout quickInputLayout;
 
 	@Getter
 	private String includedTabNewRecordInputMode;
@@ -791,6 +797,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
+		clone.quickInputLayout = quickInputLayout;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 		clone.queryIfNoFilters = queryIfNoFilters;
@@ -1089,6 +1096,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsAutodetectDefaultDateFilter;
 	}
+
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
@@ -1155,8 +1163,13 @@ public class GridTabVO implements Evaluatee, Serializable
 		return applyRolePermissions;
 	}
 
-	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
-	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
+	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
+
+	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
+
+	public ITranslatableString getNotFoundMessage() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_Message);}
+
+	public ITranslatableString getNotFoundMessageDetail() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);}
 
 	//
 	//
@@ -1290,7 +1303,17 @@ public class GridTabVO implements Evaluatee, Serializable
 		public void putTranslation(@NonNull final String adLanguage, @Nullable final String captionTrl)
 		{
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-			translations.put(adLanguage, captionTrl != null ? captionTrl.trim() : "");
+
+			final String captionTrlNorm = captionTrl != null ? captionTrl.trim() : "";
+			if (!captionTrlNorm.isEmpty())
+			{
+				translations.put(adLanguage, captionTrlNorm);
+			}
+			else
+			{
+				translations.remove(adLanguage);
+			}
+
 			computedTrl = null;
 		}
 

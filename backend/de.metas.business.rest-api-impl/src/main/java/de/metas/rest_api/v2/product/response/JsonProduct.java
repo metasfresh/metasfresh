@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -42,14 +42,12 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonProduct
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
+	@Schema(type = "java.lang.Integer",
+			description = "This translates to `M_Product.M_Product_ID`.")
 	@NonNull
 	ProductId id;
 
-	@ApiModelProperty("This translates to `M_Product.Value`.")
+	@Schema(description = "This translates to `M_Product.Value`.")
 	@NonNull
 	String productNo;
 
@@ -59,17 +57,17 @@ public class JsonProduct
 	@Nullable
 	String description;
 
-	@ApiModelProperty(value = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
+	@Schema(description = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
 	@Nullable
 	@JsonInclude(Include.NON_EMPTY)
 	String ean;
 
-	@ApiModelProperty("This translates to `M_Product.ExternalId`.")
+	@Schema(description = "This translates to `M_Product.ExternalId`.")
 	@Nullable
 	@JsonInclude(Include.NON_EMPTY)
 	String externalId;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
+	@Schema(description = "This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
 	@NonNull
 	String uom;
 

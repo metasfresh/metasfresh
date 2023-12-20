@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -67,22 +67,20 @@ public class JsonResponseLocation
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	@Schema
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(
-			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
+	@Schema(description = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean active;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -112,38 +110,38 @@ public class JsonResponseLocation
 
 	String countryCode;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean shipTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean shipToDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean billTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean billToDefault;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String setupPlaceNo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean remitTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean visitorsAddress;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean handoverLocation;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@Schema
 	boolean replicationLookupDefault;
 
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
+	@Schema // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)

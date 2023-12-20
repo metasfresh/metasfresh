@@ -34,10 +34,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
@@ -320,53 +320,6 @@ public class TimeUtil
 		cal.set(Calendar.MILLISECOND, 0);
 		return new Timestamp(cal.getTimeInMillis());
 	}    // getDayTime
-
-	/**
-	 * Is the _1 in the Range of _2
-	 *
-	 * <pre>
-	 * 		Time_1         +--x--+
-	 * 		Time_2   +a+      +---b---+   +c+
-	 * </pre>
-	 * <p>
-	 * The function returns true for b and false for a/b.
-	 *
-	 * @param start_1 start (1)
-	 * @param end_1   not included end (1)
-	 * @param start_2 start (2)
-	 * @param end_2   not included (2)
-	 * @return true if in range
-	 */
-	static public boolean inRange(
-			@NonNull final Timestamp start_1,
-			@NonNull final Timestamp end_1,
-			@NonNull final Timestamp start_2,
-			@NonNull final Timestamp end_2)
-	{
-		// validity check
-		if (end_1.before(start_1))
-		{
-			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
-		}
-		if (end_2.before(start_2))
-		{
-			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
-		}
-		// case a
-		if (!end_2.after(start_1))        // end not including
-		{
-			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return false;
-		}
-		// case c
-		if (!start_2.before(end_1))        // end not including
-		{
-			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return false;
-		}
-		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-		return true;
-	}    // inRange
 
 	/**
 	 * Is start..end on one of the days ?
@@ -1000,7 +953,7 @@ public class TimeUtil
 	 *
 	 * @return true if date is between given dates (inclusively)
 	 */
-	public static boolean isBetween(final Date date, final Date dateFrom, final Date dateTo)
+	public static boolean isBetween(final Date date, @Nullable final Date dateFrom, @Nullable final Date dateTo)
 	{
 		Check.assumeNotNull(date, "date not null");
 
@@ -1327,7 +1280,7 @@ public class TimeUtil
 		}
 		else
 		{
-			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
 			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
@@ -1382,7 +1335,13 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		return instant != null ? Timestamp.from(instant) : null;
+		return instant != null ? asTimestampNotNull(instant) : null;
+	}
+
+	@NonNull
+	public static Timestamp asTimestampNotNull(@NonNull final Instant instant)
+	{
+		return Timestamp.from(instant);
 	}
 
 	/**
@@ -1521,13 +1480,27 @@ public class TimeUtil
 	}
 
 	/**
-	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
+	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
 	 */
+	@Deprecated
 	public static Timestamp parseTimestamp(@NonNull final String date)
+	{
+		return parseTimestamp(date, SystemTime.zoneId());
+	}
+
+	/**
+	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * The returned timestamp is 00:00 at the given date and timezone.
+	 */
+	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
 	{
 		try
 		{
-			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
+
+			final Date parsedDate = simpleDateFormat.parse(date);
 			return new Timestamp(parsedDate.getTime());
 		}
 		catch (final ParseException e)
@@ -1665,6 +1638,13 @@ public class TimeUtil
 	}
 
 	@Deprecated
+	@NonNull
+	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
+	{
+		return ts.toLocalDateTime().toLocalDate();
+	}
+
+	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
 	{
@@ -1716,7 +1696,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj,zoneId).toLocalDate();
+			return asLocalDateTime(obj, zoneId).toLocalDate();
 		}
 	}
 
@@ -1983,7 +1963,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
 	{
-		if(localDate == null)
+		if (localDate == null)
 		{
 			return null;
 		}
@@ -2025,6 +2005,10 @@ public class TimeUtil
 			@NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
+		{
+			return null;
+		}
+		else if (String.valueOf(obj).equals(String.valueOf((Object)null)))
 		{
 			return null;
 		}
@@ -2263,5 +2247,41 @@ public class TimeUtil
 	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
 	{
 		return timestamp2.getTime() - timestamp1.getTime();
+	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
+	{
+		if (localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime startOfDay = localDate.atTime(LocalTime.MIN);
+
+		return asInstant(startOfDay, zoneId);
+	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asStartOfDayInstant(localDate, zoneId);
+	}
+
+	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asEndOfDayInstant(localDate, zoneId);
 	}
 }    // TimeUtil

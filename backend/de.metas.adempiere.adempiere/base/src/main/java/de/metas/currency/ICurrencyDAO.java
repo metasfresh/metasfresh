@@ -60,7 +60,7 @@ public interface ICurrencyDAO extends ISingletonService
 
 	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, Instant date);
 
-	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
+	CurrencyConversionTypeId getConversionTypeId(@NonNull ConversionTypeMethod type);
 
 	@NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull CurrencyConversionTypeId id);
 

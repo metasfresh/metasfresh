@@ -8,6 +8,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -43,7 +44,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -112,7 +113,22 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
-	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+		}
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -121,32 +137,42 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			return Optional.of(createIssueOrReceipt(request));
+			return CostDetailCreateResultsList.ofNullable(createIssueOrReceipt(request));
 		}
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if (actualResourceId.isNoResource())
+			{
+				return null;
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return Optional.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
+			return CostDetailCreateResultsList.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
 		}
 		else if (costCollectorType.isUsageVariance())
 		{
 			if (cc.getPP_Order_BOMLine_ID() > 0)
 			{
-				return Optional.of(createUsageVariance(request));
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request));
 			}
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+				if (actualResourceId.isNoResource())
+				{
+					return null;
+				}
+
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
-				return Optional.of(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
 		}
 		else
@@ -176,6 +202,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(true)
@@ -209,6 +236,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -231,6 +259,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
+				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -481,5 +510,4 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
-
 }

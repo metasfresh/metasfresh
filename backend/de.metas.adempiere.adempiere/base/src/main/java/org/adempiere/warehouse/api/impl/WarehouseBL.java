@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
@@ -34,6 +35,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.User;
@@ -63,6 +65,7 @@ public class WarehouseBL implements IWarehouseBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -167,6 +170,13 @@ public class WarehouseBL implements IWarehouseBL
 		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
+	@Override
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return extractBPartnerLocationId(warehouse);
+	}
+
 	@Nullable
 	@Override
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
@@ -251,7 +261,10 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final ImmutableSet<WarehouseId> warehouseIds = warehouseDAO.retrieveWarehouseWithLocation(oldLocationId);
 
-		warehouseIds.forEach(warehouseId -> updateWarehouseLocation(warehouseId, newLocationId));
+		for (final WarehouseId warehouseId : warehouseIds)
+		{
+			updateWarehouseLocation(warehouseId, newLocationId);
+		}
 	}
 
 	@Override
@@ -309,5 +322,35 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@Override
+	public boolean isDropShipWarehouse(@NonNull final WarehouseId warehouseId, @NonNull final OrgId adOrgId)
+	{
+		final WarehouseId dropShipWarehouseId = orgDAO.getOrgDropshipWarehouseId(adOrgId);
+
+		return warehouseId.equals(dropShipWarehouseId);
+	}
+
+	@Override
+	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
+	{
+		final WarehouseId warehouseId = getIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return Optional.ofNullable(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()));
+	}
+
+	@Override
+	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
+	{
+		return warehouseDAO.retrieveOrgIdByLocatorId(locatorId);
+	}
+
+	@NonNull
+	@Override
+	public BPartnerId getBPartnerId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return BPartnerId.ofRepoId(warehouse.getC_BPartner_ID());
 	}
 }

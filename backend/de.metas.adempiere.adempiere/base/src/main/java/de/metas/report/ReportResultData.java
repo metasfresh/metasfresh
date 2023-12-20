@@ -3,7 +3,9 @@ package de.metas.report;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,6 +18,9 @@ import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /*
  * #%L
@@ -45,11 +50,9 @@ import java.io.IOException;
 @Value
 public class ReportResultData
 {
-	Resource reportData;
-
-	String reportFilename;
-
-	String reportContentType;
+	@NonNull Resource reportData;
+	@NonNull String reportFilename;
+	@NonNull String reportContentType;
 
 	@Builder
 	private ReportResultData(
@@ -115,6 +118,26 @@ public class ReportResultData
 		catch (final IOException ex)
 		{
 			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
+		}
+	}
+
+	public Path writeToDirectory(@NonNull final Path directory)
+	{
+		final Path file = FileUtil.findNotExistingFile(directory, getReportFilename(), 200)
+				.orElseGet(() -> {
+					final String extWithDot = MimeType.getExtensionByType(reportContentType);
+					final String fileBaseName = FileUtil.getFileBaseName(getReportFilename());
+					return directory.resolve(fileBaseName + "_" + SystemTime.millis() + extWithDot);
+				});
+
+		try
+		{
+			Files.copy(reportData.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
+			return file;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file, ex);
 		}
 	}
 

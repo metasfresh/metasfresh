@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -52,6 +53,9 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 
 	private static final AdMessageKey MSG_NoCountryAttribute = AdMessageKey.of("de.metas.swat.CountryAttribute.error");
 
+	private final int c_countryTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Country.Table_Name);
+	private final ICountryAttributeDAO countryAttributeDAO = Services.get(ICountryAttributeDAO.class);
+
 	private Country2CountryAwareAttributeService()
 	{
 		super();
@@ -62,8 +66,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 	{
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
-		final AttributeId countryAttributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(adClientId, adOrgId);
-		return countryAttributeId;
+		return countryAttributeDAO.retrieveCountryAttributeId(adClientId, adOrgId);
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 					throw new NoAttributeGeneratorException(country.getCountryCode());
 				}
 
-				return generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, trxName); // SO trx doesn't matter here
+				return generator.generateAttributeValue(ctx, c_countryTableId, country.getC_Country_ID(), false, trxName); // SO trx doesn't matter here
 
 			}
 

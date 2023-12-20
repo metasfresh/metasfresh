@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 @Value
 public class CreditLimitTypeId implements RepoIdAware
 {
-	@JsonValue
 	int repoId;
 
 	@JsonCreator
@@ -51,5 +50,12 @@ public class CreditLimitTypeId implements RepoIdAware
 	private CreditLimitTypeId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CreditLimit_Type_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

@@ -49,4 +49,6 @@ public class Resource
 	@Nullable UserId responsibleId;
 	
 	@Nullable String internalName;
+
+	@Nullable HumanResourceTestGroupId humanResourceTestGroupId;
 }

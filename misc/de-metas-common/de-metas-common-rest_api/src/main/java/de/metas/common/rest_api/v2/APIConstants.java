@@ -28,4 +28,6 @@ public interface APIConstants
 
 	String GITHUB_ISSUE_CONTROLLER = "/issue/github";
 	String GITHUB_ISSUE_CONTROLLER_SYNC_ENDPOINT = "/sync";
+
+	String CACHE_CONTROL_NO_CACHE = "no-cache";
 }

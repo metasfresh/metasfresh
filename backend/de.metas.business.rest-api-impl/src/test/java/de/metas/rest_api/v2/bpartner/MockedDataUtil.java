@@ -145,6 +145,7 @@ public class MockedDataUtil
 		location.setVisitorsAddress(true);
 		location.setRemitTo(true);
 		location.setReplicationLookupDefault(true);
+		location.setVatId(prefix + "_vatID");
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)

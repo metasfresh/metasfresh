@@ -94,6 +94,9 @@ public class PPOrderData
 
 	HUPIItemProductId packingMaterialId;
 
+	String lotForLot;
+
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
@@ -110,7 +113,8 @@ public class PPOrderData
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
-			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId)
+			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId,
+			@JsonProperty("lotForLot") final String lotForLot)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
@@ -126,6 +130,7 @@ public class PPOrderData
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.packingMaterialId = packingMaterialId;
+		this.lotForLot = lotForLot;
 	}
 
 	@JsonIgnore

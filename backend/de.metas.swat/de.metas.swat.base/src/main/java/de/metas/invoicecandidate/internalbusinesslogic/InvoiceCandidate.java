@@ -1,12 +1,10 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
-import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.InvoiceRule;
@@ -184,7 +182,7 @@ public class InvoiceCandidate
 
 		final StockQtyAndUOMQty toInvoiceExclOverrideCalc = toInvoiceExclOverride.getQtysCalc();
 
-		final ToInvoiceDataBuilder result = ToInvoiceData.builder()
+		final ToInvoiceData.ToInvoiceDataBuilder result = ToInvoiceData.builder()
 				.qtysRaw(toInvoiceExclOverride.getQtysRaw())
 				.qtysCalc(toInvoiceExclOverrideCalc);
 

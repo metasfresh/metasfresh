@@ -32,7 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
@@ -67,7 +67,7 @@ public class ReceiptRestController
 		this.customerReturnRestService = customerReturnRestService;
 	}
 
-	@ApiOperation("Creates a material return or - based on receipt candidate - a material receipt.\n" 
+	@Operation(summary = "Creates a material return or - based on receipt candidate - a material receipt.\n"
 			+ "Note that currently the request-body needs to contain the actual receipt candidates' metasfresh-IDs as exported by the pruchase-candidate endpoint.")
 	@PostMapping
 	public ResponseEntity createReceipts(@RequestBody final JsonCreateReceiptsRequest jsonCreateReceiptsRequest)

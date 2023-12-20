@@ -29,9 +29,11 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -44,12 +46,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,6 +112,9 @@ public class WOProjectRepository
 		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(woProject.getBpartnerTargetDate()));
 		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(woProject.getWoProjectCreatedDate()));
 		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(woProject.getSpecialistConsultantID()));
+		projectRecord.setInternalPriority(InternalPriority.toCode(woProject.getInternalPriority()));
+		projectRecord.setR_Project_Status_ID(RStatusId.toRepoId(woProject.getStatusId()));
 
 		saveRecord(projectRecord);
 
@@ -147,6 +152,7 @@ public class WOProjectRepository
 
 		projectRecord.setBPartnerDepartment(createWOProjectRequest.getBpartnerDepartment());
 		projectRecord.setWOOwner(createWOProjectRequest.getWoOwner());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(createWOProjectRequest.getSpecialistConsultantId()));
 
 		projectRecord.setIsActive(createWOProjectRequest.isActive());
 
@@ -193,6 +199,45 @@ public class WOProjectRepository
 		return getAllActiveProjectsByProjectCalendarQuery(query)
 				.stream()
 				.map(WOProject::getProjectId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableList<WOProject> getByParentProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, projectId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.create()
+				.stream()
+				.map(WOProjectRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Iterator<I_C_Project> iterateAllActive()
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.create()
+				.iterate(I_C_Project.class);
+	}
+
+	@NonNull
+	public ImmutableSet<ProjectId> getByParentProjectAndProjectType(
+			@NonNull final ProjectId parentProjectId,
+			@NonNull final ProjectTypeId projectTypeId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, parentProjectId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_ProjectType_ID, projectTypeId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.create()
+				.listIds()
+				.stream()
+				.map(ProjectId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -271,6 +316,7 @@ public class WOProjectRepository
 		return WOProject.builder()
 				.projectId(projectId)
 				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(projectRecord.getAD_Client_ID()))
 				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
 				.externalId(ExternalId.ofOrNull(projectRecord.getExternalId()))
 
@@ -296,6 +342,9 @@ public class WOProjectRepository
 				.woOwner(projectRecord.getWOOwner())
 
 				.isActive(projectRecord.isActive())
+				.specialistConsultantID(UserId.ofRepoIdOrNullIfSystem(projectRecord.getSpecialist_Consultant_ID()))
+				.internalPriority(InternalPriority.ofNullableCode(projectRecord.getInternalPriority()))
+				.statusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.build();
 	}
 }

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1836855192L;
+	private static final long serialVersionUID = -1070501090L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -157,6 +157,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
+	/** Repair = R */
+	public static final String HUSTATUS_Repair = "R";
 	@Override
 	public void setHUStatus (final java.lang.String HUStatus)
 	{
@@ -178,6 +180,18 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public boolean isChildHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsChildHU);
+	}
+
+	@Override
+	public void setIsExternalProperty (final boolean IsExternalProperty)
+	{
+		set_Value (COLUMNNAME_IsExternalProperty, IsExternalProperty);
+	}
+
+	@Override
+	public boolean isExternalProperty()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExternalProperty);
 	}
 
 	@Override

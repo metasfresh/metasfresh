@@ -1,18 +1,16 @@
 package de.metas.rest_api.utils;
 
-import java.time.ZonedDateTime;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.user.UserId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -36,23 +34,19 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "Entity Created/Updated info")
+@Schema(description = "Entity Created/Updated info")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonCreatedUpdatedInfo
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `AD_User_ID`.")
+	@Schema(type = "java.lang.Integer", //
+			description = "This translates to `AD_User_ID`.")
 	UserId createdBy;
 
 	ZonedDateTime created;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `AD_User_ID`.")
+	@Schema(type = "java.lang.Integer", //
+			description = "This translates to `AD_User_ID`.")
 	UserId updatedBy;
 
 	ZonedDateTime updated;

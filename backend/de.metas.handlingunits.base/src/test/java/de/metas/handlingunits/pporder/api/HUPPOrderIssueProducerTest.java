@@ -102,7 +102,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
-	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private IPPOrderDAO ppOrdersRepo;
 
 	private MRPTestDataSimple masterData;
 
@@ -152,6 +152,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		ppOrdersRepo = Services.get(IPPOrderDAO.class);
 
 		uomStuck = createUOM("Stück", 0, 0);
 		uomMillimeter = createUOM("Millimeter", 2, 4);

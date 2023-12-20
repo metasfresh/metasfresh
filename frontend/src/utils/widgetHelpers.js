@@ -168,9 +168,9 @@ export function shouldPatch({
 
   let allowPatching =
     (isValue &&
-      (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
-        JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
-    JSON.stringify(cachedValue) != JSON.stringify(value) ||
+      (!equalsByValue(fieldData.value, value, fieldData.widgetType) ||
+        !equalsByValue(fieldData.valueTo, valueTo, fieldData.widgetType))) ||
+    !equalsByValue(cachedValue, value, fieldData.widgetType) ||
     // clear field that had it's cachedValue nulled before
     (cachedValue === null && value === null);
 
@@ -180,6 +180,29 @@ export function shouldPatch({
 
   return allowPatching;
 }
+
+const equalsByValue = (value1, value2, widgetType) => {
+  if (widgetType === 'Quantity') {
+    // NOTE: we might consider the other number based widget types (e.g. Integer, Amount, Number, Quantity, CostPrice)
+    // but for now we are checking the Quantity only because that one is in our task focus,
+    // and atm that's the only one on which we are manipulating the trailing zeros
+    const valueNumber1 = convertValueToNumber(value1);
+    const valueNumber2 = convertValueToNumber(value2);
+    return valueNumber1 === valueNumber2;
+  } else {
+    const valueString1 = JSON.stringify(value1);
+    const valueString2 = JSON.stringify(value2);
+    return valueString1 === valueString2;
+  }
+};
+
+const convertValueToNumber = (value) => {
+  if (value == null || value === '') {
+    return null;
+  }
+
+  return Number.parseFloat(value);
+};
 
 /**
  * @method getWidgetField

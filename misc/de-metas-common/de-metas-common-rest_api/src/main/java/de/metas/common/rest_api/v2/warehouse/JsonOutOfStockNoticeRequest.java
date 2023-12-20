@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,8 +38,8 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = JsonOutOfStockNoticeRequest.JsonOutOfStockNoticeRequestBuilder.class)
 public class JsonOutOfStockNoticeRequest
 {
-	@ApiModelProperty(
-			value = "Identifier of the product in question. Can be\n"
+	@Schema(
+			description = "Identifier of the product in question. Can be\n"
 					+ "* a plain `<M_Product_ID>`,\n"
 					+ "* the M_Product.Value as `<val-M_Product.Value>`\n"
 					+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>`")
@@ -47,20 +47,17 @@ public class JsonOutOfStockNoticeRequest
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
 
-	@ApiModelProperty(
-			value = "Optional; Specifies if metasfresh shall create and complete an inventory document for this out of stock notice. Default if omitted: `true`")
+	@Schema(description = "Optional; Specifies if metasfresh shall create and complete an inventory document for this out of stock notice. Default if omitted: `true`")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@NonNull
 	Boolean createInventory;
 
-	@ApiModelProperty(
-			value = "Optional; Specifies if unprocessed shipment schedules with with this request's warehouse, product ans attributes shall be closed. Default if omitted: `true`")
+	@Schema(description = "Optional; Specifies if unprocessed shipment schedules with with this request's warehouse, product ans attributes shall be closed. Default if omitted: `true`")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@NonNull
 	Boolean closePendingShipmentSchedules;
 
-	@ApiModelProperty(
-			value = "AD_Org.value")
+	@Schema(description = "AD_Org.value")
 	@Nullable
 	@JsonProperty("orgCode")
 	String orgCode;

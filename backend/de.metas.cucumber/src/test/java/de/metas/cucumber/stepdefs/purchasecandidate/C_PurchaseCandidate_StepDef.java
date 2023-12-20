@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -32,6 +33,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -136,6 +139,31 @@ public class C_PurchaseCandidate_StepDef
 		purchaseCandidateTable.putOrReplace(purchaseCandidateIdentifier, purchaseCandidateRecord);
 	}
 
+	@And("the following C_PurchaseCandidates are enqueued for generating C_Orders")
+	public void enqueueC_PurchaseCandidates(@NonNull final DataTable dataTable)
+	{
+		final ImmutableSet.Builder<PurchaseCandidateId> purchaseCandidateIds = ImmutableSet.builder();
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			purchaseCandidateIds.add(getPurchaseCandidateId(row));
+		}
+
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds.build());
+	}
+
+	@NonNull
+	private PurchaseCandidateId getPurchaseCandidateId(@NonNull final Map<String, String> row)
+	{
+		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID + ".Identifier");
+
+		final I_C_PurchaseCandidate purchaseCandidateRecord = purchaseCandidateTable.get(purchaseCandidateIdentifier);
+		assertThat(purchaseCandidateRecord).isNotNull();
+
+		return PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());
+	}
+
 	private void validatePurchaseCandidate(@NonNull final Map<String, String> row)
 	{
 		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID + ".Identifier");
@@ -166,7 +194,8 @@ public class C_PurchaseCandidate_StepDef
 		purchaseCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID), purchaseCandidateRecord);
 	}
 
-	private void logCurrentContext(@NonNull final Map<String, String> row)
+	@NonNull
+	private String logCurrentContext(@NonNull final Map<String, String> row)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + ".Identifier");
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderSO_ID + ".Identifier");
@@ -194,7 +223,7 @@ public class C_PurchaseCandidate_StepDef
 						.append(COLUMNNAME_M_Product_ID).append(" : ").append(purchaseCandidateRecord.getM_Product_ID()).append(" ; ")
 						.append("\n"));
 
-		logger.error("*** Error while looking for purchase candidate records, see current context: \n" + message);
+		return "see current context: \n" + message;
 	}
 
 	@NonNull

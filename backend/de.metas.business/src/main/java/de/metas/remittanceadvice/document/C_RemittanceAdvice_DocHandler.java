@@ -22,6 +22,7 @@
 
 package de.metas.remittanceadvice.document;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.organization.InstantAndOrgId;
@@ -67,7 +68,7 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_RemittanceAdvice remittanceAdviceRecord = extractRemittanceAdvice(docFields);
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(remittanceAdviceRecord.getC_RemittanceAdvice_ID());
@@ -81,7 +82,7 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 
 		remittanceAdviceRecord.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
 		remittanceAdviceRecord.setProcessed(true);
-		return X_C_RemittanceAdvice.DOCSTATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override

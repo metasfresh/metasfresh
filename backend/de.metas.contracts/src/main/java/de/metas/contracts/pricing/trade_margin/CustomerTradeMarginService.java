@@ -48,6 +48,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.ILoggable;
@@ -156,9 +157,9 @@ public class CustomerTradeMarginService
 		updatePricingResultToMatchUOM(salesRepPriceResult, request.getQty().getUomId());
 
 		final Money salesRepNetUnitPriceWithoutTax = deductTaxes(salesRepOrgId,
-				salesRepShipToLocation,
-				request,
-				salesRepPriceResult);
+													   salesRepShipToLocation,
+													   request,
+													   salesRepPriceResult);
 
 		final Money salesRepNetUnitPrice = convertToCustomerCurrency(salesRepOrgId, request, salesRepNetUnitPriceWithoutTax);
 
@@ -182,6 +183,7 @@ public class CustomerTradeMarginService
 		final BPartnerLocationAndCaptureId salesRepBillToLocationAndCapture = BPartnerLocationAndCaptureId.of(salesRepBillToLocationId,
 				LocationId.ofRepoId(salesRepBillToLocation.getC_Location_ID()));
 
+		final VatCodeId vatCodeId = null;
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
 				salesRepPricingResult.getTaxCategoryId(),
@@ -190,7 +192,8 @@ public class CustomerTradeMarginService
 				salesRepOrgId,
 				(WarehouseId)null,
 				salesRepBillToLocationAndCapture,
-				request.getSoTrx());
+				request.getSoTrx(),
+				vatCodeId);
 
 		final Tax taxRecord = taxDAO.getTaxById(taxId);
 

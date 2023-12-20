@@ -1,6 +1,8 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.RestUtils;
+import de.metas.auction.AuctionId;
+import de.metas.auction.AuctionService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -82,7 +84,7 @@ import java.util.Optional;
  * #L%
  */
 
-final class MasterdataProvider
+public final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -97,6 +99,7 @@ final class MasterdataProvider
 	private final JsonRetrieverService jsonRetrieverService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final SectionCodeService sectionCodeService;
+	private final AuctionService auctionService;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -106,7 +109,8 @@ final class MasterdataProvider
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonRetrieverService jsonRetrieverService,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final AuctionService auctionService)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
@@ -114,6 +118,7 @@ final class MasterdataProvider
 		this.externalReferenceService = externalReferenceRestControllerService;
 		this.productMasterDataProvider = new ProductMasterDataProvider(externalReferenceRestControllerService);
 		this.sectionCodeService = sectionCodeService;
+		this.auctionService = auctionService;
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -387,6 +392,7 @@ final class MasterdataProvider
 				.build();
 	}
 
+	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final JsonOLCandCreateRequest request, @NonNull final OrgId orgId)
 	{
 
@@ -443,5 +449,17 @@ final class MasterdataProvider
 		}
 
 		return sectionCodeService.getSectionCodeIdByValue(orgId, sectionCode);
+	}
+
+
+	@Nullable
+	public AuctionId getAuctionId(@NonNull final JsonOLCandCreateRequest request)
+	{
+		if (Check.isBlank(request.getAuction()))
+		{
+			return null;
+		}
+
+		return auctionService.getIdByName(request.getAuction());
 	}
 }

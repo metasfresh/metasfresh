@@ -1,12 +1,17 @@
 @from:cucumber
 @topic:materialdispo
+@ghActions:run_on_executor6
 Feature: material-dispo updates on shipment-schedule events
   As a user
   I want material dispo to be updated properly if shipment-schedules are created
   So that the ATP is always correct
 
   Background: Initial Data
-    Given metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
+    Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
+      | Identifier | Name            |
+      | p_1        | salesProduct_12 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                       | Value                       | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
@@ -23,13 +28,13 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with no quantity in stock
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier | Name            |
       | p_1        | p_No_Qty_160922 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_Orders:
+    Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     |
       | o_1        | true    | endcustomer_1            | 2022-09-19  | 2022-09-18T21:00:00.00Z |
     And metasfresh contains C_OrderLines:
@@ -47,13 +52,13 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with quantity in stock
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier | Name              |
       | p_1        | p_With_Qty_160922 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh initially has this MD_Candidate data
+    Given metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-09-18T10:00:00.00Z | 100 | 100                    |
     And metasfresh contains C_Orders:

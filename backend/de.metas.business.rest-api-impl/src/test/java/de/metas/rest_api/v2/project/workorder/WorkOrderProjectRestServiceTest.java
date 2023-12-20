@@ -128,6 +128,7 @@ class WorkOrderProjectRestServiceTest
 		projectType = newInstance(I_C_ProjectType.class);
 		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
 		projectType.setR_StatusCategory_ID(requestStatusCategory.getR_StatusCategory_ID());
+		projectType.setName("projectTypeName");
 		save(projectType);
 
 		final I_S_ResourceType resourceType = newInstance(I_S_ResourceType.class);
@@ -890,7 +891,7 @@ class WorkOrderProjectRestServiceTest
 	@Builder(builderMethodName = "createProjectWOObjectUnderTestRecord")
 	private I_C_Project_WO_ObjectUnderTest createProjectWOObjectUnderTest(
 			@NonNull final ProjectId projectId,
-			@NonNull final int numberOfObjectsUnderTest,
+			final int numberOfObjectsUnderTest,
 			@Nullable final String externalId)
 	{
 		final I_C_Project_WO_ObjectUnderTest objectUnderTest = InterfaceWrapperHelper.newInstance(I_C_Project_WO_ObjectUnderTest.class);

@@ -66,6 +66,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -393,6 +394,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, icRecord);
 
+		invoiceCandidateHandlerBL.setWarehouseId(icRecord);
+		invoiceCandidateHandlerBL.setHarvestingDetails(icRecord);
+
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
@@ -414,6 +418,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		if (orderLine == null)
 		{
 			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciols.stream()
+														 .map(I_C_InvoiceCandidate_InOutLine::getC_InvoiceCandidate_InOutLine_ID)
+														 .collect(ImmutableList.toImmutableList()), ic.getC_Invoice_Candidate_ID()));
 
 			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 			{
@@ -438,6 +448,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 				iciol.setC_Invoice_Candidate(ic);
 			}
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}

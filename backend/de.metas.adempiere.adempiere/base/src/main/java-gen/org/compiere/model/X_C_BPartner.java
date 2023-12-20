@@ -13,19 +13,19 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1539313489L;
+	private static final long serialVersionUID = 1865145681L;
 
-	/** Standard Constructor */
-	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
-	{
-		super (ctx, C_BPartner_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_BPartner_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -713,18 +713,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setDocumentCopies (final int DocumentCopies)
-	{
-		set_Value (COLUMNNAME_DocumentCopies, DocumentCopies);
-	}
-
-	@Override
-	public int getDocumentCopies()
-	{
-		return get_ValueAsInt(COLUMNNAME_DocumentCopies);
-	}
-
-	@Override
 	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
 	{
 		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
@@ -1179,6 +1167,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsManuallyCreated (final boolean IsManuallyCreated)
+	{
+		set_Value (COLUMNNAME_IsManuallyCreated, IsManuallyCreated);
+	}
+
+	@Override
+	public boolean isManuallyCreated()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyCreated);
+	}
+
+	@Override
 	public void setIsManufacturer (final boolean IsManufacturer)
 	{
 		set_Value (COLUMNNAME_IsManufacturer, IsManufacturer);
@@ -1212,6 +1212,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isPOTaxExempt()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
+	}
+
+	/**
+	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISPRINTLOCALCURRENCYINFO_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISPRINTLOCALCURRENCYINFO_Yes = "Y";
+	/** No = N */
+	public static final String ISPRINTLOCALCURRENCYINFO_No = "N";
+	@Override
+	public void setIsPrintLocalCurrencyInfo (final @Nullable java.lang.String IsPrintLocalCurrencyInfo)
+	{
+		set_Value (COLUMNNAME_IsPrintLocalCurrencyInfo, IsPrintLocalCurrencyInfo);
+	}
+
+	@Override
+	public java.lang.String getIsPrintLocalCurrencyInfo()
+	{
+		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}
 
 	@Override
@@ -2348,6 +2369,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setSAP_BPartnerCode (final @Nullable java.lang.String SAP_BPartnerCode)
+	{
+		set_Value (COLUMNNAME_SAP_BPartnerCode, SAP_BPartnerCode);
+	}
+
+	@Override
+	public java.lang.String getSAP_BPartnerCode()
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_BPartnerCode);
+	}
+
+	@Override
 	public void setSection_Group_Partner_ID (final int Section_Group_Partner_ID)
 	{
 		if (Section_Group_Partner_ID < 1)
@@ -2623,5 +2656,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getXing()
 	{
 		return get_ValueAsString(COLUMNNAME_Xing);
+	}
+
+	@Override
+	public void setFresh_Urproduzent(final boolean Fresh_Urproduzent)
+	{
+		set_Value(COLUMNNAME_Fresh_Urproduzent, Fresh_Urproduzent);
+	}
+
+	@Override
+	public boolean isFresh_Urproduzent()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Fresh_Urproduzent);
 	}
 }

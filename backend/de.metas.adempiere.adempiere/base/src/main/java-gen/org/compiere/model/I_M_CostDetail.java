@@ -203,28 +203,6 @@ public interface I_M_CostDetail
 	String COLUMNNAME_C_ProjectIssue_ID = "C_ProjectIssue_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -248,6 +226,28 @@ public interface I_M_CostDetail
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Accounting Date.
@@ -457,6 +457,27 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, Object> COLUMN_M_CostDetail_ID = new ModelColumn<>(I_M_CostDetail.class, "M_CostDetail_ID", null);
 	String COLUMNNAME_M_CostDetail_ID = "M_CostDetail_ID";
+
+	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostDetail_Type (java.lang.String M_CostDetail_Type);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getM_CostDetail_Type();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_M_CostDetail_Type = new ModelColumn<>(I_M_CostDetail.class, "M_CostDetail_Type", null);
+	String COLUMNNAME_M_CostDetail_Type = "M_CostDetail_Type";
 
 	/**
 	 * Set Cost Element.
@@ -693,6 +714,27 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipping Notification Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipping_NotificationLine_ID (int M_Shipping_NotificationLine_ID);
+
+	/**
+	 * Get Shipping Notification Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipping_NotificationLine_ID();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_M_Shipping_NotificationLine_ID = new ModelColumn<>(I_M_CostDetail.class, "M_Shipping_NotificationLine_ID", null);
+	String COLUMNNAME_M_Shipping_NotificationLine_ID = "M_Shipping_NotificationLine_ID";
+
+	/**
 	 * Set Manufacturing Cost Collector.
 	 *
 	 * <br>Type: Search
@@ -892,6 +934,47 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, Object> COLUMN_Qty = new ModelColumn<>(I_M_CostDetail.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Amount in document currency.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSourceAmt (@Nullable BigDecimal SourceAmt);
+
+	/**
+	 * Get Amount in document currency.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSourceAmt();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_SourceAmt = new ModelColumn<>(I_M_CostDetail.class, "SourceAmt", null);
+	String COLUMNNAME_SourceAmt = "SourceAmt";
+
+	/**
+	 * Set Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource_Currency_ID (int Source_Currency_ID);
+
+	/**
+	 * Get Document currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSource_Currency_ID();
+
+	String COLUMNNAME_Source_Currency_ID = "Source_Currency_ID";
 
 	/**
 	 * Get Updated.

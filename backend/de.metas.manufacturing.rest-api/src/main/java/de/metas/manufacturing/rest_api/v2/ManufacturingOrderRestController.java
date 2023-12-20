@@ -30,7 +30,7 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.Env;
@@ -65,7 +65,7 @@ public class ManufacturingOrderRestController
 
 	@GetMapping
 	public ResponseEntity<JsonResponseManufacturingOrdersBulk> exportOrders(
-			@ApiParam("Max number of items to be returned in one request.") //
+			@Parameter(description = "Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{

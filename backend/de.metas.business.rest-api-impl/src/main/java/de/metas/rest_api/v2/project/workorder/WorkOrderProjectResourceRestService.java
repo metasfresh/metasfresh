@@ -177,17 +177,8 @@ public class WorkOrderProjectResourceRestService
 			@NonNull final JsonWorkOrderResourceUpsertItemRequest request,
 			@NonNull final WOProjectResource existingResource)
 	{
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-
-		final Instant assignDateFrom = TimeUtil.asInstant(request.getAssignDateFrom(), zoneId);
-		final Instant assignDateTo = TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), zoneId);
-
 		final WOProjectResource.WOProjectResourceBuilder resourceBuilder = existingResource.toBuilder()
-				.dateRange(CalendarDateRange.builder()
-								   .startDate(assignDateFrom)
-								   .endDate(assignDateTo)
-								   .allDay(Boolean.TRUE.equals(request.getIsAllDay()))
-								   .build());
+				.dateRange(getDateRange(orgId, request, existingResource));
 
 		if (request.isActiveSet())
 		{
@@ -202,7 +193,7 @@ public class WorkOrderProjectResourceRestService
 		if (request.isDurationSet() && request.isDurationUnitSet())
 		{
 			final Duration duration = request.mapDuration((reqDuration, jsonUnit) -> DurationUtils
-					.fromBigDecimal(reqDuration, toWFDurationUnit(jsonUnit).getTemporalUnit()))
+							.fromBigDecimal(reqDuration, toWFDurationUnit(jsonUnit).getTemporalUnit()))
 					.orElse(Duration.ZERO);
 
 			resourceBuilder.duration(duration);
@@ -461,16 +452,6 @@ public class WorkOrderProjectResourceRestService
 				throw new MissingPropertyException("resourceIdentifier", request);
 			}
 
-			if (requestItem.getAssignDateFrom() == null)
-			{
-				throw new MissingPropertyException("assignDateFrom", request);
-			}
-
-			if (requestItem.getAssignDateTo() == null)
-			{
-				throw new MissingPropertyException("assignDateTo", request);
-			}
-
 			final boolean isDurationInfoPartiallySet = Stream.of(requestItem.getDuration(), requestItem.getDurationUnit())
 					.filter(Objects::nonNull)
 					.count() == 1;
@@ -494,11 +475,17 @@ public class WorkOrderProjectResourceRestService
 				.woResourceId(JsonMetasfreshId.of(WOProjectResourceId.toRepoId(resourceData.getWoProjectResourceId())))
 				.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(resourceData.getWoProjectStepId())))
 				.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
-				.assignDateFrom(TimeUtil.asLocalDate(resourceData.getDateRange().getStartDate(), zoneId))
-				.assignDateTo(TimeUtil.asLocalDate(resourceData.getDateRange().getEndDate(), zoneId))
+				
+				.assignDateFrom(resourceData.getStartDate()
+										.map(startDate -> TimeUtil.asLocalDate(startDate, zoneId))
+										.orElse(null))
+				.assignDateTo(resourceData.getEndDate()
+									  .map(endDate -> TimeUtil.asLocalDate(endDate, zoneId))
+									  .orElse(null))
+				
 				.duration(DurationUtils.toBigDecimal(resourceData.getDuration(), resourceData.getDurationUnit().getTemporalUnit()))
 				.durationUnit(toJsonDurationUnit(resourceData.getDurationUnit()))
-				.isAllDay(resourceData.getDateRange().isAllDay())
+				.isAllDay(resourceData.isAllDay())
 				.isActive(resourceData.getIsActive())
 				.testFacilityGroupName(resourceData.getTestFacilityGroupName())
 				.externalId(ExternalId.toValue(resourceData.getExternalId()))
@@ -526,5 +513,61 @@ public class WorkOrderProjectResourceRestService
 	{
 		final Set<IdentifierString> seenResourceIdentifiers = new HashSet<>();
 		return t -> seenResourceIdentifiers.add(keyExtractor.apply(t));
+	}
+	
+	@Nullable
+	private CalendarDateRange getDateRange(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonWorkOrderResourceUpsertItemRequest request,
+			@NonNull final WOProjectResource existingResource)
+	{
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+		
+		final Instant actualDateFrom = request.isAssignDateFromSet()
+				? TimeUtil.asInstant(request.getAssignDateFrom(), zoneId)
+				: existingResource.getStartDate().orElse(null);
+		
+		final Instant actualDateTo = request.isAssignDateToSet()
+				? TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), zoneId)
+				: existingResource.getEndDate().orElse(null);
+		
+		final boolean actualIsAllDay = request.isAllDaySet()
+				? Boolean.TRUE.equals(request.getIsAllDay())
+				: existingResource.isAllDay();
+
+		if (actualDateFrom == null && actualDateTo == null && actualIsAllDay)
+		{
+			throw new AdempiereException("IsAllDay cannot be true if there are no dates!")
+					.appendParametersToMessage()
+					.setParameter("WOResourceId", existingResource.getWoProjectResourceId());
+		}
+		else if (actualDateFrom == null && actualDateTo != null)
+		{
+			throw new AdempiereException("DateFrom cannot be missing when DateTo is set!")
+					.appendParametersToMessage()
+					.setParameter("WOResourceId", existingResource.getWoProjectResourceId());
+		}
+		else if (actualDateFrom != null && actualDateTo == null && !actualIsAllDay)
+		{
+			throw new AdempiereException("DateTo cannot be missing when DateFrom is set and isAllDay is false!")
+					.appendParametersToMessage()
+					.setParameter("WOResourceId", existingResource.getWoProjectResourceId());
+		}
+		else if (actualDateFrom == null)
+		{
+			return null;
+		}
+		
+		final Instant nonNullDateTo = actualDateTo == null 
+				? TimeUtil.asEndOfDayInstant(actualDateFrom.atZone(zoneId).toLocalDate(), zoneId)
+				: actualDateTo;
+		
+		Check.assumeNotNull(nonNullDateTo, "Computed DateTo cannot be null!");
+		
+		return CalendarDateRange.builder()
+				.startDate(actualDateFrom)
+				.endDate(nonNullDateTo)
+				.allDay(actualIsAllDay)
+				.build();
 	}
 }

@@ -74,7 +74,10 @@ public class S_TimeBooking_StepDef
 
 			final Timestamp bookedDate = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_BookedDate);
 
-			final I_S_TimeBooking timeBooking = newInstance(I_S_TimeBooking.class);
+			final String timeBookingIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_TimeBooking_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_S_TimeBooking timeBooking = timeBookingTable.getOptional(timeBookingIdentifier)
+					.orElseGet(() -> newInstance(I_S_TimeBooking.class));
 
 			timeBooking.setS_Issue_ID(issue.getS_Issue_ID());
 			timeBooking.setHoursAndMinutes(hoursAndMinutes);
@@ -83,7 +86,6 @@ public class S_TimeBooking_StepDef
 
 			saveRecord(timeBooking);
 
-			final String timeBookingIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_TimeBooking_ID + "." + TABLECOLUMN_IDENTIFIER);
 			timeBookingTable.putOrReplace(timeBookingIdentifier, timeBooking);
 		}
 	}

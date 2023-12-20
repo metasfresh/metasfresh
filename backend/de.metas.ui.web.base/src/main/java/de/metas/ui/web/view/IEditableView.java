@@ -53,15 +53,16 @@ public interface IEditableView extends IView
 
 	void patchViewRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 
-	LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query);
+	default LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query) {throw new UnsupportedOperationException();}
 
-	LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName);
+	default LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName) {throw new UnsupportedOperationException();}
 
 	@Builder
 	@Getter
 	@ToString(exclude = "documentsCollection")
 	class RowEditingContext
 	{
+		@NonNull private final ViewId viewId;
 		@NonNull private final DocumentId rowId;
 		@NonNull private final DocumentCollection documentsCollection;
 		@NonNull private final IUserRolePermissions userRolePermissions;

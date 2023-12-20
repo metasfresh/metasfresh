@@ -13,6 +13,8 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.impl.MaterialPlanningContext;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -23,7 +25,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -119,7 +120,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
@@ -127,6 +128,8 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		}
 
 		final IMaterialPlanningContext mrpContext = new MaterialPlanningContext();
+		final ProductPlanningId ppOrderProductPlanningId = ProductPlanningId.ofRepoIdOrNull((materialDemandEvent.getPpOrderProductPlanningId()));
+		final ProductPlanning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
 
 		mrpContext.setProductId(ProductId.ofRepoId(materialDescr.getProductId()));
 		mrpContext.setAttributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescr.getAttributeSetInstanceId()));
@@ -140,6 +143,9 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		mrpContext.setClientId(eventDescr.getClientId());
 		mrpContext.setOrgId(eventDescr.getOrgId());
+
+		mrpContext.setPpOrderProductPlanning(ppOrderProductPlanning);
+
 		return mrpContext;
 	}
 }

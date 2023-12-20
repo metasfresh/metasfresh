@@ -8,6 +8,7 @@ import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
+import de.metas.ui.web.quickinput.orderline.IOrderLineQuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -18,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -97,9 +99,10 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				.setDetailId(detailId)
-				.addField( createProductFieldDescriptor() )
-				.addFieldIf( QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor )
-				.addField( createQtyFieldDescriptor() )
+				.addField(createProductFieldDescriptor())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor)
+				.addFieldIf(QuickInputConstants.isEnableVatCodeField(), () -> this.createVatCodeField(soTrx))
+				.addField(createQtyFieldDescriptor())
 				.build();
 	}
 
@@ -111,14 +114,45 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(
 						ProductLookupDescriptor
-						.builderWithoutStockInfo()
-						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-						.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
-						.build() )
+								.builderWithoutStockInfo()
+								.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
+								.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+								.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(invoiceLineQuickInputCallout::onProductChange)
 				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createVatCodeField(final @NonNull Optional<SOTrx> soTrx)
+	{
+		final SqlLookupDescriptorProviderBuilder sqlLookupDescriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(null) // ctxTableName
+				.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setDisplayType(DisplayType.TableDir)
+				.setPageLength(QuickInputConstants.BIG_ENOUGH_PAGE_LENGTH);
+		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
+		{
+			sqlLookupDescriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610));// FIXME: hardcoded "VAT_Code_for_SO"
+		}
+		else
+		{
+			sqlLookupDescriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540611));// FIXME: hardcoded "VAT_Code_for_PO"
+		}
+
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(sqlLookupDescriptorProviderBuilder.build())
+				.setValueClass(LookupValue.IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField)
+				.usePreviousValueAsDefaultValue(LookupValue.IntegerLookupValue.class,
+												InvoiceLineQuickInputDescriptorFactory.class.getSimpleName());
 	}
 
 	private DocumentFieldDescriptor.Builder createQtyFieldDescriptor()
@@ -151,8 +185,9 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
 				{ IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID, IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
+				{ IInvoiceLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
 				{ IInvoiceLineQuickInput.COLUMNNAME_Qty }
 		});
 	}

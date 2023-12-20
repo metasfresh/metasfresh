@@ -1,15 +1,14 @@
 package de.metas.costing.interceptors;
 
+import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
-
-import de.metas.costing.ICostDetailService;
-import de.metas.costing.ICurrentCostsRepository;
-import de.metas.product.ProductId;
-import lombok.NonNull;
 
 /*
  * #%L

@@ -75,7 +75,7 @@ public final class Evaluatees
 		return new MapEvaluateeBuilder();
 	}
 
-	public static Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
+	public static Evaluatee ofCtx(@NonNull final Properties ctx, final int windowNo, final boolean onlyWindow)
 	{
 		return new EvaluateeCtx(ctx, windowNo, onlyWindow);
 	}

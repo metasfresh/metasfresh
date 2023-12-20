@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMAdditionalInfo;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMLine;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
@@ -48,6 +49,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class PushBOMProductsProcessor implements Processor
 {
@@ -82,6 +85,7 @@ public class PushBOMProductsProcessor implements Processor
 				.name(JsonBOMUtil.getName(jsonBOM))
 				.isActive(jsonBOM.isActive())
 				.validFrom(SystemTime.asInstant())
+				.resourceCode(getPreferredResource(jsonBOM).orElse(null))
 				.bomLines(bomLines)
 				.build();
 
@@ -95,6 +99,7 @@ public class PushBOMProductsProcessor implements Processor
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOMLine.getProductId()))
 				.line(jsonBOMLine.getLine())
 				.isQtyPercentage(Boolean.TRUE)
+				.help(jsonBOMLine.getAdditionalInfo())
 				.qtyBom(JsonQuantity.builder()
 								.qty(jsonBOMLine.getQtyBOM())
 								.uomCode(jsonBOMLine.getUom())
@@ -123,5 +128,28 @@ public class PushBOMProductsProcessor implements Processor
 				.jsonBOMCreateRequest(jsonRequest)
 				.orgCode(credentials.getOrgCode())
 				.build();
+	}
+
+	@NonNull
+	private static Optional<String> getPreferredResource(@NonNull final JsonBOM bom)
+	{
+		if (bom.getAdditionalInfos() == null || bom.getAdditionalInfos().size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		final JsonBOMAdditionalInfo additionalInfo = bom.getAdditionalInfos().get(0);
+
+		if (additionalInfo.getPlantConfig() == null || additionalInfo.getPlantConfig().size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		return additionalInfo.getPlantConfig().get(0)
+				.entrySet()
+				.stream()
+				.filter(resource -> resource.getValue() != null && resource.getValue().signum() > 0)
+				.map(Map.Entry::getKey)
+				.findFirst();
 	}
 }

@@ -1,11 +1,13 @@
 package de.metas.document.sequence.impl;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -18,6 +20,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,9 +69,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	private final AtomicBoolean _built = new AtomicBoolean(false);
 	private DocSequenceId _oldSequence_ID = null;  // lazy
 
-	/* package */ PreliminaryDocumentNoBuilder()
+	private final List<ICountryIdProvider> countryIdProviders;
+
+	/* package */ PreliminaryDocumentNoBuilder(final List<ICountryIdProvider> countryIdProviders)
 	{
 		super();
+		this.countryIdProviders = countryIdProviders;
 	}
 
 	@Override
@@ -108,8 +114,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		final boolean isDocNoControlled = newDocType.isDocNoControlled();
 		if (isDocNoControlled)
 		{
-			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
-			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+			final DocTypeSequenceList newDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(newDocType);
+			final DocSequenceId newDocSequenceId = newDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
@@ -153,7 +159,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			{
 				final String dateColumnName = newDocumentSeqInfo.getDateColumn();
 				final Date date = getDocumentDate(dateColumnName);
-				final String documentNo = documentSequenceDAO.retrieveDocumentNoByYear(docSequenceId.getRepoId(), date);
+
+				final boolean isStartNewMonth = newDocumentSeqInfo.isStartNewMonth();
+				final String documentNo;
+				if (isStartNewMonth)
+				{
+					documentNo = documentSequenceDAO.retrieveDocumentNoByYearAndMonth(docSequenceId.getRepoId(), date);
+				}
+				else
+				{
+					documentNo = documentSequenceDAO.retrieveDocumentNoByYear(docSequenceId.getRepoId(), date);
+				}
 				return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 			}
 			else
@@ -192,8 +208,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			return null;
 		}
 
-		final DocTypeSequenceMap oldDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
-		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+		final DocTypeSequenceList oldDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(oldDocType);
+		return oldDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 	}
 
 	private Properties getCtx()
@@ -336,5 +352,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		final Object documentModel = getDocumentModel();
 		final Optional<java.util.Date> date = InterfaceWrapperHelper.getValue(documentModel, dateColumnName);
 		return date.orElse(null);
+	}
+
+	private CountryId getCountryId()
+	{
+		ICountryIdProvider.ProviderResult billToProviderResult = ICountryIdProvider.ProviderResult.EMPTY;
+		for(final ICountryIdProvider countryIdProvider : countryIdProviders)
+		{
+			billToProviderResult = countryIdProvider.computeValueInfo(getDocumentModel());
+			if(billToProviderResult.hasCountryId())
+			{
+				break;
+			}
+		}
+		return billToProviderResult.getCountryIdOrNull();
 	}
 }

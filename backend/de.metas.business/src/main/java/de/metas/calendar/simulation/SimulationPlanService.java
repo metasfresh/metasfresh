@@ -3,10 +3,10 @@ package de.metas.calendar.simulation;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,34 +49,27 @@ public class SimulationPlanService
 		changesDispatcher.unsubscribe(simulationId, listener);
 	}
 
-	public SimulationPlanRef createNewSimulation(
-			@Nullable String name,
-			@Nullable SimulationPlanId copyFromSimulationId,
-			@NonNull UserId responsibleUserId)
+	@NonNull
+	public SimulationPlanRef createNewSimulation(@NonNull final SimulationPlanCreateRequest simulationPlanCreateRequest)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> createNewSimulationInTrx(name, copyFromSimulationId, responsibleUserId));
+		return trxManager.callInThreadInheritedTrx(() -> createNewSimulationInTrx(simulationPlanCreateRequest));
 	}
 
-	public SimulationPlanRef createNewSimulationInTrx(
-			@Nullable String name,
-			@Nullable SimulationPlanId copyFromSimulationId,
-			@NonNull UserId responsibleUserId)
+	public SimulationPlanRef createNewSimulationInTrx(@NonNull final SimulationPlanCreateRequest simulationPlanCreateRequest)
 	{
-		String nameToUse = StringUtils.trimBlankToNull(name);
-		if (nameToUse == null)
-		{
-			nameToUse = generateName(responsibleUserId);
-		}
+		final SimulationPlanRef simulationRef = simulationPlanRepository.createNewSimulation(
+				simulationPlanCreateRequest,
+				() -> generateName(simulationPlanCreateRequest));
 
-		final SimulationPlanRef simulationRef = simulationPlanRepository.createNewSimulation(nameToUse, responsibleUserId);
-		hooks.onNewSimulationPlan(simulationRef, copyFromSimulationId);
+		hooks.onNewSimulationPlan(simulationRef, simulationPlanCreateRequest.getCopyFromSimulationId());
 		return simulationRef;
 	}
 
-	private String generateName(final @NonNull UserId responsibleUserId)
+	private String generateName(final @NonNull SimulationPlanCreateRequest request)
 	{
 		final String name = TranslatableStrings.builder()
-				.append(userDAO.retrieveUserFullName(responsibleUserId))
+				.append(request.isMainSimulationPlan() ? "* " : "")
+				.append(userDAO.retrieveUserFullName(request.getResponsibleUserId()))
 				.append(" - ")
 				.appendDateTime(SystemTime.asZonedDateTime())
 				.build()
@@ -115,6 +108,32 @@ public class SimulationPlanService
 		trxManager.runInThreadInheritedTrx(() -> completeInTrx(simulationPlanId));
 	}
 
+	@NonNull
+	public SimulationPlanRef getOrCreateMainSimulationPlan(
+			@NonNull final UserId responsibleUserId,
+			@NonNull final OrgId orgId)
+	{
+		final Optional<SimulationPlanRef> currentMainSimulationPlan = simulationPlanRepository.getCurrentMainSimulationPlan(orgId);
+		if (currentMainSimulationPlan.isPresent())
+		{
+			return currentMainSimulationPlan.get();
+		}
+		else
+		{
+			// dev-note: we want to avoid race condition
+			synchronized (this)
+			{
+				return simulationPlanRepository.getCurrentMainSimulationPlan(orgId)
+						// dev-note: callInNewTrx so the just created simulation is visible across all ongoing transactions
+						.orElseGet(() -> trxManager.callInNewTrx(() -> createNewSimulation(SimulationPlanCreateRequest.builder()
+																								   .responsibleUserId(responsibleUserId)
+																								   .orgId(orgId)
+																								   .isMainSimulationPlan(true)
+																								   .build())));
+			}
+		}
+	}
+	
 	private void completeInTrx(@NonNull final SimulationPlanId simulationPlanId)
 	{
 		SimulationPlanRef simulationRef = simulationPlanRepository.getById(simulationPlanId);

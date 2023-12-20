@@ -193,6 +193,12 @@ public class DefaultDunningCandidateProducerFactoryTest
 		}
 
 		@Override
+		public String getPoReference()
+		{
+			return null;
+		}
+
+		@Override
 		public int getM_SectionCode_ID()
 		{
 			return 0;

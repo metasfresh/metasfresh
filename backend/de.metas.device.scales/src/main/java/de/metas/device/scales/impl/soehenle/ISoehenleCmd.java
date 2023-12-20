@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 
 public interface ISoehenleCmd extends ICmd
 {
+	String CMD_TERMINATOR = "\r\n"; // we need to terminate the command string with "Carriage Return, Line Feed"
 	String RESULT_ELEMENT_STATUS = "Status";
 	String RESULT_ELEMENT_WEIGHT_VALUE = "WeightValue";
 	String RESULT_ELEMENT_UNIT = "Unit";

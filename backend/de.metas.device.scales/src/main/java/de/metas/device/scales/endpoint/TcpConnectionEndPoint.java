@@ -25,11 +25,12 @@ package de.metas.device.scales.endpoint;
 import com.google.common.base.MoreObjects;
 import de.metas.device.scales.impl.ICmd;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.slf4j.Logger;
 
-import java.io.BufferedReader;
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -43,11 +44,6 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	private int port;
 
 	/**
-	 * see {@link #setReturnLastLine(boolean)}.
-	 */
-	private boolean returnLastLine = false;
-
-	/**
 	 * see {@link #setReadTimeoutMillis(int)}.
 	 */
 	private int readTimeoutMillis = 500;
@@ -57,11 +53,10 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	 * Note: discards everything besides the last line.
 	 */
 	@Override
-	public String sendCmd(final String cmd)
+	@Nullable
+	public String sendCmd(@NonNull final String cmd)
 	{
-
 		try (final Socket clientSocket = new Socket(hostName, port);
-				final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ICmd.DEFAULT_CMD_CHARSET));
 				final OutputStream out = clientSocket.getOutputStream();)
 		{
 			clientSocket.setSoTimeout(readTimeoutMillis);
@@ -70,23 +65,7 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 			out.write(cmd.getBytes(ICmd.DEFAULT_CMD_CHARSET));
 			out.flush();
 
-			String result = null;
-			String lastReadLine = in.readLine();
-			if (returnLastLine)
-			{
-				while (lastReadLine != null)
-				{
-					result = lastReadLine;
-					lastReadLine = readWithTimeout(in);
-				}
-				logger.debug("Result (last line) as read from the socket: {}", result);
-			}
-			else
-			{
-				result = lastReadLine;
-				logger.debug("Result (first line) as read from the socket: {}", result);
-			}
-			return result;
+			return readSocketResponse(clientSocket.getInputStream());
 		}
 		catch (final UnknownHostException e)
 		{
@@ -98,19 +77,25 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 		}
 	}
 
-	private String readWithTimeout(final BufferedReader in) throws IOException
+	@Nullable
+	String readSocketResponse(@NonNull final InputStream in) throws IOException
 	{
+		final StringBuilder sb = new StringBuilder();
+		int i;
 		try
 		{
-			String lastReadLine = in.readLine();
-			logger.debug("Read line from the socket: {}", lastReadLine);
-			return lastReadLine;
+			while ((i = in.read()) != -1)
+			{
+				sb.append((char)i);
+			}
 		}
 		catch (final SocketTimeoutException e)
 		{
-			logger.debug("Socket timeout; return null; exception-message={}", e.getMessage());
-			return null;
+			// if the device doesn't send "EOF", then there is nothing we can do here
+			// ..because at this place here we don't know how the response is terminated.
+			// so we just wait for the respective timeout
 		}
+		return sb.toString();
 	}
 
 	public TcpConnectionEndPoint setHost(final String hostName)
@@ -126,23 +111,7 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	}
 
 	/**
-	 * If <code>false</code>, then the endpoint will return the first line coming out of the socket.
-	 * If <code>true</code>, if will discard all lines until there is nothing more coming out of the socket, and then return the last line if got.
-	 *
-	 * @param returnLastLine
-	 * @return
-	 */
-	public TcpConnectionEndPoint setReturnLastLine(final boolean returnLastLine)
-	{
-		this.returnLastLine = returnLastLine;
-		return this;
-	}
-
-	/**
 	 * Timeout for this endpoint for each read, before considering the result to be <code>null</code>. The default is 500ms.
-	 *
-	 * @param readTimeoutMillis
-	 * @return
 	 */
 	public TcpConnectionEndPoint setReadTimeoutMillis(final int readTimeoutMillis)
 	{

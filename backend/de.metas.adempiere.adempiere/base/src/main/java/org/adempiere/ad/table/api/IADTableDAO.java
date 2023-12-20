@@ -101,6 +101,8 @@ public interface IADTableDAO extends ISingletonService
 		return retrieveTableName(AdTableId.ofRepoId(adTableId));
 	}
 
+	Optional<String> getTableNameIfPresent(@NonNull AdTableId adTableId);
+
 	/**
 	 * @param tableName, can be case insensitive
 	 * @return AD_Table_ID or -1
@@ -196,12 +198,16 @@ public interface IADTableDAO extends ISingletonService
 
 	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
 
-	void updateColumnNameByAdElementId(
-			@NonNull AdElementId adElementId,
-			@Nullable String newColumnName);
-
 	MinimalColumnInfo getMinimalColumnInfo(@NonNull String tableName, @NonNull String columnName);
 
 	MinimalColumnInfo getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
 	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull Collection<AdColumnId> adColumnIds);
+
+	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull String columnName);
+
+	void updateColumnNameByAdElementId(
+			@NonNull AdElementId adElementId,
+			@Nullable String newColumnName);
+
+	List<ViewSourceDescriptor> retrieveViewSourceDescriptors();
 }

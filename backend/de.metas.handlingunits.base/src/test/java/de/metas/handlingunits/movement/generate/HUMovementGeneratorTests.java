@@ -24,12 +24,14 @@ package de.metas.handlingunits.movement.generate;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -77,6 +79,8 @@ public class HUMovementGeneratorTests
 		InterfaceWrapperHelper.save(org);
 
 		Env.setContext(testsupport.helper.ctx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
+
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 	}
 
 	@Test

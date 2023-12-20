@@ -8,11 +8,9 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsService;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsService.CreateOLCandsRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
@@ -53,10 +51,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/forum-datenaustausch.ch",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/forum-datenaustausch.ch" })
 @Conditional(RestApiStartupCondition.class)
-@Api(tags = { "forum-datenaustausch.ch XML endpoint" })
-@SwaggerDefinition(tags = {
-		@Tag(name = "forum-datenaustausch.ch XML endpoint", description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
-})
+@Tag(name = "forum-datenaustausch.ch XML endpoint", description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {
 	private final XmlToOLCandsService xmlToOLCandsService;
@@ -67,21 +62,21 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/KV")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch insurance invoice-XML (\"Krankenversicherung\") into metasfresh")
+	@Operation(summary = "Upload a forum-datenaustausch.ch insurance invoice-XML (\"Krankenversicherung\") into metasfresh")
 	public ResponseEntity<JsonAttachment> importInsuranceInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@Parameter(example = "DONT_UPDATE", description = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@Parameter(example = "CREATE", description = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(defaultValue = "DONT_UPDATE") //
+			@Parameter(example = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(defaultValue = "CREATE") //
+			@Parameter(example = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// Districts / Kantone are supposed to live at Org=*, because we don't want them to be duplicated;
@@ -106,21 +101,21 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/KT")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch state invoice-XML (\"Kanton\") into metasfresh.")
+	@Operation(summary = "Upload a forum-datenaustausch.ch state invoice-XML (\"Kanton\") into metasfresh.")
 	public ResponseEntity<JsonAttachment> importDistrictInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@Parameter(example = "DONT_UPDATE", description = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@Parameter(example = "CREATE", description = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(defaultValue = "DONT_UPDATE") //
+			@Parameter(example = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(defaultValue = "CREATE") //
+			@Parameter(example = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// Districts / Kantone are supposed to live at Org=*, because we don't want them to be duplicated;
@@ -145,23 +140,23 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/GM")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch municipality invoice-XML (\"Gemeinde\") into metasfresh.\n"
+	@Operation(summary = "Upload a forum-datenaustausch.ch municipality invoice-XML (\"Gemeinde\") into metasfresh.\n"
 			+ "The municipality - which is the invoice recipient - is looked up by the bpartner's value (a.k.a. \"code\") = `GM-<municipality-zip-code>`\n"
 			+ "If it does not yet exist, it is created with Organisation=* (any)")
 	public ResponseEntity<JsonAttachment> importMunicipalityInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
+			@Parameter(example = "DONT_UPDATE", description = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
+			@Parameter(example = "CREATE", description = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(defaultValue = "DONT_UPDATE") //
+			@Parameter(example = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(defaultValue = "CREATE") //
+			@Parameter(example = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		final SyncAdvise debitorSyncAdvise = SyncAdvise.builder()
@@ -184,23 +179,23 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/EA")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh.\n"
+	@Operation(summary = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh.\n"
 			+ "The patient - which is the invoice recipient - is looked up by the bpartner's external-ID = `org:EAN-<biller-EAN>_bp:SSN-<patient-SSN>`\n"
 			+ "If it does not yet exist, it is created within the biller's own organisation")
 	public ResponseEntity<JsonAttachment> importPatientInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@Parameter(example = "DONT_UPDATE", description = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@Parameter(example = "CREATE", description = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(defaultValue = "DONT_UPDATE") //
+			@Parameter(example = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(defaultValue = "CREATE") //
+			@Parameter(example = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// The only kinds of debitors that xmlToOLCandsService is implemented to create are health insurances

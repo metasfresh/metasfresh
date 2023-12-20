@@ -23,7 +23,6 @@
 package org.adempiere.warehouse.groups.picking;
 
 import com.google.common.collect.ImmutableSet;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

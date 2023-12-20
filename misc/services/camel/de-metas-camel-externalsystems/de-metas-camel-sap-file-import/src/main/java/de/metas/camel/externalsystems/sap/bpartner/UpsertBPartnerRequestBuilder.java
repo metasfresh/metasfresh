@@ -38,22 +38,30 @@ import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSAPBPartnerImportSettings;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.metas.camel.externalsystems.sap.SAPConstants.BPARTNER_DEFAULT_LANGUAGE;
+
 @Value
+@Builder
 public class UpsertBPartnerRequestBuilder
 {
 	private static final String VAL_EXTERNAL_IDENTIFIER_PREFIX = "val-";
@@ -61,7 +69,7 @@ public class UpsertBPartnerRequestBuilder
 	@NonNull
 	PartnerCode parentPartnerCode;
 
-	@NonNull
+	@Nullable
 	JsonRequestBPartnerUpsertItem sectionGroupBPartnerItem;
 
 	@NonNull
@@ -75,19 +83,30 @@ public class UpsertBPartnerRequestBuilder
 	ArrayList<BPartnerRow> bPartnerRows;
 
 	@NonNull
+	@Getter(AccessLevel.NONE)
+	ImmutableList<JsonExternalSAPBPartnerImportSettings> sapbPartnerImportSettingsList;
+
+	@NonNull
 	public static UpsertBPartnerRequestBuilder of(
 			@NonNull final BPartnerRow row,
 			@NonNull final String orgCode,
-			@NonNull final JsonMetasfreshId externalSystemConfigId) throws Exception
+			@NonNull final JsonMetasfreshId externalSystemConfigId,
+			@NonNull final ImmutableList<JsonExternalSAPBPartnerImportSettings> sapbPartnerImportSettings) throws Exception
 	{
-		final JsonRequestBPartnerUpsertItem sectionGroupJsonRequestBPartnerUpsertItem = buildSectionGroupJsonRequestBPartnerUpsertItem(row, orgCode, externalSystemConfigId);
+		final JsonExternalSAPBPartnerImportSettings partnerImportSettings = getBPartnerImportSettingsForRow(sapbPartnerImportSettings, row)
+				.orElse(null);
+
+		final JsonRequestBPartnerUpsertItem sectionGroupJsonRequestBPartnerUpsertItem = partnerImportSettings != null && partnerImportSettings.isSingleBPartner()
+				? null
+				: buildSectionGroupJsonRequestBPartnerUpsertItem(row, orgCode, externalSystemConfigId, partnerImportSettings);
 
 		final UpsertBPartnerRequestBuilder syncBPartnerRequestBuilder = new UpsertBPartnerRequestBuilder(
 				row.getPartnerCode(),
 				sectionGroupJsonRequestBPartnerUpsertItem,
 				orgCode,
 				externalSystemConfigId,
-				new ArrayList<>());
+				new ArrayList<>(),
+				sapbPartnerImportSettings);
 
 		syncBPartnerRequestBuilder.add(row);
 
@@ -100,9 +119,27 @@ public class UpsertBPartnerRequestBuilder
 		return ExternalIdentifierFormat.formatExternalId(partnerCode + "_" + sectionCode);
 	}
 
+	@NonNull
+	public static String getBPartnerExternalIdentifierTruncatedPartnerCode(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getPartnerCode(), bPartnerRow.getSection());
+	}
+
+	@NonNull
+	public static String getBPartnerExternalIdentifierRawPartnerCode(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getRawPartnerCode(), bPartnerRow.getSection());
+	}
+
 	public boolean add(@NonNull final BPartnerRow row)
 	{
 		if (!row.getPartnerCode().matchesGroup(parentPartnerCode))
+		{
+			return false;
+		}
+
+		if (shouldImportByItself(row)
+				&& !parentPartnerCode.getRawPartnerCode().equals(row.getPartnerCode().getRawPartnerCode()))
 		{
 			return false;
 		}
@@ -116,7 +153,7 @@ public class UpsertBPartnerRequestBuilder
 	public BPUpsertCamelRequest build() throws Exception
 	{
 		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> upsertBPartnerItemsCollector = ImmutableList.builder();
-		upsertBPartnerItemsCollector.add(sectionGroupBPartnerItem);
+		getSectionBPartnerUpsertItem().ifPresent(upsertBPartnerItemsCollector::add);
 
 		final Map<String, List<BPartnerRow>> groupedBPartnerRows = bPartnerRows.stream()
 				.collect(Collectors.groupingBy(BPartnerRow::getSection));
@@ -152,7 +189,10 @@ public class UpsertBPartnerRequestBuilder
 
 		final BPartnerRow lastRowOfTheGroup = bPartnerRows.get(bPartnerRows.size() - 1);
 
-		final JsonRequestBPartner jsonRequestBPartner = buildJsonRequestBPartner(lastRowOfTheGroup);
+		final JsonExternalSAPBPartnerImportSettings matchingBPartnerImportSettings = getBPartnerImportSettingsForRow(sapbPartnerImportSettingsList, lastRowOfTheGroup)
+				.orElse(null);
+
+		final JsonRequestBPartner jsonRequestBPartner = buildJsonRequestBPartner(lastRowOfTheGroup, matchingBPartnerImportSettings);
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
@@ -160,16 +200,23 @@ public class UpsertBPartnerRequestBuilder
 				.orgCode(orgCode)
 				.build();
 
+		final String externalIdentifier = Optional.ofNullable(matchingBPartnerImportSettings)
+				.map(JsonExternalSAPBPartnerImportSettings::isSingleBPartner)
+				.orElse(false)
+				? getBPartnerExternalIdentifierRawPartnerCode(lastRowOfTheGroup)
+				: getBPartnerExternalIdentifierTruncatedPartnerCode(lastRowOfTheGroup);
+
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerComposite(jsonRequestComposite)
-				.bpartnerIdentifier(getBPartnerExternalIdentifier(lastRowOfTheGroup))
+				.bpartnerIdentifier(externalIdentifier)
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
 	@NonNull
-	private JsonRequestBPartner buildJsonRequestBPartner(@NonNull final BPartnerRow bPartnerRow)
+	private JsonRequestBPartner buildJsonRequestBPartner(
+			@NonNull final BPartnerRow bPartnerRow,
+			@Nullable final JsonExternalSAPBPartnerImportSettings partnerImportSettings)
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
@@ -183,22 +230,39 @@ public class UpsertBPartnerRequestBuilder
 				.map(purchasePaymentTerm -> VAL_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
 				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
 
-		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + "_" + bPartnerRow.getSection();
+		final String bpartnerCode;
+		if (partnerImportSettings != null)
+		{
+			Optional.ofNullable(partnerImportSettings.getBpGroupName())
+					.ifPresent(jsonRequestBPartner::setGroup);
+
+			if (partnerImportSettings.isSingleBPartner())
+			{
+				bpartnerCode = bPartnerRow.getPartnerCode().getRawPartnerCode();
+			}
+			else
+			{
+				bpartnerCode = bPartnerRow.getPartnerCode().getPartnerCode();
+				jsonRequestBPartner.setSectionGroupPartnerIdentifier(getParentExternalIdentifier());
+			}
+		}
+		else
+		{
+			bpartnerCode = bPartnerRow.getPartnerCode().getPartnerCode();
+			jsonRequestBPartner.setSectionGroupPartnerIdentifier(getParentExternalIdentifier());
+		}
+		final String bpartnerValue = bpartnerCode + " (" + bPartnerRow.getSection() + ")";
 
 		jsonRequestBPartner.setCode(bpartnerValue);
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
-		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
 
 		jsonRequestBPartner.setSectionCodeValue(bPartnerRow.getSection());
 		jsonRequestBPartner.setDeliveryRule(JsonDeliveryRule.Availability);
 		jsonRequestBPartner.setDeliveryViaRule(JsonDeliveryViaRule.Shipper);
 		jsonRequestBPartner.setPaymentRule(JsonPaymentRule.OnCredit);
 		jsonRequestBPartner.setPaymentRulePO(JsonPaymentRule.OnCredit);
-
-		jsonRequestBPartner.setIncotermsCustomerValue(bPartnerRow.getSalesIncoterms());
-		jsonRequestBPartner.setIncotermsVendorValue(bPartnerRow.getPurchaseIncoterms());
 
 		if (PartnerCategory.STORAGE_LOCATION == PartnerCategory.ofCodeOrNull(bPartnerRow.getPartnerCategory()))
 		{
@@ -213,7 +277,10 @@ public class UpsertBPartnerRequestBuilder
 			jsonRequestBPartner.setStorageWarehouse(false);
 		}
 
-		jsonRequestBPartner.setParentIdentifier(getParentExternalIdentifier());
+		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
+		jsonRequestBPartner.setProspect(false);
+		jsonRequestBPartner.setSapBPartnerCode(bpartnerCode);
+		jsonRequestBPartner.setSectionPartner(true);
 
 		return jsonRequestBPartner;
 	}
@@ -243,11 +310,14 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestLocation.setRemitTo(false);
 		jsonRequestLocation.setReplicationLookupDefault(false);
 
+		jsonRequestLocation.setVatId(bPartnerRow.getVatRegNo());
+		jsonRequestLocation.setSapPaymentMethod(bPartnerRow.getPaymentMethod());
+		jsonRequestLocation.setSapBPartnerCode(bPartnerRow.getPartnerCode().getRawPartnerCode());
+
 		return JsonRequestLocationUpsertItem.builder()
 				.location(jsonRequestLocation)
 				.locationIdentifier(getLocationExternalIdentifier(bPartnerRow))
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
@@ -255,12 +325,6 @@ public class UpsertBPartnerRequestBuilder
 	private String getParentExternalIdentifier()
 	{
 		return ExternalIdentifierFormat.formatExternalId(parentPartnerCode.getPartnerCode());
-	}
-
-	@NonNull
-	private String getBPartnerExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
-	{
-		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getPartnerCode(), bPartnerRow.getSection());
 	}
 
 	@NonNull
@@ -273,16 +337,24 @@ public class UpsertBPartnerRequestBuilder
 	private static JsonRequestBPartnerUpsertItem buildSectionGroupJsonRequestBPartnerUpsertItem(
 			@NonNull final BPartnerRow bPartnerRow,
 			@NonNull final String orgCode,
-			@NonNull final JsonMetasfreshId externalSystemConfigId
-	)
+			@NonNull final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final JsonExternalSAPBPartnerImportSettings importSettings)
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
-		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode().getPartnerCode());
+		final String bpartnerCode = bPartnerRow.getPartnerCode().getPartnerCode();
+
+		jsonRequestBPartner.setCode(bpartnerCode);
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
-		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
+		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
+		jsonRequestBPartner.setProspect(false);
+		jsonRequestBPartner.setSapBPartnerCode(bpartnerCode);
+		jsonRequestBPartner.setSectionGroupPartner(true);
+		Optional.ofNullable(importSettings)
+				.map(JsonExternalSAPBPartnerImportSettings::getBpGroupName)
+				.ifPresent(jsonRequestBPartner::setGroup);
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
@@ -292,7 +364,39 @@ public class UpsertBPartnerRequestBuilder
 				.bpartnerComposite(jsonRequestCompositeBuilder.build())
 				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerRow.getPartnerCode().getPartnerCode()))
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
+	}
+
+	@NonNull
+	private Optional<JsonRequestBPartnerUpsertItem> getSectionBPartnerUpsertItem()
+	{
+		return Optional.ofNullable(sectionGroupBPartnerItem);
+	}
+
+	private boolean shouldImportByItself(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return getBPartnerImportSettingsForRow(sapbPartnerImportSettingsList, bPartnerRow)
+				.map(JsonExternalSAPBPartnerImportSettings::isSingleBPartner)
+				.orElse(false);
+	}
+
+	private static boolean matchesPartnerCode(
+			@NonNull final JsonExternalSAPBPartnerImportSettings settings,
+			@NonNull final PartnerCode partnerCode)
+	{
+		return Pattern.compile(settings.getPartnerCodePattern())
+				.matcher(partnerCode.getRawPartnerCode())
+				.find();
+	}
+
+	@NonNull
+	private static Optional<JsonExternalSAPBPartnerImportSettings> getBPartnerImportSettingsForRow(
+			@NonNull final ImmutableList<JsonExternalSAPBPartnerImportSettings> partnerImportSettingsList,
+			@NonNull final BPartnerRow row)
+	{
+		return partnerImportSettingsList.stream()
+				.sorted(Comparator.comparingInt(JsonExternalSAPBPartnerImportSettings::getSeqNo))
+				.filter(settings -> matchesPartnerCode(settings, row.getPartnerCode()))
+				.findFirst();
 	}
 }

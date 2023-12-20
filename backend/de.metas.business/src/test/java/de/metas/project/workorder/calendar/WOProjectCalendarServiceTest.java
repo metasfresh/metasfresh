@@ -9,6 +9,7 @@ import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
@@ -17,6 +18,8 @@ import de.metas.project.budget.BudgetProjectSimulationRepository;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.project.service.PlainProjectRepository;
+import de.metas.project.status.RStatusRepository;
+import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.conflicts.WOProjectResourceConflictRepository;
 import de.metas.project.workorder.project.CreateWOProjectRequest;
@@ -39,7 +42,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class WOProjectCalendarServiceTest
 {
@@ -60,10 +63,11 @@ class WOProjectCalendarServiceTest
 	{
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 		this.budgetProjectRepository = new BudgetProjectRepository();
-		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		this.woProjectRepository = new WOProjectRepository();
 		final WOProjectResourceRepository woProjectResourceRepository = new WOProjectResourceRepository();
-		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository());
+		final RStatusRepository statusRepository = new RStatusRepository();
+		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), new RStatusService(statusRepository), new ProjectTypeRepository());
+		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		final WOProjectSimulationRepository woProjectSimulationRepository = new WOProjectSimulationRepository();
 		final SimulationPlanRepository simulationPlanRepository = new SimulationPlanRepository();
 		final WOProjectConflictService woProjectConflictService = new WOProjectConflictService(
@@ -74,9 +78,11 @@ class WOProjectCalendarServiceTest
 				woProjectResourceRepository,
 				new CalendarConflictEventsDispatcher()
 		);
+		final SimulationPlanService simulationPlanService = new SimulationPlanService(simulationPlanRepository, Optional.empty());
+
 		this.woProjectCalendarService = new WOProjectCalendarService(
 				resourceService,
-				new SimulationPlanService(simulationPlanRepository, Optional.empty()),
+				simulationPlanService,
 				new PlainProjectRepository(),
 				woProjectService,
 				budgetProjectService,
@@ -91,6 +97,7 @@ class WOProjectCalendarServiceTest
 		final I_C_ProjectType projectTypeRecord = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
 		projectTypeRecord.setProjectCategory(projectCategory.getCode());
 		projectTypeRecord.setR_StatusCategory_ID(111);
+		projectTypeRecord.setName("projectTypeName");
 		InterfaceWrapperHelper.save(projectTypeRecord);
 
 		return ProjectTypeRepository.toProjectType(projectTypeRecord);
@@ -115,12 +122,12 @@ class WOProjectCalendarServiceTest
 		void only_given_BudgetProject()
 		{
 			final BudgetProject budgetProject = budgetProjectRepository.create(CreateBudgetProjectRequest.builder()
-					.value("test")
-					.name("test")
-					.orgId(OrgId.MAIN)
-					.currencyId(CurrencyId.ofRepoId(102))
-					.projectType(projectType(ProjectCategory.Budget))
-					.build());
+																					   .value("test")
+																					   .name("test")
+																					   .orgId(OrgId.MAIN)
+																					   .currencyId(CurrencyId.ofRepoId(102))
+																					   .projectType(projectType(ProjectCategory.Budget))
+																					   .build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(
 					budgetProject.getProjectId(), // onlyProjectId,
@@ -135,12 +142,12 @@ class WOProjectCalendarServiceTest
 		void only_given_WOProject()
 		{
 			final WOProject woProject = woProjectRepository.create(CreateWOProjectRequest.builder()
-					.value("test")
-					.name("test")
-					.orgId(OrgId.MAIN)
-					.currencyId(CurrencyId.ofRepoId(102))
-					.projectType(projectType(ProjectCategory.WorkOrderJob))
-					.build());
+																		   .value("test")
+																		   .name("test")
+																		   .orgId(OrgId.MAIN)
+																		   .currencyId(CurrencyId.ofRepoId(102))
+																		   .projectType(projectType(ProjectCategory.WorkOrderJob))
+																		   .build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(
 					woProject.getProjectId(), // onlyProjectId,

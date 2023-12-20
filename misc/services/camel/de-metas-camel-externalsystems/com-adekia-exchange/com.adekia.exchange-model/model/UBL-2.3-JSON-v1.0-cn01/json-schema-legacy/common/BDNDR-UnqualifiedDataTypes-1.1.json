@@ -1,0 +1,317 @@
+{
+  "title": "OASIS Business Document Naming and Design Rules (BDNDR) Unqualified Types",
+  "description": "\nThis is an expression of OASIS Unqualified Data Types as a JSON schema\nfollowing the OASIS Business Document Naming and Design Rules Version 1.1.\n\nVersion: $Date: 2020/04/09 15:00:15 $UTC\n\nCopyright (c) OASIS Open 2016-2020. All Rights Reserved.\n\nOASIS takes no position regarding the validity or scope of any \nintellectual property or other rights that might be claimed to pertain \nto the implementation or use of the technology described in this \ndocument or the extent to which any license under such rights \nmight or might not be available; neither does it represent that it has \nmade any effort to identify any such rights. Information on OASIS's \nprocedures with respect to rights in OASIS specifications can be \nfound at the OASIS website. Copies of claims of rights made \navailable for publication and any assurances of licenses to be made \navailable, or the result of an attempt made to obtain a general \nlicense or permission for the use of such proprietary rights by \nimplementors or users of this specification, can be obtained from \nthe OASIS Executive Director.\n\nOASIS invites any interested party to bring to its attention any \ncopyrights, patents or patent applications, or other proprietary \nrights which may cover technology that may be required to \nimplement this specification. Please address the information to the \nOASIS Executive Director.\n\nThis document and translations of it may be copied and furnished to \nothers, and derivative works that comment on or otherwise explain \nit or assist in its implementation may be prepared, copied, \npublished and distributed, in whole or in part, without restriction of \nany kind, provided that the above copyright notice and this \nparagraph are included on all such copies and derivative works. \nHowever, this document itself may not be modified in any way, \nsuch as by removing the copyright notice or references to OASIS, \nexcept as needed for the purpose of developing OASIS \nspecifications, in which case the procedures for copyrights defined \nin the OASIS Intellectual Property Rights document must be \nfollowed, or as required to translate it into languages other than \nEnglish. \n\nThe limited permissions granted above are perpetual and will not be \nrevoked by OASIS or its successors or assigns. \n\nThis document and the information contained herein is provided on \nan \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \nWARRANTY THAT THE USE OF THE INFORMATION HEREIN \nWILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \nWARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \nPARTICULAR PURPOSE.\n",
+  "definitions": {
+    "AmountType": {
+      "title": "Amount. Type",
+      "description": "A number of monetary units specified using a given unit of currency.",
+      "required": [
+        "_",
+        "currencyID"
+      ],
+      "properties": {
+        "_": {
+          "type": "number"
+        },
+        "currencyCodeListVersionID": {
+          "type": "string"
+        },
+        "currencyID": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "BinaryObjectType": {
+      "title": "Binary Object. Type",
+      "description": "A set of finite-length sequences of binary octets.",
+      "required": [
+        "_",
+        "mimeCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "string"
+        },
+        "characterSetCode": {
+          "type": "string"
+        },
+        "encodingCode": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mimeCode": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GraphicType": {
+      "title": "Graphic. Type",
+      "description": "A diagram, graph, mathematical curve, or similar representation.",
+      "required": [
+        "_",
+        "mimeCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "string"
+        },
+        "characterSetCode": {
+          "type": "string"
+        },
+        "encodingCode": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mimeCode": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PictureType": {
+      "title": "Picture. Type",
+      "description": "A diagram, graph, mathematical curve, or similar representation.",
+      "required": [
+        "_",
+        "mimeCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "string"
+        },
+        "characterSetCode": {
+          "type": "string"
+        },
+        "encodingCode": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mimeCode": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "SoundType": {
+      "title": "Sound. Type",
+      "description": "An audio representation.",
+      "required": [
+        "_",
+        "mimeCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "string"
+        },
+        "characterSetCode": {
+          "type": "string"
+        },
+        "encodingCode": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mimeCode": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "VideoType": {
+      "title": "Video. Type",
+      "description": "A video representation.",
+      "required": [
+        "_",
+        "mimeCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "string"
+        },
+        "characterSetCode": {
+          "type": "string"
+        },
+        "encodingCode": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mimeCode": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "CodeType": {
+      "title": "Code. Type",
+      "description": "A character string (letters, figures, or symbols) that for brevity and/or language independence may be used to represent or replace a definitive value or text of an attribute, together with relevant supplementary information.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/CodeType"
+    },
+    "DateTimeType": {
+      "title": "Date Time. Type",
+      "description": "A particular point in the progression of time, together with relevant supplementary information.",
+      "required": [
+        "_"
+      ],
+      "properties": {
+        "_": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DateType": {
+      "title": "Date. Type",
+      "description": "One calendar day according the Gregorian calendar.",
+      "required": [
+        "_"
+      ],
+      "properties": {
+        "_": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TimeType": {
+      "title": "Time. Type",
+      "description": "An instance of time that occurs every day.",
+      "required": [
+        "_"
+      ],
+      "properties": {
+        "_": {
+          "type": "string",
+          "format": "time"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "IdentifierType": {
+      "title": "Identifier. Type",
+      "description": "A character string to identify and uniquely distinguish one instance of an object in an identification scheme from all other objects in the same scheme, together with relevant supplementary information.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/IdentifierType"
+    },
+    "IndicatorType": {
+      "title": "Indicator. Type",
+      "description": "A list of two mutually exclusive Boolean values that express the only possible states of a property.",
+      "required": [
+        "_"
+      ],
+      "properties": {
+        "_": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MeasureType": {
+      "title": "Measure. Type",
+      "description": "A numeric value determined by measuring an object using a specified unit of measure.",
+      "required": [
+        "_",
+        "unitCode"
+      ],
+      "properties": {
+        "_": {
+          "type": "number"
+        },
+        "unitCode": {
+          "type": "string"
+        },
+        "unitCodeListVersionID": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NumericType": {
+      "title": "Numeric. Type",
+      "description": "Numeric information that is assigned or is determined by calculation, counting, or sequencing. It does not require a unit of quantity or unit of measure.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/NumericType"
+    },
+    "ValueType": {
+      "title": "Value. Type",
+      "description": "Numeric information that is assigned or is determined by calculation, counting, or sequencing. It does not require a unit of quantity or unit of measure.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/NumericType"
+    },
+    "PercentType": {
+      "title": "Percent. Type",
+      "description": "Numeric information that is assigned or is determined by calculation, counting, or sequencing and is expressed as a percentage. It does not require a unit of quantity or unit of measure.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/NumericType"
+    },
+    "RateType": {
+      "title": "Rate. Type",
+      "description": "A numeric expression of a rate that is assigned or is determined by calculation, counting, or sequencing. It does not require a unit of quantity or unit of measure.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/NumericType"
+    },
+    "QuantityType": {
+      "title": "Quantity. Type",
+      "description": "A counted number of non-monetary units, possibly including a fractional part.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/QuantityType"
+    },
+    "TextType": {
+      "title": "Text. Type",
+      "description": "A character string (i.e. a finite set of characters), generally in the form of words of a language.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/TextType"
+    },
+    "NameType": {
+      "title": "Name. Type",
+      "description": "A character string that constitutes the distinctive designation of a person, place, thing or concept.",
+      "$ref": "BDNDR-CCTS_CCT_SchemaModule-1.1.json#/definitions/TextType"
+    }
+  }
+}

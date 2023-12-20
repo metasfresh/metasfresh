@@ -22,6 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.ICalendarDAO;
@@ -71,6 +72,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -113,16 +115,20 @@ public class C_Flatrate_Term
 	private final ContractOrderService contractOrderService;
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ADReferenceService adReferenceService;
+	private final GLCategoryRepository glCategoryRepository;
 
 	public C_Flatrate_Term(
 			@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.adReferenceService = adReferenceService;
+		this.glCategoryRepository = glCategoryRepository;
 	}
 
 	@Init
@@ -139,12 +145,13 @@ public class C_Flatrate_Term
 
 	private void ensureDocTypesExist(final String docSubType)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+		final ClientId clientId = ClientId.METASFRESH;
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Client_ID, clientId)
 				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
@@ -184,6 +191,7 @@ public class C_Flatrate_Term
 					.docSubType(docSubType)
 					.isSOTrx(true)
 					.newDocNoSequenceStartNo(10000)
+					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
 					.build());
 		}
 	}
@@ -193,7 +201,10 @@ public class C_Flatrate_Term
 	{
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
 
-		term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		if (term.getBill_BPartner_ID() == 0)
+		{ // make sure not to override a Bill_BPartner_ID that is already set via extend-flatrate-term
+			term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		}
 
 		if (!flatrateData.isHasContracts())
 		{
@@ -262,16 +273,19 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				final LocalDateAndOrgId firstPeriodStartDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(0).getStartDate(), orgId, orgDAO::getTimeZone);
+				if (firstPeriodStartDate.compareTo(startDate) > 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
 							new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
-				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
-				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
+
+				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
+				
+				if (lastPeriodEndDate.compareTo(endDate) < 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-							new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
+							new Object[] { lastPeriodEndDate.toTimestamp(orgDAO::getTimeZone), invoicingCal.getName() }));
 				}
 			}
 		}
@@ -646,7 +660,6 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
@@ -662,7 +675,7 @@ public class C_Flatrate_Term
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID,
-			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID},
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID },
 			skipIfCopying = true)
 	public void updateDropshipAddress(final I_C_Flatrate_Term term)
 	{

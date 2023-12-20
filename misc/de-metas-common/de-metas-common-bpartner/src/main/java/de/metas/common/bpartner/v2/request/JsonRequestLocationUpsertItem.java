@@ -25,8 +25,7 @@ package de.metas.common.bpartner.v2.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,31 +37,27 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = LOCATION_IDENTIFIER_DOC
+	@Schema(description = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created location.") //
 	@NonNull
 	String locationIdentifier;
 
-	@ApiModelProperty(position = 20, //
-			value = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
+	@Schema(nullable = true, description = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
 	@Nullable
 	String externalVersion;
 
-	@ApiModelProperty(position = 30, //
-			value = "ID of the external system config.")
+	@Schema(nullable = true, description = "ID of the external system config.")
 	@Nullable
 	JsonMetasfreshId externalSystemConfigId;
 
-	@ApiModelProperty(position = 40)
+	@Schema(nullable = true)
 	@Nullable
 	Boolean isReadOnlyInMetasfresh;
 
-	@ApiModelProperty(position = 50, required = true, //
-			value = "The location to upsert")
+	@Schema(description = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 

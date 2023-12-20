@@ -1,16 +1,5 @@
 package de.metas.fresh.material.interceptor;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -21,6 +10,16 @@ import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
 
 /**
  * @task https://metasfresh.atlassian.net/browse/FRESH-86

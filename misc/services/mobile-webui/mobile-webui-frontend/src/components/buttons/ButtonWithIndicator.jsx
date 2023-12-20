@@ -22,7 +22,13 @@ const ButtonWithIndicator = ({
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
-  const showHazardsAndAllergens = hazardSymbols != null || allergens != null;
+  const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
+
+  const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
+
+  const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
+
+  const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
   return (
     <button
@@ -33,14 +39,19 @@ const ButtonWithIndicator = ({
       <div className="full-size-btn">
         <div className="left-btn-side">
           {showWarningSign && <i className="fas fa-exclamation-triangle warning-sign" />}
-          {typeFASIconName && <i className={`fas fa-solid ${typeFASIconName}`} />}
+          {typeFASIconName && (
+            <span>
+              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing typeFASIconName so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
+              <i key="icon" className={`fas fa-solid ${typeFASIconName}`} />
+            </span>
+          )}
         </div>
         <div className="caption-btn">
           <div className="rows">
             <div className="row">
               <span>{caption}</span>
             </div>
-            {showHazardsAndAllergens && (
+            {displayHazardsAndAllergens && (
               <div
                 className="row hazard-icons-btn"
                 style={{
@@ -48,7 +59,7 @@ const ButtonWithIndicator = ({
                   maxHeight: SYMBOLS_SIZE_PX + 'px',
                 }}
               >
-                <AllergenIcon allergens={allergens} size={SYMBOLS_SIZE_PX} />
+                <AllergenIcon allergens={allergensWithColor} size={SYMBOLS_SIZE_PX} />
                 {hazardSymbols &&
                   hazardSymbols.map((hazardSymbol, symbolIndex) => (
                     <HazardIcon

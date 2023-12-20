@@ -2,7 +2,7 @@ package de.metas.order.voidorderandrelateddocs;
 
 import java.util.List;
 
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.order.OrderId;

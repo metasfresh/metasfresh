@@ -24,7 +24,7 @@ package de.metas.common.bpartner.v2.request.creditLimit;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -36,42 +36,48 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class JsonRequestCreditLimitUpsertItem
 {
-	@ApiModelProperty(position = 10, value = "Translated to `C_BPartner_CreditLimit.C_BPartner_CreditLimit_ID`, if set, it's assumed that the resource exists in metasfresh.")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.C_BPartner_CreditLimit_ID`, if set, it's assumed that the resource exists in metasfresh.")
 	private JsonMetasfreshId creditLimitId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean creditLimitIdSet;
 
-	@ApiModelProperty(position = 20, value = "Translated to `C_BPartner_CreditLimit.Amount`")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.Amount`")
 	private JsonMoney amount;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean amountSet;
 
-	@ApiModelProperty(position = 30, value = "Translated to `C_CreditLimit_Type.Name`")
+	@Schema(description = "Translated to `C_CreditLimit_Type.Name`")
 	private String type;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 40, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.DateFrom`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dateFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateFromSet;
 
-	@ApiModelProperty(position = 50, value = "Translated to `C_BPartner_CreditLimit.IsActive`")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.IsActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 60, value = "Translated to `C_BPartner_CreditLimit.Processed`")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.Processed`")
 	private Boolean processed;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean processedSet;
+
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.ApprovedBy_ID`")
+	private JsonMetasfreshId approvedBy;
+
+	@Schema(hidden = true)
+	private boolean approvedBySet;
 
 	public void setAmount(final JsonMoney amount)
 	{
@@ -107,5 +113,11 @@ public class JsonRequestCreditLimitUpsertItem
 	{
 		this.processed = processed;
 		this.processedSet = true;
+	}
+
+	public void setApprovedBy(final JsonMetasfreshId approvedBy)
+	{
+		this.approvedBy = approvedBy;
+		this.approvedBySet = true;
 	}
 }

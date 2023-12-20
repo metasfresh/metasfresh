@@ -439,7 +439,9 @@ UPDATE AD_Element_Trl SET Name='Kassenjournal(obsolet)',Updated=TO_TIMESTAMP('20
 ;
 
 -- 2022-08-29T17:31:36.246Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581402,0,TO_TIMESTAMP('2022-08-29 20:31:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Produkt Plandaten - LEGACY','Produkt Plandaten - LEGACY',TO_TIMESTAMP('2022-08-29 20:31:36','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+SELECT 0,581402,0,TO_TIMESTAMP('2022-08-29 20:31:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Produkt Plandaten - LEGACY','Produkt Plandaten - LEGACY',TO_TIMESTAMP('2022-08-29 20:31:36','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Element where AD_Element_ID=581402);
 ;
 
 -- 2022-08-29T17:31:36.248Z
@@ -487,7 +489,9 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=53007
 ;
 
 -- 2022-08-29T17:37:06.640Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581403,0,TO_TIMESTAMP('2022-08-29 20:37:06','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Abgabemeldung (TEST)','Abgabemeldung (TEST)',TO_TIMESTAMP('2022-08-29 20:37:06','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+SELECT 0,581403,0,TO_TIMESTAMP('2022-08-29 20:37:06','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Abgabemeldung (TEST)','Abgabemeldung (TEST)',TO_TIMESTAMP('2022-08-29 20:37:06','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Element where AD_Element_ID=581403);
 ;
 
 -- 2022-08-29T17:37:06.641Z

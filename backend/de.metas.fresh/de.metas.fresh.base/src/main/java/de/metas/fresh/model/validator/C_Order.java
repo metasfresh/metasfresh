@@ -22,19 +22,28 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.model.I_C_Order;
+import de.metas.i18n.Language;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
-
-import de.metas.handlingunits.model.I_C_Order;
-import de.metas.util.Services;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setWarehouse(final I_C_Order order)
 	{
@@ -44,5 +53,4 @@ public class C_Order
 			order.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
 	}
-
 }

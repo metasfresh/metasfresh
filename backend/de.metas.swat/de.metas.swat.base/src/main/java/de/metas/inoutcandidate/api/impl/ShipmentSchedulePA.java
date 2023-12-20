@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -6,8 +28,8 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -66,7 +88,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
-
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
@@ -82,7 +103,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
@@ -95,7 +116,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Reservation 1 - look at scheds for which there is a reservation
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU_Reservation res"
-			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
@@ -614,14 +635,31 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).list();
+	}
+
+	@Override
 	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
+	}
+
+	@Override
+	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).anyMatch();
+	}
+
+	private IQueryBuilder<I_M_ShipmentSchedule> queryByOrderId(final @NonNull OrderId orderId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
-				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId);
 	}
 
 	@Override
@@ -632,4 +670,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.create()
 				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
 	}
+
+	@Override
+	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
+	{
+		//noinspection unchecked
+		final ImmutableList<OrderId> orderIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter((IQueryFilter<I_M_ShipmentSchedule>)filter)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
+		return ImmutableSet.copyOf(orderIds);
+	}
+
 }

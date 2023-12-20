@@ -5,6 +5,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -228,7 +229,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
 				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
@@ -245,7 +246,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
@@ -548,6 +549,7 @@ public class OLCandBL implements IOLCandBL
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
 				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
+				.auctionId(AuctionId.ofRepoIdOrNull(olCandRecord.getC_Auction_ID()))
 				.build();
 	}
 
@@ -570,7 +572,7 @@ public class OLCandBL implements IOLCandBL
 
 			return note;
 		}
-		catch (RuntimeException ex2)
+		catch (final RuntimeException ex2)
 		{
 			ex2.addSuppressed(ex);
 			throw ex2;

@@ -77,12 +77,6 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_C_Tax getC_Tax()
-	{
-		return isAccountSignDR() ? glJournalLine.getDR_Tax() : glJournalLine.getCR_Tax();
-	}
-
-	@Override
 	public int getC_Tax_ID()
 	{
 		return isAccountSignDR() ? glJournalLine.getDR_Tax_ID() : glJournalLine.getCR_Tax_ID();
@@ -91,13 +85,14 @@ import de.metas.util.Services;
 	@Override
 	public void setC_Tax(final I_C_Tax tax)
 	{
+		final int taxId = tax != null ? tax.getC_Tax_ID() : -1;
 		if (isAccountSignDR())
 		{
-			glJournalLine.setDR_Tax(tax);
+			glJournalLine.setDR_Tax_ID(taxId);
 		}
 		else
 		{
-			glJournalLine.setCR_Tax(tax);
+			glJournalLine.setCR_Tax_ID(taxId);
 		}
 	}
 

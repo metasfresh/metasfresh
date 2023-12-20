@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: completeInvoice option when processing invoice candidates
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]

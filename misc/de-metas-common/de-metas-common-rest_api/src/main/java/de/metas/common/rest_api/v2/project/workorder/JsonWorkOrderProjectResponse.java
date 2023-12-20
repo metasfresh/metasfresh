@@ -22,7 +22,9 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
@@ -35,7 +37,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Value
-@Builder
 @Jacksonized
 public class JsonWorkOrderProjectResponse
 {
@@ -50,7 +51,7 @@ public class JsonWorkOrderProjectResponse
 
 	@Nullable
 	JsonExternalId externalId;
-	
+
 	@NonNull
 	JsonMetasfreshId projectTypeId;
 
@@ -103,6 +104,12 @@ public class JsonWorkOrderProjectResponse
 	String bpartnerDepartment;
 
 	@Nullable
+	JsonMetasfreshId specialistConsultantId;
+
+	@Nullable
+	String internalPriority;
+
+	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate bpartnerTargetDate;
 
@@ -115,4 +122,63 @@ public class JsonWorkOrderProjectResponse
 
 	@Nullable
 	List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest;
+
+	@Builder
+	@JsonCreator
+	public JsonWorkOrderProjectResponse(
+			@JsonProperty("projectId") @NonNull JsonMetasfreshId projectId,
+			@JsonProperty("value") @NonNull String value,
+			@JsonProperty("name") @NonNull String name,
+			@JsonProperty("externalId") @Nullable JsonExternalId externalId,
+			@JsonProperty("projectTypeId") @NonNull JsonMetasfreshId projectTypeId,
+			@JsonProperty("priceListVersionId") @Nullable JsonMetasfreshId priceListVersionId,
+			@JsonProperty("currencyCode") @NonNull String currencyCode,
+			@JsonProperty("salesRepId") @Nullable JsonMetasfreshId salesRepId,
+			@JsonProperty("description") @Nullable String description,
+			@JsonProperty("dateContract") LocalDate dateContract,
+			@JsonProperty("dateFinish") LocalDate dateFinish,
+			@JsonProperty("bpartnerId") @Nullable JsonMetasfreshId bpartnerId,
+			@JsonProperty("projectReferenceExt") @Nullable String projectReferenceExt,
+			@JsonProperty("projectParentId") @Nullable JsonMetasfreshId projectParentId,
+			@JsonProperty("orgCode") @NonNull String orgCode,
+			@JsonProperty("isActive") @Nullable Boolean isActive,
+			@JsonProperty("dateOfProvisionByBPartner") LocalDate dateOfProvisionByBPartner,
+			@JsonProperty("woOwner") @Nullable String woOwner,
+			@JsonProperty("poReference") @Nullable String poReference,
+			@JsonProperty("bpartnerDepartment") @Nullable String bpartnerDepartment,
+			@JsonProperty("specialistConsultantId") @Nullable JsonMetasfreshId specialistConsultantId,
+			@JsonProperty("internalPriority") @Nullable String internalPriority,
+			@JsonProperty("bpartnerTargetDate") LocalDate bpartnerTargetDate,
+			@JsonProperty("woProjectCreatedDate") LocalDate woProjectCreatedDate,
+			@JsonProperty("steps") @Nullable List<JsonWorkOrderStepResponse> steps,
+			@JsonProperty("objectsUnderTest") @Nullable List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest
+	)
+	{
+		this.projectId = projectId;
+		this.value = value;
+		this.name = name;
+		this.externalId = externalId;
+		this.projectTypeId = projectTypeId;
+		this.priceListVersionId = priceListVersionId;
+		this.currencyCode = currencyCode;
+		this.salesRepId = salesRepId;
+		this.description = description;
+		this.dateContract = dateContract;
+		this.dateFinish = dateFinish;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerDepartment = bpartnerDepartment;
+		this.projectReferenceExt = projectReferenceExt;
+		this.projectParentId = projectParentId;
+		this.orgCode = orgCode;
+		this.isActive = isActive;
+		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.woOwner = woOwner;
+		this.poReference = poReference;
+		this.specialistConsultantId = specialistConsultantId;
+		this.internalPriority = internalPriority;
+		this.bpartnerTargetDate = bpartnerTargetDate;
+		this.woProjectCreatedDate = woProjectCreatedDate;
+		this.steps = steps;
+		this.objectsUnderTest = objectsUnderTest;
+	}
 }

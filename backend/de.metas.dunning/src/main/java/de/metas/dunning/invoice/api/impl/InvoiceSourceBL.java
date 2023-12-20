@@ -1,9 +1,11 @@
 package de.metas.dunning.invoice.api.impl;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.organization.IOrgDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,6 +39,7 @@ import lombok.NonNull;
 public class InvoiceSourceBL implements IInvoiceSourceBL
 {
 	private final static transient Logger logger = LogManager.getLogger(InvoiceSourceBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean setDunningGraceIfManaged(@NonNull final I_C_Invoice invoice)
@@ -54,9 +57,8 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			return false;
 		}
 
-		final InvoiceDueDateProviderService invoiceDueDateProviderService = SpringContextHolder.instance.getBean(InvoiceDueDateProviderService.class);
-
-		final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+		final LocalDate dueDate =  TimeUtil.asLocalDate(invoice.getDueDate(),timeZone);
 		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
 
 		invoice.setDunningGrace(TimeUtil.asTimestamp(dunningGraceDate));

@@ -71,16 +71,17 @@ public class PackToHUsProducer
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyPicked,
 			@NonNull final TableRecordReference documentRef,
-			boolean checkIfAlreadyPacked)
+			final boolean checkIfAlreadyPacked)
 	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions
+		// NOTE in case of Packing Instructions, if the PackTo is Virtual (i.e. no packing) then we consider any packing instructions are accepted
 		if (checkIfAlreadyPacked
 				&& huContext.getHUStorageFactory().isSingleProductWithQtyEqualsTo(pickFromHU, productId, qtyPicked)
-				&& HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHU)))
+				&& (packToInfo.getPackingInstructionsId().isVirtual() || HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHU))))
 		{
 			handlingUnitsBL.setHUStatus(pickFromHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
 			return ImmutableList.of(pickFromHU);
@@ -194,7 +195,7 @@ public class PackToHUsProducer
 		}
 	}
 
-	private static void setupPackToDestinationCommonOptions(@NonNull IHUProducerAllocationDestination producer, @NonNull PackToInfo packToInfo)
+	private static void setupPackToDestinationCommonOptions(@NonNull final IHUProducerAllocationDestination producer, @NonNull final PackToInfo packToInfo)
 	{
 		producer.setHUStatus(X_M_HU.HUSTATUS_Picked);
 		producer.setBPartnerAndLocationId(packToInfo.getShipToBPLocationId());

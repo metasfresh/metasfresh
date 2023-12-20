@@ -1,12 +1,13 @@
 package de.metas.payment.paymentterm;
 
-import java.util.Optional;
-
-import org.compiere.model.I_C_PaymentTerm;
-
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.compiere.model.I_C_PaymentTerm;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -32,12 +33,25 @@ import de.metas.util.lang.Percent;
 
 public interface IPaymentTermRepository extends ISingletonService
 {
+	@Nullable
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
-	PaymentTermId getDefaultPaymentTermIdOrNull();
+	@NonNull
+	Optional<PaymentTermId> getDefaultPaymentTermId();
 
-	I_C_PaymentTerm getById(PaymentTermId paymentTermId);
+	PaymentTerm getById(PaymentTermId paymentTermId);
 
-	Optional<PaymentTermId> retrievePaymentTermId(PaymentTermQuery build);
+	@NonNull
+	Optional<PaymentTermId> retrievePaymentTermId(@NonNull PaymentTermQuery build);
 
+	/**
+	 * Convenience method that thorws an exception if no term is found.
+	 */
+	@NonNull
+	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
+
+	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
+
+	@Deprecated
+	I_C_PaymentTerm getRecordById(@NonNull final PaymentTermId paymentTermId);
 }

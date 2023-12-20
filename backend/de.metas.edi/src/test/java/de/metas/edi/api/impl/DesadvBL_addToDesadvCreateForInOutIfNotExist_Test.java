@@ -13,7 +13,6 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
-import de.metas.esb.edi.model.X_EDI_DesadvLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
@@ -36,6 +35,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
@@ -65,8 +65,8 @@ import java.util.Properties;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -139,17 +139,19 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", stockUOMRecord);
 
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+		final UomId stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+													   .productId(productId)
 													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
-													   .toUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+													   .toUomId(stockUomId)
 													   .fromToMultiplier(new BigDecimal("2"))
 													   .build());
 
 		// we do need a UOM conversion between catchUomRecord and orderUOMRecord,
 		// because we need to convert the catch qtys (might e.g. be in tons) to the ordered UOM (might be in kilos)
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+													   .productId(productId)
 													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
 													   .toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
 													   .fromToMultiplier(new BigDecimal("3"))
@@ -158,12 +160,12 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		// we do need a UOM conversion between catchUomRecord and stockUOM,
 		// because we need to convert the catch qtys (might e.g. be in tons) when computing the LUTUconfig's capacity
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-													   .fromUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+													   .productId(productId)
+													   .fromUomId(stockUomId)
 													   .toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
 													   .fromToMultiplier(new BigDecimal("1.5"))
 													   .build());
-
+		
 		// setup HU packing instructions
 		final I_M_HU_PI huDefPalet = huTestHelper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		huTestHelper.createHU_PI_Item_PackingMaterial(huDefPalet, huTestHelper.pmPalet);
@@ -173,7 +175,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		final I_M_HU_PI_Item maItemIFCO = huTestHelper.createHU_PI_Item_Material(huDefIFCO);
 		huPIItemPallet = huTestHelper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, TEN);
 
-		huPIItemProductRecord = huTestHelper.assignProduct(maItemIFCO, ProductId.ofRepoId(productRecord.getM_Product_ID()), new BigDecimal("5"), stockUOMRecord);
+		huPIItemProductRecord = huTestHelper.assignProduct(maItemIFCO, productId, new BigDecimal("5"), stockUOMRecord);
 
 		final I_EDI_Desadv desadv = newInstance(I_EDI_Desadv.class);
 		saveRecord(desadv);
@@ -183,7 +185,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		desadvLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		desadvLine.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
 		desadvLine.setQtyDeliveredInStockingUOM(new BigDecimal("2")); // initial quantity in stock-UOM..we don't care from where it came..
-		desadvLine.setInvoicableQtyBasedOn(X_EDI_DesadvLine.INVOICABLEQTYBASEDON_CatchWeight); // the code should fall back to "nominal" if the respecive inOutLine doesn't have catch weight data.
+		desadvLine.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight.getCode()); // the code should fall back to "nominal" if the respecive inOutLine doesn't have catch weight data.
 		saveRecord(desadvLine);
 
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
@@ -205,6 +207,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		saveRecord(inOutRecord);
 
 		inOutLineRecord = newInstance(I_M_InOutLine.class);
+		inOutLineRecord.setC_Order_ID(orderLineRecord.getC_Order_ID());
 		inOutLineRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
 		inOutLineRecord.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		inOutLineRecord.setMovementQty(new BigDecimal("84")); // in order-UOM this is 84 / 2 = 42; in catch-UOM this is 84 * 1.5 = 126
@@ -238,7 +241,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("2.500"), new BigDecimal("17.000"))//
@@ -278,10 +281,10 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */) //
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.000")/* CUperLU - rounded to ceiling */) //
 				);
 	}
 
@@ -308,10 +311,10 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("1"), new BigDecimal("10")),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("1"), new BigDecimal("7")) //
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("5"), new BigDecimal("50")),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("5"), new BigDecimal("34")) //
 				);
 	}
 
@@ -339,7 +342,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
@@ -365,17 +368,17 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("1"), new BigDecimal("10")),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("1"), new BigDecimal("7")) //
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("5"), new BigDecimal("49")),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("5"), new BigDecimal("35")) //
 				);
 	}
 
 	private void changeDesadvLineToCOLIasUOM()
 	{
 		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
-
+		
 		desadvLine.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
 		desadvLine.setQtyItemCapacity(TEN);
 		saveRecord(desadvLine);

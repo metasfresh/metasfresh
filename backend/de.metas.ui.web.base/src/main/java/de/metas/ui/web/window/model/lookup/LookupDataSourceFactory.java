@@ -2,7 +2,7 @@ package de.metas.ui.web.window.model.lookup;
 
 import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
-import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -54,7 +54,7 @@ import java.util.function.Function;
  */
 
 @Component
-public final class LookupDataSourceFactory
+public class LookupDataSourceFactory
 {
 	public static LookupDataSourceFactory sharedInstance()
 	{
@@ -95,6 +95,11 @@ public final class LookupDataSourceFactory
 	public LookupDataSource productAttributes()
 	{
 		return getLookupDataSource(lookupDescriptorProviders.productAttributes());
+	}
+
+	public LookupDataSource listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+	{
+		return listByAD_Reference_Value_ID(ReferenceId.ofRepoId(AD_Reference_Value_ID));
 	}
 
 	public LookupDataSource listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)

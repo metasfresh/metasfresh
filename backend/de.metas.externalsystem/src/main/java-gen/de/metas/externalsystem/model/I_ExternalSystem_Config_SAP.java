@@ -52,6 +52,48 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set API-Version.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setApiVersion (@Nullable String ApiVersion);
+
+	/**
+	 * Get API-Version.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getApiVersion();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ApiVersion = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ApiVersion", null);
+	String COLUMNNAME_ApiVersion = "ApiVersion";
+
+	/**
+	 * Set Base-URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBaseURL (@Nullable String BaseURL);
+
+	/**
+	 * Get Base-URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getBaseURL();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_BaseURL = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "BaseURL", null);
+	String COLUMNNAME_BaseURL = "BaseURL";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -75,29 +117,6 @@ public interface I_ExternalSystem_Config_SAP
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Errored Directory.
-	 * Defines where files should be moved after being processed with error. (The path should be relative to the current sftp target location)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setErroredDirectory (String ErroredDirectory);
-
-	/**
-	 * Get Errored Directory.
-	 * Defines where files should be moved after being processed with error. (The path should be relative to the current sftp target location)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getErroredDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ErroredDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ErroredDirectory", null);
-	String COLUMNNAME_ErroredDirectory = "ErroredDirectory";
 
 	/**
 	 * Set External System Config.
@@ -190,280 +209,117 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Frequency In Milliseconds.
-	 * Defines how frequently should the process poll for new files.
+	 * Set Check also description for material type.
+	 * If enabled, the process also looks into the dat file's product description column for material types that are mapped to a product category.
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPollingFrequencyInMs (int PollingFrequencyInMs);
+	void setIsCheckDescriptionForMaterialType (boolean IsCheckDescriptionForMaterialType);
 
 	/**
-	 * Get Frequency In Milliseconds.
-	 * Defines how frequently should the process poll for new files.
+	 * Get Check also description for material type.
+	 * If enabled, the process also looks into the dat file's product description column for material types that are mapped to a product category.
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getPollingFrequencyInMs();
+	boolean isCheckDescriptionForMaterialType();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequencyInMs = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequencyInMs", null);
-	String COLUMNNAME_PollingFrequencyInMs = "PollingFrequencyInMs";
-
-	/**
-	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed. (The path should be relative to the current sftp target location)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setProcessedDirectory (String ProcessedDirectory);
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_IsCheckDescriptionForMaterialType = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "IsCheckDescriptionForMaterialType", null);
+	String COLUMNNAME_IsCheckDescriptionForMaterialType = "IsCheckDescriptionForMaterialType";
 
 	/**
-	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed. (The path should be relative to the current sftp target location)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getProcessedDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ProcessedDirectory", null);
-	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
-
-	/**
-	 * Set SFTP Business Partner File Name Pattern.
-	 * Ant-style pattern used to identify business partner files on the SFTP-Server. (If not set, all files are considered)
+	 * Set Post accouting documents path.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_BPartner_FileName_Pattern (@Nullable String SFTP_BPartner_FileName_Pattern);
+	void setPost_Acct_Documents_Path (@Nullable String Post_Acct_Documents_Path);
 
 	/**
-	 * Get SFTP Business Partner File Name Pattern.
-	 * Ant-style pattern used to identify business partner files on the SFTP-Server. (If not set, all files are considered)
+	 * Get Post accouting documents path.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSFTP_BPartner_FileName_Pattern();
+	@Nullable String getPost_Acct_Documents_Path();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_FileName_Pattern", null);
-	String COLUMNNAME_SFTP_BPartner_FileName_Pattern = "SFTP_BPartner_FileName_Pattern";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_Post_Acct_Documents_Path = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "Post_Acct_Documents_Path", null);
+	String COLUMNNAME_Post_Acct_Documents_Path = "Post_Acct_Documents_Path";
 
 	/**
-	 * Set SFTP Business Partner Target Directory.
-	 * Directory used to pull business partners from the sftp server. (If not set, the files will be pulled from the root location of the sftp server)
+	 * Set Signature.
+	 * Azure service shared access signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_BPartner_TargetDirectory (@Nullable String SFTP_BPartner_TargetDirectory);
+	void setSignatureSAS (@Nullable String SignatureSAS);
 
 	/**
-	 * Get SFTP Business Partner Target Directory.
-	 * Directory used to pull business partners from the sftp server. (If not set, the files will be pulled from the root location of the sftp server)
+	 * Get Signature.
+	 * Azure service shared access signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSFTP_BPartner_TargetDirectory();
+	@Nullable String getSignatureSAS();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_TargetDirectory", null);
-	String COLUMNNAME_SFTP_BPartner_TargetDirectory = "SFTP_BPartner_TargetDirectory";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SignatureSAS = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SignatureSAS", null);
+	String COLUMNNAME_SignatureSAS = "SignatureSAS";
 
 	/**
-	 * Set SFTP Credit Limit File Name Pattern.
-	 * Pattern used to find the file from which credit limits are pulled from the SFTP server - the filename must match the given pattern.(If not provided, there is no constraint on the filename)
+	 * Set Signed permissions.
+	 * Part of Azure service shared access signature. The permissions that are associated with the shared access signature. The user is restricted to operations that are allowed by the permissions. You must omit this field if it has been specified in an associated stored access policy.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_CreditLimit_FileName_Pattern (@Nullable String SFTP_CreditLimit_FileName_Pattern);
+	void setSignedPermissions (@Nullable String SignedPermissions);
 
 	/**
-	 * Get SFTP Credit Limit File Name Pattern.
-	 * Pattern used to find the file from which credit limits are pulled from the SFTP server - the filename must match the given pattern.(If not provided, there is no constraint on the filename)
+	 * Get Signed permissions.
+	 * Part of Azure service shared access signature. The permissions that are associated with the shared access signature. The user is restricted to operations that are allowed by the permissions. You must omit this field if it has been specified in an associated stored access policy.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSFTP_CreditLimit_FileName_Pattern();
+	@Nullable String getSignedPermissions();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_CreditLimit_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_CreditLimit_FileName_Pattern", null);
-	String COLUMNNAME_SFTP_CreditLimit_FileName_Pattern = "SFTP_CreditLimit_FileName_Pattern";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SignedPermissions = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SignedPermissions", null);
+	String COLUMNNAME_SignedPermissions = "SignedPermissions";
 
 	/**
-	 * Set SFTP Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 * Set Signed version.
+	 * Part of Azure service shared access signature. The storage service version to use to authorize and handle requests that you make with this shared access signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_CreditLimit_TargetDirectory (@Nullable String SFTP_CreditLimit_TargetDirectory);
+	void setSignedVersion (@Nullable String SignedVersion);
 
 	/**
-	 * Get SFTP Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 * Get Signed version.
+	 * Part of Azure service shared access signature. The storage service version to use to authorize and handle requests that you make with this shared access signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSFTP_CreditLimit_TargetDirectory();
+	@Nullable String getSignedVersion();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_CreditLimit_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_CreditLimit_TargetDirectory", null);
-	String COLUMNNAME_SFTP_CreditLimit_TargetDirectory = "SFTP_CreditLimit_TargetDirectory";
-
-	/**
-	 * Set SFTP Hostname.
-	 * SFTP-Server-Hostname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_HostName (String SFTP_HostName);
-
-	/**
-	 * Get SFTP Hostname.
-	 * SFTP-Server-Hostname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getSFTP_HostName();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_HostName = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_HostName", null);
-	String COLUMNNAME_SFTP_HostName = "SFTP_HostName";
-
-	/**
-	 * Set SFTP Password.
-	 * Password used for SFTP-server authentication.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Password (String SFTP_Password);
-
-	/**
-	 * Get SFTP Password.
-	 * Password used for SFTP-server authentication.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getSFTP_Password();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Password = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Password", null);
-	String COLUMNNAME_SFTP_Password = "SFTP_Password";
-
-	/**
-	 * Set SFTP Port.
-	 * SFTP-Port
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Port (String SFTP_Port);
-
-	/**
-	 * Get SFTP Port.
-	 * SFTP-Port
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getSFTP_Port();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Port = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Port", null);
-	String COLUMNNAME_SFTP_Port = "SFTP_Port";
-
-	/**
-	 * Set SFTP Product File Name Pattern.
-	 * Ant-style pattern used to identify product files on the SFTP-Server. (If not set, all files are considered)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Product_FileName_Pattern (@Nullable String SFTP_Product_FileName_Pattern);
-
-	/**
-	 * Get SFTP Product File Name Pattern.
-	 * Ant-style pattern used to identify product files on the SFTP-Server. (If not set, all files are considered)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getSFTP_Product_FileName_Pattern();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_FileName_Pattern", null);
-	String COLUMNNAME_SFTP_Product_FileName_Pattern = "SFTP_Product_FileName_Pattern";
-
-	/**
-	 * Set SFTP Product Target Directory.
-	 * Directory used to pull products from the SFTP-server. (If not set, the files will be pulled from the root location of the SFTP-server)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Product_TargetDirectory (@Nullable String SFTP_Product_TargetDirectory);
-
-	/**
-	 * Get SFTP Product Target Directory.
-	 * Directory used to pull products from the SFTP-server. (If not set, the files will be pulled from the root location of the SFTP-server)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getSFTP_Product_TargetDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_TargetDirectory", null);
-	String COLUMNNAME_SFTP_Product_TargetDirectory = "SFTP_Product_TargetDirectory";
-
-	/**
-	 * Set SFTP Username.
-	 * Username used for SFTP-server authentication.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Username (String SFTP_Username);
-
-	/**
-	 * Get SFTP Username.
-	 * Username used for SFTP-server authentication.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getSFTP_Username();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Username = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Username", null);
-	String COLUMNNAME_SFTP_Username = "SFTP_Username";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SignedVersion = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SignedVersion", null);
+	String COLUMNNAME_SignedVersion = "SignedVersion";
 
 	/**
 	 * Get Updated.

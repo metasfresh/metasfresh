@@ -41,7 +41,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -78,6 +77,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
+	private boolean _isExternalProperty = false; // default false
 
 	/**
 	 *
@@ -269,6 +269,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
 		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
+		huBuilder.setIsExternalProperty(isExternalProperty());
+
 
 		return huBuilder;
 	}
@@ -436,7 +438,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final List<I_M_HU> getCreatedHUs()
+	public final ImmutableList<I_M_HU> getCreatedHUs()
 	{
 		if (_createdHUs.isEmpty())
 		{
@@ -732,5 +734,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
 		return _huClearanceStatusInfo;
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setIsExternalProperty(final boolean isExternalProperty)
+	{
+		assertConfigurable();
+		_isExternalProperty = isExternalProperty;
+		return this;
+	}
+
+	public final boolean isExternalProperty()
+	{
+		return _isExternalProperty;
 	}
 }

@@ -1,13 +1,5 @@
 package de.metas.rest_api.bpartner_product.impl;
 
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -18,8 +10,15 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.utils.RestApiUtilsV1;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,14 +54,14 @@ public class BpartnerProductRestController
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 
-	@ApiOperation("For a BPartner's name and that partner's specific product-number or product-name, this operation returns the product's metasfresh search-key (i.e. `M_Product.Value`).<br>"
+	@Operation(summary = "For a BPartner's name and that partner's specific product-number or product-name, this operation returns the product's metasfresh search-key (i.e. `M_Product.Value`).<br>"
 			+ "Note that the respective `C_BPartner_Product` record needs to be flagged with `UsedForCustomer='Y'` to be found by this operation.")
 	@GetMapping("/query")
 	public ResponseEntity<JsonBPartnerProductResult> getByCustomerProductNo(
-			@ApiParam("`C_BPartner.Name` of the bpartner in question.")
+			@Parameter(description = "`C_BPartner.Name` of the bpartner in question.")
 			@RequestParam("customerName") final String customerName,
 
-			@ApiParam("`C_BPartner_Product.ProductNo` or `.ProductName`.")
+			@Parameter(description = "`C_BPartner_Product.ProductNo` or `.ProductName`.")
 			@RequestParam("customerProduct") final String customerProductSearchString)
 	{
 		final BPartnerId customerId = findCustomerId(customerName).orElse(null);

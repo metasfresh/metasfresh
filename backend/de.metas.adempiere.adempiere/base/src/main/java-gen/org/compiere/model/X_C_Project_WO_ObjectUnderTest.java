@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_ObjectUnderTest
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implements I_C_Project_WO_ObjectUnderTest, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1675901874L;
+	private static final long serialVersionUID = -864061225L;
 
     /** Standard Constructor */
     public X_C_Project_WO_ObjectUnderTest (final Properties ctx, final int C_Project_WO_ObjectUnderTest_ID, @Nullable final String trxName)
@@ -32,6 +32,33 @@ public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implem
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Provision()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_Provision_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine_Provision(final org.compiere.model.I_C_OrderLine C_OrderLine_Provision)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_Provision_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_Provision);
+	}
+
+	@Override
+	public void setC_OrderLine_Provision_ID (final int C_OrderLine_Provision_ID)
+	{
+		if (C_OrderLine_Provision_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_Provision_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_Provision_ID, C_OrderLine_Provision_ID);
+	}
+
+	@Override
+	public int getC_OrderLine_Provision_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_Provision_ID);
 	}
 
 	@Override
@@ -77,6 +104,21 @@ public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
 	public void setNumberOfObjectsUnderTest (final int NumberOfObjectsUnderTest)
 	{
 		set_Value (COLUMNNAME_NumberOfObjectsUnderTest, NumberOfObjectsUnderTest);
@@ -86,6 +128,18 @@ public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implem
 	public int getNumberOfObjectsUnderTest() 
 	{
 		return get_ValueAsInt(COLUMNNAME_NumberOfObjectsUnderTest);
+	}
+
+	@Override
+	public void setObjectDeliveredDate (final @Nullable java.sql.Timestamp ObjectDeliveredDate)
+	{
+		set_Value (COLUMNNAME_ObjectDeliveredDate, ObjectDeliveredDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getObjectDeliveredDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ObjectDeliveredDate);
 	}
 
 	@Override

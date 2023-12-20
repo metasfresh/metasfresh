@@ -1,10 +1,12 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: external system invocation using metasfresh api
   As a REST-API invoker
   I want want to be able to invoke external systems
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
       | S6_config                           | S6   | testS6              |
@@ -13,7 +15,6 @@ Feature: external system invocation using metasfresh api
   @from:cucumber
   Scenario: The request is good and the external service Shopware6 is invoked via the correct process
     When the metasfresh REST-API endpoint path 'api/externalsystem/S6/testS6/test' receives a 'POST' request
-
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'S6' invocation
 
   @from:cucumber

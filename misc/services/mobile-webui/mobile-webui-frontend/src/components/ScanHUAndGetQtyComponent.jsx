@@ -6,8 +6,9 @@ import { trl } from '../utils/translations';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadable } from '../utils/qtys';
+import { formatQtyToHumanReadableStr, formatQtyToHumanReadable, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
+import { toastError } from '../utils/toast';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -24,9 +25,16 @@ const ScanHUAndGetQtyComponent = ({
   qtyCaption,
   qtyTarget,
   qtyMax,
+  lineQtyToIssue,
+  lineQtyIssued,
+  qtyHUCapacity,
+  qtyAlreadyOnScale,
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  scaleTolerance,
+  catchWeight,
+  catchWeightUom,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -35,19 +43,55 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
-    scannedBarcode: null,
-    userInfo: [],
-    qtyCaption: null,
-    qtyTarget: null,
-    qtyMax: null,
-    uom: null,
-    qtyRejectedReasons: null,
-    scaleDevice: null,
+    userInfo,
+    qtyCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
+    catchWeight,
+    catchWeightUom,
   });
 
   useEffect(() => {
-    setResolvedBarcodeData({ userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice });
-  }, [userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice]);
+    setResolvedBarcodeData({
+      userInfo,
+      qtyCaption,
+      qtyTarget,
+      qtyMax,
+      lineQtyToIssue,
+      lineQtyIssued,
+      qtyHUCapacity,
+      qtyAlreadyOnScale,
+      uom,
+      qtyRejectedReasons,
+      scaleDevice,
+      scaleTolerance,
+      catchWeight,
+      catchWeightUom,
+    });
+  }, [
+    userInfo,
+    qtyCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
+    catchWeight,
+    catchWeightUom,
+  ]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
@@ -94,24 +138,56 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
+    const adjustedQtyMax = roundQtyMaxToScalePrecision(
+      resolvedBarcodeData.qtyMax,
+      resolvedBarcodeData.uom,
+      resolvedBarcodeData.scaleDevice
+    );
+
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
-      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
-        qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - resolvedBarcodeData.qtyMax, uom }),
+    const { qtyEffective: diff, uomEffective: diffUom } =
+      adjustedQtyMax &&
+      adjustedQtyMax > 0 &&
+      formatQtyToHumanReadable({
+        qty: qtyEntered - adjustedQtyMax,
+        uom,
       });
+
+    if (diff > 0) {
+      const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+
+      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
     }
 
     // OK
     return null;
   };
 
-  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason }) => {
+  const roundQtyMaxToScalePrecision = (qtyMax, qtyMaxUOM, scaleDevice) => {
+    if (!scaleDevice || !scaleDevice.roundingToScale) {
+      return qtyMax;
+    }
+
+    try {
+      return roundToQtyPrecision(
+        { qty: qtyMax, uom: qtyMaxUOM },
+        { qty: scaleDevice.roundingToScale.qty, uom: scaleDevice.roundingToScale.uomSymbol }
+      );
+    } catch (e) {
+      toastError({ plainMessage: e.message });
+    }
+  };
+
+  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason, catchWeight, catchWeightUom }) => {
     onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      catchWeight,
+      catchWeightUom,
+      isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
     });
   };
 
@@ -131,7 +207,7 @@ const ScanHUAndGetQtyComponent = ({
           />
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
-              caption={`DEBUG: ${eligibleBarcode}`}
+              caption={`DEBUG: QR`}
               onClick={() => onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: eligibleBarcode }))}
             />
           )}
@@ -144,9 +220,16 @@ const ScanHUAndGetQtyComponent = ({
           userInfo={resolvedBarcodeData.userInfo}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          totalQty={resolvedBarcodeData.lineQtyToIssue}
+          qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
           uom={resolvedBarcodeData.uom}
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
+          scaleTolerance={resolvedBarcodeData.scaleTolerance}
+          catchWeight={resolvedBarcodeData.catchWeight}
+          catchWeightUom={resolvedBarcodeData.catchWeightUom}
+          readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
+          hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
@@ -171,9 +254,16 @@ ScanHUAndGetQtyComponent.propTypes = {
   qtyCaption: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
+  lineQtyToIssue: PropTypes.number,
+  lineQtyIssued: PropTypes.number,
+  qtyHUCapacity: PropTypes.number,
+  qtyAlreadyOnScale: PropTypes.number,
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,
   scaleDevice: PropTypes.object,
+  scaleTolerance: PropTypes.object,
+  catchWeight: PropTypes.number,
+  catchWeightUom: PropTypes.string,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

@@ -1,6 +1,6 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -33,7 +33,7 @@ import java.util.List;
 @Builder
 public class JsonCreateInvoiceCandidatesResponse
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Singular
 	List<JsonInvoiceCandidatesResponseItem> responseItems;
 }

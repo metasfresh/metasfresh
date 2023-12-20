@@ -306,7 +306,7 @@ public class CalloutInOut extends CalloutEngine
 		if (isSOTrx)
 		{
 			final BPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
+			final BigDecimal soCreditUsed = bpartnerStats.getSoCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{
 				calloutField.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(soCreditUsed), false);
@@ -465,6 +465,8 @@ public class CalloutInOut extends CalloutEngine
 			//
 			// Dimensions
 			inoutLine.setC_Activity_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Activity_ID());
+			inoutLine.setC_Order_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Order_ID());
+			inoutLine.setM_SectionCode_ID(originalInOutLine == null? -1: originalInOutLine.getM_SectionCode_ID());
 			inoutLine.setC_Campaign_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Campaign_ID());
 			inoutLine.setC_Project_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_ProjectPhase_ID());

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +37,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -52,7 +53,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
@@ -375,7 +376,7 @@ public class M_PriceList_StepDef
 		final de.metas.handlingunits.model.I_M_ProductPrice productPrice = existingProductPrice == null
 				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
 				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
-
+		
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
 		productPrice.setM_Product_ID(productId);
@@ -392,7 +393,9 @@ public class M_PriceList_StepDef
 		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 		if (Check.isNotBlank(invoiceableQtyBasedOn))
 		{
-			productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn);
+			final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(invoiceableQtyBasedOn);
+
+			productPrice.setInvoicableQtyBasedOn(invoicableQtyBasedOn.getCode());
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

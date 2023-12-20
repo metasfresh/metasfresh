@@ -32,6 +32,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -240,6 +242,25 @@ public class ExternalReferenceRepository
 				.stream()
 				.map(this::buildExternalReference)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Map<IExternalReferenceType, List<ExternalReference>> getExternalReferenceByConfigIdAndType(@NonNull final ByTypeAndSystemConfigIdQuery query)
+	{
+		final ExternalSystemParentConfigId externalSystemConfigId = query.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
+
+		final ImmutableSet<String> externalTypeCodes = query.getExternalReferenceTypeSet()
+				.stream()
+				.map(ReferenceListAwareEnum::getCode)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalSystem_Config_ID, externalSystemConfigId)
+				.addInArrayFilter(I_S_ExternalReference.COLUMNNAME_Type, externalTypeCodes)
+				.create()
+				.stream()
+				.map(this::buildExternalReference)
+				.collect(Collectors.groupingBy(ExternalReference::getExternalReferenceType));
 	}
 
 	public boolean isReadOnlyInMetasfresh(@NonNull final TableRecordReference tableRecordReference)

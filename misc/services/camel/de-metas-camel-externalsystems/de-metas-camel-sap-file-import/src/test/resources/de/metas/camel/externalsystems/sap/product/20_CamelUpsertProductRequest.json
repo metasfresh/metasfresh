@@ -6,10 +6,9 @@
         "productIdentifier": "ext-SAP-PRODUCT_CODE",
         "externalVersion": null,
         "externalReferenceUrl": null,
-        "isReadOnlyInMetasfresh": true,
         "externalSystemConfigId": 1,
         "requestProduct": {
-          "code": "PRODUCT_CODE_Product Name",
+          "code": "PRODUCT_CODE (SCOD)",
           "codeSet": true,
           "name": "Product Name",
           "nameSet": true,
@@ -29,12 +28,23 @@
           "activeSet": false,
           "stocked": true,
           "stockedSet": true,
-          "productCategoryIdentifier": null,
-          "productCategoryIdentifierSet": false,
+          "productCategoryIdentifier": "123456",
+          "productCategoryIdentifierSet": true,
           "syncAdvise": null,
           "bpartnerProductItems": null,
           "sectionCode": "SCOD",
-          "sectionCodeSet": true
+          "sectionCodeSet": true,
+          "purchased": true,
+          "purchasedSet": true,
+          "sapProductHierarchy": "335  81",
+          "sapProductHierarchySet": true,
+          "warehouseAssignments": {
+            "warehouseIdentifiers": [ "name-XXXX" ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          }
         }
       }
     ],

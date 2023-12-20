@@ -2,7 +2,7 @@ package de.metas.ui.web.view.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -21,11 +21,11 @@ public class JSONGetViewActionsRequest
 	@Nullable Set<String> selectedIds;
 
 	@Nullable String parentViewId;
-	@ApiParam("comma separated IDs")
+	@Parameter(description = "comma separated IDs")
 	@Nullable Set<String> parentViewSelectedIds;
 
 	@Nullable String childViewId;
-	@ApiParam("comma separated IDs")
+	@Parameter(description = "comma separated IDs")
 	@Nullable Set<String> childViewSelectedIds;
 
 	/** if true then all actions shall be returned, not only those which are enabled or not silent */

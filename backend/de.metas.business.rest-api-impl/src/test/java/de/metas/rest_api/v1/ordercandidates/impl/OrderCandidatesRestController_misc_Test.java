@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.CreatedUpdatedInfo;
@@ -31,33 +33,19 @@ import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import de.metas.user.UserId;
-import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.MimeType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class OrderCandidatesRestController_misc_Test
 {
-	@BeforeAll
-	public static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	/**
 	 * Asserts that every {@link AttachmentEntryType} has a matching {@link JsonAttachmentType} and vice versa
@@ -97,7 +85,7 @@ public class OrderCandidatesRestController_misc_Test
 
 		assertThat(jsonAttachment.getType().name()).isEqualTo(AttachmentEntryType.URL.name());
 
-		expect(jsonAttachment).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(jsonAttachment);
 	}
 
 	@Test

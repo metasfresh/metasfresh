@@ -1,13 +1,12 @@
 package de.metas.i18n.po;
 
-import java.util.Optional;
-
 import com.google.common.collect.ImmutableList;
-
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -33,44 +32,38 @@ import lombok.Value;
 
 /**
  * Persistent object's translation info.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Value
 @Builder
-public final class POTrlInfo
+public class POTrlInfo
 {
 	public static final POTrlInfo NOT_TRANSLATED = POTrlInfo.builder().translated(false).build();
 
 	/**
 	 * True if at least one column is translated
 	 */
-	private final boolean translated;
+	boolean translated;
 
-	private final String tableName;
-	private final String keyColumnName;
-
-	@Default
-	@NonNull
-	private final ImmutableList<String> translatedColumnNames = ImmutableList.of();
+	String tableName;
+	String keyColumnName;
+	@Default @NonNull ImmutableList<String> translatedColumnNames = ImmutableList.of();
 
 	/**
 	 * SQL SELECT used to fetch the translation of a given record for a given language.
-	 * 
-	 * @return <code>SELECT ... FROM TableName_Trl WHERE KeyColumnName=? AND AD_Language=?</code> or <code>null</code>
+	 * <code>SELECT ... FROM TableName_Trl WHERE KeyColumnName=? AND AD_Language=?</code> or <code>null</code>
 	 */
 	@Default
-	@NonNull
-	private final Optional<String> sqlSelectTrlByIdAndLanguage = Optional.empty();
+	@NonNull Optional<String> sqlSelectTrlByIdAndLanguage = Optional.empty();
 
 	/**
 	 * SQL SELECT used to fetch the translations of a given record for any language.
-	 * 
-	 * @return <code>SELECT ... FROM TableName_Trl WHERE KeyColumnName=?</code> or <code>null</code>
+	 * <code>SELECT ... FROM TableName_Trl WHERE KeyColumnName=?</code> or <code>null</code>
 	 */
 	@Default
-	@NonNull
-	private final Optional<String> sqlSelectTrlById = Optional.empty();
+	@NonNull Optional<String> sqlSelectTrlById = Optional.empty();
 
 	public boolean isColumnTranslated(final String columnName)
 	{

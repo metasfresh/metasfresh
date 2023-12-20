@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
@@ -35,7 +34,7 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
@@ -45,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -95,7 +95,7 @@ public abstract class ReceiptScheduleTestBase
 		AdempiereTestHelper.get().staticInit();
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
@@ -115,7 +115,7 @@ public abstract class ReceiptScheduleTestBase
 
 	// 07629 just adding to fix existing tests; TODO extend the tests
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
-	private IProductAcctDAO productAcctDAO; // 07629
+	private IProductActivityProvider productActivityProvider; // 07629
 
 	protected Properties ctx;
 	/**
@@ -199,15 +199,14 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
-		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		productActivityProvider = Mockito.spy(IProductActivityProvider.class);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -216,7 +215,7 @@ public abstract class ReceiptScheduleTestBase
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
-		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+		Mockito.when(productActivityProvider.getActivityForAcct(
 				ArgumentMatchers.any(),
 				ArgumentMatchers.eq(orgId),
 				ArgumentMatchers.any()))
@@ -370,7 +369,7 @@ public abstract class ReceiptScheduleTestBase
 		orderLine.setM_Product_ID(product.getM_Product_ID());
 		// orderLine.setC_UOM_ID(productUOM != null ? productUOM.getC_UOM_ID() : -1);
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
-		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		orderLine.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 
 		//
 		// Quantities

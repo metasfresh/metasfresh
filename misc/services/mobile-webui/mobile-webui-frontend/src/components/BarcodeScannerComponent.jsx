@@ -18,7 +18,7 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
+const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult, inputPlaceholderText }) => {
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -33,6 +33,13 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     }
     scanningStatus.running = true;
 
+    // console.log('Resolving scanned barcode', {
+    //   scannedBarcode,
+    //   resolveScannedBarcode,
+    //   onResolvedResult,
+    //   scanningStatus: { ...scanningStatus },
+    // });
+
     try {
       let resolvedResult;
       if (resolveScannedBarcode) {
@@ -40,6 +47,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
+      // console.log('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -132,7 +140,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
           ref={inputTextRef}
           className="input-text"
           type="text"
-          placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
@@ -148,6 +156,7 @@ BarcodeScannerComponent.propTypes = {
   // Props:
   resolveScannedBarcode: PropTypes.func,
   onResolvedResult: PropTypes.func.isRequired,
+  inputPlaceholderText: PropTypes.string,
 };
 
 export default BarcodeScannerComponent;

@@ -24,7 +24,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;

@@ -5,6 +5,8 @@ import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -13,6 +15,7 @@ import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface IPPOrderBL extends ISingletonService
@@ -106,4 +109,16 @@ public interface IPPOrderBL extends ISingletonService
 	void postPPOrderCreatedEvent(@NonNull I_PP_Order ppOrder);
 
 	void completeDocument(@NonNull I_PP_Order ppOrder);
+
+	boolean hasSerialNumberSequence(@NonNull PPOrderId ppOrderId);
+
+	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
+
+	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
+
+	boolean isModularOrder(@NonNull PPOrderId ppOrderId);
+
+	Optional<Quantity> getRoundingToScale(@NonNull PPOrderId ppOrderId);
+
+	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
 }

@@ -1,21 +1,18 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.springframework.context.annotation.Profile;
-
-import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
-import de.metas.handlingunits.report.HUReportExecutor;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
-import de.metas.process.AdProcessId;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.report.PrintCopies;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import org.compiere.SpringContextHolder;
+import org.springframework.context.annotation.Profile;
 
 /*
  * #%L
@@ -43,6 +40,8 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
+	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
+
 	@Param(mandatory = true, parameterName = "Copies")
 	private int p_copies = 1;
 
@@ -54,28 +53,15 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		final HUReportService huReportService = HUReportService.get();
-
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
-		if (adProcessId == null)
-		{
-			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
-		}
 		if (!getSelectedRowIds().isSingleDocumentId())
 		{
-			return ProcessPreconditionsResolution.reject("No (single) row selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) row selected");
 		}
 
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
 		if (hu == null)
 		{
-			return ProcessPreconditionsResolution.reject("No (single) HU selected");
-		}
-
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
-		if (husToProcess.isEmpty())
-		{
-			return ProcessPreconditionsResolution.reject("current HU's type does not match the receipt label process");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -83,24 +69,17 @@ public class WEBUI_M_HU_PrintReceiptLabel
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final HUReportService huReportService = HUReportService.get();
-
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
-				.stream()
-				.filter(HUToReport::isTopLevel) // issue https://github.com/metasfresh/metasfresh/issues/3851
-				.collect(ImmutableList.toImmutableList());
-
-		HUReportExecutor.newInstance(getCtx())
-				.windowNo(getProcessInfo().getWindowNo())
-				.numberOfCopies(p_copies)
-				.executeHUReportAfterCommit(adProcessId, husToProcess);
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.MaterialReceipt)
+				.hu(hu)
+				.printCopiesOverride(PrintCopies.ofInt(p_copies))
+				.failOnMissingLabelConfig(true)
+				.build());
 
 		return MSG_OK;
 	}
-
 }

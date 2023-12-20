@@ -8,18 +8,19 @@ import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostElementType;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
@@ -39,16 +40,10 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,12 +54,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -96,7 +89,6 @@ public class CostingService implements ICostingService
 
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final CostingMethodHandlerUtils utils;
 	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
@@ -135,13 +127,19 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
+	{
+		return costElementsRepo.getById(costElementId);
+	}
+
+	@Override
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
 	}
 
 	@Override
-	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
 	{
 		final ImmutableList<CostDetailCreateResult> costElementResults = Stream.of(request)
 				.flatMap(this::explodeAcctSchemas)
@@ -156,31 +154,8 @@ public class CostingService implements ICostingService
 		}
 		else
 		{
-			return ExplainedOptional.of(toAggregatedCostAmount(costElementResults));
+			return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costElementResults));
 		}
-	}
-
-	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
-	{
-		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
-
-		final CostSegment costSegment = costElementResults
-				.stream()
-				.map(CostDetailCreateResult::getCostSegment)
-				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
-
-		final Map<CostElement, CostAmount> amountsByCostElement = costElementResults
-				.stream()
-				.collect(Collectors.toMap(
-						CostDetailCreateResult::getCostElement, // keyMapper
-						CostDetailCreateResult::getAmt, // valueMapper
-						CostAmount::add)); // mergeFunction
-
-		return AggregatedCostAmount.builder()
-				.costSegment(costSegment)
-				.amounts(amountsByCostElement)
-				.build();
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
@@ -188,10 +163,10 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> {
+				.flatMap(handler -> {
 					try
 					{
-						return handler.createOrUpdateCost(request);
+						return handler.createOrUpdateCost(request).stream();
 					}
 					catch (final Exception ex)
 					{
@@ -199,39 +174,12 @@ public class CostingService implements ICostingService
 								.setParameter("request", request)
 								.appendParametersToMessage();
 					}
-				})
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+				});
 	}
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
 	{
-		if (request.getAmt().isZero())
-		{
-			return request;
-		}
-
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
-		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
-		if (request.getAmt().getCurrencyId().equals(acctCurrencyId))
-		{
-			return request;
-		}
-
-		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						request.getDate(),
-						request.getCurrencyConversionTypeId(),
-						request.getClientId(),
-						request.getOrgId())
-				.withPrecision(acctSchema.getCosting().getCostingPrecision());
-
-		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(
-				conversionCtx,
-				request.getAmt().getValue(),
-				request.getAmt().getCurrencyId(),
-				acctCurrencyId);
-
-		return request.withAmount(CostAmount.of(amtConversionResult.getAmount(), acctCurrencyId));
+		return request.withAmount(utils.convertToAcctSchemaCurrency(request.getAmt(), request));
 	}
 
 	@Override
@@ -277,12 +225,11 @@ public class CostingService implements ICostingService
 				.costElementId(costDetail.getCostElementId())
 				.build();
 
-		final CostAmount amt = costDetail.getAmt();
 		final Quantity qty = costDetail.getQty();
 
 		return CostDetailVoidRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.amt(amt)
+				.amt(costDetail.getAmt())
 				.qty(qty)
 				.build();
 	}
@@ -323,22 +270,29 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
-				: ImmutableList.of(request.getCostElement());
+		if (request.isExplicitCostElement())
+		{
+			return ImmutableList.of(request.getCostElement());
+		}
+		else if (request.getDocumentRef().isMatchInv())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
+		else if (request.isOutbound())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
+		}
+		else // inbound
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
 	}
 
 	private List<CostElement> extractCostElements(final MoveCostsRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
-				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
-	}
-
-	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
-	{
-		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
-		return costElementsRepo.getMaterialCostingMethods(clientId);
+		return request.isExplicitCostElement()
+				? ImmutableList.of(Objects.requireNonNull(request.getCostElement()))
+				: costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(@NonNull final CostingMethod costingMethod)
@@ -406,7 +360,13 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
+	{
+		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
@@ -441,13 +401,13 @@ public class CostingService implements ICostingService
 
 		if (costDetailCreateResults.isEmpty())
 		{
-			throw new AdempiereException("No costs created for " + reversalRequest);
+			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
 		}
 
-		return toAggregatedCostAmount(costDetailCreateResults);
+		return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costDetailCreateResults));
 	}
 
-	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(
+	private List<CostDetailCreateResult> createReversalCostDetails(
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
@@ -462,9 +422,7 @@ public class CostingService implements ICostingService
 		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(handler -> handler.createOrUpdateCost(request).stream())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -482,8 +440,9 @@ public class CostingService implements ICostingService
 				.documentRef(reversalRequest.getReversalDocumentRef())
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
 				.costElement(costElement)
-				.qty(costDetail.getQty().negate())
+				.amtType(costDetail.getAmtType())
 				.amt(costDetail.getAmt().negate())
+				.qty(costDetail.getQty().negate())
 				// .currencyConversionTypeId(currencyConversionTypeId) // N/A
 				.date(reversalRequest.getDate())
 				.description(reversalRequest.getDescription())

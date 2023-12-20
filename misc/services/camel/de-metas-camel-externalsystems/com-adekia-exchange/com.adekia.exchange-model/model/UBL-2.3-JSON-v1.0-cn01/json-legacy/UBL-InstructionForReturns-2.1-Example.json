@@ -1,0 +1,136 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:InstructionForReturns-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "InstructionForReturns":[{
+ "UBLVersionID":[{"_":"2.1"}],
+ "ID":[{"_":"AB011"}],
+ "CopyIndicator":[{"_":false}],
+ "IssueDate":[{"_":"2010-04-10"}],
+ "Note":[{"_":"Instruction to return goods that are badly sent to you."}],
+ "SellerSupplierParty":[{
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"Arancio Forniture spa"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Via Dell'Arcoveggio"}],
+    "BuildingNumber":[{"_":"403"}],
+    "CityName":[{"_":"Bologna"}],
+    "PostalZone":[{"_":"40129"}],
+    "Country":[{
+     "IdentificationCode":[{"_":"IT"}],
+     "Name":[{"_":"Italy"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"Mr Rossi"}],
+    "Telephone":[{"_":"0039 051 23000000"}],
+    "Telefax":[{"_":"0039 051 23000023"}],
+    "ElectronicMail":[{"_":"rossi@arancioforniture.it"}]
+   }]
+  }]
+ }],
+ "RetailerCustomerParty":[{
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"Beta Shop"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Via Emilia"}],
+    "BuildingNumber":[{"_":"1"}],
+    "CityName":[{"_":"Modena"}],
+    "PostalZone":[{"_":"41121"}],
+    "Country":[{
+     "IdentificationCode":[{"_":"IT"}],
+     "Name":[{"_":"Italy"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"Mr Delta"}],
+    "Telephone":[{"_":"0039 059 33000000"}],
+    "Telefax":[{"_":"0039 059 33000055"}],
+    "ElectronicMail":[{"_":"delta@betashop.it"}]
+   }]
+  }]
+ }],
+ "ManufacturerParty":[{
+  "PartyName":[{
+   "Name":[{"_":"AZ Outsourcing srl"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Via Bolognese"}],
+   "BuildingNumber":[{"_":"199"}],
+   "CityName":[{"_":"Bologna"}],
+   "PostalZone":[{"_":"40129"}],
+   "Country":[{
+    "IdentificationCode":[{"_":"IT"}],
+    "Name":[{"_":"Italy"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Mr Verdi"}],
+   "Telephone":[{"_":"0039 051 25400000"}],
+   "Telefax":[{"_":"0039 051 25400023"}],
+   "ElectronicMail":[{"_":"verdi@azoutsourcing.it"}]
+  }]
+ }],
+ "Shipment":[{
+  "ID":[{"_":"51022"}],
+  "Consignment":[{
+   "ID":[{"_":"510"}]
+  }],
+  "Delivery":[{
+   "DeliveryAddress":[{
+    "StreetName":[{"_":"Via Dell'Arcoveggio"}],
+    "BuildingNumber":[{"_":"403"}],
+    "CityName":[{"_":"Bologna"}],
+    "PostalZone":[{"_":"40129"}],
+    "Country":[{
+     "IdentificationCode":[{"_":"IT"}],
+     "Name":[{"_":"Italy"}]
+    }]
+   }],
+   "Despatch":[{
+    "DespatchAddress":[{
+     "StreetName":[{"_":"Via Emilia"}],
+     "BuildingNumber":[{"_":"1"}],
+     "CityName":[{"_":"Modena"}],
+     "PostalZone":[{"_":"41121"}],
+     "Country":[{
+      "IdentificationCode":[{"_":"IT"}],
+      "Name":[{"_":"Italy"}]
+     }]
+    }]
+   }]
+  }]
+ }],
+ "InstructionForReturnsLine":[{
+  "ID":[{"_":"1"}],
+  "Quantity":[{"_":20,
+   "unitCode":"NAR"}],
+  "Item":[{
+   "Description":[{"_":"Denim Jeans Jacket"}],
+   "Name":[{"_":"Jeans Jacket man"}],
+   "BuyersItemIdentification":[{
+    "ID":[{"_":"AA109"}]
+   }],
+   "SellersItemIdentification":[{
+    "ID":[{"_":"YX401"}]
+   }]
+  }]
+ },{
+  "ID":[{"_":"2"}],
+  "Quantity":[{"_":5,
+   "unitCode":"NAR"}],
+  "Item":[{
+   "Description":[{"_":"Leather Jacket"}],
+   "Name":[{"_":"Leather Jacket man"}],
+   "BuyersItemIdentification":[{
+    "ID":[{"_":"AA128"}]
+   }],
+   "SellersItemIdentification":[{
+    "ID":[{"_":"YX233"}]
+   }]
+  }]
+ }]
+}]}

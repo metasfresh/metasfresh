@@ -1,9 +1,11 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and that it correctly propagates on C_InvoiceCandidates
   (default payment rule is not propagated on C_InvoiceCandidates in this case, the payment rule set on C_Order is taken into consideration)
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-22T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config String value P for sys config de.metas.invoice.C_Invoice_PaymentRule
@@ -31,7 +33,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | s_s_1      | ol_1                      | N             |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-03-23  | 2001343                 | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
 
     And update shipment schedules

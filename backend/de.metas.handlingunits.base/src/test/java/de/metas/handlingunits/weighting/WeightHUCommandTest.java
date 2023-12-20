@@ -1,5 +1,6 @@
 package de.metas.handlingunits.weighting;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
@@ -140,6 +141,7 @@ public class WeightHUCommandTest
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.name("inventory")
+				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());
 
 		//

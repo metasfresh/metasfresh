@@ -49,6 +49,10 @@
         <module>de-metas-camel-grssignum</module>
         <module>de-metas-camel-leichundmehl</module>
         <module>de-metas-camel-sap-file-import</module>
+        <module>de-metas-camel-metasfresh</module>
+        <module>com-adekia-exchange</module>
+        <module>de-metas-camel-sap</module>
+        <module>de-metas-camel-printingclient</module>
     </modules>
 
     <dependencies>
@@ -58,7 +62,7 @@
             <artifactId>lombok</artifactId>
             <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
             <!-- <version>1.18.18</version> -->
-            <version>1.18.22</version>
+            <version>1.18.24</version>
         </dependency>
     </dependencies>
 
@@ -73,5 +77,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

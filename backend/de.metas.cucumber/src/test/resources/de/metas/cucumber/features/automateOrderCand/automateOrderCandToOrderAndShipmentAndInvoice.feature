@@ -1,17 +1,18 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and automatically generate shipment and invoice for it
   As a user
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-11-20T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
-
 
   @from:cucumber
   @topic:orderCandidate
@@ -145,7 +146,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 10 Tage 1 % | true      | CO        | Shopware                               | testSection_S0150_100           |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_Project_ID.Identifier |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_Project_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      | project_1                   |
 
     And after not more than 60s, Fact_Acct are found
@@ -154,8 +155,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     # dev-note: update dateInvoiced to be set in the past in order to generate dunning
     And update C_Invoice:
-      | Identifier | OPT.DateInvoiced |
-      | invoice_1  | 2021-04-08       |
+      | Identifier | OPT.DueDate |
+      | invoice_1  | 2021-04-08  |
 
     And invoke "C_Dunning_Candidate_Create" process:
       | C_DunningLevel_ID.Identifier | DunningDate | OPT.IsFullUpdate |
@@ -236,8 +237,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ordereLine_1_1            | order_1               | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ordereLine_1_1            | order_1               | 2021-07-20      | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
     # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber
@@ -330,7 +331,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -442,7 +443,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -573,7 +574,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
@@ -651,7 +652,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
@@ -752,6 +753,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

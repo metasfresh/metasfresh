@@ -57,20 +57,20 @@ public interface I_C_Project_WO_Resource
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAssignDateFrom (java.sql.Timestamp AssignDateFrom);
+	void setAssignDateFrom (@Nullable java.sql.Timestamp AssignDateFrom);
 
 	/**
 	 * Get Assign From.
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getAssignDateFrom();
+	@Nullable java.sql.Timestamp getAssignDateFrom();
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource.class, "AssignDateFrom", null);
 	String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
@@ -80,20 +80,20 @@ public interface I_C_Project_WO_Resource
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAssignDateTo (java.sql.Timestamp AssignDateTo);
+	void setAssignDateTo (@Nullable java.sql.Timestamp AssignDateTo);
 
 	/**
 	 * Get Assign To.
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getAssignDateTo();
+	@Nullable java.sql.Timestamp getAssignDateTo();
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource.class, "AssignDateTo", null);
 	String COLUMNNAME_AssignDateTo = "AssignDateTo";
@@ -367,6 +367,27 @@ public interface I_C_Project_WO_Resource
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_IsAllDay = new ModelColumn<>(I_C_Project_WO_Resource.class, "IsAllDay", null);
 	String COLUMNNAME_IsAllDay = "IsAllDay";
+
+	/**
+	 * Set Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setResolvedHours (int ResolvedHours);
+
+	/**
+	 * Get Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getResolvedHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ResolvedHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "ResolvedHours", null);
+	String COLUMNNAME_ResolvedHours = "ResolvedHours";
 
 	/**
 	 * Set Resource.

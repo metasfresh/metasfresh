@@ -22,7 +22,7 @@
 
 package de.metas.serviceprovider.issue;
 
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.serviceprovider.timebooking.TimeBooking;
@@ -53,8 +53,7 @@ import static org.junit.Assert.assertNull;
 public class IssueServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
 	private final IssueService issueService = new IssueService(issueRepository, timeBookingRepository);
 

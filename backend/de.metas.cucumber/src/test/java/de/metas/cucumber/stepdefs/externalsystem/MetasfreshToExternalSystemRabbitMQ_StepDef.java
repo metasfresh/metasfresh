@@ -48,6 +48,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.handlingunits.model.I_M_HU;
@@ -61,6 +62,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
+import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -81,6 +83,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROJECT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -99,6 +102,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final PP_Order_StepDefData ppOrderTable;
 	private final M_Product_StepDefData productTable;
+	private final C_Project_StepDefData projectTable;
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
@@ -106,13 +110,15 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Project_StepDefData projectTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.ppOrderTable = ppOrderTable;
 		this.productTable = productTable;
+		this.projectTable = projectTable;
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineParser.CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
@@ -227,6 +233,15 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			if (Check.isNotBlank(ppOrderIdentifier))
 			{
 				validateExportPPOrderWithPLUFile(ppOrderIdentifier, requests, externalSystemConfig, tableRow);
+			}
+
+			final String projectIdentifier =  DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters." + I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				assertThat(project).isNotNull();
+
+				checkExistingJsonExternalSystemRequestForProject(requests, externalSystemConfig, project);
 			}
 
 			final String expectedRawParams = DataTableUtil.extractStringOrNullForColumnName(tableRow, "JsonExternalSystemRequest.parameters.RAW");
@@ -600,6 +615,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			return true;
 		}
 
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.parameters." + I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (isMatchingESRequestBasedOnProject(projectIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
 		final String expectedRawParams = DataTableUtil.extractStringOrNullForColumnName(row, "JsonExternalSystemRequest.parameters.RAW");
 		if (isMatchingESRequestBasedOnRawParams(expectedRawParams, externalSystemRequest))
 		{
@@ -654,6 +675,24 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
 				.filter(request -> request.getParameters().get(PARAM_BPARTNER_ID) != null)
 				.filter(request -> String.valueOf(bPartner.getC_BPartner_ID()).equals(request.getParameters().get(PARAM_BPARTNER_ID)))
+				.findFirst()
+				.orElse(null);
+
+		if (jsonExternalSystemRequest == null)
+		{
+			logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+		}
+	}
+
+	private void checkExistingJsonExternalSystemRequestForProject(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final I_C_Project project) throws JsonProcessingException
+	{
+		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+				.filter(request -> request.getParameters().get(PARAM_PROJECT_ID) != null)
+				.filter(request -> String.valueOf(project.getC_Project_ID()).equals(request.getParameters().get(PARAM_PROJECT_ID)))
 				.findFirst()
 				.orElse(null);
 
@@ -724,6 +763,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			final String bpartnerIdAsString = externalSystemRequest.getParameters().get(PARAM_BPARTNER_ID);
 
 			return Check.isNotBlank(bpartnerIdAsString) && Integer.parseInt(bpartnerIdAsString) == bPartner.getC_BPartner_ID();
+		}
+		return false;
+	}
+
+	private boolean isMatchingESRequestBasedOnProject(@Nullable final String projectIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			final String projectIdAsString = externalSystemRequest.getParameters().get(PARAM_PROJECT_ID);
+
+			return Check.isNotBlank(projectIdAsString) && Integer.parseInt(projectIdAsString) == project.getC_Project_ID();
 		}
 		return false;
 	}

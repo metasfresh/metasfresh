@@ -44,9 +44,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -59,20 +64,16 @@ public class HUUniqueAttributesService
 
 	private static final String ERR_HU_Qty_Invalid_For_Unique_Attribute = "M_HU_UniqueAttribute_HUQtyError";
 	private static final String ERR_HU_Unique_Attribute_Duplicate = "M_HU_UniqueAttribute_DuplicateValue_Error";
-	private final HUUniqueAttributesRepository repo;
 	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
-
 	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-
 	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
+	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final HUUniqueAttributesRepository repo;
 
 	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
@@ -114,7 +115,8 @@ public class HUUniqueAttributesService
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
 		{
 			final I_M_Attribute attribute = attributeDAO.getAttributeById(attributeId);
-			throw new AdempiereException(AdMessageKey.of(ERR_HU_Qty_Invalid_For_Unique_Attribute), attribute.getName(), huStorage.getM_HU_ID(), uomDAO.getEachUOM().getName());
+			throw new AdempiereException(AdMessageKey.of(ERR_HU_Qty_Invalid_For_Unique_Attribute), attribute.getName(), huStorage.getM_HU_ID(), uomDAO.getEachUOM().getName())
+					.markAsUserValidationError();
 		}
 	}
 
@@ -155,7 +157,8 @@ public class HUUniqueAttributesService
 			throw new AdempiereException(AdMessageKey.of(ERR_HU_Unique_Attribute_Duplicate), huUniqueAttribute.getM_HU_ID(),
 										 attribute.getName(),
 										 huUniqueAttribute.getValue(),
-										 product.getName());
+										 product.getName())
+					.markAsUserValidationError();
 		}
 	}
 
@@ -199,9 +202,15 @@ public class HUUniqueAttributesService
 			}
 
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-			if(!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// don't validate HU Statuses that are not qtyOnHand here
+				continue;
+			}
+
+			if(belongsToQualityWarehouse(huRecord))
+			{
+				// don't validate HUs in quality warehouse
 				continue;
 			}
 
@@ -219,9 +228,16 @@ public class HUUniqueAttributesService
 			final I_M_HU_Attribute huAttribute = huAttributes.next();
 
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
 			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// nothing to do for non-qtyOnHand statuses
+				continue;
+			}
+
+			if(belongsToQualityWarehouse(huRecord))
+			{
+				// don't validate HUs from quality warehouse
 				continue;
 			}
 			createOrUpdateHUUniqueAttribute(huAttribute);
@@ -237,4 +253,42 @@ public class HUUniqueAttributesService
 				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
 
+	public void validateASI(@NonNull final AttributeSetInstanceId attributeSetInstanceId, @NonNull final ProductId productId)
+	{
+		if (!attributeSetInstanceId.isRegular())
+		{
+			//nothing to do
+			return;
+		}
+
+		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(attributeSetInstanceId);
+
+		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
+		{
+			if (Check.isBlank(attributeInstance.getValue()))
+			{
+				continue;
+			}
+
+			final HUUniqueAttributeParameters parameters = HUUniqueAttributeParameters.builder()
+					.productId(productId)
+					.attributeId(AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID()))
+					.attributeValue(attributeInstance.getValue())
+					.build();
+
+			validateHUUniqueAttributeValue(parameters);
+		}
+	}
+
+	public boolean belongsToQualityWarehouse(@NonNull final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			return false;
+		}
+		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return warehouse.isQualityReturnWarehouse();
+	}
 }

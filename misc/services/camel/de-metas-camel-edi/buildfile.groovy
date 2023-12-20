@@ -25,11 +25,15 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         final String dockerImageName = 'metasfresh/de-metas-edi-esb-camel'
         final String latestDockerImageName = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
-        currentBuild.description = """${currentBuild.description}<p/>
+        if (latestDockerImageName) {
+            currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI; latest docker image: <code>${latestDockerImageName}</code>
 					"""
-        echo 'no changes happened in EDI; skip building EDI';
-        return
+            echo 'no changes happened in EDI; skip building EDI';
+            return
+        } else {
+            echo "No docker image found; need to rebuild."
+        }
     }
 
     // set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo

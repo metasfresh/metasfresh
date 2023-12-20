@@ -247,6 +247,11 @@ export const useCalendarData = ({
       loadSimulationsFromAPI();
     }
 
+    console.log('********** ', {
+      simulationId,
+      changedSimulationIds,
+      bool: simulationId && changedSimulationIds.includes(simulationId),
+    });
     if (simulationId && changedSimulationIds.includes(simulationId)) {
       refreshEntriesFromAPI();
       loadConflictsFromAPI();
@@ -264,6 +269,7 @@ export const useCalendarData = ({
   };
 
   return {
+    isLoading: !!entries?.loading,
     getResourcesArray: () => resources, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
     //
     loadSimulationsFromAPI,

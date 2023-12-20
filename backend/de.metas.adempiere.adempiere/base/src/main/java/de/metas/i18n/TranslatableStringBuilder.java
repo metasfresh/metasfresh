@@ -277,7 +277,7 @@ public final class TranslatableStringBuilder
 
 	@Deprecated
 	public TranslatableStringBuilder appendADMessage(
-			final String adMessage,
+			@NonNull final String adMessage,
 			final Object... msgParameters)
 	{
 		return appendADMessage(AdMessageKey.of(adMessage), msgParameters);
