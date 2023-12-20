@@ -105,7 +105,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				continue;
 			}
 
-			final Set<InvoiceCandidateId> invoiceCandIds = getVoidAndReturnInvoiceCandIds(invoice);
+			final Set<InvoiceCandidateId> invoiceCandIds = voidAndReturnInvoiceCandIds(invoice);
 			if (invoiceCandIds.isEmpty())
 			{
 				loggable.addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
@@ -116,13 +116,13 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		}
 	}
 
-	private Set<InvoiceCandidateId> getVoidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
+	private Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
 	{
 		// NOTE: we have to separate voidAndReturnInvoiceCandIds and enqueueForInvoicing in 2 transactions because
 		// InvoiceCandidateEnqueuer is calling updateSelectionBeforeEnqueueing in a new transaction (for some reason?!?)
 		// and that is introducing a deadlock in case we are also changing C_Invoice_Candidate table here.
 		trxManager.assertThreadInheritedTrxNotExists();
-		
+
 		return trxManager.callInNewTrx(() -> invoiceCandBL.voidAndReturnInvoiceCandIds(invoice));
 	}
 
