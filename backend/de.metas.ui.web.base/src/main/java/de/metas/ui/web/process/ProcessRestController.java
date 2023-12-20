@@ -12,6 +12,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessMDC;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -231,6 +232,10 @@ public class ProcessRestController
 			DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 			if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 			{
+				if (viewId == null)
+				{
+					throw new AdempiereException("viewId is expected to be set");
+				}
 				final IView view = viewsRepo.getView(viewId);
 				singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 			}
@@ -457,7 +462,15 @@ public class ProcessRestController
 
 				final IProcessInstancesRepository repository = getRepository(processId);
 				repository.cacheReset();
-				repository.getProcessDescriptor(processId);
+
+				final ProcessDescriptor processDescriptor = repository.getProcessDescriptor(processId);
+
+				// Try loading & instantiating the process class if any
+				if (processDescriptor.getProcessClassname() != null)
+				{
+					ProcessInfo.newProcessClassInstance(processDescriptor.getProcessClassname());
+				}
+
 				repository.cacheReset();
 
 				logger.info("healthCheck [{}/{}] Process {} is OK", countCurrent, countTotal, processId);
@@ -466,14 +479,17 @@ public class ProcessRestController
 			{
 				final String adLanguage = Env.getADLanguageOrBaseLanguage();
 				final I_AD_Process adProcess = adProcessDAO.getById(adProcessId);
-				logger.info("healthCheck [{}/{}] Process {} is NOK: {}", countCurrent, countTotal, processId, ex.getLocalizedMessage());
+				final String processValue = adProcess != null ? adProcess.getValue() : "?";
+				final String processName = adProcess != null ? adProcess.getName() : "?";
+				final String processClassname = adProcess != null ? adProcess.getClassname() : "?";
+				logger.info("healthCheck [{}/{}] Process {}_{} ({}) is NOK: {}", countCurrent, countTotal, processValue, processName, processId, ex.getLocalizedMessage());
 
 				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
 				errors.add(JsonProcessHealthResponse.Entry.builder()
 						.processId(processId)
-						.value(adProcess.getValue())
-						.name(adProcess.getName())
-						.classname(adProcess.getClassname())
+						.value(processValue)
+						.name(processName)
+						.classname(processClassname)
 						.error(JsonErrors.ofThrowable(cause, adLanguage))
 						.build());
 			}

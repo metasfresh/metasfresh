@@ -334,16 +334,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = Util.newInstance(JavaProcess.class, processClass);
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -352,6 +345,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
@@ -767,14 +773,13 @@ public final class ProcessInfo implements Serializable
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
 		}
-		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
 		}
 
 		return OptionalBoolean.UNKNOWN;
 	}
-
 
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
