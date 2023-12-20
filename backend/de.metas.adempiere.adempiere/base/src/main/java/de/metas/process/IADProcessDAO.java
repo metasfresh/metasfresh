@@ -1,6 +1,7 @@
 package de.metas.process;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -132,4 +133,6 @@ public interface IADProcessDAO extends ISingletonService
 			@Nullable String newColumnName);
 
 	ProcessType retrieveProcessType(@NonNull AdProcessId processId);
+
+	ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds();
 }

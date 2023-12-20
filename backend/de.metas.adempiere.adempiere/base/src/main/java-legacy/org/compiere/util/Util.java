@@ -176,7 +176,10 @@ public class Util
 		}
 		catch (final ReflectiveOperationException e)
 		{
-			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
+			final Throwable cause = AdempiereException.extractCause(e);
+			throw cause instanceof AdempiereException
+					? (AdempiereException)cause
+					: new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, cause);
 		}
 	}
 
@@ -535,7 +538,7 @@ public class Util
 		catch (final IOException e)
 		{
 			throw new AdempiereException("Cannot write file " + file + "."
-												 + "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
+					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
 					, e);
 		}
 		finally
