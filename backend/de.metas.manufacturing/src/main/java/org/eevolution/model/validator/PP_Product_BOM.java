@@ -131,9 +131,18 @@ public class PP_Product_BOM
 			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
 		}
 
-		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(productBom.getPP_Product_BOMVersions_ID());
 		final BOMType bomType = BOMType.ofNullableCode(productBom.getBOMType());
-		final Optional<I_PP_Product_BOM> latestBOMVersions = bomDAO.getLatestBOMRecordByVersionAndType(bomVersionsId, ImmutableSet.of(bomType));
+
+		final Optional<I_PP_Product_BOM> latestBOMVersions;
+
+		if (bomType == null)
+		{
+			latestBOMVersions = bomDAO.getPreviousVersion(productBom, null, null);
+		}
+		else
+		{
+			latestBOMVersions = bomDAO.getPreviousVersion(productBom, ImmutableSet.of(bomType), null);
+		}
 
 		if (!latestBOMVersions.isPresent())
 		{
