@@ -29,6 +29,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
@@ -54,11 +55,15 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ICommissionTriggerService commissionTriggerService = SpringContextHolder.instance.getBean(ICommissionTriggerService.class);
 
 	private final static AdMessageKey MSG_SKIPPED_INVOICE_NON_PAYMENT_ALLOC_INVOLVED = AdMessageKey.of("MSG_SKIPPED_INVOICE_NON_PAYMENT_ALLOC_INVOLVED");
 	private static final AdMessageKey MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION = AdMessageKey.of("MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION");
+
+	@Override
+	public boolean isRunInTransaction() {return false;}
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String trxName_IGNORED)
@@ -113,11 +118,18 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 	private Set<InvoiceCandidateId> getVoidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
 	{
-		return invoiceCandBL.voidAndReturnInvoiceCandIds(invoice);
+		// NOTE: we have to separate voidAndReturnInvoiceCandIds and enqueueForInvoicing in 2 transactions because
+		// InvoiceCandidateEnqueuer is calling updateSelectionBeforeEnqueueing in a new transaction (for some reason?!?)
+		// and that is introducing a deadlock in case we are also changing C_Invoice_Candidate table here.
+		trxManager.assertThreadInheritedTrxNotExists();
+		
+		return trxManager.callInNewTrx(() -> invoiceCandBL.voidAndReturnInvoiceCandIds(invoice));
 	}
 
 	private void enqueueForInvoicing(final Set<InvoiceCandidateId> invoiceCandIds, final @NonNull I_C_Async_Batch asyncBatch)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
 				.setC_Async_Batch(asyncBatch)
