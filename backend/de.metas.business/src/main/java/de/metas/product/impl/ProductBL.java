@@ -546,4 +546,10 @@ public final class ProductBL implements IProductBL
 		return productsRepo.getIssuingToleranceSpec(productId);
 	}
 
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIdsInTrx(productIds);
+	}
 }

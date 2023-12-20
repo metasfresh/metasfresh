@@ -1,13 +1,16 @@
 package de.metas.product.model.interceptor;
 
+import com.google.common.collect.Iterators;
 import de.metas.i18n.AdMessageKey;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
-import de.metas.product.impl.ProductDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -24,6 +27,9 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -52,6 +58,7 @@ import javax.annotation.Nullable;
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
@@ -105,7 +112,7 @@ public class M_Product
 		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
 	public void setUOM_ID(@NonNull final I_M_Product product)
 	{
 		final AdMessageKey errorMessage = checkExistingUOMConversions(product);
@@ -113,6 +120,25 @@ public class M_Product
 		{
 			throw new AdempiereException(errorMessage).markAsUserValidationError();
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Weight })
+	public void updateOrderWeight(@NonNull final I_M_Product product)
+	{
+		final List<OrderId> orderIdsToBeUpdated = orderBL.getUnprocessedIdsBy(ProductId.ofRepoId(product.getM_Product_ID()));
+
+		Iterators.partition(orderIdsToBeUpdated.iterator(), 100)
+				.forEachRemaining(this::setWeightFromLines);
+	}
+
+	private void setWeightFromLines(@NonNull final List<OrderId> orderIds)
+	{
+		orderBL.getByIds(orderIds)
+				.forEach(order -> {
+					orderBL.setWeightFromLines(order);
+
+					saveRecord(order);
+				});
 	}
 
 	@Nullable

@@ -198,4 +198,7 @@ public interface IProductDAO extends ISingletonService
 	int getGuaranteeMonthsInDays(ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

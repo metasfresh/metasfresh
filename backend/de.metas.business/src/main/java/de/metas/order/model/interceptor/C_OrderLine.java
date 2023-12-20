@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -419,5 +420,15 @@ public class C_OrderLine
 		}
 
 		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_QtyOrdered })
+	public void updateWeight(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		orderBL.setWeightFromLines(order);
+		
+		saveRecord(order);
 	}
 }

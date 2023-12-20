@@ -1,18 +1,8 @@
 package de.metas.cache.model;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
+ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.TableNamesGroup;
@@ -20,6 +10,15 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -53,6 +52,7 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 	private static final String TABLENAMES_GROUP_CONFIG = ColumnSqlCacheInvalidateRequestInitializer.class.getSimpleName() + ".CONFIG";
 	private static final String TABLENAMES_GROUP_FACTORY_TABLES = ColumnSqlCacheInvalidateRequestInitializer.class.getSimpleName();
 
+	private static final Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestInitializer.class);
 	private final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final CacheMgt cacheMgt = CacheMgt.get();
@@ -84,7 +84,7 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 		private final CacheMgt cacheMgt;
 
 		private static final int DUMMY_CACHE_ID = 0;
-		private CCache<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup> builder()
+		private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup>builder()
 				.tableName(I_AD_SQLColumn_SourceTableColumn.Table_Name)
 				.initialCapacity(1)
 				.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -170,14 +170,32 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 			return this;
 		}
 
+		@SuppressWarnings("UnusedReturnValue")
 		public ImmutableFactoryGroupBuilder add(final ColumnSqlSourceDescriptor descriptor)
 		{
-			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getSourceTableName());
-			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getTargetTableName());
-
-			factoriesByTableName.put(descriptor.getSourceTableName(), ColumnSqlCacheInvalidateRequestFactories.ofDescriptor(descriptor));
+			final ModelCacheInvalidateRequestFactory requestFactory = createRequestFactoryNoFail(descriptor);
+			if (requestFactory != null)
+			{
+				tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getSourceTableName());
+				tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getTargetTableName());
+				factoriesByTableName.put(descriptor.getSourceTableName(), requestFactory);
+			}
 
 			return this;
+		}
+
+		@Nullable
+		private static ModelCacheInvalidateRequestFactory createRequestFactoryNoFail(final ColumnSqlSourceDescriptor descriptor)
+		{
+			try
+			{
+				return ColumnSqlCacheInvalidateRequestFactories.ofDescriptorOrNull(descriptor);
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Failed creating {} from {}. Ignored.", ModelCacheInvalidateRequestFactory.class, descriptor, ex);
+				return null;
+			}
 		}
 	}
 }
