@@ -1,6 +1,5 @@
 package org.eevolution.model.validator;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.product.ProductId;
@@ -15,7 +14,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
@@ -28,7 +26,6 @@ import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
