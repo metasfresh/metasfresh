@@ -684,6 +684,7 @@ public class ADProcessDAO implements IADProcessDAO
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
 				.listIds(AdProcessId::ofRepoId);
 	}
