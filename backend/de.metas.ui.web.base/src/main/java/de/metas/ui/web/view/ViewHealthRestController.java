@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +34,6 @@ public class ViewHealthRestController
 
 	@NonNull private static final Logger logger = LogManager.getLogger(ViewRestController.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-	@NonNull private final UserSession userSession;
 	@NonNull private final IViewsRepository viewsRepo;
 
 	@GetMapping("/health")
@@ -42,16 +41,9 @@ public class ViewHealthRestController
 			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
 	)
 	{
-		userSession.assertLoggedIn();
-		final String adLanguage = userSession.getAD_Language();
-		//final IUserRolePermissions permissions = userSession.getUserRolePermissions();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
-		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
-				// AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
-				// AdWindowId.ofRepoId(540674), // Shipment Schedule Editor - placeholder window
-				// AdWindowId.ofRepoId(540759), // Payment Allocation - placeholder window
-				// AdWindowId.ofRepoId(540485) // Picking Terminal (v2) - placeholder window
-		);
+		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of();
 
 		final ImmutableSet<AdWindowId> onlyAdWindowIds = RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class);
 		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
@@ -83,15 +75,6 @@ public class ViewHealthRestController
 				{
 					throw new AdempiereException("Not an existing/active window");
 				}
-
-				// if (!permissions.checkWindowPermission(adWindowId).hasReadAccess())
-				// {
-				// 	skipped.add(JsonWindowsHealthResponse.Entry.builder()
-				// 			.windowId(windowId)
-				// 			.errorMessage("No permissions")
-				// 			.build());
-				// 	continue;
-				// }
 
 				final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, JSONViewDataType.grid, null, null);
 
