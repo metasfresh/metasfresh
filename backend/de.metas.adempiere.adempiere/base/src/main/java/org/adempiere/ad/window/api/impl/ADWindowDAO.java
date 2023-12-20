@@ -1276,10 +1276,18 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
+
+	@Override
 	public Optional<QuickInputConfigLayout> getQuickInputConfigLayout(final AdTabId adTabId)
 	{
 		final I_AD_Tab adTab = load(adTabId, I_AD_Tab.class);
 		return QuickInputConfigLayout.parse(adTab.getQuickInputLayout());
 	}
-
 }
