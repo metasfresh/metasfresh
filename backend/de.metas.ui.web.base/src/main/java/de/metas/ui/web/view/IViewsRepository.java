@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -49,7 +50,7 @@ public interface IViewsRepository
 			@NonNull WindowId windowId,
 			@NonNull JSONViewDataType viewDataType,
 			@Nullable ViewProfileId profileId,
-			@Nullable IUserRolePermissions permissions);
+			@Nullable UserRolePermissionsKey permissionsKey);
 
 	/**
 	 * @return view or <code>null</code>

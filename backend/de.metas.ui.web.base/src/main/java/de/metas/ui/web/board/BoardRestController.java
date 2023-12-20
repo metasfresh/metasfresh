@@ -272,7 +272,7 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
-		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL, userSession.getUserRolePermissions());
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL, userSession.getUserRolePermissionsKey());
 
 		final JSONDocumentLayoutOptions options = newJSONLayoutOptions();
 		final String adLanguage = options.getAdLanguage();

@@ -7,6 +7,8 @@ import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -75,6 +77,7 @@ import java.util.stream.Stream;
 public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
 
@@ -262,19 +265,26 @@ public class ViewsRepository implements IViewsRepository
 			@NonNull final WindowId windowId,
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId,
-			@Nullable final IUserRolePermissions permissions)
+			@Nullable final UserRolePermissionsKey permissionsKey)
 	{
-		if (permissions != null)
+		if (permissionsKey != null)
 		{
+			final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(permissionsKey);
 			DocumentPermissionsHelper.assertViewAccess(windowId, null, permissions);
 		}
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		return factory.getViewLayout(windowId, viewDataType, profileId)
-				// Enable AllowNew if we have a menu node to create new records
-				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
-						.getNewRecordNodeForWindowId(windowId)
-						.map(MenuNode::getCaption));
+		ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType, profileId);
+
+		// Enable AllowNew if we have a menu node to create new records.
+		if (permissionsKey != null)
+		{
+			viewLayout = viewLayout.withAllowNewRecordIfPresent(menuTreeRepo.getMenuTree(permissionsKey)
+					.getNewRecordNodeForWindowId(windowId)
+					.map(MenuNode::getCaption));
+		}
+
+		return viewLayout;
 	}
 
 	@Override

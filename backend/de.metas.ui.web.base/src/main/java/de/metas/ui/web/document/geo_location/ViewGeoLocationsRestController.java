@@ -122,7 +122,7 @@ public class ViewGeoLocationsRestController
 
 	private ImmutableSet<String> getViewFieldNames(final IView view)
 	{
-		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId(), userSession.getUserRolePermissions());
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId(), userSession.getUserRolePermissionsKey());
 		final ImmutableSet<String> fieldNames = viewLayout.getElements()
 				.stream()
 				.flatMap(element -> element.getFields().stream())
