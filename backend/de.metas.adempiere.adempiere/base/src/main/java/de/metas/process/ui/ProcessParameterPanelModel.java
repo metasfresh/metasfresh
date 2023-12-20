@@ -203,7 +203,7 @@ public class ProcessParameterPanelModel
 	 *
 	 * @param rs result set
 	 */
-	private void createField(final ResultSet rs)
+	private void createField(final ResultSet rs) throws SQLException
 	{
 		// Parameter field
 		final GridFieldVO gridFieldVO = GridFieldVO.createParameter(ctx, windowNo, tabNo, rs);

@@ -429,10 +429,13 @@ public class GridWindowVO implements Serializable
 			//  No Tabs
 			if (TabNo == 0 || tabsByAD_Tab_ID.isEmpty())
 			{
-				throw new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAdWindowId());
-//				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
-//				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
-//				return null;
+				final WindowLoadException windowLoadException = new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAdWindowId());
+				final String loadErrorMessages = mWindowVO.loadErrorMessages != null ? StringUtils.trimBlankToNull(mWindowVO.loadErrorMessages.toString()) : null;
+				if (loadErrorMessages != null)
+				{
+					windowLoadException.setParameter("loadErrorMessages", loadErrorMessages);
+				}
+				throw windowLoadException;
 			}
 
 			return ImmutableList.copyOf(tabsByAD_Tab_ID.values());
