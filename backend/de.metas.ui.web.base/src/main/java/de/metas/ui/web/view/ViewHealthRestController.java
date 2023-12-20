@@ -78,17 +78,18 @@ public class ViewHealthRestController
 
 				final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, JSONViewDataType.grid, null, null);
 
-				logger.info("healthCheck [{}/{}] View {} ({}) is OK", countCurrent, countTotal, viewLayout.getCaption(adLanguage), windowId);
+				final String viewName = viewLayout.getCaption(adLanguage);
+				logger.info("healthCheck [{}/{}] View `{}` ({}) is OK", countCurrent, countTotal, viewName, windowId);
 			}
 			catch (Exception ex)
 			{
-				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
-				logger.info("healthCheck [{}/{}] View `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
+				final String viewName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
+				logger.info("healthCheck [{}/{}] View `{}` ({}) is NOK: {}", countCurrent, countTotal, viewName, windowId, ex.getLocalizedMessage());
 
 				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
 				errors.add(JsonWindowsHealthResponse.Entry.builder()
 						.windowId(windowId)
-						.windowName(windowName)
+						.windowName(viewName)
 						.error(de.metas.rest_api.utils.v2.JsonErrors.ofThrowable(cause, adLanguage))
 						.build());
 			}
