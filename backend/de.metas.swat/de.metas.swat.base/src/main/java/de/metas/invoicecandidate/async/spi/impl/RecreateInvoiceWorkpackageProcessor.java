@@ -106,8 +106,6 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				continue;
 			}
 
-			invoiceCandIds.forEach(invoiceCandId -> invoiceCandBL.setAsyncBatch(invoiceCandId, asyncBatchId));
-
 			final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 			invoiceCandBL.enqueueForInvoicing()
