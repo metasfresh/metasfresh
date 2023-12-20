@@ -97,12 +97,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
 	{
-		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
-		if (poInfo == null)
-		{
-			throw new AdempiereException("No POInfo found for " + tableName);
-		}
-		return poInfo;
+		return getPOInfoMap().getByTableName(tableName);
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -1400,6 +1395,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	@NonNull
+	public ImmutableList<POInfoColumn> getColumns() {return m_columns;}
+
+	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
 		return m_columns.stream()
@@ -1452,6 +1450,19 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
 
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
 		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
 	}
 }   // POInfo
