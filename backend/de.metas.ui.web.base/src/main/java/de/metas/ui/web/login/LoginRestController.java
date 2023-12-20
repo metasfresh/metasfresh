@@ -11,13 +11,10 @@ import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
-import de.metas.security.user_2fa.User2FAService;
-import de.metas.security.user_2fa.totp.OTP;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
-import de.metas.ui.web.login.json.JSONLoginAuth2FARequest;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
@@ -67,6 +64,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -114,6 +113,9 @@ public class LoginRestController
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
 	private final User2FAService user2FAService;
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
+
+	private static final Comparator<JSONLoginRole> ROLES_ORDERING = Comparator.<JSONLoginRole, Integer>comparing(role -> RoleId.isRegular(role.getRoleId()) ? 0 : 100) // Regular roles first
+			.thenComparing(JSONLoginRole::getCaption); // by caption
 
 	private Login getLoginService()
 	{
@@ -264,7 +266,7 @@ public class LoginRestController
 
 		final Joiner captionJoiner = Joiner.on(", ");
 
-		final ImmutableList.Builder<JSONLoginRole> result = ImmutableList.builder();
+		final ArrayList<JSONLoginRole> result = new ArrayList<>();
 		for (final Role role : availableRoles)
 		{
 			final RoleId roleId = role.getId();
@@ -293,7 +295,9 @@ public class LoginRestController
 			}
 		}
 
-		return result.build();
+		result.sort(ROLES_ORDERING);
+
+		return result;
 	}
 
 	private void startMFSession(final Login loginService)
