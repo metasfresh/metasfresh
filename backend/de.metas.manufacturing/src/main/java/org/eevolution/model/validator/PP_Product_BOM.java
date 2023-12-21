@@ -14,9 +14,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
@@ -24,9 +22,6 @@ import org.eevolution.callout.PP_Product_BOM_TabCallout;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
-
-import java.sql.Timestamp;
-import java.util.List;
 
 /*
  * #%L
@@ -59,10 +54,7 @@ public class PP_Product_BOM
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 	private final ProductBOMService productBOMService;
 
-	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
-
 	private static final AdMessageKey MSG_BOM_VERSIONS_NOT_MATCH = AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match");
-	private static final AdMessageKey MSG_BOM_VERSIONS_OVERLAPPING = AdMessageKey.of("PP_Product_BOMVersions_Overlapping");
 	private static final AdMessageKey MSG_VALID_TO_BEFORE_VALID_FROM = AdMessageKey.of("PP_Product_BOMVersions_ValidTo_Before_ValidFrom");
 
 	public PP_Product_BOM(
@@ -130,16 +122,7 @@ public class PP_Product_BOM
 			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
 		}
 
-		final List<I_PP_Product_BOM> siblingBOMs = bomDAO.getSiblings(productBom);
-
-		for (final I_PP_Product_BOM existingBOMVersion : siblingBOMs)
-		{
-			if (TimeUtil.isOverlapping(productBom.getValidFrom(), productBom.getValidTo(), existingBOMVersion.getValidFrom(), existingBOMVersion.getValidTo()))
-			{
-				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, productBom.getName())
-						.markAsUserValidationError();
-			}
-		}
+		productBOMService.assertNoOverlapping(productBom);
 	}
 
 }
