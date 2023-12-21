@@ -2117,9 +2117,11 @@ public class TimeUtil
 			@Nullable final Timestamp start2,
 			@Nullable final Timestamp end2)
 	{
-		final Range<Instant> range1 = toInstantsRange(start1, end1);
-		final Range<Instant> range2 = toInstantsRange(start2, end2);
+		return isOverlapping(toInstantsRange(start1, end1), toInstantsRange(start2, end2));
+	}
 
+	public static boolean isOverlapping(@NonNull final Range<Instant> range1, @NonNull final Range<Instant> range2)
+	{
 		if (!range1.isConnected(range2))
 		{
 			return false;
