@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -72,6 +73,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -293,7 +295,7 @@ public class ViewRestController
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType, ViewProfileId.fromJson(profileIdStr));
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType, ViewProfileId.fromJson(profileIdStr), userSession.getUserRolePermissionsKey());
 
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
@@ -601,7 +603,7 @@ public class ViewRestController
 					.excelFormat(excelFormat)
 					.view(viewsRepo.getView(viewId))
 					.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
-					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
+					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL, userSession.getUserRolePermissionsKey()))
 					.language(userSession.getLanguage())
 					.zoneId(userSession.getTimeZone())
 					.build()

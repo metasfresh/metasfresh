@@ -1092,11 +1092,12 @@ public class WindowRestController
 	}
 
 	@GetMapping("/health")
-	public JsonWindowsHealthResponse testWindows(
+	public JsonWindowsHealthResponse healthCheck(
 			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
 	)
 	{
 		final DocumentDescriptorFactory documentDescriptorFactory = documentCollection.getDocumentDescriptorFactory();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
 				AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
@@ -1131,14 +1132,14 @@ public class WindowRestController
 				}
 
 				documentDescriptorFactory.invalidateForWindow(windowId);
-				documentDescriptorFactory.getDocumentDescriptor(windowId);
+				final DocumentDescriptor documentDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
 				documentDescriptorFactory.invalidateForWindow(windowId);
 
-				logger.info("testWindows [{}/{}] Window {} is OK", countCurrent, countTotal, windowId);
+				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
 			}
 			catch (Exception ex)
 			{
-				final String adLanguage = Env.getADLanguageOrBaseLanguage();
 				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
 				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
 
@@ -1154,9 +1155,8 @@ public class WindowRestController
 		stopwatch.stop();
 
 		return JsonWindowsHealthResponse.builder()
-				.countTotal(countTotal)
-				.countErrors(errors.size())
 				.took(stopwatch.toString())
+				.countTotal(countTotal)
 				.errors(errors)
 				.build();
 	}
