@@ -31,6 +31,11 @@
       "scanHUPlaceholder": "Scannen HU",
       "scanTargetPlaceholder": "Scan-Ziel",
       "moveSuccess": "Erfolgreich verschoben"
+    },
+    "changeQty": {
+      "buttonCaption": "Menge verändern",
+      "qtyLabel": "Menge",
+      "descriptionLabel": "Beschreibung"
     }
   }
 }

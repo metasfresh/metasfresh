@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import * as api from '../api';
-import { clearLoadedData, handlingUnitLoaded, changeClearanceStatus } from '../actions';
+import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
   huManagerAssignExternalLotNo,
@@ -20,12 +20,20 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
+import { toastError } from '../../../utils/toast';
+import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+
+const MODALS = {
+  CHANGE_QTY: 'CHANGE_QTY',
+  CLEARANCE_STATUS: 'CLEARANCE_STATUS',
+};
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const [clearanceModalDisplayed, toggleClearanceModal] = useState(false);
   const [clearanceStatuses, setClearanceStatuses] = useState([]);
+  const [modalToDisplay, setModalToDisplay] = useState('');
+  const [changeQtyAllowed, setChangeQtyAllowed] = useState(false);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -78,6 +86,19 @@ const HUManagerScreen = () => {
   const onAssignExternalLotNoClicked = () => {
     history.push(huManagerAssignExternalLotNo());
   };
+  const onChangeQtySubmit = ({ qty, description }) => {
+    api
+      .changeQty({
+        huQRCode: handlingUnitInfo.qrCode,
+        description: description,
+        qty: qty,
+      })
+      .then((handlingUnitInfo) => {
+        dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+      })
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => toggleChangeQtyModal(false));
+  };
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
@@ -89,15 +110,36 @@ const HUManagerScreen = () => {
     }
   }, [handlingUnitInfo]);
 
+  useEffect(() => {
+    const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+    setChangeQtyAllowed(isSingleStorage);
+  }, [handlingUnitInfo]);
+
+  const toggleChangeQtyModal = (showModal) => {
+    setModalToDisplay(showModal ? MODALS.CHANGE_QTY : '');
+  };
+
+  const toggleClearanceModal = (showModal) => {
+    setModalToDisplay(showModal ? MODALS.CLEARANCE_STATUS : '');
+  };
+
   if (handlingUnitInfo && handlingUnitInfo.id) {
     return (
       <>
-        {clearanceModalDisplayed ? (
+        {modalToDisplay === MODALS.CLEARANCE_STATUS ? (
           <ClearanceDialog
             onCloseDialog={() => toggleClearanceModal(false)}
             onClearanceChange={onClearanceChange}
             clearanceStatuses={clearanceStatuses}
             handlingUnitInfo={handlingUnitInfo}
+          />
+        ) : null}
+        {modalToDisplay === MODALS.CHANGE_QTY ? (
+          <ChangeHUQtyDialog
+            currentQty={Number(handlingUnitInfo.products[0].qty)}
+            uom={handlingUnitInfo.products[0].uom}
+            onCloseDialog={() => toggleChangeQtyModal(false)}
+            onSubmit={onChangeQtySubmit}
           />
         ) : null}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
@@ -116,6 +158,12 @@ const HUManagerScreen = () => {
             caption={trl('huManager.action.bulkActions.buttonCaption')}
             onClick={onBulkActionsClick}
           />
+          {changeQtyAllowed && (
+            <ButtonWithIndicator
+              caption={trl('huManager.action.changeQty.buttonCaption')}
+              onClick={() => toggleChangeQtyModal(true)}
+            />
+          )}
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
