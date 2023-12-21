@@ -420,6 +420,20 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_PP_Product_BOM> getSiblings(final @NonNull I_PP_Product_BOM productBom)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, productBom.getPP_Product_BOM_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, productBom.getPP_Product_BOMVersions_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, productBom.getBOMType())
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.create()
+				.list();
+	}
+
+	@Override
 	public boolean isComponent(final ProductId productId)
 	{
 		return queryBL
