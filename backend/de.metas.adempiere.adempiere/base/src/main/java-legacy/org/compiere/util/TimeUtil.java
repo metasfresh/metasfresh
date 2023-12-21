@@ -2111,23 +2111,23 @@ public class TimeUtil
 		return timestamp2.getTime() - timestamp1.getTime();
 	}
 
-	public static boolean isOverlapping(@NonNull final Timestamp newValidFrom, @Nullable final Timestamp newValidTo, @NonNull final Timestamp existingValidFrom, @Nullable final Timestamp existingValidTo)
+	public static boolean isOverlapping(@NonNull final Timestamp newValidFrom, @Nullable final Timestamp newValidTo, @NonNull final Timestamp start2, @Nullable final Timestamp end2)
 	{
-		if (newValidTo != null && existingValidTo != null)
+		if (newValidTo != null && end2 != null)
 		{
-			return newValidFrom.before(existingValidTo) || newValidTo.before(existingValidTo);
+			return newValidFrom.before(end2) || newValidTo.before(end2);
 		}
 
-		if (newValidTo == null && existingValidTo != null)
+		if (newValidTo == null && end2 != null)
 		{
-			return newValidFrom.before(existingValidTo);
+			return newValidFrom.before(end2);
 		}
 
 		if (newValidTo != null)
 		{
-			return newValidTo.before(existingValidFrom) || newValidFrom.before(existingValidFrom);
+			return newValidTo.before(start2) || newValidFrom.before(start2);
 		}
 
-		return newValidFrom.before(existingValidFrom);
+		return newValidFrom.before(start2);
 	}
 }    // TimeUtil
