@@ -204,10 +204,11 @@ $$
 
 
 --
--- select *
--- from report.M_Cost_CostPrice_Function('2020-09-16',
---                                       null,
---                                       null,
+-- SELECT *
+-- FROM report.M_Cost_CostPrice_Function('2020-09-16',
+--                                       NULL,
+--                                       NULL,
+--                                       'Y',
 --                                       'Y',
 --                                       'de_DE',
 --                                       1000000,
