@@ -119,6 +119,7 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
+		doNotQuoteRows = builder.isDoNotQuoteRows();
 		spreadsheetExportOptions = builder.getSpreadsheetExportOptions();
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
@@ -247,6 +248,8 @@ public final class ProcessInfo implements Serializable
 	private final boolean archiveReportData;
 	@Getter
 	private final boolean reportingProcess;
+	@Getter
+	private final boolean doNotQuoteRows;
 	@Getter
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
@@ -1274,6 +1277,12 @@ public final class ProcessInfo implements Serializable
 			final I_AD_Process process = getAD_ProcessOrNull();
 			final String sqlStatement = process == null ? null : process.getSQLStatement();
 			return StringUtils.trimBlankToOptional(sqlStatement);
+		}
+
+		private boolean isDoNotQuoteRows()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			return process != null && process.isDoNotQuoteRows();
 		}
 
 		private SpreadsheetExportOptions getSpreadsheetExportOptions()

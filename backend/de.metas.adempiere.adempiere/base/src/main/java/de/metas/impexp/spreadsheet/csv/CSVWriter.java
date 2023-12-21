@@ -57,6 +57,8 @@ public class CSVWriter
 
 	private final DateFormat dateFormat;
 
+	private final boolean doNotQuoteRows;
+
 	@Getter
 	private final File outputFile;
 	private Writer writer;
@@ -70,7 +72,8 @@ public class CSVWriter
 			@NonNull final File outputFile,
 			@NonNull final List<String> header,
 			@NonNull final String adLanguage,
-			@Nullable final String fieldDelimiter)
+			@Nullable final String fieldDelimiter,
+			final boolean doNotQuoteRows)
 	{
 		Check.assume(!header.isEmpty(), "header not empty");
 
@@ -84,6 +87,7 @@ public class CSVWriter
 		// see http://www.danielschneller.com/2007/04/calendar-dateformat-and-multi-threading.html
 		final Language language = Language.getLanguage(adLanguage);
 		this.dateFormat = (DateFormat)DisplayType.getDateFormat(DisplayType.Date, language).clone();
+		this.doNotQuoteRows = doNotQuoteRows;
 	}
 
 	private static Writer createWriter(@NonNull final File outputFile)
@@ -92,7 +96,7 @@ public class CSVWriter
 		{
 			final FileOutputStream out = new FileOutputStream(outputFile, false);
 
-			if(enforceUTF8BOM)
+			if (enforceUTF8BOM)
 			{
 				try
 				{
@@ -130,8 +134,9 @@ public class CSVWriter
 				headerLine.append(fieldDelimiter);
 			}
 
-			final String headerColQuoted = quoteCsvValue(headerCol);
-			headerLine.append(headerColQuoted);
+			final String headerColEffective = doNotQuoteRows ? removeQuotesFromCsvValue(headerCol) : quoteCsvValue(headerCol);
+
+			headerLine.append(headerColEffective);
 		}
 
 		writeLine(headerLine);
@@ -172,6 +177,22 @@ public class CSVWriter
 		writeLine(line);
 	}
 
+	@NonNull
+	private String escapeSpecialCharacters(@NonNull final String valueStr)
+	{
+		return valueStr.contains(fieldDelimiter) ? quoteCsvValue(valueStr) : valueStr;
+	}
+
+	@NonNull
+	private String removeQuotesFromCsvValue(@NonNull final String valueStr)
+	{
+		final String unquotedValueStr = valueStr.startsWith(fieldQuote) && valueStr.endsWith(fieldQuote)
+				? valueStr.substring(fieldQuote.length(), valueStr.length() - fieldQuote.length())
+				: valueStr;
+
+		return escapeSpecialCharacters(unquotedValueStr);
+	}
+
 	private void writeLine(final CharSequence line)
 	{
 		try
@@ -187,6 +208,7 @@ public class CSVWriter
 		linesWrote++;
 	}
 
+	@NonNull
 	private String toCsvValue(@Nullable final Object valueObj)
 	{
 		final String valueStr;
@@ -204,7 +226,7 @@ public class CSVWriter
 			valueStr = valueObj.toString();
 		}
 
-		return quoteCsvValue(valueStr);
+		return doNotQuoteRows ? removeQuotesFromCsvValue(valueStr) : quoteCsvValue(valueStr);
 	}
 
 	private String quoteCsvValue(@NonNull final String valueStr)
