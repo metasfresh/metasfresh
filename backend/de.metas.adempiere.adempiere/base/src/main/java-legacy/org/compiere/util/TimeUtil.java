@@ -2111,23 +2111,20 @@ public class TimeUtil
 		return timestamp2.getTime() - timestamp1.getTime();
 	}
 
-	public static boolean isOverlapping(@NonNull final Timestamp start1, @Nullable final Timestamp end1, @NonNull final Timestamp start2, @Nullable final Timestamp end2)
+	public static boolean isOverlapping(
+			@Nullable final Timestamp start1,
+			@Nullable final Timestamp end1,
+			@Nullable final Timestamp start2,
+			@Nullable final Timestamp end2)
 	{
-		if (end1 != null && end2 != null)
+		final Range<Instant> range1 = toInstantsRange(start1, end1);
+		final Range<Instant> range2 = toInstantsRange(start2, end2);
+
+		if (!range1.isConnected(range2))
 		{
-			return start1.before(end2) || end1.before(end2);
+			return false;
 		}
 
-		if (end1 == null && end2 != null)
-		{
-			return start1.before(end2);
-		}
-
-		if (end1 != null)
-		{
-			return end1.before(start2) || start1.before(start2);
-		}
-
-		return start1.before(start2);
+		return !range1.intersection(range2).isEmpty();
 	}
 }    // TimeUtil
