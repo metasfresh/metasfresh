@@ -38,3 +38,27 @@ UPDATE AD_Column SET FilterDefaultValue='N', IsSelectionColumn='Y',Updated=TO_TI
 UPDATE AD_Column SET FilterDefaultValue='',Updated=TO_TIMESTAMP('2023-12-21 12:02:40.702','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=571143
 ;
 
+-- 2023-12-21T12:36:17.448Z
+UPDATE AD_Element_Trl SET Description='Check if the status of the Manufacturing Order is voided on not',Updated=TO_TIMESTAMP('2023-12-21 13:36:17.248','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582876 AND AD_Language='en_US'
+;
+
+-- 2023-12-21T12:36:17.566Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582876,'en_US')
+;
+
+-- 2023-12-21T12:36:32.633Z
+UPDATE AD_Element_Trl SET Description='Prüfen Sie, ob der Status des Produktionsauftrags storniert ist oder nicht',Updated=TO_TIMESTAMP('2023-12-21 13:36:32.431','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582876 AND AD_Language='de_DE'
+;
+
+-- 2023-12-21T12:36:32.705Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582876,'de_DE')
+;
+
+-- 2023-12-21T12:36:32.845Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582876,'de_DE')
+;
+
+-- 2023-12-21T12:36:32.916Z
+UPDATE AD_Column SET ColumnName='IsVoided', Name='Storniert', Description='Prüfen Sie, ob der Status des Produktionsauftrags storniert ist oder nicht', Help=NULL WHERE AD_Element_ID=582876
+;
+
