@@ -9,6 +9,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -17,6 +18,12 @@ public interface ISysConfigBL extends ISingletonService
 
 	@Nullable
 	String getValue(String name);
+
+	@NonNull
+	default Optional<String> getValueOptional(final String name)
+	{
+		return Optional.ofNullable(getValue(name));
+	}
 
 	int getIntValue(String name, int defaultValue);
 

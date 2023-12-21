@@ -139,8 +139,7 @@ class ExtractCounterAttributesCommand
 	private boolean isEmptyAttributeValue(@NonNull final AttributeCode attributeCode)
 	{
 		final Object value = attributes.getValue(attributeCode);
-		return value == null
-				|| "".equals(value);
+		return Check.isEmpty(value);
 	}
 
 	@Value
