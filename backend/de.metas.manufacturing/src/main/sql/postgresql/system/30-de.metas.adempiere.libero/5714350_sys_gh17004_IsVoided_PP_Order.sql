@@ -28,6 +28,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Voided', PrintName='Voided',Up
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582876,'en_US') 
 ;
 
+-- Column: PP_Order.IsVoided
+-- 2023-12-21T11:45:42.443Z
+UPDATE AD_Column SET FilterDefaultValue='N', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-12-21 12:45:42.441','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587764
+;
+
 -- Column: PP_Order.ExportStatus
 -- 2023-12-21T11:02:40.704Z
 UPDATE AD_Column SET FilterDefaultValue='',Updated=TO_TIMESTAMP('2023-12-21 12:02:40.702','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=571143
