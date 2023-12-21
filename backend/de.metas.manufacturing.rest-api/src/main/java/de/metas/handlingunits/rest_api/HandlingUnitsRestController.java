@@ -26,13 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.ad_reference.ADRefList;
-import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
-import de.metas.common.handlingunits.JsonDisposalReason;
-import de.metas.common.handlingunits.JsonDisposalReasonsList;
-import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.common.handlingunits.JsonHU;
-import de.metas.common.handlingunits.JsonHUAttributesRequest;
-import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.handlingunits.*;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -50,14 +44,12 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Builder;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.service.IADReferenceDAO;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -68,14 +60,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -104,7 +89,7 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
-	@ApiOperation("Retrieves a singular HU by serialNo."
+	@Operation(description = "Retrieves a singular HU by serialNo."
 			+ " By default, takes into consideration only HUs with status = 'Active'. "
 			+ " But custom HU statuses can be set via AD_SysConfig: 'de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses'")
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
