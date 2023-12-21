@@ -132,18 +132,16 @@ public class PP_Product_BOM
 
 		final List<I_PP_Product_BOM> siblingBOMs = bomDAO.getSiblings(productBom);
 
-		for (final I_PP_Product_BOM existingBOMVersion : siblingBOMs) {
+		for (final I_PP_Product_BOM existingBOMVersion : siblingBOMs)
+		{
 
-			if (productBom.getPP_Product_BOM_ID() == existingBOMVersion.getPP_Product_BOM_ID()) {
+			if (productBom.getPP_Product_BOM_ID() == existingBOMVersion.getPP_Product_BOM_ID())
+			{
 				continue;
 			}
 
-			final Timestamp newValidFrom = productBom.getValidFrom();
-			final Timestamp newValidTo = productBom.getValidTo();
-			final Timestamp existingValidFrom = existingBOMVersion.getValidFrom();
-			final Timestamp existingValidTo = existingBOMVersion.getValidTo();
-
-			if (TimeUtil.isOverlapping(newValidFrom, newValidTo, existingValidFrom, existingValidTo)) {
+			if (TimeUtil.isOverlapping(productBom.getValidFrom(), productBom.getValidTo(), existingBOMVersion.getValidFrom(), existingBOMVersion.getValidTo()))
+			{
 				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, productBom.getName())
 						.markAsUserValidationError();
 			}
