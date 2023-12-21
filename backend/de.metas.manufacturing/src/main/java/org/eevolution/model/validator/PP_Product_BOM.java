@@ -134,12 +134,6 @@ public class PP_Product_BOM
 
 		for (final I_PP_Product_BOM existingBOMVersion : siblingBOMs)
 		{
-
-			if (productBom.getPP_Product_BOM_ID() == existingBOMVersion.getPP_Product_BOM_ID())
-			{
-				continue;
-			}
-
 			if (TimeUtil.isOverlapping(productBom.getValidFrom(), productBom.getValidTo(), existingBOMVersion.getValidFrom(), existingBOMVersion.getValidTo()))
 			{
 				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, productBom.getName())
