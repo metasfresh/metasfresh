@@ -62,3 +62,6 @@ UPDATE AD_Element_Trl SET Description='Prüfen Sie, ob der Status des Produktion
 UPDATE AD_Column SET ColumnName='IsVoided', Name='Storniert', Description='Prüfen Sie, ob der Status des Produktionsauftrags storniert ist oder nicht', Help=NULL WHERE AD_Element_ID=582876
 ;
 
+-- 2023-12-21T12:46:12.945Z
+UPDATE AD_Val_Rule SET Description='BOMs with Valid To < Production Date should no be displayed, Also If the PP_Order is (Manufactoring) only manufactoring BOMs with (BOM Type=Current Active) are displayed, if the PP_Order is (Service/Repair Order) only Repair BOMs are displayed',Updated=TO_TIMESTAMP('2023-12-21 13:46:12.745','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540667
+;
