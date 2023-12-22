@@ -25,7 +25,6 @@ package de.metas.impexp.spreadsheet.csv;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.Language;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,7 +40,6 @@ import static de.metas.impexp.spreadsheet.csv.CSVWriter.DEFAULT_FieldDelimiter;
 
 public class CSVWriterTest
 {
-	private static final String FILE_NAME = "./src/test/resources/de/metas/impexp/spreadsheet/csv/test.csv";
 	private static final List<String> HEADER = ImmutableList.of("id", "name");
 
 	private File outputFile;
@@ -51,27 +48,14 @@ public class CSVWriterTest
 	@BeforeEach
 	public void init() throws IOException
 	{
-		cleanUpFiles();
+		outputFile = File.createTempFile("prefix-", ".csv");
 
-		outputFile = new File(FILE_NAME);
-		outputFile.createNewFile();
-
-		path = Paths.get(FILE_NAME);
-	}
-
-	@AfterEach
-	public void cleanUpFiles()
-	{
-		final File targetFile = new File(FILE_NAME);
-		targetFile.delete();
+		path = outputFile.toPath();
 	}
 
 	@Test
 	public void givenDoNotQuoteRowsAndNoDelimiterInText_whenAppendRows_thenNoQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn", "firstRowSecondColumn");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", "secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -81,15 +65,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn", "firstRowSecondColumn"));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", "secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
 		Assertions.assertThat(lines)
-				.hasSize(3)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFFid;name",
 						"firstRowFirstColumn;firstRowSecondColumn",
@@ -99,9 +82,6 @@ public class CSVWriterTest
 	@Test
 	public void givenDoNotQuoteRowsAndDelimiterInText_whenAppendRows_thenQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn", "firstRowSecondColumn");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -111,14 +91,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn", "firstRowSecondColumn"));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
-		Assertions.assertThat(lines).hasSize(3)
+		Assertions.assertThat(lines)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFFid;name",
 						"\"firstRowFirstColumn ; firstRowFirstColumn\";firstRowSecondColumn",
@@ -128,9 +108,6 @@ public class CSVWriterTest
 	@Test
 	public void givenDoNotQuoteRowsWithDelimiterAndQuoteInText_whenAppendRows_thenQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn \"firstRowFirstColumn\"", "firstRowSecondColumn \"firstRowSecondColumn\"");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -140,14 +117,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn \"firstRowFirstColumn\"", "firstRowSecondColumn \"firstRowSecondColumn\""));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
-		Assertions.assertThat(lines).hasSize(3)
+		Assertions.assertThat(lines)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFFid;name",
 						"\"firstRowFirstColumn ; firstRowFirstColumn \"\"firstRowFirstColumn\"\"\";firstRowSecondColumn \"firstRowSecondColumn\"",
@@ -155,11 +132,34 @@ public class CSVWriterTest
 	}
 
 	@Test
+	public void givenDoNotQuoteRowsNoDelimiterAndQuoteInText_whenAppendRows_thenNoQuotesApplied() throws IOException
+	{
+		final CSVWriter csvWriter = CSVWriter.builder()
+				.outputFile(outputFile)
+				.header(HEADER)
+				.adLanguage(Language.AD_Language_en_US)
+				.fieldDelimiter(DEFAULT_FieldDelimiter)
+				.doNotQuoteRows(true)
+				.build();
+
+		csvWriter.appendHeaderIfNeeded();
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn\"bla", "firstRowSecondColumn"));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", "secondRowSecondColumn"));
+
+		csvWriter.close();
+
+		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+		Assertions.assertThat(lines)
+				.containsExactlyElementsOf(Arrays.asList(
+						"\uFEFFid;name",
+						"firstRowFirstColumn\"bla;firstRowSecondColumn",
+						"secondRowFirstColumn;secondRowSecondColumn"));
+	}
+
+	@Test
 	public void givenQuoteRowsAndNoDelimiterInText_whenAppendRows_thenQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn", "firstRowSecondColumn");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", "secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -169,14 +169,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn", "firstRowSecondColumn"));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", "secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
-		Assertions.assertThat(lines).hasSize(3)
+		Assertions.assertThat(lines)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFF\"id\";\"name\"",
 						"\"firstRowFirstColumn\";\"firstRowSecondColumn\"",
@@ -186,9 +186,6 @@ public class CSVWriterTest
 	@Test
 	public void givenQuoteRowsAndDelimiterInText_whenAppendRows_thenQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn", "firstRowSecondColumn");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -198,14 +195,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn", "firstRowSecondColumn"));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
-		Assertions.assertThat(lines).hasSize(3)
+		Assertions.assertThat(lines)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFF\"id\";\"name\"",
 						"\"firstRowFirstColumn ; firstRowFirstColumn\";\"firstRowSecondColumn\"",
@@ -215,9 +212,6 @@ public class CSVWriterTest
 	@Test
 	public void givenQuoteRowsWithDelimiterAndQuoteInText_whenAppendRows_thenQuotesApplied() throws IOException
 	{
-		final List<Object> row1 = ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn \"firstRowFirstColumn\"", "firstRowSecondColumn \"firstRowSecondColumn\"");
-		final List<Object> row2 = ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn");
-
 		final CSVWriter csvWriter = CSVWriter.builder()
 				.outputFile(outputFile)
 				.header(HEADER)
@@ -227,14 +221,14 @@ public class CSVWriterTest
 				.build();
 
 		csvWriter.appendHeaderIfNeeded();
-		csvWriter.appendRow(row1);
-		csvWriter.appendRow(row2);
+		csvWriter.appendRow(ImmutableList.of("firstRowFirstColumn ; firstRowFirstColumn \"firstRowFirstColumn\"", "firstRowSecondColumn \"firstRowSecondColumn\""));
+		csvWriter.appendRow(ImmutableList.of("secondRowFirstColumn", ";secondRowSecondColumn;secondRowSecondColumn"));
 
 		csvWriter.close();
 
 		final List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
-		Assertions.assertThat(lines).hasSize(3)
+		Assertions.assertThat(lines)
 				.containsExactlyElementsOf(Arrays.asList(
 						"\uFEFF\"id\";\"name\"",
 						"\"firstRowFirstColumn ; firstRowFirstColumn \"\"firstRowFirstColumn\"\"\";\"firstRowSecondColumn \"\"firstRowSecondColumn\"\"\"",

@@ -119,7 +119,6 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
-		doNotQuoteRows = builder.isDoNotQuoteRows();
 		spreadsheetExportOptions = builder.getSpreadsheetExportOptions();
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
@@ -248,11 +247,6 @@ public final class ProcessInfo implements Serializable
 	private final boolean archiveReportData;
 	@Getter
 	private final boolean reportingProcess;
-	/**
-	 * This flag is relevant for a CSV-Reporting {@link de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess}.
-	 */
-	@Getter
-	private final boolean doNotQuoteRows;
 	@Getter
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
@@ -772,14 +766,13 @@ public final class ProcessInfo implements Serializable
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
 		}
-		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
 		}
 
 		return OptionalBoolean.UNKNOWN;
 	}
-
 
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
@@ -1282,12 +1275,6 @@ public final class ProcessInfo implements Serializable
 			return StringUtils.trimBlankToOptional(sqlStatement);
 		}
 
-		private boolean isDoNotQuoteRows()
-		{
-			final I_AD_Process process = getAD_ProcessOrNull();
-			return process != null && process.isDoNotQuoteRows();
-		}
-
 		private SpreadsheetExportOptions getSpreadsheetExportOptions()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
@@ -1309,6 +1296,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}

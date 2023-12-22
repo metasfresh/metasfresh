@@ -134,9 +134,7 @@ public class CSVWriter
 				headerLine.append(fieldDelimiter);
 			}
 
-			final String headerColEffective = doNotQuoteRows ? removeQuotesFromCsvValue(headerCol) : quoteCsvValue(headerCol);
-
-			headerLine.append(headerColEffective);
+			headerLine.append(toCsvValue(headerCol));
 		}
 
 		writeLine(headerLine);

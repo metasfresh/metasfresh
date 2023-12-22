@@ -87,7 +87,7 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 					.adLanguage(Env.getAD_Language(getCtx()))
 					.translateHeaders(spreadsheetExportOptions.isTranslateHeaders())
 					.fieldDelimiter(spreadsheetExportOptions.getCsvFieldDelimiter())
-					.doNotQuoteRows(isDoNotQuoteRows())
+					.doNotQuoteRows(spreadsheetExportOptions.isDoNotQuoteRows())
 					.build();
 
 			spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcCSVExporter);
@@ -127,11 +127,6 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 	private String getSql()
 	{
 		return getProcessInfo().getSQLStatement().orElseThrow(() -> new FillMandatoryException("SQLStatement"));
-	}
-
-	private boolean isDoNotQuoteRows()
-	{
-		return getProcessInfo().isDoNotQuoteRows();
 	}
 
 	private Evaluatee getEvalContext()
