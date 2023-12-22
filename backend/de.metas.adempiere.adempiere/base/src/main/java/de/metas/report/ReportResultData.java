@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 /*
  * #%L
@@ -54,7 +56,7 @@ public class ReportResultData
 	@NonNull String reportFilename;
 	@NonNull String reportContentType;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ReportResultData(
 			@NonNull final Resource reportData,
 			@NonNull final String reportFilename,
@@ -155,4 +157,13 @@ public class ReportResultData
 			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
 		}
 	}
+
+	public ReportResultData withReportFilename(@NonNull final String reportFilename)
+	{
+		final String reportFilenameNorm = StringUtils.trim(reportFilename);
+		return !Objects.equals(this.reportFilename, reportFilenameNorm)
+				? toBuilder().reportFilename(reportFilenameNorm).build()
+				: this;
+	}
 }
+;

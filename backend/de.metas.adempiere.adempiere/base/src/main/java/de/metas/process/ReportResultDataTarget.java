@@ -3,6 +3,7 @@ package de.metas.process;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -20,12 +21,14 @@ public class ReportResultDataTarget
 
 	@NonNull @With ReportResultDataTargetType targetType;
 	@Nullable Path serverTargetDirectory;
+	@Nullable String targetFilename;
 
 	@Builder(toBuilder = true)
 	@Jacksonized
 	private ReportResultDataTarget(
 			@NonNull final ReportResultDataTargetType targetType,
-			@Nullable final Path serverTargetDirectory)
+			@Nullable final Path serverTargetDirectory,
+			@Nullable String targetFilename)
 	{
 		if (targetType.isSaveToServerDirectory() && serverTargetDirectory == null)
 		{
@@ -34,6 +37,7 @@ public class ReportResultDataTarget
 
 		this.targetType = targetType;
 		this.serverTargetDirectory = serverTargetDirectory;
+		this.targetFilename = StringUtils.trimBlankToNull(targetFilename);
 	}
 
 	public boolean isSaveToServerDirectory() {return targetType.isSaveToServerDirectory();}

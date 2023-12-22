@@ -1072,4 +1072,7 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFilePath = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFilePath", null);
 	String COLUMNNAME_StoreProcessResultFilePath = "StoreProcessResultFilePath";
+
+	// TODO: add a real database column
+	default String getFilenamePattern() { return "@AD_PInstance_ID@_@AD_Process.Value@_@Date@.csv";};
 }
