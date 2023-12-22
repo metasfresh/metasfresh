@@ -1340,7 +1340,7 @@ public final class ProcessInfo implements Serializable
 					.put("AD_PInstance_ID", pInstanceId != null ? String.valueOf(pInstanceId.getRepoId()) : "")
 					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
 					.put("AD_Process.Value", adProcess.getValue())
-					.put("AD_Process.Name", CoalesceUtil.coalesceNotNull(title, adProcess.getName(), ""))
+					.put("AD_Process.Name", getTitle())
 					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(ZoneId.systemDefault()).format(SystemTime.asInstant()))
 					.build();
 
