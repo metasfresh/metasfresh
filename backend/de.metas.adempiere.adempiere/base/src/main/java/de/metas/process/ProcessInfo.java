@@ -766,14 +766,13 @@ public final class ProcessInfo implements Serializable
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
 		}
-		if(params.hasParameter(PARA_IsAlsoSendToBrowser))
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
 		{
 			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
 		}
 
 		return OptionalBoolean.UNKNOWN;
 	}
-
 
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
@@ -1297,6 +1296,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}
