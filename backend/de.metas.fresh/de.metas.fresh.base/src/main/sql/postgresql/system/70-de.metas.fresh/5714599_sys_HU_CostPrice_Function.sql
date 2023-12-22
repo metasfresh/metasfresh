@@ -2,7 +2,7 @@ DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zo
 
 DROP FUNCTION IF EXISTS report.HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, IN ad_language character varying(6));
 
-
+DROP FUNCTION IF EXISTS report.HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, showDetails character varying, IN ad_language character varying(6));
 
 CREATE OR REPLACE FUNCTION report.HU_CostPrice_Function
 (
