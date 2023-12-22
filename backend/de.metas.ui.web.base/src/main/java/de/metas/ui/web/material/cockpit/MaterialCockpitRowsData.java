@@ -24,12 +24,13 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import de.metas.material.cockpit.ProductsWithDemandSupply;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
-import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
@@ -43,9 +44,11 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -57,6 +60,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final boolean includePerPlantDetailRows;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 
 	/**
 	 * Every row has a product, and so does every MD_Stock and MD_Candidate..
@@ -66,7 +70,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	public MaterialCockpitRowsData(
 			final boolean includePerPlantDetailRows,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
-			@NonNull final List<MaterialCockpitRow> rows)
+			@NonNull final List<MaterialCockpitRow> rows,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
 		this.includePerPlantDetailRows = includePerPlantDetailRows;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
@@ -79,6 +84,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			productIdDocumentIdBuilder.put(ProductId.ofRepoId(row.getProductId()), row.getId());
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
 	}
 
 	@Override
@@ -125,6 +131,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
+		final ProductsWithDemandSupply productsWithDemandSupply = loadQuantitiesRecords(rowsToInvalidate);
+
 		for (final MaterialCockpitRow row : rowsToInvalidate)
 		{
 			final CreateRowsRequestBuilder builder = builders.computeIfAbsent(row.getDate(), this::createNewBuilder);
@@ -137,8 +145,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 			final ProductId productId = ProductId.ofRepoId(row.getProductId());
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
-			builder.quantitiesRecords(quantitiesRecords);
+			builder.quantitiesRecords(productsWithDemandSupply.getByProductId(productId));
 
 			builder.productIdToListEvenIfEmpty(productId);
 		}
@@ -192,10 +199,14 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	}
 
 	@NonNull
-	private List<I_QtyDemand_QtySupply_V> loadQuantitiesRecords(@NonNull final ProductId productId)
+	private ProductsWithDemandSupply loadQuantitiesRecords(@NonNull final Collection<MaterialCockpitRow> rows)
 	{
-		return QtyDemandSupplyFilters
-				.createQuantitiesQueryFor(productId)
-				.list();
+		final Set<ProductId> productIds = rows.stream()
+				.map(MaterialCockpitRow::getProductId)
+				.map(ProductId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds);
 	}
 }
