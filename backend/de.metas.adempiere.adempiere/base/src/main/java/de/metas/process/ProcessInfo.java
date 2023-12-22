@@ -1341,7 +1341,7 @@ public final class ProcessInfo implements Serializable
 					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
 					.put("AD_Process.Value", adProcess.getValue())
 					.put("AD_Process.Name", getTitle())
-					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(ZoneId.systemDefault()).format(SystemTime.asInstant()))
+					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(SystemTime.zoneId()).format(SystemTime.asInstant()))
 					.build();
 
 			String reportFilename = reportFilenamePattern.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
