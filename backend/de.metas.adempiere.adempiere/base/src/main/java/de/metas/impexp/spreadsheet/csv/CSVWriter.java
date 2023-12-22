@@ -178,7 +178,7 @@ public class CSVWriter
 	}
 
 	@NonNull
-	private String escapeSpecialCharacters(@NonNull final String valueStr)
+	private String quoteContentIfNeeded(@NonNull final String valueStr)
 	{
 		return valueStr.contains(fieldDelimiter) ? quoteCsvValue(valueStr) : valueStr;
 	}
@@ -190,7 +190,7 @@ public class CSVWriter
 				? valueStr.substring(fieldQuote.length(), valueStr.length() - fieldQuote.length())
 				: valueStr;
 
-		return escapeSpecialCharacters(unquotedValueStr);
+		return quoteContentIfNeeded(unquotedValueStr);
 	}
 
 	private void writeLine(final CharSequence line)

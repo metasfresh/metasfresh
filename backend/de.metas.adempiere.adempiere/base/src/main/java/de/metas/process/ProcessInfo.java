@@ -248,6 +248,9 @@ public final class ProcessInfo implements Serializable
 	private final boolean archiveReportData;
 	@Getter
 	private final boolean reportingProcess;
+	/**
+	 * This flag is relevant for a CSV-Reporting {@link de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess}.
+	 */
 	@Getter
 	private final boolean doNotQuoteRows;
 	@Getter
