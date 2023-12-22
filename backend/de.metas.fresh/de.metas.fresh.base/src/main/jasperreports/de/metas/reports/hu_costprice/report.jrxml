@@ -68,7 +68,7 @@
 				<subreportParameter name="keydate">
 					<subreportParameterExpression><![CDATA[$P{keydate}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="onlyActiveProducts">
+				<subreportParameter name="Parameter_onlyActiveProducts">
 					<subreportParameterExpression><![CDATA[$P{Parameter_onlyActiveProducts}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
