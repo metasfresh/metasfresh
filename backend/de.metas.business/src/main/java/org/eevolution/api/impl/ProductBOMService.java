@@ -35,6 +35,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMVersionsCreateRequest;
 import org.eevolution.api.IProductBOMBL;
@@ -46,8 +47,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
-
-import static org.eevolution.exceptions.ExceptionConstants.PP_PRODUCT_PLANNING_BOM_ATTR_ERROR;
 
 @Service
 public class ProductBOMService
