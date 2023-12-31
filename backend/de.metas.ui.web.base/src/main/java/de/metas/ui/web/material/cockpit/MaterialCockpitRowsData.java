@@ -37,8 +37,11 @@ import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+import de.metas.util.async.Debouncer;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
@@ -57,10 +60,15 @@ import java.util.Set;
  */
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
+	private final static String SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS = "de.metas.ui.web.material.cockpit.MaterialCockpitRowsDataDebouncer.delayInMillis";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final boolean includePerPlantDetailRows;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
+
+	private final Debouncer<DocumentIdsSelection> debouncer;
 
 	/**
 	 * Every row has a product, and so does every MD_Stock and MD_Candidate..
@@ -85,6 +93,19 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
 		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
+
+		this.debouncer = Debouncer.<DocumentIdsSelection>builder()
+				.name(MaterialCockpitRowsData.class.getSimpleName() + "-debouncer")
+				.bufferMaxSize(500)
+				.delayInMillis(sysConfigBL.getIntValue(SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS, 1000))
+				.distinct(true)
+				.consumer(collectedItems -> {
+					final DocumentIdsSelection combinedItems = collectedItems.stream()
+							.reduce(DocumentIdsSelection.EMPTY, DocumentIdsSelection::addAll);
+
+					invalidateNow(combinedItems);
+				})
+				.build();
 	}
 
 	@Override
@@ -121,11 +142,13 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		invalidate(DocumentIdsSelection.ALL);
 	}
 
-	/**
-	 * Recomputes the given rows.
-	 */
 	@Override
 	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
+	{
+		debouncer.add(rowIds);
+	}
+
+	private void invalidateNow(@NonNull final DocumentIdsSelection rowIds)
 	{
 		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowIds);
 
