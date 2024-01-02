@@ -48,6 +48,7 @@ import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -127,6 +128,7 @@ public class PrintingDataFactory
 	{
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
+				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
@@ -168,6 +170,7 @@ public class PrintingDataFactory
 
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
+				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(jobLine.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
 				.documentFileName(archiveRecord.getName() + ".pdf");
