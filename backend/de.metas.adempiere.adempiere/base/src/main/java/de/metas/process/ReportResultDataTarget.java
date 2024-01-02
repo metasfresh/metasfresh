@@ -14,6 +14,10 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 
+/**
+ * Metadata that specifies where to forward and/or store the result data of a process. 
+ * Note that the process data itself is stored in {@link de.metas.report.ReportResultData}.
+ */
 @Value
 public class ReportResultDataTarget
 {
@@ -28,7 +32,7 @@ public class ReportResultDataTarget
 	private ReportResultDataTarget(
 			@NonNull final ReportResultDataTargetType targetType,
 			@Nullable final Path serverTargetDirectory,
-			@Nullable String targetFilename)
+			@Nullable final String targetFilename)
 	{
 		if (targetType.isSaveToServerDirectory() && serverTargetDirectory == null)
 		{

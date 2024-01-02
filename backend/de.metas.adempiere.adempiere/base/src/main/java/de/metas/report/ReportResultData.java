@@ -53,6 +53,11 @@ import java.util.Objects;
 public class ReportResultData
 {
 	@NonNull Resource reportData;
+
+	/**
+	 * The filename to be used when the report data is stored (either via browser or directly on the metasfresh-server).
+	 * Might be "influenced" on the go, see {@link #withReportFilename(String)}.
+	 */
 	@NonNull String reportFilename;
 	@NonNull String reportContentType;
 

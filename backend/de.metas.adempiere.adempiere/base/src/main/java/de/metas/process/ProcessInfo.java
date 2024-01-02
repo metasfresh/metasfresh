@@ -1336,6 +1336,7 @@ public final class ProcessInfo implements Serializable
 
 			final IStringExpression reportFilenamePattern = StringExpressionCompiler.instance.compile(reportFilenamePatternStr);
 
+			// !! Please keep this in sync with the description of AD_Element_ID=582878 (ColumnName=FilenamePattern)
 			final Evaluatee evalCtx = Evaluatees.mapBuilder()
 					.put("AD_PInstance_ID", pInstanceId != null ? String.valueOf(pInstanceId.getRepoId()) : "")
 					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
