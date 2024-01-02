@@ -334,6 +334,29 @@ public interface I_AD_Process
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Do Not Quote Rows.
+	 * If this is true the cell values in all rows will not be quoted anymore in the exported file.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDoNotQuoteRows (boolean DoNotQuoteRows);
+
+	/**
+	 * Get Do Not Quote Rows.
+	 * If this is true the cell values in all rows will not be quoted anymore in the exported file.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDoNotQuoteRows();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_DoNotQuoteRows = new ModelColumn<>(I_AD_Process.class, "DoNotQuoteRows", null);
+	String COLUMNNAME_DoNotQuoteRows = "DoNotQuoteRows";
+
+	/**
 	 * Set Entity Type.
 	 * Entity Type
 	 *
@@ -940,19 +963,19 @@ public interface I_AD_Process
 	 * Set Process Result Storing File Default Path.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setStoreProcessResultFileOn (@Nullable java.lang.String StoreProcessResultFileOn);
+	void setStoreProcessResultFileOn (java.lang.String StoreProcessResultFileOn);
 
 	/**
 	 * Get Process Result Storing File Default Path.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getStoreProcessResultFileOn();
+	java.lang.String getStoreProcessResultFileOn();
 
 	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFileOn = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFileOn", null);
 	String COLUMNNAME_StoreProcessResultFileOn = "StoreProcessResultFileOn";

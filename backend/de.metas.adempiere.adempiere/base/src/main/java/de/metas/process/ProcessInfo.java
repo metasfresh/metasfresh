@@ -1304,6 +1304,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}

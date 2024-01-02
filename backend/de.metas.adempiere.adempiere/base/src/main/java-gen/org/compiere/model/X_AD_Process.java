@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1773961903L;
+	private static final long serialVersionUID = -1170939088L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -232,6 +232,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setDoNotQuoteRows (final boolean DoNotQuoteRows)
+	{
+		set_Value (COLUMNNAME_DoNotQuoteRows, DoNotQuoteRows);
+	}
+
+	@Override
+	public boolean isDoNotQuoteRows() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_DoNotQuoteRows);
 	}
 
 	/** 
@@ -592,7 +604,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/** Both = B */
 	public static final String STOREPROCESSRESULTFILEON_Both = "B";
 	@Override
-	public void setStoreProcessResultFileOn (final @Nullable java.lang.String StoreProcessResultFileOn)
+	public void setStoreProcessResultFileOn (final java.lang.String StoreProcessResultFileOn)
 	{
 		set_Value (COLUMNNAME_StoreProcessResultFileOn, StoreProcessResultFileOn);
 	}
