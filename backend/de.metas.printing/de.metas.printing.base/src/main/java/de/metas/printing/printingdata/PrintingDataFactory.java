@@ -69,7 +69,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Service
 public class PrintingDataFactory
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingDataFactory.class);
+	private final static Logger logger = LogManager.getLogger(PrintingDataFactory.class);
 
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
@@ -195,6 +195,7 @@ public class PrintingDataFactory
 		return printingData.build();
 	}
 
+	@Nullable
 	private byte[] loadArchiveData(@NonNull final I_AD_Archive archiveRecord)
 	{
 
@@ -225,12 +226,13 @@ public class PrintingDataFactory
 				.build();
 	}
 
+	@Nullable
 	private PrintingSegment createPrintingSegment(
 			@NonNull final I_AD_PrinterRouting printerRouting,
 			@Nullable final UserId userToPrintId,
 			@Nullable final String hostKey)
 	{
-		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey/*hostKey*/, userToPrintId, printerRouting.getAD_Printer());
+		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey, userToPrintId, printerRouting.getAD_Printer());
 		if (printerMatchingRecord == null)
 		{
 			logger.debug("Found no AD_Printer_Matching record for AD_PrinterRouting_ID={}, AD_User_PrinterMatchingConfig_ID={} and hostKey={}; -> creating no PrintingSegment for routing",
