@@ -18,6 +18,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -48,6 +49,8 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
+	@Nullable
+	@Contract("!null -> !null")
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)

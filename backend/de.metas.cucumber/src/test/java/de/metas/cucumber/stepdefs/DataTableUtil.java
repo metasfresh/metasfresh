@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -189,10 +190,11 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return value == null || NULL_STRING.equals(value) ? null : value;
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull
