@@ -115,6 +115,7 @@ class PPOrderLinesViewDataLoader
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 
 		this.adReferenceService = adReferenceService;
