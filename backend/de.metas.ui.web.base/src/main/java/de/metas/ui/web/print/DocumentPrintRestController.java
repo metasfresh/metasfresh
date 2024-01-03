@@ -32,7 +32,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -85,7 +84,7 @@ public class DocumentPrintRestController
 				.orElseGet(() -> ResponseEntity.ok().build());
 	}
 
-	@NotNull
+	@NonNull
 	private static ResponseEntity<Resource> toResponseEntity(@NonNull final ReportResultData documentPrint, @NonNull final String filename)
 	{
 		final Resource reportData = documentPrint.getReportData();
