@@ -85,8 +85,6 @@ public interface IPrintingDAO extends ISingletonService
 
 	I_C_Print_Job_Line retrievePrintJobLine(I_C_Print_Job job, int seqNo);
 
-	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
-
 	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
 	 */
@@ -126,7 +124,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Delete all existing recipients of given item.
-	 *
+	 * <p/>
 	 * NOTE: this method will prevent updating the item's aggregation key.
 	 */
 	void deletePrintingQueueRecipients(I_C_Printing_Queue item);
@@ -201,7 +199,7 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, UserId userToPrintId, I_AD_PrinterRouting routing);
 
-	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, UserId userToPrintId, de.metas.adempiere.model.I_AD_Printer printer);
+	I_AD_Printer_Matching retrievePrinterMatchingOrNull(@Nullable String hostKey, @Nullable UserId userToPrintId, @NonNull de.metas.adempiere.model.I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
 
