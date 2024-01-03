@@ -18,6 +18,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -48,6 +49,11 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
+<<<<<<< HEAD
+=======
+	@Nullable
+	@Contract("!null -> !null")
+>>>>>>> d2ef0e60dc5 (play with jetbrains Contract annotation to avoid pointless warnings (#17049))
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
@@ -729,7 +735,11 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Override with a method returning false if your exception is more of a signal than an error
 	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
+<<<<<<< HEAD
 	 * <p>
+=======
+	 * <p/>
+>>>>>>> d2ef0e60dc5 (play with jetbrains Contract annotation to avoid pointless warnings (#17049))
 	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
 	 */
 	protected boolean isLoggedInTrxManager()
