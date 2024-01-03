@@ -61,7 +61,7 @@ public class PrintingDataToPDFFileStorer
 	final static String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
 	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
 
-	final static String SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME = "de.metas.printing.IncludePInstanceIdInFileName ";
+	final static String SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME = "de.metas.printing.IncludePInstanceIdInFileName";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
