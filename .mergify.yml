@@ -47,7 +47,6 @@ pull_request_rules:
               - base=massive_entropy_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
-              - base=science_vessel_hotfix
               - base=tasty_ham_hotfix
               - base=yoyo_hotfix
     actions:
