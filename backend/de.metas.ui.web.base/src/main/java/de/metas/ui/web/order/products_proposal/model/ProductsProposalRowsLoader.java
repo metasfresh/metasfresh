@@ -23,6 +23,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
@@ -224,18 +225,26 @@ public final class ProductsProposalRowsLoader
 		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.collect(ImmutableList.toImmutableList());
-		bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+		if (order != null && orderProductProposalsService != null)
+		{
+			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
+		}
+		else
+		{
+			bestMatchingProductPriceIdToOrderLine = ImmutableMap.of();
+		}
 		return productPrices
 				.stream()
 				.map(this::toProductsProposalRowOrNull)
 				.filter(Objects::nonNull);
 	}
 
+	@Nullable
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final LookupValue product = productLookup.findById(productId);
-		if (!product.isActive())
+		if (product == null || !product.isActive())
 		{
 			return null;
 		}
@@ -261,12 +270,10 @@ public final class ProductsProposalRowsLoader
 				.seqNo(record.getSeqNo())
 				.productPriceId(productPriceId);
 
-
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
 
 		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
 				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
-
 
 		return rowBuilder
 				.build()
@@ -329,6 +336,7 @@ public final class ProductsProposalRowsLoader
 		return row.withLastShipmentDays(lastShipmentOrReceiptInDays);
 	}
 
+	@Nullable
 	private Integer calculateLastShipmentOrReceiptInDays(@Nullable final BPartnerProductStats stats)
 	{
 		if (stats == null)

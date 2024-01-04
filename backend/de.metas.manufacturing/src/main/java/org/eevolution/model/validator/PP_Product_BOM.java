@@ -57,6 +57,9 @@ public class PP_Product_BOM
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 	private final ProductBOMService productBOMService;
 
+	private static final AdMessageKey MSG_BOM_VERSIONS_NOT_MATCH = AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match");
+	private static final AdMessageKey MSG_VALID_TO_BEFORE_VALID_FROM = AdMessageKey.of("PP_Product_BOMVersions_ValidTo_Before_ValidFrom");
+
 	public PP_Product_BOM(
 			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
 			@NonNull final ProductBOMService productBOMService)
@@ -93,7 +96,7 @@ public class PP_Product_BOM
 
 		if (productId != bomVersions.getM_Product_ID())
 		{
-			throw new AdempiereException(AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match"))
+			throw new AdempiereException(MSG_BOM_VERSIONS_NOT_MATCH)
 					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("PP_Product_BOM", bom)
@@ -122,4 +125,17 @@ public class PP_Product_BOM
 			throw new AdempiereException(UOM_ID_MUST_BE_EACH_IF_SEQ_NO_IS_SET);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_ValidFrom, I_PP_Product_BOM.COLUMNNAME_ValidTo })
+	public void preventBOMVersionsOverlapping(final I_PP_Product_BOM productBom)
+	{
+		if (productBom.getValidTo() != null && productBom.getValidTo().before(productBom.getValidFrom()))
+		{
+			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
+		}
+
+		productBOMService.assertNoOverlapping(productBom);
+	}
+
 }

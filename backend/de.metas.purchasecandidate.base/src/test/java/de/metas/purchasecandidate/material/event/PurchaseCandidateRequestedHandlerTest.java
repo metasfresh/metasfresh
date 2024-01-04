@@ -1,16 +1,25 @@
 package de.metas.purchasecandidate.material.event;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -36,10 +45,34 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 
 public class PurchaseCandidateRequestedHandlerTest
 {
-	@Before
-	public void init()
+	private ProductId productId;
+
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		
+		setupMasterdata();
+	}
+
+	private void setupMasterdata()
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(60);
+		product.setValue("Value");
+		product.setName("Name");
+		save(product);
+		this.productId = ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	MaterialDescriptor createMaterialDescriptor()
+	{
+		return MaterialDescriptor.builder()
+				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
+				.warehouseId(WarehouseId.ofRepoId(40))
+				.quantity(BigDecimal.ONE)
+				.date(SystemTime.asInstant())
+				.build();
 	}
 
 	@Test
@@ -48,7 +81,7 @@ public class PurchaseCandidateRequestedHandlerTest
 		final PurchaseCandidateRequestedEvent requestedEvent = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, 6))
 				.supplyCandidateRepoId(10)
-				.purchaseMaterialDescriptor(PurchaseCandidateAdvisedEventCreatorTest.createMaterialDescriptor())
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
 				.build();
 		final BPartnerId vendorId = BPartnerId.ofRepoId(30);
 		final PurchaseCandidateId purchaseCandidateId = PurchaseCandidateId.ofRepoId(20);

@@ -103,6 +103,8 @@ const translations = {
         packing: 'Packing',
         qtyTUs: 'TUs',
         print: 'Print',
+        numberOfHUs: 'HUs',
+        numberOfCopies: 'Copies',
       },
       issues: {
         target: 'To issue',
@@ -111,6 +113,9 @@ const translations = {
         qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
+        addToFunnel: 'Add to funnel',
+        noQtyEnteredCannotAddToStorage: 'No qty entered! There is nothing to be added to temporary storage!',
+        cannotAddToStorageDueTo: 'Cannot add to temporary storage due to: ',
         step: {
           name: 'Issue HU',
         },

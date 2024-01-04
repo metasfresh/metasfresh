@@ -128,7 +128,7 @@ class PlanningHUAttributesUpdater
 
 	private Optional<String> computeLotNumber(final LotNumberSeqKey key)
 	{
-		final I_C_DocType docType = docTypeDAO.getById(key.getDocTypeId());
+		final I_C_DocType docType = docTypeDAO.getRecordById(key.getDocTypeId());
 		final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());
 		if (lotNoSequenceId != null)
 		{

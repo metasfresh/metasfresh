@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs.bank;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.dataImport.C_DataImport_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -39,7 +39,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Bank_StepDef
 {

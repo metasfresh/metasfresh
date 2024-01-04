@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,15 +23,10 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.ad_reference.ADRefList;
-import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
-import de.metas.common.handlingunits.JsonDisposalReason;
-import de.metas.common.handlingunits.JsonDisposalReasonsList;
-import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.common.handlingunits.JsonHU;
-import de.metas.common.handlingunits.JsonHUAttributesRequest;
-import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.handlingunits.*;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -42,35 +37,33 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -81,39 +74,42 @@ import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotN
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
+@RequiredArgsConstructor
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
+	private static final String SYS_CONFIG_BY_SERIAL_NO_HUStatuses = "de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final InventoryCandidateService inventoryCandidateService;
 	private final HandlingUnitsService handlingUnitsService;
 	private final HUQRCodesService huQRCodesService;
 
-	public HandlingUnitsRestController(
-			@NonNull final InventoryCandidateService inventoryCandidateService,
-			@NonNull final HandlingUnitsService handlingUnitsService,
-			@NonNull final HUQRCodesService huQRCodesService)
-	{
-		this.inventoryCandidateService = inventoryCandidateService;
-		this.handlingUnitsService = handlingUnitsService;
-		this.huQRCodesService = huQRCodesService;
-	}
-
 	@GetMapping("/bySerialNo/{serialNo}")
+	@Operation(description = "Retrieves a singular HU by serialNo."
+			+ " By default, takes into consideration only HUs with status = 'Active'. "
+			+ " But custom HU statuses can be set via AD_SysConfig: 'de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses'")
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		return toSingleHUResponseEntity(() -> retrieveActiveHUIdBySerialNo(serialNo));
+		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo));
 	}
 
-	private I_M_HU retrieveActiveHUIdBySerialNo(final @NonNull String serialNo)
+	@NonNull
+	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo)
 	{
+		final ImmutableSet<String> onlyHUStatuses = Arrays.stream(sysConfigBL.getValueOptional(SYS_CONFIG_BY_SERIAL_NO_HUStatuses)
+																		  .orElse(X_M_HU.HUSTATUS_Active)
+																		  .split(","))
+				.map(String::trim)
+				.collect(ImmutableSet.toImmutableSet());
+
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.addHUStatusesToInclude(onlyHUStatuses)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNo)
 				.list();
 		if (hus.isEmpty())
@@ -183,8 +179,12 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
-					.build());
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
+																						 .hu(hu)
+																						 .adLanguage(adLanguage)
+																						 .excludeEmptyAttributes(true)
+																						 .build()))
+											 .build());
 		}
 		catch (final Exception ex)
 		{
@@ -324,6 +324,28 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
+	@PostMapping("/bulk/move")
+	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
+	{
+		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
+				.map(HUQRCode::fromGlobalQRCodeJsonString)
+				.collect(ImmutableList.toImmutableList());
+
+		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
+											  .huQrCodes(huQrCodes)
+											  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+											  .build());
+	}
+
+	@PutMapping("/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HuId huId = handlingUnitsService.updateQty(request);
+		return getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.build());
+	}
+
 	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
@@ -350,8 +372,8 @@ public class HandlingUnitsRestController
 		catch (final Exception e)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(e, adLanguage))
-					.build());
+															.error(JsonErrors.ofThrowable(e, adLanguage))
+															.build());
 		}
 	}
 
@@ -364,7 +386,8 @@ public class HandlingUnitsRestController
 	private static class GetByIdRequest
 	{
 		@NonNull HuId huId;
-		@Nullable HUQRCode expectedQRCode;
+		@Nullable
+		HUQRCode expectedQRCode;
 
 		boolean includeAllowedClearanceStatuses;
 	}

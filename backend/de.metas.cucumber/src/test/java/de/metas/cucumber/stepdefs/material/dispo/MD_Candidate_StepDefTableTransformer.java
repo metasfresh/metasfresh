@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
@@ -77,7 +77,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
 
 			final String candidateTypeStr = dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
-			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s",I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
+			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s", I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
 			final CandidateType type = CandidateType.ofCode(candidateTypeStr);
 
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
@@ -116,7 +116,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.map(I_M_Warehouse::getM_Warehouse_ID)
 					.map(WarehouseId::ofRepoId)
 					.orElse(null);
-			
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)

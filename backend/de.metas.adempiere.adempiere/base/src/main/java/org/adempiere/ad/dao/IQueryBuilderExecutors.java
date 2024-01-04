@@ -1,12 +1,14 @@
 package org.adempiere.ad.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public interface IQueryBuilderExecutors<T>
@@ -33,4 +35,6 @@ public interface IQueryBuilderExecutors<T>
 	default void forEach(@NonNull final Consumer<T> action) {create().forEach(action);}
 
 	default int count() {return create().count();}
+
+	default <K> ImmutableMap<K, T> toMap(final Function<T, K> keyMapper) {return create().map(keyMapper);}
 }

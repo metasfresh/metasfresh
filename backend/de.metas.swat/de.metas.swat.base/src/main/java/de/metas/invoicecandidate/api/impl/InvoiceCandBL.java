@@ -31,7 +31,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -1788,7 +1787,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 						// task 08927
-						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						note = "@C_DocType_ID@=" + docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 						if (creditMemoReinvoicable)
 						{
 							qtysInvoiced = StockQtyAndUOMQtys
@@ -2644,23 +2643,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					return ic;
 				})
 				.collect(Collectors.toSet());
-	}
-
-	@Override
-	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
-
-		if (invoiceCandidate.isProcessed())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
-																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
-			return;
-		}
-
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
-		invoiceCandDAO.save(invoiceCandidate);
 	}
 
 	@Override

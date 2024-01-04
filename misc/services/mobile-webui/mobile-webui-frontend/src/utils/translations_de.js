@@ -103,6 +103,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',
@@ -111,6 +113,9 @@ const translations = {
         qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        addToFunnel: 'Trichterwechsel',
+        noQtyEnteredCannotAddToStorage: 'Keine Menge eingegeben! Es ist nichts in den Zwischenspeicher zu legen!',
+        cannotAddToStorageDueTo: 'Kann nicht zum temporären Speicher hinzugefügt werden aufgrund von: ',
         step: {
           name: 'HU einfüllen',
         },

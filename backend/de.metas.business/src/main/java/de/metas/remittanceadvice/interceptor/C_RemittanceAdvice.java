@@ -75,7 +75,7 @@ public class C_RemittanceAdvice
 			return;
 		}
 
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)
@@ -93,7 +93,7 @@ public class C_RemittanceAdvice
 			ifColumnsChanged = I_C_RemittanceAdvice.COLUMNNAME_C_Payment_Doctype_Target_ID)
 	public void setIsSOTrxFromPaymentDocType(@NonNull final I_C_RemittanceAdvice record)
 	{
-		final I_C_DocType targetPaymentDocType = docTypeDAO.getById(record.getC_Payment_Doctype_Target_ID());
+		final I_C_DocType targetPaymentDocType = docTypeDAO.getRecordById(record.getC_Payment_Doctype_Target_ID());
 
 		record.setIsSOTrx(targetPaymentDocType.isSOTrx());
 	}

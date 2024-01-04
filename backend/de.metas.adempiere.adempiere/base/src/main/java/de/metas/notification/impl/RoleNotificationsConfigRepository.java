@@ -1,15 +1,7 @@
 package de.metas.notification.impl;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_Role_NotificationGroup;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IRoleNotificationsConfigRepository;
@@ -19,6 +11,12 @@ import de.metas.notification.UserNotificationsGroup;
 import de.metas.security.RoleId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_NotificationGroup;
+
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -95,7 +93,7 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 	public ImmutableSet<RoleId> getRoleIdsContainingNotificationGroupName(@NonNull final NotificationGroupName notificationGroupName)
 	{
 		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
-		final int notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
+		final NotificationGroupId notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)

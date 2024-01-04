@@ -304,7 +304,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setChargenNo(voidString);
 
 		p100.setCUperTU(
-				formatNumber(packItem.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
+				formatNumber(packItem.getQtyCUsPerTU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
 							 decimalFormat));
 
 		// note that validateExchange() made sure there is at least one

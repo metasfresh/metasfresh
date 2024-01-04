@@ -1346,6 +1346,27 @@ public interface I_AD_User
 	String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
 
 	/**
+	 * Set Receive Mass Dunning Reports.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceiveMassDunningReports (boolean IsReceiveMassDunningReports);
+
+	/**
+	 * Get Receive Mass Dunning Reports.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceiveMassDunningReports();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsReceiveMassDunningReports = new ModelColumn<>(I_AD_User.class, "IsReceiveMassDunningReports", null);
+	String COLUMNNAME_IsReceiveMassDunningReports = "IsReceiveMassDunningReports";
+
+	/**
 	 * Set Sales Contact.
 	 *
 	 * <br>Type: YesNo

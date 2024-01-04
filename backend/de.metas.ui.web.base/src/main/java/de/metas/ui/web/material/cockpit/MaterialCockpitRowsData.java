@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -76,7 +77,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 		for (final MaterialCockpitRow row : rows)
 		{
-			productIdDocumentIdBuilder.put(ProductId.ofRepoId(row.getProductId()), row.getId());
+			productIdDocumentIdBuilder.put(row.getProductId(), row.getId());
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
 	}
@@ -135,9 +136,17 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			final List<I_MD_Stock> stockRecords = loadStockRecords(row.getAllIncludedStockRecordIds());
 			builder.stockRecords(stockRecords);
 
-			final ProductId productId = ProductId.ofRepoId(row.getProductId());
+			final ProductId productId = row.getProductId();
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
+			final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+			if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+			{
+				quantitiesRecords = loadQuantitiesRecords(productId);
+			}
+			else
+			{
+				quantitiesRecords = ImmutableList.of();
+			}
 			builder.quantitiesRecords(quantitiesRecords);
 
 			builder.productIdToListEvenIfEmpty(productId);

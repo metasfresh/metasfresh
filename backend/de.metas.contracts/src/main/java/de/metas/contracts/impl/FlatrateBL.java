@@ -290,8 +290,7 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = getCtx(dataEntry);
 
-					final ADReferenceService adReferenceService = ADReferenceService.get();
-					final ITranslatableString competed = adReferenceService
+					final ITranslatableString competed = ADReferenceService.get()
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);

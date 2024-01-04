@@ -394,7 +394,7 @@ public class GridFieldVO implements Serializable
 		}
 		catch (SQLException e)
 		{
-			logger.error("ColumnName=" + columnName, e);
+			logger.error("Failed creating GridFieldVO for ColumnName={}. Returning null.", columnName, e);
 			return null;
 		}
 
@@ -459,7 +459,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs       result set AD_Process_Para
 	 * @return MFieldVO
 	 */
-	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
+	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs) throws SQLException
 	{
 		final AdWindowId adWindowId = null;
 		final int adTabId = 0;
@@ -472,7 +472,6 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
-		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
@@ -504,10 +503,6 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
-		}
-		catch (SQLException e)
-		{
-			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
@@ -974,7 +969,7 @@ public class GridFieldVO implements Serializable
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{
-				logger.error("No LookupInfo for {}", ColumnName, e);
+				logger.warn("No LookupInfo for {}. Considering displayType=ID", ColumnName, e);
 				displayType = DisplayType.ID;
 				lookupInfo = null;
 			}

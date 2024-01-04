@@ -26,7 +26,7 @@ import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.resource.Resource;
+import de.metas.product.ResourceId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -70,7 +70,7 @@ class DD_OrderLine
 	})
 	public void setPP_Plant_From_ID(final I_DD_OrderLine ddOrderLine)
 	{
-		Resource plantFrom = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
+		ResourceId plantFromId = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
 
 		//
 		// If no plant was found for "Warehouse From" we shall use the Destination Plant.
@@ -78,12 +78,12 @@ class DD_OrderLine
 		// Example when applies: MRP generated a DD order to move materials from a Raw materials warehouse to Plant warehouse.
 		// The raw materials warehouse is not assigned to a Plant so no further planning will be calculated.
 		// I see it as perfectly normal to use the Destination Plant in this case.
-		if (plantFrom == null)
+		if (plantFromId == null)
 		{
-			plantFrom = ddOrderLowLevelService.getPlantTo(ddOrderLine);
+			plantFromId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
 		}
 
-		if (plantFrom == null)
+		if (plantFromId == null)
 		{
 			final LiberoException ex = new LiberoException("@NotFound@ @PP_Plant_ID@"
 					+ "\n @M_Marehouse_ID@: " + ddOrderLine.getM_Locator_ID()
@@ -92,7 +92,7 @@ class DD_OrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From_ID(plantFrom.getResourceId().getRepoId());
+		ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

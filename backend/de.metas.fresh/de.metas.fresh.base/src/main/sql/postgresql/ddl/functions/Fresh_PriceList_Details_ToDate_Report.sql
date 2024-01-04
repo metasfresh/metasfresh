@@ -22,13 +22,19 @@
 
 DROP FUNCTION IF EXISTS report.Fresh_PriceList_Details_ToDate_Report(character varying,
                                                                      text,
-                                                                     date)
+                                                                     date,
+                                                                     numeric,
+                                                                     numeric,
+                                                                     text)
 ;
 
 CREATE OR REPLACE FUNCTION report.Fresh_PriceList_Details_ToDate_Report(
     p_ad_language                character varying,
     p_show_product_price_pi_flag text,
-    p_validfrom                  date
+    p_validfrom                  date,
+    p_c_bpartner_id              numeric DEFAULT NULL::numeric,
+    p_c_bp_group_id              numeric DEFAULT NULL::numeric,
+    p_issotrx                    text DEFAULT 'Y'::text
 )
     RETURNS TABLE
             (
@@ -57,7 +63,9 @@ CREATE OR REPLACE FUNCTION report.Fresh_PriceList_Details_ToDate_Report(
                 currency                   character,
                 currency2                  character,
                 show_product_price_pi_flag text,
-                plv_name                   text
+                plv_name                   text,
+                c_bpartner_location_id     numeric,
+                ad_org_id                  numeric
             )
 AS
 $$
@@ -68,18 +76,28 @@ BEGIN
     CREATE TEMP TABLE IF NOT EXISTS temp_price_list_details AS
     SELECT DISTINCT bp.c_bpartner_id,
                     plv.M_PriceList_Version_ID,
-                    plv.name
+                    plv.name,
+                    (SELECT bpl.c_bpartner_location_id
+                     FROM c_bpartner_location bpl
+                     WHERE bpl.c_bpartner_id = bp.c_bpartner_id
+                     ORDER BY bpl.isbilltodefault
+                             DESC
+                     LIMIT 1) AS c_bpartner_location_id,
+                    bp.ad_org_id
     FROM c_bpartner bp
-             INNER JOIN M_PricingSystem ps ON bp.m_pricingsystem_id = ps.m_pricingsystem_id
-             INNER JOIN C_BPartner_Product bpp ON bp.c_bpartner_id = bpp.c_bpartner_id AND bp.iscustomer = 'Y'
-             INNER JOIN M_ProductPrice pp ON pp.M_Product_ID = bpp.M_Product_ID
-             INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID
-             INNER JOIN M_PriceList pl ON plv.m_pricelist_id = pl.m_pricelist_id AND ps.m_pricingsystem_id = pl.m_pricingsystem_id AND pl.issopricelist = 'Y'
-        AND plv.validfrom >= p_validfrom;
+             INNER JOIN M_PriceList pl ON bp.m_pricingsystem_id = pl.m_pricingsystem_id
+             INNER JOIN M_PriceList_Version plv ON pl.m_pricelist_id = plv.m_pricelist_id
+    WHERE pl.issopricelist = p_issotrx
+      AND plv.validfrom >= p_validfrom
+      AND (p_C_BPartner_ID IS NULL OR bp.c_bpartner_id = p_C_BPartner_ID)
+      AND (p_C_BP_Group_ID IS NULL OR bp.c_bp_group_id = p_C_BP_Group_ID);
 
 
     IF p_show_product_price_pi_flag = 'N' THEN
-        RETURN QUERY (SELECT DISTINCT d.*, tmp.name::text AS plv_name
+        RETURN QUERY (SELECT DISTINCT d.*,
+                                      tmp.name::text AS plv_name,
+                                      tmp.c_bpartner_location_id,
+                                      tmp.ad_org_id
                       FROM temp_price_list_details tmp
                                INNER JOIN report.fresh_PriceList_Details_Report(
                               tmp.c_bpartner_id,
@@ -91,12 +109,17 @@ BEGIN
                       ORDER BY bp_value,
                                plv_name,
                                productcategory,
-                               m_product_id);
+                               ProductName,
+                               attributes,
+                               ItemProductName);
 
     END IF;
 
     IF p_show_product_price_pi_flag = 'Y' THEN
-        RETURN QUERY (SELECT pp.*, tmp.name::text AS plv_name
+        RETURN QUERY (SELECT DISTINCT pp.*,
+                                      tmp.name::text AS plv_name,
+                                      tmp.c_bpartner_location_id,
+                                      tmp.ad_org_id
                       FROM temp_price_list_details tmp
                                INNER JOIN report.fresh_pricelist_details_report_with_pp_pi(
                               tmp.c_bpartner_id,
@@ -108,7 +131,9 @@ BEGIN
                       ORDER BY bp_value,
                                plv_name,
                                productcategory,
-                               m_product_id);
+                               ProductName,
+                               attributes,
+                               ItemProductName);
 
     END IF;
 

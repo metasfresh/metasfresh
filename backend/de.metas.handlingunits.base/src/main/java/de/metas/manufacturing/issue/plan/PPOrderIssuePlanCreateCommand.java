@@ -88,7 +88,7 @@ public class PPOrderIssuePlanCreateCommand
 	private Stream<PPOrderIssuePlanStep> createSteps(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
-		if (!bomComponentType.isIssue())
+		if (!bomComponentType.isIssue() || !productBL.isStocked(ProductId.ofRepoId(orderBOMLine.getM_Product_ID())))
 		{
 			return Stream.of();
 		}

@@ -9,7 +9,6 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.util.Services;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -37,15 +36,25 @@ public class C_PurchaseCandiate_Create_Requisitions
 		extends C_PurchaseCandiate_Create_PurchaseOrders
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final DocTypeId reqDocTypeId = docTypeDAO.getDocTypeId(
-			DocTypeQuery.builder()
-					.docBaseType(DocBaseType.PurchaseOrder)
-					.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
-					.adClientId(Env.getClientId().getRepoId())
-					.build());
+	private DocTypeId _reqDocTypeId;
 
 	protected void createPurchaseOrders(final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds)
 	{
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds, reqDocTypeId);
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds, getReqDocTypeId());
+	}
+
+	private DocTypeId getReqDocTypeId()
+	{
+		DocTypeId reqDocTypeId = this._reqDocTypeId;
+		if (reqDocTypeId == null)
+		{
+			reqDocTypeId = this._reqDocTypeId = docTypeDAO.getDocTypeId(
+					DocTypeQuery.builder()
+							.docBaseType(DocBaseType.PurchaseOrder)
+							.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
+							.adClientId(getClientId().getRepoId())
+							.build());
+		}
+		return reqDocTypeId;
 	}
 }

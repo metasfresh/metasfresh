@@ -86,7 +86,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -925,9 +925,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		return getPI(piVersionId);
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsVersionId piVersionId)
+	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
 	}
+
 
 	@NonNull
 	@Override
@@ -1238,5 +1245,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
 	{
 		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 	}
 }

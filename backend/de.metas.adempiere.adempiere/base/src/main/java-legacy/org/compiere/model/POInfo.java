@@ -224,7 +224,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
- 				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
+				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
 				+ ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
 				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
 				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy

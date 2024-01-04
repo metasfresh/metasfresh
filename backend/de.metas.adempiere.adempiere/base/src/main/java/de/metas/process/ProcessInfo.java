@@ -63,6 +63,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,6 +114,8 @@ public final class ProcessInfo implements Serializable
 		adWindowId = builder.getAdWindowId();
 
 		title = builder.getTitle();
+
+		reportResultDataTarget = builder.getReportResultDataTarget();
 
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
@@ -166,10 +170,8 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
 	/**
 	 * Table ID if the Process
@@ -258,11 +260,16 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
+	@NonNull private final ReportResultDataTarget reportResultDataTarget;
+
 	/**
 	 * Process result
 	 */
 	@Getter
 	private final ProcessExecutionResult result;
+
+	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
+	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	@Override
 	public String toString()
@@ -327,16 +334,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = Util.newInstance(JavaProcess.class, processClass);
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -345,6 +345,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
@@ -748,6 +761,26 @@ public final class ProcessInfo implements Serializable
 		return _processClassInfo;
 	}
 
+	public ReportResultDataTarget getReportResultDataTarget()
+	{
+		return reportResultDataTarget.forwardingToUserBrowser(isAlsoSendToBrowser());
+	}
+
+	private OptionalBoolean isAlsoSendToBrowser()
+	{
+		final IRangeAwareParams params = getParameterAsIParams();
+		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
+		}
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
+		}
+
+		return OptionalBoolean.UNKNOWN;
+	}
+
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
 	{
@@ -761,6 +794,7 @@ public final class ProcessInfo implements Serializable
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_DefaultStoringFileServerPath = "de.metas.process.DefaultStoringFileServerPath";
 
 		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -771,6 +805,7 @@ public final class ProcessInfo implements Serializable
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
+
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
@@ -909,7 +944,7 @@ public final class ProcessInfo implements Serializable
 			{
 				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
 			}
-			
+
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -1066,6 +1101,38 @@ public final class ProcessInfo implements Serializable
 		{
 			this.title = title;
 			return this;
+		}
+
+		@NonNull
+		private ReportResultDataTarget getReportResultDataTarget()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return ReportResultDataTarget.ForwardToUserBrowser;
+			}
+
+			final ReportResultDataTargetType targetType = ReportResultDataTargetType.optionalOfNullableCode(process.getStoreProcessResultFileOn()).orElse(ReportResultDataTargetType.ForwardToUserBrowser);
+
+			Path serverTargetDirectory = null;
+			if (targetType.isSaveToServerDirectory())
+			{
+				serverTargetDirectory = StringUtils.trimBlankToOptional(process.getStoreProcessResultFilePath())
+						.or(ProcessInfoBuilder::getDefaultStoringFileServerPath)
+						.map(Paths::get)
+						.orElse(null);
+			}
+
+			return ReportResultDataTarget.builder()
+					.targetType(targetType)
+					.serverTargetDirectory(serverTargetDirectory)
+					.build();
+		}
+
+		private static Optional<String> getDefaultStoringFileServerPath()
+		{
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			return StringUtils.trimBlankToOptional(sysConfigBL.getValue(SYSCONFIG_DefaultStoringFileServerPath));
 		}
 
 		private I_AD_PInstance getAD_PInstanceOrNull()
@@ -1236,6 +1303,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}
@@ -1641,18 +1709,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}

@@ -30,17 +30,15 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -75,7 +73,7 @@ public class PPOrderCandidateAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
@@ -159,20 +157,11 @@ public class PPOrderCandidateAdvisedEventCreator
 	}
 
 	@Nullable
-	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
+	private static Quantity extractMaxQuantityPerOrder(@NonNull final ProductPlanning productPlanning)
 	{
-		final Quantity maxQtyPerOrder;
-		if (productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID() > 0)
-		{
-			maxQtyPerOrder = Quantitys.create(
-					productPlanning.getMaxManufacturedQtyPerOrderDispo(),
-					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID()));
-		}
-		else
-		{
-			maxQtyPerOrder = null;
-		}
-		return maxQtyPerOrder;
+		return productPlanning.getMaxManufacturedQtyPerOrderDispo() != null && productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0
+				? productPlanning.getMaxManufacturedQtyPerOrderDispo()
+				: null;
 	}
 
 	@Nullable

@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.descriptor.annotation;
 
+import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -7,11 +8,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -101,6 +102,9 @@ public final class ViewColumnHelper
 				}
 			});
 
+	public static String SYSCFG_DISPLAYED_SUFFIX = ".IsDisplayed";
+	public static String SYSCFG_DISABLED = "-";
+
 	public static void cacheReset()
 	{
 		descriptorsByClass.invalidateAll();
@@ -150,6 +154,30 @@ public final class ViewColumnHelper
 		@Singular
 		ImmutableSet<MediaType> restrictToMediaTypes;
 		boolean hideIfConfiguredSysConfig;
+
+		public static List<ClassViewColumnOverrides> parseCommaSeparatedString(@Nullable final String string)
+		{
+			final String stringNorm = StringUtils.trimBlankToNull(string);
+
+			if (stringNorm == null || SYSCFG_DISABLED.equals(stringNorm))
+			{
+				return ImmutableList.of();
+			}
+
+			final ImmutableList.Builder<ClassViewColumnOverrides> columns = ImmutableList.builder();
+			for (final String part : Splitter.on(",").splitToList(stringNorm))
+			{
+				final String fieldName = StringUtils.trimBlankToNull(part);
+				if (fieldName == null)
+				{
+					throw new AdempiereException("Empty field name not allowed: `" + string + "`");
+				}
+
+				columns.add(builder(fieldName).hideIfConfiguredSysConfig(false).build());
+			}
+
+			return columns.build();
+		}
 	}
 
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
@@ -198,8 +226,7 @@ public final class ViewColumnHelper
 
 	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
-		@SuppressWarnings("unchecked")
-		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
+		@SuppressWarnings("unchecked") final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
 
 		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
 				.map(ViewColumnHelper::createClassViewColumnDescriptor)
@@ -235,6 +262,7 @@ public final class ViewColumnHelper
 				.layoutsByViewType(layoutsByViewType)
 				.widgetSize(viewColumnAnn.widgetSize())
 				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
+				.allowZoomInfo(viewColumnAnn.zoomInto())
 				.build();
 	}
 
@@ -335,9 +363,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumn viewColumn)
 	{
 		return extractDisplayMode(fieldName,
-								  viewColumn.displayed(),
-								  viewColumn.displayedSysConfigPrefix(),
-								  viewColumn.defaultDisplaySysConfig());
+				viewColumn.displayed(),
+				viewColumn.displayedSysConfigPrefix(),
+				viewColumn.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -345,9 +373,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumnLayout viewColumnLayout)
 	{
 		return extractDisplayMode(fieldName,
-								  viewColumnLayout.displayed(),
-								  viewColumnLayout.displayedSysConfigPrefix(),
-								  viewColumnLayout.defaultDisplaySysConfig());
+				viewColumnLayout.displayed(),
+				viewColumnLayout.displayedSysConfigPrefix(),
+				viewColumnLayout.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -366,7 +394,7 @@ public final class ViewColumnHelper
 			{
 				return defaultDisplaySysConfig ? DisplayMode.DISPLAYED_BY_SYSCONFIG : DisplayMode.HIDDEN_BY_SYSCONFIG;
 			}
-			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
+			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + SYSCFG_DISPLAYED_SUFFIX;
 
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final boolean isDisplayed = sysConfigBL.getBooleanValue(
@@ -398,7 +426,8 @@ public final class ViewColumnHelper
 				.setViewAllowSorting(column.isAllowSorting())
 				.restrictToMediaTypes(column.getRestrictToMediaTypes())
 				.setDescription(column.getDescription())
-				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
+				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName())
+						.setSupportZoomInto(column.isSupportZoomInto()));
 	}
 
 	public static <T extends IViewRow> ImmutableSet<String> extractFieldNames(@NonNull final T row)
@@ -598,6 +627,8 @@ public final class ViewColumnHelper
 		@NonNull ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
 		@NonNull ImmutableSet<MediaType> restrictToMediaTypes;
 
+		boolean allowZoomInfo;
+
 		public DisplayMode getDisplayMode(final JSONViewDataType viewType)
 		{
 			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
@@ -620,6 +651,8 @@ public final class ViewColumnHelper
 		{
 			return fieldReference.getField();
 		}
+
+		public boolean isSupportZoomInto() {return allowZoomInfo && widgetType.isSupportZoomInto();}
 	}
 
 	@Getter

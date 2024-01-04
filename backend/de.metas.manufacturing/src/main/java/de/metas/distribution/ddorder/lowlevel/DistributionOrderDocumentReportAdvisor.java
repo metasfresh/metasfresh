@@ -103,7 +103,7 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, ddOrder.getC_BPartner_Location_ID()))
-				.docTypeId(DocTypeId.ofRepoId(ddOrder.getC_DocType_ID()))
+				.docTypeId(docTypeId)
 				.onlyCopiesGreaterZero(true)
 				.build();
 

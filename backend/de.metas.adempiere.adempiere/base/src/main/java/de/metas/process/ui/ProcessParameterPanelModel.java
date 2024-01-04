@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.Getter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -35,19 +36,19 @@ public class ProcessParameterPanelModel
 	public static final String FIELDSEPARATOR_TEXT = " - ";
 
 	@FunctionalInterface
-	public static interface IDisplayValueProvider
+	public interface IDisplayValueProvider
 	{
 		String getDisplayValue(GridField gridField);
 	}
 
-	private final Properties ctx;
-	private final int windowNo;
-	private final int tabNo;
+	@Getter private final Properties ctx;
+	@Getter private final int windowNo;
+	@Getter private final int tabNo;
 	private final int processId;
 	private final ProcessClassInfo processClassInfo;
-	private final List<GridField> gridFields = new ArrayList<GridField>();
-	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
-	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
+	private final List<GridField> gridFields = new ArrayList<>();
+	private final List<GridField> gridFieldsTo = new ArrayList<>();
+	private final List<GridField> gridFieldsAll = new ArrayList<>();
 
 	private final ProcessDefaultParametersUpdater defaultParametersUpdater;
 
@@ -79,21 +80,6 @@ public class ProcessParameterPanelModel
 		processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
-	}
-
-	public Properties getCtx()
-	{
-		return ctx;
-	}
-
-	public int getWindowNo()
-	{
-		return windowNo;
-	}
-
-	public int getTabNo()
-	{
-		return tabNo;
 	}
 
 	public int getAD_Process_ID()
@@ -165,8 +151,6 @@ public class ProcessParameterPanelModel
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}
 
@@ -183,24 +167,6 @@ public class ProcessParameterPanelModel
 	public GridField getFieldTo(final int index)
 	{
 		return gridFieldsTo.get(index);
-	}
-
-	/**
-	 * Get field index by columnName
-	 *
-	 * @param columnName
-	 * @return field index or -1
-	 */
-	public int getFieldIndex(final String columnName)
-	{
-		for (int i = 0; i < gridFields.size(); i++)
-		{
-			if (gridFields.get(i).getColumnName().equals(columnName))
-			{
-				return i;
-			}
-		}
-		return -1;
 	}
 
 	public void setDefaultValues()
@@ -237,7 +203,7 @@ public class ProcessParameterPanelModel
 	 *
 	 * @param rs result set
 	 */
-	private void createField(final ResultSet rs)
+	private void createField(final ResultSet rs) throws SQLException
 	{
 		// Parameter field
 		final GridFieldVO gridFieldVO = GridFieldVO.createParameter(ctx, windowNo, tabNo, rs);
@@ -280,12 +246,8 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Notify the model that an editor value was changed.
-	 *
 	 * NOTE: this is used to do View to Model binding
 	 *
-	 * @param columnName
-	 * @param valueNew
-	 * @param displayValueNew
 	 * @param changedField optional {@link GridField} that changed
 	 */
 	public void notifyValueChanged(final String columnName, final Object valueNew, final GridField changedField)
@@ -333,7 +295,7 @@ public class ProcessParameterPanelModel
 	}
 
 	/** A list of column names which are notifying in progress */
-	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<String>();
+	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<>();
 
 	/* package */void setFieldValue(final GridField gridField, final Object valueNew)
 	{
@@ -342,9 +304,6 @@ public class ProcessParameterPanelModel
 
 	/**
 	 * Validate given <code>gridField</code> when <code>changedColumnName</code> was changed.
-	 *
-	 * @param gridField
-	 * @param changedColumnName
 	 */
 	private void validateField(final GridField gridField, final String changedColumnName)
 	{
@@ -375,7 +334,7 @@ public class ProcessParameterPanelModel
 
 	private void validate()
 	{
-		final Set<String> missingMandatoryFields = new HashSet<String>();
+		final Set<String> missingMandatoryFields = new HashSet<>();
 
 		final int fieldCount = getFieldCount();
 		for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)

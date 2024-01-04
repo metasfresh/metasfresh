@@ -929,7 +929,7 @@ public final class MPayment extends X_C_Payment
 			final I_C_Invoice invoice = getC_Invoice();
 
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			final I_C_DocType doctype = docTypeDAO.getById(invoice.getC_DocType_ID());
+			final I_C_DocType doctype = docTypeDAO.getRecordById(invoice.getC_DocType_ID());
 
 			if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(doctype.getDocBaseType()))
 			{
@@ -1504,7 +1504,7 @@ public final class MPayment extends X_C_Payment
 		final I_C_Invoice invoice = Services.get(IInvoiceBL.class).getById(invoiceId);
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
-		
+
 		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
@@ -1575,7 +1575,7 @@ public final class MPayment extends X_C_Payment
 		alloc.saveEx();
 
 		final Money allocationAmt = getAllocationAmt(alloc.getDateTrx(),
-													 invoiceOpenAmt, 
+													 invoiceOpenAmt,
 													 payAmt,
 													 CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()));
 
@@ -2116,7 +2116,7 @@ public final class MPayment extends X_C_Payment
 		{
 			return; // shall not happen
 		}
-		final I_C_DocType orderDocType = Services.get(IDocTypeDAO.class).getById(orderDocTypeId);
+		final I_C_DocType orderDocType = Services.get(IDocTypeDAO.class).getRecordById(orderDocTypeId);
 
 		final String orderDocSubType = orderDocType.getDocSubType();
 		if (!X_C_DocType.DOCSUBTYPE_POSOrder.equals(orderDocSubType)
@@ -2186,7 +2186,7 @@ public final class MPayment extends X_C_Payment
 		final CurrencyConversionResult currencyConversionResult = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId());
 		return currencyConversionResult.getAmountAsMoney().min(invoiceOpenAmt);
 	}
-	
+
 	@NonNull
 	private Money getPayAmtAsMoney()
 	{

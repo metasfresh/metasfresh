@@ -171,6 +171,8 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -221,6 +223,8 @@ public class DocumentEntityDescriptor
 		queryIfNoFilters = builder.queryIfNoFilters;
 
 		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -499,6 +503,8 @@ public class DocumentEntityDescriptor
 		private int viewPageLength;
 
 		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -1188,6 +1194,12 @@ public class DocumentEntityDescriptor
 		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
 		{
 			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 	}

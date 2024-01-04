@@ -291,7 +291,7 @@ public class PickingJobService
 		{
 			case PICK:
 			{
-				return PickingJobPickCommand.builder()
+				PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
@@ -308,6 +308,7 @@ public class PickingJobService
 						.catchWeightBD(event.getCatchWeight())
 						//
 						.build().execute();
+				return getById(pickingJob.getId());
 			}
 			case UNPICK:
 			{

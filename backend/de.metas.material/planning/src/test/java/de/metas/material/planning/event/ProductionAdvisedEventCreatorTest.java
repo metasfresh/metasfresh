@@ -10,6 +10,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
@@ -20,7 +21,6 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,7 +32,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
@@ -64,7 +64,6 @@ public class ProductionAdvisedEventCreatorTest
 	PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	private I_M_Product product;
-	private I_PP_Product_Planning ppProductPlanning;
 	private IOrgDAO orgDAO;
 
 	@BeforeEach
@@ -79,9 +78,6 @@ public class ProductionAdvisedEventCreatorTest
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
-		ppProductPlanning = newInstance(I_PP_Product_Planning.class);
-		saveRecord(ppProductPlanning);
-
 		ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 		ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
 
@@ -92,14 +88,10 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLotInfo()
 	{
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 
-		ppProductPlanning.setIsLotForLot(false);
-		saveRecord(ppProductPlanning);
-
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(false).build());
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -121,12 +113,9 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Applied()
 	{
-		ppProductPlanning.setIsLotForLot(true);
-		saveRecord(ppProductPlanning);
-
 		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ppProductPlanning);
+				.thenReturn(ProductPlanning.builder().isLotForLot(true).build());
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -155,14 +144,14 @@ public class ProductionAdvisedEventCreatorTest
 	{
 		return PPOrderCandidate.builder()
 				.ppOrderData(PPOrderData.builder()
-									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
-									 .plantId(ResourceId.ofRepoId(1))
-									 .warehouseId(WarehouseId.ofRepoId(1))
-									 .productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
-									 .datePromised(Instant.now())
-									 .dateStartSchedule(Instant.now())
-									 .qtyRequired(new BigDecimal("100"))
-									 .build())
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
+						.plantId(ResourceId.ofRepoId(1))
+						.warehouseId(WarehouseId.ofRepoId(1))
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
+						.datePromised(Instant.now())
+						.dateStartSchedule(Instant.now())
+						.qtyRequired(new BigDecimal("100"))
+						.build())
 				.build();
 	}
 }

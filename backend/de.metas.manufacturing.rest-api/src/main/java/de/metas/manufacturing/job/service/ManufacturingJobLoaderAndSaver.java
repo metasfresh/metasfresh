@@ -29,7 +29,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -106,9 +105,8 @@ public class ManufacturingJobLoaderAndSaver
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
 	}
 
-	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final List<PPOrderIssueSchedule> schedules)
 	{
-		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}

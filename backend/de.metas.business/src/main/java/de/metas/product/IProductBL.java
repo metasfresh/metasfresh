@@ -211,4 +211,7 @@ public interface IProductBL extends ISingletonService
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

@@ -165,17 +165,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_OrderLine(orderLine);
 
-		final int productRecordId = orderLine.getM_Product_ID();
-		icRecord.setM_Product_ID(productRecordId);
-
-		final boolean isFreightCostProduct = productBL
-				.getProductType(ProductId.ofRepoId(productRecordId))
-				.isFreightCost();
-
-		icRecord.setIsFreightCost(isFreightCostProduct);
-		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
-		icRecord.setC_Charge_ID(orderLine.getC_Charge_ID());
-
 		setOrderedData(icRecord, orderLine);
 
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
@@ -253,8 +242,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setEMail(order.getEMail());
 		}
 
-		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
-
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
@@ -331,6 +318,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		// Product related data
+		{
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			ic.setM_Product_ID(productId.getRepoId());
+			ic.setIsFreightCost(productBL.getProductType(productId).isFreightCost());
+			ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
+			ic.setC_Charge_ID(orderLine.getC_Charge_ID());
+		}
+
 		// prefer priceUOM, if given
 		if (orderLine.getPrice_UOM_ID() > 0)
 		{

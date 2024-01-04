@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
@@ -587,7 +588,7 @@ public final class Msg
 		return outStr.toString();
 	}   // parseTranslation
 
-	@lombok.Value
+	@Value
 	private static class Element
 	{
 		public static String DEFAULT_LANG = "";

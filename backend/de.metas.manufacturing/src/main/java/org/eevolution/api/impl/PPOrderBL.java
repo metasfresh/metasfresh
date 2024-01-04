@@ -27,6 +27,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -58,6 +60,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -72,6 +75,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -113,6 +117,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -477,13 +484,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(orderRecord)
-						.orderActivity(activity)
-						.movementDate(reportDate)
-						.qtyMoved(qtyToProcess)
-						.durationSetup(setupTimeRemaining)
-						.duration(durationRemaining.getDuration())
-						.build());
+																	.order(orderRecord)
+																	.orderActivity(activity)
+																	.movementDate(reportDate)
+																	.qtyMoved(qtyToProcess)
+																	.durationSetup(setupTimeRemaining)
+																	.duration(durationRemaining.getDuration())
+																	.build());
 			}
 		}
 	}
@@ -627,7 +634,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		final ImmutableList<I_PP_OrderCandidate_PP_Order> orderAllocations = ppOrderDAO.getPPOrderAllocations(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
 		String lotForLot = "";
-		if(orderAllocations.size() == 1)
+		if (orderAllocations.size() == 1)
 		{
 			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(orderAllocations.get(0).getPP_Order_Candidate_ID());
 			lotForLot = ppOrderCandidateDAO.getById(ppOrderCandidateId).getIsLotForLot();
@@ -690,5 +697,40 @@ public class PPOrderBL implements IPPOrderBL
 		final I_PP_Order ppOrder = getById(ppOrderId);
 
 		return docTypeBL.isModularManufacturingOrder(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+	}
+	@NonNull
+	public Optional<Quantity> getRoundingToScale(@NonNull final PPOrderId ppOrderId)
+	{
+		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+
+		return Optional.ofNullable(getById(ppOrderId).getCurrentScaleDeviceId())
+				.filter(Check::isNotBlank)
+				.map(DeviceId::ofString)
+				.flatMap(deviceAccessorsHubFactory::getDeviceAccessorById)
+				.map(deviceAccessor -> {
+					final BigDecimal roundingToScale = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+							.filter(Check::isNotBlank)
+							.map(BigDecimal::new)
+							.orElse(null);
+					final UomId roundingToScaleUomId = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
+							.map(Integer::parseInt)
+							.map(UomId::ofRepoId)
+							.orElse(null);
+
+					if (roundingToScale == null || roundingToScaleUomId == null)
+					{
+						return null;
+					}
+
+					return Quantitys.create(roundingToScale, roundingToScaleUomId);
+				});
+	}
+
+	@Override
+	public PPOrderDocBaseType getPPOrderDocBaseType(@NonNull final I_PP_Order ppOrder)
+	{
+		final I_C_DocType docTypeTarget = docTypesRepo.getRecordById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
+		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
 	}
 }

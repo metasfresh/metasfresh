@@ -165,7 +165,8 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
+	private ViewLayout(
+			@NonNull final ViewLayout from,
 					   final WindowId windowId,
 					   final ViewProfileId profileId,
 					   final ImmutableList<DocumentFilterDescriptor> filters,
@@ -721,6 +722,20 @@ public class ViewLayout implements ETagAware
 		{
 			elementBuilders.forEach(this::addElement);
 			return this;
+		}
+
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType, @Nullable final String commaSeparatedFields)
+		{
+			final List<ViewColumnHelper.ClassViewColumnOverrides> columnOverrides = ViewColumnHelper.ClassViewColumnOverrides.parseCommaSeparatedString(commaSeparatedFields);
+			if (!columnOverrides.isEmpty())
+			{
+				final ViewColumnHelper.ClassViewColumnOverrides[] columnOverridesArray = columnOverrides.toArray(new ViewColumnHelper.ClassViewColumnOverrides[0]);
+				return addElementsFromViewRowClassAndFieldNames(viewRowClass, viewType, columnOverridesArray);
+			}
+			else
+			{
+				return addElementsFromViewRowClass(viewRowClass, viewType);
+			}
 		}
 
 		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)

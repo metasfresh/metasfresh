@@ -3,6 +3,8 @@ package de.metas.handlingunits.qrcodes.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -12,8 +14,10 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.process.AdProcessId;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -21,7 +25,9 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -136,12 +142,28 @@ public class HUQRCodesService
 
 	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
 	{
-		globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId));
+		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId));
 	}
 
-	public void print(@NonNull final List<HUQRCode> qrCodes) {globalQRCodeService.print(createPDF(qrCodes));}
+	public void print(@NonNull final List<HUQRCode> qrCodes)
+	{
+		print(qrCodes, PrintCopies.ONE);
+	}
 
-	public void print(@NonNull final QRCodePDFResource pdf) {globalQRCodeService.print(pdf);}
+	public void print(@NonNull final List<HUQRCode> qrCodes, @NonNull PrintCopies copies)
+	{
+		print(createPDF(qrCodes), copies);
+	}
+
+	public void print(@NonNull final QRCodePDFResource pdf)
+	{
+		print(pdf, PrintCopies.ONE);
+	}
+
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
+	{
+		globalQRCodeService.print(pdf, copies);
+	}
 
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
@@ -215,5 +237,13 @@ public class HUQRCodesService
 		{
 			throw new AdempiereException("QR code is not handled: " + globalQRCode);
 		}
+	}
+
+	@NonNull
+	public Map<HUQRCodeUniqueId, HuId> getHuIds(@NonNull final Collection<HUQRCode> huQrCodes)
+	{
+		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getHuId));
 	}
 }
