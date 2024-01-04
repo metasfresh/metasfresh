@@ -97,12 +97,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
 	{
-		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
-		if (poInfo == null)
-		{
-			throw new AdempiereException("No POInfo found for " + tableName);
-		}
-		return poInfo;
+		return getPOInfoMap().getByTableName(tableName);
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -469,7 +464,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
 		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 		final boolean isIdentifier = StringUtils.toBoolean(rs.getString("columnIsIdentifier"));
 		final ColumnCloningStrategy cloningStrategy = ColumnCloningStrategy.ofCode(rs.getString("columnCloningStrategy"));
@@ -494,7 +488,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn,
 				adSequenceID,
 				cloningStrategy,
 				isIdentifier);
@@ -1395,26 +1388,14 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return Optional.ofNullable(singleColumnName);
 	}
 
-	public boolean isRestAPICustomColumn(final int index)
-	{
-		if (index < 0 || index >= m_columns.size())
-		{
-			return false;
-		}
-		return m_columns.get(index).IsRestAPICustomColumn;
-	}
-
-	public boolean isRestAPICustomColumn(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return isRestAPICustomColumn(columnIndex);
-	}
-
 	public boolean isParentLinkColumn(final String columnName)
 	{
 		final POInfoColumn column = getColumn(columnName);
 		return column != null && column.isParent();
 	}
+
+	@NonNull
+	public ImmutableList<POInfoColumn> getColumns() {return m_columns;}
 
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
@@ -1469,6 +1450,19 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
 
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
 		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
 	}
 }   // POInfo

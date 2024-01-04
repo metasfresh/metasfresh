@@ -69,6 +69,11 @@ public class TableIdsCache
 
 	private final JUnitGeneratedTableInfoMap junitGeneratedTableInfoMap = new JUnitGeneratedTableInfoMap();
 
+	public AdTableId getTableIdNotNull(@NonNull final String tableName)
+	{
+		return getTableId(tableName).orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
+	}
+
 	public Optional<AdTableId> getTableId(@NonNull final String tableName)
 	{
 		if (Adempiere.isUnitTestMode())
