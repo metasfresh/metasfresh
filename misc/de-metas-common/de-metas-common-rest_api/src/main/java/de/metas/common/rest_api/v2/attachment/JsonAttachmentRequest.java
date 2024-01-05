@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -42,6 +43,7 @@ public class JsonAttachmentRequest
 	@JsonProperty("orgCode")
 	String orgCode;
 
+	@Schema(description = "Optional list of external references to metasfresh records with which the attachment is associated.")
 	@NonNull
 	@JsonProperty("targets")
 	List<JsonExternalReferenceTarget> targets;
@@ -50,6 +52,7 @@ public class JsonAttachmentRequest
 	@JsonProperty("attachment")
 	JsonAttachment attachment;
 
+	@Schema(description = "Optional list of Tablename/RecordId pairs of metasfresh records with which the attachment is associated.")
 	@NonNull
 	@JsonProperty("references")
 	List<JsonTableRecordReference> references;
@@ -69,7 +72,7 @@ public class JsonAttachmentRequest
 		this.orgCode = orgCode;
 		this.attachment = attachment;
 
-		this.targets = CoalesceUtil.coalesce(targets, ImmutableList.of());
-		this.references = CoalesceUtil.coalesce(references, ImmutableList.of());
+		this.targets = CoalesceUtil.coalesceNotNull(targets, ImmutableList.of());
+		this.references = CoalesceUtil.coalesceNotNull(references, ImmutableList.of());
 	}
 }

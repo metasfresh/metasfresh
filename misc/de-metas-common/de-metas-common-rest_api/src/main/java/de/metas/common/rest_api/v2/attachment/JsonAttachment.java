@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.attachment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,6 +41,7 @@ public class JsonAttachment
 	@JsonProperty("fileName")
 	String fileName;
 
+	@Schema(description = "If type=`Data`, then this field contains the attachment's base64 encoded binary data.")
 	@NonNull
 	@JsonProperty("data")
 	String data;
