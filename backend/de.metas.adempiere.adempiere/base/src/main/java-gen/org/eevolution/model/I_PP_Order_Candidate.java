@@ -77,28 +77,6 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -122,6 +100,28 @@ public interface I_PP_Order_Candidate
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date Promised.
@@ -214,6 +214,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
+	 * Set Maturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMaturing (boolean IsMaturing);
+
+	/**
+	 * Get Maturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMaturing();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsMaturing = new ModelColumn<>(I_PP_Order_Candidate.class, "IsMaturing", null);
+	String COLUMNNAME_IsMaturing = "IsMaturing";
+
+	/**
 	 * Set Simulated.
 	 *
 	 * <br>Type: YesNo
@@ -233,6 +254,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_PP_Order_Candidate.class, "IsSimulated", null);
 	String COLUMNNAME_IsSimulated = "IsSimulated";
+
+	/**
+	 * Set Issue HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssue_HU_ID (int Issue_HU_ID);
+
+	/**
+	 * Get Issue HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssue_HU_ID();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_Issue_HU_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "Issue_HU_ID", null);
+	String COLUMNNAME_Issue_HU_ID = "Issue_HU_ID";
 
 	/**
 	 * Set Attributes.
@@ -281,6 +323,56 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_HU_PI_Item_Product_ID", null);
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_ID (int M_Maturing_Configuration_ID);
+
+	/**
+	 * Get Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration();
+
+	void setM_Maturing_Configuration(@Nullable org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration);
+
+	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_M_Maturing_Configuration> COLUMN_M_Maturing_Configuration_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_Maturing_Configuration_ID", org.compiere.model.I_M_Maturing_Configuration.class);
+	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
+
+	/**
+	 * Set Maturing Configuration Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
+
+	/**
+	 * Get Maturing Configuration Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_Line_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line();
+
+	void setM_Maturing_Configuration_Line(@Nullable org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line);
+
+	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_M_Maturing_Configuration_Line> COLUMN_M_Maturing_Configuration_Line_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_Maturing_Configuration_Line_ID", org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	String COLUMNNAME_M_Maturing_Configuration_Line_ID = "M_Maturing_Configuration_Line_ID";
 
 	/**
 	 * Set Product.
@@ -346,6 +438,33 @@ public interface I_PP_Order_Candidate
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Number of Resources to Process.
+	 * Required number of resources to process the the open qty
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setNumberOfResources_ToProcess (int NumberOfResources_ToProcess);
+
+	/**
+	 * Get Number of Resources to Process.
+	 * Required number of resources to process the the open qty
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getNumberOfResources_ToProcess();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_NumberOfResources_ToProcess = new ModelColumn<>(I_PP_Order_Candidate.class, "NumberOfResources_ToProcess", null);
+	String COLUMNNAME_NumberOfResources_ToProcess = "NumberOfResources_ToProcess";
 
 	/**
 	 * Set Manufacturing candidate.
@@ -415,7 +534,6 @@ public interface I_PP_Order_Candidate
 	 */
 	int getPP_Product_Planning_ID();
 
-	ModelColumn<I_PP_Order_Candidate, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**

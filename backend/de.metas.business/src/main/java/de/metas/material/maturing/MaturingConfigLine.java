@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.material.planning;
+package de.metas.material.maturing;
 
-import de.metas.material.maturing.MaturingConfigId;
-import de.metas.material.maturing.MaturingConfigLineId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
@@ -45,52 +44,16 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)
-public class ProductPlanning
+public class MaturingConfigLine
 {
-	boolean disallowSaving;
-	@Nullable ProductPlanningId id;
-	@Nullable ProductPlanningSchemaId productPlanningSchemaId;
+	@NonNull
+	MaturingConfigLineId id;
+	@NonNull
+	MaturingConfigId maturingConfigId;
 
-	//
-	// Selector
-	@Nullable ProductId productId;
-	@Nullable WarehouseId warehouseId;
+	@NonNull ProductId fromProductId;
+	@NonNull ProductId maturedProductId;
 	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
-	@Nullable ResourceId plantId;
-	boolean isAttributeDependant;
-	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
-	@Nullable String storageAttributesKey;
-	int seqNo;
-
-	//
-	// Common
-	@Nullable UserId plannerId;
-	boolean isCreatePlan;
-	int transferTimeDays;
-	int leadTimeDays;
-	boolean isDocComplete;
-
-	//
-	// Manufacturing
-	boolean isManufactured;
-	boolean isMatured;
-	@Nullable ProductBOMVersionsId bomVersionsId;
-	@Nullable PPRoutingId workflowId;
-	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
-	@Nullable MaturingConfigId maturingConfigId;
-	@Nullable MaturingConfigLineId maturingConfigLineId;
-	// Picking
-	boolean isPickingOrder;
-	boolean isPickDirectlyIfFeasible;
-
-	//
-	// Purchasing
-	boolean isPurchased;
-	@Nullable OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse;
-
-	//
-	// Distribution
-	@Nullable DistributionNetworkId distributionNetworkId;
-
-	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
+	@NonNull @Builder.Default Integer maturityAge = Integer.valueOf(0);
+	public MaturingConfigLineId getIdNotNull() {return Check.assumeNotNull(id, "Maturing Config Line is saved: {}", this);}
 }
