@@ -6,57 +6,12 @@ import { connect } from 'react-redux';
 import keymap from '../../shortcuts/keymap';
 import { TableFilterContextShortcuts } from '../keyshortcuts';
 import { openModal } from '../../actions/WindowActions';
-import { fetchTopActions, deleteTopActions } from '../../actions/Actions';
+import { deleteTopActions, fetchTopActions } from '../../actions/Actions';
 import { addNotification } from '../../actions/AppActions';
 
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
-
-class ActionButton extends PureComponent {
-  static propTypes = {
-    action: PropTypes.object.isRequired,
-    openModal: PropTypes.func.isRequired,
-    docId: PropTypes.string,
-    tabIndex: PropTypes.number,
-    children: PropTypes.any,
-    showTooltip: PropTypes.func,
-    hideTooltip: PropTypes.func,
-  };
-
-  handleClick = () => {
-    const { openModal, action, docId } = this.props;
-
-    if (action.disabled) {
-      return;
-    }
-
-    openModal({
-      title: action.caption,
-      windowId: action.processId,
-      modalType: 'process',
-      isAdvanced: false,
-      viewDocumentIds: [docId],
-    });
-  };
-
-  render() {
-    const { action, tabIndex, children, showTooltip, hideTooltip } = this.props;
-
-    return (
-      <button
-        onClick={this.handleClick}
-        className="btn btn-meta-outline-secondary btn-distance btn-sm"
-        tabIndex={tabIndex}
-        title={action.description}
-        onMouseEnter={showTooltip}
-        onMouseLeave={hideTooltip}
-      >
-        {action.caption}
-        {children}
-      </button>
-    );
-  }
-}
+import { getSelection, getTableId } from '../../reducers/tables';
 
 class TableFilter extends PureComponent {
   static propTypes = {
@@ -68,6 +23,7 @@ class TableFilter extends PureComponent {
     tabId: PropTypes.string,
     docType: PropTypes.string,
     docId: PropTypes.string,
+    selectedRowIds: PropTypes.array,
     openModal: PropTypes.func.isRequired,
     toggleFullScreen: PropTypes.func,
     fullScreen: PropTypes.any,
@@ -83,7 +39,6 @@ class TableFilter extends PureComponent {
   };
 
   actionButtons = null;
-  shortcutElements = null;
 
   constructor(props) {
     super(props);
@@ -155,7 +110,7 @@ class TableFilter extends PureComponent {
   };
 
   handleClick = (action) => {
-    const { openModal, docId } = this.props;
+    const { openModal, selectedRowIds } = this.props;
 
     if (action.disabled) {
       return;
@@ -165,7 +120,7 @@ class TableFilter extends PureComponent {
       title: action.caption,
       windowId: action.processId,
       modalType: 'process',
-      viewDocumentIds: [docId],
+      viewDocumentIds: selectedRowIds,
     });
   };
 
@@ -175,7 +130,7 @@ class TableFilter extends PureComponent {
    * this on each render
    */
   generateActionButtons = (actions) => {
-    const { openModal, tabIndex, docId, tabId, docType, pending } = this.props;
+    const { tabIndex, docId, tabId, docType, pending } = this.props;
     const { isTooltipShow } = this.state;
 
     if (actions && !actions.length) {
@@ -185,7 +140,6 @@ class TableFilter extends PureComponent {
     this.actionButtons = actions.map((action) => (
       <ActionButton
         {...{
-          openModal,
           tabIndex,
           action,
           docId,
@@ -193,6 +147,7 @@ class TableFilter extends PureComponent {
           docType,
           pending,
         }}
+        onClick={() => this.handleClick(action)}
         showTooltip={() => this.showTooltip(action.processId)}
         hideTooltip={this.hideTooltip}
         key={`top-action-${action.processId}`}
@@ -327,11 +282,11 @@ class TableFilter extends PureComponent {
             (isBatchEntry || fullScreen) &&
             allowCreateNew && (
               <TableQuickInput
-                closeBatchEntry={handleBatchEntryToggle}
                 docType={docType}
                 docId={docId}
                 tabId={tabId}
                 forceHeight={wrapperHeight ? wrapperHeight : null}
+                closeBatchEntry={handleBatchEntryToggle}
                 addNotification={addNotification}
               />
             )}
@@ -369,9 +324,48 @@ class TableFilter extends PureComponent {
   }
 }
 
-const mapStateToProps = ({ windowHandler }) => ({
-  modalVisible: windowHandler.modal.visible,
-});
+const ActionButton = ({
+  action,
+  tabIndex,
+  children,
+  onClick,
+  showTooltip,
+  hideTooltip,
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      className="btn btn-meta-outline-secondary btn-distance btn-sm"
+      tabIndex={tabIndex}
+      title={action.description}
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+    >
+      {action.caption}
+      {children}
+    </button>
+  );
+};
+ActionButton.propTypes = {
+  action: PropTypes.object.isRequired,
+  docId: PropTypes.string,
+  tabIndex: PropTypes.number,
+  children: PropTypes.any,
+  onClick: PropTypes.func.isRequired,
+  showTooltip: PropTypes.func,
+  hideTooltip: PropTypes.func,
+};
+
+const mapStateToProps = (state, props) => {
+  const { docType: windowId, docId, tabId } = props;
+
+  const tableId = getTableId({ windowId, docId, tabId });
+
+  return {
+    modalVisible: state.windowHandler.modal.visible,
+    selectedRowIds: getSelection()(state, tableId),
+  };
+};
 
 export default connect(mapStateToProps, {
   fetchTopActions,
