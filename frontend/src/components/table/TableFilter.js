@@ -13,6 +13,9 @@ import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
 import { getSelection, getTableId } from '../../reducers/tables';
 
+/**
+ * Component displayed above included tab header and contains buttons like 'Add new', 'Batch entry', top actions etc.
+ */
 class TableFilter extends PureComponent {
   static propTypes = {
     tabIndex: PropTypes.number.isRequired,
@@ -38,19 +41,18 @@ class TableFilter extends PureComponent {
     pending: PropTypes.bool,
   };
 
-  actionButtons = null;
-
   constructor(props) {
     super(props);
 
     this.state = {
+      topActions: [],
       isTooltipShow: false,
       shortcutActions: [],
     };
   }
 
   componentDidMount() {
-    this.getActions();
+    this.loadTopActions();
     this.openCloseBatchEntryIfNeeded();
   }
 
@@ -95,21 +97,21 @@ class TableFilter extends PureComponent {
   };
 
   /**
-   * @method getActions
-   * @summary fetch quickactions for the table
+   * @method loadTopActions
+   * @summary fetch top actions for the table
    */
-  getActions = () => {
+  loadTopActions = () => {
     const { tabId, docType, docId, fetchTopActions } = this.props;
 
     if (tabId && docType && docId) {
-      fetchTopActions(docType, docId, tabId).then((actions) => {
-        this.generateActionButtons(actions);
-        this.generateShortcuts(actions);
+      fetchTopActions(docType, docId, tabId).then((topActions) => {
+        this.setState({ topActions });
+        this.generateShortcuts(topActions);
       });
     }
   };
 
-  handleClick = (action) => {
+  handleTopActionClick = (action) => {
     const { openModal, selectedRowIds } = this.props;
 
     if (action.disabled) {
@@ -125,32 +127,25 @@ class TableFilter extends PureComponent {
   };
 
   /**
-   * @method generateActionButtons
-   * @summary create and store buttons for actions once, so that we won't redo
-   * this on each render
+   * @summary create and store buttons for actions once, so that we won't redo this on each render
    */
-  generateActionButtons = (actions) => {
-    const { tabIndex, docId, tabId, docType, pending } = this.props;
-    const { isTooltipShow } = this.state;
+  renderTopActionButtons = () => {
+    const { tabIndex } = this.props;
+    const { topActions, isTooltipShow } = this.state;
 
-    if (actions && !actions.length) {
-      this.actionButtons = null;
+    if (!topActions || !topActions.length) {
+      return null;
     }
 
-    this.actionButtons = actions.map((action) => (
+    return topActions.map((action) => (
       <ActionButton
-        {...{
-          tabIndex,
-          action,
-          docId,
-          tabId,
-          docType,
-          pending,
-        }}
-        onClick={() => this.handleClick(action)}
+        key={`top-action-${action.processId}`}
+        tabIndex={tabIndex}
+        caption={action.caption}
+        description={action.description}
+        onClick={() => this.handleTopActionClick(action)}
         showTooltip={() => this.showTooltip(action.processId)}
         hideTooltip={this.hideTooltip}
-        key={`top-action-${action.processId}`}
       >
         {isTooltipShow === action.processId && (
           <Tooltips
@@ -176,26 +171,20 @@ class TableFilter extends PureComponent {
 
       shortcutActions.push({
         name: `FILTER_ACTION_${i}`,
-        handler: () => this.handleClick(action),
+        handler: () => this.handleTopActionClick(action),
         shortcut: action.shortcut ? action.shortcut.replace('-', '+') : '',
       });
     }
 
-    this.setState({
-      shortcutActions,
-    });
+    this.setState({ shortcutActions });
   };
 
   showTooltip = (name) => {
-    this.setState({
-      isTooltipShow: name,
-    });
+    this.setState({ isTooltipShow: name });
   };
 
   hideTooltip = () => {
-    this.setState({
-      isTooltipShow: null,
-    });
+    this.setState({ isTooltipShow: null });
   };
 
   render() {
@@ -270,7 +259,7 @@ class TableFilter extends PureComponent {
                 )}
               </button>
             )}
-            {!isBatchEntry && this.actionButtons}
+            {!isBatchEntry && this.renderTopActionButtons()}
             {!isBatchEntry &&
               (shortcutActions.length ? (
                 <TableFilterContextShortcuts
@@ -325,7 +314,8 @@ class TableFilter extends PureComponent {
 }
 
 const ActionButton = ({
-  action,
+  caption,
+  description,
   tabIndex,
   children,
   onClick,
@@ -337,17 +327,18 @@ const ActionButton = ({
       onClick={onClick}
       className="btn btn-meta-outline-secondary btn-distance btn-sm"
       tabIndex={tabIndex}
-      title={action.description}
+      title={description}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
     >
-      {action.caption}
+      {caption}
       {children}
     </button>
   );
 };
 ActionButton.propTypes = {
-  action: PropTypes.object.isRequired,
+  caption: PropTypes.string.isRequired,
+  description: PropTypes.string,
   docId: PropTypes.string,
   tabIndex: PropTypes.number,
   children: PropTypes.any,
