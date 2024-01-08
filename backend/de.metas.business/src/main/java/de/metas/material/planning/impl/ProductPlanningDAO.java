@@ -26,6 +26,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -111,6 +113,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.isCreatePlan(record.isCreatePlan())
 				.bomVersionsId(ProductBOMVersionsId.ofRepoIdOrNull(record.getPP_Product_BOMVersions_ID()))
 				.isPickingOrder(record.isPickingOrder())
+				.isMatured(record.isMatured())
+				.maturingConfigId(MaturingConfigId.ofRepoIdOrNull(record.getM_Maturing_Configuration_ID()))
+				.maturingConfigLineId(MaturingConfigLineId.ofRepoIdOrNull(record.getM_Maturing_Configuration_Line_ID()))
 				.isPickDirectlyIfFeasible(record.isPickDirectlyIfFeasible())
 				.isDocComplete(record.isDocComplete())
 				.seqNo(record.getSeqNo())
@@ -150,6 +155,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setMaxManufacturedQtyPerOrderDispo_UOM_ID(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().getUomId().getRepoId() : -1);
 		record.setDD_NetworkDistribution_ID(DistributionNetworkId.toRepoId(from.getDistributionNetworkId()));
 		record.setOnMaterialReceiptWithDestWarehouse(from.getOnMaterialReceiptWithDestWarehouse() != null ? from.getOnMaterialReceiptWithDestWarehouse().getCode() : null);
+		record.setIsMatured(from.isMatured());
+		record.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(from.getMaturingConfigId()));
+		record.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(from.getMaturingConfigLineId()));
 	}
 
 	@Nullable

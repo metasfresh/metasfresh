@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 329777100L;
+	private static final long serialVersionUID = -62557261L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -114,6 +114,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setIsMaturing (final boolean IsMaturing)
+	{
+		set_Value (COLUMNNAME_IsMaturing, IsMaturing);
+	}
+
+	@Override
+	public boolean isMaturing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMaturing);
+	}
+
+	@Override
 	public void setIsSimulated (final boolean IsSimulated)
 	{
 		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
@@ -123,6 +135,21 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public boolean isSimulated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
+	}
+
+	@Override
+	public void setIssue_HU_ID (final int Issue_HU_ID)
+	{
+		if (Issue_HU_ID < 1) 
+			set_Value (COLUMNNAME_Issue_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Issue_HU_ID, Issue_HU_ID);
+	}
+
+	@Override
+	public int getIssue_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Issue_HU_ID);
 	}
 
 	@Override
@@ -168,6 +195,60 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration(final org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class, M_Maturing_Configuration);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
+	{
+		if (M_Maturing_Configuration_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line(final org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class, M_Maturing_Configuration_Line);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
+	{
+		if (M_Maturing_Configuration_Line_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_Line_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -210,6 +291,17 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public void setNumberOfResources_ToProcess (final int NumberOfResources_ToProcess)
+	{
+		throw new IllegalArgumentException ("NumberOfResources_ToProcess is virtual column");	}
+
+	@Override
+	public int getNumberOfResources_ToProcess() 
+	{
+		return get_ValueAsInt(COLUMNNAME_NumberOfResources_ToProcess);
 	}
 
 	@Override
@@ -327,7 +419,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
