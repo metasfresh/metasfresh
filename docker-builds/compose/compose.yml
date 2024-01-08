@@ -51,6 +51,12 @@ services:
       - "8789:8789"
     volumes:
       - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
       - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
@@ -75,6 +81,12 @@ services:
       - "8788:8788"
     volumes:
       - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8282/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
       - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788"
@@ -104,7 +116,8 @@ services:
       - CAMEL_COMPONENT_RABBITMQ_USERNAME=metasfresh
       - CAMEL_COMPONENT_RABBITMQ_PASSWORD=metasfresh
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 1
@@ -117,8 +130,10 @@ services:
     volumes:
       - ./web-config.js:/usr/share/nginx/html/config.js:ro
     depends_on:
-      - webapi
-      - app
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 1
@@ -130,8 +145,10 @@ services:
     volumes:
       - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
     depends_on:
-      - webapi
-      - app
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 1

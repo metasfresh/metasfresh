@@ -602,6 +602,28 @@ jobs:
           name: cucumber-logs
           path: cucumber.log
 
+  health_check:
+    name: health check
+    runs-on: ubuntu-latest
+    needs: [ init, backend, frontend ]
+    defaults:
+      run:
+        working-directory: docker-builds/
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: run-health-checks
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          docker-compose up -d
+          ./health/healthChecks.sh
+          docker-compose ps -a  
+          docker-compose down
+
   redeploy:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
