@@ -191,18 +191,16 @@ const TableFilter = ({
               <TableFilterContextShortcuts shortcutActions={shortcutActions} />
             ) : null)}
         </div>
-        {quickInputSupport &&
-          (isBatchEntryActive || fullScreen) &&
-          allowCreateNew && (
-            <TableQuickInput
-              docType={windowId}
-              docId={docId}
-              tabId={tabId}
-              forceHeight={wrapperHeight ? wrapperHeight : null}
-              closeBatchEntry={handleBatchEntryToggle}
-              addNotification={(...args) => dispatch(addNotification(...args))}
-            />
-          )}
+        {quickInputSupport && isBatchEntryActive && allowCreateNew && (
+          <TableQuickInput
+            docType={windowId}
+            docId={docId}
+            tabId={tabId}
+            forceHeight={wrapperHeight ? wrapperHeight : null}
+            closeBatchEntry={handleBatchEntryToggle}
+            addNotification={(...args) => dispatch(addNotification(...args))}
+          />
+        )}
       </div>
 
       {
