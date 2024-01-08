@@ -98,30 +98,29 @@ const TableFilter = ({
    * @summary create and store buttons for actions once, so that we won't redo this on each render
    */
   const renderTopActionButtons = () => {
-    if (!topActions || !topActions.length) {
-      return null;
-    }
-
-    return topActions.map((action) => (
-      <ActionButton
-        key={`top-action-${action.processId}`}
-        tabIndex={tabIndex}
-        caption={action.caption}
-        description={action.description}
-        onClick={() => handleTopActionClick(action)}
-        showTooltip={() => showTooltip(action.processId)}
-        hideTooltip={hideTooltip}
-        disabled={pending}
-      >
-        {isTooltipShow === action.processId && (
-          <Tooltips
-            name={action.shortcut ? action.shortcut.replace('-', '+') : ''}
-            action={action.caption}
-            type={''}
-          />
-        )}
-      </ActionButton>
-    ));
+    return (
+      topActions &&
+      topActions.map((action) => (
+        <ActionButton
+          key={`top-action-${action.processId}`}
+          tabIndex={tabIndex}
+          caption={action.caption}
+          description={action.description}
+          onClick={() => handleTopActionClick(action)}
+          showTooltip={() => showTooltip(action.processId)}
+          hideTooltip={hideTooltip}
+          disabled={pending}
+        >
+          {isTooltipShow === action.processId && (
+            <Tooltips
+              name={action.shortcut ? action.shortcut.replace('-', '+') : ''}
+              action={action.caption}
+              type={''}
+            />
+          )}
+        </ActionButton>
+      ))
+    );
   };
 
   const showTooltip = (name) => {
