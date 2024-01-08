@@ -620,8 +620,9 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
           docker-compose -f ./compose/compose.yml up -d
+          chmod +x ./health/healthChecks.sh
           ./health/healthChecks.sh
-          docker-compose ps -a
+          docker-compose -f ./compose/compose.yml ps -a
           docker-compose -f ./compose/compose.yml down
 
   redeploy:
