@@ -300,6 +300,7 @@ public class MainRowWithSubRows
 				.lookups(rowLookups)
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())
+				.warehouseId(mainRow.getWarehouseId())
 				.qtyMaterialentnahmeAtDate(mainRow.getQtyMaterialentnahmeAtDate())
 				.qtyDemandPPOrderAtDate(mainRow.getQtyDemandPPOrderAtDate())
 				.qtyStockCurrentAtDate(mainRow.getQtyStockCurrentAtDate())

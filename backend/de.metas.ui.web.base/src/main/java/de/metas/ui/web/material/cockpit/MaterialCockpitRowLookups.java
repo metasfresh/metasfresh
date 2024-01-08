@@ -10,9 +10,11 @@ import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ public class MaterialCockpitRowLookups
 	@NonNull private final LookupDataSource uomLookup;
 	@NonNull private final LookupDataSource bpartnerLookup;
 	@NonNull private final LookupDataSource productLookup;
+	@NonNull private final LookupDataSource warehouseLookup;
 
 	@Autowired
 	public MaterialCockpitRowLookups(final @NonNull LookupDataSourceFactory lookupFactory)
@@ -31,6 +34,7 @@ public class MaterialCockpitRowLookups
 		this.uomLookup = lookupFactory.searchInTableLookup(I_C_UOM.Table_Name);
 		this.bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		this.productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
+		this.warehouseLookup = lookupFactory.searchInTableLookup(I_M_Warehouse.Table_Name);
 	}
 
 	@VisibleForTesting
@@ -38,11 +42,13 @@ public class MaterialCockpitRowLookups
 	private MaterialCockpitRowLookups(
 			@NonNull final LookupDataSource uomLookup,
 			@NonNull final LookupDataSource bpartnerLookup,
-			@NonNull final LookupDataSource productLookup)
+			@NonNull final LookupDataSource productLookup,
+			@NonNull final LookupDataSource warehouseLookup)
 	{
 		this.uomLookup = uomLookup;
 		this.bpartnerLookup = bpartnerLookup;
 		this.productLookup = productLookup;
+		this.warehouseLookup = warehouseLookup;
 	}
 
 	@Nullable
@@ -53,6 +59,9 @@ public class MaterialCockpitRowLookups
 
 	@Nullable
 	public LookupValue lookupProductById(@Nullable final ProductId productId) {return productLookup.findById(productId);}
+
+	@Nullable
+	public LookupValue lookupWarehouseById(@Nullable final WarehouseId warehouseId) {return warehouseLookup.findById(warehouseId);}
 
 	public DocumentZoomIntoInfo getZoomInto(@Nullable final ProductId productId) {return productLookup.getDocumentZoomInto(ProductId.toRepoId(productId));}
 }

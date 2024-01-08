@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import java.util.HashSet;
@@ -99,6 +100,8 @@ public class DimensionGroupSubRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
+	private WarehouseId warehouseId;
+
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
@@ -129,6 +132,7 @@ public class DimensionGroupSubRowBucket
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+		warehouseId = WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
@@ -150,7 +154,7 @@ public class DimensionGroupSubRowBucket
 				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
-
+				.warehouseId(getWarehouseId())
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromisedAtDate(getPmmQtyPromisedAtDate())
 				.qtyMaterialentnahmeAtDate(getQtyMaterialentnahmeAtDate())
