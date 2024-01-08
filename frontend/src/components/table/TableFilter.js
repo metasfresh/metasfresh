@@ -12,6 +12,7 @@ import { addNotification } from '../../actions/AppActions';
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
 import { useSelectedRowIds } from '../../reducers/tables';
+import { useTopActions } from '../../reducers/windowHandler';
 
 /**
  * Component displayed above included tab header and contains buttons like 'Add new', 'Batch entry', top actions etc.
@@ -32,12 +33,12 @@ const TableFilter = ({
   openTableModal,
   pending,
 }) => {
-  const modalVisible = useSelector(
+  const isModalVisible = useSelector(
     (state) => state.windowHandler.modal.visible
   );
   const selectedRowIds = useSelectedRowIds({ windowId, tabId, docId });
+  const topActions = useTopActions();
 
-  const [topActions, setTopActions] = useState([]);
   const [shortcutActions, setShortcutActions] = useState([]);
   const [isTooltipShow, setIsTooltipShow] = useState(null);
 
@@ -45,17 +46,18 @@ const TableFilter = ({
 
   useEffect(() => {
     if (windowId && tabId && docId) {
-      dispatch(fetchTopActions(windowId, docId, tabId)).then((topActions) => {
-        setTopActions(topActions);
-        setShortcutActions(
-          generateShortcutActionsArray(topActions, handleTopActionClick)
-        );
-      });
+      dispatch(fetchTopActions(windowId, docId, tabId));
     }
     return () => {
       dispatch(deleteTopActions());
     };
-  }, []);
+  }, [windowId, tabId, docId]);
+
+  useEffect(() => {
+    setShortcutActions(
+      generateShortcutActionsArray(topActions, handleTopActionClick)
+    );
+  }, [topActions]);
 
   useEffect(() => {
     openCloseBatchEntryIfNeeded();
@@ -131,7 +133,7 @@ const TableFilter = ({
     setIsTooltipShow(null);
   };
 
-  const tabIndex = fullScreen || modalVisible ? -1 : tabIndexProp;
+  const tabIndex = fullScreen || isModalVisible ? -1 : tabIndexProp;
 
   const showNewButton =
     newRecordInputMode === 'ALL_METHODS' && // input mode allows it
@@ -254,13 +256,19 @@ TableFilter.propTypes = {
 const generateShortcutActionsArray = (actions, handleTopActionClick) => {
   const shortcutActions = [];
 
-  for (let i = 0; i < actions.length; i += 1) {
+  for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
+
+    if (!action.shortcut) {
+      continue;
+    }
+
+    const shortcut = action.shortcut.replace('-', '+');
 
     shortcutActions.push({
       name: `FILTER_ACTION_${i}`,
       handler: () => handleTopActionClick(action),
-      shortcut: action.shortcut ? action.shortcut.replace('-', '+') : '',
+      shortcut,
     });
   }
 

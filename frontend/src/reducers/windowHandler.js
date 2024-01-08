@@ -60,6 +60,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
+import { useSelector } from 'react-redux';
 
 const initialMasterState = {
   layout: {
@@ -221,7 +222,7 @@ const selectWidgetData = (data, layout) => {
     }, []);
   }
 
-  if (!widgetData.length) {
+  if (!widgetData || !widgetData.length) {
     widgetData = [{}];
   }
 
@@ -303,6 +304,12 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
     },
   ];
 });
+
+export const useTopActions = () => {
+  return useSelector(
+    (state) => state.windowHandler.master?.topActions?.actions ?? []
+  );
+};
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
