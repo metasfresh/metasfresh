@@ -28,15 +28,19 @@ import lombok.Value;
 
 @Value
 @EqualsAndHashCode
-public final class Age
+public class Age
 {
-	private final int ageInMonths;
+	int ageInMonths;
 
-	public static Age ZERO = ofAgeInMonths(0);
+	public static Age ZERO = new Age(0);
 
 	@NonNull
 	public static Age ofAgeInMonths(final int ageInMonths)
 	{
+		if (ageInMonths == ZERO.ageInMonths)
+		{
+			return ZERO;
+		}
 		return new Age(ageInMonths);
 	}
 
@@ -64,6 +68,9 @@ public final class Age
 	{
 		return ageInMonths == 0;
 	}
+
+	@Override
+	public String toString() {return toStringValue();}
 
 	public String toStringValue()
 	{
