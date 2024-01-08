@@ -189,7 +189,7 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 		{
 			try
 			{
-				return ColumnSqlCacheInvalidateRequestFactories.ofDescriptor(descriptor);
+				return ColumnSqlCacheInvalidateRequestFactories.ofDescriptorOrNull(descriptor);
 			}
 			catch (Exception ex)
 			{
