@@ -266,6 +266,7 @@ class SectionGroup extends PureComponent {
               internalName,
             }}
             toggleFullScreen={this.toggleTableFullScreen}
+            fullScreen={fullScreen}
             entity="window"
             key={tabId}
             orderBy={orderBy || defaultOrderBys}
