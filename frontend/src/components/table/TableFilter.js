@@ -37,7 +37,7 @@ const TableFilter = ({
     (state) => state.windowHandler.modal.visible
   );
   const selectedRowIds = useSelectedRowIds({ windowId, tabId, docId });
-  const topActions = useTopActions();
+  const topActions = useTopActions({ tabId });
 
   const [shortcutActions, setShortcutActions] = useState([]);
   const [isTooltipShow, setIsTooltipShow] = useState(null);
@@ -46,10 +46,10 @@ const TableFilter = ({
 
   useEffect(() => {
     if (windowId && tabId && docId) {
-      dispatch(fetchTopActions(windowId, docId, tabId));
+      dispatch(fetchTopActions({ windowId, tabId, docId }));
     }
     return () => {
-      dispatch(deleteTopActions());
+      dispatch(deleteTopActions({ windowId, tabId, docId }));
     };
   }, [windowId, tabId, docId]);
 

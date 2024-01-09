@@ -15,12 +15,12 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_TOP_ACTIONS,
+  TOP_ACTIONS_DELETE,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_SUCCESS,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   OPEN_MODAL,
@@ -73,11 +73,7 @@ const initialMasterState = {
   hasComments: false,
   docId: undefined,
   websocket: null,
-  topActions: {
-    actions: [],
-    fetching: false,
-    error: false,
-  },
+  topActions: {},
 };
 const initialModalState = {
   visible: false,
@@ -305,25 +301,31 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
   ];
 });
 
-export const useTopActions = () => {
-  return useSelector(selectTopActionsArray, shallowEqual);
+export const useTopActions = ({ tabId }) => {
+  return useSelector(
+    (state) => selectTopActionsArray(state, tabId),
+    shallowEqual
+  );
 };
 
-const selectTopActionsArray = (state) => {
-  return state.windowHandler.master?.topActions?.actions ?? [];
+const selectTopActionsArray = (state, tabId) => {
+  return state.windowHandler.master?.topActions?.[tabId]?.actions ?? [];
 };
 
-const mergeTopActions = (state, topActions) => {
-  return {
-    ...state,
-    master: {
-      ...state.master,
-      topActions: {
-        ...state.master.topActions,
-        ...topActions,
-      },
-    },
-  };
+const mergeTopActions = (state, tabId, topActions) => {
+  if (topActions == null) {
+    return update(state, {
+      master: { topActions: { $unset: [tabId] } },
+    });
+  } else if (state.master.topActions[tabId]) {
+    return update(state, {
+      master: { topActions: { [tabId]: { $merge: topActions } } },
+    });
+  } else {
+    return update(state, {
+      master: { topActions: { [tabId]: { $set: topActions } } },
+    });
+  }
 };
 
 export default function windowHandler(state = initialState, action) {
@@ -712,28 +714,26 @@ export default function windowHandler(state = initialState, action) {
       };
 
     // TOP ACTIONS
-    case FETCH_TOP_ACTIONS: {
-      return mergeTopActions(state, { fetching: true });
-    }
-    case FETCH_TOP_ACTIONS_SUCCESS: {
-      return mergeTopActions(state, {
-        actions: action.payload,
-        fetching: false,
-        error: false,
+    case TOP_ACTIONS_LOADING: {
+      return mergeTopActions(state, action.payload.tabId, {
+        fetching: true,
       });
     }
-    case FETCH_TOP_ACTIONS_FAILURE: {
-      return mergeTopActions(state, {
+    case TOP_ACTIONS_SUCCESS: {
+      return mergeTopActions(state, action.payload.tabId, {
+        fetching: false,
+        error: false,
+        actions: action.payload.actions,
+      });
+    }
+    case TOP_ACTIONS_FAILURE: {
+      return mergeTopActions(state, action.payload.tabId, {
         fetching: false,
         error: true,
       });
     }
-    case DELETE_TOP_ACTIONS: {
-      return mergeTopActions(state, {
-        actions: [],
-        fetching: false,
-        error: false,
-      });
+    case TOP_ACTIONS_DELETE: {
+      return mergeTopActions(state, action.payload.tabId, null);
     }
 
     case SET_SPINNER: {

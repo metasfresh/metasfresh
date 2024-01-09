@@ -201,7 +201,7 @@ class MasterWindowContainer extends PureComponent {
       })
       .catch((error) => error);
 
-    fetchTopActions(windowId, docId, activeTabId);
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {

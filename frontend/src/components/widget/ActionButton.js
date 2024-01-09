@@ -239,7 +239,7 @@ class ActionButton extends PureComponent {
     this.statusDropdown.blur();
     if (changePromise instanceof Promise) {
       changePromise.then(() => {
-        fetchTopActions(windowType, docId, activeTab);
+        fetchTopActions({ windowId: windowType, tabId: activeTab, docId });
 
         return this.fetchStatusList();
       });
