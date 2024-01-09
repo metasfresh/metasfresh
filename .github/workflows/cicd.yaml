@@ -606,24 +606,79 @@ jobs:
     name: health check
     runs-on: ubuntu-latest
     needs: [ init, backend, frontend ]
-    defaults:
-      run:
-        working-directory: docker-builds/
     steps:
       - uses: actions/checkout@v3
       - uses: docker/login-action@v2
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: run-health-checks
+      - name: start docker-compose
+        working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          docker-compose -f ./compose/compose.yml up -d
-          chmod +x ./health/healthChecks.sh
-          ./health/healthChecks.sh
-          docker-compose -f ./compose/compose.yml ps -a
-          docker-compose -f ./compose/compose.yml down
+          docker-compose up -d
+      - name: Make the script files executable
+        working-directory: docker-builds/health/
+        run: |
+          chmod +x apiHealthChecks.sh containerHealthCheck.sh
+      - name: db health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh db
+      - name: webapi health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh webapi
+      - name: app health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh app
+      - name: rabbitmq health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh rabbitmq
+      - name: search health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh search
+      - name: external health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh external
+      - name: webui health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh webui
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          containerHealthCheck.sh mobile
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          apiHealthChecks.sh
+      - name: create docker-compose summary
+        working-directory: docker-builds/compose/
+        if: success() || failure()
+        run: |
+          docker-compose ps -a
+      - name: stop docker-compose
+        working-directory: docker-builds/compose/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+        if: success() || failure()
+        run: | 
+          docker-compose down
 
   redeploy:
     runs-on: ubuntu-latest
