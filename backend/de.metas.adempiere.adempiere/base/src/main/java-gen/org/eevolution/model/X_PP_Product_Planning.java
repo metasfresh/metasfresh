@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -751515352L;
+	private static final long serialVersionUID = 899772396L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -139,6 +139,18 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public boolean isDocComplete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDocComplete);
+	}
+
+	@Override
+	public void setIsLotForLot (final boolean IsLotForLot)
+	{
+		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+	}
+
+	@Override
+	public boolean isLotForLot() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLotForLot);
 	}
 
 	/** 
@@ -485,6 +497,19 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setSeqNo (final int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, SeqNo);
@@ -494,18 +519,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -62557261L;
+	private static final long serialVersionUID = 1024409393L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -33,6 +33,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCapacityPerProductionCycleOverride (final @Nullable BigDecimal CapacityPerProductionCycleOverride)
+	{
+		set_Value (COLUMNNAME_CapacityPerProductionCycleOverride, CapacityPerProductionCycleOverride);
+	}
+
+	@Override
+	public BigDecimal getCapacityPerProductionCycleOverride() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycleOverride);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -111,6 +124,27 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	/** 
+	 * IsLotForLot AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISLOTFORLOT_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISLOTFORLOT_Yes = "Y";
+	/** No = N */
+	public static final String ISLOTFORLOT_No = "N";
+	@Override
+	public void setIsLotForLot (final @Nullable java.lang.String IsLotForLot)
+	{
+		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+	}
+
+	@Override
+	public java.lang.String getIsLotForLot() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
 
 	@Override
@@ -400,6 +434,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyToProcess (final @Nullable BigDecimal QtyToProcess)
 	{
 		set_Value (COLUMNNAME_QtyToProcess, QtyToProcess);
@@ -422,18 +469,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override

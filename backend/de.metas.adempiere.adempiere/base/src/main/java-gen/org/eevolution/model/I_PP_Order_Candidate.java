@@ -52,6 +52,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycleOverride (@Nullable BigDecimal CapacityPerProductionCycleOverride);
+
+	/**
+	 * Get Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCapacityPerProductionCycleOverride();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_CapacityPerProductionCycleOverride = new ModelColumn<>(I_PP_Order_Candidate.class, "CapacityPerProductionCycleOverride", null);
+	String COLUMNNAME_CapacityPerProductionCycleOverride = "CapacityPerProductionCycleOverride";
+
+	/**
 	 * Set Orderline.
 	 *
 	 * <br>Type: Search
@@ -124,7 +145,7 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Date Promised.
+	 * Set Date Promised From.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -134,7 +155,7 @@ public interface I_PP_Order_Candidate
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Date Promised.
+	 * Get Date Promised From.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -212,6 +233,29 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsClosed = new ModelColumn<>(I_PP_Order_Candidate.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotForLot (@Nullable java.lang.String IsLotForLot);
+
+	/**
+	 * Get Lot for Lot.
+	 * Forces quantity to be equal to ordered quantity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsLotForLot();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_PP_Order_Candidate.class, "IsLotForLot", null);
+	String COLUMNNAME_IsLotForLot = "IsLotForLot";
 
 	/**
 	 * Set Maturing.
@@ -350,7 +394,7 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
 
 	/**
-	 * Set Maturing Configuration Line.
+	 * Set Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -359,7 +403,7 @@ public interface I_PP_Order_Candidate
 	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
 
 	/**
-	 * Get Maturing Configuration Line.
+	 * Get Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -600,6 +644,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_QtyProcessed = "QtyProcessed";
 
 	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
+
+	/**
 	 * Set Quantity To Process.
 	 *
 	 * <br>Type: Quantity
@@ -665,11 +730,6 @@ public interface I_PP_Order_Candidate
 	 */
 	int getS_Resource_ID();
 
-	org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
