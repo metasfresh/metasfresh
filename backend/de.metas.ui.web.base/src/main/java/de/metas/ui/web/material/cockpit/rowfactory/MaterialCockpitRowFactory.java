@@ -13,6 +13,7 @@ import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -138,14 +139,23 @@ public class MaterialCockpitRowFactory
 			{
 				for (final I_S_Resource plant : plants)
 				{
-					mainRowBucket.addEmptyCountingSubrowBucket(plant.getS_Resource_ID()); // TODO! pay attention to the para ID
+					final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+							.detailsRowAggregation(detailsRowAggregation)
+							.aggregationId(plant.getS_Resource_ID())
+							.build();
+					mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
 				}
 			}
 			else if (detailsRowAggregation.isWarehouse())
 			{
 				for (final I_M_Warehouse warehouse : warehouses)
 				{
-					mainRowBucket.addEmptyCountingSubrowBucket(warehouse.getM_Warehouse_ID());
+					final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+							.detailsRowAggregation(detailsRowAggregation)
+							.aggregationId(warehouse.getM_Warehouse_ID())
+							.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+							.build();
+					mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
 				}
 			}
 
