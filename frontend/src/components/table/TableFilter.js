@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
@@ -81,20 +81,23 @@ const TableFilter = ({
     }
   };
 
-  const handleTopActionClick = (action) => {
-    if (action.disabled) {
-      return;
-    }
+  const handleTopActionClick = useCallback(
+    (action) => {
+      if (action.disabled) {
+        return;
+      }
 
-    dispatch(
-      openModal({
-        title: action.caption,
-        windowId: action.processId,
-        modalType: 'process',
-        viewDocumentIds: selectedRowIds,
-      })
-    );
-  };
+      dispatch(
+        openModal({
+          title: action.caption,
+          windowId: action.processId,
+          modalType: 'process',
+          viewDocumentIds: selectedRowIds,
+        })
+      );
+    },
+    [selectedRowIds]
+  );
 
   /**
    * @summary create and store buttons for actions once, so that we won't redo this on each render

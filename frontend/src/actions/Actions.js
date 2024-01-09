@@ -270,9 +270,7 @@ export function deleteTopActions() {
  */
 export function fetchTopActions(windowId, docId, tabId) {
   return (dispatch) => {
-    dispatch({
-      type: FETCH_TOP_ACTIONS,
-    });
+    dispatch({ type: FETCH_TOP_ACTIONS });
 
     return topActionsRequest(windowId, docId, tabId)
       .then((response) => {
@@ -284,9 +282,7 @@ export function fetchTopActions(windowId, docId, tabId) {
         return Promise.resolve(response.data.actions);
       })
       .catch((e) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
-        });
+        dispatch({ type: FETCH_TOP_ACTIONS_FAILURE });
 
         return Promise.reject(e);
       });

@@ -60,7 +60,7 @@ import {
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
-import { useSelector } from 'react-redux';
+import { shallowEqual, useSelector } from 'react-redux';
 
 const initialMasterState = {
   layout: {
@@ -306,9 +306,24 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
 });
 
 export const useTopActions = () => {
-  return useSelector(
-    (state) => state.windowHandler.master?.topActions?.actions ?? []
-  );
+  return useSelector(selectTopActionsArray, shallowEqual);
+};
+
+const selectTopActionsArray = (state) => {
+  return state.windowHandler.master?.topActions?.actions ?? [];
+};
+
+const mergeTopActions = (state, topActions) => {
+  return {
+    ...state,
+    master: {
+      ...state.master,
+      topActions: {
+        ...state.master.topActions,
+        ...topActions,
+      },
+    },
+  };
 };
 
 export default function windowHandler(state = initialState, action) {
@@ -697,53 +712,30 @@ export default function windowHandler(state = initialState, action) {
       };
 
     // TOP ACTIONS
-    case FETCH_TOP_ACTIONS:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            fetching: true,
-          },
-        },
-      };
-    case FETCH_TOP_ACTIONS_SUCCESS:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            actions: action.payload,
-            fetching: false,
-          },
-        },
-      };
-    case FETCH_TOP_ACTIONS_FAILURE:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            fetching: false,
-            error: true,
-          },
-        },
-      };
-    case DELETE_TOP_ACTIONS: {
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            actions: [],
-          },
-        },
-      };
+    case FETCH_TOP_ACTIONS: {
+      return mergeTopActions(state, { fetching: true });
     }
+    case FETCH_TOP_ACTIONS_SUCCESS: {
+      return mergeTopActions(state, {
+        actions: action.payload,
+        fetching: false,
+        error: false,
+      });
+    }
+    case FETCH_TOP_ACTIONS_FAILURE: {
+      return mergeTopActions(state, {
+        fetching: false,
+        error: true,
+      });
+    }
+    case DELETE_TOP_ACTIONS: {
+      return mergeTopActions(state, {
+        actions: [],
+        fetching: false,
+        error: false,
+      });
+    }
+
     case SET_SPINNER: {
       return {
         ...state,
