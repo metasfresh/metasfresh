@@ -13,6 +13,7 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
@@ -168,6 +169,11 @@ public class AdempiereException extends RuntimeException
 		}
 
 		if (throwable instanceof InvocationTargetException)
+		{
+			return cause;
+		}
+
+		if(throwable instanceof CalloutExecutionException)
 		{
 			return cause;
 		}
