@@ -14,8 +14,10 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -71,13 +73,7 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
-		if(productId == null)
-		{
-			throw new FillMandatoryException(I_C_OrderLine.COLUMNNAME_M_Product_ID);
-		}
-
-		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(productId,
+		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(ProductId.ofRepoId(orderLine.getM_Product_ID()),
 				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
 				TimeUtil.asZonedDateTime(orderLine.getDatePromised()));
 		final Properties ctx = Env.getCtx();
