@@ -10,10 +10,10 @@ services:
       - ./db-data:/var/lib/postgresql/customdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
-      interval: 5s
-      timeout: 2s
-      start_period: 10s
-      retries: 120
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     deploy:
       mode: replicated
       replicas: 1
@@ -23,6 +23,12 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q status
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     environment:
       - RABBITMQ_DEFAULT_USER=metasfresh
       - RABBITMQ_DEFAULT_PASS=metasfresh
@@ -36,6 +42,12 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    healthcheck:
+      test: "curl --fail --silent GET http://localhost:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     environment:
       - discovery.type=single-node
       - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
@@ -53,10 +65,10 @@ services:
       - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
     healthcheck:
       test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
-      interval: 30s
-      timeout: 5s
-      retries: 10
+      interval: 10s
+      timeout: 10s
       start_period: 60s
+      retries: 30
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
       - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
@@ -83,10 +95,10 @@ services:
       - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
     healthcheck:
       test: "curl --fail --silent localhost:8282/health | grep UP || exit 1"
-      interval: 30s
-      timeout: 5s
-      retries: 10
+      interval: 10s
+      timeout: 10s
       start_period: 60s
+      retries: 30
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
       - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788"
@@ -106,6 +118,12 @@ services:
 
   external:
     image: $mfregistry/metas-externalsystems:$mfversion
+    healthcheck:
+      test: "curl --fail --silent localhost:8095/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     environment:
       - METASFRESH_API_BASEURL=http://app:8282/api
       - METASFRESH_API_V2_BASEURL=http://app:8282/api/v2
@@ -125,10 +143,16 @@ services:
   webui:
     image: $mfregistry/metas-frontend:$mfversion
     ports:
-      - "80:80"
+      - "3000:80"
       - "443:443"
     volumes:
       - ./web-config.js:/usr/share/nginx/html/config.js:ro
+    healthcheck:
+      test: "curl --fail --silent http://localhost:80 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     depends_on:
       webapi:
         condition: service_healthy
@@ -144,6 +168,12 @@ services:
       - "8880:80"
     volumes:
       - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+    healthcheck:
+      test: "curl --fail --silent http://localhost:80 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
     depends_on:
       webapi:
         condition: service_healthy
