@@ -231,7 +231,7 @@ class ActionButton extends PureComponent {
    * @param {boolean} option
    */
   processStatus = (status, option) => {
-    const { onChange, docId, windowType, activeTab } = this.props;
+    const { onChange } = this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
