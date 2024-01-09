@@ -12,6 +12,7 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import de.metas.resource.ManufacturingResourceType;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -22,6 +23,7 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +87,8 @@ public class MaterialCockpitRowFactory
 		@Singular
 		List<WarehouseId> warehouseIds;
 
-		boolean includePerPlantDetailRows;
+		@NonNull
+		MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
@@ -93,7 +96,7 @@ public class MaterialCockpitRowFactory
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductIdsToListEvenIfEmpty(),
 				request.getDate(),
-				request.isIncludePerPlantDetailRows());
+				request.getDetailsRowAggregation());
 
 		final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
@@ -113,12 +116,17 @@ public class MaterialCockpitRowFactory
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final LocalDate timestamp,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
-		final List<I_S_Resource> plants = retrieveCountingPlants(includePerPlantDetailRows);
+
+
+		final List<I_S_Resource> plants = retrieveCountingPlants();
+
+
+		final List<I_M_Warehouse> warehouses = retrieveWarehouses();
 
 		final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 		for (final ProductId productId : productIds)
@@ -126,9 +134,19 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
 			final MainRowWithSubRows mainRowBucket = newMainRowWithSubRows(key);
 
-			for (final I_S_Resource plant : plants)
+			if (detailsRowAggregation.isPlant())
 			{
-				mainRowBucket.addEmptyCountingSubrowBucket(plant.getS_Resource_ID());
+				for (final I_S_Resource plant : plants)
+				{
+					mainRowBucket.addEmptyCountingSubrowBucket(plant.getS_Resource_ID()); // TODO! pay attention to the para ID
+				}
+			}
+			else if (detailsRowAggregation.isWarehouse())
+			{
+				for (final I_M_Warehouse warehouse : warehouses)
+				{
+					mainRowBucket.addEmptyCountingSubrowBucket(warehouse.getM_Warehouse_ID());
+				}
 			}
 
 			for (final DimensionSpecGroup group : groups)
@@ -140,23 +158,26 @@ public class MaterialCockpitRowFactory
 		}
 		return result.build();
 	}
-
 	private MainRowWithSubRows newMainRowWithSubRows(final MainRowBucketId key)
 	{
 		return new MainRowWithSubRows(rowLookups, key);
 	}
 
-	private List<I_S_Resource> retrieveCountingPlants(final boolean includePerPlantDetailRows)
+	private List<I_S_Resource> retrieveCountingPlants()
 	{
-		if (!includePerPlantDetailRows)
-		{
-			return ImmutableList.of();
-		}
-
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant)
+				.create()
+				.list();
+	}
+
+	private List<I_M_Warehouse> retrieveWarehouses()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter() // todo: filter needed ?
 				.create()
 				.list();
 	}
@@ -172,7 +193,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.getDetailsRowAggregation());
 		}
 	}
 
@@ -186,7 +207,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.getDetailsRowAggregation());
 		}
 	}
 
@@ -200,7 +221,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.getDetailsRowAggregation());
 		}
 	}
 }

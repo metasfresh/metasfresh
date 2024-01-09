@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -66,6 +67,8 @@ public class CountingSubRowBucket
 
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@Nullable private final ResourceId plantId;
+
+	@Nullable private final WarehouseId warehouseId;
 
 	// Zaehlbestand
 	private Quantity qtyStockEstimateCountAtDate;
@@ -134,6 +137,7 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
+				.warehouseId(warehouseId)
 				.qtyDemandSalesOrder(qtyDemandSalesOrder)
 				.qtySupplyPurchaseOrder(qtySupplyPurchaseOrder)
 				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)

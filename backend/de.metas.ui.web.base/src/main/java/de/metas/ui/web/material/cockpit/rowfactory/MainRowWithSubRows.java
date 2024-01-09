@@ -10,6 +10,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.product.ResourceId;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
@@ -84,13 +85,15 @@ public class MainRowWithSubRows
 
 	private CountingSubRowBucket newCountingSubRowBucket(final int plantId)
 	{
-		return new CountingSubRowBucket(rowLookups, ResourceId.ofRepoIdOrNull(plantId));
+		return new CountingSubRowBucket(rowLookups,
+										ResourceId.ofRepoIdOrNull(plantId),
+										WarehouseId.ofRepoIdOrNull(wa));
 	}
 
 	public void addCockpitRecord(
 			@NonNull final I_MD_Cockpit cockpitRecord,
 			@NonNull final DimensionSpec dimensionSpec,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		boolean addedToAtLeastOneBucket = false;
 
@@ -103,7 +106,7 @@ public class MainRowWithSubRows
 
 		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0)
 		{
-			if (includePerPlantDetailRows)
+			if (detailsRowAggregation.isPlant())
 			{
 				addCockpitRecordToCounting(cockpitRecord, ppPlantId);
 				addedToAtLeastOneBucket = true;
@@ -123,15 +126,15 @@ public class MainRowWithSubRows
 		mainRow.addDataRecord(cockpitRecord);
 	}
 
-	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate, final int ppPlantId)
+	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate, final int aggregationId)
 	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(ppPlantId, this::newCountingSubRowBucket);
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(aggregationId, this::newCountingSubRowBucket);
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
-	private void addQuantitiesRecordToCounting(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord, final int ppPlantId)
+	private void addQuantitiesRecordToCounting(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord, final int aggregationId)
 	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(ppPlantId, this::newCountingSubRowBucket);
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(aggregationId, this::newCountingSubRowBucket);
 		countingSubRow.addQuantitiesRecord(quantitiesRecord);
 	}
 
@@ -216,10 +219,10 @@ public class MainRowWithSubRows
 	public void addStockRecord(
 			@NonNull final I_MD_Stock stockRecord,
 			@NonNull final DimensionSpec dimensionSpec,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		boolean addedToAtLeastOneBucket = false;
-		if (includePerPlantDetailRows)
+		if (!detailsRowAggregation.isNone())
 		{
 			addStockRecordToCounting(stockRecord);
 			addedToAtLeastOneBucket = true;
@@ -239,23 +242,27 @@ public class MainRowWithSubRows
 	public void addQuantitiesRecord(
 			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
 			@NonNull final DimensionSpec dimensionSpec,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		boolean addedToAtLeastOneBucket = false;
 
-		int ppPlantId = 0;
-		if (quantitiesRecord.getM_Warehouse_ID() > 0)
+		final int warehouseId = quantitiesRecord.getM_Warehouse_ID();
+		if (warehouseId > 0)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID()));
-			ppPlantId = warehouse.getPP_Plant_ID();
-		}
-
-		if (ppPlantId > 0)
-		{
-			if (includePerPlantDetailRows)
+			if (detailsRowAggregation.isWarehouse())
 			{
-				addQuantitiesRecordToCounting(quantitiesRecord, ppPlantId);
+				addQuantitiesRecordToCounting(quantitiesRecord, warehouseId);
 				addedToAtLeastOneBucket = true;
+			}
+			else if (detailsRowAggregation.isPlant())
+			{
+				final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId));
+				final int ppPlantId = warehouse.getPP_Plant_ID();
+				if (ppPlantId > 0)
+				{
+					addQuantitiesRecordToCounting(quantitiesRecord, ppPlantId);
+					addedToAtLeastOneBucket = true;
+				}
 			}
 		}
 		else

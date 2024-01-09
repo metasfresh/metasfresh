@@ -54,7 +54,7 @@ import java.util.Set;
  */
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
-	private final boolean includePerPlantDetailRows;
+	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 
@@ -64,11 +64,11 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
 	public MaterialCockpitRowsData(
-			final boolean includePerPlantDetailRows,
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
 			@NonNull final List<MaterialCockpitRow> rows)
 	{
-		this.includePerPlantDetailRows = includePerPlantDetailRows;
+		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
@@ -188,7 +188,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		return MaterialCockpitRowFactory.CreateRowsRequest.builder()
 				.date(localDate)
-				.includePerPlantDetailRows(includePerPlantDetailRows);
+				.detailsRowAggregation(detailsRowAggregation);
 	}
 
 	@NonNull

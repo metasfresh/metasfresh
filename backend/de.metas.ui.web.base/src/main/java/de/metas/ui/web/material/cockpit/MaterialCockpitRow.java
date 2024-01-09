@@ -608,7 +608,7 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
-			final WarehouseId warehouseId,
+			@Nullable final WarehouseId warehouseId,
 			final LocalDate date,
 			@Nullable final ResourceId plantId,
 			@Nullable final Quantity qtyDemandSalesOrder,
