@@ -259,29 +259,6 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsDocComplete = "IsDocComplete";
 
 	/**
-	 * Set Lot for Lot.
-	 * Forces quantity to be equal to ordered quantity.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsLotForLot (boolean IsLotForLot);
-
-	/**
-	 * Get Lot for Lot.
-	 * Forces quantity to be equal to ordered quantity.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isLotForLot();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_PP_Product_Planning.class, "IsLotForLot", null);
-	String COLUMNNAME_IsLotForLot = "IsLotForLot";
-
-	/**
 	 * Set Manufactured.
 	 *
 	 * <br>Type: List
@@ -301,6 +278,27 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsManufactured = new ModelColumn<>(I_PP_Product_Planning.class, "IsManufactured", null);
 	String COLUMNNAME_IsManufactured = "IsManufactured";
+
+	/**
+	 * Set Matured.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMatured (boolean IsMatured);
+
+	/**
+	 * Get Matured.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMatured();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsMatured = new ModelColumn<>(I_PP_Product_Planning.class, "IsMatured", null);
+	String COLUMNNAME_IsMatured = "IsMatured";
 
 	/**
 	 * Set Is MPS.
@@ -482,6 +480,56 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID = "MaxManufacturedQtyPerOrderDispo_UOM_ID";
 
 	/**
+	 * Set Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_ID (int M_Maturing_Configuration_ID);
+
+	/**
+	 * Get Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration();
+
+	void setM_Maturing_Configuration(@Nullable org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Maturing_Configuration> COLUMN_M_Maturing_Configuration_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_Maturing_Configuration_ID", org.compiere.model.I_M_Maturing_Configuration.class);
+	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
+
+	/**
+	 * Set Maturing Configuration Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
+
+	/**
+	 * Get Maturing Configuration Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_Line_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line();
+
+	void setM_Maturing_Configuration_Line(@Nullable org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Maturing_Configuration_Line> COLUMN_M_Maturing_Configuration_Line_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_Maturing_Configuration_Line_ID", org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	String COLUMNNAME_M_Maturing_Configuration_Line_ID = "M_Maturing_Configuration_Line_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -638,27 +686,6 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
-	 * Set Total Quantity per Day.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
-
-	/**
-	 * Get Total Quantity per Day.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyProcessed_OnDate();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
-	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
-
-	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first
@@ -703,6 +730,11 @@ public interface I_PP_Product_Planning
 	 */
 	int getS_Resource_ID();
 
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**

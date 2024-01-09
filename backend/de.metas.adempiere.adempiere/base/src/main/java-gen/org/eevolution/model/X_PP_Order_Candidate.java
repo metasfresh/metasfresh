@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 856767801L;
+	private static final long serialVersionUID = -62557261L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -78,19 +78,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setCapacityPerProductionCycleOverride (final @Nullable BigDecimal CapacityPerProductionCycleOverride)
-	{
-		set_Value (COLUMNNAME_CapacityPerProductionCycleOverride, CapacityPerProductionCycleOverride);
-	}
-
-	@Override
-	public BigDecimal getCapacityPerProductionCycleOverride()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycleOverride);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setDatePromised (final java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
@@ -126,25 +113,16 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
-	/**
-	 * IsLotForLot AD_Reference_ID=540528
-	 * Reference name: Yes_No
-	 */
-	public static final int ISLOTFORLOT_AD_Reference_ID=540528;
-	/** Yes = Y */
-	public static final String ISLOTFORLOT_Yes = "Y";
-	/** No = N */
-	public static final String ISLOTFORLOT_No = "N";
 	@Override
-	public void setIsLotForLot (final @Nullable java.lang.String IsLotForLot)
+	public void setIsMaturing (final boolean IsMaturing)
 	{
-		set_Value (COLUMNNAME_IsLotForLot, IsLotForLot);
+		set_Value (COLUMNNAME_IsMaturing, IsMaturing);
 	}
 
 	@Override
-	public java.lang.String getIsLotForLot()
+	public boolean isMaturing() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsLotForLot);
+		return get_ValueAsBoolean(COLUMNNAME_IsMaturing);
 	}
 
 	@Override
@@ -154,9 +132,24 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public boolean isSimulated()
+	public boolean isSimulated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
+	}
+
+	@Override
+	public void setIssue_HU_ID (final int Issue_HU_ID)
+	{
+		if (Issue_HU_ID < 1) 
+			set_Value (COLUMNNAME_Issue_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Issue_HU_ID, Issue_HU_ID);
+	}
+
+	@Override
+	public int getIssue_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Issue_HU_ID);
 	}
 
 	@Override
@@ -189,16 +182,70 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	@Override
 	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
-		if (M_HU_PI_Item_Product_ID < 1)
+		if (M_HU_PI_Item_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
-	public int getM_HU_PI_Item_Product_ID()
+	public int getM_HU_PI_Item_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration(final org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_ID, org.compiere.model.I_M_Maturing_Configuration.class, M_Maturing_Configuration);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
+	{
+		if (M_Maturing_Configuration_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line(final org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Maturing_Configuration_Line_ID, org.compiere.model.I_M_Maturing_Configuration_Line.class, M_Maturing_Configuration_Line);
+	}
+
+	@Override
+	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
+	{
+		if (M_Maturing_Configuration_Line_ID < 1) 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
+	}
+
+	@Override
+	public int getM_Maturing_Configuration_Line_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
@@ -244,6 +291,17 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public void setNumberOfResources_ToProcess (final int NumberOfResources_ToProcess)
+	{
+		throw new IllegalArgumentException ("NumberOfResources_ToProcess is virtual column");	}
+
+	@Override
+	public int getNumberOfResources_ToProcess() 
+	{
+		return get_ValueAsInt(COLUMNNAME_NumberOfResources_ToProcess);
 	}
 
 	@Override
@@ -342,19 +400,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
-	{
-		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
-	}
-
-	@Override
-	public BigDecimal getQtyProcessed_OnDate()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setQtyToProcess (final @Nullable BigDecimal QtyToProcess)
 	{
 		set_Value (COLUMNNAME_QtyToProcess, QtyToProcess);
@@ -374,7 +419,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}

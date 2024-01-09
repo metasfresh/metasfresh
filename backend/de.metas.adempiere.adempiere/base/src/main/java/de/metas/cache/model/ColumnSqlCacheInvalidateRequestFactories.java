@@ -2,7 +2,6 @@ package de.metas.cache.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -20,7 +19,6 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -50,8 +48,6 @@ import java.util.List;
 @UtilityClass
 final class ColumnSqlCacheInvalidateRequestFactories
 {
-	private final static Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestFactories.class);
-
 	@Nullable
 	public static ModelCacheInvalidateRequestFactory ofDescriptorOrNull(@NonNull final ColumnSqlSourceDescriptor descriptor)
 	{
@@ -72,8 +68,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 			if (!targetTableInfo.isPhysicalColumn(sourceLinkColumnName))
 			{
-				logger.warn("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
-				return null;
+				throw new AdempiereException("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
 			}
 			//noinspection UnnecessaryLocalVariable
 			final String targetLinkColumnName = sourceLinkColumnName;
