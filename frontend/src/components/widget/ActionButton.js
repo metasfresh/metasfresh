@@ -42,7 +42,7 @@ class ActionButton extends PureComponent {
   /**
    * @method handleKeyDown
    * @summary ToDo: Describe the method
-   * @param {object} event
+   * @param {object} e
    * @todo Write the documentation
    */
   handleKeyDown = (e) => {
@@ -291,9 +291,7 @@ class ActionButton extends PureComponent {
    */
   isDisabled = () => {
     const { modalVisible, readonly, processStatus } = this.props;
-    return readonly || processStatus === 'pending' || modalVisible
-      ? true
-      : false;
+    return readonly || processStatus === 'pending' || modalVisible;
   };
 
   /**
