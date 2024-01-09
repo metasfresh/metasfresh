@@ -862,7 +862,6 @@ export function patch(
       isEdit,
     };
 
-    await dispatch(indicatorState('pending'));
     await dispatch({ type: PATCH_REQUEST, symbol, options });
 
     try {
@@ -905,7 +904,6 @@ export function patch(
         (property === dataItem.validStatus.fieldName ||
           dataItem.validStatus.fieldName === undefined)
       ) {
-        await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
 
         // Don't show the notification because we are showing the error message in Indicator component
@@ -921,13 +919,11 @@ export function patch(
         //   )
         // );
       } else {
-        await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
         return response.data;
       }
     } catch (error) {
-      await dispatch(indicatorState('error'));
       await dispatch({ type: PATCH_FAILURE, symbol });
 
       const response = await getData({
