@@ -4,14 +4,13 @@ import { connect } from 'react-redux';
 import { get } from 'lodash';
 import classnames from 'classnames';
 
-import { fetchTopActions } from '../../actions/Actions';
 import { dropdownRequest } from '../../actions/GenericActions';
 
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 import Prompt from '../../components/app/Prompt';
 
 /**
- * @file Class based component.
+ * @file Document Status/Action Button (Complete, Reverse)
  * @module ActionButton
  * @extends Component
  */
@@ -232,15 +231,12 @@ class ActionButton extends PureComponent {
    * @param {boolean} option
    */
   processStatus = (status, option) => {
-    const { onChange, docId, windowType, activeTab, fetchTopActions } =
-      this.props;
+    const { onChange, docId, windowType, activeTab } = this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
     if (changePromise instanceof Promise) {
       changePromise.then(() => {
-        fetchTopActions({ windowId: windowType, tabId: activeTab, docId });
-
         return this.fetchStatusList();
       });
     }
@@ -382,7 +378,6 @@ ActionButton.defaultProps = { readonly: false };
  */
 ActionButton.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
-  fetchTopActions: PropTypes.func.isRequired,
   data: PropTypes.any,
   onChange: PropTypes.func,
   dropdownOpenCallback: PropTypes.any,
@@ -400,6 +395,6 @@ const mapStateToProps = ({ windowHandler, appHandler }) => ({
   processStatus: appHandler.processStatus,
 });
 
-export default connect(mapStateToProps, { fetchTopActions }, null, {
+export default connect(mapStateToProps, null, null, {
   forwardRef: true,
 })(ActionButton);
