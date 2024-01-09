@@ -281,6 +281,10 @@ export class RawLookup extends Component {
   };
 
   handleInputTextBlur = () => {
+    if (!this.inputSearch) {
+      return;
+    }
+
     const { defaultValue } = this.props;
     const { inputTextOnFocus } = this.state;
     const inputTextNow = this.inputSearch.value;
