@@ -626,47 +626,47 @@ jobs:
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh db
+          ./containerHealthCheck.sh db
       - name: webapi health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh webapi
+          ./containerHealthCheck.sh webapi
       - name: app health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh app
+          ./containerHealthCheck.sh app
       - name: rabbitmq health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh rabbitmq
+          ./containerHealthCheck.sh rabbitmq
       - name: search health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh search
+          ./containerHealthCheck.sh search
       - name: external health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh external
+          ./containerHealthCheck.sh external
       - name: webui health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh webui
+          ./containerHealthCheck.sh webui
       - name: mobile health check
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          containerHealthCheck.sh mobile
+          ./containerHealthCheck.sh mobile
       - name: run api health checks
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
-          apiHealthChecks.sh
+          ./apiHealthChecks.sh
       - name: create docker-compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
