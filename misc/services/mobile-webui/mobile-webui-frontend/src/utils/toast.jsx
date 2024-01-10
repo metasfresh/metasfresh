@@ -57,8 +57,7 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
 
   toast.custom(
     (t) => (
-      <div className="toastSuccessContainer">
-        <button className="toastCloseButton" onClick={() => toast.dismiss(t.id)}></button>
+      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
         <span>{message}</span>
       </div>
     ),
