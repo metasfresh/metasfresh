@@ -181,7 +181,7 @@ public class MaterialCockpitRowFactory
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Warehouse.class)
-				.addOnlyActiveRecordsFilter() // todo: filter needed ?
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 	}
