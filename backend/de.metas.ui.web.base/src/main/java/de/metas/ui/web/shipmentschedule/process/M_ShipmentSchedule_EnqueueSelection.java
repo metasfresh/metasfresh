@@ -63,6 +63,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ForeignExchangeContract;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -90,6 +92,9 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
+
+	@Param(parameterName = "ShipmentDate")
+	private LocalDate shipmentDate;
 
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
@@ -170,6 +175,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 								.quantityType(quantityType)
 								.completeShipments(isCompleteShipments)
 								.isShipmentDateToday(isShipToday)
+								.fixedShipmentDate(getFixedShipmentDate().orElse(null))
 								.forexContractRef(p_FECParams.getForexContractRef())
 								.build());
 
@@ -196,5 +202,11 @@ public class M_ShipmentSchedule_EnqueueSelection
 		filters.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
 
 		return filters;
+	}
+
+	@NonNull
+	private Optional<LocalDate> getFixedShipmentDate()
+	{
+		return isShipToday ? Optional.empty() : Optional.ofNullable(shipmentDate);
 	}
 }
