@@ -94,7 +94,7 @@ public class MainRowWithSubRows
 			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
-		boolean addedToAtLeastOneBucket = false;
+		final boolean addedToAtLeastOneBucket;
 
 		int ppPlantId = 0;
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(cockpitRecord.getM_Warehouse_ID());
@@ -107,23 +107,25 @@ public class MainRowWithSubRows
 		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || !detailsRowAggregation.isNone())
 		{
 			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier;
-			if (detailsRowAggregation.isPlant())
+			if (detailsRowAggregation.isPlant() && ppPlantId > 0)
 			{
 				rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 						.aggregationId(ppPlantId)
-						.warehouseId(warehouseId)
 						.build();
 				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
 			}
-			else if (detailsRowAggregation.isWarehouse())
+			else if (detailsRowAggregation.isWarehouse() && warehouseId != null)
 			{
 				rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(warehouseId.getRepoId())
-						.warehouseId(warehouseId)
+						.aggregationId(WarehouseId.toRepoId(warehouseId))
 						.build();
 				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
+			}
+			else
+			{
+				addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 			}
 		}
 		else
@@ -216,7 +218,7 @@ public class MainRowWithSubRows
 				continue;
 			}
 
-			// while iterating, also look out out for "otherGroup"
+			// while iterating, also look out for "otherGroup"
 			if (DimensionSpecGroup.OTHER_GROUP.equals(group))
 			{
 				otherGroup = group;
@@ -267,7 +269,6 @@ public class MainRowWithSubRows
 			{
 				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 						.aggregationId(warehouseId.getRepoId())
-						.warehouseId(warehouseId)
 						.build();
 
 				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
@@ -281,7 +282,6 @@ public class MainRowWithSubRows
 				{
 					final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 							.aggregationId(ppPlantId)
-							.warehouseId(warehouseId)
 							.build();
 					addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
 					addedToAtLeastOneBucket = true;
@@ -308,11 +308,10 @@ public class MainRowWithSubRows
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
 		final int plantId = warehouseRecord.getPP_Plant_ID();
 
-		if(detailsRowAggregation.isPlant())
+		if (detailsRowAggregation.isPlant())
 		{
 			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 					.aggregationId(plantId)
-					.warehouseId(warehouseId)
 					.build();
 
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
@@ -320,9 +319,8 @@ public class MainRowWithSubRows
 		}
 		else if (detailsRowAggregation.isWarehouse())
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier	rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 					.aggregationId(stockRecord.getM_Warehouse_ID())
-					.warehouseId(warehouseId)
 					.build();
 
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
@@ -351,7 +349,6 @@ public class MainRowWithSubRows
 				.lookups(rowLookups)
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())
-				.warehouseId(mainRow.getWarehouseId())
 				.qtyMaterialentnahmeAtDate(mainRow.getQtyMaterialentnahmeAtDate())
 				.qtyDemandPPOrderAtDate(mainRow.getQtyDemandPPOrderAtDate())
 				.qtyStockCurrentAtDate(mainRow.getQtyStockCurrentAtDate())

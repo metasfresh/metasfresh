@@ -132,7 +132,6 @@ public class DimensionGroupSubRowBucket
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
-		warehouseId = WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
@@ -154,7 +153,6 @@ public class DimensionGroupSubRowBucket
 				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
-				.warehouseId(getWarehouseId())
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromisedAtDate(getPmmQtyPromisedAtDate())
 				.qtyMaterialentnahmeAtDate(getQtyMaterialentnahmeAtDate())

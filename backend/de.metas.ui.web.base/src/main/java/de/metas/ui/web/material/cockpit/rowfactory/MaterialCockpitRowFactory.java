@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
@@ -83,10 +82,6 @@ public class MaterialCockpitRowFactory
 		@NonNull
 		@Singular
 		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
-
-		@NonNull
-		@Singular
-		List<WarehouseId> warehouseIds;
 
 		@NonNull
 		MaterialCockpitDetailsRowAggregation detailsRowAggregation;
@@ -153,7 +148,6 @@ public class MaterialCockpitRowFactory
 					final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
 							.detailsRowAggregation(detailsRowAggregation)
 							.aggregationId(warehouse.getM_Warehouse_ID())
-							.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
 							.build();
 					mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
 				}

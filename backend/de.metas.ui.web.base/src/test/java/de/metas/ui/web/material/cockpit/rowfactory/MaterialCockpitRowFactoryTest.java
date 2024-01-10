@@ -124,7 +124,6 @@ public class MaterialCockpitRowFactoryTest
 						.uomLookup(MockedLookupDataSource.withNamePrefix("UOM"))
 						.bpartnerLookup(MockedLookupDataSource.withNamePrefix("BP"))
 						.productLookup(MockedLookupDataSource.withNamePrefix("Product"))
-						.warehouseLookup(MockedLookupDataSource.withNamePrefix("Warehouse"))
 						.build()
 		);
 	}

@@ -25,17 +25,12 @@ package de.metas.ui.web.material.cockpit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class MaterialCockpitDetailsRowAggregationIdentifier
 {
 	@NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation;
-
-	@Nullable WarehouseId warehouseId;
 
 	int aggregationId;
 }
