@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -100,6 +101,8 @@ public class MainRowBucket
 	@Nullable
 	private Instant qtyInventoryTimeAtDate;
 
+	private WarehouseId warehouseId;
+
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
@@ -152,5 +155,6 @@ public class MainRowBucket
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+		warehouseId = WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID());
 	}
 }

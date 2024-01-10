@@ -44,12 +44,15 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class MaterialCockpitRowsLoader
@@ -100,11 +103,16 @@ public class MaterialCockpitRowsLoader
 		final List<I_QtyDemand_QtySupply_V> quantitiesRecords = QtyDemandSupplyFilters
 				.createQuantitiesQueryFor(filters)
 				.list();
+
+		final List<WarehouseId> warehouseIds = quantitiesRecords.stream()
+				.map(qtyRecord -> WarehouseId.ofRepoId(qtyRecord.getM_Warehouse_ID()))
+				.toList();
 		
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
 				.date(date)
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
+				.warehouseIds(warehouseIds)
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
 				.quantitiesRecords(quantitiesRecords)

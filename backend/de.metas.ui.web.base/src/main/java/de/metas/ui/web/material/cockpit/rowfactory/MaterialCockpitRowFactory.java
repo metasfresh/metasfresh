@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +80,10 @@ public class MaterialCockpitRowFactory
 		@NonNull
 		@Singular
 		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+
+		@NonNull
+		@Singular
+		List<WarehouseId> warehouseIds;
 
 		boolean includePerPlantDetailRows;
 	}

@@ -41,6 +41,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -108,6 +110,14 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final Integer qtyStockEstimateSeqNoAtDate;
+
+	public static final String FIELDNAME_M_Warehouse_ID = I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID;
+	@ViewColumn(fieldName = FIELDNAME_M_Warehouse_ID, //
+			widgetType = DocumentFieldWidgetType.Lookup, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID, //
+			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 7)},
+			zoomInto = true)
+	private final LookupValue warehouse;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductValue, //
@@ -361,6 +371,8 @@ public class MaterialCockpitRow implements IViewRow
 	private final ViewRowFieldNameAndJsonValuesHolder<MaterialCockpitRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(MaterialCockpitRow.class);
 	private final MaterialCockpitRowLookups lookups;
 
+	private final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
+
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
 			@NonNull final MaterialCockpitRowLookups lookups,
@@ -387,6 +399,7 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity qtyStockCurrentAtDate,
 			final Quantity qtyOnHandStock,
 			@NonNull final ProductId productId,
+			final WarehouseId warehouseId,
 			@NonNull final LocalDate date,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
@@ -427,6 +440,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
+
+		this.warehouse = lookups.lookupWarehouseById(warehouseId);
 
 		this.packageSize = productRecord.getPackageSize();
 
@@ -493,6 +508,7 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
+			final WarehouseId warehouseId,
 			final LocalDate date,
 			@NonNull final DimensionSpecGroup dimensionGroup,
 			final Quantity pmmQtyPromisedAtDate,
@@ -549,6 +565,8 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.product = lookups.lookupProductById(this.productId);
 
+		this.warehouse = lookups.lookupWarehouseById(warehouseId);
+
 		this.packageSize = productRecord.getPackageSize();
 
 		this.date = date;
@@ -590,6 +608,7 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
+			final WarehouseId warehouseId,
 			final LocalDate date,
 			@Nullable final ResourceId plantId,
 			@Nullable final Quantity qtyDemandSalesOrder,
@@ -642,6 +661,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
+
+		this.warehouse = lookups.lookupWarehouseById(warehouseId);
 
 		this.packageSize = productRecord.getPackageSize();
 
