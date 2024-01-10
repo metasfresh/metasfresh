@@ -34,8 +34,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   console.trace('toast error: ', { message, axiosError });
   toast.custom(
     (t) => (
-      <div className="toastContainer">
-        <button className="toastCloseButton" onClick={() => toast.dismiss(t.id)}></button>
+      <div className="toastContainer" onClick={() => toast.dismiss(t.id)}>
         <span>{message}</span>
       </div>
     ),
