@@ -22,6 +22,8 @@
 
 package de.metas.material.planning;
 
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
@@ -73,10 +75,13 @@ public class ProductPlanning
 	//
 	// Manufacturing
 	boolean isManufactured;
+	boolean isMatured;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
 	@Nullable BigDecimal qtyProcessed_OnDate;
+	@Nullable MaturingConfigId maturingConfigId;
+	@Nullable MaturingConfigLineId maturingConfigLineId;
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;

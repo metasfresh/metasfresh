@@ -1,9 +1,11 @@
-DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive(numeric,
-                                                 varchar)
+DROP FUNCTION IF EXISTS pp_product_bom_recursive(p_pp_product_bom_id numeric,
+                                                 p_ad_language       character varying,
+                                                 referencedate       timestamp WITHOUT TIME ZONE)
 ;
 
-CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
-                                                    p_ad_language       character varying)
+CREATE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
+                                         p_ad_language       character varying,
+                                         referencedate       timestamp WITHOUT TIME ZONE DEFAULT NOW())
     RETURNS TABLE
             (
                 line            text,
@@ -25,18 +27,18 @@ CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
 AS
 $$
     --
-WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS path,
-                                   NULL::integer[]                         AS parent_path,
-                                   1                                       AS depth,
-                                   bomProduct.Value                        AS ProductValue,
-                                   COALESCE(pt.Name, bomProduct.Name)      AS ProductName,
+WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                          AS path,
+                                   NULL::integer[]                             AS parent_path,
+                                   1                                           AS depth,
+                                   bomProduct.Value                            AS ProductValue,
+                                   COALESCE(pt.Name, bomProduct.Name)          AS ProductName,
                                    bomProduct.M_Product_ID,
                                    bomProduct.IsBOM,
                                    bom.PP_Product_BOM_ID,
-                                   'N'::char(1)                            AS IsQtyPercentage,
-                                   ROUND(1::numeric, uom.StdPrecision)     AS QtyBOM,
-                                   NULL::numeric                           AS Percentage,
-                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
+                                   'N'::char(1)                                AS IsQtyPercentage,
+                                   ROUND(1::numeric, uom.StdPrecision)         AS QtyBOM,
+                                   NULL::numeric                               AS Percentage,
+                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)     AS UOMSymbol,
                                    uom.C_UOM_ID,
                                    (SELECT bPartner.value
                                     FROM C_BPartner_Product bPartnerProduct
@@ -44,8 +46,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                     WHERE bomProduct.m_product_id = bPartnerProduct.m_product_id
                                       AND bPartnerProduct.iscurrentvendor = 'Y'
                                       AND bPartnerProduct.isActive = 'Y'
-                                      AND bPartnerProduct.usedforvendor = 'Y'
-                                   )                                       AS Supplier
+                                      AND bPartnerProduct.usedforvendor = 'Y') AS Supplier
                             FROM PP_Product_BOM bom
                                      INNER JOIN M_Product bomProduct ON bomProduct.M_Product_ID = bom.M_Product_ID
                                      LEFT OUTER JOIN M_Product_Trl pt ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
@@ -57,10 +58,10 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                            UNION ALL
                            --
                            (SELECT parent.path || (ROW_NUMBER() OVER (PARTITION BY bomLine.PP_Product_BOM_ID, parent.path ORDER BY bomLine.line, bomLine.PP_Product_BOMLine_ID))::integer AS path,
-                                   parent.path                                                                                                                               AS parent_path,
-                                   parent.depth + 1                                                                                                                          AS depth,
-                                   bomLineProduct.Value                                                                                                                      AS ProductValue,
-                                   COALESCE(pt.Name, bomLineProduct.Name)                                                                                                    AS ProductName,
+                                   parent.path                                                                                                                                            AS parent_path,
+                                   parent.depth + 1                                                                                                                                       AS depth,
+                                   bomLineProduct.Value                                                                                                                                   AS ProductValue,
+                                   COALESCE(pt.Name, bomLineProduct.Name)                                                                                                                 AS ProductName,
                                    bomLineProduct.M_Product_ID,
                                    bomLineProduct.IsBOM,
                                    (CASE
@@ -70,14 +71,15 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                                   WHERE bom.M_Product_ID = bomLineProduct.M_Product_ID
                                                     AND bom.IsActive = 'Y'
                                                     AND bom.Value = bomLineProduct.Value
-                                                  ORDER BY bom.PP_Product_BOM_ID
+                                                    AND referencedate >= bom.validfrom
+                                                  ORDER BY bom.ValidFrom DESC, bom.PP_Product_BOM_ID DESC
                                                   LIMIT 1)
                                             ELSE NULL
-                                    END)::numeric(10, 0)                                                                                                                     AS PP_Product_BOM_ID,
+                                    END)::numeric(10, 0)                                                                                                                                  AS PP_Product_BOM_ID,
                                    bomLine.IsQtyPercentage,
-                                   (CASE WHEN bomLine.IsQtyPercentage = 'N' THEN ROUND(bomLine.QtyBOM, uom.StdPrecision) ELSE NULL END)                                      AS QtyBOM,
-                                   (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                                   AS Percentage,
-                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                                   AS UOMSymbol,
+                                   (CASE WHEN bomLine.IsQtyPercentage = 'N' THEN ROUND(bomLine.QtyBOM, uom.StdPrecision) ELSE NULL END)                                                   AS QtyBOM,
+                                   (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                                                AS Percentage,
+                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                                                AS UOMSymbol,
                                    uom.C_UOM_ID,
                                    (SELECT bPartner.value
                                     FROM C_BPartner_Product bPartnerProduct
@@ -85,8 +87,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                     WHERE bomLine.m_product_id = bPartnerProduct.m_product_id
                                       AND bPartnerProduct.iscurrentvendor = 'Y'
                                       AND bPartnerProduct.isActive = 'Y'
-                                      AND bPartnerProduct.usedforvendor = 'Y'
-                                   )                                                                                                                                         AS Supplier
+                                      AND bPartnerProduct.usedforvendor = 'Y')                                                                                                            AS Supplier
                             FROM bomNode parent
                                      INNER JOIN PP_Product_BOMLine bomLine ON bomLine.PP_Product_BOM_ID = parent.PP_Product_BOM_ID
                                      INNER JOIN M_Product bomLineProduct ON bomLineProduct.M_Product_ID = bomLine.M_Product_ID
@@ -117,5 +118,5 @@ ORDER BY path
 $$
 ;
 
-ALTER FUNCTION pp_product_bom_recursive(numeric, varchar) OWNER TO metasfresh
+ALTER FUNCTION pp_product_bom_recursive(numeric, varchar,timestamp WITHOUT TIME ZONE) OWNER TO metasfresh
 ;

@@ -303,6 +303,27 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsManufactured = "IsManufactured";
 
 	/**
+	 * Set Fully matured.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMatured (boolean IsMatured);
+
+	/**
+	 * Get Fully matured.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMatured();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsMatured = new ModelColumn<>(I_PP_Product_Planning.class, "IsMatured", null);
+	String COLUMNNAME_IsMatured = "IsMatured";
+
+	/**
 	 * Set Is MPS.
 	 * Indicates if this product is part of the master production schedule
 	 *
@@ -480,6 +501,56 @@ public interface I_PP_Product_Planning
 	int getMaxManufacturedQtyPerOrderDispo_UOM_ID();
 
 	String COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID = "MaxManufacturedQtyPerOrderDispo_UOM_ID";
+
+	/**
+	 * Set Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_ID (int M_Maturing_Configuration_ID);
+
+	/**
+	 * Get Maturing Configuration .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration getM_Maturing_Configuration();
+
+	void setM_Maturing_Configuration(@Nullable org.compiere.model.I_M_Maturing_Configuration M_Maturing_Configuration);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Maturing_Configuration> COLUMN_M_Maturing_Configuration_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_Maturing_Configuration_ID", org.compiere.model.I_M_Maturing_Configuration.class);
+	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
+
+	/**
+	 * Set Maturing Products Allocation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
+
+	/**
+	 * Get Maturing Products Allocation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Maturing_Configuration_Line_ID();
+
+	@Nullable org.compiere.model.I_M_Maturing_Configuration_Line getM_Maturing_Configuration_Line();
+
+	void setM_Maturing_Configuration_Line(@Nullable org.compiere.model.I_M_Maturing_Configuration_Line M_Maturing_Configuration_Line);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Maturing_Configuration_Line> COLUMN_M_Maturing_Configuration_Line_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_Maturing_Configuration_Line_ID", org.compiere.model.I_M_Maturing_Configuration_Line.class);
+	String COLUMNNAME_M_Maturing_Configuration_Line_ID = "M_Maturing_Configuration_Line_ID";
 
 	/**
 	 * Set Product.
