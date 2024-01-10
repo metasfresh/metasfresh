@@ -7,9 +7,9 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
+import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
@@ -81,7 +81,7 @@ public class MaterialCockpitRowFactory
 
 		@NonNull
 		@Singular
-		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+		List<QtyDemandQtySupply> quantitiesRecords;
 
 		@NonNull
 		MaterialCockpitDetailsRowAggregation detailsRowAggregation;
@@ -220,7 +220,7 @@ public class MaterialCockpitRowFactory
 			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 	{
-		for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
+		for (final QtyDemandQtySupply qtyRecord : request.getQuantitiesRecords())
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 

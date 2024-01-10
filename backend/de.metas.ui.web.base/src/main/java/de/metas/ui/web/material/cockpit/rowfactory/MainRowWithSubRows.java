@@ -3,9 +3,9 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import com.google.common.collect.ImmutableList;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
+import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
@@ -146,7 +146,7 @@ public class MainRowWithSubRows
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
-	private void addQuantitiesRecordToCounting(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord, @NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
+	private void addQuantitiesRecordToCounting(@NonNull final QtyDemandQtySupply quantitiesRecord, @NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(detailsRowAggregationIdentifier, this::newCountingSubRowBucket);
 		countingSubRow.addQuantitiesRecord(quantitiesRecord);
@@ -171,11 +171,10 @@ public class MainRowWithSubRows
 	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given quantitiesRecord could be added.
 	 */
 	private boolean addQuantitiesRecordToDimensionGroups(
-			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final QtyDemandQtySupply quantitiesRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
-		final AttributesKey attributesKey = AttributesKey.ofString(quantitiesRecord.getAttributesKey());
-		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(quantitiesRecord.getAttributesKey(), dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addQuantitiesRecord(quantitiesRecord));
 		return !subRowBuckets.isEmpty();
 	}
@@ -254,17 +253,16 @@ public class MainRowWithSubRows
 	}
 
 	public void addQuantitiesRecord(
-			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final QtyDemandQtySupply qtyDemandQtySupply,
 			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		boolean addedToAtLeastOneBucket = false;
 
 		int ppPlantId = 0;
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(quantitiesRecord.getM_Warehouse_ID());
-		if (warehouseId != null)
+		if (qtyDemandQtySupply.getWarehouseId() != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+			final I_M_Warehouse warehouse = warehouseDAO.getById(qtyDemandQtySupply.getWarehouseId());
 			ppPlantId = warehouse.getPP_Plant_ID();
 		}
 
@@ -275,7 +273,7 @@ public class MainRowWithSubRows
 				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 						.aggregationId(ppPlantId)
 						.build();
-				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+				addQuantitiesRecordToCounting(qtyDemandQtySupply, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
 
 			}
@@ -295,16 +293,16 @@ public class MainRowWithSubRows
 
 		if (!addedToAtLeastOneBucket)
 		{
-			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(quantitiesRecord, dimensionSpec);
+			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(qtyDemandQtySupply, dimensionSpec);
 		}
 
 		if (!addedToAtLeastOneBucket)
 		{
 			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, this::newSubRowBucket);
-			fallbackBucket.addQuantitiesRecord(quantitiesRecord);
+			fallbackBucket.addQuantitiesRecord(qtyDemandQtySupply);
 		}
 
-		mainRow.addQuantitiesRecord(quantitiesRecord);
+		mainRow.addQuantitiesRecord(qtyDemandQtySupply);
 	}
 
 	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,

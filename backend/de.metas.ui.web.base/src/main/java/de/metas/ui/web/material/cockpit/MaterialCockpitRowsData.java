@@ -24,28 +24,34 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import de.metas.material.cockpit.ProductsWithDemandSupply;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
-import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+import de.metas.util.async.Debouncer;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -54,9 +60,15 @@ import java.util.Set;
  */
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
+	private final static String SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS = "de.metas.ui.web.material.cockpit.MaterialCockpitRowsDataDebouncer.delayInMillis";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
+
+	private final Debouncer<DocumentIdsSelection> debouncer;
 
 	/**
 	 * Every row has a product, and so does every MD_Stock and MD_Candidate..
@@ -66,7 +78,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	public MaterialCockpitRowsData(
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
-			@NonNull final List<MaterialCockpitRow> rows)
+			@NonNull final List<MaterialCockpitRow> rows,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
 		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
@@ -79,6 +92,20 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			productIdDocumentIdBuilder.put(row.getProductId(), row.getId());
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
+
+		this.debouncer = Debouncer.<DocumentIdsSelection>builder()
+				.name(MaterialCockpitRowsData.class.getSimpleName() + "-debouncer")
+				.bufferMaxSize(500)
+				.delayInMillis(sysConfigBL.getIntValue(SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS, 1000))
+				.distinct(true)
+				.consumer(collectedItems -> {
+					final DocumentIdsSelection combinedItems = collectedItems.stream()
+							.reduce(DocumentIdsSelection.EMPTY, DocumentIdsSelection::addAll);
+
+					invalidateNow(combinedItems);
+				})
+				.build();
 	}
 
 	@Override
@@ -115,15 +142,19 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		invalidate(DocumentIdsSelection.ALL);
 	}
 
-	/**
-	 * Recomputes the given rows.
-	 */
 	@Override
 	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
+	{
+		debouncer.add(rowIds);
+	}
+
+	private void invalidateNow(@NonNull final DocumentIdsSelection rowIds)
 	{
 		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowIds);
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
+
+		final ProductsWithDemandSupply productsWithDemandSupply = loadQuantitiesRecords(rowsToInvalidate);
 
 		for (final MaterialCockpitRow row : rowsToInvalidate)
 		{
@@ -137,8 +168,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 			final ProductId productId = row.getProductId();
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
-			builder.quantitiesRecords(quantitiesRecords);
+			builder.quantitiesRecords(productsWithDemandSupply.getByProductId(productId));
 
 			builder.productIdToListEvenIfEmpty(productId);
 		}
@@ -192,10 +222,14 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	}
 
 	@NonNull
-	private List<I_QtyDemand_QtySupply_V> loadQuantitiesRecords(@NonNull final ProductId productId)
+	private ProductsWithDemandSupply loadQuantitiesRecords(@NonNull final Collection<MaterialCockpitRow> rows)
 	{
-		return QtyDemandSupplyFilters
-				.createQuantitiesQueryFor(productId)
-				.list();
+		final Set<ProductId> productIds = rows.stream()
+				.map(MaterialCockpitRow::getProductId)
+				.map(ProductId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds);
 	}
 }
