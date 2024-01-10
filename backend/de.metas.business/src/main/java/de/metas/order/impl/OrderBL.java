@@ -122,6 +122,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -172,6 +173,12 @@ public class OrderBL implements IOrderBL
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	@Override
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return orderDAO.getByIds(orderIds);
 	}
 
 	@Override
