@@ -28,7 +28,7 @@ echo "========================================================="
 echo " $1 health check ..."
 echo "---------------------------------------------------------"
 
-timeout 5s sh -c "until docker ps | grep $containerName | grep -q '(healthy)'; do echo 'Waiting for container to be healthy...'; sleep 30; done"
+timeout 300s sh -c "until docker ps | grep $containerName | grep -q '(healthy)'; do echo 'Waiting for container to be healthy...'; sleep 30; done"
 status=$?
 echo "Status: $status"
 if [ $status -eq 124 ] #timed out

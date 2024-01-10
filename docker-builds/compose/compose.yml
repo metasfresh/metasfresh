@@ -119,7 +119,7 @@ services:
   external:
     image: $mfregistry/metas-externalsystems:$mfversion
     healthcheck:
-      test: "curl --fail --silent localhost:8095/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent localhost:8095/actuator/health -H 'X-Auth-Token: $$DE_METAS_CAMEL_EXTERNALSYSTEMS_ACTUATOR_AUTH' | grep UP || exit 1"
       interval: 10s
       timeout: 10s
       start_period: 60s
@@ -129,6 +129,7 @@ services:
       - METASFRESH_API_V2_BASEURL=http://app:8282/api/v2
       - METASFRESH_ERROR-REPORT_FOLDER=file://app:8282/data/error
       - METASFRESH_API_AUTHTOKEN=37b5d80deb7a4ee098bdc82ff0971c84
+      - DE_METAS_CAMEL_EXTERNALSYSTEMS_ACTUATOR_AUTH=Ty59e2qkM7GEUZcMbAIIOjACIC6ziw5R
       - CAMEL_COMPONENT_RABBITMQ_HOSTNAME=rabbitmq
       - CAMEL_COMPONENT_RABBITMQ_PORT=5672
       - CAMEL_COMPONENT_RABBITMQ_USERNAME=metasfresh
