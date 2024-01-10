@@ -14,6 +14,7 @@
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
 	<parameter name="ShowDetails" class="java.lang.String"/>
+	<parameter name="Parameter_onlyActiveProducts" class="java.lang.String"/>
 	<parameter name="keydate" class="java.sql.Timestamp"/>
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
@@ -25,6 +26,7 @@ $P{keydate},
 $P{M_Product_ID},
 $P{M_Warehouse_ID},
 $P{ShowDetails},
+$P{Parameter_onlyActiveProducts},
 $P{ad_language}
 );]]>
 	</queryString>
