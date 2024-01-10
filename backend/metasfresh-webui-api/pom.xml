@@ -61,6 +61,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.invoice</groupId>
 			<artifactId>de.metas.invoice.webui</artifactId>
 			<version>${metasfresh.version}</version>
