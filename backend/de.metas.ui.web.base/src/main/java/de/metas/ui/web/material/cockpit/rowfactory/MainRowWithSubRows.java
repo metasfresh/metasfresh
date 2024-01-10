@@ -94,7 +94,7 @@ public class MainRowWithSubRows
 			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
-		final boolean addedToAtLeastOneBucket;
+		boolean addedToAtLeastOneBucket = false;
 
 		int ppPlantId = 0;
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(cockpitRecord.getM_Warehouse_ID());
@@ -127,10 +127,6 @@ public class MainRowWithSubRows
 			{
 				addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 			}
-		}
-		else
-		{
-			addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 		}
 
 		if (!addedToAtLeastOneBucket)
