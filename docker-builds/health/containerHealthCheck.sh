@@ -28,14 +28,15 @@ echo "========================================================="
 echo " $1 health check ..."
 echo "---------------------------------------------------------"
 
-timeout 300s sh -c "until docker ps | grep $containerName | grep '(healthy)'; do echo 'Waiting for container to be healthy...'; sleep 30; done"
+timeout 5s sh -c "until docker ps | grep $containerName | grep -q '(healthy)'; do echo 'Waiting for container to be healthy...'; sleep 30; done"
 status=$?
+echo "Status: $status"
 if [ $status -eq 124 ] #timed out
 then
   echo "---------------------------------------------------------"
   echo " start log of unhealthy $containerName"
   echo "---------------------------------------------------------"
-  docker-compose -f ../compose/compose.yml logs $containerName --tail 1000
+  docker-compose -f ../compose/compose.yml logs "$containerName" --tail 1000
   echo ""
   echo "---------------------------------------------------------"
   echo " end log of unhealthy $containerName"
