@@ -30,7 +30,11 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.*;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +55,7 @@ public class PP_Product_BOM
 				.orElse(BOMType.CurrentActive);
 
 		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord,
-				ImmutableSet.of(bomType), DocStatus.Completed);
+																							   ImmutableSet.of(bomType), DocStatus.Completed);
 
 		if (!previousBOMVersion.isPresent())
 		{
