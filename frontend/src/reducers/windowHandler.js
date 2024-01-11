@@ -437,12 +437,18 @@ export default function windowHandler(state = initialState, action) {
       };
     }
     case INIT_DATA_SUCCESS: {
-      const layout = state[action.scope].layout ?? {};
+      let layout = state[action.scope].layout ?? {};
       if (action.notFoundMessage !== undefined) {
-        layout.notFoundMessage = action.notFoundMessage;
+        layout = {
+          ...layout,
+          notFoundMessage: action.notFoundMessage,
+        };
       }
       if (action.notFoundMessageDetail !== undefined) {
-        layout.notFoundMessageDetail = action.notFoundMessageDetail;
+        layout = {
+          ...layout,
+          notFoundMessageDetail: action.notFoundMessageDetail,
+        };
       }
 
       return {
