@@ -972,9 +972,7 @@ Header.propTypes = {
 const mapStateToProps = (state) => {
   const {
     indicator,
-    master: {
-      saveStatus,
-    },
+    master: { saveStatus },
   } = state.windowHandler;
 
   return {
