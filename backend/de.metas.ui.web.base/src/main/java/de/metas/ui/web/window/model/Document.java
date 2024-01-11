@@ -1092,10 +1092,8 @@ public final class Document
 		return _valid;
 	}
 
-	private DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
+	private DocumentValidStatus setValidStatusAndReturn(@NonNull final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
 	{
-		Preconditions.checkNotNull(valid, "valid"); // shall not happen
-
 		// Don't check if changed because we want ALWAYS to collect the valid status
 		// final DocumentValidStatus validOld = _valid;
 		// if (Objects.equals(validOld, valid))
@@ -1136,7 +1134,7 @@ public final class Document
 			_saveStatusOnCheckout = saveStatus;
 		}
 
-		if (!isInitializingNewDocument() && !NullDocumentChangesCollector.isNull(changesCollector) && !saveStatus.equalsIgnoreReason(saveStatusOnCheckoutOld))
+		if (!isInitializingNewDocument() && !NullDocumentChangesCollector.isNull(changesCollector) && !Objects.equals(saveStatus, saveStatusOnCheckoutOld))
 		{
 			changesCollector.collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
 		}
@@ -1844,7 +1842,7 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument(), onValidStatusChanged);
+				return setValidStatusAndReturn(validState, onValidStatusChanged);
 			}
 		}
 
@@ -1953,20 +1951,10 @@ public final class Document
 		}
 		catch (final Exception saveEx)
 		{
-			// Directly propagate user validation exceptions
-			// NOTE: this is kind of workaround until we really fix how we mark if a document/included document got some errors.
-			// Known issue(s):
-			// When saving an included document (e.g. a line) is failing, the exception is caught (here) but for header document,
-			// so here we are flagging the header document instead of flagging the line.
-			if (AdempiereException.isUserValidationError(saveEx))
-			{
-				throw AdempiereException.wrapIfNeeded(saveEx);
-			}
-
 			// NOTE: usually if we do the right checks we shall not get to this
-			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
+			// logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
-			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
+			return setSaveStatusAndReturn(DocumentSaveStatus.error(saveEx));
 		}
 	}
 
@@ -1979,14 +1967,21 @@ public final class Document
 		boolean deleted = false;
 		if (hasChanges())
 		{
-			final SaveResult saveResult = getDocumentRepository().save(this);
-			if (saveResult == SaveResult.DELETED)
+			try
 			{
-				deleted = true;
-			}
+				final SaveResult saveResult = getDocumentRepository().save(this);
+				if (saveResult == SaveResult.DELETED)
+				{
+					deleted = true;
+				}
 
-			documentCallout.onSave(asCalloutRecord());
-			logger.debug("Document saved: {}", this);
+				documentCallout.onSave(asCalloutRecord());
+				logger.debug("Document saved: {}", this);
+			}
+			catch (Exception ex)
+			{
+				return setSaveStatusAndReturn(DocumentSaveStatus.error(ex)).throwIfError();
+			}
 		}
 		else
 		{

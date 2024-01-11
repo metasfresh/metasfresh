@@ -43,7 +43,7 @@ public class CountryDisplaySequenceHelper
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
 		{
 			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
-					.appendParametersToMessage()
+					//.appendParametersToMessage()
 					.setParameter("displaySequence", displaySequence);
 		}
 	}

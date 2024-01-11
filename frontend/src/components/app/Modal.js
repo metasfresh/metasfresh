@@ -577,18 +577,18 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
+      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const isNotSaved =
-      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -710,7 +710,14 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator {...{ isNotSaved, indicator }} />
+          <Indicator
+            indicator={indicator}
+            isDocumentNotSaved={
+              staticModalType === 'printing' ? false : isDocumentNotSaved
+            }
+            error={saveStatus?.error ? saveStatus?.reason : ''}
+            exception={saveStatus?.error ? saveStatus?.exception : null}
+          />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -864,10 +871,11 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.any,
+  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  modalSaveStatus: PropTypes.any,
+  saveStatus: PropTypes.object,
+  modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,
