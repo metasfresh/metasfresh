@@ -104,29 +104,26 @@ public class MainRowWithSubRows
 			ppPlantId = warehouse.getPP_Plant_ID();
 		}
 
-		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || !detailsRowAggregation.isNone())
+		if (detailsRowAggregation.isPlant())
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier;
-			if (detailsRowAggregation.isPlant() && ppPlantId > 0)
-			{
-				rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(ppPlantId)
-						.build();
-				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
-			else if (detailsRowAggregation.isWarehouse() && warehouseId != null)
-			{
-				rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(WarehouseId.toRepoId(warehouseId))
-						.build();
-				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
-			else
-			{
-				addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
-			}
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(ppPlantId)
+					.build();
+			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
+		}
+		else if (detailsRowAggregation.isWarehouse())
+		{
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(WarehouseId.toRepoId(warehouseId))
+					.build();
+			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
+		}
+
+		if (!addedToAtLeastOneBucket)
+		{
+			addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 		}
 
 		if (!addedToAtLeastOneBucket)
@@ -258,33 +255,34 @@ public class MainRowWithSubRows
 	{
 		boolean addedToAtLeastOneBucket = false;
 
+		int ppPlantId = 0;
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(quantitiesRecord.getM_Warehouse_ID());
 		if (warehouseId != null)
 		{
-			if (detailsRowAggregation.isWarehouse())
-			{
-				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(warehouseId.getRepoId())
-						.build();
-
-				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
-			else if (detailsRowAggregation.isPlant())
-			{
-				final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-				final int ppPlantId = warehouse.getPP_Plant_ID();
-				if (ppPlantId > 0)
-				{
-					final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-							.aggregationId(ppPlantId)
-							.build();
-					addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
-					addedToAtLeastOneBucket = true;
-				}
-			}
+			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+			ppPlantId = warehouse.getPP_Plant_ID();
 		}
-		else
+
+		if (detailsRowAggregation.isPlant())
+		{
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(ppPlantId)
+					.build();
+			addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
+
+		}
+		else if (detailsRowAggregation.isWarehouse())
+		{
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(WarehouseId.toRepoId(warehouseId))
+					.build();
+
+			addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
+		}
+
+		if (!addedToAtLeastOneBucket)
 		{
 			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(quantitiesRecord, dimensionSpec);
 		}
@@ -298,8 +296,15 @@ public class MainRowWithSubRows
 		mainRow.addQuantitiesRecord(quantitiesRecord);
 	}
 
-	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord, final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,
+			final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
+
+		if (detailsRowAggregation.isNone())
+		{
+			// nothing to do
+			return;
+		}
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
 		final int plantId = warehouseRecord.getPP_Plant_ID();
@@ -322,7 +327,6 @@ public class MainRowWithSubRows
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
 			countingSubRow.addStockRecord(stockRecord);
 		}
-
 	}
 
 	/**
