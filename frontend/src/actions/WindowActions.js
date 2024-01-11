@@ -217,6 +217,7 @@ export function initLayoutSuccess(layout, scope) {
 
 // @VisibleForTesting
 export function initDataSuccess({
+  windowId,
   data,
   docId,
   includedTabsInfo,
@@ -231,6 +232,7 @@ export function initDataSuccess({
 }) {
   return {
     type: INIT_DATA_SUCCESS,
+    windowId,
     data,
     docId,
     includedTabsInfo,
@@ -636,6 +638,7 @@ export function createWindow({
         disconnected !== 'inlineTab' &&
           dispatch(
             initDataSuccess({
+              windowId,
               data: parseToDisplay(responseDocuments[elem].fieldsByName),
               docId,
               saveStatus: data.saveStatus,
