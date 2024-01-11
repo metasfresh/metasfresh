@@ -104,23 +104,28 @@ public class MainRowWithSubRows
 			ppPlantId = warehouse.getPP_Plant_ID();
 		}
 
-		if (detailsRowAggregation.isPlant())
+		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0)
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-					.aggregationId(ppPlantId)
-					.build();
-			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-			addedToAtLeastOneBucket = true;
+			if (detailsRowAggregation.isPlant())
+			{
+				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+						.aggregationId(ppPlantId)
+						.build();
+				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+				addedToAtLeastOneBucket = true;
+			}
 		}
-		else if (detailsRowAggregation.isWarehouse())
+		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || warehouseId != null)
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-					.aggregationId(WarehouseId.toRepoId(warehouseId))
-					.build();
-			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-			addedToAtLeastOneBucket = true;
+			if (detailsRowAggregation.isWarehouse())
+			{
+				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+						.aggregationId(WarehouseId.toRepoId(warehouseId))
+						.build();
+				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+				addedToAtLeastOneBucket = true;
+			}
 		}
-
 		if (!addedToAtLeastOneBucket)
 		{
 			addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
@@ -263,23 +268,29 @@ public class MainRowWithSubRows
 			ppPlantId = warehouse.getPP_Plant_ID();
 		}
 
-		if (detailsRowAggregation.isPlant())
+		if (ppPlantId > 0)
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-					.aggregationId(ppPlantId)
-					.build();
-			addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
-			addedToAtLeastOneBucket = true;
+			if (detailsRowAggregation.isPlant())
+			{
+				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+						.aggregationId(ppPlantId)
+						.build();
+				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+				addedToAtLeastOneBucket = true;
 
+			}
 		}
-		else if (detailsRowAggregation.isWarehouse())
+		if(warehouseId!=null)
 		{
-			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-					.aggregationId(WarehouseId.toRepoId(warehouseId))
-					.build();
+			if (detailsRowAggregation.isWarehouse())
+			{
+				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+						.aggregationId(WarehouseId.toRepoId(warehouseId))
+						.build();
 
-			addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
-			addedToAtLeastOneBucket = true;
+				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+				addedToAtLeastOneBucket = true;
+			}
 		}
 
 		if (!addedToAtLeastOneBucket)
