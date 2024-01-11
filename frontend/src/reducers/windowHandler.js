@@ -438,6 +438,16 @@ export default function windowHandler(state = initialState, action) {
     }
     case INIT_DATA_SUCCESS: {
       let layout = state[action.scope].layout ?? {};
+
+      // If the action data is for another windowId then reset the layout.
+      // "INIT_LAYOUT_SUCCESS" action to come afterward and set the actual layout.
+      if (
+        action.windowId !== undefined &&
+        layout.windowId !== action.windowId
+      ) {
+        layout = {};
+      }
+
       if (action.notFoundMessage !== undefined) {
         layout = {
           ...layout,
