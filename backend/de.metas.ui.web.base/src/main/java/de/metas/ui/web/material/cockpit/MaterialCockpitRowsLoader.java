@@ -104,7 +104,7 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
-		final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+		final List<QtyDemandQtySupply> quantitiesRecords;
 		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
 		{
 			quantitiesRecords = getQtyRecords(cockpitRecords, stockRecords);

@@ -22,7 +22,6 @@
 
 package de.metas.ui.web.material.cockpit;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -47,13 +46,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Note: the tricky thing is that we can have rows that have neither an MD_Cockpit nor an MD_Stock record.
@@ -155,7 +148,9 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
-		final ProductsWithDemandSupply productsWithDemandSupply = loadQuantitiesRecords(rowsToInvalidate);
+		final ProductsWithDemandSupply productsWithDemandSupply = MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive()
+				? loadQuantitiesRecords(rowsToInvalidate)
+				: ProductsWithDemandSupply.of(ImmutableMap.of());
 
 		for (final MaterialCockpitRow row : rowsToInvalidate)
 		{
@@ -169,15 +164,6 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 			final ProductId productId = row.getProductId();
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
-			if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
-			{
-				quantitiesRecords = loadQuantitiesRecords(productId);
-			}
-			else
-			{
-				quantitiesRecords = ImmutableList.of();
-			}
 			builder.quantitiesRecords(productsWithDemandSupply.getByProductId(productId));
 
 			builder.productIdToListEvenIfEmpty(productId);
@@ -236,7 +222,6 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		final Set<ProductId> productIds = rows.stream()
 				.map(MaterialCockpitRow::getProductId)
-				.map(ProductId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
