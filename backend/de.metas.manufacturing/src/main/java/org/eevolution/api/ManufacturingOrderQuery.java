@@ -58,7 +58,8 @@ public class ManufacturingOrderQuery
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 	@NonNull @Singular ImmutableList<SortingOption> sortingOptions;
 
-	public enum SortingOption {
+	public enum SortingOption
+	{
 		SEQ_NO
 	}
 }
