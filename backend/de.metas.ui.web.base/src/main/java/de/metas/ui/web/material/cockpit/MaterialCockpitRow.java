@@ -35,12 +35,15 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.ListUtils;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -428,6 +431,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.product = lookups.lookupProductById(this.productId);
 
+
 		this.packageSize = productRecord.getPackageSize();
 
 		this.includedRows = includedRows;
@@ -586,12 +590,12 @@ public class MaterialCockpitRow implements IViewRow
 		this.lookups = lookups;
 	}
 
-	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
+	@Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
+			@NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier,
 			final LocalDate date,
-			@Nullable final ResourceId plantId,
 			@Nullable final Quantity qtyDemandSalesOrder,
 			@Nullable final Quantity qtySupplyPurchaseOrder,
 			@Nullable final Quantity qtyStockEstimateCountAtDate,
@@ -608,21 +612,50 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.dimensionGroupOrNull = null;
 
-		final String plantName;
-		if (plantId != null)
+		final String aggregatorName;
+
+		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = detailsRowAggregationIdentifier.getDetailsRowAggregation();
+
+		if (detailsRowAggregation.isPlant())
 		{
-			plantName = ResourceService.Legacy.getResourceName(plantId);
+
+			final ResourceId plantId = ResourceId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
+
+			if (plantId != null)
+			{
+				aggregatorName = ResourceService.Legacy.getResourceName(plantId);
+			}
+			else
+			{
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
+			}
+		}
+		else if(detailsRowAggregation.isWarehouse())
+		{
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
+			if(warehouseId != null)
+			{
+				final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
+
+				aggregatorName = warehousesDAO.getWarehouseName(warehouseId);
+			}
+			else
+			{
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Warehouse_Info");
+			}
 		}
 		else
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			plantName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
+			aggregatorName = "";
 		}
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"countingRow",
 				date,
 				productId,
-				plantName));
+				aggregatorName));
 
 		this.documentPath = DocumentPath.rootDocumentPath(
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
@@ -633,7 +666,7 @@ public class MaterialCockpitRow implements IViewRow
 		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
 		this.productValue = productRecord.getValue();
 		this.productName = productRecord.getName();
-		this.productCategoryOrSubRowName = plantName;
+		this.productCategoryOrSubRowName = aggregatorName;
 
 		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
 		this.uom = lookups.lookupUOMById(uomId);

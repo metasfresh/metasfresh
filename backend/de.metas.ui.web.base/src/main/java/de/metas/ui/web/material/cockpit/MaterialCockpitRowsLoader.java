@@ -87,7 +87,7 @@ public class MaterialCockpitRowsLoader
 	public List<MaterialCockpitRow> getMaterialCockpitRows(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final LocalDate date,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)
@@ -100,7 +100,7 @@ public class MaterialCockpitRowsLoader
 		final List<I_QtyDemand_QtySupply_V> quantitiesRecords = QtyDemandSupplyFilters
 				.createQuantitiesQueryFor(filters)
 				.list();
-		
+
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
 				.date(date)
@@ -108,7 +108,7 @@ public class MaterialCockpitRowsLoader
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
 				.quantitiesRecords(quantitiesRecords)
-				.includePerPlantDetailRows(includePerPlantDetailRows)
+				.detailsRowAggregation(detailsRowAggregation)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
 	}

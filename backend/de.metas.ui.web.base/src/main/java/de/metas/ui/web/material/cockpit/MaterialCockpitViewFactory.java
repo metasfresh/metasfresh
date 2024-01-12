@@ -121,15 +121,15 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader)
 	{
 		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
-		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
+		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = retrieveDetailsRowAggregation();
 		if (date == null)
 		{
-			return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, ImmutableList.of());
+			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of());
 		}
 
-		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, includePerPlantDetailRows);
+		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
 
-		return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, rows);
+		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows);
 	}
 
 	@Override
@@ -171,12 +171,14 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.build();
 	}
 
-	private boolean retrieveIsIncludePerPlantDetailRows()
+	private MaterialCockpitDetailsRowAggregation retrieveDetailsRowAggregation()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(
-				MaterialCockpitUtil.SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS,
-				false,
+		final String sysConfigValue = sysConfigBL.getValue(
+				MaterialCockpitUtil.SYSCONFIG_DETAILS_ROW_AGGREGATION,
+				MaterialCockpitDetailsRowAggregation.NONE.getValue(),
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
+
+		return MaterialCockpitDetailsRowAggregation.valueOf(sysConfigValue);
 	}
 }
