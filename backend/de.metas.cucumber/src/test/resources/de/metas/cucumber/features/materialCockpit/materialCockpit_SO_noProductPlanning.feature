@@ -477,6 +477,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7500265639/job/20419223945
   @Id:S0189_800
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and same ASI
