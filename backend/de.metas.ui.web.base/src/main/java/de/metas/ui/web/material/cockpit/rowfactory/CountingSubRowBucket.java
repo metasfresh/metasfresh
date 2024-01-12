@@ -4,8 +4,8 @@ import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
@@ -66,7 +66,7 @@ public class CountingSubRowBucket
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-	@Nullable private final ResourceId plantId;
+	@NonNull private final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier;
 
 	// Zaehlbestand
 	private Quantity qtyStockEstimateCountAtDate;
@@ -134,7 +134,7 @@ public class CountingSubRowBucket
 				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
-				.plantId(plantId)
+				.detailsRowAggregationIdentifier(detailsRowAggregationIdentifier)
 				.qtyDemandSalesOrder(qtyDemandSalesOrder)
 				.qtySupplyPurchaseOrder(qtySupplyPurchaseOrder)
 				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)

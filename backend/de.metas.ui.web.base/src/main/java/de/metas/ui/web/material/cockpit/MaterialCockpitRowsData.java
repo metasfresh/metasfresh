@@ -30,7 +30,9 @@ import de.metas.material.cockpit.ProductsWithDemandSupply;
 import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
+import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
@@ -57,7 +59,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final static String SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS = "de.metas.ui.web.material.cockpit.MaterialCockpitRowsDataDebouncer.delayInMillis";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final boolean includePerPlantDetailRows;
+
+	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
@@ -70,12 +73,11 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
 	public MaterialCockpitRowsData(
-			final boolean includePerPlantDetailRows,
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
-			@NonNull final List<MaterialCockpitRow> rows,
-			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
+			@NonNull final List<MaterialCockpitRow> rows)
 	{
-		this.includePerPlantDetailRows = includePerPlantDetailRows;
+		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
@@ -214,7 +216,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		return MaterialCockpitRowFactory.CreateRowsRequest.builder()
 				.date(localDate)
-				.includePerPlantDetailRows(includePerPlantDetailRows);
+				.detailsRowAggregation(detailsRowAggregation);
 	}
 
 	@NonNull
