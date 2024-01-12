@@ -73,6 +73,7 @@ describe('WindowActions thunks', () => {
                 { type: ACTION_TYPES.INIT_WINDOW },
                 {
                   type: ACTION_TYPES.INIT_DATA_SUCCESS,
+                  windowId: "143",
                   data: {},
                   docId: undefined,
                   hasComments: undefined,
@@ -241,6 +242,7 @@ describe('WindowActions thunks', () => {
               { type: ACTION_TYPES.INIT_WINDOW },
               {
                 type: ACTION_TYPES.INIT_DATA_SUCCESS,
+                windowId,
                 data: parseToDisplay(dataResponse[0].fieldsByName),
                 docId,
                 saveStatus: dataResponse[0].saveStatus,

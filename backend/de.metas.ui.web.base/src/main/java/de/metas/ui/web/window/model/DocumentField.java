@@ -83,7 +83,7 @@ class DocumentField implements IDocumentField
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus;
+	@NonNull private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -466,7 +466,6 @@ class DocumentField implements IDocumentField
 
 	/**
 	 * Computes field's validStatus.
-	 *
 	 * IMPORTANT: this method is not updating the status, it's only computing it.
 	 */
 	private DocumentValidStatus computeValidStatus()

@@ -14,6 +14,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
@@ -176,6 +177,11 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 
+		if(throwable instanceof CalloutExecutionException)
+		{
+			return cause;
+		}
+
 		return throwable;
 	}
 
@@ -275,6 +281,7 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = messageKey.toAD_Message();

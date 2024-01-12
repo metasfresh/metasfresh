@@ -72,7 +72,7 @@ public class FillMandatoryException extends AdempiereException
 
 			if (firstField)
 			{
-				builder.append(": ");
+				builder.append(" ");
 			}
 			else
 			{
