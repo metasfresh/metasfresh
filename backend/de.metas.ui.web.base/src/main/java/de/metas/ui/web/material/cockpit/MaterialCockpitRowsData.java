@@ -46,7 +46,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Note: the tricky thing is that we can have rows that have neither an MD_Cockpit nor an MD_Stock record.
@@ -56,8 +62,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
 	private final static String SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS = "de.metas.ui.web.material.cockpit.MaterialCockpitRowsDataDebouncer.delayInMillis";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private final boolean includePerPlantDetailRows;
+	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
@@ -70,12 +75,12 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
 	public MaterialCockpitRowsData(
-			final boolean includePerPlantDetailRows,
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
 			@NonNull final List<MaterialCockpitRow> rows,
 			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
-		this.includePerPlantDetailRows = includePerPlantDetailRows;
+		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
@@ -214,7 +219,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		return MaterialCockpitRowFactory.CreateRowsRequest.builder()
 				.date(localDate)
-				.includePerPlantDetailRows(includePerPlantDetailRows);
+				.detailsRowAggregation(detailsRowAggregation);
 	}
 
 	@NonNull
