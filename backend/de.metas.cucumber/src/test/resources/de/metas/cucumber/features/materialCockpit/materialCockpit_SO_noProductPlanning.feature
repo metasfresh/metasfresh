@@ -315,6 +315,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7495008589
   @Id:S0189_600
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and different ASI
