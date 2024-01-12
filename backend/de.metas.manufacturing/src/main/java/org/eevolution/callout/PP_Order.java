@@ -191,31 +191,31 @@ public class PP_Order extends CalloutEngine
 				.includeWithNullProductId(false)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
-		ProductPlanning productPlanningOrig = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanningOrig = productPlanningDAO.find(query).orElse(null);
 
-		ProductPlanning.ProductPlanningBuilder builder;
+		final ProductPlanning.ProductPlanningBuilder builder;
 		if (productPlanningOrig == null)
 		{
-			builder = productPlanningOrig.toBuilder();
-			builder.orgId(OrgId.ofRepoId(ppOrderWithProductId.getAD_Org_ID()));
-			builder.warehouseId(WarehouseId.ofRepoId(ppOrderWithProductId.getM_Warehouse_ID()));
-			builder.plantId(ResourceId.ofRepoId(ppOrderWithProductId.getS_Resource_ID()));
-			builder.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()));
+			builder = ProductPlanning.builder()
+					.orgId(OrgId.ofRepoId(ppOrderWithProductId.getAD_Org_ID()))
+					.warehouseId(WarehouseId.ofRepoId(ppOrderWithProductId.getM_Warehouse_ID()))
+					.plantId(ResourceId.ofRepoId(ppOrderWithProductId.getS_Resource_ID()))
+					.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()));
 		}
 		else
 		{
-			builder = ProductPlanning.builder();
+			builder = productPlanningOrig.toBuilder();
 		}
 		builder.disallowSaving(true);
 
 		final ProductId productId = ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()); // pp itself might not have M_Product_ID>0, so we use the PP_Order's one
-		if (productPlanningOrig.getWorkflowId() == null)
+		if (productPlanningOrig == null || productPlanningOrig.getWorkflowId() == null)
 		{
 			final PPRoutingId routingId = routingRepo.getRoutingIdByProductId(productId);
 			builder.workflowId(routingId);
 		}
 
-		if (productPlanningOrig.getBomVersionsId() == null)
+		if (productPlanningOrig == null || productPlanningOrig.getBomVersionsId() == null)
 		{
 			bomVersionsRepo.retrieveBOMVersionsId(productId).ifPresent(builder::bomVersionsId);
 		}
