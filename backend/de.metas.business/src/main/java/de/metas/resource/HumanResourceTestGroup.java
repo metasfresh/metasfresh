@@ -38,6 +38,6 @@ public class HumanResourceTestGroup
 	@NonNull String groupIdentifier;
 	@NonNull String name;
 	@NonNull String department;
-	@NonNull Duration weeklyCapacity;
+	@NonNull ResourceWeeklyAvailability availability;
 	@NonNull Boolean isActive;
 }

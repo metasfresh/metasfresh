@@ -257,7 +257,7 @@ public class DatabasePlanLoaderInstance
 		}
 
 		final HumanResourceTestGroup group = humanResourceTestGroupService.getById(groupId);
-		final ResourceWeeklyAvailability availability = ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17.timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION);
+		final ResourceWeeklyAvailability availability = group.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION);
 
 		return HumanResource.builder()
 				.id(HumanResourceId.of(group.getId()))

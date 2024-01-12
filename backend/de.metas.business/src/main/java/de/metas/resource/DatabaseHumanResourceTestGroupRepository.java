@@ -2,6 +2,7 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
@@ -10,9 +11,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_HumanResourceTestGroup;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -66,7 +68,7 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 	}
 
 	@NonNull
-	private static HumanResourceTestGroup fromRecord(@NonNull final I_S_HumanResourceTestGroup record)
+	public static HumanResourceTestGroup fromRecord(@NonNull final I_S_HumanResourceTestGroup record)
 	{
 		return HumanResourceTestGroup.builder()
 				.id(HumanResourceTestGroupId.ofRepoId(record.getS_HumanResourceTestGroup_ID()))
@@ -74,9 +76,62 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 				.groupIdentifier(record.getGroupIdentifier())
 				.name(record.getName())
 				.department(record.getDepartment())
-				.weeklyCapacity(Duration.ofHours(record.getCapacityInHours()))
+				.availability(extractResourceAvailability(record))
 				.isActive(record.isActive())
 				.build();
+	}
+
+	private static ResourceWeeklyAvailability extractResourceAvailability(final I_S_HumanResourceTestGroup record)
+	{
+		final boolean timeSlot = record.isTimeSlot();
+		return ResourceWeeklyAvailability.builder()
+				.availableDaysOfWeek(extractAvailableDaysOfWeek(record))
+				.timeSlot(timeSlot)
+				.timeSlotStart(timeSlot ? TimeUtil.asLocalTime(record.getTimeSlotStart()) : null)
+				.timeSlotEnd(timeSlot ? TimeUtil.asLocalTime(record.getTimeSlotEnd()) : null)
+				.build();
+	}
+
+	private static ImmutableSet<DayOfWeek> extractAvailableDaysOfWeek(@NonNull final I_S_HumanResourceTestGroup record)
+	{
+		if (record.isDateSlot())
+		{
+			final ImmutableSet.Builder<DayOfWeek> days = ImmutableSet.builder();
+			if (record.isOnMonday())
+			{
+				days.add(DayOfWeek.MONDAY);
+			}
+			if (record.isOnTuesday())
+			{
+				days.add(DayOfWeek.TUESDAY);
+			}
+			if (record.isOnWednesday())
+			{
+				days.add(DayOfWeek.WEDNESDAY);
+			}
+			if (record.isOnThursday())
+			{
+				days.add(DayOfWeek.THURSDAY);
+			}
+			if (record.isOnFriday())
+			{
+				days.add(DayOfWeek.FRIDAY);
+			}
+			if (record.isOnSaturday())
+			{
+				days.add(DayOfWeek.SATURDAY);
+			}
+			if (record.isOnSunday())
+			{
+				days.add(DayOfWeek.SUNDAY);
+			}
+
+			return days.build();
+		}
+		else
+		{
+			return ImmutableSet.copyOf(DayOfWeek.values());
+		}
 	}
 
 	//
