@@ -16,9 +16,9 @@ public class StepPreviousEndDateUpdater implements VariableListener<Plan, StepAl
 	@Override
 	public void afterEntityAdded(ScoreDirector<Plan> scoreDirector, StepAllocation step)
 	{
-		System.out.println("afterEntityAdded: " + step + " --------------------------");
+		//System.out.println("afterEntityAdded: " + step + " --------------------------");
 		updateStep(scoreDirector, step);
-		System.out.println("---------------------------------------------------------");
+		//System.out.println("---------------------------------------------------------");
 	}
 
 	@Override
