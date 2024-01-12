@@ -1912,7 +1912,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -1932,7 +1932,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoiceContactRecord.getC_BPartner_Location_ID());
 		if (contactLocationId != null)
 		{
-			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
+			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdEvenInactive(contactLocationId);
 			if (contactLocationRecord == null)
 			{
 				return null;
