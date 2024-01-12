@@ -74,4 +74,7 @@ public interface I_T_WEBUI_ViewSelection
 	String COLUMNNAME_StringKey9 = "StringKey9";
 	String COLUMNNAME_StringKey10 = "StringKey10";
 	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1, COLUMNNAME_StringKey2, COLUMNNAME_StringKey3, COLUMNNAME_StringKey4, COLUMNNAME_StringKey5, COLUMNNAME_StringKey6, COLUMNNAME_StringKey7, COLUMNNAME_StringKey8, COLUMNNAME_StringKey9, COLUMNNAME_StringKey10);
+
+	String COLUMNNAME_TimestampKey1 = "TimestampKey1";
+	ImmutableList<String> COLUMNNAME_TimestampKeys = ImmutableList.of(COLUMNNAME_TimestampKey1);
 }

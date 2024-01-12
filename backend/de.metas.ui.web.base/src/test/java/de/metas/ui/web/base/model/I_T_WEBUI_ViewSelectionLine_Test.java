@@ -42,4 +42,10 @@ class I_T_WEBUI_ViewSelectionLine_Test
 		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_StringKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
 		assertThat(I_T_ES_FTS_Search_Result.COLUMNNAME_StringKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
 	}
+
+	@Test
+	void checkTimestampKeys()
+	{
+		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_TimestampKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_TimestampKeys);
+	}
 }
