@@ -12,7 +12,6 @@ import {
 import { getTableId } from '../../../reducers/tables';
 
 import AttributesDropdown from './AttributesDropdown';
-import TetherComponent from 'react-tether';
 import { useSelector } from 'react-redux';
 import { getSettingFromStateAsPositiveInt } from '../../../utils/settings';
 
@@ -221,57 +220,35 @@ const Attributes = ({
 
   return (
     <div className={classnames('attributes', { 'attributes-in-table': rowId })}>
-      <TetherComponent
-        attachment="bottom left"
-        targetAttachment="top right"
-        constraints={[
+      <button
+        tabIndex={tabIndex}
+        onClick={() => showHideDropdown(true)}
+        className={classnames(
+          'btn btn-block tag tag-lg tag-block tag-secondary pointer',
           {
-            to: 'scrollParent',
-          },
-          {
-            to: 'window',
-            pin: ['top'],
-          },
-        ]}
-        renderTarget={(ref) => (
-          <div ref={ref}>
-            <button
-              tabIndex={tabIndex}
-              onClick={() => showHideDropdown(true)}
-              className={classnames(
-                'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-                {
-                  'tag-disabled': isDropdownOpen,
-                  'tag-disabled disabled': readonly,
-                }
-              )}
-            >
-              {buttonCaption}
-            </button>
-          </div>
+            'tag-disabled': isDropdownOpen,
+            'tag-disabled disabled': readonly,
+          }
         )}
-        renderElement={(ref) =>
-          isDropdownOpen &&
-          layout &&
-          fieldsByName && (
-            <AttributesDropdown
-              ref={ref}
-              attributeType={attributeType}
-              editingInstanceId={editingInstanceId}
-              layout={layout}
-              fieldsByName={fieldsByName}
-              rowIndex={rowIndex}
-              tabIndex={tabIndex}
-              isModal={isModal}
-              maxHeight={maxHeight}
-              //
-              onFieldChange={handleFieldChange}
-              onFieldPatch={handleFieldPatch}
-              onCompletion={handleCompletion}
-            />
-          )
-        }
-      ></TetherComponent>
+      >
+        {buttonCaption}
+      </button>
+      {isDropdownOpen && layout && fieldsByName && (
+        <AttributesDropdown
+          attributeType={attributeType}
+          editingInstanceId={editingInstanceId}
+          layout={layout}
+          fieldsByName={fieldsByName}
+          rowIndex={rowIndex}
+          tabIndex={tabIndex}
+          isModal={isModal}
+          maxHeight={maxHeight}
+          //
+          onFieldChange={handleFieldChange}
+          onFieldPatch={handleFieldPatch}
+          onCompletion={handleCompletion}
+        />
+      )}
     </div>
   );
 };
