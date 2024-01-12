@@ -30,9 +30,7 @@ import de.metas.material.cockpit.ProductsWithDemandSupply;
 import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
-import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
@@ -48,7 +46,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Note: the tricky thing is that we can have rows that have neither an MD_Cockpit nor an MD_Stock record.
@@ -58,8 +62,6 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
 	private final static String SYS_CONFIG_DEBOUNCER_DELAY_MILLISECONDS = "de.metas.ui.web.material.cockpit.MaterialCockpitRowsDataDebouncer.delayInMillis";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-
 	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
@@ -75,7 +77,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	public MaterialCockpitRowsData(
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
-			@NonNull final List<MaterialCockpitRow> rows)
+			@NonNull final List<MaterialCockpitRow> rows,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
 		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;

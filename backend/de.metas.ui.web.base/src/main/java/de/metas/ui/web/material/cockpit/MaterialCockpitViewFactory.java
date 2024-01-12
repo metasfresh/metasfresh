@@ -131,12 +131,12 @@ public class MaterialCockpitViewFactory implements IViewFactory
 		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = retrieveDetailsRowAggregation();
 		if (date == null)
 		{
-			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of());
+			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of(), qtyDemandSupplyRepository);
 		}
 
 		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
 
-		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows);
+		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows, qtyDemandSupplyRepository);
 	}
 
 	@Override
