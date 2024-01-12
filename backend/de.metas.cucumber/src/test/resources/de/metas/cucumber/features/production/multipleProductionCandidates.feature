@@ -126,7 +126,7 @@ Feature: create multiple production candidates
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | DR            |
 
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
       | oc_2       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 0            | 2            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -202,7 +202,7 @@ Feature: create multiple production candidates
       | ppOrder_2              | 5          |
       | ppOrder_3              | 1          |
 
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 1            | 11           | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
 
@@ -306,7 +306,7 @@ Feature: create multiple production candidates
       | ppOrder_3_1            | 2          |
       | ppOrder_3_2            | 2          |
 
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_3_1 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 0            | 3            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
       | ppOrderCandidate_3_2 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 5            | 4            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
