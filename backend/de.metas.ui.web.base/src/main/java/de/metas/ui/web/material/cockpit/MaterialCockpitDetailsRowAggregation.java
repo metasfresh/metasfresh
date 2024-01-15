@@ -25,6 +25,8 @@ package de.metas.ui.web.material.cockpit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
+
 @AllArgsConstructor
 @Getter
 public enum MaterialCockpitDetailsRowAggregation
@@ -34,6 +36,18 @@ public enum MaterialCockpitDetailsRowAggregation
 	NONE("NONE");
 
 	private final String value;
+
+	public static MaterialCockpitDetailsRowAggregation getValueOrDefault(@Nullable final String value)
+	{
+		for (final MaterialCockpitDetailsRowAggregation aggregation : MaterialCockpitDetailsRowAggregation.values())
+		{
+			if (aggregation.name().equalsIgnoreCase(value))
+			{
+				return aggregation;
+			}
+		}
+		return PLANT;  // default value
+	}
 
 	public boolean isNone()
 	{
