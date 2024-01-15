@@ -43,6 +43,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -87,6 +88,11 @@ public class HandlingUnitsRestController
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
 	private static final String SYS_CONFIG_BY_SERIAL_NO_HUStatuses = "de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses";
 
+	/**
+	 * {@code M_Attribute.Value}s of attributes to include, even if empty.
+	 */
+	private static final String SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE = "de.metas.handlingunits.rest_api.bySerialNo.includedHUAttributesEvenIfEmpty";
+
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -95,23 +101,31 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
-	@ApiOperation("Retrieves a singular HU by serialNo."
-			+ " By default, takes into consideration only HUs with status = 'Active'. "
-			+ " But custom HU statuses can be set via AD_SysConfig: 'de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses'")
+	@ApiOperation("Retrieves a singular HU by serialNo.\n"
+			+ "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
+			+ "  But custom HU statuses can be set via `AD_SysConfig`: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`\n"
+			+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
+			+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via `AD_SysConfig`: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`"
+	)
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo));
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+		final Supplier<I_M_HU> huSupplier = () -> retrieveHUIdBySerialNo(serialNo, clientAndOrgId);
+
+		return toSingleHUResponseEntity(huSupplier, clientAndOrgId);
 	}
 
 	@NonNull
-	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo)
+	private I_M_HU retrieveHUIdBySerialNo(
+			final @NonNull String serialNo,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final ImmutableSet<String> onlyHUStatuses = Arrays.stream(sysConfigBL.getValueOptional(SYS_CONFIG_BY_SERIAL_NO_HUStatuses)
-																		  .orElse(X_M_HU.HUSTATUS_Active)
-																		  .split(","))
-				.map(String::trim)
-				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<String> onlyHUStatuses = extractStringSet(
+				SYS_CONFIG_BY_SERIAL_NO_HUStatuses,
+				X_M_HU.HUSTATUS_Active,
+				clientAndOrgId);
 
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
@@ -165,7 +179,9 @@ public class HandlingUnitsRestController
 		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
 	}
 
-	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
+	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(
+			@NonNull final Supplier<I_M_HU> huSupplier,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -177,20 +193,38 @@ public class HandlingUnitsRestController
 				throw new AdempiereException("No HU found");
 			}
 
+			final ImmutableSet<String> attributesToInclude = extractStringSet(SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE, "", clientAndOrgId);
+
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
 											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
 																						 .hu(hu)
 																						 .adLanguage(adLanguage)
 																						 .excludeEmptyAttributes(true)
+																						 .emptyAttributesToInclude(attributesToInclude)
 																						 .build()))
 											 .build());
 		}
 		catch (final Exception ex)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(ex, adLanguage))
-					.build());
+															.error(JsonErrors.ofThrowable(ex, adLanguage))
+															.build());
 		}
+	}
+
+	private ImmutableSet<String> extractStringSet(
+			@NonNull final String sysConfigValue,
+			@NonNull final String defaultValue,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return Arrays.stream(sysConfigBL
+									 .getValue(
+											 sysConfigValue,
+											 defaultValue,
+											 clientAndOrgId)
+									 .split(","))
+				.map(String::trim)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@PostMapping("/byId/{M_HU_ID}/dispose")
@@ -231,12 +265,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-						.stream()
-						.map(item -> JsonDisposalReason.builder()
-								.key(item.getValue())
-								.caption(item.getName().translate(adLanguage))
-								.build())
-						.collect(ImmutableList.toImmutableList()))
+								 .stream()
+								 .map(item -> JsonDisposalReason.builder()
+										 .key(item.getValue())
+										 .caption(item.getName().translate(adLanguage))
+										 .build())
+								 .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -292,10 +326,10 @@ public class HandlingUnitsRestController
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-				.huId(request.getHuId())
-				.huQRCode(huQRCode)
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-				.build());
+										  .huId(request.getHuId())
+										  .huQRCode(huQRCode)
+										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+										  .build());
 
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
