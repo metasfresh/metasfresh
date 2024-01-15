@@ -115,7 +115,7 @@ public class HUQtyService
 				.quantityBooked(huQty)
 				.quantityCount(newQty)
 				.productId(huProductStorage.getProductId())
-				.storageAttributesKey(handlingUnitsBL.getStorageRelevantAttributesKey(hu))
+				.storageAttributesKey(handlingUnitsBL.getAttributesKey(hu))
 				.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
 				.markAsCounted(true)
 				.build();

@@ -95,7 +95,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -1040,15 +1039,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
+	public AttributesKey getAttributesKey(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
-		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
-
-		return AttributesKeys
-				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
+		return AttributesKeys.createAttributesKeyFromAttributeSet(attributeStorage)
 				.orElse(AttributesKey.NONE);
 	}
 
