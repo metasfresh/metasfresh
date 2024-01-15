@@ -79,6 +79,7 @@ public class InvoiceProcessingServiceCompanyConfig
 		if (invoiceDocTypeId != null)
 		{
 			final Optional<Percent> matchingDocTypePercent = detailsList.stream()
+					.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive)
 					.filter(details -> invoiceDocTypeId.equals(details.getDocTypeId()))
 					.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 					.findFirst();
@@ -90,9 +91,23 @@ public class InvoiceProcessingServiceCompanyConfig
 		}
 
 		return detailsList.stream()
+				.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive)
 				.filter(details -> details.getDocTypeId() == null)
 				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 				.findFirst();
+	}
+
+	public boolean isBPartnerDetailsActive(@NonNull final BPartnerId bpartnerId)
+	{
+		final ImmutableCollection<InvoiceProcessingServiceCompanyConfigBPartnerDetails> detailsList = bpartnerDetails.get(bpartnerId);
+
+		if (isEmpty(detailsList))
+		{
+			return false;
+		}
+
+		return detailsList.stream()
+				.anyMatch(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive);
 	}
 }
 
@@ -108,4 +123,7 @@ public class InvoiceProcessingServiceCompanyConfig
 
 	@Nullable
 	DocTypeId docTypeId;
+	
+	@NonNull
+	Boolean isActive;
 }

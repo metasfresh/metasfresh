@@ -76,7 +76,9 @@ import java.util.Optional;
 			final InvoiceProcessingServiceCompanyConfig config = configs.get(i);
 			if (config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom))
 			{
-				return Optional.of(config);
+				return config.isBPartnerDetailsActive(customerId)
+						? Optional.of(config)
+						: Optional.empty();
 			}
 		}
 
