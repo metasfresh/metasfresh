@@ -179,6 +179,6 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
 
-		return MaterialCockpitDetailsRowAggregation.valueOf(sysConfigValue);
+		return MaterialCockpitDetailsRowAggregation.getValueOrDefault(sysConfigValue);
 	}
 }
