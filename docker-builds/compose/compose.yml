@@ -144,7 +144,7 @@ services:
   webui:
     image: $mfregistry/metas-frontend:$mfversion
     ports:
-      - "3000:80"
+      - "80:80"
       - "443:443"
     volumes:
       - ./web-config.js:/usr/share/nginx/html/config.js:ro
