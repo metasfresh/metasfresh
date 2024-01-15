@@ -16,7 +16,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -394,9 +394,17 @@
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="44" splitType="Stretch">
+		<band height="90" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-7" x="3" y="2" width="592" height="86" uuid="921035d3-435f-412a-9151-3b4e875265b0"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
+			</subreport>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-63" x="435" y="9" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2d7c06b4-7222-473d-8d59-7bd6b2e72fc3"/>
+				<reportElement key="textField-63" x="420" y="4" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2d7c06b4-7222-473d-8d59-7bd6b2e72fc3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -409,7 +417,7 @@
 				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-62" x="498" y="9" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fa4e8c9e-1dc3-4c7c-bab9-8114b823d43b"/>
+				<reportElement key="textField-62" x="483" y="4" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fa4e8c9e-1dc3-4c7c-bab9-8114b823d43b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -422,7 +430,7 @@
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " / "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Report" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-64" x="520" y="9" width="61" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="899b94d3-c6e6-4543-b2e5-b3414df898d8"/>
+				<reportElement key="textField-64" x="505" y="4" width="61" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="899b94d3-c6e6-4543-b2e5-b3414df898d8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
