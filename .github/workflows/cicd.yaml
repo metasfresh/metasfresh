@@ -620,6 +620,7 @@ jobs:
           docker-compose up -d
       - name: Make the script files executable
         working-directory: docker-builds/health/
+        if: success() || failure()
         run: |
           chmod +x apiHealthChecks.sh containerHealthCheck.sh
       - name: db health check
