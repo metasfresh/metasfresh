@@ -79,6 +79,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -187,10 +188,8 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
 	/**
 	 * Table ID if the Process
@@ -348,16 +347,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -366,6 +358,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
