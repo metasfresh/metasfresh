@@ -163,3 +163,135 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Abmelden',Updated=TO_TIMEST
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Einstellungen',Updated=TO_TIMESTAMP('2024-01-15 11:45:03.748','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544344
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- Element: AD_NotificationGroup_ID
+-- 2024-01-15T17:03:44.272Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Benachrichtigungsgrupe', PrintName='Benachrichtigungsgrupe',Updated=TO_TIMESTAMP('2024-01-15 18:03:44.272','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543947 AND AD_Language='de_CH'
+;
+
+-- 2024-01-15T17:03:44.429Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543947,'de_CH')
+;
+
+-- Element: AD_NotificationGroup_ID
+-- 2024-01-15T17:04:05.474Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Benachrichtigungsgrupe', PrintName='Benachrichtigungsgrupe',Updated=TO_TIMESTAMP('2024-01-15 18:04:05.474','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543947 AND AD_Language='de_DE'
+;
+
+-- 2024-01-15T17:04:05.540Z
+UPDATE AD_Element SET Name='Benachrichtigungsgrupe', PrintName='Benachrichtigungsgrupe' WHERE AD_Element_ID=543947
+;
+
+-- 2024-01-15T17:04:07.578Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(543947,'de_DE')
+;
+
+-- 2024-01-15T17:04:07.640Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543947,'de_DE')
+;
+
+-- Element: AD_Form_ID
+-- 2024-01-15T17:14:59.641Z
+UPDATE AD_Element_Trl SET Description='Sonderform', Help='Das Feld Sonderformular identifiziert ein eindeutiges Sonderformular im System.', IsTranslated='Y', Name='Sonderform', PrintName='Sonderform',Updated=TO_TIMESTAMP('2024-01-15 18:14:59.641','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=1298 AND AD_Language='de_DE'
+;
+
+-- 2024-01-15T17:14:59.701Z
+UPDATE AD_Element SET Description='Sonderform', Help='Das Feld Sonderformular identifiziert ein eindeutiges Sonderformular im System.', Name='Sonderform', PrintName='Sonderform' WHERE AD_Element_ID=1298
+;
+
+-- 2024-01-15T17:15:01.227Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(1298,'de_DE')
+;
+
+-- 2024-01-15T17:15:01.286Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1298,'de_DE')
+;
+
+-- Element: AD_Form_ID
+-- 2024-01-15T17:15:19.541Z
+UPDATE AD_Element_Trl SET Description='Sonderform', Help='Das Feld Sonderformular identifiziert ein eindeutiges Sonderformular im System.', IsTranslated='Y', Name='Sonderform', PrintName='Sonderform',Updated=TO_TIMESTAMP('2024-01-15 18:15:19.541','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=1298 AND AD_Language='de_CH'
+;
+
+-- 2024-01-15T17:15:19.666Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1298,'de_CH')
+;
+
+-- Element: IsPermissionGranted
+-- 2024-01-15T17:17:37.927Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis erteilt', PrintName='Erlaubnis erteilt',Updated=TO_TIMESTAMP('2024-01-15 18:17:37.927','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54160 AND AD_Language='de_CH'
+;
+
+-- 2024-01-15T17:17:38.050Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54160,'de_CH')
+;
+
+-- Element: IsPermissionGranted
+-- 2024-01-15T17:17:46.618Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis erteilt', PrintName='Erlaubnis erteilt',Updated=TO_TIMESTAMP('2024-01-15 18:17:46.618','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54160 AND AD_Language='de_DE'
+;
+
+-- 2024-01-15T17:17:46.676Z
+UPDATE AD_Element SET Name='Erlaubnis erteilt', PrintName='Erlaubnis erteilt' WHERE AD_Element_ID=54160
+;
+
+-- 2024-01-15T17:17:48.578Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(54160,'de_DE')
+;
+
+-- 2024-01-15T17:17:48.638Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54160,'de_DE')
+;
+
+-- Element: GrantPermission
+-- 2024-01-15T17:22:02.243Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis erteilen', PrintName='Erlaubnis erteilen',Updated=TO_TIMESTAMP('2024-01-15 18:22:02.243','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54161 AND AD_Language='de_CH'
+;
+
+-- 2024-01-15T17:22:02.360Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54161,'de_CH')
+;
+
+-- Element: GrantPermission
+-- 2024-01-15T17:22:15.447Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis erteilen', PrintName='Erlaubnis erteilen',Updated=TO_TIMESTAMP('2024-01-15 18:22:15.447','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54161 AND AD_Language='de_DE'
+;
+
+-- 2024-01-15T17:22:15.507Z
+UPDATE AD_Element SET Name='Erlaubnis erteilen', PrintName='Erlaubnis erteilen' WHERE AD_Element_ID=54161
+;
+
+-- 2024-01-15T17:22:23.168Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(54161,'de_DE')
+;
+
+-- 2024-01-15T17:22:23.229Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54161,'de_DE')
+;
+
+-- Element: RevokePermission
+-- 2024-01-15T17:23:30.614Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis widerrufen', PrintName='Erlaubnis widerrufen',Updated=TO_TIMESTAMP('2024-01-15 18:23:30.614','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54162 AND AD_Language='de_CH'
+;
+
+-- 2024-01-15T17:23:30.734Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54162,'de_CH')
+;
+
+-- Element: RevokePermission
+-- 2024-01-15T17:23:44.518Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erlaubnis widerrufen', PrintName='Erlaubnis widerrufen',Updated=TO_TIMESTAMP('2024-01-15 18:23:44.518','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=54162 AND AD_Language='de_DE'
+;
+
+-- 2024-01-15T17:23:44.580Z
+UPDATE AD_Element SET Name='Erlaubnis widerrufen', PrintName='Erlaubnis widerrufen' WHERE AD_Element_ID=54162
+;
+
+-- 2024-01-15T17:23:46.154Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(54162,'de_DE')
+;
+
+-- 2024-01-15T17:23:46.214Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(54162,'de_DE')
+;
+
