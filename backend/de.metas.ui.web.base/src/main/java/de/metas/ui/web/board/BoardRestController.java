@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -272,7 +272,7 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
-		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL);
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL, userSession.getUserRolePermissionsKey());
 
 		final JSONDocumentLayoutOptions options = newJSONLayoutOptions();
 		final String adLanguage = options.getAdLanguage();

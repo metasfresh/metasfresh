@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process.impl;
 
 import ch.qos.logback.classic.Level;
@@ -670,5 +692,22 @@ public class ADProcessDAO implements IADProcessDAO
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	public ProcessType retrieveProcessType(@NonNull final AdProcessId processId)
+	{
+		final I_AD_Process process = InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+		return ProcessType.ofCode(process.getType());
+	}
+
+	@Override
+	public ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
+				.create()
+				.listIds(AdProcessId::ofRepoId);
 	}
 }
