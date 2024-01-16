@@ -672,6 +672,14 @@ jobs:
         if: success() || failure()
         run: |
           docker-compose ps -a
+          docker inspect --format "{{json .State.Health }}" compose_db_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_webapi_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_app_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_rabbitmq_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
       - name: stop docker-compose
         working-directory: docker-builds/compose/
         env:

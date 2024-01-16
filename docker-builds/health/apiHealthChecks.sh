@@ -35,7 +35,7 @@ echo "========================================================="
 echo " window health check ..."
 echo "---------------------------------------------------------"
 
-healthJson=$(jq . <<< $(curl localhost:8080/rest/api/window/health -H "Accept: application/json"))
+healthJson=$(jq . <<< $(curl --silent localhost:8080/rest/api/window/health -H "Accept: application/json"))
 countErrors=$(jq '.countErrors' <<< $healthJson)
 
 echo ""
@@ -70,7 +70,7 @@ echo "========================================================="
 echo " process health check ..."
 echo "---------------------------------------------------------"
 
-healthJson=$(jq . <<< $(curl localhost:8080/rest/api/process/health -H "Accept: application/json"))
+healthJson=$(jq . <<< $(curl --silent localhost:8080/rest/api/process/health -H "Accept: application/json"))
 countErrors=$(jq '.countErrors' <<< $healthJson)
 
 echo ""
@@ -105,7 +105,7 @@ echo "========================================================="
 echo " view health check ..."
 echo "---------------------------------------------------------"
 
-healthJson=$(jq . <<< $(curl localhost:8080/rest/api/view/health -H "Accept: application/json"))
+healthJson=$(jq . <<< $(curl --silent localhost:8080/rest/api/view/health -H "Accept: application/json"))
 countErrors=$(jq '.countErrors' <<< $healthJson)
 
 echo ""
