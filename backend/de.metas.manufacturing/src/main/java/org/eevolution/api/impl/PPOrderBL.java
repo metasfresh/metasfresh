@@ -338,11 +338,11 @@ public class PPOrderBL implements IPPOrderBL
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.toDocBaseType())
-				.docSubType(docSubType)
-				.adClientId(ppOrder.getAD_Client_ID())
-				.adOrgId(ppOrder.getAD_Org_ID())
-				.build());
+																	  .docBaseType(docBaseType.toDocBaseType())
+																	  .docSubType(docSubType)
+																	  .adClientId(ppOrder.getAD_Client_ID())
+																	  .adOrgId(ppOrder.getAD_Org_ID())
+																	  .build());
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
@@ -698,6 +698,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		return docTypeBL.isModularManufacturingOrder(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
 	}
+
 	@NonNull
 	public Optional<Quantity> getRoundingToScale(@NonNull final PPOrderId ppOrderId)
 	{

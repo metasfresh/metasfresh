@@ -531,13 +531,25 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		return shipmentSchedulePA.getByOrderIds(orderId);
+		return shipmentSchedulePA.getByOrderId(orderId);
+	}
+
+	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return shipmentSchedulePA.getByOrderIds(orderIds);
 	}
 
 	@Override
 	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
 	{
 		return shipmentSchedulePA.anyMatchByOrderId(orderId);
+	}
+
+	@Override
+	public boolean anyMatchByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return shipmentSchedulePA.anyMatchByOrderIds(orderIds);
 	}
 
 	@Override

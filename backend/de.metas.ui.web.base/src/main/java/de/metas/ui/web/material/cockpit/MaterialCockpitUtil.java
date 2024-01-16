@@ -45,7 +45,7 @@ public final class MaterialCockpitUtil
 	public static final String SYSCONFIG_DIM_SPEC_INTERNAL_NAME = "de.metas.ui.web.material.cockpit.DIM_Dimension_Spec.InternalName";
 	public static final String DEFAULT_DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
 
-	public static final String SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS = "de.metas.ui.web.material.cockpit.DisplayPerPlantDetailRows";
+	public static final String SYSCONFIG_DETAILS_ROW_AGGREGATION = "de.metas.ui.web.material.cockpit.DetailsRowAggregation";
 
 	private static final String SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE = "de.metas.ui.web.material.cockpit.I_QtyDemand_QtySupply_V.IsActive";
 

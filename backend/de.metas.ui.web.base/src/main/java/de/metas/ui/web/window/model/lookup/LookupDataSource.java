@@ -59,7 +59,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	@Override
 	@Nullable
-	LookupValue findById(Object id);
+	LookupValue findById(@Nullable Object id);
 
 	default Optional<LookupValue> findByIdOptional(Object id) {return Optional.ofNullable(findById(id));}
 

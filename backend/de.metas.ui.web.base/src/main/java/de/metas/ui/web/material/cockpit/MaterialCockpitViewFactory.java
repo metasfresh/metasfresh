@@ -24,6 +24,7 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -68,6 +69,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	private final MaterialCockpitRowsLoader materialCockpitRowsLoader;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -76,11 +78,13 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
 			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory,
-			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
 		this.materialCockpitRowsLoader = materialCockpitRowsLoader;
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
 
 		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
@@ -124,15 +128,15 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader)
 	{
 		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
-		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
+		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = retrieveDetailsRowAggregation();
 		if (date == null)
 		{
-			return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, ImmutableList.of());
+			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of(), qtyDemandSupplyRepository);
 		}
 
-		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, includePerPlantDetailRows);
+		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
 
-		return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, rows);
+		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows, qtyDemandSupplyRepository);
 	}
 
 	@Override
@@ -175,12 +179,14 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.build();
 	}
 
-	private boolean retrieveIsIncludePerPlantDetailRows()
+	private MaterialCockpitDetailsRowAggregation retrieveDetailsRowAggregation()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(
-				MaterialCockpitUtil.SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS,
-				false,
+		final String sysConfigValue = sysConfigBL.getValue(
+				MaterialCockpitUtil.SYSCONFIG_DETAILS_ROW_AGGREGATION,
+				MaterialCockpitDetailsRowAggregation.NONE.getValue(),
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
+
+		return MaterialCockpitDetailsRowAggregation.getValueOrDefault(sysConfigValue);
 	}
 }

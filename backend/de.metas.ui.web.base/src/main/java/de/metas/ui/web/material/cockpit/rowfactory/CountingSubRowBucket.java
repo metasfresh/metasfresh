@@ -1,15 +1,14 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -67,7 +66,7 @@ public class CountingSubRowBucket
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-	@Nullable private final ResourceId plantId;
+	@NonNull private final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier;
 
 	// Zaehlbestand
 	private Quantity qtyStockEstimateCountAtDate;
@@ -116,9 +115,9 @@ public class CountingSubRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final QtyDemandQtySupply quantitiesRecord)
 	{
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
@@ -135,7 +134,7 @@ public class CountingSubRowBucket
 				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
-				.plantId(plantId)
+				.detailsRowAggregationIdentifier(detailsRowAggregationIdentifier)
 				.qtyDemandSalesOrder(qtyDemandSalesOrder)
 				.qtySupplyPurchaseOrder(qtySupplyPurchaseOrder)
 				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)
