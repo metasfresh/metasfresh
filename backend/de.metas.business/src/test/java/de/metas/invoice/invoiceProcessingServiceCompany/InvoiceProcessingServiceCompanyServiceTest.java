@@ -340,9 +340,9 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 
-			assertCorrectConfigReturned(bpartner2, "3030-01-01", 3);
-			assertCorrectConfigReturned(bpartner2, "2020-04-02", 3);
-			assertCorrectConfigReturned(bpartner2, "2020-04-01", 3);
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 			assertCorrectConfigReturned(bpartner2, "2020-03-28", 3);
 			assertCorrectConfigReturned(bpartner2, "2020-01-01", 1);
 		}

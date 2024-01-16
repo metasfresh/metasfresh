@@ -68,17 +68,33 @@ import java.util.Optional;
 		}
 	}
 
+	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = bpartnersToConfigsSorted.get(customerId);
-		for (int i = configs.size() - 1; i >= 0; i--)
+		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCustomers = bpartnersToConfigsSorted.get(customerId);
+		for (int i = configsForCustomers.size() - 1; i >= 0; i--)
 		{
-			final InvoiceProcessingServiceCompanyConfig config = configs.get(i);
+			final InvoiceProcessingServiceCompanyConfig config = configsForCustomers.get(i);
 			if (config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom))
 			{
-				return config.isBPartnerDetailsActive(customerId)
-						? Optional.of(config)
-						: Optional.empty();
+				final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
+				for (int j = configsForCompanyBPartners.size() - 1; j >= 0; j--)
+				{
+					final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(j);
+					if (companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom))
+					{
+						if (config.equals(companyConfig))
+						{
+							return config.isBPartnerDetailsActive(customerId)
+									? Optional.of(config)
+									: Optional.empty();
+						}
+						else
+						{
+							return Optional.empty();
+						}
+					}
+				}
 			}
 		}
 
