@@ -41,11 +41,11 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -121,7 +121,7 @@ public final class SqlViewKeyColumnNamesMap
 			{
 				availableKeys = availableStringKeys;
 			}
-			else if (Timestamp.class.equals(sqlValueClass))
+			else if (TimeUtil.isDateOrTimeClass(keyField.getSqlValueClass()))
 			{
 				availableKeys = availableTimestampKeys;
 			}
