@@ -13,6 +13,7 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
@@ -45,14 +46,11 @@ public interface IInvoiceBL extends ISingletonService
 	 * Copies a given invoice
 	 *
 	 * @param from the copy source
-	 * @param dateDoc
-	 * @param C_DocTypeTarget_ID
 	 * @param isSOTrx parameter is set as the copy's <code>IsSOtrx</code> value
 	 * @param isCounterpart if <code>true</code>, then the copy shall be the counter document of <code>from</code>
 	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
 	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
 	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
-	 * @return
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
 			org.compiere.model.I_C_Invoice from,
@@ -69,8 +67,6 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Load and iterate the invoice lines from the given <code>fromInvoice</code> and create new invoice lines for the given <code>toInvoice</code>.
 	 *
-	 * @param fromInvoice
-	 * @param toInvoice
 	 * @param counter if <code>true</code>, then
 	 *            <ul>
 	 *            <li>The <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> values of both the existing and new invoice line are set to the ID of their counterpart (independent of the setInvoiceRef
@@ -85,7 +81,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setInvoiceRef if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
 	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
 	 *            May be <code>null</code>.
-	 * @return
 	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
 	 */
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
@@ -106,25 +101,21 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
 	/**
-	 * @param invoice
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(I_C_Invoice invoice);
 
 	/**
-	 * @param docBaseType
 	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(String docBaseType);
 
 	/**
-	 * @param invoice
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
 	boolean isReversal(I_C_Invoice invoice);
 
 	/**
-	 * @param invoice
 	 * @return true if the given invoice is a AR CreditMemo (ARC)
 	 */
 	boolean isARCreditMemo(I_C_Invoice invoice);
@@ -132,9 +123,7 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Writes off the given openAmt from the given invoice.
 	 *
-	 * @param invoice
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
-	 * @param description
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
@@ -154,7 +143,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
 	 *
 	 * @param invoice the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
-	 * @param creditCtx
 	 * @return the created credit memo
 	 * @throws AdempiereException if
 	 *             <ul>
@@ -170,9 +158,6 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	I_C_InvoiceLine createLine(I_C_Invoice invoice);
 
@@ -186,7 +171,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
-	 * @param order
 	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
 	 * @param dateAcct may be <code>null</code> (see task 08438)
@@ -216,8 +200,6 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
-	 *
-	 * @param invoice
 	 */
 	void setDocTypeTargetIdIfNotSet(I_C_Invoice invoice);
 
@@ -226,7 +208,6 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Sort and then renumber all invoice lines.
 	 *
-	 * @param invoice
 	 * @param step start and step
 	 */
 	void renumberLines(de.metas.adempiere.model.I_C_Invoice invoice, int step);
@@ -234,18 +215,12 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Similar to {@link #renumberLines(de.metas.adempiere.model.I_C_Invoice, int)}, but in addition, leave alone lines which were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}
 	 * and don't assign their <code>Line</code> value to any other line.
-	 *
-	 * @param lines
-	 * @param step
 	 */
 	void renumberLines(List<I_C_InvoiceLine> lines, int step);
 
 	/**
 	 * Use {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor ModelDynAttributeAccessor} to flag lines whose <code>C_InvoiceLine.Line</code> value shall not be changed by
 	 * {@link #renumberLines(List, int)}.
-	 *
-	 * @param line
-	 * @param value
 	 */
 	void setHasFixedLineNumber(I_C_InvoiceLine line, boolean value);
 
@@ -273,7 +248,6 @@ public interface IInvoiceBL extends ISingletonService
 	I_C_DocType getC_DocType(I_C_Invoice invoice);
 
 	/**
-	 * @param invoice
 	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
 	 */
 	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
@@ -297,7 +271,7 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(I_C_Invoice invoice, String docSubType);
+	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
@@ -320,17 +294,11 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * If the given <code>invoiceLine</code> references a <code>C_Charge</code>, then the method returns that charge's tax category. Otherwise, it uses the pricing APO to get the tax category that is
 	 * referenced from the invoice line's pricing data (i.e. <code>M_ProductPrice</code> record).
-	 *
-	 * @param invoiceLine
-	 * @return
 	 */
 	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
-	 *
-	 * @param filter
-	 * @param copyHandler
 	 */
 	void registerCopyHandler(
 			IQueryFilter<ImmutablePair<I_C_Invoice, I_C_Invoice>> filter,
@@ -346,17 +314,12 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-	 *
-	 * @param invoiceLine
-	 * @return
 	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Is Tax Included in Amount.
 	 *
-	 * @param invoice
-	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
 	 */
 	boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
@@ -364,33 +327,21 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective
 	 * reversal invoice line.
-	 *
-	 * @param invoice
 	 */
 	void handleReversalForInvoice(I_C_Invoice invoice);
 
 	/**
 	 * Allocate parent invoice against it's credit memo
-	 *
-	 * @param invoice
-	 * @param creditMemo
-	 * @param openAmt
 	 */
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	boolean isAdjustmentCharge(I_C_Invoice invoice);
 
 	/**
 	 * Decide if the given doctype is of an Adjustment Charge
-	 *
-	 * @param docType
-	 * @return
 	 */
 	boolean isAdjustmentCharge(I_C_DocType docType);
 
@@ -413,14 +364,13 @@ public interface IInvoiceBL extends ISingletonService
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
 
 	/**
-	 * 
-	 * @param invoice
 	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
-	 * @param date
 	 */
 	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	String getLocationEmail(InvoiceId invoiceId);
 }

@@ -1,18 +1,8 @@
 package de.metas.util.lang;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -20,6 +10,14 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /*
  * #%L
@@ -76,18 +74,22 @@ public class RepoIdAwares
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
 
-		@SuppressWarnings("unchecked")
-		final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
+		@SuppressWarnings("unchecked") final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
 
 		return id;
 	}
 
-	public static <T extends RepoIdAware> T ofRepoId(final String repoIdStr, final Class<T> repoIdClass)
+	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
 	{
-		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdStr);
+		if (repoIdClass.isInstance(repoIdObj))
+		{
+			return repoIdClass.cast(repoIdObj);
+		}
+
+		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdObj);
 		if (repoId == null)
 		{
-			throw Check.mkEx("Invalid repoId value: " + repoId);
+			throw Check.mkEx("Cannot convert `" + repoIdObj + "` (" + repoIdObj.getClass() + ") to " + repoIdClass.getSimpleName());
 		}
 
 		return ofRepoId(repoId, repoIdClass);
@@ -97,8 +99,7 @@ public class RepoIdAwares
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
 
-		@SuppressWarnings("unchecked")
-		final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
+		@SuppressWarnings("unchecked") final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
 
 		return id;
 	}
@@ -109,7 +110,7 @@ public class RepoIdAwares
 	{
 		return CollectionUtils.ofCommaSeparatedList(
 				commaSeparatedStr,
-				repoIdStr -> ofRepoId(repoIdStr, repoIdClass));
+				repoIdStr -> ofObject(repoIdStr, repoIdClass));
 	}
 
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)

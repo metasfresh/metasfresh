@@ -1,14 +1,14 @@
 package de.metas.i18n;
 
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableMap;
-
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -36,7 +36,6 @@ import lombok.Singular;
  * Immutable {@link ITranslatableString} implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @EqualsAndHashCode
 public final class ImmutableTranslatableString implements ITranslatableString
@@ -76,5 +75,12 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	public Set<String> getAD_Languages()
 	{
 		return trlMap.keySet();
+	}
+
+	@JsonIgnore // needed for snapshot testing
+	public boolean isEmpty()
+	{
+		return defaultValue.isEmpty()
+				&& trlMap.values().stream().allMatch(String::isEmpty);
 	}
 }

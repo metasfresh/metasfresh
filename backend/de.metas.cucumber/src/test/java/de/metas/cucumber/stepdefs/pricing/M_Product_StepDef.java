@@ -22,24 +22,44 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * This is not the "normal" product stepDef, but one that creates just a static product with a given {@code M_Product_ID}.
- * To set up actual product-data, see {@link de.metas.cucumber.stepdefs.M_Product_StepDef}.
+ * To set up actual product-data, see {@link de.metas.cucumber.stepdefs.product.M_Product_StepDef}.
  */
 public class M_Product_StepDef
 {
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 	public final ProductCategoryId standardCategoryId = StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 	public final UomId PCEUOMId = StepDefConstants.PCE_UOM_ID;
+
+	private final M_Product_StepDefData productTable;
+
+	public M_Product_StepDef(@NonNull final M_Product_StepDefData productTable)
+	{
+		this.productTable = productTable;
+	}
 
 	@And("metasfresh contains M_Product with M_Product_ID {string}")
 	public void add_M_Product(@NonNull final String productIdentifier)
@@ -54,5 +74,29 @@ public class M_Product_StepDef
 		mockedProduct.setIsPurchased(false);
 		mockedProduct.setIsSold(false);
 		saveRecord(mockedProduct);
+	}
+
+	@Given("load M_Product:")
+	public void load_M_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			loadProduct(row);
+		}
+	}
+
+	private void loadProduct(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
+
+		if (Check.isNotBlank(id))
+		{
+			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
+
+			productTable.putOrReplace(identifier, productRecord);
+		}
 	}
 }

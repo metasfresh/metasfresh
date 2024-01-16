@@ -22,10 +22,10 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,11 +35,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Validate {@link IQueueDAO#retrieveQueueElements(I_C_Queue_WorkPackage, boolean)}.
@@ -60,7 +57,6 @@ public class TestQueue_RetrieveQueueElements
 	private Properties ctx;
 	private String trxName;
 
-	private I_C_Queue_Block block;
 	private I_C_Queue_WorkPackage workpackage1;
 	private I_C_Queue_Element workpackage1_element1;
 	@SuppressWarnings("unused")
@@ -86,30 +82,20 @@ public class TestQueue_RetrieveQueueElements
 
 		int nextRecordId = 1;
 
-		block = createQueueBlock();
-
-		workpackage1 = createWorkPackage(block);
+		workpackage1 = createWorkPackage();
 		workpackage1_element1 = createQueueElement(workpackage1, nextRecordId++);
 		workpackage1_element2 = createQueueElement(workpackage1, nextRecordId++);
 		workpackage1_element3 = createQueueElement(workpackage1, nextRecordId++);
 
-		workpackage2 = createWorkPackage(block);
+		workpackage2 = createWorkPackage();
 		workpackage2_element1 = createQueueElement(workpackage2, workpackage1_element1.getRecord_ID()); // same as workpackage1_element1
 		workpackage2_element2 = createQueueElement(workpackage2, nextRecordId++);
 		workpackage2_element3 = createQueueElement(workpackage2, nextRecordId++);
 	}
 
-	private I_C_Queue_Block createQueueBlock()
-	{
-		final I_C_Queue_Block block = InterfaceWrapperHelper.create(ctx, I_C_Queue_Block.class, trxName);
-		InterfaceWrapperHelper.save(block);
-		return block;
-	}
-
-	private I_C_Queue_WorkPackage createWorkPackage(final I_C_Queue_Block block)
+	private I_C_Queue_WorkPackage createWorkPackage()
 	{
 		final I_C_Queue_WorkPackage wp = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage.class, trxName);
-		wp.setC_Queue_Block(block);
 		wp.setProcessed(false);
 		InterfaceWrapperHelper.save(wp);
 

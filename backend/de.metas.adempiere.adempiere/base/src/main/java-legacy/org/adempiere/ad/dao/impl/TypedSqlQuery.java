@@ -21,21 +21,25 @@
  */
 package org.adempiere.ad.dao.impl;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.sql.SqlParamsInliner;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -58,25 +62,18 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.common.util.CoalesceUtil;
-import de.metas.dao.selection.pagination.PaginationService;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Low Heng Sin
@@ -1221,6 +1218,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build and add UNION SQL queries
 		if (unions != null)
 		{
+			final boolean useOrderByClauseInUnions = Check.isBlank(getOrderBy());
+
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
@@ -1231,7 +1230,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 						selectClause,
 						null/* don't assume the union-query's from-clause is identical! */,
 						null/* groupByClause */,
-						false/* useOrderByClause */);
+						useOrderByClauseInUnions);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
@@ -1621,14 +1620,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
-		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
+		// NOTE: avoid leading/trailing "spaces" in sqlDeleteFrom and fromClause,
+		// in order to be matched by our migration scripts "dontLog" matcher.
+		// In case of fromClause we need a trailing space.
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE");
+		final StringBuilder fromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
 		final String groupByClause = null;
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		final int no = DB.executeUpdateEx(sql, params, trxName);
-		return no;
+		return DB.executeUpdateEx(sql, params, trxName);
 	}
 
 	@Override

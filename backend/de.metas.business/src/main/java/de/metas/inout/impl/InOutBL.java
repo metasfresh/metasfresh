@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -16,6 +17,7 @@ import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -42,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -58,9 +61,12 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -100,6 +106,7 @@ public class InOutBL implements IInOutBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -125,7 +132,6 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inout = getById(inoutId);
 		return getLines(inout);
 	}
-
 
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
@@ -160,8 +166,8 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+												 + "\n @M_InOut_ID@: " + inOut
+												 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -172,8 +178,8 @@ public class InOutBL implements IInOutBL
 				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
-				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
-				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
+					  "No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+					  inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
@@ -237,7 +243,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+													 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -591,5 +597,37 @@ public class InOutBL implements IInOutBL
 				.build();
 
 		return requestsRepo.createRequest(requestCandidate);
+	}
+
+	@Nullable
+	public String getLocationEmail(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inOutId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
+		{
+			return null;
+		}
+		return bpartnerDAO.getContactLocationEmail(contactId);
+	}
+
+	@Override
+	@NonNull
+	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
+	{
+		final OrgId orgId = OrgId.ofRepoId(inOut.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
 	}
 }

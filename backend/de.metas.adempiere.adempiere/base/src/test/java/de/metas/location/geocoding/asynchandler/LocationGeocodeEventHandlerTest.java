@@ -22,11 +22,11 @@
 
 package de.metas.location.geocoding.asynchandler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeocodingService;
+import de.metas.location.geocoding.GeographicalCoordinates;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -36,11 +36,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeocodingService;
-import de.metas.location.geocoding.GeographicalCoordinates;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocationGeocodeEventHandlerTest
 {
@@ -98,8 +97,8 @@ public class LocationGeocodeEventHandlerTest
 
 		InterfaceWrapperHelper.refresh(location);
 		assertThat(location)
-				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
-				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, null);
+				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue_ID)
+				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, -1);
 	}
 
 	@Test
@@ -140,7 +139,7 @@ public class LocationGeocodeEventHandlerTest
 
 		InterfaceWrapperHelper.refresh(location);
 		assertThat(location)
-				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
-				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, null);
+				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue_ID)
+				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, -1);
 	}
 }

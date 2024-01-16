@@ -22,6 +22,10 @@ package de.metas.contracts;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -37,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -77,6 +82,13 @@ public interface IFlatrateBL extends ISingletonService
 	 * Updates various fields of the given entry, all based of the entry's current Qty_Reported and ActualQty values
 	 */
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
+
+	void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request);
+	void updateFlatrateTermBillBPartner(FlatrateTermBillPartnerRequest request);
+
+	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull I_C_Flatrate_Term term);
 
 	/**
 	 * term to extend
@@ -166,7 +178,7 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
 
 	/**
-	 * Check if there are terms for the same bPartner that have a time period overlapping with the given term and match with the same product or product category.
+	 * Check if there are terms for the same bPartner and org that have a time period overlapping with the given term and match with the same product or product category.
 	 * <p>
 	 * Note that overlapping need to be prevented for those types of terms (like refund contracts or refundable contracts) to which newly created invoice candidates need to be mapped.
 	 * Overlapping is no problem for subscription contracts.
@@ -188,4 +200,9 @@ public interface IFlatrateBL extends ISingletonService
 
 
 	void ensureOneContractOfGivenType(I_C_Flatrate_Term term,TypeConditions targetConditions);
+
+	/**
+	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
+	 */
+	boolean existsTermForOrderLine(I_C_OrderLine ol);
 }

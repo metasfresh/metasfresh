@@ -31,6 +31,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.compiere.model.I_C_OrderLine;
@@ -245,6 +246,7 @@ import java.util.Set;
 
 	private DocumentFieldDescriptor.Builder createContractConditionsField()
 	{
+		final ILogicExpression compensationGroupSchemaIsSet = LogicExpressionCompiler.instance.compile("@" + IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID + "/0@ > 0");
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
 				//
@@ -253,8 +255,8 @@ import java.util.Set;
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ConstantLogicExpression.FALSE)
-				.setDisplayLogic(LogicExpressionCompiler.instance.compile("@" + IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID + "/0@ > 0"))
+				.setMandatoryLogic(compensationGroupSchemaIsSet)
+				.setDisplayLogic(compensationGroupSchemaIsSet)
 				.addCharacteristic(Characteristic.PublicField);
 
 	}

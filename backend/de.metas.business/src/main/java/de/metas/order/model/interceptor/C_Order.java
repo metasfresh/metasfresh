@@ -35,6 +35,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -68,6 +69,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -91,6 +93,7 @@ public class C_Order
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -210,15 +213,67 @@ public class C_Order
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setIncoterms(final I_C_Order order)
+	{
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+
+		final int c_Incoterms;
+
+		if (order.isSOTrx())
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+		}
+		else
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+		}
+
+		order.setC_Incoterms_ID(c_Incoterms);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
 
 		if (deliveryViaRule != null)
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
+	}
+
+	/**
+	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setPaymentRule(final I_C_Order order)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
+		{
+			return;
+		}
+
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		final PaymentRule paymentRule;
+		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+		}
+		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+		}
+		else
+		{
+			paymentRule = invoiceBL.getDefaultPaymentRule();
+		}
+
+		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

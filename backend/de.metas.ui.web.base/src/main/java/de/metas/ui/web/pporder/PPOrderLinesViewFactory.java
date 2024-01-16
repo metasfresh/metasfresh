@@ -146,6 +146,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.setIncludedViewLayout(IncludedViewLayout.DEFAULT)
 				//
 				.addElementsFromViewRowClass(PPOrderLineRow.class, JSONViewDataType.grid)
+				.setAllowOpeningRowDetails(false)
 				//
 				.build();
 	}
@@ -164,7 +165,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_Delete.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueTuQty.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueCUQty.class),
-				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel.class));
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Pick_ReceivedHUs.class));
 
 	}
 

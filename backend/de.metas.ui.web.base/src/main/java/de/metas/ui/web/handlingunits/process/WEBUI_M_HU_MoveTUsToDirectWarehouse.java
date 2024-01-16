@@ -1,11 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -18,6 +13,11 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /*
  * #%L
@@ -115,7 +115,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
-				// .setMovementDate(movementDate) // now
+				.setMovementDate(SystemTime.asInstant()) // now
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setLoggable(this)

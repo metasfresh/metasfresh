@@ -36,9 +36,6 @@ import de.metas.async.model.I_C_Queue_Element;
  */
 public class PackageItemNotAvailableException extends AdempiereException
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4271514302298190437L;
 
 	private final String tableName;

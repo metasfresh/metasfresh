@@ -20,7 +20,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
-import onClickOutside from 'react-onclickoutside';
 
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
 import { deleteRequest } from '../../api';
@@ -383,6 +382,6 @@ export default connect(mapStateToProps, {
   setInlineTabShowMore,
   updateDataValidStatus,
   updateDataIncludedTabsInfo,
-})(onClickOutside(InlineTabWrapper));
+})(InlineTabWrapper);
 
 export { InlineTabWrapper };

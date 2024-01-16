@@ -22,12 +22,15 @@
 
 package de.metas.rest_api.v2.util;
 
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.rest_api.v2.JsonPagingDescriptor;
 import de.metas.common.rest_api.v2.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.dao.selection.pagination.PageDescriptor;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 
 @UtilityClass
 public class JsonConverters
@@ -47,4 +50,39 @@ public class JsonConverters
 		return jsonPagingDescriptor.build();
 	}
 
+	@NonNull
+	public JsonAttachmentSourceType toJsonAttachmentSourceType(@NonNull final AttachmentEntryType type)
+	{
+		switch (type)
+		{
+			case Data:
+				return JsonAttachmentSourceType.Data;
+			case URL:
+				return JsonAttachmentSourceType.URL;
+			case LocalFileURL:
+				return JsonAttachmentSourceType.LocalFileURL;
+			default:
+				throw new AdempiereException("Unknown AttachmentEntryType")
+						.appendParametersToMessage()
+						.setParameter("type", type);
+		}
+	}
+
+	@NonNull
+	public AttachmentEntryType toAttachmentType(@NonNull final JsonAttachmentSourceType type)
+	{
+		switch (type)
+		{
+			case Data:
+				return AttachmentEntryType.Data;
+			case URL:
+				return AttachmentEntryType.URL;
+			case LocalFileURL:
+				return AttachmentEntryType.LocalFileURL;
+			default:
+				throw new AdempiereException("Unknown JsonAttachmentSourceType")
+						.appendParametersToMessage()
+						.setParameter("type", type);
+		}
+	}
 }

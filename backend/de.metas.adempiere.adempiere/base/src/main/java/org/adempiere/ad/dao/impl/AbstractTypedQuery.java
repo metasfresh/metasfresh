@@ -22,12 +22,12 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -37,10 +37,12 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
@@ -115,6 +117,18 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		}
 
 		return map;
+	}
+
+	@Override
+	public <ID extends RepoIdAware, ET extends T> Map<ID, ET> mapByRepoIdAware(@NonNull final IntFunction<ID> idMapper, @NonNull final Class<ET> clazz) throws DBException
+	{
+		final Function<ET, ID> record2RepoIdAware = (record) -> {
+			final int recordId = InterfaceWrapperHelper.getId(record);
+			return idMapper.apply(recordId);
+		};
+
+		return stream(clazz)
+				.collect(ImmutableMap.toImmutableMap(record2RepoIdAware, Function.identity()));
 	}
 
 	@Override

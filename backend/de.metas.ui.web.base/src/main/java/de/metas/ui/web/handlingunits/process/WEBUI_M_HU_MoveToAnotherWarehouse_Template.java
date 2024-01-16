@@ -5,8 +5,8 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -17,6 +17,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.Comparator;
@@ -57,10 +58,10 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-	private HUMovementResult movementResult = null;
+	private HUMovementGeneratorResult movementResult = null;
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
-	private I_M_Warehouse warehouse;
+	private WarehouseId warehouseId;
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
@@ -103,7 +104,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 		final List<I_M_HU> hus = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
 
 		assertHUsEligible();
-		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
+		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouseId);
 
 		return MSG_OK;
 	}

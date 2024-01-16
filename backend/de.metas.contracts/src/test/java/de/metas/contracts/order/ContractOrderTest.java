@@ -26,7 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -62,7 +65,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
 		SystemTime.setTimeSource(today);
 	}
 

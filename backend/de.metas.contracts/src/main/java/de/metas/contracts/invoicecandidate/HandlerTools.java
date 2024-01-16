@@ -2,14 +2,20 @@ package de.metas.contracts.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -25,6 +31,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import java.math.BigDecimal;
@@ -76,7 +84,10 @@ public class HandlerTools
 
 	public static I_C_Invoice_Candidate createIcAndSetCommonFields(@NonNull final I_C_Flatrate_Term term)
 	{
+		// Services
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 
@@ -84,7 +95,9 @@ public class HandlerTools
 
 		ic.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class));
 		ic.setRecord_ID(term.getC_Flatrate_Term_ID());
-
+		
+		ic.setC_Async_Batch_ID(term.getC_Async_Batch_ID());
+		
 		ic.setM_Product_ID(term.getM_Product_ID());
 
 		ic.setC_Currency_ID(term.getC_Currency_ID());
@@ -107,9 +120,28 @@ public class HandlerTools
 
 		if (term.getC_OrderLine_Term_ID() > 0)
 		{
-			final I_C_OrderLine orderLine = term.getC_OrderLine_Term();
-			ic.setC_OrderLine(orderLine);
-			ic.setC_Order(orderLine.getC_Order());
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(term.getC_OrderLine_Term_ID()));
+			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+
+			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+			ic.setC_Order_ID(orderLine.getC_Order_ID());
+			ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+			ic.setIncotermLocation(order.getIncotermLocation());
+
+			//DocType
+			final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()));
+
+			if(orderDocTypeId != null)
+			{
+				final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+				final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+				if (invoiceDocTypeId != null)
+				{
+					ic.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+				}
+			}
 
 			final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 

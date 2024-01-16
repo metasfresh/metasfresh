@@ -8,7 +8,7 @@ import { getTabRequest, getRowsData } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
-import { addNotification } from '../actions/AppActions';
+import { addNotification, updateLastBackPage } from '../actions/AppActions';
 import {
   attachFileAction,
   clearMasterData,
@@ -23,6 +23,7 @@ import {
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 
 /**
  * @file Class based component.
@@ -45,6 +46,14 @@ class MasterWindowContainer extends PureComponent {
       connectWS.call(this, master.websocket, async (msg) => {
         this.onWebsocketEvent(msg);
       });
+    }
+  }
+
+  componentDidMount() {
+    const fullPath = window.location.href;
+    const { updateLastBackPage } = this.props;
+    if (!fullPath.includes('viewId')) {
+      updateLastBackPage('');
     }
   }
 
@@ -179,17 +188,12 @@ class MasterWindowContainer extends PureComponent {
     });
 
     const tabLayout = getTab(master.layout, activeTabId);
-    const orderBy = tabLayout ? tabLayout.orderBy : null;
-    let sortingOrder = null;
-
-    if (orderBy && orderBy.length) {
-      const ordering = orderBy[0];
-      sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
-    }
+    const orderBysArray = tabLayout ? tabLayout.orderBy : null;
+    const orderBy = toOrderBysCommaSeparatedString(orderBysArray);
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, sortingOrder).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
           updateTabTableData(tableId, rows)
         );
       })
@@ -306,6 +310,7 @@ MasterWindowContainer.propTypes = {
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
+  updateLastBackPage: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -333,4 +338,5 @@ export default connect(mapStateToProps, {
   updateTabTableData,
   deleteTable,
   updateTabLayout,
+  updateLastBackPage,
 })(MasterWindowContainer);

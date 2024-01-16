@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import org.adempiere.exceptions.AdempiereException;
@@ -169,8 +170,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			setDeliveryViaRule(ss);
 		}
-		// Default Invoice/Payment Rule
-		ss = bp.getInvoiceRule();
 
 		if (getSalesRep_ID() == 0)
 		{
@@ -512,9 +511,12 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(getDeliveryRule());
 		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
+			final IProductBL productBL = Services.get(IProductBL.class);
+
 			for (final I_DD_OrderLine line : lines)
 			{
-				I_M_Product product = line.getM_Product();
+				final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+				final I_M_Product product = productBL.getById(productId);
 				if (product != null && product.isExcludeAutoDelivery())
 				{
 					m_processMsg = "@M_Product_ID@ " + product.getValue() + " @IsExcludeAutoDelivery@";
@@ -563,6 +565,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	private void reserveStock(MDDOrderLine[] lines)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
 
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
@@ -570,6 +573,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Always check and (un) Reserve Inventory
 		for (MDDOrderLine line : lines)
 		{
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+			final I_M_Product product = productBL.getById(productId);
+
 			final int fromLocatorId = line.getM_Locator_ID();
 			final WarehouseId fromWarehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(fromLocatorId);
 			final int toLocatorId = line.getM_LocatorTo_ID();
@@ -579,7 +585,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 					.subtract(line.getQtyDelivered());
 			if (reserved_ordered.signum() == 0)
 			{
-				final I_M_Product product = line.getM_Product();
 				if (product != null)
 				{
 					Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
@@ -589,10 +594,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			}
 
 			// Check Product - Stocked and Item
-			final I_M_Product product = line.getM_Product();
 			if (product != null)
 			{
-				if (Services.get(IProductBL.class).isStocked(product))
+				if (productBL.isStocked(product))
 				{
 					// Update Storage
 					final IStorageBL storageBL = Services.get(IStorageBL.class);

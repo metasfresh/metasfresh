@@ -1,10 +1,8 @@
-/**
- *
- */
 package de.metas.pricing.rules;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -61,7 +59,7 @@ public final class AggregatedPricingRule implements IPricingRule
 	 * Please note that calculation won't stop after first rule that matched.
 	 */
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		logger.debug("Evaluating pricing rules with pricingContext: {}", pricingCtx);
 
@@ -94,7 +92,7 @@ public final class AggregatedPricingRule implements IPricingRule
 				// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 				// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
 				result.addPricingRuleApplied(rule);
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Applied rule {}, result: {}", rule, result);
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Applied rule {}; calculated={}, result: {}", rule, result.isCalculated(), result);
 			}
 		}
 	}

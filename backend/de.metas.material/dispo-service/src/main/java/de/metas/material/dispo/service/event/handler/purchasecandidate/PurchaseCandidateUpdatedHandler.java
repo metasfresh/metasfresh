@@ -1,12 +1,6 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -18,6 +12,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ public final class PurchaseCandidateUpdatedHandler
 	}
 
 	@Override
-	public Collection<Class<? extends PurchaseCandidateUpdatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PurchaseCandidateUpdatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PurchaseCandidateUpdatedEvent.class);
 	}
@@ -81,13 +79,11 @@ public final class PurchaseCandidateUpdatedHandler
 				.purchaseCandidateRepoId(event.getPurchaseCandidateRepoId())
 				.build();
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		return CandidatesQuery.builder()
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.type(CandidateType.SUPPLY)
 				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.build();
-
-		return query;
 	}
 
 	@Override

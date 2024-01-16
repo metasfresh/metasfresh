@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.CreatedUpdatedInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
@@ -54,11 +55,11 @@ public abstract class DataEntryRecordField<T>
 
 	@Getter
 	@JsonIgnore
-	private final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
+	private final CreatedUpdatedInfo createdUpdatedInfo;
 
 	protected DataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
 	{
 		this.dataEntryFieldId = dataEntryFieldId;
 		this.createdUpdatedInfo = createdUpdatedInfo;
@@ -70,7 +71,7 @@ public abstract class DataEntryRecordField<T>
 	@SuppressWarnings("unchecked")
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@NonNull final T value)
 	{
 		final DataEntryRecordField<T> result;
@@ -113,6 +114,7 @@ public abstract class DataEntryRecordField<T>
 		return result;
 	}
 
+	@Nullable
 	public static Object convertValueToFieldType(
 			@Nullable final Object value,
 			@NonNull final DataEntryField field)
@@ -173,6 +175,7 @@ public abstract class DataEntryRecordField<T>
 		}
 	}
 
+	@Nullable
 	private static DataEntryListValueId convertValueToListValueId(
 			@Nullable final Object value,
 			@NonNull final DataEntryField field)

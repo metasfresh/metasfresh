@@ -139,7 +139,7 @@ public class SqlDocumentQueryBuilder
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(Env.CTXNAME_AD_Language, getAD_Language())
-				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKey())
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKeyString())
 				.build();
 
 		final Evaluatee parentEvalCtx;
@@ -169,10 +169,16 @@ public class SqlDocumentQueryBuilder
 		return Env.getADLanguageOrBaseLanguage(getCtx());
 	}
 
-	private String getPermissionsKey()
+	private String getPermissionsKeyString()
 	{
 		// TODO: introduce permissionsKey as parameter
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
+	}
+
+	private UserRolePermissionsKey getPermissionsKey()
+	{
+		// TODO: introduce permissionsKey as parameter
+		return UserRolePermissionsKey.fromContext(getCtx());
 	}
 
 	/**
@@ -473,9 +479,14 @@ public class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
-			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 			final FilterSql filtersSql = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
-					.getSql(getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()), context);
+					.getSql(
+							getDocumentFilters(),
+							SqlOptions.usingTableAlias(entityBinding.getTableAlias()),
+							SqlDocumentFilterConverterContext.builder()
+									.userRolePermissionsKey(getPermissionsKey())
+									.build());
+
 			if (filtersSql.getWhereClause() != null && !filtersSql.getWhereClause().isEmpty())
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
@@ -486,6 +497,13 @@ public class SqlDocumentQueryBuilder
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* FTS */ (\n").append(filtersSql.getFilterByFTS().buildExistsWhereClause(entityBinding.getTableAlias())).append(")\n");
+			}
+
+			if(filtersSql.getAlwaysIncludeSql() != null)
+			{
+				// TODO implement support
+				// but atm is quite unusual to have it here
+				throw new AdempiereException("Always include SQL is not supported");
 			}
 		}
 

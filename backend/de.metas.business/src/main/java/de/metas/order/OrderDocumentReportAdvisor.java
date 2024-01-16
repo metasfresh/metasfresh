@@ -24,6 +24,7 @@ package de.metas.order;
 
 import javax.annotation.Nullable;
 
+import de.metas.process.AdProcessId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -60,6 +61,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 	}
 
 	@Override
+	@NonNull
 	public String getHandledTableName()
 	{
 		return I_C_Order.Table_Name;
@@ -75,7 +77,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 	@NonNull
 	public DocumentReportInfo getDocumentReportInfo(
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId adPrintFormatToUseId)
+			@Nullable final PrintFormatId adPrintFormatToUseId, final AdProcessId reportProcessIdToUse)
 	{
 		final OrderId orderId = recordRef.getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
 		final I_C_Order order = orderBL.getById(orderId);
@@ -101,7 +103,6 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
-				.printFormatId(printFormatId)
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
 				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(order.getDocumentNo())

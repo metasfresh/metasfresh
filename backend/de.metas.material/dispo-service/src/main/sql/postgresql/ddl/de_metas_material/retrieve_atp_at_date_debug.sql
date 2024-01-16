@@ -14,7 +14,7 @@ $BODY$
 	SELECT DISTINCT ON (M_Product_ID, M_Warehouse_ID, C_BPartner_Customer_ID, StorageAttributesKey)
 		M_Product_ID, M_Warehouse_ID, C_BPartner_Customer_ID, StorageAttributesKey, SeqNo, Qty, MD_Candidate_ID, Dateprojected
 	FROM MD_Candidate 
-	WHERE IsActive='Y' AND MD_Candidate_Type='STOCK' and DateProjected <= p_date
+	WHERE IsActive='Y' AND MD_Candidate_Type='STOCK' and DateProjected <= p_date and md_candidate_status <> 'simulated'
 	ORDER BY M_Product_ID, M_Warehouse_ID, C_BPartner_Customer_ID, StorageAttributesKey, Dateprojected DESC, SeqNo DESC
 $BODY$
   LANGUAGE sql STABLE;

@@ -3,18 +3,19 @@ import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
-import { applyMiddleware, createStore, combineReducers } from 'redux';
+import { applyMiddleware, combineReducers, createStore } from 'redux';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
-import promiseMiddleware from 'redux-promise';
 import http from 'http';
 import StompServer from 'stomp-broker-js';
 
-import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../components/keyshortcuts/ShortcutProvider';
 import { ProvideAuth } from '../../hooks/useAuth';
 import { Routes } from '../../routes';
 import { serverTestPort } from '../../../test_setup/jestSetup';
@@ -37,10 +38,9 @@ import listHandler, {
 import viewHandler, {
   initialState as viewHandlerState,
 } from '../../reducers/viewHandler';
-import tables, {
-  initialState as tablesHandlerState,
-} from '../../reducers/tables';
+import tables from '../../reducers/tables';
 import filters, {
+  initialState as tablesHandlerState,
   initialState as filtersHandlerState,
 } from '../../reducers/tables';
 import actionsHandler, {
@@ -52,15 +52,21 @@ import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../test_setup/fixtures/keymap.json';
 import propsFixtures from '../../../test_setup/fixtures/doclist.json';
 import dataFixtures from '../../../test_setup/fixtures/grid/doclist_data.json';
-import layoutFixtures from '../../../test_setup/fixtures/grid/doclist_layout.json';
-import rowFixtures from '../../../test_setup/fixtures/grid/doclist_row_data.json';
+import layoutFixtures
+  from '../../../test_setup/fixtures/grid/doclist_layout.json';
+import rowFixtures
+  from '../../../test_setup/fixtures/grid/doclist_row_data.json';
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
-import quickActionsData from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
-import attributesData from '../../../test_setup/fixtures/attributes.json';
-
+import quickActionsData
+  from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
+import attributesData from '../../../test_setup/fixtures/huAttributes.json';
 
 jest.mock(`../../components/app/QuickActions`);
+
+// so that we don't have collision with other tests running in parallel
+const serverPort = serverTestPort + 2;
+global.config.WS_URL = `ws://localhost:${serverPort}/ws`;
 
 // jest.useFakeTimers();
 
@@ -81,7 +87,7 @@ const rootReducer = combineReducers({
 });
 
 const createInitialState = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },
@@ -95,8 +101,6 @@ const createInitialState = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 describe.skip('DocList', () => {
@@ -104,7 +108,6 @@ describe.skip('DocList', () => {
 
   let mockServer;
   let server;
-  let history;
 
   beforeAll(() => {
     server = http.createServer();
@@ -114,7 +117,7 @@ describe.skip('DocList', () => {
       path: '/ws',
     });
 
-    server.listen(serverTestPort+1); // this is defined in the jestSetup file
+    server.listen(serverPort); // this is defined in the jestSetup file
   });
 
   // afterEach stop server
@@ -151,6 +154,11 @@ describe.skip('DocList', () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/userSession')
         .reply(200, userSessionData);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/login/isLoggedIn')
+        .reply(200, true);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -223,19 +231,17 @@ describe.skip('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${windowId}/${viewId}/quickActions?childViewId=${includedViewId}&childViewSelectedIds=${
-            includedData.result[0].id}&selectedIds=${data.result[0].id
-          }`
+        .post(
+          `/documentView/${windowId}/${viewId}/quickActions`, 
+          { childViewId: includedViewId, childViewSelectedIds: includedData.result[0].id, selectedIds: data.result[0].id }
         )
         .reply(200, quickActionsData.parent_quickactions2);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?parentViewId=${viewId}&parentViewSelectedIds=${
-            data.result[0].id}&selectedIds=${includedData.result[0].id
-          }`
+        .post(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions`, 
+          { parentViewId: viewId, parentViewSelectedIds: data.result[0].id, selectedIds: includedData.result[0].id }
         )
         .reply(200, quickActionsData.included_quickactions);
 
@@ -255,7 +261,7 @@ describe.skip('DocList', () => {
         );
       });
 
-      await act( async() => {
+      await act(async() => {
         wrapper.update();
 
         await waitFor(async () => {
@@ -264,7 +270,7 @@ describe.skip('DocList', () => {
         });
       });      
 
-      await act( async() => {
+      await act(async() => {
         wrapper.update();
 
         await waitFor(async () => {
@@ -282,7 +288,7 @@ describe.skip('DocList', () => {
 
       const quickActionsId = getQuickActionsId({ windowId: includedWindowId, viewId: includedViewId });
 
-      await act( async() => {
+      await act(async() => {
         waitFor(() => {
           expect(
             store.getState().actionsHandler[quickActionsId]

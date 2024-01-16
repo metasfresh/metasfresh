@@ -1,29 +1,8 @@
 package org.adempiere.exceptions;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.Null;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
@@ -34,6 +13,24 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.model.Null;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -197,12 +194,25 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * If enabled, the language used to translate the error message is captured when the exception is constructed.
-	 *
+	 * <p>
 	 * If is NOT enabled, the language used to translate the error message is acquired when the message is translated.
 	 */
 	public static void enableCaptureLanguageOnConstructionTime()
 	{
 		AdempiereException.captureLanguageOnConstructionTime = true;
+	}
+
+	/** 
+	 * Tells if a throwable passsing thourgh trx-manager shall be logged there or not.
+	 * We currently have one exception where whe know that it needs not to be logged and can clutter the whole output when it is logged.
+	 */
+	public static boolean isThrowableLoggedInTrxManager(@NonNull final Throwable t)
+	{
+		if (t instanceof AdempiereException)
+		{
+			return ((AdempiereException)t).isLoggedInTrxManager();
+		}
+		return true;
 	}
 
 	@VisibleForTesting
@@ -213,7 +223,9 @@ public class AdempiereException extends RuntimeException
 	private static boolean captureLanguageOnConstructionTime = false;
 
 	private final ITranslatableString messageTrl;
-	/** Build message but not translated */
+	/**
+	 * Build message but not translated
+	 */
 	@Nullable
 	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
@@ -239,6 +251,10 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.mdcContextMap = captureMDCContextMap();
+
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this.userValidationError = true;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
@@ -279,7 +295,7 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -333,7 +349,7 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * Reset the build message. Next time when the message is needed, it will be re-builded first ({@link #buildMessage()}).
-	 *
+	 * <p>
 	 * Call this method from each setter which would change your message.
 	 */
 	protected final void resetMessageBuilt()
@@ -353,9 +369,9 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * Build error message (if needed) and return it.
-	 *
+	 * <p>
 	 * By default this method is returning initial message, but extending classes could override it.
-	 *
+	 * <p>
 	 * WARNING: to avoid recursion, please never ever call {@link #getMessage()} or {@link #getLocalizedMessage()} but
 	 * <ul>
 	 * <li>call {@link #getOriginalMessage()}
@@ -442,7 +458,7 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * If developer mode is active, it logs a warning with given exception.
-	 *
+	 * <p>
 	 * If the developer mode is not active, this method does nothing
 	 *
 	 * @param exceptionSupplier {@link AdempiereException} supplier
@@ -520,7 +536,7 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Sets parameter.
 	 *
-	 * @param name parameter name
+	 * @param name  parameter name
 	 * @param value parameter value; {@code null} is added as {@link Null}
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -544,6 +560,15 @@ public class AdempiereException extends RuntimeException
 		return setParameter(parameterName, enumValue);
 	}
 
+	public AdempiereException setParameters(@Nullable final Map<String, ?> params)
+	{
+		if (params != null && !params.isEmpty())
+		{
+			params.forEach(this::setParameter);
+		}
+		return this;
+	}
+
 	@OverridingMethodsMustInvokeSuper
 	public <T extends Enum<?>> boolean hasParameter(@NonNull final T enumValue)
 	{
@@ -564,7 +589,7 @@ public class AdempiereException extends RuntimeException
 	@Nullable
 	public final Object getParameter(@NonNull final String name)
 	{
-		return parameters != null ? parameters.get(name) : null;
+		return parameters != null ? Null.unbox(parameters.get(name)) : null;
 	}
 
 	public final Map<String, Object> getParameters()
@@ -595,13 +620,13 @@ public class AdempiereException extends RuntimeException
 	 * Utility method that can be used by both external callers and subclasses'
 	 * {@link AdempiereException#buildMessage()} or
 	 * {@link #getMessage()} methods to create a string from this instance's parameters.
-	 *
+	 * <p>
 	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
 	 * but instead add another method that can take a format string as parameter.
 	 *
 	 * @return an empty string if this instance has no parameters or otherwise something like
 	 *
-	 *         <pre>
+	 * <pre>
 	 * Additional parameters:
 	 * name1: value1
 	 * name2: value2
@@ -679,5 +704,16 @@ public class AdempiereException extends RuntimeException
 	{
 		addSuppressed(exception);
 		return this;
+	}
+
+	/**
+	 * Override with a method returning false if your exception is more of a signal than an error 
+	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
+	 * 
+	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
+	 */
+	protected boolean isLoggedInTrxManager()
+	{
+		return true;
 	}
 }

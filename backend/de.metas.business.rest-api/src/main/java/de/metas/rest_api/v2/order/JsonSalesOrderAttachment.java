@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import lombok.Builder;
 import lombok.Value;
 
@@ -42,7 +42,7 @@ public class JsonSalesOrderAttachment
 	private final int id;
 
 	@JsonProperty("type")
-	private final JsonAttachmentType type;
+	private final JsonAttachmentSourceType type;
 
 	@JsonProperty("filename")
 	private final String filename;
@@ -59,7 +59,7 @@ public class JsonSalesOrderAttachment
 	private JsonSalesOrderAttachment(
 			@JsonProperty("salesOrderId") final String salesOrderId,
 			@JsonProperty("id") final int id,
-			@JsonProperty("type") final JsonAttachmentType type,
+			@JsonProperty("type") final JsonAttachmentSourceType type,
 			@JsonProperty("filename") final String filename,
 			@JsonProperty("mimeType") final String mimeType,
 			@JsonProperty("url") final String url)

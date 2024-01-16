@@ -39,9 +39,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
  */
 public class WorkpackageSkipRequestException extends AdempiereException implements IWorkpackageSkipRequest
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 5950712616746434839L;
 
 	private final int skipTimeoutMillis;
@@ -84,8 +81,6 @@ public class WorkpackageSkipRequestException extends AdempiereException implemen
 	/**
 	 * A random int between 0 and 5000 is added to the {@link Async_Constants#DEFAULT_RETRY_TIMEOUT_MILLIS} timeout. Use this if you want workpackages that are postponed at the same time to be
 	 * retried at different times.
-	 *
-	 * @param message
 	 */
 	public static WorkpackageSkipRequestException createWithRandomTimeout(final String message)
 	{
@@ -124,4 +119,11 @@ public class WorkpackageSkipRequestException extends AdempiereException implemen
 		return this;
 	}
 
+	/**
+	 * No need to fill the log if this exception is thrown.
+	 */
+	protected boolean isLoggedInTrxManager()
+	{
+		return false;
+	}
 }
