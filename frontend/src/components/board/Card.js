@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
 import PropTypes from 'prop-types';
-import ItemTypes from '../../constants/ItemTypes';
 import Avatar from '../app/Avatar';
 
 const cardTarget = {
@@ -67,7 +66,7 @@ TargetIndicator.propTypes = {
   parentLaneId: PropTypes.number,
 };
 
-class Card extends Component {
+class Card extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -165,7 +164,7 @@ Card.propTypes = {
 };
 
 export default DragSource(
-  ItemTypes.CARD,
+  'CARD',
   cardSource,
   collect
-)(DropTarget(ItemTypes.CARD, cardTarget, connect)(Card));
+)(DropTarget('CARD', cardTarget, connect)(Card));

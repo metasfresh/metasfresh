@@ -3,7 +3,7 @@ package de.metas.handlingunits.trace;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;

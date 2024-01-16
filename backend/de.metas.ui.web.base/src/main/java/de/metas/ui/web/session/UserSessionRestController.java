@@ -1,16 +1,16 @@
 package de.metas.ui.web.session;
 
+import de.metas.i18n.Language;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.session.json.JSONUserSession;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.model.DocumentCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import de.metas.i18n.Language;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.session.json.JSONUserSession;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -42,10 +42,12 @@ public class UserSessionRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	@Autowired
 	private UserSessionRepository userSessionRepo;
 
+	@Autowired
+	private DocumentCollection documentCollection;
 
 	@GetMapping
 	public JSONUserSession getAll()
@@ -58,7 +60,8 @@ public class UserSessionRestController
 	{
 		final String adLanguage = value.getKey();
 		userSessionRepo.setAD_Language(userSession.getLoggedUserId(), adLanguage);
-		
+		documentCollection.cacheReset(false); // don't evict unsaved documents from the cache, because they would be lost entirely
+
 		return getLanguage();
 	}
 

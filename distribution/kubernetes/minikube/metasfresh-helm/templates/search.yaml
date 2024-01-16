@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-search
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-search
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-search
+  ports:
+  - name: elasticsearch
+    port: {{ .Values.search.port.search }}
+    protocol: TCP
+    targetPort: {{ .Values.search.port.search }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-search
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-search
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-search
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-search
+    spec:
+      containers:       
+        - name: metasfresh-{{ .Release.Name }}-search
+          image: {{ .Values.search.image }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: {{ .Values.search.resources.limits.memory }}
+          ports:
+            - containerPort: {{ .Values.search.port.search }}
+          securityContext:
+            capabilities:
+              add:
+              - IPC_LOCK
+          env:
+          - name: CLUSTER_NAME
+            value: {{ .Values.search.clusterName }}
+          - name: ES_PORT
+            value: '{{ .Values.search.port.search }}'
+          - name: discovery.type
+            value: single-node
+          volumeMounts:
+          - mountPath: /usr/share/elasticsearch/data
+            name: data
+          - mountPath: /etc/localtime
+            name: host-localtime
+            readOnly: true
+          - mountPath: /etc/timezone
+            name: host-timezone
+            readOnly: true
+      initContainers:
+      - name: take-data-dir-ownership
+        image: busybox
+        command: ['sh', '-c', 'chown 1000:0 /usr/share/elasticsearch/data']
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      volumes:
+      - name: data
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/search/data
+          type: DirectoryOrCreate
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

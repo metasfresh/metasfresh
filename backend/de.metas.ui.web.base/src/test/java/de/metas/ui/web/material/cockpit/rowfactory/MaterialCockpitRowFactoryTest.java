@@ -1,20 +1,23 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.DimensionSpecGroup;
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
+import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
+import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -32,24 +35,19 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.DimensionSpecGroup;
-import de.metas.dimension.model.I_DIM_Dimension_Spec;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
-import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
-import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -194,34 +192,34 @@ public class MaterialCockpitRowFactoryTest
 				.get();
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
-		cockpitRecordWithAttributes.setM_Product(product);
+		cockpitRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		cockpitRecordWithAttributes.setDateGeneral(de.metas.common.util.time.SystemTime.asTimestamp());
 		cockpitRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		cockpitRecordWithAttributes.setQtyReserved_Purchase(TEN);
+		cockpitRecordWithAttributes.setQtySupply_PurchaseOrder(TEN);
 		save(cockpitRecordWithAttributes);
 
 		final AttributesKey attributesKey2 = AttributesKey.NONE;
 
 		final I_MD_Cockpit cockpitRecordWithEmptyAttributesKey = newInstance(I_MD_Cockpit.class);
-		cockpitRecordWithEmptyAttributesKey.setM_Product(product);
+		cockpitRecordWithEmptyAttributesKey.setM_Product_ID(product.getM_Product_ID());
 		cockpitRecordWithEmptyAttributesKey.setDateGeneral(SystemTime.asTimestamp());
 		cockpitRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
-		cockpitRecordWithEmptyAttributesKey.setQtyReserved_Purchase(ONE);
+		cockpitRecordWithEmptyAttributesKey.setQtySupply_PurchaseOrder(ONE);
 		save(cockpitRecordWithEmptyAttributesKey);
 
 		final I_M_Warehouse warehouseWithPlant = createWarehousewithPlant("plantName");
 
 		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);
-		stockRecordWithAttributes.setM_Product(product);
+		stockRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		stockRecordWithAttributes.setM_Warehouse(warehouseWithPlant);
+		stockRecordWithAttributes.setM_Warehouse_ID(warehouseWithPlant.getM_Warehouse_ID());
 		stockRecordWithAttributes.setQtyOnHand(ELEVEN);
 		save(stockRecordWithAttributes);
 
 		final I_MD_Stock stockRecordWithEmptyAttributesKey = newInstance(I_MD_Stock.class);
-		stockRecordWithEmptyAttributesKey.setM_Product(product);
+		stockRecordWithEmptyAttributesKey.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
-		stockRecordWithEmptyAttributesKey.setM_Warehouse(warehouseWithPlant);
+		stockRecordWithEmptyAttributesKey.setM_Warehouse_ID(warehouseWithPlant.getM_Warehouse_ID());
 		stockRecordWithEmptyAttributesKey.setQtyOnHand(TWELVE);
 		save(stockRecordWithEmptyAttributesKey);
 
@@ -241,7 +239,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(result).hasSize(1);
 		final MaterialCockpitRow mainRow = result.get(0);
 		assertThat(mainRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN.add(TWELVE));
-		assertThat(mainRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN.add(ONE));
+		assertThat(mainRow.getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN.add(ONE));
 
 		final List<MaterialCockpitRow> includedRows = mainRow.getIncludedRows();
 		// there shall be 4 rows:
@@ -253,15 +251,15 @@ public class MaterialCockpitRowFactoryTest
 		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty); 
 		assertThat(emptyGroupRow.getAllIncludedStockRecordIds()).contains(stockRecordWithEmptyAttributesKey.getMD_Stock_ID());
 		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo(TWELVE);
-		assertThat(emptyGroupRow.getQtyReservedPurchase()).isEqualByComparingTo(ONE);
+		assertThat(emptyGroupRow.getQtySupplyPurchaseOrder()).isEqualByComparingTo(ONE);
 
 		final MaterialCockpitRow attr1GroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_attr1_value1);
 		assertThat(attr1GroupRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
-		assertThat(attr1GroupRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(attr1GroupRow.getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 
 		final MaterialCockpitRow attr2GroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_attr2_value1);
 		assertThat(attr2GroupRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
-		assertThat(attr2GroupRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(attr2GroupRow.getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 
 		final MaterialCockpitRow countingRow = extractSingleCountingRow(includedRows);
 		assertThat(countingRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN.add(TWELVE));
@@ -344,16 +342,16 @@ public class MaterialCockpitRowFactoryTest
 		// then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
-		assertThat(result.get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
 		// this is the stockrecord-row. it's a dedicated subrow because of the includePerPlantDetailRows (even though the plant-id is zero)
 		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
-		assertThat(result.get(0).getIncludedRows().get(0).getQtyReservedPurchase()).isNull();
+		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrder()).isNull();
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 		
 		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
-		assertThat(result.get(0).getIncludedRows().get(1).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getIncludedRows().get(1).getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
 	}
 
@@ -371,11 +369,11 @@ public class MaterialCockpitRowFactoryTest
 		// then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
-		assertThat(result.get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
 		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
-		assertThat(result.get(0).getIncludedRows().get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrder()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 	}
 	
@@ -401,19 +399,19 @@ public class MaterialCockpitRowFactoryTest
 				.get();
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
-		cockpitRecordWithAttributes.setM_Product(product);
+		cockpitRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		cockpitRecordWithAttributes.setDateGeneral(de.metas.common.util.time.SystemTime.asTimestamp());
 		cockpitRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		cockpitRecordWithAttributes.setQtyReserved_Purchase(TEN);
+		cockpitRecordWithAttributes.setQtySupply_PurchaseOrder(TEN);
 		save(cockpitRecordWithAttributes);
 
 		final I_M_Warehouse warehouseWithoutPlant = newInstance(I_M_Warehouse.class);
 		save(warehouseWithoutPlant);
 
 		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);
-		stockRecordWithAttributes.setM_Product(product);
+		stockRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		stockRecordWithAttributes.setM_Warehouse(warehouseWithoutPlant);
+		stockRecordWithAttributes.setM_Warehouse_ID(warehouseWithoutPlant.getM_Warehouse_ID());
 		stockRecordWithAttributes.setQtyOnHand(ELEVEN);
 		save(stockRecordWithAttributes);
 

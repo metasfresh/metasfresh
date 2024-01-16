@@ -22,14 +22,9 @@ package de.metas.pricing;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -43,10 +38,13 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Result of a pricing calculation
- *
  */
 public interface IPricingResult
 {
@@ -87,7 +85,12 @@ public interface IPricingResult
 	@NonNull
 	Percent getDiscount();
 
+	/**
+	 * Sets the given discount. After this, {@link #isDiscountCalculated()} will always return {@code true}.
+	 */
 	void setDiscount(Percent discount);
+
+	boolean isDiscountCalculated();
 
 	CurrencyPrecision getPrecision();
 
@@ -155,7 +158,6 @@ public interface IPricingResult
 	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
 
 	/**
-	 *
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
 	LocalDate getPriceDate();
@@ -168,7 +170,9 @@ public interface IPricingResult
 
 	void setDiscountEditable(boolean isDiscountEditable);
 
-	/** This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.*/
+	/**
+	 * This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.
+	 */
 	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
 
 	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
@@ -181,11 +185,17 @@ public interface IPricingResult
 
 	ImmutableList<String> getLoggableMessages();
 
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
+	/**
+	 * @return {@code true} if the current discount should not be overridden by any other pricing rule, {@code false} otherwise.
+	 */
+	boolean isDontOverrideDiscountAdvice();
 
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
+	/**
+	 * Can specify if the discount in the pricing rule can be overridden by any other pricing rule.
+	 */
+	void setDontOverrideDiscountAdvice(boolean dontOverrideDiscountAdvice);
 
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
+	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
 
-	Percent getTradedCommissionPercent();
+	HUPIItemProductId getPackingMaterialId();
 }

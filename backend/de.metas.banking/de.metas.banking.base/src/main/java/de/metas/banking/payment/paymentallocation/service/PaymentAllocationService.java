@@ -30,6 +30,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
@@ -97,10 +98,11 @@ public class PaymentAllocationService
 		final I_C_Payment payment = paymentAllocationCriteria.getPayment();
 
 		final PaymentDocument paymentDocument = toPaymentDocument(payment);
+		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault());
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
-				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDocument))
+				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
 				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
@@ -150,7 +152,7 @@ public class PaymentAllocationService
 
 	private PayableDocument toPayableDocument(
 			final PaymentAllocationPayableItem paymentAllocationPayableItem,
-			final PaymentDocument paymentDocument)
+			final ZonedDateTime paymentDate)
 	{
 		final Money openAmt = moneyService.toMoney(paymentAllocationPayableItem.getOpenAmt());
 		final Money payAmt = moneyService.toMoney(paymentAllocationPayableItem.getPayAmt());
@@ -175,7 +177,7 @@ public class PaymentAllocationService
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 							.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
-							.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault()))
+							.paymentDate(paymentDate)
 							.customerId(paymentAllocationPayableItem.getBPartnerId())
 							.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 							.feeAmountIncludingTax(serviceFeeAmt)
@@ -192,23 +194,30 @@ public class PaymentAllocationService
 				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
 				: Money.zero(currencyId);
 
-		final SOTrx soTrx = SOTrx.ofBoolean(paymentAllocationPayableItem.isSOTrx());
+		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
 
+		// for purchase invoices and sales credit memos, we need to negate
+		// but not for sales invoices and purchase credit memos
+		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
+		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
 				.documentNo(paymentAllocationPayableItem.getDocumentNo())
-				.soTrx(soTrx)
-				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
+				.soTrx(paymentAllocationPayableItem.getSoTrx())
+				.openAmt(amtMultiplier.convertToRealValue(openAmt))
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
-										   .negateIf(soTrx.isPurchase()))
+										   .convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
+				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
+				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
 				.build();
 	}
 

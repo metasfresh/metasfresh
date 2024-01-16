@@ -23,21 +23,29 @@
 package de.metas.order.process;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.CreateSalesOrderFromProposalCommand;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
-public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
+public final class C_Order_CreateFromProposal extends C_Order_CreationProcess implements IProcessDefaultParametersProvider
 {
+	private static final String PARAM_IsKeepProposalPrices = "IsKeepProposalPrices";
+	private static final String PARAM_DEFAULT_VALUE_YES = "Y";
+
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@Param(parameterName = "C_DocType_ID", mandatory = true)
 	private DocTypeId newOrderDocTypeId;
@@ -50,6 +58,9 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 
 	@Param(parameterName = "CompleteIt")
 	private boolean completeIt;
+
+	@Param(parameterName = PARAM_IsKeepProposalPrices)
+	private boolean keepProposalPrices;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull I_C_Order order)
@@ -68,6 +79,21 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(@NonNull  final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_IsKeepProposalPrices.contentEquals(parameter.getColumnName()))
+		{
+			final I_C_Order proposal = orderBL.getById(OrderId.ofRepoId(getRecord_ID()));
+			if (docTypeBL.isSalesQuotation(DocTypeId.ofRepoId(proposal.getC_DocType_ID())))
+			{
+				return PARAM_DEFAULT_VALUE_YES;
+			}
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
 	@Override
 	protected String doIt()
 	{
@@ -77,6 +103,7 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 				.newOrderDateOrdered(newOrderDateOrdered)
 				.poReference(poReference)
 				.completeIt(completeIt)
+				.isKeepProposalPrices(keepProposalPrices)
 				.build()
 				.execute();
 

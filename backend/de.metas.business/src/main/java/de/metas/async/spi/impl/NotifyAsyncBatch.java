@@ -22,26 +22,13 @@
 
 package de.metas.async.spi.impl;
 
-import java.util.Properties;
-
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.util.Loggables;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import de.metas.async.api.AsyncBatchType;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
@@ -53,17 +40,33 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
 
 public class NotifyAsyncBatch implements INotifyAsyncBatch
 {
 	protected final Logger logger = LogManager.getLogger(getClass());
 
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IAsyncBatchListeners asyncBatchListener = Services.get(IAsyncBatchListeners.class);
 	final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	@Override
-	public void sendNotifications(I_C_Async_Batch asyncBatch)
+	public void sendNotifications(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		sendEMail(asyncBatch);
 		sendNote(asyncBatch);
@@ -72,25 +75,25 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	/***
 	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by AD_SYSCONFIG_ASYNC_BOILERPLATE_ID. If there is no such
 	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
-	 * 
+	 *
 	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
 	 */
-	public void sendEMail(final I_C_Async_Batch asyncBatch)
+	public void sendEMail(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
+		final AsyncBatchType asyncBatchType = asyncBatchBL.getAsyncBatchType(asyncBatch)
+				.orElseThrow(() -> new AdempiereException("Async Batch type should not be null for async batch " + asyncBatch.getC_Async_Batch_ID()));
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
-		final int boilerPlateId = asyncBatchType.getAD_BoilerPlate_ID();
+		final int boilerPlateId = asyncBatchType.getAdBoilderPlateId();
 		if (boilerPlateId <= 0)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("sendEMail - C_Async_Batch_Type_ID={} of C_Async_Batch_ID={} has no AD_BoilerPlate_ID; -> not sending mail", 
-															asyncBatchType.getC_Async_Batch_Type_ID());
+			Loggables.withLogger(logger, Level.INFO).addLog("sendEMail - C_Async_Batch_Type_ID={} of C_Async_Batch_ID={} has no AD_BoilerPlate_ID; -> not sending mail",
+					asyncBatchType.getId().getRepoId(), asyncBatch.getC_Async_Batch_ID());
 			return;
 		}
-		
+
 		final MADBoilerPlate text = new MADBoilerPlate(ctx, boilerPlateId, trxName);
 
 		Boolean isSent = null;
@@ -145,16 +148,16 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 							adLanguage = client.getAD_Language();
 						}
 						attributesBuilder.setAD_Language(adLanguage);
-						
+
 						attributesEffective = attributesBuilder.build();
 					}
 					//
 					final String message = text.getTextSnippetParsed(attributesEffective);
 					//
 					if (Check.isEmpty(message, true))
-					 {
+					{
 						return null;
-					//
+						//
 					}
 
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
@@ -196,8 +199,8 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	 */
 	public void sendNote(final I_C_Async_Batch asyncBatch)
 	{
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
+		asyncBatchBL.getAsyncBatchType(asyncBatch)
+				.orElseThrow(() -> new AdempiereException("Async Batch type should not be null for async batch " + asyncBatch.getC_Async_Batch_ID()));
 
 		asyncBatchListener.applyListener(asyncBatch);
 	}

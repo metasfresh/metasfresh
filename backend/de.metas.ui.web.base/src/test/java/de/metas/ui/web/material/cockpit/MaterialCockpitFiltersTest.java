@@ -1,18 +1,14 @@
 package de.metas.ui.web.material.cockpit;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -48,9 +44,6 @@ public class MaterialCockpitFiltersTest
 	@Test
 	public void createQuery_when_emptyFilters_then_retrieve_nothing()
 	{
-		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
-		save(record);
-
 		final IQuery<I_MD_Cockpit> query = new MaterialCockpitFilters().createQuery(DocumentFilterList.EMPTY);
 		assertThat(query).isNotNull();
 		assertThat(query.list()).isEmpty();

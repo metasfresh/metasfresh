@@ -22,9 +22,16 @@
 
 package de.metas.common.util;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class FileUtil
@@ -63,5 +70,58 @@ public class FileUtil
 		}
 
 		return sb.toString();
+	}
+
+	@NonNull
+	public Path getFilePath(@NonNull final URL url)
+	{
+		final boolean isWindowsLocalPath = Check.isEmpty(url.getHost())
+				? url.getPath().contains(":")
+				: url.getAuthority().contains(":");
+
+		final Path path = isWindowsLocalPath
+				? parseWindowsLocalPath(url)
+				: parseNonLocalWindowsFileURL(url);
+
+		if (path == null)
+		{
+			throw new RuntimeException("Couldn't parse path from:" + url);
+		}
+
+		return path;
+	}
+
+	@Nullable
+	private Path parseWindowsLocalPath(@NonNull final URL url)
+	{
+		try
+		{
+			final String normalizedPath = Stream.concat(Stream.of(url.getAuthority()), Arrays.stream(url.getPath().split("/")))
+					.filter(Check::isNotBlank)
+					.collect(Collectors.joining("/"));
+
+			return Paths.get(normalizedPath);
+		}
+		catch (final Throwable throwable)
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	private Path parseNonLocalWindowsFileURL(@NonNull final URL url)
+	{
+		try
+		{
+			final String normalizedPath = Stream.of(url.getAuthority(), url.getPath())
+							.filter(Check::isNotBlank)
+							.collect(Collectors.joining());
+
+			return Paths.get("//" + normalizedPath);
+		}
+		catch (final Throwable throwable)
+		{
+			return null;
+		}
 	}
 }

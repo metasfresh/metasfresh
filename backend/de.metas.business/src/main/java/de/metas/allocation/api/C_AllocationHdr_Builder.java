@@ -25,6 +25,7 @@ package de.metas.allocation.api;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,7 +35,6 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
@@ -48,6 +48,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /**
  * Convenient way to create (and maybe complete) and {@link I_C_AllocationHdr} with {@link I_C_AllocationLine}s.
@@ -78,6 +80,7 @@ public class C_AllocationHdr_Builder
 		this.allocHdr = InterfaceWrapperHelper.newInstance(I_C_AllocationHdr.class);
 	}
 
+	@Nullable
 	public I_C_AllocationHdr create(final boolean complete)
 	{
 		markAsBuilt();
@@ -134,13 +137,13 @@ public class C_AllocationHdr_Builder
 		return create(complete);
 	}
 
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built, "Not already built");
 	}

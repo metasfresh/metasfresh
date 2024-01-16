@@ -22,31 +22,36 @@
 
 package de.metas.rest_api.v1.bpartner;
 
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_VALUE;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.resetTimeSource;
-import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.setupTimeSource;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
+import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
+import de.metas.common.bpartner.v1.request.JsonRequestContact;
+import de.metas.common.bpartner.v1.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.v1.response.JsonResponseContact;
+import de.metas.common.bpartner.v1.response.JsonResponseContactList;
+import de.metas.common.bpartner.v1.response.JsonResponseUpsert;
+import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.util.time.SystemTime;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
+import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.greeting.GreetingRepository;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
+import de.metas.test.SnapshotFunctionFactory;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.lang.UIDStringUtil;
+import lombok.NonNull;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,31 +72,25 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.currency.CurrencyRepository;
-import de.metas.greeting.GreetingRepository;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.common.bpartner.v1.request.JsonRequestContact;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
-import de.metas.common.bpartner.v1.response.JsonResponseContact;
-import de.metas.common.bpartner.v1.response.JsonResponseContactList;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsert;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.rest_api.v1.SyncAdvise;
-import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
-import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
+import java.util.Optional;
+
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.AD_USER_VALUE;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.resetTimeSource;
+import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.setupTimeSource;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class ContactRestControllerTest
@@ -105,7 +104,7 @@ class ContactRestControllerTest
 	@BeforeAll
 	static void initStatic()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
@@ -126,7 +125,7 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository);
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),

@@ -97,6 +97,28 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_BOMUse = "BOMUse";
 
 	/**
+	 * Set Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_ID();
+
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -167,6 +189,27 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Document Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDateDoc (java.sql.Timestamp DateDoc);
+
+	/**
+	 * Get Document Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDateDoc();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_DateDoc = new ModelColumn<>(I_PP_Product_BOM.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -188,24 +231,68 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocAction();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_DocAction = new ModelColumn<>(I_PP_Product_BOM.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocStatus();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_DocStatus = new ModelColumn<>(I_PP_Product_BOM.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	java.lang.String getDocumentNo();
 
 	ModelColumn<I_PP_Product_BOM, Object> COLUMN_DocumentNo = new ModelColumn<>(I_PP_Product_BOM.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -354,7 +441,7 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: ID
@@ -364,7 +451,7 @@ public interface I_PP_Product_BOM
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: ID
@@ -375,6 +462,52 @@ public interface I_PP_Product_BOM
 
 	ModelColumn<I_PP_Product_BOM, Object> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_PP_Product_BOM.class, "PP_Product_BOM_ID", null);
 	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+
+	/**
+	 * Set BOM & Formula.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Product_BOMVersions_ID (int PP_Product_BOMVersions_ID);
+
+	/**
+	 * Get BOM & Formula.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Product_BOMVersions_ID();
+
+	org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions();
+
+	void setPP_Product_BOMVersions(org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions);
+
+	ModelColumn<I_PP_Product_BOM, org.eevolution.model.I_PP_Product_BOMVersions> COLUMN_PP_Product_BOMVersions_ID = new ModelColumn<>(I_PP_Product_BOM.class, "PP_Product_BOMVersions_ID", org.eevolution.model.I_PP_Product_BOMVersions.class);
+	String COLUMNNAME_PP_Product_BOMVersions_ID = "PP_Product_BOMVersions_ID";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Processed = new ModelColumn<>(I_PP_Product_BOM.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -471,7 +604,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Set Valid From.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -480,7 +613,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Get Valid From.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

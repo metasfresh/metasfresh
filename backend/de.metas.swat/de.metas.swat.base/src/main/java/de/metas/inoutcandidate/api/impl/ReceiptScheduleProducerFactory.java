@@ -1,35 +1,39 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.spi.AsyncReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.inoutcandidate.spi.impl.OrderLineReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.impl.OrderReceiptScheduleProducer;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Warehouse;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
+
+@Service
 public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerFactory
 {
 	private final Map<String, CopyOnWriteArrayList<Class<? extends IReceiptScheduleProducer>>> producerClasses = new ConcurrentHashMap<>();
 	/** Source table name to {@link IReceiptScheduleWarehouseDestProvider} */
 	private final CompositeReceiptScheduleWarehouseDestProvider warehouseDestProviders = new CompositeReceiptScheduleWarehouseDestProvider(DefaultFromOrderLineWarehouseDestProvider.instance);
 
-	public ReceiptScheduleProducerFactory()
+	private final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter;
+		
+	public ReceiptScheduleProducerFactory(@NonNull final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter)
 	{
-		super();
+		this.modelAggregateFilter = modelAggregateFilter;
 
 		// Register standard producers:
 		registerProducer(I_C_Order.Table_Name, OrderReceiptScheduleProducer.class);
@@ -52,7 +56,7 @@ public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerF
 			throw new AdempiereException("No " + IReceiptScheduleProducer.class + " implementation was found for " + tableName);
 		}
 
-		final CompositeReceiptScheduleProducerExecutor compositeProducer = new CompositeReceiptScheduleProducerExecutor();
+		final CompositeReceiptScheduleProducerExecutor compositeProducer = new CompositeReceiptScheduleProducerExecutor(modelAggregateFilter);
 		compositeProducer.setReceiptScheduleProducerFactory(this);
 		for (final Class<? extends IReceiptScheduleProducer> producerClass : producerClassesForTable)
 		{

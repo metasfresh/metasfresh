@@ -67,7 +67,7 @@ public final class DataTypes
 	 * <li>{@link BigDecimal}s are compared excluding the scale (so "1.00" equals with "1.0")
 	 * </ul>
 	 */
-	public static <T> boolean equals(final T value1, final T value2)
+	public static <T> boolean equals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (value1 == value2)
 		{

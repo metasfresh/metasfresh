@@ -6,16 +6,19 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
   "commissionDate" : "2020-03-21",
   "updated" : "2020-03-03T08:23:00.929Z",
   "triggerType" : "SalesCreditmemo",
+  "currencyId" : 100008,
   "invoiceLines" : [ {
     "id" : {
       "repoId" : 100011,
       "invoiceId" : 100010
     },
     "productId" : 100009,
-    "forecastCommissionPoints" : 0,
-    "commissionPointsToInvoice" : 0,
     "invoicedCommissionPoints" : -100,
-    "tradedCommissionPercent" : 0,
-    "updated" : "2020-03-03T08:23:00.929Z"
+    "updated" : "2020-03-03T08:23:00.929Z",
+    "invoicedQty" : {
+      "qty" : "0",
+      "uomId" : 100007
+    },
+    "currencyId" : 100008
   } ]
 } ]

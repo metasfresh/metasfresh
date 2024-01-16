@@ -30,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,23 +41,17 @@ public interface IContractsDAO extends ISingletonService
 	/**
 	 * @return the flatrate terms with missing candidates, gathered in a list.
 	 */
-	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, int limit);
+	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, @NonNull QueryLimit limit);
 
 
 	/**
-	 *
 	 * Check if the term given as parameter was extended (has a predecessor).
-	 * @param term
-	 * @return
 	 */
 	boolean termHasAPredecessor (I_C_Flatrate_Term term);
 
 	/**
 	 * Sums up the <code>Qty</code> values of all {@link I_C_SubscriptionProgress} records that reference the given
 	 * term.
-	 *
-	 * @param term
-	 * @return
 	 */
 	BigDecimal retrieveSubscriptionProgressQtyForTerm(I_C_Flatrate_Term term);
 

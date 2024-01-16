@@ -1,27 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-edi
-  ~ %%
-  ~ Copyright (C) 2022 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
-
-<ErpelMessage xmlns="http://erpel.at/schemas/1p0/messaging/message" xmlns:document="http://erpel.at/schemas/1p0/documents" xmlns:edifact="http://erpel.at/schemas/1p0/documents/extensions/edifact" xmlns:erpel="http://erpel.at/schemas/1p0/documents/ext" xmlns:header="http://erpel.at/schemas/1p0/messaging/header">
+<ErpelMessage xmlns="http://erpel.at/schemas/1p0/messaging/message" xmlns:bosch="http://erpel.at/schemas/1p0/documents/extensions/bosch" xmlns:document="http://erpel.at/schemas/1p0/documents" xmlns:edifact="http://erpel.at/schemas/1p0/documents/extensions/edifact" xmlns:erpel="http://erpel.at/schemas/1p0/documents/ext" xmlns:header="http://erpel.at/schemas/1p0/messaging/header" xmlns:klosterquell="http://erpel.at/schemas/1p0/documents/extensions/klosterquell">
 	<header:ErpelBusinessDocumentHeader>
 		<header:InterchangeHeader>
 			<header:SyntaxIdentifier>

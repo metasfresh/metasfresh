@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -19,6 +21,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -36,11 +39,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +56,7 @@ import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
@@ -65,6 +72,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -219,19 +228,21 @@ import java.util.Set;
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())
 				//
-				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
-				.setDescription(gridTabVO.getDescriptionTrls(), gridTabVO.getDescription())
+				.setCaption(gridTabVO.getNameTrls())
+				.setDescription(gridTabVO.getDescriptionTrls())
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAllowCreateNewLogic(allowCreateNewLogic)
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
-				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
+				.setQuickInputSupport(QuickInputSupportDescriptorLoader.extractFrom(gridTabVO))
+				.setIncludedTabNewRecordInputMode(IncludedTabNewRecordInputMode.ofNullableCodeOrAllAvailable(gridTabVO.getIncludedTabNewRecordInputMode()))
+				.setAutodetectDefaultDateFilter(gridTabVO.isAutodetectDefaultDateFilter())
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)
 				//
-				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
+				.setAD_Tab_ID(gridTabVO.getAdTabId().getRepoId()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
 				//
@@ -415,15 +426,12 @@ import java.util.Set;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
-		final String sqlColumnSql = gridFieldVO.getColumnSQL(false);
-
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(sqlColumnName)
-				.setColumnSql(sqlColumnSql)
-				.setVirtualColumn(gridFieldVO.isVirtualColumn())
+				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
@@ -477,6 +485,19 @@ import java.util.Set;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	@Nullable
+	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
+	{
+		if(gridFieldVO.isVirtualColumn())
+		{
+			return gridFieldVO.getColumnSql(contextTableName);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -541,7 +562,7 @@ import java.util.Set;
 		{
 			return ConstantLogicExpression.TRUE;
 		}
-		else if(gridFieldVO.isVirtualColumn())
+		else if (gridFieldVO.isVirtualColumn())
 		{
 			return ConstantLogicExpression.TRUE;
 		}
@@ -707,8 +728,7 @@ import java.util.Set;
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(lookupDescriptor.getFieldName())
-				.setColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
-				.setVirtualColumn(true)
+				.setVirtualColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
 				.setMandatory(false)
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(DocumentFieldWidgetType.Labels.getValueClass())
@@ -719,8 +739,12 @@ import java.util.Set;
 
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
+		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
+				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+		);
+
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
-				.setCaption(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName()))
+				.setCaption(caption)
 				.setDescription(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Description, labelsUIElement.getDescription()))
 				.setKey(fieldBinding.isKeyColumn())
 				.setWidgetType(fieldBinding.getWidgetType())
@@ -741,6 +765,18 @@ import java.util.Set;
 		collectSpecialField(fieldBuilder);
 	}
 
+	@Nullable
+	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
+	{
+		if (labelsUIElement.getAD_Name_ID() <= 0)
+		{
+			return null;
+		}
+		final I_AD_Element adElement = InterfaceWrapperHelper.load(labelsUIElement.getAD_Name_ID(), I_AD_Element.class);
+		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(adElement);
+		return trlMap.getColumnTrl(I_AD_Element.COLUMNNAME_Name, adElement.getName());
+	}
+
 	private static ILogicExpression extractLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
@@ -759,7 +795,8 @@ import java.util.Set;
 			@NonNull final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
-		final String labelsTableName = labelsTab.getAD_Table().getTableName();
+		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
+		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)
@@ -820,6 +857,7 @@ import java.util.Set;
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
+				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
@@ -909,8 +947,7 @@ import java.util.Set;
 		}
 		else if (childLinkColumnNames.contains(parentLinkColumnName))
 		{
-			final String childLinkColumnName = parentLinkColumnName;
-			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+			return ImmutablePair.of(parentLinkColumnName, parentLinkColumnName);
 		}
 		else
 		{

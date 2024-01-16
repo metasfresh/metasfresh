@@ -1,11 +1,11 @@
 package org.eevolution.api;
 
-import com.google.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -22,7 +22,8 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Objects;
 
 /*
  * #%L
@@ -46,7 +47,7 @@ import java.time.LocalDateTime;
  * #L%
  */
 
-@Builder
+@Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
 @Getter
@@ -56,11 +57,13 @@ public final class PPOrderRoutingActivity
 	private static final Logger logger = LogManager.getLogger(PPOrderRoutingActivity.class);
 
 	@Nullable private PPOrderRoutingActivityId id;
+	@NonNull private final PPRoutingActivityType type;
 	@NonNull private final PPOrderRoutingActivityCode code;
+	@NonNull private final String name;
 	@NonNull private final PPRoutingActivityId routingActivityId;
 
 	private final boolean subcontracting;
-	private final BPartnerId subcontractingVendorId;
+	@Nullable private final BPartnerId subcontractingVendorId;
 
 	private final boolean milestone;
 
@@ -99,12 +102,14 @@ public final class PPOrderRoutingActivity
 	@NonNull private Quantity qtyDelivered;
 	@NonNull private Quantity qtyScrapped;
 	@NonNull private Quantity qtyRejected;
-	@Nullable private LocalDateTime dateStart;
-	@Nullable private LocalDateTime dateFinish;
+	@Nullable private Instant dateStart;
+	@Nullable private Instant dateFinish;
+
+	public PPOrderRoutingActivity copy() {return toBuilder().build();}
 
 	public PPOrderId getOrderId()
 	{
-		return getId().getOrderId();
+		return Objects.requireNonNull(getId()).getOrderId();
 	}
 
 	public Quantity getQtyToDeliver()
@@ -117,7 +122,7 @@ public final class PPOrderRoutingActivity
 		return getSetupTimeRequired().minus(getSetupTimeReal());
 	}
 
-	public Duration getDurationTotalBooked() { return getSetupTimeReal().plus(getDurationReal());}
+	public Duration getDurationTotalBooked() {return getSetupTimeReal().plus(getDurationReal());}
 
 	public boolean isSomethingProcessed()
 	{
@@ -143,7 +148,7 @@ public final class PPOrderRoutingActivity
 		}
 	}
 
-	private void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
+	public void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
 	{
 		final PPOrderRoutingActivityStatus currentStatus = getStatus();
 		if (currentStatus.equals(newStatus))
@@ -201,10 +206,10 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() != null)
 		{
-			setDateFinish(de.metas.common.util.time.SystemTime.asLocalDateTime());
+			setDateFinish(SystemTime.asInstant());
 		}
 
-		if (!Objects.equal(getDurationRequired(), getDurationReal()))
+		if (!Objects.equals(getDurationRequired(), getDurationReal()))
 		{
 			// addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@closed@ ( @Duration@ :" + getDurationRequiered() + ") ( @QtyRequiered@ :" + getQtyRequiered() + ")"));
 			setDurationRequired(getDurationReal());
@@ -244,7 +249,7 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() == null)
 		{
-			setDateFinish(SystemTime.asLocalDateTime());
+			setDateFinish(SystemTime.asInstant());
 		}
 	}
 

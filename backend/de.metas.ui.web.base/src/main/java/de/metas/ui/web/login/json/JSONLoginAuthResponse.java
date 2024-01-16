@@ -1,15 +1,15 @@
 package de.metas.ui.web.login.json;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.util.Check;
+import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -37,30 +37,29 @@ import lombok.Value;
 @Value
 public class JSONLoginAuthResponse
 {
-	public static final JSONLoginAuthResponse of(final Collection<JSONLoginRole> roles)
+	public static JSONLoginAuthResponse of(@NonNull final Collection<JSONLoginRole> roles)
 	{
 		Check.assumeNotEmpty(roles, "roles is not empty");
 		final boolean loginComplete = false;
 		return new JSONLoginAuthResponse(roles, loginComplete);
 	}
 
-	public static final JSONLoginAuthResponse loginComplete(final JSONLoginRole role)
+	public static JSONLoginAuthResponse loginComplete(@NonNull final JSONLoginRole role)
 	{
-		Check.assumeNotNull(role, "Parameter role is not null");
-		final Set<JSONLoginRole> roles = ImmutableSet.of(role);
+		final List<JSONLoginRole> roles = ImmutableList.of(role);
 		final boolean loginComplete = true;
 		return new JSONLoginAuthResponse(roles, loginComplete);
 	}
 
 	@JsonProperty("roles")
-	Set<JSONLoginRole> roles;
+	List<JSONLoginRole> roles;
 
 	@JsonProperty("loginComplete")
 	boolean loginComplete;
 
 	private JSONLoginAuthResponse(final Collection<JSONLoginRole> roles, final boolean loginComplete)
 	{
-		this.roles = ImmutableSet.copyOf(roles);
+		this.roles = ImmutableList.copyOf(roles);
 		this.loginComplete = loginComplete;
 	}
 }

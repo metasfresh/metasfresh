@@ -34,11 +34,11 @@ import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.event.WorkpackageProcessedEvent;
 import de.metas.async.event.WorkpackageProcessedEvent.Status;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkpackageSkipRequest;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
@@ -87,7 +87,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -102,7 +101,7 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.DONE;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 
-@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
+@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "asyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
@@ -115,6 +114,8 @@ class WorkpackageProcessorTask implements Runnable
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
 	private final IWorkpackageLogsRepository logsRepository;
 
 	private final IQueueProcessor queueProcessor;
@@ -167,7 +168,7 @@ class WorkpackageProcessorTask implements Runnable
 				NoopPerformanceMonitoringService.INSTANCE);
 
 		service.monitorTransaction(
-				() -> run0(),
+				this::run0,
 				TransactionMetadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
@@ -205,7 +206,7 @@ class WorkpackageProcessorTask implements Runnable
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
-						(TrxRunnable)trxName_IGNORED -> {
+						trxName_IGNORED -> {
 							// ignore the concrete trxName param,
 							// by default everything shall use the thread inherited trx
 							final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
@@ -316,10 +317,11 @@ class WorkpackageProcessorTask implements Runnable
 	/**
 	 * Method called before we actually start to process the workpackage, but after the transaction is created.
 	 */
-	private final void beforeWorkpackageProcessing()
+	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
 		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
+		contextFactory.setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
 		contextFactory.setThreadInheritedPriority(priority);
@@ -331,7 +333,7 @@ class WorkpackageProcessorTask implements Runnable
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
-	private Result processWorkpackage(final String trxName)
+	private Result processWorkpackage(@Nullable final String trxName)
 	{
 		// Setup context and everything that needs to be setup before actually starting to process the workpackage
 		beforeWorkpackageProcessing();
@@ -386,13 +388,15 @@ class WorkpackageProcessorTask implements Runnable
 		}
 	}
 
-	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	private RuntimeException handleServiceConnectionException(
+			@Nullable final String trxName,
+			@NonNull final ServiceConnectionException e)
 	{
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
 		{
 			Loggables.addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
-					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
+							 e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
 
 			final WorkpackageSkipRequestException //
 					workpackageSkipRequestException = WorkpackageSkipRequestException
@@ -425,6 +429,7 @@ class WorkpackageProcessorTask implements Runnable
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
 		contextFactory.setThreadInheritedAsyncBatch(null);
+		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
 		try
@@ -542,21 +547,20 @@ class WorkpackageProcessorTask implements Runnable
 		queueDAO.save(workPackage);
 
 		final String processorName;
-		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
-		if (queueBlock == null)
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoIdOrNull(workPackage.getC_Queue_PackageProcessor_ID());
+		if (packageProcessorId == null)
 		{
 			processorName = "<null>"; // might happen in unit tests.
 		}
 		else
 		{
-			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
+			final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(packageProcessorId);
 			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
-		logger.info(msg, skipException);
-		Loggables.addLog(msg);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, skipException);
 
 		createAndFireEventWithStatus(workPackage, SKIPPED);
 	}
@@ -635,13 +639,13 @@ class WorkpackageProcessorTask implements Runnable
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
-				.recipientUserId(userInChargeId)
-				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
-				.contentADMessageParam(workpackageId)
-				.contentADMessageParam(errorMsg)
-				.targetAction(TargetRecordAction.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
-				.build());
+											   .topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
+											   .recipientUserId(userInChargeId)
+											   .contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
+											   .contentADMessageParam(workpackageId)
+											   .contentADMessageParam(errorMsg)
+											   .targetAction(TargetRecordAction.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
+											   .build());
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package de.metas.bpartner_product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
@@ -28,10 +29,10 @@ import de.metas.util.ISingletonService;
 
 public interface IBPartnerProductBL extends ISingletonService
 {
-
 	/**
-	 * Throw an exception if the product and partner are involved in a C_BPartnerProduct entry that is flagged as IsExcludedFromSale.
+	 * Throw an exception if the product and partner are involved in a C_BPartnerProduct entry that is flagged to be excluded from the given type of transaction.
+	 * if soTrx = SALES and C_BPartner_Product.IsExcludedFromSale = 'Y' => error
+	 * if soTrx = PURCHASE and C_BPartner_Product.IsExcludedFromPurchase = 'Y' => error
 	 */
-	void assertNotExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
-
+	void assertNotExcludedFromTransaction(SOTrx soTrx, ProductId productId, BPartnerId partnerId);
 }

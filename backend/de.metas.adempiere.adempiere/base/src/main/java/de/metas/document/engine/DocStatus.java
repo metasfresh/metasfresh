@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -61,6 +62,12 @@ public enum DocStatus implements ReferenceListAwareEnum
 	DocStatus(final String code)
 	{
 		this.code = code;
+	}
+
+	@NonNull
+	public static Optional<DocStatus> ofCodeOptional(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	@Nullable

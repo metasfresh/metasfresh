@@ -16,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.MAccount;
@@ -52,82 +53,87 @@ import de.metas.organization.OrgId;
 public class C_AcctSchema_Element
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_C_AcctSchema_Element element)
+	public void beforeSave(final I_C_AcctSchema_Element record)
 	{
-		element.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
 
-		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
-		if (element.isMandatory() && elementType.isUserDefinedElements())
+		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
+		if (record.isMandatory() && elementType.isUserDefinedElements())
 		{
-			element.setIsMandatory(false);
+			record.setIsMandatory(false);
 		}
 
 		if (!elementType.isDeletable())
 		{
-			element.setIsMandatory(true);
-			element.setIsActive(true);
+			record.setIsMandatory(true);
+			record.setIsActive(true);
 		}
 		//
-		else if (element.isMandatory())
+		else if (record.isMandatory())
 		{
 			String errorField = null;
-			if (AcctSchemaElementType.Account.equals(elementType) && element.getC_ElementValue_ID() == 0)
+			if (AcctSchemaElementType.Account.equals(elementType) && record.getC_ElementValue_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_ElementValue_ID;
 			}
-			else if (AcctSchemaElementType.Activity.equals(elementType) && element.getC_Activity_ID() == 0)
+			else if (AcctSchemaElementType.Activity.equals(elementType) && record.getC_Activity_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Activity_ID;
 			}
-			else if (AcctSchemaElementType.BPartner.equals(elementType) && element.getC_BPartner_ID() == 0)
+			else if (AcctSchemaElementType.BPartner.equals(elementType) && record.getC_BPartner_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_BPartner_ID;
 			}
-			else if (AcctSchemaElementType.Campaign.equals(elementType) && element.getC_Campaign_ID() == 0)
+			else if (AcctSchemaElementType.Campaign.equals(elementType) && record.getC_Campaign_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Campaign_ID;
 			}
-			else if (AcctSchemaElementType.LocationFrom.equals(elementType) && element.getC_Location_ID() == 0)
+			else if (AcctSchemaElementType.LocationFrom.equals(elementType) && record.getC_Location_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Location_ID;
 			}
-			else if (AcctSchemaElementType.LocationTo.equals(elementType) && element.getC_Location_ID() == 0)
+			else if (AcctSchemaElementType.LocationTo.equals(elementType) && record.getC_Location_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Location_ID;
 			}
-			else if (AcctSchemaElementType.Organization.equals(elementType) && element.getOrg_ID() == 0)
+			else if (AcctSchemaElementType.Organization.equals(elementType) && record.getOrg_ID() <= 0)
 			{
 				errorField = COLUMNNAME_Org_ID;
 			}
-			else if (AcctSchemaElementType.OrgTrx.equals(elementType) && element.getOrg_ID() == 0)
+			else if (AcctSchemaElementType.OrgTrx.equals(elementType) && record.getOrg_ID() <= 0)
 			{
 				errorField = COLUMNNAME_Org_ID;
 			}
-			else if (AcctSchemaElementType.Product.equals(elementType) && element.getM_Product_ID() == 0)
+			else if (AcctSchemaElementType.Product.equals(elementType) && record.getM_Product_ID() <= 0)
 			{
 				errorField = COLUMNNAME_M_Product_ID;
 			}
-			else if (AcctSchemaElementType.Project.equals(elementType) && element.getC_Project_ID() == 0)
+			else if (AcctSchemaElementType.Project.equals(elementType) && record.getC_Project_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Project_ID;
 			}
-			else if (AcctSchemaElementType.SalesRegion.equals(elementType) && element.getC_SalesRegion_ID() == 0)
+			else if (AcctSchemaElementType.SalesRegion.equals(elementType) && record.getC_SalesRegion_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			}
 			if (errorField != null)
 			{
-				throw new AdempiereException("@IsMandatory@: @" + errorField + "@");
+				throw new FillMandatoryException(errorField);
 			}
 		}
 
 		//
-		if (element.getAD_Column_ID() <= 0
+		if (record.getAD_Column_ID() <= 0
 				&& (AcctSchemaElementType.UserElement1.equals(elementType) || AcctSchemaElementType.UserElement2.equals(elementType)))
 		{
-			throw new AdempiereException("@IsMandatory@: @AD_Column_ID@");
+			throw new FillMandatoryException(I_C_AcctSchema_Element.COLUMNNAME_AD_Column_ID);
 		}
-	}	// beforeSave
+
+		if(AcctSchemaElementType.Account.equals(elementType) && record.getC_Element_ID() <= 0)
+		{
+			throw new FillMandatoryException(I_C_AcctSchema_Element.COLUMNNAME_C_Element_ID);
+		}
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_C_AcctSchema_Element element)

@@ -310,11 +310,32 @@ public class SQLHelper
 		ResultSet rs = null;
 		try
 		{
+			final ImmutableSet.Builder<String> result = ImmutableSet.builder();
+
+			//
+			// Fetch database functions
+			close(rs);
+			rs = database.getConnection()
+					.getMetaData()
+					.getFunctions(database.getDbName(), null, functionNamePattern);
+			while (rs.next())
+			{
+				final String functionName = rs.getString("FUNCTION_NAME");
+				final String schemaName = rs.getString("FUNCTION_SCHEM");
+
+				final String functionNameFQ = schemaName != null ? schemaName + "." + functionName : functionName;
+				result.add(functionNameFQ);
+			}
+
+			//
+			// Fetch database procedures
+			// NOTE: after PostgreSQL 11 this will fetch nothing because our "after_import" routines are functions,
+			// but we are keeping it for legacy purposes.
+			// (see org.postgresql.jdbc.PgDatabaseMetaData.getProcedures)
+			close(rs);
 			rs = database.getConnection()
 					.getMetaData()
 					.getProcedures(database.getDbName(), null, functionNamePattern);
-
-			final ImmutableSet.Builder<String> result = ImmutableSet.builder();
 			while (rs.next())
 			{
 				final String functionName = rs.getString("PROCEDURE_NAME");

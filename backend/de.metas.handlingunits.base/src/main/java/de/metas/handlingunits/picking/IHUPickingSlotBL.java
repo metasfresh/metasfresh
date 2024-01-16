@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -11,7 +10,9 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotId;
@@ -55,7 +56,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Note: the method does not set the new HU's <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code>. Setting them is the job of the business logic which associates the HU with the
 	 * <code>M_ShipmentSchedule</code> for which we are doing all this.
 	 *
-	 * @param pickingSlot
 	 * @param itemProduct the blueprint to use for the new HU.
 	 * @return the result with the created picking slot trx (the trx will have ACTION_Set_Current_HU)
 	 */
@@ -64,14 +64,13 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	/**
 	 * Adds current picking slot HU to HUs queue.
 	 *
-	 * @param pickingSlot
 	 * @return the result: if the picking slot had a current HU assigned, the result contains a trx to document the HU being closed
 	 */
 	IQueueActionResult closeCurrentHU(I_M_PickingSlot pickingSlot);
 
 	/**
 	 * Adds given Handling Units to picking slot queue.
-	 *
+	 * <p>
 	 * NOTEs:
 	 * <ul>
 	 * <li>It will also change HU's status to {@link X_M_HU#HUSTATUS_Picked}.
@@ -83,18 +82,16 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @return the results with the created picking slot trx and the picking-slot-hu-assignment that was created or updated
 	 */
 	IQueueActionResult addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
-	
+
 	IQueueActionResult addToPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
 	 * Removes the given <code>hu</code> from the picking slot queue by deleting its associating {@link I_M_PickingSlot_HU} record.<br>
 	 * If the given hu was the slot's current HU, it is unset as current HU as well.<br>
 	 * Finally, if the given <code>pickingSlot</code> is dynamic, it also releases the slot from its current BPartner.
-	 *
+	 * <p>
 	 * TODO: i think it should check if there queue is *really* empty before releasing form the BPartner.
 	 *
-	 * @param pickingSlot
-	 * @param hu
 	 * @return the result with the created picking slot trx
 	 */
 	IQueueActionResult removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
@@ -102,8 +99,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	IQueueActionResult removeFromPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
-	 *
-	 * @param hu
 	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU).
 	 */
 	void removeFromPickingSlotQueue(I_M_HU hu);
@@ -111,37 +106,29 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	/**
 	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).
 	 *
-	 * @param hu
 	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU)
 	 */
 	void removeFromPickingSlotQueueRecursivelly(I_M_HU hu);
 
 	/**
 	 * @return <code>true</code> if the given <code>itemProduct</code> references no <code>C_BPartner</code> or if the referenced BPartner fits with the given <code>pickingSlot</code>.
-	 * @see #isAvailableForBPartnerId(de.metas.picking.model.I_M_PickingSlot, int)
+	 * @see #isAvailableForBPartnerId(de.metas.picking.model.I_M_PickingSlot, BPartnerId)
 	 */
 	boolean isAvailableForProduct(I_M_PickingSlot pickingSlot, I_M_HU_PI_Item_Product itemProduct);
 
 	/**
-	 * Allocate dynamic picking slot to selected partner and location if the picking slot was not already allocated for a partner. If the picking slot is not dynamic, the method does nothing.
+	 * Allocate dynamic picking slot to selected partner and location if the picking slot was not already allocated for a partner.
+	 * If the picking slot is not dynamic, the method does nothing.
 	 * <p>
 	 * Note: Even if the given <code>pickingSlot</code> already has a HU assigned to itself, this method does not set that HU's <code>C_BPartner_ID</code> and <code>C_BPartner_Lcoation_ID</code>.
 	 * Setting them is the job of the business logic which associates the HU with the <code>M_ShipmentSchedule</code> for which we are doing all this.
-	 *
-	 * @param pickingSlot
-	 * @param bpartnerId
-	 * @param bpartnerLocationId
 	 */
-	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
-
-	void allocatePickingSlotIfPossible(PickingSlotId pickingSlotId, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
+	BooleanWithReason allocatePickingSlotIfPossible(@NonNull PickingSlotAllocateRequest request);
 
 	/**
 	 * Release the given dynamic picking slot.<br>
 	 * By releasing, we mean "resetting the slot's C_BPartner to <code>null</code>". If the picking slot is not dynamic or not allocated to any partner, the method does nothing.<br>
 	 * <b>Important:</b> Picking slot will NOT be released if there still are any {@link I_M_PickingSlot_HU} assignments.
-	 *
-	 * @param pickingSlot
 	 */
 	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
 
@@ -153,7 +140,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Ad-Hoc and simple return type for above methods
 	 *
 	 * @author ts
-	 *
 	 */
 	interface IQueueActionResult
 	{
@@ -166,23 +152,20 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.<br>
 	 * Available HUs are not yet picked and are not yet selected to be source HUs
 	 *
-	 * @param request
-	 *
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery query);
+	List<I_M_HU> retrieveAvailableHUsToPick(@NonNull PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPickForShipmentSchedule(RetrieveAvailableHUIdsToPickRequest retrieveAvailableHUIdsToPickRequest);
 
+	void releasePickingSlotFromJob(@NonNull PickingSlotId pickingSlotId, @NonNull PickingJobId pickingJobId);
+
 	/**
 	 * Search for available fine picking source HUs.<br>
 	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
 	 * to serve as source HU from which stuff is loaded into the picking-HUs. That means that they may not yet be empty.
-	 *
-	 * @param query
-	 * @return
 	 */
 	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsQuery query);
 
@@ -208,5 +191,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
+
+		/**
+		 * If {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.
+		 */
+		@Default
+		boolean excludeAllReserved = false;
 	}
 }

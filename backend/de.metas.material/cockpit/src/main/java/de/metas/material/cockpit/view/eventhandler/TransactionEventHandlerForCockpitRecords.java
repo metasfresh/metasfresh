@@ -1,17 +1,6 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
@@ -21,7 +10,16 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -60,7 +58,7 @@ public class TransactionEventHandlerForCockpitRecords
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(
 				TransactionCreatedEvent.class,
@@ -92,6 +90,13 @@ public class TransactionEventHandlerForCockpitRecords
 		{
 			dataRequestBuilder.directMovementQty(eventQuantity);
 		}
+
+		if (event.getInventoryLineId() > 0)
+		{
+			dataRequestBuilder.qtyInventoryCount(eventQuantity);
+			dataRequestBuilder.qtyInventoryTime(event.getMaterialDescriptor().getDate());
+		}
+
 		return dataRequestBuilder.build();
 	}
 }
