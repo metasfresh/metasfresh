@@ -354,14 +354,20 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			final BPartnerId bpartner2 = BPartnerId.ofRepoId(7);
 
 			configInactiveDetails()
+					.feePercentageOfGrandTotal("5")
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-05-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			configInactiveDetails()
 					.feePercentageOfGrandTotal("4")
+					.customerId(bpartner2)
 					.customerId(bpartner1)
 					.validFrom(LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
-			configInactiveDetails()
+			config()
 					.feePercentageOfGrandTotal("3")
-					.customerId(bpartner2)
 					.customerId(bpartner1)
 					.validFrom(LocalDate.parse("2020-03-01").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
@@ -380,27 +386,24 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.validFrom(LocalDate.parse("2020-01-01").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
+			// bpartner1 is effectively not included in any config before 2020-01-01 and after 2020-04-01
 			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-
-			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			
-			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-03-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			
 			assertCorrectConfigReturned(bpartner1, "2020-01-01", 1);
 			assertCorrectConfigReturned(bpartner1, "2020-02-01", 2);
+			assertCorrectConfigReturned(bpartner1, "2020-03-01", 3);
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-04-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-05-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-05-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 
+			// bpartner2 is effectively not included in any config before 2020-01-01 and after 2020-03-01
 			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-
-			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			
-			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-03-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
-			
 			assertCorrectConfigReturned(bpartner2, "2020-01-01", 1);
 			assertCorrectConfigReturned(bpartner2, "2020-02-01", 2);
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-03-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 		}
 
 		@Test
@@ -504,10 +507,10 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			serviceInvoiceDocTypeId = Services.get(IDocTypeDAO.class)
 					.createDocType(DocTypeCreateRequest.builder()
-							.ctx(Env.getCtx())
-							.name("invoice processing fee vendor invoice")
-							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-							.build());
+										   .ctx(Env.getCtx())
+										   .name("invoice processing fee vendor invoice")
+										   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+										   .build());
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 			serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
