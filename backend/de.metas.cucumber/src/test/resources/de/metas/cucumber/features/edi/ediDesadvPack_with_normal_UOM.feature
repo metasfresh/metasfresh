@@ -674,6 +674,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7528017001/job/20490070611
   Scenario: 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU and then we use the QtyToDeliverCatch_Override for the remaining qty
   in:
