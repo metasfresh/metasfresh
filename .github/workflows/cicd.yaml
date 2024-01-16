@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.3.3'
+  PIPELINE_VERSION: '0.3.4'
 jobs:
 
   init:
@@ -589,6 +589,93 @@ jobs:
         with:
           name: cucumber-logs
           path: cucumber.log
+
+  health_check:
+    name: health check
+    runs-on: ubuntu-latest
+    needs: [ init, backend, frontend ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: start docker-compose
+        working-directory: docker-builds/compose/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          docker-compose up -d
+      - name: Make the script files executable
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          chmod +x apiHealthChecks.sh containerHealthCheck.sh
+      - name: db health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh db
+      - name: webapi health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh webapi
+      - name: app health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh app
+      - name: rabbitmq health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh rabbitmq
+      - name: search health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh search
+      - name: external health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh external
+      - name: webui health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh webui
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
+#      - name: run api health checks
+#        working-directory: docker-builds/health/
+#        if: success() || failure()
+#        run: |
+#          ./apiHealthChecks.sh
+      - name: create docker-compose summary
+        working-directory: docker-builds/compose/
+        if: success() || failure()
+        run: |
+          docker-compose ps -a
+          docker inspect --format "{{json .State.Health }}" compose_db_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_webapi_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_app_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_rabbitmq_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
+      - name: stop docker-compose
+        working-directory: docker-builds/compose/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+        if: success() || failure()
+        run: | 
+          docker-compose down
 
   redeploy:
     runs-on: ubuntu-latest
