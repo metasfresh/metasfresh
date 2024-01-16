@@ -101,12 +101,12 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
-	@ApiOperation("Retrieves a singular HU by serialNo.\n"
-			+ "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
-			+ "  But custom HU statuses can be set via `AD_SysConfig`: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`\n"
-			+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
-			+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via `AD_SysConfig`: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`"
-	)
+	@ApiOperation("Retrieves a singular HU by serialNo.<ul>"
+			+ "- <li><b>HU-Status</b>: By default, the endpoint takes into consideration only HUs with status = 'Active'.<br/>"
+			+ "  But custom HU statuses can be set via SysConfig: <code>de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses</code></li>"
+			+ "- <li><b>Empty HU-Attributes</b>: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).<br/>"
+			+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: <code>de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty</code><li>" 
+			+ "</ul>")
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
@@ -150,7 +150,7 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
 			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		return getByIdSupplier(() -> {
+		final Supplier<HuId> huSupplier = () -> {
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
 			if (globalQRCode != null)
 			{
@@ -161,7 +161,9 @@ public class HandlingUnitsRestController
 			{
 				return HuId.ofHUValue(request.getQrCode());
 			}
-		}, request.isIncludeAllowedClearanceStatuses());
+		};
+		
+		return getByIdSupplier(huSupplier, request.isIncludeAllowedClearanceStatuses());
 	}
 
 	@GetMapping("/byId/{M_HU_ID}")
