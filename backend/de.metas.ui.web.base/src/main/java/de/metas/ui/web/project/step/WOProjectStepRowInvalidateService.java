@@ -25,7 +25,6 @@ package de.metas.ui.web.project.step;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.project.workorder.resource.WOProjectResourceId;
-import de.metas.project.workorder.stepresource.WOProjectStepResourceService;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -36,9 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WOProjectStepRowInvalidateService
 {
 	@NonNull
-	private final WOProjectStepResourceService woProjectStepResourceService;
+	private final WOProjectStepAndResourceService woProjectStepResourceService;
 
-	public WOProjectStepRowInvalidateService(final @NonNull WOProjectStepResourceService woProjectStepResourceService)
+	public WOProjectStepRowInvalidateService(final @NonNull WOProjectStepAndResourceService woProjectStepResourceService)
 	{
 		this.woProjectStepResourceService = woProjectStepResourceService;
 	}

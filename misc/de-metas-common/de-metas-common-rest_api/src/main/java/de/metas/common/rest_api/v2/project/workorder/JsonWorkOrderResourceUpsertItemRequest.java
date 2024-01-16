@@ -30,10 +30,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
@@ -43,7 +40,7 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIE
 @EqualsAndHashCode
 public class JsonWorkOrderResourceUpsertItemRequest
 {
-	@Schema(required = true,
+	@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 			description = RESOURCE_IDENTIFIER_DOC + "\n"
 					+ "Note that `C_Project_WO_Resource.S_Resource_ID` is needed for the calendar view!") //
 	@Setter
@@ -69,16 +66,6 @@ public class JsonWorkOrderResourceUpsertItemRequest
 
 	@Schema(hidden = true)
 	boolean allDaySet;
-
-	BigDecimal duration;
-
-	@Schema(hidden = true)
-	boolean durationSet;
-
-	JsonDurationUnit durationUnit;
-
-	@Schema(hidden = true)
-	boolean durationUnitSet;
 
 	String testFacilityGroupName;
 
@@ -114,18 +101,6 @@ public class JsonWorkOrderResourceUpsertItemRequest
 		this.allDaySet = true;
 	}
 
-	public void setDuration(final BigDecimal duration)
-	{
-		this.duration = duration;
-		this.durationSet = true;
-	}
-
-	public void setDurationUnit(final JsonDurationUnit durationUnit)
-	{
-		this.durationUnit = durationUnit;
-		this.durationUnitSet = true;
-	}
-
 	public void setTestFacilityGroupName(final String testFacilityGroupName)
 	{
 		this.testFacilityGroupName = testFacilityGroupName;
@@ -143,17 +118,5 @@ public class JsonWorkOrderResourceUpsertItemRequest
 	public <T> T mapResourceIdentifier(@NonNull final Function<String, T> mappingFunction)
 	{
 		return mappingFunction.apply(resourceIdentifier);
-	}
-
-	@JsonIgnore
-	@NonNull
-	public <T> Optional<T> mapDuration(@NonNull final BiFunction<BigDecimal, JsonDurationUnit, T> mappingFunction)
-	{
-		if (duration == null || durationUnit == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.ofNullable(mappingFunction.apply(duration, durationUnit));
 	}
 }

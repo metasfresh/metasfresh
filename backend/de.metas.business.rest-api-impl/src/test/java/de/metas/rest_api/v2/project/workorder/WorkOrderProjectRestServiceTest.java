@@ -94,7 +94,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -107,7 +107,6 @@ class WorkOrderProjectRestServiceTest
 
 	private I_C_ProjectType projectType;
 
-	private I_R_StatusCategory requestStatusCategory;
 	private String orgValue;
 	private I_S_Resource resource;
 	private PriceListVersionId priceListVersionId;
@@ -122,7 +121,7 @@ class WorkOrderProjectRestServiceTest
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
 
-		requestStatusCategory = newInstance(I_R_StatusCategory.class);
+		final I_R_StatusCategory requestStatusCategory = newInstance(I_R_StatusCategory.class);
 		save(requestStatusCategory);
 
 		projectType = newInstance(I_C_ProjectType.class);
@@ -175,10 +174,10 @@ class WorkOrderProjectRestServiceTest
 		final WorkOrderMapper workOrderMapper = new WorkOrderMapper(mockProjectService);
 
 		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository,
-																	  new ProjectTypeRepository(),
-																	  workOrderMapper,
-																	  workOrderProjectObjectUnderTestRestService,
-																	  workOrderProjectStepRestService);
+				new ProjectTypeRepository(),
+				workOrderMapper,
+				workOrderProjectObjectUnderTestRestService,
+				workOrderProjectStepRestService);
 	}
 
 	@Test
@@ -256,6 +255,7 @@ class WorkOrderProjectRestServiceTest
 		stepRequest.setWoStepStatus(woStepStatus);
 		stepRequest.setWoFindingsReleasedDate(woFindingsReleasedDate);
 		stepRequest.setWoFindingsCreatedDate(woFindingsCreatedDate);
+		stepRequest.setWoPlannedResourceDurationHours(240);
 		stepRequest.setExternalId(stepIdentifier);
 
 		projectRequest.setSteps(ImmutableList.of(stepRequest));
@@ -272,8 +272,6 @@ class WorkOrderProjectRestServiceTest
 		resourceRequest.setAssignDateTo(assignDateTo);
 		resourceRequest.setActive(false);
 		resourceRequest.setIsAllDay(true);
-		resourceRequest.setDuration(BigDecimal.TEN);
-		resourceRequest.setDurationUnit(JsonDurationUnit.Day);
 		resourceRequest.setTestFacilityGroupName(testFacilityGroupName);
 		resourceRequest.setExternalId(stepIdentifier);
 
@@ -304,8 +302,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(responseBody).isNotNull();
 
 		final JsonWorkOrderProjectResponse data = workOrderProjectRestService.getWorkOrderProjectById(ProjectId.ofRepoId(responseBody.getMetasfreshId().getValue()));
-		assertThat(data.getProjectId()).isNotNull();
-
 		assertThat(data.getProjectId()).isEqualTo(responseBody.getMetasfreshId());
 		assertThat(data.getValue()).isEqualTo(projectValue);
 		assertThat(data.getName()).isEqualTo(projectName);
@@ -323,13 +319,12 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getPoReference()).isEqualTo(poReference);
 		assertThat(data.getBpartnerTargetDate()).isEqualTo(bpartnerTargetDate);
 		assertThat(data.getWoProjectCreatedDate()).isEqualTo(woProjectCreatedDate);
-		assertThat(data.getIsActive()).isEqualTo(false);
+		assertThat(data.getIsActive()).isFalse();
 		assertThat(data.getOrgCode()).isEqualTo(orgValue);
 		assertThat(data.getDateOfProvisionByBPartner()).isEqualTo(dateOfProvisionByBPartner);
 		assertThat(data.getProjectParentId()).isNull();
 
-		assertThat(data.getSteps()).isNotNull();
-		assertThat(data.getSteps().size()).isEqualTo(1);
+		assertThat(data.getSteps()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderStepResponse stepResponse = data.getSteps().get(0);
 
@@ -350,8 +345,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(stepResponse.getWoFindingsCreatedDate()).isEqualTo(woFindingsCreatedDate);
 		assertThat(stepResponse.getExternalId()).isEqualTo(stepIdentifier);
 
-		assertThat(stepResponse.getResources()).isNotNull();
-		assertThat(stepResponse.getResources().size()).isEqualTo(1);
+		assertThat(stepResponse.getResources()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderResourceResponse resourceResponse = stepResponse.getResources().get(0);
 
@@ -359,15 +353,14 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceInternalName).isEqualTo(resource.getInternalName());
 		assertThat(resourceResponse.getAssignDateFrom()).isEqualTo(assignDateFrom);
 		assertThat(resourceResponse.getAssignDateTo()).isEqualTo(assignDateTo);
-		assertThat(resourceResponse.getIsActive()).isEqualTo(false);
-		assertThat(resourceResponse.getIsAllDay()).isEqualTo(true);
+		assertThat(resourceResponse.getIsActive()).isFalse();
+		assertThat(resourceResponse.getIsAllDay()).isTrue();
 		assertThat(resourceResponse.getDuration()).isEqualTo(BigDecimal.TEN);
 		assertThat(resourceResponse.getDurationUnit()).isEqualTo(JsonDurationUnit.Day);
 		assertThat(resourceResponse.getTestFacilityGroupName()).isEqualTo(testFacilityGroupName);
 		assertThat(resourceResponse.getExternalId()).isEqualTo(stepIdentifier);
 
-		assertThat(data.getObjectsUnderTest()).isNotNull();
-		assertThat(data.getObjectsUnderTest().size()).isEqualTo(1);
+		assertThat(data.getObjectsUnderTest()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderObjectsUnderTestResponse objectsUnderTestResponse = data.getObjectsUnderTest().get(0);
 
@@ -401,13 +394,11 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectResponse storedProject = workOrderProjectRestService.getWorkOrderProjectById(ProjectId.ofRepoId(responseBody.getMetasfreshId().getValue()));
 
 		//project
-		assertThat(storedProject.getProjectId()).isNotNull();
-
 		assertThat(storedProject.getProjectId()).isEqualTo(responseBody.getMetasfreshId());
 		assertThat(storedProject.getValue()).isEqualTo(nextValue);
 		assertThat(storedProject.getName()).isEqualTo(nextValue);
 		assertThat(storedProject.getProjectTypeId()).isEqualTo(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
-		assertThat(storedProject.getIsActive()).isEqualTo(true);
+		assertThat(storedProject.getIsActive()).isTrue();
 		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
 		assertThat(storedProject.getCurrencyCode()).isEqualTo(CurrencyCode.EUR.toThreeLetterCode());
@@ -427,12 +418,10 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getProjectParentId()).isNull();
 
 		//steps
-		assertThat(storedProject.getSteps()).isNotNull();
-		assertThat(storedProject.getSteps().size()).isEqualTo(0);
+		assertThat(storedProject.getSteps()).isNotNull().isEmpty();
 
 		//objects under test
-		assertThat(storedProject.getObjectsUnderTest()).isNotNull();
-		assertThat(storedProject.getObjectsUnderTest().size()).isEqualTo(0);
+		assertThat(storedProject.getObjectsUnderTest()).isNotNull().isEmpty();
 	}
 
 	@Test
@@ -494,13 +483,11 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectResponse storedProject = workOrderProjectRestService.getWorkOrderProjectById(ProjectId.ofRepoId(responseBody.getMetasfreshId().getValue()));
 
 		//project
-		assertThat(storedProject.getProjectId()).isNotNull();
-
 		assertThat(storedProject.getProjectId()).isEqualTo(responseBody.getMetasfreshId());
 		assertThat(storedProject.getValue()).isEqualTo(nextValue);
 		assertThat(storedProject.getName()).isEqualTo(nextValue);
 		assertThat(storedProject.getProjectTypeId()).isEqualTo(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
-		assertThat(storedProject.getIsActive()).isEqualTo(true);
+		assertThat(storedProject.getIsActive()).isTrue();
 		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
 		assertThat(storedProject.getCurrencyCode()).isEqualTo(CurrencyCode.EUR.toThreeLetterCode());
@@ -520,8 +507,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getProjectParentId()).isNull();
 
 		//steps
-		assertThat(storedProject.getSteps()).isNotNull();
-		assertThat(storedProject.getSteps().size()).isEqualTo(1);
+		assertThat(storedProject.getSteps()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderStepResponse stepResponse = storedProject.getSteps().get(0);
 
@@ -530,8 +516,8 @@ class WorkOrderProjectRestServiceTest
 		assertThat(stepResponse.getProjectId()).isEqualTo(storedProject.getProjectId());
 		assertThat(stepResponse.getSeqNo()).isEqualTo(10);
 		assertThat(stepResponse.getName()).isEqualTo(stepName);
-		assertThat(stepResponse.getWoPlannedResourceDurationHours()).isEqualTo(0);
-		assertThat(stepResponse.getWoPlannedPersonDurationHours()).isEqualTo(0);
+		assertThat(stepResponse.getWoPlannedResourceDurationHours()).isZero();
+		assertThat(stepResponse.getWoPlannedPersonDurationHours()).isZero();
 		assertThat(stepResponse.getDateEnd()).isEqualTo(stepEndDate);
 		assertThat(stepResponse.getDateStart()).isEqualTo(stepStartDate);
 
@@ -545,8 +531,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(stepResponse.getWoFindingsCreatedDate()).isNull();
 
 		//resources
-		assertThat(stepResponse.getResources()).isNotNull();
-		assertThat(stepResponse.getResources().size()).isEqualTo(1);
+		assertThat(stepResponse.getResources()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderResourceResponse resourceResponse = stepResponse.getResources().get(0);
 
@@ -555,8 +540,8 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceInternalName).isEqualTo(resource.getInternalName());
 		assertThat(resourceResponse.getAssignDateFrom()).isEqualTo(assignDateFrom);
 		assertThat(resourceResponse.getAssignDateTo()).isEqualTo(assignDateTo);
-		assertThat(resourceResponse.getIsActive()).isEqualTo(true);
-		assertThat(resourceResponse.getIsAllDay()).isEqualTo(false);
+		assertThat(resourceResponse.getIsActive()).isTrue();
+		assertThat(resourceResponse.getIsAllDay()).isFalse();
 
 		assertThat(resourceResponse.getDuration()).isEqualTo(BigDecimal.ZERO);
 		assertThat(resourceResponse.getDurationUnit()).isEqualTo(JsonDurationUnit.Hour);
@@ -565,8 +550,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceResponse.getExternalId()).isNull();
 
 		//objects under test
-		assertThat(storedProject.getObjectsUnderTest()).isNotNull();
-		assertThat(storedProject.getObjectsUnderTest().size()).isEqualTo(1);
+		assertThat(storedProject.getObjectsUnderTest()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderObjectsUnderTestResponse objectsUnderTestResponse = storedProject.getObjectsUnderTest().get(0);
 
@@ -604,6 +588,7 @@ class WorkOrderProjectRestServiceTest
 				.projectId(projectId)
 				.name(projectWoStepName)
 				.externalId(externalIdStep)
+				.woPlannedResourceDurationHours(8 * 24)
 				.build();
 
 		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(projectId, projectWoStep.getC_Project_WO_Step_ID());
@@ -616,8 +601,6 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
-				.duration(BigDecimal.valueOf(8))
-				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "22222";
@@ -677,11 +660,10 @@ class WorkOrderProjectRestServiceTest
 		//validate project
 		final I_C_Project projectToValidate = InterfaceWrapperHelper.load(project.getC_Project_ID(), I_C_Project.class);
 		assertThat(projectToValidate.getName()).isEqualTo("newProjectName");
-		assertThat(projectToValidate.isActive()).isEqualTo(false);
+		assertThat(projectToValidate.isActive()).isFalse();
 
 		//validate projectStep
-		assertThat(responseBody.getSteps()).isNotNull();
-		assertThat(responseBody.getSteps().size()).isEqualTo(1);
+		assertThat(responseBody.getSteps()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderStepUpsertResponse stepUpsertResponse = responseBody.getSteps().get(0);
 		assertThat(stepUpsertResponse.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.UPDATED);
@@ -692,21 +674,19 @@ class WorkOrderProjectRestServiceTest
 		assertThat(projectWoStepToValidate.getName()).isEqualTo("newStepName");
 
 		//validate projectResource
-		assertThat(stepUpsertResponse.getResources()).isNotNull();
-		assertThat(stepUpsertResponse.getResources().size()).isEqualTo(1);
+		assertThat(stepUpsertResponse.getResources()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderResourceUpsertResponse resourceResponse = stepUpsertResponse.getResources().get(0);
 		assertThat(resourceResponse.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.UPDATED);
 		assertThat(resourceResponse.getIdentifier()).isEqualTo("int-" + resource.getInternalName());
 
 		final I_C_Project_WO_Resource projectWoResourceToValidate = InterfaceWrapperHelper.load(projectWoResource.getC_Project_WO_Resource_ID(), I_C_Project_WO_Resource.class);
-		assertThat(projectWoResourceToValidate.isActive()).isEqualTo(false);
+		assertThat(projectWoResourceToValidate.isActive()).isFalse();
 		assertThat(projectWoResourceToValidate.getAssignDateFrom()).isEqualTo(TimeUtil.asTimestamp(newAssignDateFrom));
 		assertThat(TimeUtil.asInstant(projectWoResourceToValidate.getAssignDateTo())).isEqualTo(TimeUtil.asEndOfDayInstant(newAssignDateTo, ZoneId.systemDefault()));
 
 		//validate projectObjectUnderTest
-		assertThat(responseBody.getObjectsUnderTest()).isNotNull();
-		assertThat(responseBody.getObjectsUnderTest().size()).isEqualTo(1);
+		assertThat(responseBody.getObjectsUnderTest()).isNotNull().hasSize(1);
 
 		final JsonWorkOrderObjectUnderTestUpsertResponse objectUnderTestUpsertResponse = responseBody.getObjectsUnderTest().get(0);
 		assertThat(objectUnderTestUpsertResponse.getIdentifier()).isEqualTo("ext-" + objectUnderTest.getExternalId());
@@ -741,6 +721,7 @@ class WorkOrderProjectRestServiceTest
 				.projectId(projectId)
 				.name(projectWoStepName)
 				.externalId(externalIdStep)
+				.woPlannedResourceDurationHours(24)
 				.build();
 
 		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(projectId, projectWoStep.getC_Project_WO_Step_ID());
@@ -753,8 +734,6 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
-				.duration(BigDecimal.ONE)
-				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "3333";
@@ -799,14 +778,14 @@ class WorkOrderProjectRestServiceTest
 
 		final I_C_Project projectToValidate = InterfaceWrapperHelper.load(project.getC_Project_ID(), I_C_Project.class);
 		assertThat(projectToValidate.getName()).isEqualTo(projectName);
-		assertThat(projectToValidate.isActive()).isEqualTo(true);
+		assertThat(projectToValidate.isActive()).isTrue();
 
 		final I_C_Project_WO_Step projectWoStepToValidate = InterfaceWrapperHelper.load(projectWoStep.getC_Project_WO_Step_ID(), I_C_Project_WO_Step.class);
 		assertThat(projectWoStepToValidate.getName()).isEqualTo(projectWoStepName);
 		assertThat(projectWoStepToValidate.getExternalId()).isEqualTo(externalIdStep);
 
 		final I_C_Project_WO_Resource projectWoResourceToValidate = InterfaceWrapperHelper.load(projectWoResource.getC_Project_WO_Resource_ID(), I_C_Project_WO_Resource.class);
-		assertThat(projectWoResourceToValidate.isActive()).isEqualTo(true);
+		assertThat(projectWoResourceToValidate.isActive()).isTrue();
 		assertThat(projectWoResourceToValidate.getAssignDateFrom()).isEqualTo(TimeUtil.asTimestamp(assignDateFrom));
 
 		final I_C_Project_WO_ObjectUnderTest objectUnderTestToValidate = InterfaceWrapperHelper.load(objectUnderTest.getC_Project_WO_ObjectUnderTest_ID(), I_C_Project_WO_ObjectUnderTest.class);
@@ -837,7 +816,7 @@ class WorkOrderProjectRestServiceTest
 		project.setIsActive(isActive);
 
 		project.setExternalId(externalId);
-		
+
 		InterfaceWrapperHelper.save(project);
 
 		return project;
@@ -847,7 +826,8 @@ class WorkOrderProjectRestServiceTest
 	private I_C_Project_WO_Step createProjectWOStep(
 			@NonNull final ProjectId projectId,
 			@NonNull final String name,
-			@Nullable final String externalId)
+			@Nullable final String externalId,
+			@Nullable final Integer woPlannedResourceDurationHours)
 	{
 		final I_C_Project_WO_Step projectWOStep = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Step.class);
 
@@ -856,6 +836,11 @@ class WorkOrderProjectRestServiceTest
 		projectWOStep.setExternalId(externalId);
 		projectWOStep.setDateEnd(Timestamp.from(Instant.ofEpochMilli(0)));
 		projectWOStep.setDateStart(Timestamp.from(Instant.ofEpochMilli(1)));
+
+		if (woPlannedResourceDurationHours != null)
+		{
+			projectWOStep.setWOPlannedResourceDurationHours(woPlannedResourceDurationHours);
+		}
 
 		InterfaceWrapperHelper.save(projectWOStep);
 
@@ -868,8 +853,6 @@ class WorkOrderProjectRestServiceTest
 			@NonNull final ResourceId resourceId,
 			@NonNull final LocalDate assignDateTo,
 			@NonNull final LocalDate assignDateFrom,
-			@NonNull final BigDecimal duration,
-			@NonNull final String durationUnit,
 			@Nullable final String externalId)
 	{
 		final I_C_Project_WO_Resource projectWoResource = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
@@ -880,8 +863,6 @@ class WorkOrderProjectRestServiceTest
 		projectWoResource.setExternalId(externalId);
 		projectWoResource.setAssignDateTo(TimeUtil.asTimestamp(assignDateTo));
 		projectWoResource.setAssignDateFrom(TimeUtil.asTimestamp(assignDateFrom));
-		projectWoResource.setDuration(duration);
-		projectWoResource.setDurationUnit(durationUnit);
 
 		InterfaceWrapperHelper.save(projectWoResource);
 

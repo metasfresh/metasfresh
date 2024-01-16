@@ -38,8 +38,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
-import de.metas.util.time.DurationUtils;
-import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -52,7 +50,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -72,6 +69,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class WOProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public ImmutableList<WOProjectResource> getByIds(@NonNull final Set<WOProjectResourceId> ids)
+	{
+		return getByIds(InSetPredicate.only(ids));
+	}
 
 	public ImmutableList<WOProjectResource> getByIds(@NonNull final InSetPredicate<WOProjectResourceId> ids)
 	{
@@ -253,7 +255,7 @@ public class WOProjectResourceRepository
 
 		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateFrom()));
 		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateTo()));
-		
+
 		resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId()));
 		resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createWOProjectResourceRequest.getResourceId()));
 		resourceRecord.setC_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId().getProjectId()));
@@ -267,17 +269,6 @@ public class WOProjectResourceRepository
 		if (createWOProjectResourceRequest.getIsAllDay() != null)
 		{
 			resourceRecord.setIsAllDay(createWOProjectResourceRequest.getIsAllDay());
-		}
-
-		if (createWOProjectResourceRequest.getDuration() == null || createWOProjectResourceRequest.getDurationUnit() == null)
-		{
-			resourceRecord.setDuration(BigDecimal.ZERO);
-			resourceRecord.setDurationUnit(WFDurationUnit.Hour.getCode());
-		}
-		else
-		{
-			resourceRecord.setDuration(createWOProjectResourceRequest.getDuration());
-			resourceRecord.setDurationUnit(createWOProjectResourceRequest.getDurationUnit().getCode());
 		}
 
 		saveRecord(resourceRecord);
@@ -295,14 +286,13 @@ public class WOProjectResourceRepository
 	}
 
 	@NonNull
-	public Stream<WOProjectResource> streamUnresolvedForProjectIds(@NonNull final ImmutableSet<ProjectId> projectIds)
+	public Stream<WOProjectResource> streamForProjectIds(@NonNull final ImmutableSet<ProjectId> projectIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
 				.create()
 				.stream()
-				.map(WOProjectResourceRepository::ofRecord)
-				.filter(WOProjectResource::isNotFullyResolved);
+				.map(WOProjectResourceRepository::ofRecord);
 	}
 
 	@NonNull
@@ -346,7 +336,6 @@ public class WOProjectResourceRepository
 		}
 
 		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
-		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(resourceRecord.getDurationUnit());
 
 		return WOProjectResource.builder()
 				.orgId(orgId)
@@ -357,8 +346,6 @@ public class WOProjectResourceRepository
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
 
 				.dateRange(dateRange)
-				.duration(DurationUtils.fromBigDecimal(resourceRecord.getDuration(), durationUnit.getTemporalUnit()))
-				.durationUnit(durationUnit)
 
 				.isActive(resourceRecord.isActive())
 
@@ -419,17 +406,15 @@ public class WOProjectResourceRepository
 		resourceRecord.setIsAllDay(projectResource.isAllDay());
 
 		resourceRecord.setAssignDateFrom(projectResource.getStartDate()
-												 .map(TimeUtil::asTimestamp)
-												 .orElse(null));
+				.map(TimeUtil::asTimestamp)
+				.orElse(null));
 
 		resourceRecord.setAssignDateTo(projectResource.getEndDate()
-											   .map(TimeUtil::asTimestamp)
-											   .orElse(null));
+				.map(TimeUtil::asTimestamp)
+				.orElse(null));
 
 		resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
 
-		resourceRecord.setDuration(DurationUtils.toBigDecimal(projectResource.getDuration(), projectResource.getDurationUnit().getTemporalUnit()));
-		resourceRecord.setDurationUnit(projectResource.getDurationUnit().getCode());
 		resourceRecord.setResolvedHours((int)projectResource.getResolvedHours().toHours());
 
 		saveRecord(resourceRecord);

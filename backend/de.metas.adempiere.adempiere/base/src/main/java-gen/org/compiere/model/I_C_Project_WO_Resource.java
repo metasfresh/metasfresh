@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -257,51 +256,51 @@ public interface I_C_Project_WO_Resource
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_Description = new ModelColumn<>(I_C_Project_WO_Resource.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
-	/**
-	 * Set Duration.
-	 * Normal Duration in Duration Unit
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDuration (BigDecimal Duration);
-
-	/**
-	 * Get Duration.
-	 * Normal Duration in Duration Unit
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getDuration();
-
-	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_Duration = new ModelColumn<>(I_C_Project_WO_Resource.class, "Duration", null);
-	String COLUMNNAME_Duration = "Duration";
-
-	/**
-	 * Set Duration Unit.
-	 * Unit of Duration
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDurationUnit (java.lang.String DurationUnit);
-
-	/**
-	 * Get Duration Unit.
-	 * Unit of Duration
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getDurationUnit();
-
-	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_DurationUnit = new ModelColumn<>(I_C_Project_WO_Resource.class, "DurationUnit", null);
-	String COLUMNNAME_DurationUnit = "DurationUnit";
+	// /**
+	//  * Set Duration.
+	//  * Normal Duration in Duration Unit
+	//  *
+	//  * <br>Type: Number
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// void setDuration (BigDecimal Duration);
+	//
+	// /**
+	//  * Get Duration.
+	//  * Normal Duration in Duration Unit
+	//  *
+	//  * <br>Type: Number
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// BigDecimal getDuration();
+	//
+	// ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_Duration = new ModelColumn<>(I_C_Project_WO_Resource.class, "Duration", null);
+	// String COLUMNNAME_Duration = "Duration";
+	//
+	// /**
+	//  * Set Duration Unit.
+	//  * Unit of Duration
+	//  *
+	//  * <br>Type: List
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// void setDurationUnit (java.lang.String DurationUnit);
+	//
+	// /**
+	//  * Get Duration Unit.
+	//  * Unit of Duration
+	//  *
+	//  * <br>Type: List
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// java.lang.String getDurationUnit();
+	//
+	// ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_DurationUnit = new ModelColumn<>(I_C_Project_WO_Resource.class, "DurationUnit", null);
+	// String COLUMNNAME_DurationUnit = "DurationUnit";
 
 	/**
 	 * Set External ID.
@@ -323,6 +322,48 @@ public interface I_C_Project_WO_Resource
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project_WO_Resource.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set Assign From (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHR_AssignDateFrom (@Nullable java.sql.Timestamp HR_AssignDateFrom);
+
+	/**
+	 * Get Assign From (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getHR_AssignDateFrom();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_HR_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource.class, "HR_AssignDateFrom", null);
+	String COLUMNNAME_HR_AssignDateFrom = "HR_AssignDateFrom";
+
+	/**
+	 * Set Assign To (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHR_AssignDateTo (@Nullable java.sql.Timestamp HR_AssignDateTo);
+
+	/**
+	 * Get Assign To (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getHR_AssignDateTo();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_HR_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource.class, "HR_AssignDateTo", null);
+	String COLUMNNAME_HR_AssignDateTo = "HR_AssignDateTo";
 
 	/**
 	 * Set Active.
@@ -390,6 +431,48 @@ public interface I_C_Project_WO_Resource
 	String COLUMNNAME_ResolvedHours = "ResolvedHours";
 
 	/**
+	 * Set Assign From (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateFrom (@Nullable java.sql.Timestamp Resource_AssignDateFrom);
+
+	/**
+	 * Get Assign From (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateFrom();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_Resource_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource.class, "Resource_AssignDateFrom", null);
+	String COLUMNNAME_Resource_AssignDateFrom = "Resource_AssignDateFrom";
+
+	/**
+	 * Set Assign To (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateTo (@Nullable java.sql.Timestamp Resource_AssignDateTo);
+
+	/**
+	 * Get Assign To (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateTo();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_Resource_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource.class, "Resource_AssignDateTo", null);
+	String COLUMNNAME_Resource_AssignDateTo = "Resource_AssignDateTo";
+
+	/**
 	 * Set Resource.
 	 * Resource
 	 *
@@ -435,6 +518,56 @@ public interface I_C_Project_WO_Resource
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedPersonDurationHours (@Nullable BigDecimal WOPlannedPersonDurationHours);
+
+	/**
+	 * Get TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedPersonDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedPersonDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedPersonDurationHours", null);
+	String COLUMNNAME_WOPlannedPersonDurationHours = "WOPlannedPersonDurationHours";
+
+	/**
+	 * Set TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedResourceDurationHours (@Nullable BigDecimal WOPlannedResourceDurationHours);
+
+	/**
+	 * Get TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedResourceDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedResourceDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedResourceDurationHours", null);
+	String COLUMNNAME_WOPlannedResourceDurationHours = "WOPlannedResourceDurationHours";
 
 	/**
 	 * Set Test facility group.

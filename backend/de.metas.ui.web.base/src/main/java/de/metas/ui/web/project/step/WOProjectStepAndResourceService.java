@@ -20,31 +20,36 @@
  * #L%
  */
 
-package de.metas.project.workorder.stepresource;
+package de.metas.ui.web.project.step;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeRepository;
-import de.metas.project.workorder.WOProjectStepResource;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepRepository;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static de.metas.project.ProjectConstants.RESERVATION_PROJECT_TYPE;
 
 @Service
-public class WOProjectStepResourceService
+public class WOProjectStepAndResourceService
 {
 	@NonNull
 	private final WOProjectRepository woProjectRepository;
@@ -58,7 +63,7 @@ public class WOProjectStepResourceService
 	@NonNull
 	private final ProjectTypeRepository projectTypeRepository;
 
-	public WOProjectStepResourceService(
+	public WOProjectStepAndResourceService(
 			@NonNull final WOProjectRepository woProjectRepository,
 			@NonNull final WOProjectStepRepository stepRepository,
 			@NonNull final WOProjectResourceRepository resourceRepository,
@@ -71,7 +76,7 @@ public class WOProjectStepResourceService
 	}
 
 	@NonNull
-	public ImmutableList<WOProjectStepResource> getUnresolvedStepResourcesForWOProject(@NonNull final ProjectId projectId)
+	public ImmutableList<WOProjectStepAndResource> getUnresolvedStepResourcesForWOProject(@NonNull final ProjectId projectId)
 	{
 		final WOProject project = woProjectRepository.getById(projectId);
 
@@ -91,18 +96,21 @@ public class WOProjectStepResourceService
 	}
 
 	@NonNull
-	public Stream<WOProjectStepResource> streamUnresolvedByResourceIds(@NonNull final ImmutableSet<WOProjectResourceId> resourceIds)
+	public Stream<WOProjectStepAndResource> streamUnresolvedByResourceIds(@NonNull final ImmutableSet<WOProjectResourceId> resourceIds)
 	{
 		return resourceRepository.streamForResourceIds(resourceIds)
-				.filter(WOProjectResource::isNotFullyResolved)
-				.map(this::buildWOProjectStepResource);
+				.collect(toWOProjectStepAndResources())
+				.stream()
+				.filter(WOProjectStepAndResource::isNotFullyResolved);
 	}
 
 	@NonNull
-	private ImmutableList<WOProjectStepResource> getUnresolvedStepResourcesForProjectIds(@NonNull final ImmutableSet<ProjectId> projectIds)
+	private ImmutableList<WOProjectStepAndResource> getUnresolvedStepResourcesForProjectIds(@NonNull final ImmutableSet<ProjectId> projectIds)
 	{
-		return resourceRepository.streamUnresolvedForProjectIds(projectIds)
-				.map(this::buildWOProjectStepResource)
+		return resourceRepository.streamForProjectIds(projectIds)
+				.collect(toWOProjectStepAndResources())
+				.stream()
+				.filter(WOProjectStepAndResource::isNotFullyResolved)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -115,18 +123,23 @@ public class WOProjectStepResourceService
 		return woProjectRepository.getByParentProjectAndProjectType(parentProjectId, reservationProjectType.getId());
 	}
 
-	@NonNull
-	private WOProjectStepResource buildWOProjectStepResource(@NonNull final WOProjectResource resource)
+	private Collector<WOProjectResource, ?, ImmutableList<WOProjectStepAndResource>> toWOProjectStepAndResources()
 	{
-		final WOProjectStep woProjectStep = stepRepository.getById(resource.getWoProjectStepId());
+		return GuavaCollectors.collectUsingListAccumulator(this::toWOProjectStepAndResources);
+	}
 
-		return WOProjectStepResource.builder()
-				.stepId(woProjectStep.getWoProjectStepId())
-				.resourceId(resource.getWoProjectResourceId())
-				.projectId(resource.getProjectId())
-				.stepName(woProjectStep.getName())
-				.totalHours(resource.getDuration())
-				.resolvedHours(resource.getResolvedHours())
-				.build();
+	private ImmutableList<WOProjectStepAndResource> toWOProjectStepAndResources(final List<WOProjectResource> resources)
+	{
+		if (resources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<WOProjectStepId> stepIds = resources.stream().map(WOProjectResource::getWoProjectStepId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<WOProjectStepId, WOProjectStep> steps = Maps.uniqueIndex(stepRepository.getByIds(stepIds), WOProjectStep::getWoProjectStepId);
+
+		return resources.stream()
+				.map(resource -> WOProjectStepAndResource.of(steps.get(resource.getWoProjectStepId()), resource))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -24,8 +24,6 @@ package de.metas.ui.web.project.step;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepResource;
-import de.metas.project.workorder.stepresource.WOProjectStepResourceService;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,7 +33,7 @@ import lombok.Value;
 @Builder
 public class WOProjectStepResourceRowsLoader
 {
-	@NonNull WOProjectStepResourceService woProjectStepResourceService;
+	@NonNull WOProjectStepAndResourceService woProjectStepResourceService;
 
 	@NonNull WOProjectStepRowInvalidateService woProjectStepRowInvalidateService;
 
@@ -44,7 +42,7 @@ public class WOProjectStepResourceRowsLoader
 	@NonNull
 	public WOProjectStepResourceRows loadRows()
 	{
-		final ImmutableList<WOProjectStepResource> unresolvedWOStepsForWOProject = woProjectStepResourceService.getUnresolvedStepResourcesForWOProject(projectId);
+		final ImmutableList<WOProjectStepAndResource> unresolvedWOStepsForWOProject = woProjectStepResourceService.getUnresolvedStepResourcesForWOProject(projectId);
 
 		final ImmutableList<WOProjectStepResourceRow> woProjectStepResourceRows = unresolvedWOStepsForWOProject.stream()
 				.map(WOProjectStepResourceRowsLoader::buildFromWOStepResource)
@@ -57,16 +55,16 @@ public class WOProjectStepResourceRowsLoader
 	}
 
 	@NonNull
-	static WOProjectStepResourceRow buildFromWOStepResource(@NonNull final WOProjectStepResource woProjectStepResource)
+	static WOProjectStepResourceRow buildFromWOStepResource(@NonNull final WOProjectStepAndResource woProjectStepAndResource)
 	{
 		return WOProjectStepResourceRow.builder()
-				.name(woProjectStepResource.getStepName())
-				.stepId(woProjectStepResource.getStepId())
-				.projectId(woProjectStepResource.getProjectId())
-				.resourceId(woProjectStepResource.getResourceId())
-				.resolvedHours(woProjectStepResource.getResolvedHours().toHours())
-				.reservedHours(woProjectStepResource.getTotalHours().toHours())
-				.rowId(DocumentId.of(woProjectStepResource.getResourceId()))
+				.name(woProjectStepAndResource.getStepName())
+				.stepId(woProjectStepAndResource.getStepId())
+				.projectId(woProjectStepAndResource.getProjectId())
+				.resourceId(woProjectStepAndResource.getResourceId())
+				.resolvedHours(woProjectStepAndResource.getResolvedHours().toHours())
+				.reservedHours(woProjectStepAndResource.getTotalHours().toHours())
+				.rowId(DocumentId.of(woProjectStepAndResource.getResourceId()))
 				.build();
 	}
 }

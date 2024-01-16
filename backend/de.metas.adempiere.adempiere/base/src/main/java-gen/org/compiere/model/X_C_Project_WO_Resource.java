@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_C_Project_WO_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1834083546L;
+	private static final long serialVersionUID = -138052304L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource (final Properties ctx, final int C_Project_WO_Resource_ID, @Nullable final String trxName)
@@ -170,47 +170,47 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	@Override
-	public void setDuration (final BigDecimal Duration)
-	{
-		set_Value (COLUMNNAME_Duration, Duration);
-	}
-
-	@Override
-	public BigDecimal getDuration() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Duration);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	/** 
-	 * DurationUnit AD_Reference_ID=299
-	 * Reference name: WF_DurationUnit
-	 */
-	public static final int DURATIONUNIT_AD_Reference_ID=299;
-	/** Year = Y */
-	public static final String DURATIONUNIT_Year = "Y";
-	/** Month = M */
-	public static final String DURATIONUNIT_Month = "M";
-	/** Day = D */
-	public static final String DURATIONUNIT_Day = "D";
-	/** Hour = h */
-	public static final String DURATIONUNIT_Hour = "h";
-	/** Minute = m */
-	public static final String DURATIONUNIT_Minute = "m";
-	/** Second = s */
-	public static final String DURATIONUNIT_Second = "s";
-	@Override
-	public void setDurationUnit (final java.lang.String DurationUnit)
-	{
-		set_Value (COLUMNNAME_DurationUnit, DurationUnit);
-	}
-
-	@Override
-	public java.lang.String getDurationUnit() 
-	{
-		return get_ValueAsString(COLUMNNAME_DurationUnit);
-	}
+	// @Override
+	// public void setDuration (final BigDecimal Duration)
+	// {
+	// 	set_Value (COLUMNNAME_Duration, Duration);
+	// }
+	//
+	// @Override
+	// public BigDecimal getDuration()
+	// {
+	// 	final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Duration);
+	// 	return bd != null ? bd : BigDecimal.ZERO;
+	// }
+	//
+	// /**
+	//  * DurationUnit AD_Reference_ID=299
+	//  * Reference name: WF_DurationUnit
+	//  */
+	// public static final int DURATIONUNIT_AD_Reference_ID=299;
+	// /** Year = Y */
+	// public static final String DURATIONUNIT_Year = "Y";
+	// /** Month = M */
+	// public static final String DURATIONUNIT_Month = "M";
+	// /** Day = D */
+	// public static final String DURATIONUNIT_Day = "D";
+	// /** Hour = h */
+	// public static final String DURATIONUNIT_Hour = "h";
+	// /** Minute = m */
+	// public static final String DURATIONUNIT_Minute = "m";
+	// /** Second = s */
+	// public static final String DURATIONUNIT_Second = "s";
+	// @Override
+	// public void setDurationUnit (final java.lang.String DurationUnit)
+	// {
+	// 	set_Value (COLUMNNAME_DurationUnit, DurationUnit);
+	// }
+	//
+	// @Override
+	// public java.lang.String getDurationUnit()
+	// {
+	// 	return get_ValueAsString(COLUMNNAME_DurationUnit);
+	// }
 
 	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
@@ -222,6 +222,30 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setHR_AssignDateFrom (final @Nullable java.sql.Timestamp HR_AssignDateFrom)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateFrom, HR_AssignDateFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateFrom);
+	}
+
+	@Override
+	public void setHR_AssignDateTo (final @Nullable java.sql.Timestamp HR_AssignDateTo)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateTo, HR_AssignDateTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateTo);
 	}
 
 	@Override
@@ -249,6 +273,30 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setResource_AssignDateFrom (final @Nullable java.sql.Timestamp Resource_AssignDateFrom)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateFrom, Resource_AssignDateFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateFrom);
+	}
+
+	@Override
+	public void setResource_AssignDateTo (final @Nullable java.sql.Timestamp Resource_AssignDateTo)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateTo, Resource_AssignDateTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateTo);
+	}
+
+	@Override
 	public void setS_Resource_ID (final int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
@@ -261,6 +309,30 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setWOPlannedPersonDurationHours (final @Nullable BigDecimal WOPlannedPersonDurationHours)
+	{
+		throw new IllegalArgumentException ("WOPlannedPersonDurationHours is virtual column");	}
+
+	@Override
+	public BigDecimal getWOPlannedPersonDurationHours() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WOPlannedPersonDurationHours);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setWOPlannedResourceDurationHours (final @Nullable BigDecimal WOPlannedResourceDurationHours)
+	{
+		throw new IllegalArgumentException ("WOPlannedResourceDurationHours is virtual column");	}
+
+	@Override
+	public BigDecimal getWOPlannedResourceDurationHours() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WOPlannedResourceDurationHours);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

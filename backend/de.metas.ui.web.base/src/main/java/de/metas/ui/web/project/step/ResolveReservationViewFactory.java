@@ -25,7 +25,6 @@ package de.metas.ui.web.project.step;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.stepresource.WOProjectStepResourceService;
 import de.metas.ui.web.project.step.process.C_Project_WO_Step_ResolveReservationView_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
@@ -54,7 +53,7 @@ import static de.metas.ui.web.project.step.process.C_Project_WO_Step_ResolveRese
 @ViewFactory(windowId = ResolveReservationViewFactory.ResolveReservationView_String)
 public class ResolveReservationViewFactory implements IViewFactory, IViewsIndexStorage
 {
-	public static final String ResolveReservationView_String = "resolveReservation";
+	static final String ResolveReservationView_String = "resolveReservation";
 	public static final WindowId WINDOWID = WindowId.fromJson(ResolveReservationView_String);
 
 	@NonNull
@@ -63,12 +62,12 @@ public class ResolveReservationViewFactory implements IViewFactory, IViewsIndexS
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull
-	private final WOProjectStepResourceService woProjectStepResourceService;
+	private final WOProjectStepAndResourceService woProjectStepResourceService;
 	@NonNull
 	private final WOProjectStepRowInvalidateService woProjectStepRowInvalidateService;
 
 	public ResolveReservationViewFactory(
-			@NonNull final WOProjectStepResourceService woProjectStepResourceService,
+			@NonNull final WOProjectStepAndResourceService woProjectStepResourceService,
 			@NonNull final WOProjectStepRowInvalidateService woProjectStepRowInvalidateService)
 	{
 		this.woProjectStepResourceService = woProjectStepResourceService;

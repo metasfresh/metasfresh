@@ -399,8 +399,6 @@ public class WorkOrderProjectRestController_StepDef
 		softly.assertThat(jsonWorkOrderResourceResponse.getIsActive()).as(I_C_Project_WO_Resource.COLUMNNAME_IsActive).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsActive());
 		softly.assertThat(jsonWorkOrderResourceResponse.getResourceId()).as(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID).isEqualTo(expectedJsonWorkOrderResourceResponse.getResourceId());
 		softly.assertThat(jsonWorkOrderResourceResponse.getIsAllDay()).as(I_C_Project_WO_Resource.COLUMNNAME_IsAllDay).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsAllDay());
-		softly.assertThat(jsonWorkOrderResourceResponse.getDuration()).as(I_C_Project_WO_Resource.COLUMNNAME_Duration).isEqualTo(expectedJsonWorkOrderResourceResponse.getDuration());
-		softly.assertThat(jsonWorkOrderResourceResponse.getDurationUnit()).as(I_C_Project_WO_Resource.COLUMNNAME_DurationUnit).isEqualTo(expectedJsonWorkOrderResourceResponse.getDurationUnit());
 		softly.assertThat(jsonWorkOrderResourceResponse.getTestFacilityGroupName()).as(I_C_Project_WO_Resource.COLUMNNAME_WOTestFacilityGroupName).isEqualTo(expectedJsonWorkOrderResourceResponse.getTestFacilityGroupName());
 		softly.assertThat(jsonWorkOrderResourceResponse.getExternalId()).as(I_C_Project_WO_Resource.COLUMNNAME_ExternalId).isEqualTo(expectedJsonWorkOrderResourceResponse.getExternalId());
 

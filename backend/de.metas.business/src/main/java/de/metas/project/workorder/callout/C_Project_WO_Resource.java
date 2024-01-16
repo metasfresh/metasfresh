@@ -29,12 +29,7 @@ import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
-import de.metas.resource.ResourceService;
-import de.metas.resource.ResourceType;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
-import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -44,10 +39,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 
 import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
@@ -56,17 +48,13 @@ import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 @Component
 public class C_Project_WO_Resource
 {
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
 
 	public C_Project_WO_Resource(
-			final ResourceService resourceService,
 			final WOProjectService woProjectService,
 			final BudgetProjectService budgetProjectService)
 	{
-		this.resourceService = resourceService;
 		this.woProjectService = woProjectService;
 		this.budgetProjectService = budgetProjectService;
 	}
@@ -80,15 +68,6 @@ public class C_Project_WO_Resource
 	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID)
 	public void onS_Resource_ID(@NonNull final I_C_Project_WO_Resource woResource)
 	{
-		final ResourceId resourceId = ResourceId.ofRepoIdOrNull(woResource.getS_Resource_ID());
-		if (resourceId != null)
-		{
-			final ResourceType resourceType = resourceService.getResourceTypeByResourceId(resourceId);
-			final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(resourceType.getDurationUomId());
-			woResource.setDurationUnit(WFDurationUnit.ofTemporalUnit(durationUnit).getCode());
-		}
-
-		updateDuration(woResource);
 		updateBudget(woResource);
 	}
 
@@ -104,8 +83,6 @@ public class C_Project_WO_Resource
 				woResource.setAssignDateTo(TimeUtil.asTimestamp(assignDateFrom.plus(DEFAULT_DURATION)));
 			}
 		}
-
-		updateDuration(woResource);
 	}
 
 	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo)
@@ -120,36 +97,6 @@ public class C_Project_WO_Resource
 				woResource.setAssignDateFrom(TimeUtil.asTimestamp(assignDateTo.minus(DEFAULT_DURATION)));
 			}
 		}
-
-		updateDuration(woResource);
-	}
-
-	private void updateDuration(final I_C_Project_WO_Resource woResource)
-	{
-		woResource.setDuration(computeDuration(woResource));
-	}
-
-	private static BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
-	{
-		final Instant dateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom());
-		if (dateFrom == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
-		if (dateTo == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final TemporalUnit durationUnit = WFDurationUnit.optionalOfNullable(woResource.getDurationUnit())
-				.orElse(WFDurationUnit.Hour)
-				.getTemporalUnit();
-
-		final Duration duration = Duration.between(dateFrom, dateTo);
-
-		return DurationUtils.toBigDecimal(duration, durationUnit);
 	}
 
 	private void updateBudget(final I_C_Project_WO_Resource woResource)

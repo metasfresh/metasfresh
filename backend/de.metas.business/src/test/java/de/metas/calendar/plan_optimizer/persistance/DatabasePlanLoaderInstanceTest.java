@@ -28,7 +28,6 @@ import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceTypeId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
-import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,7 +48,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -154,17 +152,18 @@ class DatabasePlanLoaderInstanceTest
 		stepRecord.setDateStart(startDateTS);
 		stepRecord.setDateEnd(endDateTS);
 		stepRecord.setIsManuallyLocked(locked);
+		stepRecord.setWOPlannedResourceDurationHours(durationInHours);
 		InterfaceWrapperHelper.saveRecord(stepRecord);
 
 		final I_C_Project_WO_Resource resourceRecord = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
 		resourceRecord.setC_Project_ID(projectId.getRepoId());
 		resourceRecord.setC_Project_WO_Step_ID(stepRecord.getC_Project_WO_Step_ID());
 		resourceRecord.setS_Resource_ID(resource(resource).getRepoId());
+		resourceRecord.setResource_AssignDateFrom(startDateTS);
+		resourceRecord.setResource_AssignDateTo(endDateTS);
 		resourceRecord.setAssignDateFrom(startDateTS);
 		resourceRecord.setAssignDateTo(endDateTS);
 		resourceRecord.setIsAllDay(false);
-		resourceRecord.setDurationUnit(WFDurationUnit.Hour.getCode());
-		resourceRecord.setDuration(BigDecimal.valueOf(durationInHours));
 
 		InterfaceWrapperHelper.save(resourceRecord);
 	}

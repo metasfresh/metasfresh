@@ -20,8 +20,6 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
-import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -30,6 +28,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 import java.util.function.Function;
@@ -97,6 +96,7 @@ class ToCalendarEntryConverter
 						.setParameter("WOProjectResource", woProjectResource));
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	@NonNull
 	private String getTemporalUnitSymbolOrEmpty(final @NonNull TemporalUnit temporalUnit)
 	{
@@ -137,10 +137,9 @@ class ToCalendarEntryConverter
 			@NonNull final WOProjectStep step,
 			@NonNull final WOProjectResource resource)
 	{
-		final WFDurationUnit durationUnit = resource.getDurationUnit();
-
-		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
-		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
+		// final WFDurationUnit durationUnit = resource.getDurationUnit();
+		// final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
+		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(ChronoUnit.HOURS); //durationUnit.getTemporalUnit());
 
 		return TranslatableStrings.builder()
 				.append(getWOExternalIdWithPrefix(project)
@@ -150,7 +149,7 @@ class ToCalendarEntryConverter
 				.append(" - ")
 				.append(step.getSeqNo() + "_" + step.getName())
 				.append(" - ")
-				.appendQty(durationInt, durationUomSymbol)
+				.appendQty(step.getWoPlannedResourceDurationHours(), durationUomSymbol)
 				.build();
 	}
 

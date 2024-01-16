@@ -82,8 +82,8 @@ public class WOProjectStepResourceRow implements IViewRow
 	@ViewColumn(seqNo = 50,
 			widgetType = DocumentFieldWidgetType.Text,
 			widgetSize = WidgetSize.Small,
-			captionKey = I_C_Project_WO_Resource.COLUMNNAME_Duration,
-			fieldName = I_C_Project_WO_Resource.COLUMNNAME_Duration,
+			captionKey = I_C_Project_WO_Step.COLUMNNAME_WOPlannedResourceDurationHours,
+			fieldName = I_C_Project_WO_Step.COLUMNNAME_WOPlannedResourceDurationHours,
 			editor = ViewEditorRenderMode.NEVER)
 	private final Long reservedHours;
 

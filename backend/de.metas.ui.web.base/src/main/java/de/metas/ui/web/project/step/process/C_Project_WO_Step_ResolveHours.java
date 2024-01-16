@@ -29,11 +29,11 @@ import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.project.step.ResolveReservationView;
-import de.metas.ui.web.project.step.WOProjectStepResourceRow;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-import java.util.stream.Stream;
+import java.util.Set;
 
 public class C_Project_WO_Step_ResolveHours extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
@@ -56,14 +56,10 @@ public class C_Project_WO_Step_ResolveHours extends ViewBasedProcessTemplate imp
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final ResolveReservationView resolveReservationView = ResolveReservationView.cast(super.getView());
-
-		final Stream<WOProjectResourceId> resourceIds = resolveReservationView
-				.streamByIds(getSelectedRowIds())
-				.map(WOProjectStepResourceRow::getResourceId);
-
+		final ResolveReservationView resolveReservationView = getView();
+		final Set<WOProjectResourceId> resourceIds = resolveReservationView.getResourceIds(getSelectedRowIds());
 		woProjectService.allocateHoursToResources(hours, resourceIds);
 
 		return MSG_OK;
@@ -74,4 +70,7 @@ public class C_Project_WO_Step_ResolveHours extends ViewBasedProcessTemplate imp
 	{
 		invalidateView();
 	}
+
+	@Override
+	protected ResolveReservationView getView() {return Check.assumeNotNull(ResolveReservationView.cast(super.getView()), "view is not null");}
 }

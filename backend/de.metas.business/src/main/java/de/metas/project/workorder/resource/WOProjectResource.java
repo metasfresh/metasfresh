@@ -28,9 +28,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
-import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -64,12 +64,6 @@ public class WOProjectResource
 	@Nullable
 	Boolean isActive;
 
-	@NonNull
-	Duration duration;
-
-	@NonNull
-	WFDurationUnit durationUnit;
-
 	@Nullable
 	ProjectId budgetProjectId;
 
@@ -95,8 +89,6 @@ public class WOProjectResource
 			@NonNull final WOProjectStepId woProjectStepId,
 			@Nullable final CalendarDateRange dateRange,
 			@NonNull final ResourceId resourceId,
-			@NonNull final Duration duration,
-			@NonNull final WFDurationUnit durationUnit,
 			final boolean isActive,
 			@Nullable final ProjectId budgetProjectId,
 			@Nullable final BudgetProjectResourceId projectResourceBudgetId,
@@ -115,8 +107,6 @@ public class WOProjectResource
 		this.woProjectStepId = woProjectStepId;
 		this.dateRange = dateRange;
 		this.resourceId = resourceId;
-		this.duration = duration;
-		this.durationUnit = durationUnit;
 		this.isActive = isActive;
 		this.budgetProjectId = budgetProjectId;
 		this.projectResourceBudgetId = projectResourceBudgetId;
@@ -147,14 +137,14 @@ public class WOProjectResource
 	{
 		return woProjectResourceId.getProjectId();
 	}
-	
+
 	@NonNull
 	public Optional<Instant> getStartDate()
 	{
 		return Optional.ofNullable(dateRange)
 				.map(CalendarDateRange::getStartDate);
 	}
-	
+
 	@NonNull
 	public Optional<Instant> getEndDate()
 	{
@@ -169,9 +159,9 @@ public class WOProjectResource
 	}
 
 	@NonNull
-	public Duration getUnresolvedHours()
+	public Duration getUnresolvedHours(@NonNull final WOProjectStep step)
 	{
-		return getDuration().minus(getResolvedHours());
+		return step.getWOPlannedResourceDuration().minus(getResolvedHours());
 	}
 
 	public boolean isAllDay()
@@ -181,8 +171,8 @@ public class WOProjectResource
 				.orElse(false);
 	}
 
-	public boolean isNotFullyResolved()
+	public boolean isNotFullyResolved(@NonNull final WOProjectStep step)
 	{
-		return getResolvedHours().isZero() || duration.minus(getResolvedHours()).compareTo(Duration.ZERO) > 0;
+		return getResolvedHours().isZero() || getUnresolvedHours(step).toHours() > 0;
 	}
 }

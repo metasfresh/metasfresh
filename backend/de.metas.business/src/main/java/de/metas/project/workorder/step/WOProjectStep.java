@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -110,5 +111,12 @@ public class WOProjectStep
 	public boolean inTesting()
 	{
 		return WOStepStatus.INTESTING.equals(woStepStatus);
+	}
+
+	public Duration getWOPlannedResourceDuration()
+	{
+		return woPlannedResourceDurationHours != null
+				? Duration.ofHours(woPlannedPersonDurationHours)
+				: Duration.ZERO;
 	}
 }

@@ -387,17 +387,16 @@ public class WOProjectSimulationPlanEditor
 	@NonNull
 	private Duration computeStepDuration(@NonNull final WOProjectStepId stepId)
 	{
-		final Duration resourcesDuration = getProjectResourcesByStepId(stepId)
-				.stream()
-				.map(WOProjectResource::getDuration)
-				.reduce(Duration.ZERO, Duration::plus);
+		final WOProjectStep step = getStepById(stepId);
+		final int durationHours = Math.max(step.getWoPlannedResourceDurationHours(), step.getWoPlannedPersonDurationHours());
+		final Duration duration = Duration.ofHours(durationHours);
 
-		if (resourcesDuration.isZero())
+		if (duration.isZero())
 		{
 			return DEFAULT_DURATION;
 		}
 
-		return resourcesDuration;
+		return duration;
 	}
 
 	private static void validateStepCanBeShifted(@NonNull final WOProjectStep step)

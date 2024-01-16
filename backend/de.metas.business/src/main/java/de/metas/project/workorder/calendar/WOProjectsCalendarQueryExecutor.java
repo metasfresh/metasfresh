@@ -196,7 +196,7 @@ public final class WOProjectsCalendarQueryExecutor
 			return true;
 		}
 
-		return projectResource.isNotFullyResolved();
+		return projectResource.isNotFullyResolved(getStep(projectResource));
 	}
 
 	private boolean isStartAndEndDatesMatching(final WOProjectResource projectResource)

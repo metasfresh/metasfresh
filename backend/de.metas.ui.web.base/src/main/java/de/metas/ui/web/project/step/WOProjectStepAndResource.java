@@ -20,36 +20,41 @@
  * #L%
  */
 
-package de.metas.project.workorder;
+package de.metas.ui.web.project.step;
 
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.time.Duration;
 
-@Value
-@Builder
-public class WOProjectStepResource
+@Value(staticConstructor = "of")
+public class WOProjectStepAndResource
 {
-	@NonNull
-	WOProjectStepId stepId;
+	@NonNull WOProjectStep step;
+	@NonNull WOProjectResource resource;
 
 	@NonNull
-	WOProjectResourceId resourceId;
+	public WOProjectStepId getStepId() {return step.getWoProjectStepId();}
 
 	@NonNull
-	ProjectId projectId;
+	public WOProjectResourceId getResourceId() {return resource.getWoProjectResourceId();}
 
 	@NonNull
-	String stepName;
+	public ProjectId getProjectId() {return resource.getProjectId();}
 
 	@NonNull
-	Duration totalHours;
+	public String getStepName() {return step.getName();}
 
 	@NonNull
-	Duration resolvedHours;
+	public Duration getTotalHours() {return step.getWOPlannedResourceDuration();}
+
+	@NonNull
+	public Duration getResolvedHours() {return resource.getResolvedHours();}
+
+	public boolean isNotFullyResolved() {return resource.isNotFullyResolved(step);}
 }

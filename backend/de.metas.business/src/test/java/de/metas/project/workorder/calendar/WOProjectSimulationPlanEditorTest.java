@@ -17,11 +17,7 @@ import de.metas.project.workorder.resource.WOProjectResources;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectSteps;
-import de.metas.workflow.WFDurationUnit;
 import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -34,7 +30,7 @@ import java.time.temporal.ChronoUnit;
 class WOProjectSimulationPlanEditorTest
 {
 	public static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	private static Instant instant(final int day)
 	{
@@ -92,8 +88,8 @@ class WOProjectSimulationPlanEditorTest
 														  .resourceId(ResourceId.ofRepoId(1))
 														  .dateRange(allDay(1, 3))
 														  .orgId(OrgId.ANY)
-														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(allDay(1, 3).getDuration())
+														  //.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  //.duration(allDay(1, 3).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 2))
@@ -101,8 +97,8 @@ class WOProjectSimulationPlanEditorTest
 														  .resourceId(ResourceId.ofRepoId(2))
 														  .dateRange(allDay(4, 5))
 														  .orgId(OrgId.ANY)
-														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(allDay(4, 5).getDuration())
+														  //.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  //.duration(allDay(4, 5).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 3))
@@ -110,8 +106,8 @@ class WOProjectSimulationPlanEditorTest
 														  .resourceId(ResourceId.ofRepoId(1))
 														  .dateRange(allDay(6, 8))
 														  .orgId(OrgId.ANY)
-														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(allDay(6, 8).getDuration())
+														  // .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  // .duration(allDay(6, 8).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 4))
@@ -119,8 +115,8 @@ class WOProjectSimulationPlanEditorTest
 														  .resourceId(ResourceId.ofRepoId(2))
 														  .dateRange(allDay(8, 9))
 														  .orgId(OrgId.ANY)
-														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(allDay(8, 9).getDuration())
+														  // .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  // .duration(allDay(8, 9).getDuration())
 														  .build()
 										  ))
 										  .build())

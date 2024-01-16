@@ -23,7 +23,9 @@
 package de.metas.project.workorder.project;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -60,7 +62,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static de.metas.project.ProjectConstants.DEFAULT_WO_CALENDAR_ENTRY_COLOR;
-import static org.apache.commons.lang3.math.NumberUtils.min;
 
 @Service
 public class WOProjectService
@@ -257,17 +258,19 @@ public class WOProjectService
 	}
 
 	public void allocateHoursToResources(
-			@NonNull final Integer hoursToResolve,
-			@NonNull final Stream<WOProjectResourceId> resourceIdsStream)
+			final int hoursToResolve,
+			@NonNull final Set<WOProjectResourceId> resourceIds)
 	{
-		resourceIdsStream.forEach(
-				resourceId -> {
-					final WOProjectResource woProjectResource = woProjectResourceRepository.getById(resourceId);
+		final ImmutableList<WOProjectResource> resources = woProjectResourceRepository.getByIds(resourceIds);
+		final ImmutableSet<WOProjectStepId> stepIds = resources.stream().map(WOProjectResource::getWoProjectStepId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<WOProjectStepId, WOProjectStep> steps = Maps.uniqueIndex(woProjectStepRepository.getByIds(stepIds), WOProjectStep::getWoProjectStepId);
 
-					final Duration toResolve = woProjectResource.getResolvedHours()
-							.plusHours(min(woProjectResource.getUnresolvedHours().toHours(), hoursToResolve));
+		resources.forEach(resource -> {
+					final WOProjectStep step = steps.get(resource.getWoProjectStepId());
+					final Duration toResolve = resource.getResolvedHours()
+							.plusHours(Math.min(resource.getUnresolvedHours(step).toHours(), hoursToResolve));
 
-					woProjectResourceRepository.updateAll(ImmutableList.of(woProjectResource.toBuilder()
+					woProjectResourceRepository.updateAll(ImmutableList.of(resource.toBuilder()
 							.resolvedHours(toResolve)
 							.build()));
 				}

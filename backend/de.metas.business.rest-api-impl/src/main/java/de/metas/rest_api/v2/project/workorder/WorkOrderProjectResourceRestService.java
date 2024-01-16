@@ -29,7 +29,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.rest_api.v2.project.workorder.JsonDurationUnit;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertItemRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
@@ -51,10 +50,8 @@ import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
-import de.metas.util.time.DurationUtils;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
-import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -63,7 +60,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -71,13 +67,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class WorkOrderProjectResourceRestService
@@ -164,8 +158,6 @@ public class WorkOrderProjectResourceRestService
 				.resourceId(resourceId)
 				.isActive(request.getIsActive())
 				.isAllDay(request.getIsAllDay())
-				.duration(request.getDuration())
-				.durationUnit(toWFDurationUnit(request.getDurationUnit()))
 				.externalId(ExternalId.ofOrNull(request.getExternalId()))
 				.testFacilityGroupName(request.getTestFacilityGroupName())
 				.build();
@@ -188,16 +180,6 @@ public class WorkOrderProjectResourceRestService
 		if (request.isExternalIdSet())
 		{
 			resourceBuilder.externalId(ExternalId.ofOrNull(request.getExternalId()));
-		}
-
-		if (request.isDurationSet() && request.isDurationUnitSet())
-		{
-			final Duration duration = request.mapDuration((reqDuration, jsonUnit) -> DurationUtils
-							.fromBigDecimal(reqDuration, toWFDurationUnit(jsonUnit).getTemporalUnit()))
-					.orElse(Duration.ZERO);
-
-			resourceBuilder.duration(duration);
-			resourceBuilder.durationUnit(toOptionalWFDurationUnit(request.getDurationUnit()).orElse(WFDurationUnit.Hour));
 		}
 
 		if (request.isTestFacilityGroupNameSet())
@@ -390,78 +372,12 @@ public class WorkOrderProjectResourceRestService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Nullable
-	private static WFDurationUnit toWFDurationUnit(@Nullable final JsonDurationUnit jsonDurationUnit)
-	{
-		if (jsonDurationUnit == null)
-		{
-			return null;
-		}
-
-		switch (jsonDurationUnit)
-		{
-			case Year:
-				return WFDurationUnit.Year;
-			case Month:
-				return WFDurationUnit.Month;
-			case Day:
-				return WFDurationUnit.Day;
-			case Hour:
-				return WFDurationUnit.Hour;
-			case Minute:
-				return WFDurationUnit.Minute;
-			case Second:
-				return WFDurationUnit.Second;
-			default:
-				throw new IllegalStateException("JsonDurationUnit not supported: " + jsonDurationUnit);
-		}
-	}
-
-	@Nullable
-	private static JsonDurationUnit toJsonDurationUnit(@Nullable final WFDurationUnit durationUnit)
-	{
-		if (durationUnit == null)
-		{
-			return null;
-		}
-
-		switch (durationUnit)
-		{
-			case Year:
-				return JsonDurationUnit.Year;
-			case Month:
-				return JsonDurationUnit.Month;
-			case Day:
-				return JsonDurationUnit.Day;
-			case Hour:
-				return JsonDurationUnit.Hour;
-			case Minute:
-				return JsonDurationUnit.Minute;
-			case Second:
-				return JsonDurationUnit.Second;
-			default:
-				throw new AdempiereException("Unhandled DurationUnit: " + durationUnit);
-		}
-	}
-
 	private static void validateJsonWorkOrderResourceUpsertRequest(@NonNull final JsonWorkOrderResourceUpsertRequest request)
 	{
 		request.getRequestItems().forEach(requestItem -> {
 			if (Check.isBlank(requestItem.getResourceIdentifier()))
 			{
 				throw new MissingPropertyException("resourceIdentifier", request);
-			}
-
-			final boolean isDurationInfoPartiallySet = Stream.of(requestItem.getDuration(), requestItem.getDurationUnit())
-					.filter(Objects::nonNull)
-					.count() == 1;
-
-			if (isDurationInfoPartiallySet)
-			{
-				throw new AdempiereException("WorkOrderResource.Duration is partially set!")
-						.appendParametersToMessage()
-						.setParameter("WorkOrderResource.Duration", requestItem.getDuration())
-						.setParameter("WorkOrderResource.DurationUnit", requestItem.getDurationUnit());
 			}
 		});
 	}
@@ -482,9 +398,6 @@ public class WorkOrderProjectResourceRestService
 				.assignDateTo(resourceData.getEndDate()
 									  .map(endDate -> TimeUtil.asLocalDate(endDate, zoneId))
 									  .orElse(null))
-				
-				.duration(DurationUtils.toBigDecimal(resourceData.getDuration(), resourceData.getDurationUnit().getTemporalUnit()))
-				.durationUnit(toJsonDurationUnit(resourceData.getDurationUnit()))
 				.isAllDay(resourceData.isAllDay())
 				.isActive(resourceData.getIsActive())
 				.testFacilityGroupName(resourceData.getTestFacilityGroupName())
@@ -492,20 +405,11 @@ public class WorkOrderProjectResourceRestService
 				.build();
 	}
 
-	@NonNull
-	private static Optional<WFDurationUnit> toOptionalWFDurationUnit(@Nullable final JsonDurationUnit jsonDurationUnit)
-	{
-		return Optional.ofNullable(toWFDurationUnit(jsonDurationUnit));
-	}
-
 	@Value(staticConstructor = "of")
 	private static class WOProjectResourceIdentifier
 	{
-		@NonNull
-		WOProjectStepId stepId;
-
-		@NonNull
-		IdentifierString resourceIdentifier;
+		@NonNull WOProjectStepId stepId;
+		@NonNull IdentifierString resourceIdentifier;
 	}
 
 	@NonNull

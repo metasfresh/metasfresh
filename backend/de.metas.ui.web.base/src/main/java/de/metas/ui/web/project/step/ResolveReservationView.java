@@ -23,19 +23,23 @@
 package de.metas.ui.web.project.step;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 public class ResolveReservationView extends AbstractCustomView<WOProjectStepResourceRow> implements IViewRowOverrides
 {
@@ -77,4 +81,12 @@ public class ResolveReservationView extends AbstractCustomView<WOProjectStepReso
 	{
 		return WOProjectStepResourceRows.cast(super.getRowsData());
 	}
+
+	public Set<WOProjectResourceId> getResourceIds(DocumentIdsSelection rowIds)
+	{
+		return streamByIds(rowIds)
+				.map(WOProjectStepResourceRow::getResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

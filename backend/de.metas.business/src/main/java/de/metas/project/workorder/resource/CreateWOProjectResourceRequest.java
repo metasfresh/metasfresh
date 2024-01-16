@@ -60,11 +60,11 @@ public class CreateWOProjectResourceRequest
 	@Nullable
 	Boolean isAllDay;
 
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	WFDurationUnit durationUnit;
+	// @Nullable
+	// BigDecimal duration;
+	//
+	// @Nullable
+	// WFDurationUnit durationUnit;
 
 	@Nullable
 	ExternalId externalId;

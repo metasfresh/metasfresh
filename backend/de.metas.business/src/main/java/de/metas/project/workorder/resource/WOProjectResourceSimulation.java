@@ -53,7 +53,6 @@ public class WOProjectResourceSimulation
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
-				.duration(dateRange.getDuration())
 				.build();
 	}
 

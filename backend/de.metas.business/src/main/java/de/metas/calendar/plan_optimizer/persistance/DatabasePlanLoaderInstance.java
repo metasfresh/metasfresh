@@ -177,7 +177,7 @@ public class DatabasePlanLoaderInstance
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate)
 	{
-		Duration requiredResourceCapacity = woStepResourceOrig.getDuration();
+		Duration requiredResourceCapacity = Optional.ofNullable(woStep.getWoPlannedResourceDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
 		if (requiredResourceCapacity.toSeconds() <= 0)
 		{
 			requiredResourceCapacity = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
