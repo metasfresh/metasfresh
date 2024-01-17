@@ -73,6 +73,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -127,7 +128,11 @@ public class HandlingUnitsService
 
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
-		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, loadJsonHURequest.isExcludeEmptyAttributes());
+		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(
+				huContext, 
+				hu, 
+				loadJsonHURequest.isExcludeEmptyAttributes(),
+				loadJsonHURequest.getEmptyAttributesToInclude());
 
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
@@ -258,7 +263,8 @@ public class HandlingUnitsService
 	private JsonHUAttributes toJsonHUAttributes(
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu,
-			final boolean excludeEmptyAttributes)
+			final boolean excludeEmptyAttributes,
+			final Set<String> emptyAttributesToInclude)
 	{
 		final ImmutableAttributeSet huAttributes = huContext.getHUAttributeStorageFactory()
 				.getImmutableAttributeSet(hu);
@@ -270,7 +276,7 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			// dev-note: skip null or empty attributes
-			if (excludeEmptyAttributes && Check.isEmpty(value))
+			if (excludeEmptyAttributes && Check.isEmpty(value) && !emptyAttributesToInclude.contains(attributeCode.getCode()))
 			{
 				continue;
 			}
