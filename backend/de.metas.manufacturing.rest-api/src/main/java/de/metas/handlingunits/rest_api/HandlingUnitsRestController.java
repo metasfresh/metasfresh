@@ -328,6 +328,24 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
+	@PostMapping("/huLabels/print")
+	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		handlingUnitsService.printHULabels(request);
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		return handlingUnitsService.getLabelPrintingOptions();
+	}
+
+	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")
+	public List<JsonHU> getHUsByDisplayableQrCode(@PathVariable("displayableQrCode") final String displayableQrCode)
+	{
+		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode);
+	}
+
 	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{

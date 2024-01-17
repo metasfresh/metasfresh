@@ -1,0 +1,37 @@
+.hu-row-info {
+  width: 100%;
+  display: flex;
+  flex: 1 1;
+}
+
+.hu-row-label {
+  display: flex;
+  padding-top: 5px;
+  text-align: left;
+  float: left;
+  width: 33%;
+  font-size: 0.5em;
+
+  span {
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+.hu-row-value {
+  display: flex;
+  float: left;
+  width: 66%;
+  font-size: 0.5em;
+  padding-top: 5px;
+  padding-left: 5px;
+
+  span {
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}

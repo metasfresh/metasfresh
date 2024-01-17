@@ -1,33 +1,9 @@
 package org.adempiere.ad.dao.impl;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -36,12 +12,14 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Query filter for validation rules
@@ -66,6 +44,15 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.adValRuleId = adValRuleId;
 		this.evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
+	}
+
+	public ValidationRuleQueryFilter(@NonNull final String tableName, final int adValRuleId)
+	{
+		Check.assumeGreaterThanZero(adValRuleId, "adValRuleId");
+
+		this.tableName = tableName;
+		this.adValRuleId = adValRuleId;
+		this.evaluatee = Evaluatees.ofCtx(Env.getCtx());
 	}
 
 	@Override

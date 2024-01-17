@@ -7,7 +7,12 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerBulkActionsLocation, huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import {
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -17,6 +22,8 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+import { isKnownQRCodeFormat } from '../../../utils/huQRCodes';
+import SelectHUIntermediateList from './SelectHUIntermediateList';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -29,6 +36,7 @@ const HUManagerScreen = () => {
   const [clearanceStatuses, setClearanceStatuses] = useState([]);
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [changeQtyAllowed, setChangeQtyAllowed] = useState(false);
+  const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -45,7 +53,11 @@ const HUManagerScreen = () => {
     setClearanceStatuses(mergedStatuses);
   };
 
-  const resolveScannedBarcode = ({ scannedBarcode }) => {
+  const resolveScannedBarcode = async ({ scannedBarcode }) => {
+    if (!isKnownQRCodeFormat(scannedBarcode)) {
+      return api.getHUsByDisplayableQRCode(scannedBarcode).then((huList) => ({ huListByQRCode: huList }));
+    }
+
     return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
     // .catch((axiosError) => ({
     //   error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
@@ -54,6 +66,18 @@ const HUManagerScreen = () => {
 
   const onResolvedResult = (result) => {
     console.log('onResolvedResult', { result });
+
+    if (result.huListByQRCode) {
+      if (!result.huListByQRCode.length) {
+        toastError({ messageKey: 'noHUFound' });
+      } else if (result.huListByQRCode.length === 1) {
+        dispatch(handlingUnitLoaded({ handlingUnitInfo: result.huListByQRCode[0] }));
+      } else {
+        setHuListByDisplayableQrCode(result.huListByQRCode);
+      }
+      return;
+    }
+
     const { handlingUnitInfo } = result;
     dispatch(handlingUnitLoaded({ handlingUnitInfo }));
   };
@@ -69,6 +93,9 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+  };
+  const onPrintLabelsClicked = () => {
+    history.push(huManagerHuLabelsLocation());
   };
   const onSetClearanceClick = () => {
     toggleClearanceModal(true);
@@ -152,10 +179,16 @@ const HUManagerScreen = () => {
               onClick={() => toggleChangeQtyModal(true)}
             />
           )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.printLabels.buttonCaption')}
+            onClick={onPrintLabelsClicked}
+          />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
     );
+  } else if (huListByDisplayableQrCode && huListByDisplayableQrCode.length) {
+    return <SelectHUIntermediateList huList={huListByDisplayableQrCode} />;
   } else {
     return (
       <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onResolvedResult} />

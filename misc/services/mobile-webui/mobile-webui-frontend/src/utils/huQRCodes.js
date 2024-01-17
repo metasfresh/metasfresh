@@ -89,7 +89,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 const SEPARATOR = '#';
-export const parseQRCodeString = (string) => {
+export const parseQRCodeString = (string, returnFalseOnError) => {
   let remainingString = string;
 
   //
@@ -98,6 +98,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       throw 'Invalid global QR code(1): ' + string;
     }
     //type = remainingString.substring(0, idx);
@@ -110,6 +113,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       throw 'Invalid global QR code(2): ' + string;
     }
     //version = remainingString.substring(0, idx);
@@ -137,4 +143,9 @@ export const parseQRCodeString = (string) => {
 
   //console.log('!!!!!!!! RETURNING', { code: string, displayable, remainingString });
   return { code: string, displayable };
+};
+
+export const isKnownQRCodeFormat = (qrCodeString) => {
+  const returnFalseOnError = true;
+  return !!parseQRCodeString(qrCodeString, returnFalseOnError);
 };
