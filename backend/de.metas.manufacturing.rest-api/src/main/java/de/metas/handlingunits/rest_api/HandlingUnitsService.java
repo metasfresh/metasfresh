@@ -288,6 +288,7 @@ public class HandlingUnitsService
 					.build());
 		}
 
+		// count attributes that end with ".._<digit>" and create additional attribute(s) for those counters.
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
