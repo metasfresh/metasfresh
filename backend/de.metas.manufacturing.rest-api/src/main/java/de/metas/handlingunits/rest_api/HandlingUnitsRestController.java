@@ -101,12 +101,13 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
-	@ApiOperation("Retrieves a singular HU by serialNo.<ul>"
-			+ "- <li><b>HU-Status</b>: By default, the endpoint takes into consideration only HUs with status = 'Active'.<br/>"
-			+ "  But custom HU statuses can be set via SysConfig: <code>de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses</code></li>"
-			+ "- <li><b>Empty HU-Attributes</b>: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).<br/>"
-			+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: <code>de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty</code><li>" 
-			+ "</ul>")
+	@ApiOperation(value = "Retrieves a singular HU by serialNo.",
+			notes = "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
+					+ "  But custom HU statuses can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`"
+					+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
+					+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`" 
+					+ "- **HU-Attribute-Ordering**: the HU's attributes are ordered according to the `SeqNo` of the PI-Attributes in the HU's packing-instruction `M_HU_PI_Version`."
+	)
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
