@@ -1138,7 +1138,7 @@ public class WindowRestController
 				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
 				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
 				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
