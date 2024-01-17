@@ -2,8 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { isNullOrUndefined } from '../../../utils';
 
 const ATTRIBUTE_CODES_TO_DISPLAY = ['HU_BestBeforeDate', 'Lot-Nummer'];
+const ATTRIBUTE_CODES_TO_MAX_LENGTH = {
+  HU_BestBeforeDate: 10,
+};
 
 const HUButton = ({ handlingUnitInfo, onClick }) => {
   const getProductCaption = () => {
@@ -24,7 +28,14 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
 
     return handlingUnitInfo.attributes2.list.filter((attribute) => ATTRIBUTE_CODES_TO_DISPLAY.includes(attribute.code));
   };
-  const isNullOrUndefined = (arg) => arg === null || arg === undefined;
+  const getAttributeDisplayValue = (attribute) => {
+    if (isNullOrUndefined(attribute.value)) {
+      return '-';
+    }
+    const stringValue = String(attribute.value);
+    const maxLength = ATTRIBUTE_CODES_TO_MAX_LENGTH[attribute.code] || stringValue.length;
+    return stringValue.substring(0, maxLength);
+  };
 
   return (
     <ButtonWithIndicator caption={getProductCaption()} onClick={onClick} size={'large'}>
@@ -34,7 +45,7 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
             <span>{attribute.caption}:</span>
           </div>
           <div className="hu-row-value">
-            <span>{isNullOrUndefined(attribute.value) ? '-' : attribute.value}</span>
+            <span>{getAttributeDisplayValue(attribute)}</span>
           </div>
         </div>
       ))}
