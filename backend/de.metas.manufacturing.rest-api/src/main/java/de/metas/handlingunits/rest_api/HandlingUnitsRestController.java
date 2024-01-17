@@ -26,7 +26,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.ad_reference.ADRefList;
-import de.metas.common.handlingunits.*;
+import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
+import de.metas.common.handlingunits.JsonDisposalReason;
+import de.metas.common.handlingunits.JsonDisposalReasonsList;
+import de.metas.common.handlingunits.JsonGetSingleHUResponse;
+import de.metas.common.handlingunits.JsonHU;
+import de.metas.common.handlingunits.JsonHUAttributesRequest;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -40,6 +46,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -60,7 +67,14 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -81,6 +95,11 @@ public class HandlingUnitsRestController
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
 	private static final String SYS_CONFIG_BY_SERIAL_NO_HUStatuses = "de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses";
 
+	/**
+	 * {@code M_Attribute.Value}s of attributes to include, even if empty.
+	 */
+	private static final String SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE = "de.metas.handlingunits.rest_api.bySerialNo.includedHUAttributesEvenIfEmpty";
+
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -89,23 +108,32 @@ public class HandlingUnitsRestController
 	private final HUQRCodesService huQRCodesService;
 
 	@GetMapping("/bySerialNo/{serialNo}")
-	@Operation(description = "Retrieves a singular HU by serialNo."
-			+ " By default, takes into consideration only HUs with status = 'Active'. "
-			+ " But custom HU statuses can be set via AD_SysConfig: 'de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses'")
+	@Operation(summary = "Retrieves a singular HU by serialNo.",
+			description = "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
+					+ "  But custom HU statuses can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`"
+					+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
+					+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`" 
+					+ "- **HU-Attribute-Ordering**: the HU's attributes are ordered according to the `SeqNo` of the PI-Attributes in the HU's packing-instruction `M_HU_PI_Version`."
+	)
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		return toSingleHUResponseEntity(() -> retrieveHUIdBySerialNo(serialNo));
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+		final Supplier<I_M_HU> huSupplier = () -> retrieveHUIdBySerialNo(serialNo, clientAndOrgId);
+
+		return toSingleHUResponseEntity(huSupplier, clientAndOrgId);
 	}
 
 	@NonNull
-	private I_M_HU retrieveHUIdBySerialNo(final @NonNull String serialNo)
+	private I_M_HU retrieveHUIdBySerialNo(
+			final @NonNull String serialNo,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final ImmutableSet<String> onlyHUStatuses = Arrays.stream(sysConfigBL.getValueOptional(SYS_CONFIG_BY_SERIAL_NO_HUStatuses)
-																		  .orElse(X_M_HU.HUSTATUS_Active)
-																		  .split(","))
-				.map(String::trim)
-				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<String> onlyHUStatuses = extractStringSet(
+				SYS_CONFIG_BY_SERIAL_NO_HUStatuses,
+				X_M_HU.HUSTATUS_Active,
+				clientAndOrgId);
 
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
@@ -166,7 +194,9 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
-	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
+	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(
+			@NonNull final Supplier<I_M_HU> huSupplier,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -178,11 +208,14 @@ public class HandlingUnitsRestController
 				throw new AdempiereException("No HU found");
 			}
 
+			final ImmutableSet<String> attributesToInclude = extractStringSet(SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE, "", clientAndOrgId);
+
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
 											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
 																						 .hu(hu)
 																						 .adLanguage(adLanguage)
 																						 .excludeEmptyAttributes(true)
+																						 .emptyAttributesToInclude(attributesToInclude)
 																						 .build()))
 											 .build());
 		}
@@ -192,6 +225,21 @@ public class HandlingUnitsRestController
 															.error(JsonErrors.ofThrowable(ex, adLanguage))
 															.build());
 		}
+	}
+
+	private ImmutableSet<String> extractStringSet(
+			@NonNull final String sysConfigValue,
+			@NonNull final String defaultValue,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return Arrays.stream(sysConfigBL
+									 .getValue(
+											 sysConfigValue,
+											 defaultValue,
+											 clientAndOrgId)
+									 .split(","))
+				.map(String::trim)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@PostMapping("/byId/{M_HU_ID}/dispose")
