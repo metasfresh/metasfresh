@@ -130,5 +130,5 @@ public interface IADProcessDAO extends ISingletonService
 			@Nullable String newColumnName);
 
 	@NonNull
-	List<I_AD_Process> retreiveProcessRecordsByValRule(@NonNull AdValRuleId valRuleId);
+	List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull AdValRuleId valRuleId);
 }

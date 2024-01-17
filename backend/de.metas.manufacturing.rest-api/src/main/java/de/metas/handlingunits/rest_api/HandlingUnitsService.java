@@ -76,10 +76,8 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -88,6 +86,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,11 +128,11 @@ public class HandlingUnitsService
 		}
 
 		return toJson(LoadJsonHURequest.builder()
-							  .hu(hu)
-							  .expectedQRCode(expectedQRCode)
-							  .adLanguage(adLanguage)
-							  .includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
-							  .build());
+				.hu(hu)
+				.expectedQRCode(expectedQRCode)
+				.adLanguage(adLanguage)
+				.includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+				.build());
 	}
 
 	@NonNull
@@ -231,10 +230,16 @@ public class HandlingUnitsService
 
 	public void printHULabels(@NonNull final JsonPrintHULabelRequest request)
 	{
+		final AdProcessId printFormatProcessId = AdProcessId.ofRepoId(request.getHuLabelProcessId().getValue());
+		if (!huLabelService.getHULabelPrintFormatProcesses().containsProcessId(printFormatProcessId))
+		{
+			throw new AdempiereException("Invalid huLabelProcessId: " + printFormatProcessId);
+		}
+
 		final HuId huId = huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()));
 
 		final HULabelDirectPrintRequest directPrintRequest = HULabelDirectPrintRequest.builder()
-				.printFormatProcessId(AdProcessId.ofRepoId(request.getHuLabelProcessId().getValue()))
+				.printFormatProcessId(printFormatProcessId)
 				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
 				.printCopies(PrintCopies.ofIntOrOne(request.getNrOfCopies()))
 				.onlyOneHUPerPrint(true)
@@ -244,15 +249,15 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public List<JsonHULabelPrintingOption> getLabelPrintingOptions()
+	public List<JsonHULabelPrintingOption> getLabelPrintingOptions(@NonNull final String adLanguage)
 	{
 		return huLabelService.getHULabelPrintFormatProcesses()
 				.stream()
-				.map(processOption -> InterfaceWrapperHelper.translate(processOption, I_AD_Process.class))
-				.map(translatedOption -> JsonHULabelPrintingOption.builder()
-						.caption(translatedOption.getName())
-						.processId(JsonMetasfreshId.of(translatedOption.getAD_Process_ID()))
+				.map(printProcess -> JsonHULabelPrintingOption.builder()
+						.processId(JsonMetasfreshId.of(printProcess.getProcessId().getRepoId()))
+						.caption(printProcess.getName().translate(adLanguage))
 						.build())
+				.sorted(Comparator.comparing(JsonHULabelPrintingOption::getCaption))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -269,7 +274,6 @@ public class HandlingUnitsService
 				.map(this::toJson)
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	@NonNull
 	private JsonAllowedHUClearanceStatuses getAllowedClearanceStatuses(@NonNull final I_M_HU hu)
@@ -333,19 +337,19 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			list.add(JsonHUAttribute.builder()
-							 .code(attributeCode.getCode())
-							 .caption(attribute.getName())
-							 .value(value)
-							 .build());
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.build());
 		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-							 .code(counterAttribute.getAttributeCode())
-							 .caption(counterAttribute.getAttributeCode())
-							 .value(counterAttribute.getCounter())
-							 .build());
+					.code(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -451,9 +455,9 @@ public class HandlingUnitsService
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.huIdAndQRCodes(ImmutableList.of(HUIdAndQRCode.builder()
-														 .huId(request.getHuId())
-														 .huQRCode(request.getHuQRCode())
-														 .build()))
+						.huId(request.getHuId())
+						.huQRCode(request.getHuQRCode())
+						.build()))
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -487,10 +491,10 @@ public class HandlingUnitsService
 		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
 		huQtyService.updateQty(UpdateHUQtyRequest.builder()
-									   .huId(huId)
-									   .qty(qty)
-									   .description(request.getDescription())
-									   .build());
+				.huId(huId)
+				.qty(qty)
+				.description(request.getDescription())
+				.build());
 
 		return huId;
 	}

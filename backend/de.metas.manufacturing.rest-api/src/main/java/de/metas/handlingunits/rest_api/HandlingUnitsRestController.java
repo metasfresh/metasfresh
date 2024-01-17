@@ -337,7 +337,8 @@ public class HandlingUnitsRestController
 	@GetMapping("/huLabels/printingOptions")
 	public List<JsonHULabelPrintingOption> getPrintingOptions()
 	{
-		return handlingUnitsService.getLabelPrintingOptions();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
 	}
 
 	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")

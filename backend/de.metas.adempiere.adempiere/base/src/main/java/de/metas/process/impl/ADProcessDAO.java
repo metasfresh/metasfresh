@@ -626,7 +626,7 @@ public class ADProcessDAO implements IADProcessDAO
 
 	@NonNull
 	@Override
-	public List<I_AD_Process> retreiveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
+	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
 	{
 		return queryBL.createQueryBuilder(I_AD_Process.class)
 				.addOnlyActiveRecordsFilter()
