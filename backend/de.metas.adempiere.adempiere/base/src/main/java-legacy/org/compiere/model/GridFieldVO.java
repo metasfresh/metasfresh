@@ -1,21 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
  *
- * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
- *****************************************************************************/
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
@@ -394,7 +397,7 @@ public class GridFieldVO implements Serializable
 		}
 		catch (SQLException e)
 		{
-			logger.error("ColumnName=" + columnName, e);
+			logger.error("Failed creating GridFieldVO for ColumnName={}. Returning null.", columnName, e);
 			return null;
 		}
 
@@ -459,7 +462,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs       result set AD_Process_Para
 	 * @return MFieldVO
 	 */
-	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
+	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs) throws SQLException
 	{
 		final AdWindowId adWindowId = null;
 		final int adTabId = 0;
@@ -472,7 +475,6 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
-		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
@@ -504,10 +506,6 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
-		}
-		catch (SQLException e)
-		{
-			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
@@ -974,7 +972,7 @@ public class GridFieldVO implements Serializable
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{
-				logger.error("No LookupInfo for {}", ColumnName, e);
+				logger.warn("No LookupInfo for {}. Considering displayType=ID", ColumnName, e);
 				displayType = DisplayType.ID;
 				lookupInfo = null;
 			}

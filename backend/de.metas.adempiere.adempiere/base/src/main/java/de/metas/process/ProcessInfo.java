@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -57,6 +79,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -165,10 +188,8 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
 	/**
 	 * Table ID if the Process
@@ -326,16 +347,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -344,6 +358,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
