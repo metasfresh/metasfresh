@@ -69,7 +69,7 @@ const HUManagerScreen = () => {
 
     if (result.huListByQRCode) {
       if (!result.huListByQRCode.length) {
-        toastError({ messageKey: 'noHUFound' });
+        toastError({ messageKey: 'general.noHUFound' });
       } else if (result.huListByQRCode.length === 1) {
         dispatch(handlingUnitLoaded({ handlingUnitInfo: result.huListByQRCode[0] }));
       } else {

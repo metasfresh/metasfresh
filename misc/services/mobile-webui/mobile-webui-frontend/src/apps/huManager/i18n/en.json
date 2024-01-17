@@ -8,7 +8,6 @@
   "clearanceNote": "Clearance Note",
   "qty": "Quantity",
   "disposePendingStatus": "disposing",
-  "noHUFound": "No HU found!",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
