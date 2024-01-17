@@ -1350,9 +1350,17 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return attributesById.containsKey(attributeId);
 		}
 
-		public Collection<I_M_Attribute> getAttributes()
+		/**
+		 * @return this storage's attributes in the order in which they were added to the storage {@link de.metas.handlingunits.attribute.impl.HUAttributesBySeqNoComparator}.
+		 */
+		public ImmutableList<I_M_Attribute> getAttributes()
 		{
-			return attributesByCode.values();
+			final ImmutableList.Builder<I_M_Attribute> result = ImmutableList.builder();
+			for(final IAttributeValue attributeValue:attributeValues)
+			{
+				result.add(attributeValue.getM_Attribute());
+			}
+			return result.build();
 		}
 
 		public I_M_Attribute getAttributeOrNull(final AttributeId attributeId)
