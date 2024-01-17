@@ -86,15 +86,15 @@ import java.util.Optional;
 		for (int i = configsForCustomers.size() - 1; i >= 0; i--)
 		{
 			final InvoiceProcessingServiceCompanyConfig config = configsForCustomers.get(i);
-			final boolean iConfigIsValid = config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom);
-			if (iConfigIsValid)
+			final boolean configIsValid = config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom);
+			if (configIsValid)
 			{
 				final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
 				for (int j = configsForCompanyBPartners.size() - 1; j >= 0; j--)
 				{
 					final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(j);
-					final boolean jConfigIsValid = companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom);
-					if (jConfigIsValid)
+					final boolean companyConfigIsValid = companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom);
+					if (companyConfigIsValid)
 					{
 						if (config.equals(companyConfig))
 						{
