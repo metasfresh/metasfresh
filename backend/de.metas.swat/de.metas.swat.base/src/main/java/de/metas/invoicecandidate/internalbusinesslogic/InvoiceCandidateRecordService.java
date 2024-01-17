@@ -96,6 +96,10 @@ public class InvoiceCandidateRecordService
 				.product(new InvoiceCandidateProduct(productId, stocked))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
+		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
+		{
+			result.qtyToInvoiceOverrideInUom(icRecord.getQtyToInvoiceInUOM_Override());
+		}
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
 			final BigDecimal qtyToInvoiceOverrideInStockUom =                //

@@ -13,15 +13,18 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -78,6 +81,8 @@ public class InvoiceCandidate
 
 	private final InvoicedData invoicedData;
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	@Setter(AccessLevel.NONE)
 	private InvoiceRule invoiceRule;
 
@@ -86,6 +91,9 @@ public class InvoiceCandidate
 
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToInvoiceOverrideInStockUom;
+
+	@Setter(AccessLevel.NONE)
+	private BigDecimal qtyToInvoiceOverrideInUom;
 
 	@Setter(AccessLevel.NONE)
 	private Percent qualityDiscountOverride;
@@ -105,7 +113,8 @@ public class InvoiceCandidate
 			@JsonProperty("invoiceRule") @NonNull final InvoiceRule invoiceRule,
 			@JsonProperty("priceUomId") @Nullable final UomId priceUomId,
 			@JsonProperty("qualityDiscountOverride") @Nullable final Percent qualityDiscountOverride,
-			@JsonProperty("qtyToInvoiceOverrideInStockUom") @Nullable final BigDecimal qtyToInvoiceOverrideInStockUom)
+			@JsonProperty("qtyToInvoiceOverrideInStockUom") @Nullable final BigDecimal qtyToInvoiceOverrideInStockUom,
+			@JsonProperty("qtyToInvoiceOverrideInUom") @Nullable final BigDecimal qtyToInvoiceOverrideInUom)
 	{
 		this.id = id;
 		this.soTrx = soTrx;
@@ -122,6 +131,7 @@ public class InvoiceCandidate
 
 		this.qualityDiscountOverride = qualityDiscountOverride;
 		this.qtyToInvoiceOverrideInStockUom = qtyToInvoiceOverrideInStockUom;
+		this.qtyToInvoiceOverrideInUom = qtyToInvoiceOverrideInUom;
 
 		validate();
 	}
@@ -179,13 +189,43 @@ public class InvoiceCandidate
 				.qtysRaw(toInvoiceExclOverride.getQtysRaw())
 				.qtysCalc(toInvoiceExclOverrideCalc);
 
-		final StockQtyAndUOMQty qtysEffective;
+		StockQtyAndUOMQty qtysEffective = null;
 
-		if (qtyToInvoiceOverrideInStockUom == null)
+		if (qtyToInvoiceOverrideInStockUom == null && qtyToInvoiceOverrideInUom == null)
 		{
 			qtysEffective = toInvoiceExclOverrideCalc;
 		}
-		else
+		else if (qtyToInvoiceOverrideInUom != null && qtyToInvoiceOverrideInUom.compareTo(ZERO) > 0)
+		{
+			final boolean overrideExceedsDelivered = qtyToInvoiceOverrideInUom.compareTo(toInvoiceExclOverrideCalc.getStockQty().toBigDecimal()) > 0;
+			final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInUom, product.getId(), uomId);
+			if (overrideExceedsDelivered)
+			{
+				logger.debug("qtyToInvoiceOverrideInUom={} is > deliveredQtysCalcInStockUom={}; -> going to use QtyToInvoiceInUOM_Override",
+							 qtyToInvoiceOverrideInUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+
+				final Quantity qtyDelivered = toInvoiceExclOverrideCalc.getUOMQtyNotNull();
+
+				final boolean deliveredInUomExceedsOverride = qtyDelivered
+						.compareTo(qtyToInvoice.getUOMQtyNotNull()) > 0;
+				if (deliveredInUomExceedsOverride)
+				{
+					logger.debug("qtyDeliveredInUom={} is > qtyToInvoiceInUom={}; -> going to use qtyDelivered instead of override, for the UOM-qty",
+								 qtyDelivered.toBigDecimal(), qtyToInvoice.getStockQty().toBigDecimal());
+
+					qtysEffective = qtyToInvoice.toBuilder().uomQty(qtyDelivered).build();
+				}
+				else
+				{
+					qtysEffective = qtyToInvoice;
+				}
+			}
+			else
+			{
+				qtysEffective = qtyToInvoice;
+			}
+		}
+		else if (qtyToInvoiceOverrideInStockUom != null && qtyToInvoiceOverrideInStockUom.compareTo(ZERO) > 0)
 		{
 			final boolean overrideExceedsDelivered = qtyToInvoiceOverrideInStockUom.compareTo(toInvoiceExclOverrideCalc.getStockQty().toBigDecimal()) > 0;
 
@@ -203,8 +243,7 @@ public class InvoiceCandidate
 					logger.debug("qtyDeliveredInUom={} is > qtyToInvoiceInUom={}; -> going to use qtyDelivered instead of override, for the UOM-qty",
 								 qtyDelivered.toBigDecimal(), qtysToInvoice.getUOMQtyNotNull().toBigDecimal());
 
-					final StockQtyAndUOMQty qtysToIvoiceWithAdjustedQty = qtysToInvoice.toBuilder().uomQty(qtyDelivered).build();
-					qtysEffective = qtysToIvoiceWithAdjustedQty;
+					qtysEffective = qtysToInvoice.toBuilder().uomQty(qtyDelivered).build();
 				}
 				else
 				{

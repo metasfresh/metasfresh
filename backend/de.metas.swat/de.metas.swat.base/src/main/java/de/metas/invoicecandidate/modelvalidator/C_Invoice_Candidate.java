@@ -80,7 +80,8 @@ public class C_Invoice_Candidate
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override})
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
