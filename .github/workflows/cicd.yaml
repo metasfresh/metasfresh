@@ -101,17 +101,6 @@ jobs:
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-backend-dist
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.backend.dist \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
-          .
       - name: build-camel
         run: |
           docker buildx build \
@@ -153,7 +142,6 @@ jobs:
             docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
       - name: push-maven-dists
         run: |
-          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
           docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
