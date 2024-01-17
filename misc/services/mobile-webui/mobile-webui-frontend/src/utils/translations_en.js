@@ -24,6 +24,7 @@ const translations = {
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
+    noHUFound: 'No HU found!',
   },
   login: {
     submitButton: 'Login',

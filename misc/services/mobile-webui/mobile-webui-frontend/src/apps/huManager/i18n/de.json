@@ -8,7 +8,6 @@
   "disposePendingStatus": "Entsorgen",
   "clearanceStatus": "Freigabestatus",
   "clearanceNote": "Freigabe-Notiz",
-  "noHUFound": "Kein HU gefunden!",
   "action": {
     "dispose": {
       "buttonCaption": "Entsorgen"
