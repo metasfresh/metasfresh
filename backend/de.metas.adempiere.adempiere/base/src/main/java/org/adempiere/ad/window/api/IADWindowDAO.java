@@ -112,4 +112,6 @@ public interface IADWindowDAO extends ISingletonService
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
 
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
+
+	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
 }
