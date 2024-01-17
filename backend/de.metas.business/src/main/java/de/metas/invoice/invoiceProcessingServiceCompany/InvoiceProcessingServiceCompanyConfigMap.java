@@ -34,49 +34,46 @@ import java.util.Optional;
 
 /* package */ class InvoiceProcessingServiceCompanyConfigMap
 {
-	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> bpartnersToConfigsSorted;
-
+	/**
+	 * Maps the payment service company (the ones that get the service-fee from us) to configs.
+	 */
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> companyBPartnersToConfigsSorted;
 
 	public InvoiceProcessingServiceCompanyConfigMap(@NonNull final List<InvoiceProcessingServiceCompanyConfig> configs)
 	{
+		final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
+		for (final InvoiceProcessingServiceCompanyConfig config : configs)
 		{
-			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
-			for (final InvoiceProcessingServiceCompanyConfig config : configs)
-			{
-				for (final BPartnerId partnerId : config.getBPartnerIds())
-				{
-					map.put(partnerId, config);
-				}
-			}
-			// for ease of access and calculation: sort by ValidFrom
-			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
-
-			bpartnersToConfigsSorted = map.build();
+			map.put(config.getServiceCompanyBPartnerId(), config);
 		}
+		// for ease of access and calculation: sort by ValidFrom
+		map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
 
-		{
-			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
-			for (final InvoiceProcessingServiceCompanyConfig config : configs)
-			{
-				map.put(config.getServiceCompanyBPartnerId(), config);
-			}
-			// for ease of access and calculation: sort by ValidFrom
-			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
-
-			companyBPartnersToConfigsSorted = map.build();
-		}
+		companyBPartnersToConfigsSorted = map.build();
 	}
 
+	/**
+	 * @return if there is an {@link InvoiceProcessingServiceCompanyConfig} with the given {@code customerId} (the one for which a service-company handles payments) at the given {@code validFrom}, then it is returned.<br>
+	 * If there is an older config for the given {@code customerId}, but a more recent config which does not have the given {@code customerId},
+	 * then {@link Optional#empty()} is returned.
+	 */
+	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = bpartnersToConfigsSorted.get(customerId);
-		for (int i = configs.size() - 1; i >= 0; i--)
+		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
+		for (int i = configsForCompanyBPartners.size() - 1; i >= 0; i--)
 		{
-			final InvoiceProcessingServiceCompanyConfig config = configs.get(i);
-			if (config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom))
+			final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(i);
+			if (companyConfig.isValid(validFrom))
 			{
-				return Optional.of(config);
+				if (companyConfig.isBPartnerDetailsActive(customerId))
+				{
+					return Optional.of(companyConfig);
+				}
+				else
+				{
+					return Optional.empty();
+				}
 			}
 		}
 
