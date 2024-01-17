@@ -4,7 +4,6 @@ import de.metas.logging.LogManager;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -140,13 +139,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
-	{
-		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
-		return query.count();
-	}
-
-	@Override
 	public final List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{
 		final List<I_C_Print_Job_Detail> details = retrievePrintJobDetailsIfAny(jobLine);
@@ -241,7 +233,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				}
 				else
 				{
-					logger.debug("retrievePrinterConfig - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set", hostKey);
+				logger.debug("retrievePrinterConfig - hostKey={} - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set", hostKey);
 					Check.errorIf(Check.isBlank(hostKey), "If the 'userToPrintId' param is empty, then the 'hostKey has to be not-blank");
 					queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID); // prefer records with userId set
 				}
@@ -325,6 +317,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return trayMatching;
 	}
 
+
+	@Nullable
 	@Override
 	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(
 			@NonNull final I_AD_Printer_Matching matching,

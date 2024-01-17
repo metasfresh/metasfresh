@@ -169,5 +169,8 @@ Feature: AD_Process validation
       | 584767        | WEBUI_PP_Order_PrintLabel                                           | U                                   | de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel                                                        | Class not found |
       | 584808        | M_DiscountSchemaBreak_CopyToSelectedRows                            | U                                   | de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToSelectedSchema_Product                               | Class not found |
       | 584852        | WEBUI_M_HU_PrintFinishedGoodsLabel                                  | U                                   | de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel                                         | Class not found |
+      | 585316        | C_Order_Generate_Shipping_Notification                              | de.metas.shippingnotification       | de.metas.inoutcandidate.process.C_Order_Generate_Shipping_Notification                                       | webui           |
+      | 585344        | C_Order_Generate_Shipping_Notification_ViewSelection                | de.metas.shippingnotification       | de.metas.inoutcandidate.process.C_Order_Generate_Shipping_Notification_ViewSelection                        | webui           |
+
 
     Then assert selected AD_Processes are valid

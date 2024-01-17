@@ -14,11 +14,13 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -48,6 +50,7 @@ public class AdempiereException extends RuntimeException
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
@@ -174,6 +177,11 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 
+		if(throwable instanceof CalloutExecutionException)
+		{
+			return cause;
+		}
+
 		return throwable;
 	}
 
@@ -273,6 +281,7 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = messageKey.toAD_Message();
@@ -731,7 +740,7 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Override with a method returning false if your exception is more of a signal than an error
 	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
-	 *
+	 * <p/>
 	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
 	 */
 	protected boolean isLoggedInTrxManager()

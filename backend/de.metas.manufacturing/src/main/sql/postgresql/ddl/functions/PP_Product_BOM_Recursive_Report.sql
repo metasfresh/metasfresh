@@ -1,4 +1,9 @@
-CREATE OR REPLACE FUNCTION pp_product_bom_recursive_report(p_pp_product_bom_id numeric)
+DROP FUNCTION IF EXISTS pp_product_bom_recursive_report(p_pp_product_bom_id numeric,
+                                                        referencedate       timestamp WITHOUT TIME ZONE)
+;
+
+CREATE FUNCTION pp_product_bom_recursive_report(p_pp_product_bom_id numeric,
+                                                referencedate       timestamp WITHOUT TIME ZONE)
     RETURNS TABLE
             (
                 line         text,
@@ -20,10 +25,7 @@ SELECT t.Line,
        t.Percentage,
        t.UOMSymbol,
        t.Supplier
-FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
+FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL, referencedate) t
 ORDER BY t.path
 $$
-;
-
-ALTER FUNCTION pp_product_bom_recursive_report(numeric) OWNER TO metasfresh
 ;

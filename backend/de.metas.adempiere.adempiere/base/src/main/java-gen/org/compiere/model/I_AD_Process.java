@@ -380,6 +380,27 @@ public interface I_AD_Process
 	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
+	 * Set Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilenamePattern (@Nullable java.lang.String FilenamePattern);
+
+	/**
+	 * Get Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilenamePattern();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_FilenamePattern = new ModelColumn<>(I_AD_Process.class, "FilenamePattern", null);
+	String COLUMNNAME_FilenamePattern = "FilenamePattern";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *

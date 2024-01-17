@@ -808,5 +808,4 @@ public class ProductDAO implements IProductDAO
 						.create()
 						.anyMatch();
 	}
-
 }

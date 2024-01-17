@@ -110,6 +110,17 @@ public class ShippingNotificationService
 		reverseByIds(shippingNotificationIds);
 	}
 
+	public void reverseBySalesOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return;
+		}
+
+		final Set<ShippingNotificationId> shippingNotificationIds = shippingNotificationRepository.listIds(ShippingNotificationQuery.completedOrClosedByOrderIds(orderIds));
+		reverseByIds(shippingNotificationIds);
+	}
+
 	public void reverseByIds(final Set<ShippingNotificationId> shippingNotificationIds)
 	{
 		shippingNotificationRepository.getRecordsByIds(shippingNotificationIds)
@@ -133,7 +144,7 @@ public class ShippingNotificationService
 	public ImmutableList<I_M_Shipping_NotificationLine> getLines(@NonNull final ShippingNotificationId shippingNotificationId)
 	{
 		return ImmutableList.copyOf(getLines(ImmutableSet.of(shippingNotificationId))
-											.get(shippingNotificationId));
+				.get(shippingNotificationId));
 	}
 
 	@NonNull

@@ -32,10 +32,10 @@ import de.metas.util.Check;
  */
 public class CalloutInitException extends CalloutException
 {
-	public static final CalloutInitException wrapIfNeeded(final Throwable throwable)
+	public static CalloutInitException wrapIfNeeded(final Throwable throwable)
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
-		
+
 		if (throwable instanceof CalloutInitException)
 		{
 			return (CalloutInitException)throwable;

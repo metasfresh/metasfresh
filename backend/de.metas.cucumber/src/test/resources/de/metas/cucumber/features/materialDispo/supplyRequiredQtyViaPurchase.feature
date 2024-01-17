@@ -166,6 +166,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | pol_1                     | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7539389628/job/20523228630
   @from:cucumber
   @Id:S0124_130
   @Id:S0222_200

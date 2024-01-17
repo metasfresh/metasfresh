@@ -116,7 +116,6 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	private ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetailsMappedByConfigId()
 	{
 		return queryBL.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
-				.addOnlyActiveRecordsFilter()
 				.create()
 				.iterateAndStream()
 				.map(bpartnerDetailsToMapEntry())
@@ -131,6 +130,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 					.bpartnerId(BPartnerId.ofRepoId(recordBP.getC_BPartner_ID()))
 					.docTypeId(DocTypeId.ofRepoIdOrNull(recordBP.getC_DocType_ID()))
 					.percent(Percent.of(recordBP.getFeePercentageOfGrandTotal()))
+					.isActive(recordBP.isActive())
 					.build();
 
 			final InvoiceProcessingServiceCompanyConfigId companyConfigId = InvoiceProcessingServiceCompanyConfigId.ofRepoId(recordBP.getInvoiceProcessingServiceCompany_ID());

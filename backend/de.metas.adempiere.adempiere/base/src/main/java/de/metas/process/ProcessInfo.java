@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -24,6 +46,7 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -36,6 +59,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -56,6 +82,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -66,6 +94,7 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -937,7 +966,7 @@ public final class ProcessInfo implements Serializable
 
 			//
 			// Allow using the where clause in expressions.
-			// For example, in a report that exports data, the SQL-Expression could be 
+			// For example, in a report that exports data, the SQL-Expression could be
 			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
 			final String whereClause = getWhereClause();
 			if (EmptyUtil.isNotBlank(whereClause))
@@ -1126,6 +1155,7 @@ public final class ProcessInfo implements Serializable
 			return ReportResultDataTarget.builder()
 					.targetType(targetType)
 					.serverTargetDirectory(serverTargetDirectory)
+					.targetFilename(getReportTargetFilename().orElse(null))
 					.build();
 		}
 
@@ -1316,13 +1346,37 @@ public final class ProcessInfo implements Serializable
 				return Optional.empty();
 			}
 
-			final String reportTemplate = adProcess.getJasperReport();
-			if (reportTemplate == null || Check.isEmpty(reportTemplate, true))
+			return StringUtils.trimBlankToOptional(adProcess.getJasperReport());
+		}
+
+		private Optional<String> getReportTargetFilename()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if(adProcess == null)
 			{
 				return Optional.empty();
 			}
 
-			return Optional.of(reportTemplate.trim());
+			final String reportFilenamePatternStr = StringUtils.trimBlankToNull(adProcess.getFilenamePattern());
+			if(reportFilenamePatternStr == null)
+			{
+				return Optional.empty();
+			}
+
+			final IStringExpression reportFilenamePattern = StringExpressionCompiler.instance.compile(reportFilenamePatternStr);
+
+			// !! Please keep this in sync with the description of AD_Element_ID=582878 (ColumnName=FilenamePattern)
+			final Evaluatee evalCtx = Evaluatees.mapBuilder()
+					.put("AD_PInstance_ID", pInstanceId != null ? String.valueOf(pInstanceId.getRepoId()) : "")
+					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
+					.put("AD_Process.Value", adProcess.getValue())
+					.put("AD_Process.Name", getTitle())
+					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(SystemTime.zoneId()).format(SystemTime.asInstant()))
+					.build();
+
+			String reportFilename = reportFilenamePattern.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+			reportFilename = FileUtil.stripIllegalCharacters(reportFilename);
+			return Optional.of(reportFilename);
 		}
 
 		private boolean isReportApplySecuritySettings()

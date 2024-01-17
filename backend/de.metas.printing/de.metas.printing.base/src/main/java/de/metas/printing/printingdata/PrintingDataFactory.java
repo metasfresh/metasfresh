@@ -48,6 +48,7 @@ import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,7 +69,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Service
 public class PrintingDataFactory
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingDataFactory.class);
+	private final static Logger logger = LogManager.getLogger(PrintingDataFactory.class);
 
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
@@ -127,6 +128,7 @@ public class PrintingDataFactory
 	{
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
+				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
@@ -169,6 +171,7 @@ public class PrintingDataFactory
 
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
+				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(jobLine.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
 				.documentFileName(archiveRecord.getName() + ".pdf");
@@ -193,6 +196,7 @@ public class PrintingDataFactory
 		return printingData.build();
 	}
 
+	@Nullable
 	private byte[] loadArchiveData(@NonNull final I_AD_Archive archiveRecord)
 	{
 
@@ -223,12 +227,13 @@ public class PrintingDataFactory
 				.build();
 	}
 
+	@Nullable
 	private PrintingSegment createPrintingSegment(
 			@NonNull final I_AD_PrinterRouting printerRouting,
 			@Nullable final UserId userToPrintId,
 			@Nullable final String hostKey)
 	{
-		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey/*hostKey*/, userToPrintId, printerRouting.getAD_Printer());
+		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey, userToPrintId, printerRouting.getAD_Printer());
 		if (printerMatchingRecord == null)
 		{
 			logger.debug("Found no AD_Printer_Matching record for AD_PrinterRouting_ID={}, AD_User_PrinterMatchingConfig_ID={} and hostKey={}; -> creating no PrintingSegment for routing",

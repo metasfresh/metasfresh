@@ -150,6 +150,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7408424898/job/20157997531
   @Id:S0189_300
   @from:cucumber
   Scenario: 2 SOs, each with qty = 10, no ASI, same product
@@ -265,6 +266,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7541667177/job/20529314708
   @Id:S0189_500
   @from:cucumber
   Scenario: SO with qty = 10 and ASI
@@ -314,6 +316,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7495008589
   @Id:S0189_600
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and different ASI
@@ -475,6 +478,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7500265639/job/20419223945
   @Id:S0189_800
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and same ASI
@@ -541,6 +545,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7408424898/job/20157997531
   @Id:S0189_900
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=12
