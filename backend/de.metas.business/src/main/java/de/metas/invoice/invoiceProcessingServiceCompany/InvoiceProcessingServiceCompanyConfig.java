@@ -31,6 +31,7 @@ import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -79,7 +80,7 @@ public class InvoiceProcessingServiceCompanyConfig
 		if (invoiceDocTypeId != null)
 		{
 			final Optional<Percent> matchingDocTypePercent = detailsList.stream()
-					.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive)
+					.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive)
 					.filter(details -> invoiceDocTypeId.equals(details.getDocTypeId()))
 					.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 					.findFirst();
@@ -91,7 +92,7 @@ public class InvoiceProcessingServiceCompanyConfig
 		}
 
 		return detailsList.stream()
-				.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive)
+				.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive)
 				.filter(details -> details.getDocTypeId() == null)
 				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 				.findFirst();
@@ -101,13 +102,18 @@ public class InvoiceProcessingServiceCompanyConfig
 	{
 		final ImmutableCollection<InvoiceProcessingServiceCompanyConfigBPartnerDetails> detailsList = bpartnerDetails.get(bpartnerId);
 
-		if (isEmpty(detailsList))
+		if (detailsList.isEmpty())
 		{
 			return false;
 		}
 
 		return detailsList.stream()
-				.anyMatch(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getIsActive);
+				.anyMatch(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive);
+	}
+
+	public boolean isValid(@NonNull final ZonedDateTime validFrom)
+	{
+		return this.validFrom.isBefore(validFrom) || this.validFrom.isEqual(validFrom);
 	}
 }
 
@@ -123,7 +129,7 @@ public class InvoiceProcessingServiceCompanyConfig
 
 	@Nullable
 	DocTypeId docTypeId;
-	
-	@NonNull
-	Boolean isActive;
+
+	@Default
+	boolean isActive = true;
 }

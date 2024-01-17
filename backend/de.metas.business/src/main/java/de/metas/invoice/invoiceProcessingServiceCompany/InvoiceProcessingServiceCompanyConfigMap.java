@@ -82,31 +82,19 @@ import java.util.Optional;
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCustomers = bpartnersToConfigsSorted.get(customerId);
-		for (int i = configsForCustomers.size() - 1; i >= 0; i--)
+		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
+		for (int i = configsForCompanyBPartners.size() - 1; i >= 0; i--)
 		{
-			final InvoiceProcessingServiceCompanyConfig config = configsForCustomers.get(i);
-			final boolean configIsValid = config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom);
-			if (configIsValid)
+			final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(i);
+			if (companyConfig.isValid(validFrom))
 			{
-				final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
-				for (int j = configsForCompanyBPartners.size() - 1; j >= 0; j--)
+				if (companyConfig.isBPartnerDetailsActive(customerId))
 				{
-					final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(j);
-					final boolean companyConfigIsValid = companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom);
-					if (companyConfigIsValid)
-					{
-						if (config.equals(companyConfig))
-						{
-							return config.isBPartnerDetailsActive(customerId)
-									? Optional.of(config)
-									: Optional.empty();
-						}
-						else
-						{
-							return Optional.empty();
-						}
-					}
+					return Optional.of(companyConfig);
+				}
+				else
+				{
+					return Optional.empty();
 				}
 			}
 		}
