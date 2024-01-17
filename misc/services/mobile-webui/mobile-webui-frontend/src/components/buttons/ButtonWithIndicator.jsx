@@ -19,6 +19,7 @@ const ButtonWithIndicator = ({
   disabled,
   onClick,
   size,
+  additionalCssClass,
   children,
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
@@ -33,7 +34,12 @@ const ButtonWithIndicator = ({
 
   return (
     <button
-      className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, size)}
+      className={cx(
+        'button is-outlined is-fullwidth complete-btn',
+        { 'is-danger': isDanger },
+        size,
+        additionalCssClass
+      )}
       disabled={!!disabled}
       onClick={onClick}
     >
@@ -104,6 +110,7 @@ ButtonWithIndicator.propTypes = {
   disabled: PropTypes.bool,
   children: PropTypes.node,
   size: PropTypes.string,
+  additionalCssClass: PropTypes.string,
   onClick: PropTypes.func.isRequired,
 };
 

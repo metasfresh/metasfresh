@@ -72,6 +72,14 @@ const HUPrintingOptionsScreen = () => {
       });
   };
 
+  const optionsWithLongCaption = printingOptions.some((printingOption) => (printingOption.caption || '').length > 20);
+  const adjustCaption = (caption) => {
+    if (caption.length > 50) {
+      return `${caption.substring(0, 47).trim()}...`;
+    }
+    return caption;
+  };
+
   return (
     <div className="pt-3 section">
       {numberOfCopiesModalDisplayed && (
@@ -86,8 +94,10 @@ const HUPrintingOptionsScreen = () => {
       {printingOptions.map((option, index) => (
         <ButtonWithIndicator
           key={index}
-          caption={option.caption}
+          caption={adjustCaption(option.caption)}
           onClick={() => toggleShowPrintOptionsModal(true, option)}
+          size={optionsWithLongCaption ? 'large' : undefined}
+          additionalCssClass={optionsWithLongCaption ? 'normal-white-space' : undefined}
         />
       ))}
     </div>
