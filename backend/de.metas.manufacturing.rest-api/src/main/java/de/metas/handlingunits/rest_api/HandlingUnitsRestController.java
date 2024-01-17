@@ -182,14 +182,14 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
-											 .build());
+					.result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
+					.build());
 		}
 		catch (final Exception ex)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(ex, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(ex, adLanguage))
+					.build());
 		}
 	}
 
@@ -231,12 +231,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-								 .stream()
-								 .map(item -> JsonDisposalReason.builder()
-										 .key(item.getValue())
-										 .caption(item.getName().translate(adLanguage))
-										 .build())
-								 .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(item -> JsonDisposalReason.builder()
+								.key(item.getValue())
+								.caption(item.getName().translate(adLanguage))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -292,10 +292,10 @@ public class HandlingUnitsRestController
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-										  .huId(request.getHuId())
-										  .huQRCode(huQRCode)
-										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-										  .build());
+				.huId(request.getHuId())
+				.huQRCode(huQRCode)
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
 
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
@@ -314,9 +314,9 @@ public class HandlingUnitsRestController
 				.collect(ImmutableList.toImmutableList());
 
 		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
-											  .huQrCodes(huQrCodes)
-											  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-											  .build());
+				.huQrCodes(huQrCodes)
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
 	}
 
 	@PutMapping("/qty")
@@ -344,7 +344,8 @@ public class HandlingUnitsRestController
 	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")
 	public List<JsonHU> getHUsByDisplayableQrCode(@PathVariable("displayableQrCode") final String displayableQrCode)
 	{
-		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode);
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode, adLanguage);
 	}
 
 	@NonNull
@@ -373,8 +374,8 @@ public class HandlingUnitsRestController
 		catch (final Exception e)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(e, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(e, adLanguage))
+					.build());
 		}
 	}
 

@@ -262,9 +262,8 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public List<JsonHU> getHUsForDisplayableQrCode(@NonNull final String displayableQrCode)
+	public List<JsonHU> getHUsForDisplayableQrCode(@NonNull final String displayableQrCode, @NonNull final String adLanguage)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		final Set<HuId> huIdSet = huQRCodeService.streamHUIdsByDisplayableQrCode(displayableQrCode)
 				.collect(ImmutableSet.toImmutableSet());
 
