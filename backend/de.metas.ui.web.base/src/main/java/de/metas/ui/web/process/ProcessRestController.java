@@ -475,7 +475,7 @@ public class ProcessRestController
 
 				logger.info("healthCheck [{}/{}] Process {} is OK", countCurrent, countTotal, processId);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				final String adLanguage = Env.getADLanguageOrBaseLanguage();
 				final I_AD_Process adProcess = adProcessDAO.getById(adProcessId);
