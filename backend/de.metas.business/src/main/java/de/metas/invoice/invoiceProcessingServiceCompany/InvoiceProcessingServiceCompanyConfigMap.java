@@ -35,43 +35,21 @@ import java.util.Optional;
 /* package */ class InvoiceProcessingServiceCompanyConfigMap
 {
 	/**
-	 * Maps the bpartners (our customers, for whom a payment service company handles the payments) to configs.
-	 */
-	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> bpartnersToConfigsSorted;
-
-	/**
 	 * Maps the payment service company (the ones that get the service-fee from us) to configs.
 	 */
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> companyBPartnersToConfigsSorted;
 
 	public InvoiceProcessingServiceCompanyConfigMap(@NonNull final List<InvoiceProcessingServiceCompanyConfig> configs)
 	{
+		final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
+		for (final InvoiceProcessingServiceCompanyConfig config : configs)
 		{
-			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
-			for (final InvoiceProcessingServiceCompanyConfig config : configs)
-			{
-				for (final BPartnerId partnerId : config.getBPartnerIds())
-				{
-					map.put(partnerId, config);
-				}
-			}
-			// for ease of access and calculation: sort by ValidFrom
-			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
-
-			bpartnersToConfigsSorted = map.build();
+			map.put(config.getServiceCompanyBPartnerId(), config);
 		}
+		// for ease of access and calculation: sort by ValidFrom
+		map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
 
-		{
-			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
-			for (final InvoiceProcessingServiceCompanyConfig config : configs)
-			{
-				map.put(config.getServiceCompanyBPartnerId(), config);
-			}
-			// for ease of access and calculation: sort by ValidFrom
-			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
-
-			companyBPartnersToConfigsSorted = map.build();
-		}
+		companyBPartnersToConfigsSorted = map.build();
 	}
 
 	/**

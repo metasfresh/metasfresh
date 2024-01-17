@@ -23,7 +23,6 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -60,11 +59,6 @@ public class InvoiceProcessingServiceCompanyConfig
 
 	@Getter(AccessLevel.NONE)
 	@NonNull ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
-
-	public ImmutableList<BPartnerId> getBPartnerIds()
-	{
-		return bpartnerDetails.keySet().asList();
-	}
 
 	@NonNull
 	public Optional<Percent> getFeePercentageOfGrandTotalByBpartner(@NonNull final BPartnerId bpartnerId, @Nullable final DocTypeId invoiceDocTypeId)
