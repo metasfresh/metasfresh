@@ -2,9 +2,9 @@
 
 #
 # %L
-# work-metas
+# master
 # %%
-# Copyright (C) 2023 metas GmbH
+# Copyright (C) 2024 metas GmbH
 # %%
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -24,22 +24,18 @@
 
 set -e
 
-# We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
-# We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
 # We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
 if ! [ -z "$1" ]; then
     BRANCH_NAME=$1
 else
     echo "!! The first parameter needs do correspond to an env-File !!"
-    echo "!! E.g. to use the env-file env-files/release.env, run 20_convert_db_to_template.sh release !!"
+    echo "!! E.g. to use the env-file env-files/release.env, run 10_reset_db_to_seek_Dump.sh release !!" 
     exit
 fi
 
 set -u
 
-# the winpty is needed to avoid an error when running the script in git bash on windows
+COMPOSE_FILE=../docker-compose.yml
+ENV_FILE=../env-files/${BRANCH_NAME}.env
 
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "UPDATE pg_database SET datistemplate='false' WHERE datname='metasfresh_template_${BRANCH_NAME}';"
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh_template_${BRANCH_NAME};"
-
-echo "The template-DB metasfresh_template_${BRANCH_NAME} was dropped and can be recreated with 20_convert_db_to_template.sh"
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure stop

@@ -4,7 +4,7 @@
 # %L
 # master
 # %%
-# Copyright (C) 2023 metas GmbH
+# Copyright (C) 2024 metas GmbH
 # %%
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as
@@ -38,5 +38,4 @@ set -u
 COMPOSE_FILE=../docker-compose.yml
 ENV_FILE=../env-files/${BRANCH_NAME}.env
 
-# reset the database
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure start
