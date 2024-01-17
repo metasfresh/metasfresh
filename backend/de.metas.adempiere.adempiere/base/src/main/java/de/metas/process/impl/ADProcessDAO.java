@@ -630,7 +630,7 @@ public class ADProcessDAO implements IADProcessDAO
 	{
 		return queryBL.createQueryBuilder(I_AD_Process.class)
 				.addOnlyActiveRecordsFilter()
-				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId.getRepoId()))
+				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId))
 				.create()
 				.list();
 	}

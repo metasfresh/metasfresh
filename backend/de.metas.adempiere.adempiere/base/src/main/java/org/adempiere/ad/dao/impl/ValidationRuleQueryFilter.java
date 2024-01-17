@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -46,12 +47,10 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		this.evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
 	}
 
-	public ValidationRuleQueryFilter(@NonNull final String tableName, final int adValRuleId)
+	public ValidationRuleQueryFilter(@NonNull final String tableName, @NonNull final AdValRuleId adValRuleId)
 	{
-		Check.assumeGreaterThanZero(adValRuleId, "adValRuleId");
-
 		this.tableName = tableName;
-		this.adValRuleId = adValRuleId;
+		this.adValRuleId = adValRuleId.getRepoId();
 		this.evaluatee = Evaluatees.ofCtx(Env.getCtx());
 	}
 
