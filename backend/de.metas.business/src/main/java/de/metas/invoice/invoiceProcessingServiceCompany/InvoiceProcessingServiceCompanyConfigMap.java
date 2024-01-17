@@ -34,8 +34,14 @@ import java.util.Optional;
 
 /* package */ class InvoiceProcessingServiceCompanyConfigMap
 {
+	/**
+	 * Maps the bpartners (our customers, for whom a payment service company handles the payments) to configs.
+	 */
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> bpartnersToConfigsSorted;
 
+	/**
+	 * Maps the payment service company (the ones that get the service-fee from us) to configs.
+	 */
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> companyBPartnersToConfigsSorted;
 
 	public InvoiceProcessingServiceCompanyConfigMap(@NonNull final List<InvoiceProcessingServiceCompanyConfig> configs)
@@ -68,6 +74,11 @@ import java.util.Optional;
 		}
 	}
 
+	/**
+	 * @return if there is an {@link InvoiceProcessingServiceCompanyConfig} with the given {@code customerId} (the one for which a service-company handles payments) at the given {@code validFrom}, then it is returned.<br>
+	 * If there is an older config for the given {@code customerId}, but a more recent config which does not have the given {@code customerId},
+	 * then {@link Optional#empty()} is returned.
+	 */
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
@@ -75,13 +86,15 @@ import java.util.Optional;
 		for (int i = configsForCustomers.size() - 1; i >= 0; i--)
 		{
 			final InvoiceProcessingServiceCompanyConfig config = configsForCustomers.get(i);
-			if (config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom))
+			final boolean iConfigIsValid = config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom);
+			if (iConfigIsValid)
 			{
 				final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
 				for (int j = configsForCompanyBPartners.size() - 1; j >= 0; j--)
 				{
 					final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(j);
-					if (companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom))
+					final boolean jConfigIsValid = companyConfig.getValidFrom().isBefore(validFrom) || companyConfig.getValidFrom().isEqual(validFrom);
+					if (jConfigIsValid)
 					{
 						if (config.equals(companyConfig))
 						{
