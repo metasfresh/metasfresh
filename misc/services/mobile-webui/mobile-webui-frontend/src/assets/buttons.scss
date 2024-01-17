@@ -76,6 +76,14 @@
   height: 4em !important;
 }
 
+.button.normal-white-space {
+  overflow: hidden !important;
+  span {
+    white-space: normal !important;
+    max-height: 4em;
+  }
+}
+
 .indicator-red, .indicator-yellow, .indicator-green {
   display: inline-block;
   width: 7px;
