@@ -2187,6 +2187,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setQtyToInvoiceInUOM_Override (final @Nullable BigDecimal QtyToInvoiceInUOM_Override)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceInUOM_Override, QtyToInvoiceInUOM_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyToInvoiceInUOM_Override()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyToInvoice_Override (final @Nullable BigDecimal QtyToInvoice_Override)
 	{
 		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
