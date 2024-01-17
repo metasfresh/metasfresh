@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,9 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Exception thrown by {@link DocumentDescriptorFactory} on any layout building issue.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@SuppressWarnings("serial")
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class DocumentLayoutBuildException extends AdempiereException
 {
@@ -60,9 +58,8 @@ public class DocumentLayoutBuildException extends AdempiereException
 
 	public static Throwable extractCause(final Throwable throwable)
 	{
-		if (throwable.getClass().equals(DocumentLayoutBuildException.class))
+		if (throwable instanceof final DocumentLayoutBuildException documentLayoutBuildException)
 		{
-			final DocumentLayoutBuildException documentLayoutBuildException = (DocumentLayoutBuildException) throwable;
 			final Throwable cause = documentLayoutBuildException.getCause();
 			return cause != null ? cause : documentLayoutBuildException;
 		}
