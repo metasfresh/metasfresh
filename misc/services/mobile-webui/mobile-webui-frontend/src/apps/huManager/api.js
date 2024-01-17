@@ -71,3 +71,21 @@ export const changeQty = ({ huQRCode, description, qty }) => {
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
+
+export const printHULabels = ({ huQRCode, huLabelProcessId, nrOfCopies }) => {
+  return axios
+    .post(`${huAPIBasePath}/huLabels/print`, {
+      huQRCode: toQRCodeString(huQRCode),
+      huLabelProcessId: huLabelProcessId,
+      nrOfCopies: nrOfCopies,
+    })
+    .then(unboxAxiosResponse);
+};
+
+export const getPrintingOptions = () => {
+  return axios.get(`${huAPIBasePath}/huLabels/printingOptions`).then(unboxAxiosResponse);
+};
+
+export const getHUsByDisplayableQRCode = (displayableQRCode) => {
+  return axios.get(`${huAPIBasePath}/byDisplayableQrCode/${displayableQRCode}`).then(unboxAxiosResponse);
+};

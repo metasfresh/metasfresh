@@ -12,6 +12,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 public class HUQRCodesService
@@ -95,7 +97,12 @@ public class HUQRCodesService
 						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId) {globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId));}
+	public void printForSelectionOfHUIds(
+			@NonNull final PInstanceId selectionId,
+			@NonNull final PrintCopies printCopies)
+	{
+		globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId), printCopies);
+	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes) {globalQRCodeService.print(createPDF(qrCodes));}
 
@@ -168,5 +175,12 @@ public class HUQRCodesService
 		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getHuId));
+	}
+
+	@NonNull
+	public Stream<HuId> streamHUIdsByDisplayableQrCode(@NonNull final String displayableQrCodePart)
+	{
+		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
+				.map(HUQRCodeAssignment::getHuId);
 	}
 }

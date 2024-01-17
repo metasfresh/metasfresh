@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Repository
 public class HUQRCodesRepository
@@ -121,6 +122,19 @@ public class HUQRCodesRepository
 		return records.size() == 1
 				? Optional.of(toHUQRCode(records.get(0)))
 				: Optional.empty();
+	}
+
+	@NonNull
+	public Stream<HUQRCodeAssignment> streamAssignmentsForDisplayableQrCode(@NonNull final String displayableQrCode)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_DisplayableQRCode, displayableQrCode)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCodeAssignment)
+				.filter(Optional::isPresent)
+				.map(Optional::get);
 	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
