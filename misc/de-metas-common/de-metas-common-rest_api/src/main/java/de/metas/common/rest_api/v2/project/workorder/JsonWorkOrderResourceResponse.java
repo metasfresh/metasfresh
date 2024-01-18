@@ -30,7 +30,6 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
@@ -60,12 +59,6 @@ public class JsonWorkOrderResourceResponse
 
 	@Nullable
 	Boolean isAllDay;
-
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	JsonDurationUnit durationUnit;
 
 	@Nullable
 	String testFacilityGroupName;

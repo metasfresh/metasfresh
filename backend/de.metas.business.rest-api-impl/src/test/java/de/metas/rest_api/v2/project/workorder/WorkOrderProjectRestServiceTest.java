@@ -255,7 +255,6 @@ class WorkOrderProjectRestServiceTest
 		stepRequest.setWoStepStatus(woStepStatus);
 		stepRequest.setWoFindingsReleasedDate(woFindingsReleasedDate);
 		stepRequest.setWoFindingsCreatedDate(woFindingsCreatedDate);
-		stepRequest.setWoPlannedResourceDurationHours(240);
 		stepRequest.setExternalId(stepIdentifier);
 
 		projectRequest.setSteps(ImmutableList.of(stepRequest));
@@ -355,8 +354,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceResponse.getAssignDateTo()).isEqualTo(assignDateTo);
 		assertThat(resourceResponse.getIsActive()).isFalse();
 		assertThat(resourceResponse.getIsAllDay()).isTrue();
-		assertThat(resourceResponse.getDuration()).isEqualTo(BigDecimal.TEN);
-		assertThat(resourceResponse.getDurationUnit()).isEqualTo(JsonDurationUnit.Day);
 		assertThat(resourceResponse.getTestFacilityGroupName()).isEqualTo(testFacilityGroupName);
 		assertThat(resourceResponse.getExternalId()).isEqualTo(stepIdentifier);
 
@@ -542,9 +539,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceResponse.getAssignDateTo()).isEqualTo(assignDateTo);
 		assertThat(resourceResponse.getIsActive()).isTrue();
 		assertThat(resourceResponse.getIsAllDay()).isFalse();
-
-		assertThat(resourceResponse.getDuration()).isEqualTo(BigDecimal.ZERO);
-		assertThat(resourceResponse.getDurationUnit()).isEqualTo(JsonDurationUnit.Hour);
 
 		assertThat(resourceResponse.getTestFacilityGroupName()).isNull();
 		assertThat(resourceResponse.getExternalId()).isNull();
