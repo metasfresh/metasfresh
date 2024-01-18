@@ -588,7 +588,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
-	AttributesKey getAttributesKey(@NonNull I_M_HU hu);
+	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
