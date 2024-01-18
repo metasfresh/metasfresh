@@ -46,41 +46,18 @@ import java.util.Optional;
 @Value
 public class WOProjectResource
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	WOProjectResourceId woProjectResourceId;
-
-	@NonNull
-	WOProjectStepId woProjectStepId;
-
-	@Nullable
-	CalendarDateRange dateRange;
-
-	@NonNull
-	ResourceId resourceId;
-
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
-	ProjectId budgetProjectId;
-
-	@Nullable
-	BudgetProjectResourceId projectResourceBudgetId;
-
-	@Nullable
-	ExternalId externalId;
-
-	@Nullable
-	String testFacilityGroupName;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	Duration resolvedHours;
+	@NonNull OrgId orgId;
+	@NonNull WOProjectResourceId woProjectResourceId;
+	@NonNull WOProjectStepId woProjectStepId;
+	@Nullable CalendarDateRange dateRange;
+	@NonNull ResourceId resourceId;
+	@Nullable Boolean isActive;
+	@Nullable ProjectId budgetProjectId;
+	@Nullable BudgetProjectResourceId projectResourceBudgetId;
+	@Nullable ExternalId externalId;
+	@Nullable String testFacilityGroupName;
+	@Nullable String description;
+	@Nullable Duration resolvedHours;
 
 	@Builder(toBuilder = true)
 	private WOProjectResource(

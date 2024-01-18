@@ -39,56 +39,25 @@ import java.util.Optional;
 @Builder(toBuilder = true)
 public class WOProjectStep
 {
-	@NonNull
-	WOProjectStepId woProjectStepId;
-
-	@NonNull
-	String name;
-
-	@NonNull
-	Integer seqNo;
-
-	@NonNull
-	OrgId orgId;
-
+	@NonNull WOProjectStepId woProjectStepId;
+	@NonNull String name;
+	@NonNull Integer seqNo;
+	@NonNull OrgId orgId;
 	@Nullable CalendarDateRange dateRange;
+	@Nullable String description;
+	@Nullable ExternalId externalId;
+	@Nullable Instant woPartialReportDate;
 
-	@Nullable
-	String description;
+	@Nullable Integer woPlannedResourceDurationHours;
+	@Nullable Integer woPlannedPersonDurationHours;
 
-	@Nullable
-	ExternalId externalId;
-
-	@Nullable
-	Instant woPartialReportDate;
-
-	@Nullable
-	Integer woPlannedResourceDurationHours;
-
-	@Nullable
-	Instant deliveryDate;
-
-	@Nullable
-	Instant woTargetStartDate;
-
-	@Nullable
-	Instant woTargetEndDate;
-
-	@Nullable
-	Integer woPlannedPersonDurationHours;
-
-	@Nullable
-	WOStepStatus woStepStatus;
-
-	@Nullable
-	Instant woFindingsReleasedDate;
-
-	@Nullable
-	Instant woFindingsCreatedDate;
-
-	@Nullable
-	Instant woDueDate;
-
+	@Nullable Instant deliveryDate;
+	@Nullable Instant woTargetStartDate;
+	@Nullable Instant woTargetEndDate;
+	@Nullable WOStepStatus woStepStatus;
+	@Nullable Instant woFindingsReleasedDate;
+	@Nullable Instant woFindingsCreatedDate;
+	@Nullable Instant woDueDate;
 	boolean manuallyLocked;
 
 	public ProjectId getProjectId() {return woProjectStepId.getProjectId();}
@@ -116,7 +85,7 @@ public class WOProjectStep
 	public Duration getWOPlannedResourceDuration()
 	{
 		return woPlannedResourceDurationHours != null
-				? Duration.ofHours(woPlannedPersonDurationHours)
+				? Duration.ofHours(woPlannedResourceDurationHours)
 				: Duration.ZERO;
 	}
 }
