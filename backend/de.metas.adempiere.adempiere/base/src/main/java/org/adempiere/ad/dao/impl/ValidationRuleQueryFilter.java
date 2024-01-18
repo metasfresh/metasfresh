@@ -47,7 +47,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	public ValidationRuleQueryFilter(@NonNull final String tableName, @NonNull final AdValRuleId adValRuleId)
 	{
 		this.tableName = tableName;
-		this.adValRuleId = adValRuleId.getRepoId();
+		this.adValRuleId = adValRuleId;
 		this.evaluatee = Evaluatees.ofCtx(Env.getCtx());
 	}
 
