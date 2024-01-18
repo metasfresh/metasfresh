@@ -27,7 +27,6 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.rest_api.v2.project.workorder.JsonDurationUnit;
 import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertItemRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
@@ -85,7 +84,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -323,7 +321,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getDateOfProvisionByBPartner()).isEqualTo(dateOfProvisionByBPartner);
 		assertThat(data.getProjectParentId()).isNull();
 
-		assertThat(data.getSteps()).isNotNull().hasSize(1);
+		assertThat(data.getSteps()).hasSize(1);
 
 		final JsonWorkOrderStepResponse stepResponse = data.getSteps().get(0);
 
@@ -344,7 +342,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(stepResponse.getWoFindingsCreatedDate()).isEqualTo(woFindingsCreatedDate);
 		assertThat(stepResponse.getExternalId()).isEqualTo(stepIdentifier);
 
-		assertThat(stepResponse.getResources()).isNotNull().hasSize(1);
+		assertThat(stepResponse.getResources()).hasSize(1);
 
 		final JsonWorkOrderResourceResponse resourceResponse = stepResponse.getResources().get(0);
 
@@ -357,7 +355,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceResponse.getTestFacilityGroupName()).isEqualTo(testFacilityGroupName);
 		assertThat(resourceResponse.getExternalId()).isEqualTo(stepIdentifier);
 
-		assertThat(data.getObjectsUnderTest()).isNotNull().hasSize(1);
+		assertThat(data.getObjectsUnderTest()).hasSize(1);
 
 		final JsonWorkOrderObjectsUnderTestResponse objectsUnderTestResponse = data.getObjectsUnderTest().get(0);
 
@@ -415,10 +413,10 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getProjectParentId()).isNull();
 
 		//steps
-		assertThat(storedProject.getSteps()).isNotNull().isEmpty();
+		assertThat(storedProject.getSteps()).isEmpty();
 
 		//objects under test
-		assertThat(storedProject.getObjectsUnderTest()).isNotNull().isEmpty();
+		assertThat(storedProject.getObjectsUnderTest()).isEmpty();
 	}
 
 	@Test
@@ -504,7 +502,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getProjectParentId()).isNull();
 
 		//steps
-		assertThat(storedProject.getSteps()).isNotNull().hasSize(1);
+		assertThat(storedProject.getSteps()).hasSize(1);
 
 		final JsonWorkOrderStepResponse stepResponse = storedProject.getSteps().get(0);
 
@@ -528,7 +526,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(stepResponse.getWoFindingsCreatedDate()).isNull();
 
 		//resources
-		assertThat(stepResponse.getResources()).isNotNull().hasSize(1);
+		assertThat(stepResponse.getResources()).hasSize(1);
 
 		final JsonWorkOrderResourceResponse resourceResponse = stepResponse.getResources().get(0);
 
@@ -544,7 +542,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(resourceResponse.getExternalId()).isNull();
 
 		//objects under test
-		assertThat(storedProject.getObjectsUnderTest()).isNotNull().hasSize(1);
+		assertThat(storedProject.getObjectsUnderTest()).hasSize(1);
 
 		final JsonWorkOrderObjectsUnderTestResponse objectsUnderTestResponse = storedProject.getObjectsUnderTest().get(0);
 
@@ -657,7 +655,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(projectToValidate.isActive()).isFalse();
 
 		//validate projectStep
-		assertThat(responseBody.getSteps()).isNotNull().hasSize(1);
+		assertThat(responseBody.getSteps()).hasSize(1);
 
 		final JsonWorkOrderStepUpsertResponse stepUpsertResponse = responseBody.getSteps().get(0);
 		assertThat(stepUpsertResponse.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.UPDATED);
@@ -668,7 +666,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(projectWoStepToValidate.getName()).isEqualTo("newStepName");
 
 		//validate projectResource
-		assertThat(stepUpsertResponse.getResources()).isNotNull().hasSize(1);
+		assertThat(stepUpsertResponse.getResources()).hasSize(1);
 
 		final JsonWorkOrderResourceUpsertResponse resourceResponse = stepUpsertResponse.getResources().get(0);
 		assertThat(resourceResponse.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.UPDATED);
@@ -680,7 +678,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(TimeUtil.asInstant(projectWoResourceToValidate.getAssignDateTo())).isEqualTo(TimeUtil.asEndOfDayInstant(newAssignDateTo, ZoneId.systemDefault()));
 
 		//validate projectObjectUnderTest
-		assertThat(responseBody.getObjectsUnderTest()).isNotNull().hasSize(1);
+		assertThat(responseBody.getObjectsUnderTest()).hasSize(1);
 
 		final JsonWorkOrderObjectUnderTestUpsertResponse objectUnderTestUpsertResponse = responseBody.getObjectsUnderTest().get(0);
 		assertThat(objectUnderTestUpsertResponse.getIdentifier()).isEqualTo("ext-" + objectUnderTest.getExternalId());
