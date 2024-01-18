@@ -6,6 +6,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -79,5 +80,11 @@ public class Weightables
 			weightable.setWeightNet(weightNetActual);
 			weightable.setWeightNetNoPropagate(weightNet); // directly set the correct value we're expecting
 		}
+	}
+
+	public static boolean isWeightRelatedAttribute(@NonNull final AttributeCode attributeCode)
+	{
+		return Stream.of(ATTR_WeightGross, ATTR_WeightNet, ATTR_WeightTare, ATTR_WeightTareAdjust)
+				.anyMatch(weightCode -> AttributeCode.equals(weightCode, attributeCode));
 	}
 }
