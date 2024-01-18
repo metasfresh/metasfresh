@@ -90,7 +90,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
 const SEPARATOR = '#';
-export const parseQRCodeString = (string) => {
+export const parseQRCodeString = (string, returnFalseOnError) => {
   let remainingString = string;
 
   //
@@ -99,6 +99,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       throw 'Invalid global QR code(1): ' + string;
     }
     type = remainingString.substring(0, idx);
@@ -111,6 +114,9 @@ export const parseQRCodeString = (string) => {
   {
     const idx = remainingString.indexOf(SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       throw 'Invalid global QR code(2): ' + string;
     }
     version = remainingString.substring(0, idx);
@@ -176,4 +182,9 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   }
 
   return result;
+};
+
+export const isKnownQRCodeFormat = (qrCodeString) => {
+  const returnFalseOnError = true;
+  return !!parseQRCodeString(qrCodeString, returnFalseOnError);
 };

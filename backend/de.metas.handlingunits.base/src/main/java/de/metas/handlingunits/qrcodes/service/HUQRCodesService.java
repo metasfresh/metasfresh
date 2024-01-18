@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 public class HUQRCodesService
@@ -140,9 +141,11 @@ public class HUQRCodesService
 						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId,
+                                         @NonNull final AdProcessId qrCodeProcessId,
+                                         @NonNull final PrintCopies printCopies)
 	{
-		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId));
+		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId, printCopies));
 	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes)
@@ -245,5 +248,12 @@ public class HUQRCodesService
 		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getHuId));
+	}
+
+	@NonNull
+	public Stream<HuId> streamHUIdsByDisplayableQrCode(@NonNull final String displayableQrCodePart)
+	{
+		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
+				.map(HUQRCodeAssignment::getHuId);
 	}
 }

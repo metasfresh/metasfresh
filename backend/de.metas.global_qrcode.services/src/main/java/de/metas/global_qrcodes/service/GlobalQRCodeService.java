@@ -47,6 +47,11 @@ public class GlobalQRCodeService
 		return execute;
 	}
 
+    public void print(@NonNull final QRCodePDFResource pdf)
+    {
+        print(pdf, PrintCopies.ONE);
+    }
+
 	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
 		final TableRecordReference recordRef = TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId());

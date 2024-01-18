@@ -38,6 +38,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeSourceDocument;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1279,6 +1281,27 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	protected final void fireAttributeStorageDisposed()
 	{
 		listeners.onAttributeStorageDisposed(this);
+	}
+
+	@Nullable
+	@Override
+	public AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
+	{
+		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeCode);
+		if (attribute == null)
+		{
+			return null;
+		}
+
+		final String value = getValueAsStringOrNull(attributeCode);
+		if (value == null)
+		{
+			return null;
+		}
+
+		return Optional.ofNullable(attributesBL.retrieveAttributeValueOrNull(attribute, value))
+				.map(AttributeListValue::getId)
+				.orElse(null);
 	}
 
 	@ToString

@@ -17,6 +17,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import java.util.stream.Stream;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -68,7 +70,7 @@ public class HuForInventoryLineFactory
 			@NonNull final IHUProductStorage huProductStorage,
 			@NonNull final BigDecimal qty)
 	{
-		final AttributesKey attributesKey = handlingUnitsBL.getStorageRelevantAttributesKey(huProductStorage.getM_HU());
+		final AttributesKey attributesKey = handlingUnitsBL.getAttributesKeyForInventory(huProductStorage.getM_HU());
 		final Quantity bookedQty = huProductStorage.getQty();
 		final Quantity adjustedQty = Quantity.of(bookedQty.toBigDecimal().add(qty), bookedQty.getUOM());
 
