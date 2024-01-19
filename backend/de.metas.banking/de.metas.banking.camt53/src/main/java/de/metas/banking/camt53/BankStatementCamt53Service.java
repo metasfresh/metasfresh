@@ -436,9 +436,11 @@ public class BankStatementCamt53Service
 	private boolean isStatementCurrencyMatchingBankAccount(@NonNull final BankAccountId bankAccountId, @NonNull final IAccountStatementWrapper statementWrapper)
 	{
 		final CurrencyCode statementCurrencyCode = statementWrapper.getStatementCurrencyCode().orElse(null);
+
+		// currency at this point is not mandatory, so we will not enforce any match if there is no currency
 		if (statementCurrencyCode == null)
 		{
-			return false;
+			return true;
 		}
 
 		return Optional.of(bankAccountService.getById(bankAccountId))
