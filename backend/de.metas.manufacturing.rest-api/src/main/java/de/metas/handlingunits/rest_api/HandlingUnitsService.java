@@ -23,6 +23,7 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
@@ -34,6 +35,7 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -51,15 +53,20 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.HUIdAndQRCode;
 import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.process.AdProcessId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.report.PrintCopies;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,6 +86,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,6 +108,7 @@ public class HandlingUnitsService
 
 	private final HUQRCodesService huQRCodeService;
 	private final HUQtyService huQtyService;
+	private final HULabelService huLabelService;
 
 	@NonNull
 	public JsonHU getFullHU(
@@ -120,11 +129,11 @@ public class HandlingUnitsService
 		}
 
 		return toJson(LoadJsonHURequest.builder()
-							  .hu(hu)
-							  .expectedQRCode(expectedQRCode)
-							  .adLanguage(adLanguage)
-							  .includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
-							  .build());
+				.hu(hu)
+				.expectedQRCode(expectedQRCode)
+				.adLanguage(adLanguage)
+				.includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+				.build());
 	}
 
 	@NonNull
@@ -224,6 +233,52 @@ public class HandlingUnitsService
 		return getAllowedClearanceStatuses(hu);
 	}
 
+	public void printHULabels(@NonNull final JsonPrintHULabelRequest request)
+	{
+		final AdProcessId printFormatProcessId = AdProcessId.ofRepoId(request.getHuLabelProcessId().getValue());
+		if (!huLabelService.getHULabelPrintFormatProcesses().containsProcessId(printFormatProcessId))
+		{
+			throw new AdempiereException("Invalid huLabelProcessId: " + printFormatProcessId);
+		}
+
+		final HuId huId = huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()));
+
+		final HULabelDirectPrintRequest directPrintRequest = HULabelDirectPrintRequest.builder()
+				.printFormatProcessId(printFormatProcessId)
+				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+				.printCopies(PrintCopies.ofIntOrOne(request.getNrOfCopies()))
+				.onlyOneHUPerPrint(true)
+				.build();
+
+		huLabelService.printNow(directPrintRequest);
+	}
+
+	@NonNull
+	public List<JsonHULabelPrintingOption> getLabelPrintingOptions(@NonNull final String adLanguage)
+	{
+		return huLabelService.getHULabelPrintFormatProcesses()
+				.stream()
+				.map(printProcess -> JsonHULabelPrintingOption.builder()
+						.processId(JsonMetasfreshId.of(printProcess.getProcessId().getRepoId()))
+						.caption(printProcess.getName().translate(adLanguage))
+						.build())
+				.sorted(Comparator.comparing(JsonHULabelPrintingOption::getCaption))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<JsonHU> getHUsForDisplayableQrCode(@NonNull final String displayableQrCode, @NonNull final String adLanguage)
+	{
+		final Set<HuId> huIdSet = huQRCodeService.streamHUIdsByDisplayableQrCode(displayableQrCode)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return handlingUnitsBL.getByIds(huIdSet)
+				.stream()
+				.map(hu -> LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage))
+				.map(this::toJson)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@NonNull
 	private JsonAllowedHUClearanceStatuses getAllowedClearanceStatuses(@NonNull final I_M_HU hu)
 	{
@@ -294,20 +349,20 @@ public class HandlingUnitsService
 			}
 
 			list.add(JsonHUAttribute.builder()
-							 .code(attributeCode.getCode())
-							 .caption(attribute.getName())
-							 .value(value)
-							 .build());
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.build());
 		}
 
 		// count attributes that end with ".._<digit>" and create additional attribute(s) for those counters.
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-							 .code(counterAttribute.getAttributeCode())
-							 .caption(counterAttribute.getAttributeCode())
-							 .value(counterAttribute.getCounter())
-							 .build());
+					.code(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -413,9 +468,9 @@ public class HandlingUnitsService
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.huIdAndQRCodes(ImmutableList.of(HUIdAndQRCode.builder()
-														 .huId(request.getHuId())
-														 .huQRCode(request.getHuQRCode())
-														 .build()))
+						.huId(request.getHuId())
+						.huQRCode(request.getHuQRCode())
+						.build()))
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -454,10 +509,10 @@ public class HandlingUnitsService
 		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
 		huQtyService.updateQty(UpdateHUQtyRequest.builder()
-									   .huId(huId)
-									   .qty(qty)
-									   .description(request.getDescription())
-									   .build());
+				.huId(huId)
+				.qty(qty)
+				.description(request.getDescription())
+				.build());
 
 		return huId;
 	}

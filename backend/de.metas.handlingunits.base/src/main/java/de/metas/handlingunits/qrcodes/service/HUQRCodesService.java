@@ -2,9 +2,8 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.global_qrcodes.GlobalQRCode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -12,9 +11,9 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.process.AdProcessId;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.report.PrintCopies;
@@ -25,11 +24,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 public class HUQRCodesService
@@ -140,9 +136,11 @@ public class HUQRCodesService
 						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId,
+                                         @NonNull final AdProcessId qrCodeProcessId,
+                                         @NonNull final PrintCopies printCopies)
 	{
-		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId));
+		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId), printCopies);
 	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes)
@@ -245,5 +243,12 @@ public class HUQRCodesService
 		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getHuId));
+	}
+
+	@NonNull
+	public Stream<HuId> streamHUIdsByDisplayableQrCode(@NonNull final String displayableQrCodePart)
+	{
+		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
+				.map(HUQRCodeAssignment::getHuId);
 	}
 }

@@ -46,12 +46,14 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.WindowCopyResult;
 import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
@@ -709,5 +711,16 @@ public class ADProcessDAO implements IADProcessDAO
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
 				.listIds(AdProcessId::ofRepoId);
+	}
+
+	@NonNull
+	@Override
+	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId))
+				.create()
+				.list();
 	}
 }

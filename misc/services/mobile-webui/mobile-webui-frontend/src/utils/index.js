@@ -16,3 +16,5 @@ export const unboxAxiosResponse = (axiosResponse) => {
 export const toQueryString = (query) => {
   return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
 };
+
+export const isNullOrUndefined = (arg) => arg === null || arg === undefined;
