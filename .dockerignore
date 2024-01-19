@@ -1,0 +1,11 @@
+**/.git
+**/.mvn
+**/target
+
+**/node_modules
+**/npm-debug.log
+**/ansible
+**/buildfile.groovy
+
+# this need to be ignored to prevent developer credentials being exposed in docker build context
+**/mvn/local-settings.xml
