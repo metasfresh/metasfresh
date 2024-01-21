@@ -250,7 +250,17 @@ public class InvoiceCandidate
 							 qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
 
 				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(product.getId(), uomId);
-				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12, RoundingMode.UNNECESSARY);
+
+				BigDecimal remainingQtyOverride;
+
+				if (qtyToInvoiceOverrideInStockUom != null)
+				{
+					remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12, RoundingMode.UNNECESSARY);
+				}
+				else
+				{
+					remainingQtyOverride = getQtyInStockUOM().getStockQty().toBigDecimal().setScale(12, RoundingMode.UNNECESSARY);
+				}
 
 				if (deliveredData.getShipmentData() != null)
 				{
@@ -321,23 +331,28 @@ public class InvoiceCandidate
 
 	}
 
+	private StockQtyAndUOMQty getQtyInStockUOM()
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final UomId stockUOMId = productBL.getStockUOMId(product.getId());
+		final I_C_UOM uom = uomDAO.getById(uomId);
+		final Quantity qtyInUOM = Quantity.of(qtyToInvoiceOverrideInUom, uom);
+		final Quantity qtyInStockUOM = uomConversionBL.convertQuantityTo(qtyInUOM, UOMConversionContext.of(product.getId()), stockUOMId);
+		return StockQtyAndUOMQty.builder()
+				.productId(product.getId())
+				.stockQty(qtyInStockUOM)
+				.uomQty(qtyInUOM)
+				.build();
+	}
+
 	private StockQtyAndUOMQty getQtysToInvoice()
 	{
 		final StockQtyAndUOMQty qtysToInvoice;
 
 		if (qtyToInvoiceOverrideInUom != null)
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
-			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-			final UomId stockUOMId = productBL.getStockUOMId(product.getId());
-			final I_C_UOM uom = uomDAO.getById(uomId);
-			final Quantity qtyInUOM = Quantity.of(qtyToInvoiceOverrideInUom, uom);
-			final Quantity qtyInStockUOM = uomConversionBL.convertQuantityTo(qtyInUOM, UOMConversionContext.of(product.getId()), stockUOMId);
-			qtysToInvoice = StockQtyAndUOMQty.builder()
-					.productId(product.getId())
-					.stockQty(qtyInStockUOM)
-					.uomQty(qtyInUOM)
-					.build();
+			qtysToInvoice = getQtyInStockUOM();
 		}
 		else
 		{
