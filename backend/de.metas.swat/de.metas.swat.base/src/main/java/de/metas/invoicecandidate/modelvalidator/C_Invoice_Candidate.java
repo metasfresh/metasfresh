@@ -81,7 +81,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override})
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
@@ -97,6 +97,18 @@ public class C_Invoice_Candidate
 			{
 				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
 			}
+
+			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
+					&& (icRecord.getQtyToInvoiceInUOM_Override() != null))
+			{
+				icRecord.setQtyToInvoice_Override(null);
+			}
+			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+					&& (icRecord.getQtyToInvoice_Override() != null))
+			{
+				icRecord.setQtyToInvoiceInUOM_Override(null);
+			}
+
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 		}
@@ -434,7 +446,6 @@ public class C_Invoice_Candidate
 
 		invoiceCandDAO.invalidateCand(ic);
 	}
-
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.

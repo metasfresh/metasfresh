@@ -62,7 +62,7 @@ public class StockQtyAndUOMQty
 	}
 
 	@JsonProperty("uomQty")
-	private Quantity getUOMQty()
+	public Quantity getUOMQty()
 	{
 		return uomQty;
 	}
