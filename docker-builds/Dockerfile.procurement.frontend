@@ -1,4 +1,4 @@
-FROM node:16.10.0
+FROM node:10-alpine
 
 RUN npm install -g webpack webpack-cli
 
