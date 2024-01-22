@@ -35,10 +35,13 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @JsonDeserialize(builder = JsonAttachmentRequest.JsonAttachmentRequestBuilder.class)
 public class JsonAttachmentRequest
 {
+	@Schema(requiredMode= REQUIRED)
 	@NonNull
 	@JsonProperty("orgCode")
 	String orgCode;
@@ -48,6 +51,7 @@ public class JsonAttachmentRequest
 	@JsonProperty("targets")
 	List<JsonExternalReferenceTarget> targets;
 
+	@Schema(requiredMode= REQUIRED)
 	@NonNull
 	@JsonProperty("attachment")
 	JsonAttachment attachment;

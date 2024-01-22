@@ -37,11 +37,12 @@ import java.util.List;
 @JsonDeserialize(builder = JsonAttachment.JsonAttachmentBuilder.class)
 public class JsonAttachment
 {
+	@Schema(requiredMode= Schema.RequiredMode.REQUIRED)
 	@NonNull
 	@JsonProperty("fileName")
 	String fileName;
 
-	@Schema(description = "If type=`Data`, then this field contains the attachment's base64 encoded binary data.")
+	@Schema(description = "If type=`Data`, then this field contains the attachment's base64 encoded binary data.", requiredMode= REQUIRED)
 	@NonNull
 	@JsonProperty("data")
 	String data;
