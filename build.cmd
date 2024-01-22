@@ -67,8 +67,10 @@ docker build -f docker-builds/Dockerfile.db-standalone -t %pubregistry%/metas-db
 docker build -f docker-builds/Dockerfile.db-migrations -t %pubregistry%/metas-db:%qualifier%-migrations . || @goto error
 docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:%qualifier%-preloaded . || @goto error
 
-@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/metas-procurement-frontend:%qualifier% . || @goto error
-
+@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/metas-procurement-backend:%qualifier% . || @goto error
+@REM docker build -f misc/services/procurement-webui/nginx/Dockerfile -t %pubregistry%/metas-procurement-nginx:%qualifier% . || @goto error
+@REM docker build -f misc/services/procurement-webui/procurement-webui-frontend/Dockerfile -t %pubregistry%/metas-procurement-frontend:%qualifier% . || @goto error
+@REM docker build -f misc/services/procurement-webui/rabbitmq/Dockerfile -t %pubregistry%/metas-procurement-rabbitmq:%qualifier% . || @goto error
 
 @echo.
 @echo --------------------------
