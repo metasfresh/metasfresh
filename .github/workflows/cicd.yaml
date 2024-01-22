@@ -371,6 +371,7 @@ jobs:
           --file docker-builds/Dockerfile.procurement.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }} \
           .
