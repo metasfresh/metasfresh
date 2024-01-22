@@ -145,7 +145,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
 
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());

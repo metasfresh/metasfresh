@@ -25,29 +25,7 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 
 	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
 
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-
-	/**
-	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
-	 */
-	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<I_C_OrderLine>()
-			.addPredicate(orderLine -> isNotFreightCost(orderLine));
-
-	private static boolean isNotFreightCost(final @NonNull I_C_OrderLine orderLine)
-	{
-		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
-		return !ordersFreightCostService.isFreightCostOrderLine(orderLine);
-	}
-
-	/**
-	 * Add a skip filter.
-	 * <p>
-	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
-	 */
-	public static void addSkipPredicate(final Predicate<I_C_OrderLine> skipPredicate)
-	{
-		skipPredicates.addPredicate(skipPredicate);
-	}
+	private final OrderLineDimensionFactory orderLineDimensionFactory = SpringContextHolder.instance.getBean(OrderLineDimensionFactory.class);
 
 	/**
 	 * @return true if the record shall be copied
@@ -66,7 +44,6 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		final I_C_OrderLine toOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
-
 		onOrderLineCopied(toOrderLine, fromOrderLine);
 	}
 
@@ -102,7 +79,7 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 			return -1;
 		}
 
-		final I_C_Order toOrder = getParentModel(I_C_Order.class);
+		final I_C_Order toOrder = getTargetOrder();
 		Map<Integer, Integer> orderCompensationGroupIdsMap = InterfaceWrapperHelper.getDynAttribute(toOrder, DYNATTR_OrderCompensationGroupIdsMap);
 		if (orderCompensationGroupIdsMap == null)
 		{

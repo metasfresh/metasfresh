@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -1116,12 +1115,6 @@ public class DocumentEntityDescriptor
 		private AdProcessId getPrintProcessId()
 		{
 			return _printProcessId;
-		}
-
-		public Builder setCloneEnabled(final boolean cloneEnabled)
-		{
-			_cloneEnabled = cloneEnabled;
-			return this;
 		}
 
 		private boolean isCloneEnabled()

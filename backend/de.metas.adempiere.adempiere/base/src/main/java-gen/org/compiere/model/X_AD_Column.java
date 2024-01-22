@@ -10,22 +10,22 @@ import javax.annotation.Nullable;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent
+public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1942633222L;
+	private static final long serialVersionUID = 1082024214L;
 
-	/** Standard Constructor */
-	public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
-	{
-		super (ctx, AD_Column_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
+    {
+      super (ctx, AD_Column_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_AD_Column (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_AD_Column (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -38,14 +38,14 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Column_ID (final int AD_Column_ID)
 	{
-		if (AD_Column_ID < 1)
+		if (AD_Column_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, AD_Column_ID);
 	}
 
 	@Override
-	public int getAD_Column_ID()
+	public int getAD_Column_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
@@ -65,14 +65,14 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Element_ID (final int AD_Element_ID)
 	{
-		if (AD_Element_ID < 1)
+		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
 	@Override
-	public int getAD_Element_ID()
+	public int getAD_Element_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
@@ -92,14 +92,14 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Process_ID (final int AD_Process_ID)
 	{
-		if (AD_Process_ID < 1)
+		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
 	@Override
-	public int getAD_Process_ID()
+	public int getAD_Process_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
@@ -119,14 +119,14 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Reference_ID (final int AD_Reference_ID)
 	{
-		if (AD_Reference_ID < 1)
+		if (AD_Reference_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Reference_ID, AD_Reference_ID);
 	}
 
 	@Override
-	public int getAD_Reference_ID()
+	public int getAD_Reference_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
 	}
@@ -146,56 +146,29 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Reference_Value_ID (final int AD_Reference_Value_ID)
 	{
-		if (AD_Reference_Value_ID < 1)
+		if (AD_Reference_Value_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, AD_Reference_Value_ID);
 	}
 
 	@Override
-	public int getAD_Reference_Value_ID()
+	public int getAD_Reference_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Sequence getAD_Sequence()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
-	}
-
-	@Override
-	public void setAD_Sequence(final org.compiere.model.I_AD_Sequence AD_Sequence)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class, AD_Sequence);
-	}
-
-	@Override
-	public void setAD_Sequence_ID (final int AD_Sequence_ID)
-	{
-		if (AD_Sequence_ID < 1)
-			set_Value (COLUMNNAME_AD_Sequence_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
-	}
-
-	@Override
-	public int getAD_Sequence_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
-	}
-
-	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1)
+		if (AD_Table_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
 	@Override
-	public int getAD_Table_ID()
+	public int getAD_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
@@ -215,19 +188,19 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Val_Rule_ID (final int AD_Val_Rule_ID)
 	{
-		if (AD_Val_Rule_ID < 1)
+		if (AD_Val_Rule_ID < 1) 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, AD_Val_Rule_ID);
 	}
 
 	@Override
-	public int getAD_Val_Rule_ID()
+	public int getAD_Val_Rule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
-	/**
+	/** 
 	 * CloningStrategy AD_Reference_ID=541754
 	 * Reference name: AD_Column_CloningStrategy
 	 */
@@ -249,7 +222,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getCloningStrategy()
+	public java.lang.String getCloningStrategy() 
 	{
 		return get_ValueAsString(COLUMNNAME_CloningStrategy);
 	}
@@ -261,7 +234,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getColumnName()
+	public java.lang.String getColumnName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ColumnName);
 	}
@@ -273,7 +246,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getColumnSQL()
+	public java.lang.String getColumnSQL() 
 	{
 		return get_ValueAsString(COLUMNNAME_ColumnSQL);
 	}
@@ -285,7 +258,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isDDL_NoForeignKey()
+	public boolean isDDL_NoForeignKey() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_DDL_NoForeignKey);
 	}
@@ -297,7 +270,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getDefaultValue()
+	public java.lang.String getDefaultValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_DefaultValue);
 	}
@@ -309,12 +282,12 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/**
+	/** 
 	 * EntityType AD_Reference_ID=389
 	 * Reference name: _EntityTypeNew
 	 */
@@ -326,7 +299,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getEntityType()
+	public java.lang.String getEntityType() 
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
@@ -338,7 +311,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public int getFacetFilterSeqNo()
+	public int getFacetFilterSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_FacetFilterSeqNo);
 	}
@@ -350,7 +323,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public int getFieldLength()
+	public int getFieldLength() 
 	{
 		return get_ValueAsInt(COLUMNNAME_FieldLength);
 	}
@@ -362,12 +335,12 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getFilterDefaultValue()
+	public java.lang.String getFilterDefaultValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_FilterDefaultValue);
 	}
 
-	/**
+	/** 
 	 * FilterOperator AD_Reference_ID=541241
 	 * Reference name: FilterOperator
 	 */
@@ -385,36 +358,9 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getFilterOperator()
+	public java.lang.String getFilterOperator() 
 	{
 		return get_ValueAsString(COLUMNNAME_FilterOperator);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
-	{
-		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
-	}
-
-	@Override
-	public void setFilter_Val_Rule(final org.compiere.model.I_AD_Val_Rule Filter_Val_Rule)
-	{
-		set_ValueFromPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, Filter_Val_Rule);
-	}
-
-	@Override
-	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
-	{
-		if (Filter_Val_Rule_ID < 1)
-			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
-		else
-			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
-	}
-
-	@Override
-	public int getFilter_Val_Rule_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
 	}
 
 	@Override
@@ -424,7 +370,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getFormatPattern()
+	public java.lang.String getFormatPattern() 
 	{
 		return get_ValueAsString(COLUMNNAME_FormatPattern);
 	}
@@ -436,7 +382,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getHelp()
+	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
 	}
@@ -448,7 +394,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getInfoFactoryClass()
+	public java.lang.String getInfoFactoryClass() 
 	{
 		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
@@ -460,7 +406,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isAllowLogging()
+	public boolean isAllowLogging() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowLogging);
 	}
@@ -472,7 +418,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isAlwaysUpdateable()
+	public boolean isAlwaysUpdateable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysUpdateable);
 	}
@@ -484,7 +430,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isAutoApplyValidationRule()
+	public boolean isAutoApplyValidationRule() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutoApplyValidationRule);
 	}
@@ -496,7 +442,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isAutocomplete()
+	public boolean isAutocomplete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutocomplete);
 	}
@@ -508,24 +454,12 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isCalculated()
+	public boolean isCalculated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
 	}
 
-	@Override
-	public void setIsDLMPartitionBoundary (final boolean IsDLMPartitionBoundary)
-	{
-		set_Value (COLUMNNAME_IsDLMPartitionBoundary, IsDLMPartitionBoundary);
-	}
-
-	@Override
-	public boolean isDLMPartitionBoundary()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
-	}
-
-	/**
+	/** 
 	 * IsEncrypted AD_Reference_ID=354
 	 * Reference name: AD_Column Encrypted
 	 */
@@ -541,7 +475,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getIsEncrypted()
+	public java.lang.String getIsEncrypted() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsEncrypted);
 	}
@@ -553,7 +487,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isExcludeFromZoomTargets()
+	public boolean isExcludeFromZoomTargets() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
@@ -565,7 +499,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isFacetFilter()
+	public boolean isFacetFilter() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFacetFilter);
 	}
@@ -577,7 +511,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isForceIncludeInGeneratedModel()
+	public boolean isForceIncludeInGeneratedModel() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsForceIncludeInGeneratedModel);
 	}
@@ -589,7 +523,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isGenericZoomOrigin()
+	public boolean isGenericZoomOrigin() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGenericZoomOrigin);
 	}
@@ -601,7 +535,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isIdentifier()
+	public boolean isIdentifier() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsIdentifier);
 	}
@@ -613,7 +547,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isKey()
+	public boolean isKey() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsKey);
 	}
@@ -625,7 +559,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isLazyLoading()
+	public boolean isLazyLoading() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLazyLoading);
 	}
@@ -637,7 +571,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isMandatory()
+	public boolean isMandatory() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMandatory);
 	}
@@ -649,7 +583,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isParent()
+	public boolean isParent() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsParent);
 	}
@@ -661,7 +595,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isRestAPICustomColumn()
+	public boolean isRestAPICustomColumn() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRestAPICustomColumn);
 	}
@@ -673,7 +607,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isSelectionColumn()
+	public boolean isSelectionColumn() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSelectionColumn);
 	}
@@ -685,7 +619,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isShowFilterIncrementButtons()
+	public boolean isShowFilterIncrementButtons() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterIncrementButtons);
 	}
@@ -697,7 +631,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isShowFilterInline()
+	public boolean isShowFilterInline() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterInline);
 	}
@@ -709,7 +643,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isStaleable()
+	public boolean isStaleable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsStaleable);
 	}
@@ -721,7 +655,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getIsSyncDatabase()
+	public java.lang.String getIsSyncDatabase() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsSyncDatabase);
 	}
@@ -733,7 +667,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isTranslated()
+	public boolean isTranslated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTranslated);
 	}
@@ -745,7 +679,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isUpdateable()
+	public boolean isUpdateable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateable);
 	}
@@ -757,7 +691,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isUseDocSequence()
+	public boolean isUseDocSequence() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUseDocSequence);
 	}
@@ -769,7 +703,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getMandatoryLogic()
+	public java.lang.String getMandatoryLogic() 
 	{
 		return get_ValueAsString(COLUMNNAME_MandatoryLogic);
 	}
@@ -781,7 +715,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public int getMaxFacetsToFetch()
+	public int getMaxFacetsToFetch() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MaxFacetsToFetch);
 	}
@@ -793,12 +727,12 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/**
+	/** 
 	 * PersonalDataCategory AD_Reference_ID=540857
 	 * Reference name: PersonalDataCategory
 	 */
@@ -816,7 +750,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getPersonalDataCategory()
+	public java.lang.String getPersonalDataCategory() 
 	{
 		return get_ValueAsString(COLUMNNAME_PersonalDataCategory);
 	}
@@ -828,7 +762,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getReadOnlyLogic()
+	public java.lang.String getReadOnlyLogic() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReadOnlyLogic);
 	}
@@ -840,7 +774,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public int getSelectionColumnSeqNo()
+	public int getSelectionColumnSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SelectionColumnSeqNo);
 	}
@@ -852,7 +786,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -864,7 +798,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getTechnicalNote()
+	public java.lang.String getTechnicalNote() 
 	{
 		return get_ValueAsString(COLUMNNAME_TechnicalNote);
 	}
@@ -876,7 +810,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getValueMax()
+	public java.lang.String getValueMax() 
 	{
 		return get_ValueAsString(COLUMNNAME_ValueMax);
 	}
@@ -888,7 +822,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getValueMin()
+	public java.lang.String getValueMin() 
 	{
 		return get_ValueAsString(COLUMNNAME_ValueMin);
 	}
@@ -900,7 +834,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public BigDecimal getVersion()
+	public BigDecimal getVersion() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Version);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -913,7 +847,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public java.lang.String getVFormat()
+	public java.lang.String getVFormat() 
 	{
 		return get_ValueAsString(COLUMNNAME_VFormat);
 	}

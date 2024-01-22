@@ -224,12 +224,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
 				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
 				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
-			//	+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
 				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
-				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) ");
+				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
+				+ " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
+				+ " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
+				+ " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
+		);
 		sql.append(" WHERE t.IsActive='Y' AND c.IsActive='Y'");
 		sql.append(" ORDER BY t.TableName, c.ColumnName");
 
