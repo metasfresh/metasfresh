@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
@@ -34,8 +35,7 @@ import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Function;
 
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_CreateReceipt_MovementDateParam
@@ -53,15 +53,13 @@ public class WEBUI_M_HU_CreateReceipt_MovementDateParam
 				.movementDate(movementDate)
 				.build();
 
-		final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByScheduleId = new HashMap<>();
-
-		getM_ReceiptSchedules()
+		final ImmutableMap<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByScheduleId = getM_ReceiptSchedules()
 				.stream()
 				.map(I_M_ReceiptSchedule::getM_ReceiptSchedule_ID)
 				.map(ReceiptScheduleId::ofRepoId)
 				.distinct()
-				.forEach(id -> externalInfoByScheduleId.put(id, scheduleExternalInfo));
-		
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), (ignored) -> scheduleExternalInfo));
+
 		parametersBuilder
 				.movementDateRule(ReceiptMovementDateRule.EXTERNAL_DATE_IF_AVAIL)
 				.externalInfoByReceiptScheduleId(externalInfoByScheduleId);
