@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.3.5'
+  PIPELINE_VERSION: '0.3.6'
 jobs:
 
   init:
@@ -183,9 +183,16 @@ jobs:
           # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           # .
+      - name: build-procurement-frontend
+        run: |
+           docker buildx build \
+           --file docker-builds/Dockerfile.procurement.frontend \
+           --cache-to type=inline \
+           --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
+           .
       - name: push-images
-            # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-            # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         uses: nick-fields/retry@v2
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -194,11 +201,16 @@ jobs:
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
+#            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+#            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
-          # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+#          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           
   test-frontend:
     name: test (frontend)
@@ -277,6 +289,16 @@ jobs:
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-edi
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel.edi \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: build-db
         run: |
           docker buildx build \
@@ -326,6 +348,8 @@ jobs:
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+            docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -335,6 +359,7 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   compatibility-images:
     runs-on: ubuntu-latest
