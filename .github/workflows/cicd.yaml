@@ -192,8 +192,6 @@ jobs:
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
 #            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
 #            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
@@ -375,6 +373,7 @@ jobs:
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: build-procurement-frontend
         run: |
           docker buildx build \
