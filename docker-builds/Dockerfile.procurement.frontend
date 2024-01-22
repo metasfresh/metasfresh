@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:17.9.1
 
 RUN npm install -g webpack webpack-cli
 
