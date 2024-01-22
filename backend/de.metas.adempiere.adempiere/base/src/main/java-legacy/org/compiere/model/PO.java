@@ -18,10 +18,11 @@ package org.compiere.model;
 
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheSourceModelFactory;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -63,11 +64,14 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.copy.POValuesCopyStrategies;
+import org.compiere.model.copy.POValuesCopyStrategy;
+import org.compiere.model.copy.ValueToCopyResolveContext;
+import org.compiere.model.copy.ValueToCopyResolved;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -116,6 +120,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 /**
  * Persistent Object.
@@ -1467,6 +1472,31 @@ public abstract class PO
 	{
 		return p_info.isColumnUpdateable(index);
 	}    // isColumnUpdateable
+
+	/**
+	 * Get Column DisplayType
+	 *
+	 * @param index index
+	 * @return display type
+	 */
+	protected final int get_ColumnDisplayType(final int index)
+	{
+		return p_info.getColumnDisplayType(index);
+	}	// getColumnDisplayType
+
+	/**
+	 * Get Lookup
+	 *
+	 * @param index index
+	 * @return Lookup or null
+	 */
+	protected final Lookup get_ColumnLookup(final int index)
+	{
+		// NOTE: in case the PO was saved/deleted from a UI window then WindowNo is available
+		final int windowNo = get_WindowNo();
+
+		return p_info.getColumnLookup(getCtx(), windowNo, index);
+	}   // getColumnLookup
 
 	/**
 	 * Get Column Index
@@ -2870,22 +2900,6 @@ public abstract class PO
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
 		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
-		//
-		// Create cache invalidation request
-		if (p_info.isSingleKeyColumnName())
-		{
-			try
-			{
-				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.BEFORE_NEW : ModelCacheInvalidationTiming.BEFORE_CHANGE;
-				cacheInvalidationService.invalidateForModel(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming);
-			}
-			catch (final Exception ex)
-			{
-				log.warn("Cache invalidation on before new/change failed for {}. Ignored.", this, ex);
-			}
-		}
-
 		// Save
 		if (newRecord)
 		{
@@ -2944,20 +2958,6 @@ public abstract class PO
 						MTree.updateTreeNode(this);
 					}
 				}
-
-				//
-				// Continue copying child records
-				// start: c.ghita@metas.ro
-				CopyRecordSupport copyRecordSupport = (CopyRecordSupport)getDynAttribute(DYNATTR_CopyRecordSupport);
-				if (copyRecordSupport != null && success)
-				{
-					copyRecordSupport.setParentPO(this);
-					copyRecordSupport.copyRecord(this, get_TrxName());
-
-					copyRecordSupport = null;
-					setDynAttribute(DYNATTR_CopyRecordSupport, null);
-				}
-				// end: c.ghita@metas.ro
 			}
 			catch (final Exception e)
 			{
@@ -2975,15 +2975,6 @@ public abstract class PO
 			fireModelChange(newRecord ? (replication ? ModelChangeType.AFTER_NEW_REPLICATION : ModelChangeType.AFTER_NEW)
 					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
-
-		//
-		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields)
-		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
-						: null;
 
 		final int columnsCount = p_info.getColumnCount();
 
@@ -4071,15 +4062,6 @@ public abstract class PO
 
 		// Delete Cascade AD_Table_ID/Record_ID (Attachments, ..)
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
-
-		//
-		// Create cache invalidation request
-		// We have to do it here, before we actually delete in case we have to compute what rows are "disappearing" from a view because this record was deleted.
-		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
-				: null;
-
 
 		//
 		// Execute SQL DELETE

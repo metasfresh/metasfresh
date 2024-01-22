@@ -224,7 +224,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", t." + I_AD_Table.COLUMNNAME_CloningEnabled
 				+ ", t." + I_AD_Table.COLUMNNAME_DownlineCloningStrategy
 				+ ", t." + I_AD_Table.COLUMNNAME_WhenChildCloningStrategy
-				+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
+			//	+ ", c." + I_AD_Column.COLUMNNAME_CloningStrategy + " AS columnCloningStrategy"
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "

@@ -1,6 +1,7 @@
 package org.adempiere.ad.wrapper;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;

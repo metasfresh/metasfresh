@@ -4,13 +4,13 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.table.api.TableName;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.compiere.util.DisplayType;
-import de.metas.util.StringUtils;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
+import org.compiere.model.copy.ColumnCloningStrategy;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -116,8 +116,6 @@ public final class POInfoColumn implements Serializable
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
 		this.cloningStrategy = cloningStrategy;
-
-		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
 
 	private static boolean isString(

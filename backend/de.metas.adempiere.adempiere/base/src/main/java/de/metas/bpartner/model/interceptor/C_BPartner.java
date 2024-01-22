@@ -2,14 +2,16 @@ package de.metas.bpartner.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -17,9 +19,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -30,19 +29,9 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_BPartner_Product_Stats;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerPOCopyRecordSupport;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 /*
  * #%L
@@ -70,7 +59,6 @@ import org.slf4j.Logger;
 public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
-
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
