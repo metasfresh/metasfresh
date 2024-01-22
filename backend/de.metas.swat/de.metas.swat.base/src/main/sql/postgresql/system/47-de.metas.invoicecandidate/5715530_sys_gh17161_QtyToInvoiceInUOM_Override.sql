@@ -1,5 +1,5 @@
 -- 2024-01-17T14:28:12.147Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582903,0,'QtyToInvoiceInUOM_Override',TO_TIMESTAMP('2024-01-17 15:28:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','UOM-Menge überschreiben','UOM-Menge überschreiben',TO_TIMESTAMP('2024-01-17 15:28:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582903,0,'QtyToInvoiceInUOM_Override',TO_TIMESTAMP('2024-01-17 15:28:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Abzurechen abw.','Abzurechen abw.',TO_TIMESTAMP('2024-01-17 15:28:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-01-17T14:28:12.156Z
@@ -18,7 +18,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='To invoice Override', PrintNam
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- 2024-01-17T14:29:14.550Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587806,582903,0,29,540270,'QtyToInvoiceInUOM_Override',TO_TIMESTAMP('2024-01-17 15:29:14','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.invoicecandidate',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'UOM-Menge überschreiben',0,0,TO_TIMESTAMP('2024-01-17 15:29:14','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587806,582903,0,29,540270,'QtyToInvoiceInUOM_Override',TO_TIMESTAMP('2024-01-17 15:29:14','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.invoicecandidate',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Abzurechen abw.',0,0,TO_TIMESTAMP('2024-01-17 15:29:14','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2024-01-17T14:29:14.554Z
@@ -33,12 +33,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN QtyToInvoiceInUOM_Override NUMERIC')
 ;
 
--- Field: Rechnungsdisposition -> Rechnungskandidaten -> UOM-Menge überschreiben
+-- Field: Rechnungsdisposition -> Rechnungskandidaten -> Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
--- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> UOM-Menge überschreiben
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- 2024-01-17T14:30:11.443Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587806,723819,0,540279,0,TO_TIMESTAMP('2024-01-17 15:30:11','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','UOM-Menge überschreiben',0,560,0,1,1,TO_TIMESTAMP('2024-01-17 15:30:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587806,723819,0,540279,0,TO_TIMESTAMP('2024-01-17 15:30:11','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Abzurechen abw.',0,560,0,1,1,TO_TIMESTAMP('2024-01-17 15:30:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-01-17T14:30:11.447Z
@@ -57,12 +57,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=723819
 /* DDL */ select AD_Element_Link_Create_Missing_Field(723819)
 ;
 
--- UI Element: Rechnungsdisposition -> Rechnungskandidaten.UOM-Menge überschreiben
+-- UI Element: Rechnungsdisposition -> Rechnungskandidaten.Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
--- UI Element: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> main -> 20 -> qtyInUOM.UOM-Menge überschreiben
+-- UI Element: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> main -> 20 -> qtyInUOM.Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- 2024-01-17T14:31:28.538Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723819,0,540279,542704,622114,'F',TO_TIMESTAMP('2024-01-17 15:31:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'UOM-Menge überschreiben',70,0,0,TO_TIMESTAMP('2024-01-17 15:31:28','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723819,0,540279,542704,622114,'F',TO_TIMESTAMP('2024-01-17 15:31:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Abzurechen abw.',70,0,0,TO_TIMESTAMP('2024-01-17 15:31:28','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- UI Element: Rechnungsdisposition -> Rechnungskandidaten.QtyToInvoiceInUOM_Calc
@@ -73,12 +73,12 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET SeqNo=80,Updated=TO_TIMESTAMP('2024-01-17 15:31:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560337
 ;
 
--- Field: Rechnungsdisposition Einkauf -> Rechnungskandidaten -> UOM-Menge überschreiben
+-- Field: Rechnungsdisposition Einkauf -> Rechnungskandidaten -> Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
--- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> UOM-Menge überschreiben
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- 2024-01-17T14:32:54.207Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587806,723820,0,543052,0,TO_TIMESTAMP('2024-01-17 15:32:53','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','UOM-Menge überschreiben',0,530,0,1,1,TO_TIMESTAMP('2024-01-17 15:32:53','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587806,723820,0,543052,0,TO_TIMESTAMP('2024-01-17 15:32:53','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Abzurechen abw.',0,530,0,1,1,TO_TIMESTAMP('2024-01-17 15:32:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-01-17T14:32:54.215Z
@@ -97,12 +97,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=723820
 /* DDL */ select AD_Element_Link_Create_Missing_Field(723820)
 ;
 
--- UI Element: Rechnungsdisposition Einkauf -> Rechnungskandidaten.UOM-Menge überschreiben
+-- UI Element: Rechnungsdisposition Einkauf -> Rechnungskandidaten.Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
--- UI Element: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> main -> 20 -> qtyInUOM.UOM-Menge überschreiben
+-- UI Element: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> main -> 20 -> qtyInUOM.Abzurechen abw.
 -- Column: C_Invoice_Candidate.QtyToInvoiceInUOM_Override
 -- 2024-01-17T14:34:03.691Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723820,0,543052,544367,622115,'F',TO_TIMESTAMP('2024-01-17 15:34:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'UOM-Menge überschreiben',70,0,0,TO_TIMESTAMP('2024-01-17 15:34:03','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,723820,0,543052,544367,622115,'F',TO_TIMESTAMP('2024-01-17 15:34:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Abzurechen abw.',70,0,0,TO_TIMESTAMP('2024-01-17 15:34:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- UI Element: Rechnungsdisposition Einkauf -> Rechnungskandidaten.QtyToInvoiceInUOM_Calc
