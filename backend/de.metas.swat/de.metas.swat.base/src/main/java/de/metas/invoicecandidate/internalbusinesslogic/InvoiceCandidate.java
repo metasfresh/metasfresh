@@ -83,8 +83,6 @@ public class InvoiceCandidate
 
 	private final InvoicedData invoicedData;
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	@Setter(AccessLevel.NONE)
 	private InvoiceRule invoiceRule;
 
@@ -347,6 +345,7 @@ public class InvoiceCandidate
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UomId stockUOMId = productBL.getStockUOMId(product.getId());
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		final I_C_UOM uom = uomDAO.getById(uomId);
 		final Quantity qtyInUOM = Quantity.of(qtyToInvoiceOverrideInUom, uom);
 
