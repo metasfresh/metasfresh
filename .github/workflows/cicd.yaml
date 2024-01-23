@@ -372,6 +372,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }} \
           .
