@@ -22,6 +22,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -101,9 +102,13 @@ public class C_Invoice_Candidate
 			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
 					&& (icRecord.getQtyToInvoiceInUOM_Override() != null))
 			{
-				icRecord.setQtyToInvoice_Override(null);
+				final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
+				if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
+				{
+					icRecord.setQtyToInvoice_Override(null);
+				}
 			}
-			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+			else if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 					&& (icRecord.getQtyToInvoice_Override() != null))
 			{
 				icRecord.setQtyToInvoiceInUOM_Override(null);
