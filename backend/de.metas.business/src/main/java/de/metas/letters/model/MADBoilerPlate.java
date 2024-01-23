@@ -727,6 +727,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			final int Ref_BoilerPlate_ID = MADBoilerPlate.getIdByName(getCtx(), refName, get_TrxName());
 			if (Ref_BoilerPlate_ID <= 0)
 			{
+				log.warn("BoilerPlate entry '" + refName + "' does not exist");
 				continue;
 			}
 			
