@@ -25,11 +25,10 @@ package de.metas.letters.model;
  * #L%
  */
 
+import org.adempiere.exceptions.AdempiereException;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
 
 /**
  * @author teo_sarca
@@ -67,7 +66,7 @@ public class MADBoilerPlateRef extends X_AD_BoilerPlate_Ref
 		this(parent.getCtx(), 0, parent.get_TrxName());
 		setAD_BoilerPlate_ID(parent.getAD_BoilerPlate_ID());
 		
-		int Ref_BoilerPlate_ID = MADBoilerPlate.getIdByName(getCtx(), refName, get_TrxName());
+		final int Ref_BoilerPlate_ID = MADBoilerPlate.getIdByName(getCtx(), refName, get_TrxName());
 		if (Ref_BoilerPlate_ID <= 0)
 		{
 			throw new AdempiereException("@NotFound@ @AD_BoilerPlate_ID@ (@Name@:"+refName+")");
