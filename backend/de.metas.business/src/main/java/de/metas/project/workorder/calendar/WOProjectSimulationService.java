@@ -9,6 +9,7 @@ import de.metas.error.IErrorManager;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
@@ -70,7 +71,7 @@ public class WOProjectSimulationService
 
 	public void checkSimulationConflicts(@NonNull final WOProjectSimulationPlan simulationPlan)
 	{
-		final ImmutableSet<ResourceId> resourceIds = woProjectService.getResourceIdsByProjectResourceIds(simulationPlan.getProjectResourceIds());
+		final ImmutableSet<ResourceIdAndType> resourceIds = woProjectService.getResourceIdsByProjectResourceIds(simulationPlan.getProjectResourceIds());
 		if (resourceIds.isEmpty())
 		{
 			return;

@@ -1,5 +1,6 @@
 package de.metas.calendar.plan_optimizer.persistance;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.HumanResource;
 import de.metas.calendar.plan_optimizer.domain.HumanResourceId;
@@ -22,6 +23,7 @@ import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourcesCollection;
+import de.metas.project.workorder.resource.WOResourceType;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepsCollection;
 import de.metas.resource.HumanResourceTestGroup;
@@ -30,6 +32,7 @@ import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceWeeklyAvailability;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -42,7 +45,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DatabasePlanLoaderInstance
 {
@@ -140,9 +146,20 @@ public class DatabasePlanLoaderInstance
 				continue;
 			}
 
-			for (final WOProjectResource woStepResourceOrig : resources.getByStepId(woStep.getWoProjectStepId()))
+			final Map<ResourceId, ImmutableMap<WOResourceType, WOProjectResource>> woStepResources = this.resources.streamByStepId(woStep.getWoProjectStepId())
+					.collect(Collectors.groupingBy(
+							resource -> resource.getResourceIdAndType().getResourceId(),
+							ImmutableMap.toImmutableMap(
+									resource -> resource.getResourceIdAndType().getType(),
+									resource -> resource
+							)
+					));
+
+			for (final ResourceId resourceId : woStepResources.keySet())
 			{
-				final StepDef step = fromWOStepResource(woProject, woStep, woStepResourceOrig, startDateMin, dueDate);
+				WOProjectResource machineProjectResource = woStepResources.get(resourceId).get(WOResourceType.MACHINE);
+				WOProjectResource humanProjectResource = woStepResources.get(resourceId).get(WOResourceType.HUMAN);
+				final StepDef step = fromWOStepResource(woProject, woStep, machineProjectResource, humanProjectResource, startDateMin, dueDate);
 				if (step == null)
 				{
 					continue;
@@ -173,43 +190,45 @@ public class DatabasePlanLoaderInstance
 	private StepDef fromWOStepResource(
 			@NonNull final WOProject woProject,
 			@NonNull final WOProjectStep woStep,
-			@NonNull final WOProjectResource woStepResourceOrig,
+			@Nullable final WOProjectResource woStepResourceOrig_Machine,
+			@Nullable final WOProjectResource woStepResourceOrig_Human,
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate)
 	{
-		Duration requiredResourceCapacity = woStepResourceOrig.getDuration();
-		if (requiredResourceCapacity.toSeconds() <= 0)
+		if (woStepResourceOrig_Machine == null && woStepResourceOrig_Human == null)
 		{
-			requiredResourceCapacity = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
-			logger.info("Step/resource has invalid duration. Considering it {}: {}", requiredResourceCapacity, woStepResourceOrig);
+			return null;
 		}
 
-		final WOProjectResource woStepResource = simulationPlan.applyOn(woStepResourceOrig);
+		final WOProjectResource woStepResource_Machine = woStepResourceOrig_Machine != null ? simulationPlan.applyOn(woStepResourceOrig_Machine) : null;
+		final WOProjectResource woStepResource_Human = woStepResourceOrig_Human != null ? simulationPlan.applyOn(woStepResourceOrig_Human) : null;
 
-		final LocalDateTime startDate = woStepResource.getStartDate()
-				.map(this::toLocalDateTime)
-				.orElse(null);
-		final LocalDateTime endDate = woStepResource.getEndDate()
-				.map(this::toLocalDateTime)
-				.orElse(null);
+		final LocalDateTime startDate = Optional.ofNullable(woStepResource_Machine).flatMap(WOProjectResource::getStartDate).map(this::toLocalDateTime).orElse(null);
+		final LocalDateTime endDate = Optional.ofNullable(woStepResource_Machine).flatMap(WOProjectResource::getEndDate).map(this::toLocalDateTime).orElse(null);
 
 		boolean pinned = woStep.isManuallyLocked() || woStep.inTesting();
 		if (pinned && (startDate == null || endDate == null))
 		{
-			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource);
+			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource_Machine);
 			pinned = false;
 		}
 
+		Duration requiredMachineCapacity = Optional.ofNullable(woStep.getWoPlannedResourceDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
+		if (requiredMachineCapacity.toSeconds() <= 0)
+		{
+			requiredMachineCapacity = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
+			logger.info("Step/machine has invalid required capacity. Considering it {}: {}", requiredMachineCapacity, woStepResourceOrig_Machine);
+		}
 		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
 
 		final StepDef stepDef = StepDef.builder()
 				.id(StepId.builder()
-						.woProjectStepId(woStepResource.getWoProjectStepId())
-						.woProjectResourceId(woStepResource.getWoProjectResourceId())
+						.woProjectStepId(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, WOProjectResource::getWoProjectStepId))
+						.woProjectResourceId(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, WOProjectResource::getWoProjectResourceId))
 						.build())
 				.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
-				.resource(toTimefoldResource(woStepResource))
-				.requiredResourceCapacity(requiredResourceCapacity)
+				.resource(toTimefoldResource(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, resource -> resource.getResourceIdAndType().getResourceId())))
+				.requiredResourceCapacity(requiredMachineCapacity)
 				.requiredHumanCapacity(requiredHumanCapacity)
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
@@ -230,10 +249,42 @@ public class DatabasePlanLoaderInstance
 		return stepDef;
 	}
 
-	@NonNull
-	private Resource toTimefoldResource(final WOProjectResource woStepResource)
+	private static <T> T getFieldValueExpectingEquals(
+			@Nullable final WOProjectResource resource1,
+			@Nullable final WOProjectResource resource2,
+			@NonNull final Function<WOProjectResource, T> valueGetter)
 	{
-		return timefoldResources.computeIfAbsent(woStepResource.getResourceId(), this::createTimefoldResource);
+		if (resource1 == null)
+		{
+			if (resource2 == null)
+			{
+				return null;
+			}
+			else
+			{
+				return valueGetter.apply(resource2);
+			}
+		}
+		else
+		{
+			if (resource2 == null)
+			{
+				return valueGetter.apply(resource1);
+			}
+			else
+			{
+				final T value1 = valueGetter.apply(resource1);
+				final T value2 = valueGetter.apply(resource2);
+				Check.assumeEquals(value1, value2, "Extracted values shall be the same for: ", resource1, resource2, valueGetter);
+				return value1;
+			}
+		}
+	}
+
+	@NonNull
+	private Resource toTimefoldResource(@NonNull final ResourceId resourceId)
+	{
+		return timefoldResources.computeIfAbsent(resourceId, this::createTimefoldResource);
 	}
 
 	private de.metas.calendar.plan_optimizer.domain.Resource createTimefoldResource(final ResourceId resourceId)

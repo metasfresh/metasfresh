@@ -32,6 +32,7 @@ import de.metas.project.budget.BudgetProject;
 import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
@@ -133,7 +134,7 @@ public class WOProjectService
 		return woProjectResourceRepository.getByProjectIds(projectIds);
 	}
 
-	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	public ImmutableSet<ResourceIdAndType> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
 	{
 		return woProjectResourceRepository.getResourceIdsByProjectResourceIds(projectResourceIds);
 	}

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -390,6 +389,27 @@ public interface I_C_Project_WO_Resource
 	String COLUMNNAME_ResolvedHours = "ResolvedHours";
 
 	/**
+	 * Set Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setResourceType (java.lang.String ResourceType);
+
+	/**
+	 * Get Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getResourceType();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ResourceType = new ModelColumn<>(I_C_Project_WO_Resource.class, "ResourceType", null);
+	String COLUMNNAME_ResourceType = "ResourceType";
+
+	/**
 	 * Set Resource.
 	 * Resource
 	 *
@@ -435,6 +455,56 @@ public interface I_C_Project_WO_Resource
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedPersonDurationHours (@Nullable BigDecimal WOPlannedPersonDurationHours);
+
+	/**
+	 * Get TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedPersonDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedPersonDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedPersonDurationHours", null);
+	String COLUMNNAME_WOPlannedPersonDurationHours = "WOPlannedPersonDurationHours";
+
+	/**
+	 * Set TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedResourceDurationHours (@Nullable BigDecimal WOPlannedResourceDurationHours);
+
+	/**
+	 * Get TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedResourceDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedResourceDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedResourceDurationHours", null);
+	String COLUMNNAME_WOPlannedResourceDurationHours = "WOPlannedResourceDurationHours";
 
 	/**
 	 * Set Test facility group.

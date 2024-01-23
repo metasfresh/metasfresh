@@ -1,7 +1,7 @@
 package de.metas.project.workorder.calendar;
 
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,7 +14,7 @@ import java.time.Instant;
 @Builder
 public class WOProjectResourceCalendarQuery
 {
-	@NonNull @Builder.Default InSetPredicate<ResourceId> resourceIds = InSetPredicate.any();
+	@NonNull @Builder.Default InSetPredicate<ResourceIdAndType> resourceIds = InSetPredicate.any();
 	@NonNull @Builder.Default InSetPredicate<ProjectId> projectIds = InSetPredicate.any();
 
 	@Nullable Instant startDate;

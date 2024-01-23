@@ -39,7 +39,7 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.organization.IOrgDAO;
-import de.metas.product.ResourceId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.ResourceGroupId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
@@ -225,10 +225,10 @@ public class CalendarRestController
 	@Nullable
 	private JSONLookupValue toJSONLookupValue(@NonNull final CalendarResourceId calendarResourceId, @NonNull final String adLanguage)
 	{
-		final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
-		if (resourceId != null)
+		final ResourceIdAndType resourceIdAndType = ResourceIdAndType.ofCalendarResourceIdOrNull(calendarResourceId);
+		if (resourceIdAndType != null)
 		{
-			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceId), adLanguage);
+			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceIdAndType.getResourceId()), adLanguage);
 		}
 
 		final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);

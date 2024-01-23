@@ -31,11 +31,11 @@ import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,24 +43,26 @@ import java.util.Optional;
 public class CalendarResourceId
 {
 	private final String type;
-	private final int repoId;
+	@Getter private final String localIdPart;
 
 	private static final Splitter CSV_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
-	private CalendarResourceId(@NonNull final String type, final int repoId)
+	private CalendarResourceId(@NonNull final String type, @NonNull final String localIdPart)
 	{
 		final String typeNorm = StringUtils.trimBlankToNull(type);
 		if (typeNorm == null)
 		{
 			throw new AdempiereException("Invalid CalendarResourceId: type shall not be blank");
 		}
-		if (repoId <= 0)
+
+		final String localIdPartNorm = StringUtils.trimBlankToNull(localIdPart);
+		if (localIdPartNorm == null)
 		{
-			throw new AdempiereException("Invalid CalendarResourceId: repoId shall be positive");
+			throw new AdempiereException("Invalid CalendarResourceId: localIdPart shall not be blank");
 		}
 
 		this.type = typeNorm;
-		this.repoId = repoId;
+		this.localIdPart = localIdPartNorm;
 	}
 
 	/**
@@ -71,15 +73,10 @@ public class CalendarResourceId
 	{
 		try
 		{
-			final List<String> parts = Splitter.on("-").splitToList(string);
-			if (parts.size() != 2)
-			{
-				throw new AdempiereException("Expected 2 parts only but got " + parts);
-			}
-
-			final String type = parts.get(0);
-			final int repoId = Integer.parseInt(parts.get(1));
-			return new CalendarResourceId(type, repoId);
+			final int idx = string.indexOf("-");
+			final String type = string.substring(0, idx);
+			final String localIdPart = string.substring(idx + 1);
+			return ofTypeAndLocalIdPart(type, localIdPart);
 		}
 		catch (final Exception ex)
 		{
@@ -95,15 +92,21 @@ public class CalendarResourceId
 			return Optional.empty();
 		}
 
-		return CSV_SPLITTER.splitToStream(stringNorm)
+		return CSV_SPLITTER.splitToList(stringNorm)
+				.stream()
 				.map(CalendarResourceId::ofString)
 				.collect(GuavaCollectors.toOptionalImmutableSet());
+	}
+
+	public static CalendarResourceId ofTypeAndLocalIdPart(@NonNull final String type, @NonNull final String localIdPart)
+	{
+		return new CalendarResourceId(type, localIdPart);
 	}
 
 	@JsonValue
 	public String getAsString()
 	{
-		return type + "-" + repoId;
+		return type + "-" + localIdPart;
 	}
 
 	@Deprecated
@@ -117,7 +120,7 @@ public class CalendarResourceId
 
 	public static <T extends RepoIdAware> CalendarResourceId ofRepoId(@NonNull final T id)
 	{
-		return new CalendarResourceId(extractType(id.getClass()), id.getRepoId());
+		return ofTypeAndLocalIdPart(extractType(id.getClass()), String.valueOf(id.getRepoId()));
 	}
 
 	@Nullable
@@ -130,23 +133,36 @@ public class CalendarResourceId
 
 	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)
 	{
-		if (!Objects.equals(this.type, extractType(clazz)))
+		final T id = toRepoIdOrNull(clazz);
+		if (id == null)
 		{
 			throw new AdempiereException("Cannot convert " + this + " to " + clazz);
 		}
 
-		return RepoIdAwares.ofRepoId(repoId, clazz);
+		return id;
 	}
 
 	@Nullable
 	public <T extends RepoIdAware> T toRepoIdOrNull(@NonNull final Class<T> clazz)
 	{
-		if (!Objects.equals(this.type, extractType(clazz)))
+		if (!isType(extractType(clazz)))
 		{
 			return null;
 		}
 
-		return RepoIdAwares.ofRepoId(repoId, clazz);
+		return RepoIdAwares.ofObject(localIdPart, clazz);
 	}
 
+	public void assertType(@NonNull final String expectedType)
+	{
+		if (!isType(expectedType))
+		{
+			throw new AdempiereException("Expected type `" + expectedType + "` for " + this);
+		}
+	}
+
+	public boolean isType(@NonNull final String expectedType)
+	{
+		return Objects.equals(this.type, expectedType);
+	}
 }

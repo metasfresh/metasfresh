@@ -10,10 +10,10 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
@@ -210,7 +210,7 @@ public final class WOProjectsCalendarQueryExecutor
 		return dateRange != null && dateRange.isOverlappingWith(startDate, endDate);
 	}
 
-	public static InSetPredicate<ResourceId> getResourceIdsPredicate(
+	public static InSetPredicate<ResourceIdAndType> getResourceIdsPredicate(
 			@NonNull final InSetPredicate<CalendarResourceId> calendarResourceIds,
 			@NonNull final ResourceService resourceService)
 	{
@@ -224,7 +224,7 @@ public final class WOProjectsCalendarQueryExecutor
 		}
 		else
 		{
-			final HashSet<ResourceId> resourceIdsSet = new HashSet<>();
+			final HashSet<ResourceIdAndType> resourceIdsSet = new HashSet<>();
 			final HashSet<ResourceGroupId> resourceGroupIdsSet = new HashSet<>();
 			for (final CalendarResourceId calendarResourceId : calendarResourceIds.toSet())
 			{
@@ -233,7 +233,7 @@ public final class WOProjectsCalendarQueryExecutor
 					continue;
 				}
 
-				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
+				final ResourceIdAndType resourceId = ResourceIdAndType.ofCalendarResourceIdOrNull(calendarResourceId);
 				if (resourceId != null)
 				{
 					resourceIdsSet.add(resourceId);
@@ -248,7 +248,10 @@ public final class WOProjectsCalendarQueryExecutor
 				}
 			}
 
-			resourceIdsSet.addAll(resourceService.getActiveResourceIdsByGroupIds(resourceGroupIdsSet));
+			resourceService.getActiveResourceIdsByGroupIds(resourceGroupIdsSet)
+					.stream()
+					.flatMap(ResourceIdAndType::streamForAllTypes)
+					.forEach(resourceIdsSet::add);
 
 			return InSetPredicate.only(resourceIdsSet);
 		}

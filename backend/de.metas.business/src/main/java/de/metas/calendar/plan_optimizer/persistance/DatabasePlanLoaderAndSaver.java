@@ -8,7 +8,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlanEditor;
@@ -16,6 +15,7 @@ import de.metas.project.workorder.calendar.WOProjectSimulationService;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
 import de.metas.util.collections.CollectionUtils;
@@ -117,7 +117,7 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 			final WOProjectSimulationPlan newSimulationPlan = editor.toNewSimulationPlan();
 			woProjectSimulationService.savePlan(newSimulationPlan);
 
-			final ImmutableSet<ResourceId> affectedResourceIds = editor.getAffectedResourceIds();
+			final ImmutableSet<ResourceIdAndType> affectedResourceIds = editor.getAffectedResourceIds();
 			if (!affectedResourceIds.isEmpty())
 			{
 				woProjectConflictService.checkSimulationConflicts(newSimulationPlan, affectedResourceIds);

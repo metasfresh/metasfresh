@@ -9,6 +9,7 @@ import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
 import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.util.InSetPredicate;
@@ -49,7 +50,7 @@ public class WOProjectConflictService
 
 	public ResourceAllocationConflicts getActualAndSimulation(
 			@Nullable final SimulationPlanId simulationId,
-			@NonNull final InSetPredicate<ResourceId> resourceIds)
+			@NonNull final InSetPredicate<ResourceIdAndType> resourceIds)
 	{
 		if (resourceIds.isNone())
 		{
@@ -75,7 +76,7 @@ public class WOProjectConflictService
 		return conflictRepository.getActualAndSimulation(simulationId, activeProjectIds, projectResourceIds);
 	}
 
-	public void checkAllConflicts(@NonNull Collection<ResourceId> resourceIds)
+	public void checkAllConflicts(@NonNull Collection<ResourceIdAndType> resourceIds)
 	{
 		newConflictsChecker()
 				.resourceIds(resourceIds)
@@ -83,7 +84,7 @@ public class WOProjectConflictService
 				.execute();
 	}
 
-	public void checkAllConflictsExcludingSimulation(@NonNull Set<ResourceId> resourceIds, @NonNull final SimulationPlanId excludeSimulationId)
+	public void checkAllConflictsExcludingSimulation(@NonNull Set<ResourceIdAndType> resourceIds, @NonNull final SimulationPlanId excludeSimulationId)
 	{
 		newConflictsChecker()
 				.resourceIds(resourceIds)
@@ -94,7 +95,7 @@ public class WOProjectConflictService
 
 	public void checkSimulationConflicts(
 			@NonNull final WOProjectSimulationPlan onlySimulation,
-			@NonNull Set<ResourceId> resourceIds)
+			@NonNull Set<ResourceIdAndType> resourceIds)
 	{
 		newConflictsChecker()
 				.resourceIds(resourceIds)
