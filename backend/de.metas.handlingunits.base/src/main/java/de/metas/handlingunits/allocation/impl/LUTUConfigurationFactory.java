@@ -365,8 +365,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, lutuConfiguration);
-		final boolean honorIsCalculated = true;
-		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, honorIsCalculated);
+		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, true);
 
 		return lutuConfigurationNew;
 	}

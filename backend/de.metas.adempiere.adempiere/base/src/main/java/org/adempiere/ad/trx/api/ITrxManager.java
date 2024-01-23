@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
@@ -335,12 +337,12 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * @return true if transaction is not null and it's active (e.g. not already committed/closed)
 	 */
-	default boolean isActive(final ITrx trx)
+	default boolean isActive(@Nullable final ITrx trx)
 	{
-		return !isNull(trx) && trx.isActive();
+		return trx != null && !isNull(trx) && trx.isActive();
 	}
 
-	default boolean isActive(final String trxName)
+	default boolean isActive(@Nullable final String trxName)
 	{
 		if (isNull(trxName))
 		{
@@ -504,4 +506,21 @@ public interface ITrxManager extends ISingletonService
 	void setDebugConnectionBackendId(boolean debugConnectionBackendId);
 
 	boolean isDebugConnectionBackendId();
+
+	default <T> void accumulateAndProcessAfterCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
+	{
+		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (isActive(trx))
+		{
+			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
+		}
+		else
+		{
+			afterCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+	}
+
 }

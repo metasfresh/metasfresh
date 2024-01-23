@@ -6,10 +6,8 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Services;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -43,17 +41,9 @@ public class C_OrderLine
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-	@Init
-	public void init()
-	{
-		CopyRecordFactory.enableForTableName(I_C_OrderLine.Table_Name);
-	}
-
 	/**
 	 * Method is fired before an order line is deleted. It deletes all {@link I_C_Order_Line_Alloc} records referencing the order line and sets <code>Processed='N'</code> for all {@link I_C_OLCand}s
 	 * that were originally aggregated into the order line.
-	 *
-	 * @param ol
 	 */
 	// 03472
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

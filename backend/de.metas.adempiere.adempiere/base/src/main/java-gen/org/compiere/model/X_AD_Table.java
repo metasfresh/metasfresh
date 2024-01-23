@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -749526082L;
+	private static final long serialVersionUID = -88752471L;
 
     /** Standard Constructor */
     public X_AD_Table (final Properties ctx, final int AD_Table_ID, @Nullable final String trxName)
@@ -144,6 +144,29 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
+	/** 
+	 * CloningEnabled AD_Reference_ID=541757
+	 * Reference name: AD_Table_CloningEnabled
+	 */
+	public static final int CLONINGENABLED_AD_Reference_ID=541757;
+	/** Enabled = E */
+	public static final String CLONINGENABLED_Enabled = "E";
+	/** Disabled = D */
+	public static final String CLONINGENABLED_Disabled = "D";
+	/** Auto = A */
+	public static final String CLONINGENABLED_Auto = "A";
+	@Override
+	public void setCloningEnabled (final java.lang.String CloningEnabled)
+	{
+		set_Value (COLUMNNAME_CloningEnabled, CloningEnabled);
+	}
+
+	@Override
+	public java.lang.String getCloningEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_CloningEnabled);
+	}
+
 	@Override
 	public void setCopyColumnsFromTable (final @Nullable java.lang.String CopyColumnsFromTable)
 	{
@@ -166,6 +189,29 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DownlineCloningStrategy AD_Reference_ID=541755
+	 * Reference name: AD_Table_DownlineCloningStrategy
+	 */
+	public static final int DOWNLINECLONINGSTRATEGY_AD_Reference_ID=541755;
+	/** Skip = S */
+	public static final String DOWNLINECLONINGSTRATEGY_Skip = "S";
+	/** Auto = A */
+	public static final String DOWNLINECLONINGSTRATEGY_Auto = "A";
+	/** OnlyIncluded = I */
+	public static final String DOWNLINECLONINGSTRATEGY_OnlyIncluded = "I";
+	@Override
+	public void setDownlineCloningStrategy (final java.lang.String DownlineCloningStrategy)
+	{
+		set_Value (COLUMNNAME_DownlineCloningStrategy, DownlineCloningStrategy);
+	}
+
+	@Override
+	public java.lang.String getDownlineCloningStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_DownlineCloningStrategy);
 	}
 
 	/** 
@@ -447,5 +493,28 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public int getWEBUI_View_PageLength() 
 	{
 		return get_ValueAsInt(COLUMNNAME_WEBUI_View_PageLength);
+	}
+
+	/** 
+	 * WhenChildCloningStrategy AD_Reference_ID=541756
+	 * Reference name: AD_Table_CloningStrategy
+	 */
+	public static final int WHENCHILDCLONINGSTRATEGY_AD_Reference_ID=541756;
+	/** Skip = S */
+	public static final String WHENCHILDCLONINGSTRATEGY_Skip = "S";
+	/** AllowCloning = A */
+	public static final String WHENCHILDCLONINGSTRATEGY_AllowCloning = "A";
+	/** AlwaysInclude = I */
+	public static final String WHENCHILDCLONINGSTRATEGY_AlwaysInclude = "I";
+	@Override
+	public void setWhenChildCloningStrategy (final java.lang.String WhenChildCloningStrategy)
+	{
+		set_Value (COLUMNNAME_WhenChildCloningStrategy, WhenChildCloningStrategy);
+	}
+
+	@Override
+	public java.lang.String getWhenChildCloningStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_WhenChildCloningStrategy);
 	}
 }
