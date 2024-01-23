@@ -358,13 +358,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: prepare
+      - name: prepare-settings
         env:
-          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
-          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
         run: |
-          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
-          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
       - name: build-procurement-backend
         run: |
           docker buildx build \
