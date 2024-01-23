@@ -9,8 +9,10 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ResourceId;
+import de.metas.project.ProjectConstants;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.resource.ResourceAndPersonDateRange;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
@@ -38,8 +40,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 
 public class WOProjectSimulationPlanEditor
 {
@@ -88,7 +88,7 @@ public class WOProjectSimulationPlanEditor
 
 	public void changeResourceDateRangeAndShiftSteps(
 			@NonNull final WOProjectResourceId projectResourceId,
-			@NonNull final CalendarDateRange newDateRange,
+			@NonNull final ResourceAndPersonDateRange newDateRange,
 			@NonNull final WOProjectStepId stepId)
 	{
 		changeResourceDateRange(projectResourceId, newDateRange, stepId);
@@ -99,7 +99,7 @@ public class WOProjectSimulationPlanEditor
 
 	public void changeResourceDateRange(
 			@NonNull final WOProjectResourceId projectResourceId,
-			@NonNull final CalendarDateRange newDateRange,
+			@NonNull final ResourceAndPersonDateRange newDateRange,
 			@NonNull final WOProjectStepId stepId)
 	{
 		changeResource(projectResourceId, newDateRange);
@@ -121,6 +121,12 @@ public class WOProjectSimulationPlanEditor
 			throw new AdempiereException("Project " + projectId + " is not in scope");
 		}
 		return project;
+	}
+
+	private Instant getProjectStartDate(final @NonNull ProjectId projectId)
+	{
+		return Optional.ofNullable(getProjectById(projectId).getDateContract())
+				.orElse(SystemTime.asInstant());
 	}
 
 	public WOProjectStep getStepById(final @NonNull WOProjectStepId stepId)
@@ -217,7 +223,7 @@ public class WOProjectSimulationPlanEditor
 
 	private void changeResource(
 			@NonNull final WOProjectResourceId projectResourceId,
-			@NonNull final CalendarDateRange newDateRange)
+			@NonNull final ResourceAndPersonDateRange newDateRange)
 	{
 		simulationProjectResourcesById.compute(
 				projectResourceId,
@@ -304,13 +310,13 @@ public class WOProjectSimulationPlanEditor
 
 		for (final WOProjectResource projectResource : getProjectResourcesByStepId(stepId))
 		{
-			final CalendarDateRange dateRange = projectResource.getDateRange();
+			final ResourceAndPersonDateRange dateRange = projectResource.getDateRange();
 			if (dateRange == null)
 			{
 				continue;
 			}
 
-			final CalendarDateRange newDateRange = dateRange.plus(offset);
+			final ResourceAndPersonDateRange newDateRange = dateRange.plus(offset);
 			changeResource(projectResource.getWoProjectResourceId(), newDateRange);
 		}
 	}
@@ -324,7 +330,7 @@ public class WOProjectSimulationPlanEditor
 	}
 
 	@NonNull
-	public CalendarDateRange suggestDateRange(@NonNull final WOProjectStepId stepId)
+	public ResourceAndPersonDateRange suggestDateRange(@NonNull final WOProjectStepId stepId)
 	{
 		final WOProjectStep step = getStepById(stepId);
 
@@ -338,7 +344,7 @@ public class WOProjectSimulationPlanEditor
 				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
 				.findFirst()
 				.map(WOProjectStep::getDateRange)
-				.map(CalendarDateRange::getEndDate)
+				.map(ResourceAndPersonDateRange::getEndDate)
 				.orElse(null);
 
 		final Instant firstAfterStepDate = getStepsAfterInOrder(stepId)
@@ -346,7 +352,7 @@ public class WOProjectSimulationPlanEditor
 				.filter(woProjectStep -> woProjectStep.getDateRange() != null)
 				.findFirst()
 				.map(WOProjectStep::getDateRange)
-				.map(CalendarDateRange::getStartDate)
+				.map(ResourceAndPersonDateRange::getStartDate)
 				.orElse(null);
 
 		final Duration stepDuration = computeStepDuration(stepId);
@@ -356,7 +362,7 @@ public class WOProjectSimulationPlanEditor
 			return getDefaultCalendarDateRange(stepId.getProjectId(), stepDuration);
 		}
 
-		final CalendarDateRange proposedDateRange = Optional.ofNullable(lastBeforeStepDate)
+		final ResourceAndPersonDateRange proposedDateRange = Optional.ofNullable(lastBeforeStepDate)
 				.map(startDate -> CalendarDateRange.ofStartDate(startDate, stepDuration))
 				.orElseGet(() -> CalendarDateRange.ofEndDate(firstAfterStepDate, stepDuration));
 
@@ -373,14 +379,24 @@ public class WOProjectSimulationPlanEditor
 	}
 
 	@NonNull
-	private CalendarDateRange getDefaultCalendarDateRange(@NonNull ProjectId projectId, @NonNull final Duration stepDuration)
+	private ResourceAndPersonDateRange getDefaultCalendarDateRange(@NonNull ProjectId projectId, @NonNull final WOProjectStep step)
 	{
-		final Instant defaultStartDate = Optional.ofNullable(getProjectById(projectId).getDateContract())
-				.orElse(SystemTime.asInstant());
+		final Instant projectStartDate = getProjectStartDate(projectId);
 
-		return CalendarDateRange.builder()
-				.startDate(defaultStartDate)
-				.endDate(defaultStartDate.plus(stepDuration))
+		Duration woPlannedResourceDuration = step.getWOPlannedResourceDuration();
+		if(woPlannedResourceDuration.toSeconds() <= 0)
+		{
+			woPlannedResourceDuration = ProjectConstants.DEFAULT_DURATION;
+		}
+		final CalendarDateRange resourceDateRange = CalendarDateRange.ofStartDate(projectStartDate, woPlannedResourceDuration);
+
+		final CalendarDateRange personDateRange = step.getWOPlannedPersonDuration()
+				.map(duration -> CalendarDateRange.ofStartDate(projectStartDate, duration))
+				.orElse(null);
+
+		return ResourceAndPersonDateRange.builder()
+				.resourceDateRange(resourceDateRange)
+				.personDateRange(personDateRange)
 				.build();
 	}
 
@@ -388,15 +404,7 @@ public class WOProjectSimulationPlanEditor
 	private Duration computeStepDuration(@NonNull final WOProjectStepId stepId)
 	{
 		final WOProjectStep step = getStepById(stepId);
-		final int durationHours = Math.max(step.getWoPlannedResourceDurationHours(), step.getWoPlannedPersonDurationHours());
-		final Duration duration = Duration.ofHours(durationHours);
-
-		if (duration.isZero())
-		{
-			return DEFAULT_DURATION;
-		}
-
-		return duration;
+		return step.getMinDuration();
 	}
 
 	private static void validateStepCanBeShifted(@NonNull final WOProjectStep step)

@@ -211,6 +211,31 @@ public interface I_C_Project_WO_Resource_Simulation
 	String COLUMNNAME_C_Project_WO_Resource_Simulation_ID = "C_Project_WO_Resource_Simulation_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Simulation Plan.
 	 *
 	 * <br>Type: Search
@@ -236,29 +261,88 @@ public interface I_C_Project_WO_Resource_Simulation
 	String COLUMNNAME_C_SimulationPlan_ID = "C_SimulationPlan_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Set Assign From (HR).
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	void setHR_AssignDateFrom (@Nullable java.sql.Timestamp HR_AssignDateFrom);
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Assign From (HR).
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	@Nullable java.sql.Timestamp getHR_AssignDateFrom();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_HR_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "HR_AssignDateFrom", null);
+	String COLUMNNAME_HR_AssignDateFrom = "HR_AssignDateFrom";
+
+	/**
+	 * Set HR Zuordnung von (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHR_AssignDateFrom_Prev (@Nullable java.sql.Timestamp HR_AssignDateFrom_Prev);
+
+	/**
+	 * Get HR Zuordnung von (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getHR_AssignDateFrom_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_HR_AssignDateFrom_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "HR_AssignDateFrom_Prev", null);
+	String COLUMNNAME_HR_AssignDateFrom_Prev = "HR_AssignDateFrom_Prev";
+
+	/**
+	 * Set Assign To (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHR_AssignDateTo (@Nullable java.sql.Timestamp HR_AssignDateTo);
+
+	/**
+	 * Get Assign To (HR).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getHR_AssignDateTo();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_HR_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "HR_AssignDateTo", null);
+	String COLUMNNAME_HR_AssignDateTo = "HR_AssignDateTo";
+
+	/**
+	 * Set HR Zuordnung bis (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHR_AssignDateTo_Prev (@Nullable java.sql.Timestamp HR_AssignDateTo_Prev);
+
+	/**
+	 * Get HR Zuordnung bis (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getHR_AssignDateTo_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_HR_AssignDateTo_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "HR_AssignDateTo_Prev", null);
+	String COLUMNNAME_HR_AssignDateTo_Prev = "HR_AssignDateTo_Prev";
 
 	/**
 	 * Set Active.
@@ -345,6 +429,90 @@ public interface I_C_Project_WO_Resource_Simulation
 
 	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Processed = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Assign From (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateFrom (@Nullable java.sql.Timestamp Resource_AssignDateFrom);
+
+	/**
+	 * Get Assign From (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateFrom();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Resource_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Resource_AssignDateFrom", null);
+	String COLUMNNAME_Resource_AssignDateFrom = "Resource_AssignDateFrom";
+
+	/**
+	 * Set Ressource Zuordnung von (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateFrom_Prev (@Nullable java.sql.Timestamp Resource_AssignDateFrom_Prev);
+
+	/**
+	 * Get Ressource Zuordnung von (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateFrom_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Resource_AssignDateFrom_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Resource_AssignDateFrom_Prev", null);
+	String COLUMNNAME_Resource_AssignDateFrom_Prev = "Resource_AssignDateFrom_Prev";
+
+	/**
+	 * Set Assign To (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateTo (@Nullable java.sql.Timestamp Resource_AssignDateTo);
+
+	/**
+	 * Get Assign To (Resource).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateTo();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Resource_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Resource_AssignDateTo", null);
+	String COLUMNNAME_Resource_AssignDateTo = "Resource_AssignDateTo";
+
+	/**
+	 * Set Ressource Zuordnung bis (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setResource_AssignDateTo_Prev (@Nullable java.sql.Timestamp Resource_AssignDateTo_Prev);
+
+	/**
+	 * Get Ressource Zuordnung bis (zuvor).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getResource_AssignDateTo_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Resource_AssignDateTo_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Resource_AssignDateTo_Prev", null);
+	String COLUMNNAME_Resource_AssignDateTo_Prev = "Resource_AssignDateTo_Prev";
 
 	/**
 	 * Get Updated.

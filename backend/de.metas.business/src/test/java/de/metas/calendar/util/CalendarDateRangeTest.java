@@ -51,6 +51,42 @@ class CalendarDateRangeTest
 	}
 
 	@Nested
+	class span_with2Params
+	{
+		@Test
+		void null_bothParams() {assertThat(CalendarDateRange.span(null, null)).isNull();}
+
+		@Test
+		void both_firstParamNull()
+		{
+			final CalendarDateRange range = allDay(1, 2);
+			assertThat(CalendarDateRange.span(null, range)).isSameAs(range);
+		}
+
+		@Test
+		void null_firstParam()
+		{
+			final CalendarDateRange range = allDay(1, 2);
+			assertThat(CalendarDateRange.span(range, null)).isSameAs(range);
+		}
+
+		@Test
+		void null_secondParam()
+		{
+			final CalendarDateRange range = allDay(1, 2);
+			assertThat(CalendarDateRange.span(range, null)).isSameAs(range);
+		}
+
+		@Test
+		void disjunctIntervals()
+		{
+			assertThat(CalendarDateRange.span(allDay(1, 2), allDay(3, 4)))
+					.isEqualTo(allDay(1, 4));
+		}
+
+	}
+
+	@Nested
 	class span
 	{
 		@Test

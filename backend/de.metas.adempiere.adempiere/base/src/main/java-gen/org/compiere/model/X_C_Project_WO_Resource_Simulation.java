@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO implements I_C_Project_WO_Resource_Simulation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -864211424L;
+	private static final long serialVersionUID = 640356656L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource_Simulation (final Properties ctx, final int C_Project_WO_Resource_Simulation_ID, @Nullable final String trxName)
@@ -167,6 +167,54 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setHR_AssignDateFrom (final @Nullable java.sql.Timestamp HR_AssignDateFrom)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateFrom, HR_AssignDateFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateFrom);
+	}
+
+	@Override
+	public void setHR_AssignDateFrom_Prev (final @Nullable java.sql.Timestamp HR_AssignDateFrom_Prev)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateFrom_Prev, HR_AssignDateFrom_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateFrom_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateFrom_Prev);
+	}
+
+	@Override
+	public void setHR_AssignDateTo (final @Nullable java.sql.Timestamp HR_AssignDateTo)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateTo, HR_AssignDateTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateTo);
+	}
+
+	@Override
+	public void setHR_AssignDateTo_Prev (final @Nullable java.sql.Timestamp HR_AssignDateTo_Prev)
+	{
+		set_Value (COLUMNNAME_HR_AssignDateTo_Prev, HR_AssignDateTo_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getHR_AssignDateTo_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_HR_AssignDateTo_Prev);
+	}
+
+	@Override
 	public void setIsAllDay (final boolean IsAllDay)
 	{
 		set_Value (COLUMNNAME_IsAllDay, IsAllDay);
@@ -200,5 +248,53 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setResource_AssignDateFrom (final @Nullable java.sql.Timestamp Resource_AssignDateFrom)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateFrom, Resource_AssignDateFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateFrom);
+	}
+
+	@Override
+	public void setResource_AssignDateFrom_Prev (final @Nullable java.sql.Timestamp Resource_AssignDateFrom_Prev)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateFrom_Prev, Resource_AssignDateFrom_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateFrom_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateFrom_Prev);
+	}
+
+	@Override
+	public void setResource_AssignDateTo (final @Nullable java.sql.Timestamp Resource_AssignDateTo)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateTo, Resource_AssignDateTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateTo);
+	}
+
+	@Override
+	public void setResource_AssignDateTo_Prev (final @Nullable java.sql.Timestamp Resource_AssignDateTo_Prev)
+	{
+		set_Value (COLUMNNAME_Resource_AssignDateTo_Prev, Resource_AssignDateTo_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getResource_AssignDateTo_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Resource_AssignDateTo_Prev);
 	}
 }

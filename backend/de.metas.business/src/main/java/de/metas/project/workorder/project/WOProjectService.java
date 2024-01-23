@@ -170,7 +170,7 @@ public class WOProjectService
 			final ImmutableList<CalendarDateRange> resourceDateRanges = resourcesByProjectId
 					.getByProjectId(projectStepId.getProjectId())
 					.streamByStepId(projectStepId)
-					.map(WOProjectResource::getDateRange)
+					.map(WOProjectResource::getEnclosingDateRange)
 					.filter(Objects::nonNull)
 					.distinct()
 					.collect(ImmutableList.toImmutableList());

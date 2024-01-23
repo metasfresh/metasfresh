@@ -318,23 +318,6 @@ public class WOProjectResourceRepository
 	{
 		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
 
-		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
-		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
-
-		final CalendarDateRange dateRange;
-		if (assignDateTo == null || assignDateFrom == null)
-		{
-			dateRange = null;
-		}
-		else
-		{
-			dateRange = CalendarDateRange.builder()
-					.startDate(assignDateFrom)
-					.endDate(assignDateTo)
-					.allDay(resourceRecord.isAllDay())
-					.build();
-		}
-
 		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
 
 		return WOProjectResource.builder()
@@ -345,7 +328,7 @@ public class WOProjectResourceRepository
 				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
 
-				.dateRange(dateRange)
+				.dateRange(extractDateRange(resourceRecord))
 
 				.isActive(resourceRecord.isActive())
 
@@ -356,6 +339,65 @@ public class WOProjectResourceRepository
 				.description(StringUtils.trimBlankToNull(resourceRecord.getDescription()))
 				.resolvedHours(Duration.ofHours(resourceRecord.getResolvedHours()))
 				.build();
+	}
+
+	@Nullable
+	private static ResourceAndPersonDateRange extractDateRange(final @NonNull I_C_Project_WO_Resource resourceRecord)
+	{
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
+
+		if (assignDateTo == null || assignDateFrom == null)
+		{
+			return null;
+		}
+		else
+		{
+			return ResourceAndPersonDateRange.builder()
+					.resourceDateRange(extractResourceDateRange(resourceRecord))
+					.personDateRange(extractPersonDateRange(resourceRecord))
+					.build();
+		}
+	}
+
+	@Nullable
+	private static CalendarDateRange extractResourceDateRange(final @NonNull I_C_Project_WO_Resource resourceRecord)
+	{
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getResource_AssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getResource_AssignDateTo());
+
+		if (assignDateTo == null || assignDateFrom == null)
+		{
+			return null;
+		}
+		else
+		{
+			return CalendarDateRange.builder()
+					.startDate(assignDateFrom)
+					.endDate(assignDateTo)
+					.allDay(resourceRecord.isAllDay())
+					.build();
+		}
+	}
+
+	@Nullable
+	private static CalendarDateRange extractPersonDateRange(final @NonNull I_C_Project_WO_Resource resourceRecord)
+	{
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getHR_AssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getHR_AssignDateTo());
+
+		if (assignDateTo == null || assignDateFrom == null)
+		{
+			return null;
+		}
+		else
+		{
+			return CalendarDateRange.builder()
+					.startDate(assignDateFrom)
+					.endDate(assignDateTo)
+					.allDay(resourceRecord.isAllDay())
+					.build();
+		}
 	}
 
 	@Nullable
@@ -402,7 +444,7 @@ public class WOProjectResourceRepository
 			resourceRecord.setC_Project_ID(ProjectId.toRepoId(projectResource.getWoProjectStepId().getProjectId()));
 		}
 
-		resourceRecord.setIsActive(Boolean.TRUE.equals(projectResource.getIsActive()));
+		resourceRecord.setIsActive(projectResource.isActive());
 		resourceRecord.setIsAllDay(projectResource.isAllDay());
 
 		resourceRecord.setAssignDateFrom(projectResource.getStartDate()

@@ -305,12 +305,8 @@ public class WorkOrderProjectStepRestService
 				.description(woProjectStep.getDescription())
 				.seqNo(woProjectStep.getSeqNo())
 
-				.dateStart(woProjectStep.getStartDate()
-								   .map(startDate -> TimeUtil.asLocalDate(startDate, zoneId))
-								   .orElse(null))
-				.dateEnd(woProjectStep.getEndDate()
-								 .map(endDate -> TimeUtil.asLocalDate(endDate, zoneId))
-								 .orElse(null))
+				.dateStart(woProjectStep.getStartDate().map(startDate -> TimeUtil.asLocalDate(startDate, zoneId)).orElse(null))
+				.dateEnd(woProjectStep.getEndDate().map(endDate -> TimeUtil.asLocalDate(endDate, zoneId)).orElse(null))
 
 				.externalId(ExternalId.toValue(woProjectStep.getExternalId()))
 				.woPartialReportDate(TimeUtil.asLocalDate(woProjectStep.getWoPartialReportDate(), zoneId))
@@ -669,7 +665,7 @@ public class WorkOrderProjectStepRestService
 	}
 
 	@Nullable
-	private CalendarDateRange getDateRange(
+	private static CalendarDateRange getDateRange(
 			@NonNull final ZoneId zoneId,
 			@NonNull final JsonWorkOrderStepUpsertItemRequest request,
 			@NonNull final WOProjectStep existingWOProjectStep)

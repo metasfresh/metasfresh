@@ -14,6 +14,7 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceAndPersonDateRange;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
@@ -206,7 +207,7 @@ public final class WOProjectsCalendarQueryExecutor
 			return true;
 		}
 
-		final CalendarDateRange dateRange = projectResource.getDateRange();
+		final ResourceAndPersonDateRange dateRange = projectResource.getDateRange();
 		return dateRange != null && dateRange.isOverlappingWith(startDate, endDate);
 	}
 

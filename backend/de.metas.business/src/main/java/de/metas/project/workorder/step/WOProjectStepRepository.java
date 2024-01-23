@@ -197,12 +197,8 @@ public class WOProjectStepRepository
 			record.setDescription(step.getDescription());
 			record.setExternalId(ExternalId.toValue(step.getExternalId()));
 
-			record.setDateEnd(step.getEndDate()
-					.map(TimeUtil::asTimestamp)
-					.orElse(null));
-			record.setDateStart(step.getStartDate()
-					.map(TimeUtil::asTimestamp)
-					.orElse(null));
+			record.setDateEnd(step.getEndDate().map(TimeUtil::asTimestamp).orElse(null));
+			record.setDateStart(step.getStartDate().map(TimeUtil::asTimestamp).orElse(null));
 
 			record.setWOPartialReportDate(TimeUtil.asTimestamp(step.getWoPartialReportDate()));
 			record.setWOPlannedResourceDurationHours(NumberUtils.asInt(step.getWoPlannedResourceDurationHours(), -1));

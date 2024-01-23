@@ -24,7 +24,9 @@ package de.metas.project.workorder.step;
 
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectConstants;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.ResourceAndPersonDateRange;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,7 +45,7 @@ public class WOProjectStep
 	@NonNull String name;
 	@NonNull Integer seqNo;
 	@NonNull OrgId orgId;
-	@Nullable CalendarDateRange dateRange;
+	@Nullable ResourceAndPersonDateRange dateRange;
 	@Nullable String description;
 	@Nullable ExternalId externalId;
 	@Nullable Instant woPartialReportDate;
@@ -66,14 +68,14 @@ public class WOProjectStep
 	public Optional<Instant> getStartDate()
 	{
 		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::getStartDate);
+				.map(ResourceAndPersonDateRange::getStartDate);
 	}
 
 	@NonNull
 	public Optional<Instant> getEndDate()
 	{
 		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::getEndDate)
+				.map(ResourceAndPersonDateRange::getEndDate)
 				.filter(Instant.MAX::isAfter);
 	}
 
@@ -82,10 +84,32 @@ public class WOProjectStep
 		return WOStepStatus.INTESTING.equals(woStepStatus);
 	}
 
+	@NonNull
 	public Duration getWOPlannedResourceDuration()
 	{
 		return woPlannedResourceDurationHours != null
 				? Duration.ofHours(woPlannedResourceDurationHours)
 				: Duration.ZERO;
+	}
+
+	@NonNull
+	public Optional<Duration> getWOPlannedPersonDuration()
+	{
+		return woPlannedPersonDurationHours != null && woPlannedPersonDurationHours > 0
+				? Optional.of(Duration.ofHours(woPlannedPersonDurationHours))
+				: Optional.empty();
+	}
+
+	public Duration getMinDuration()
+	{
+		final int durationHours = Math.max(
+				this.woPlannedResourceDurationHours != null ? this.woPlannedResourceDurationHours : 0,
+				this.woPlannedPersonDurationHours != null ? this.woPlannedPersonDurationHours : 0
+		);
+		if (durationHours <= 0)
+		{
+			return ProjectConstants.DEFAULT_DURATION;
+		}
+		return Duration.ofHours(durationHours);
 	}
 }

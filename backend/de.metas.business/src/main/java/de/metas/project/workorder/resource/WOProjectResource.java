@@ -49,9 +49,9 @@ public class WOProjectResource
 	@NonNull OrgId orgId;
 	@NonNull WOProjectResourceId woProjectResourceId;
 	@NonNull WOProjectStepId woProjectStepId;
-	@Nullable CalendarDateRange dateRange;
+	@Nullable ResourceAndPersonDateRange dateRange;
 	@NonNull ResourceId resourceId;
-	@Nullable Boolean isActive;
+	boolean isActive;
 	@Nullable ProjectId budgetProjectId;
 	@Nullable BudgetProjectResourceId projectResourceBudgetId;
 	@Nullable ExternalId externalId;
@@ -64,7 +64,7 @@ public class WOProjectResource
 			@NonNull final OrgId orgId,
 			@NonNull final WOProjectResourceId woProjectResourceId,
 			@NonNull final WOProjectStepId woProjectStepId,
-			@Nullable final CalendarDateRange dateRange,
+			@Nullable ResourceAndPersonDateRange dateRange,
 			@NonNull final ResourceId resourceId,
 			final boolean isActive,
 			@Nullable final ProjectId budgetProjectId,
@@ -102,7 +102,7 @@ public class WOProjectResource
 		}
 
 		final ImmutableList<CalendarDateRange> dateRanges = projectResources.stream()
-				.map(WOProjectResource::getDateRange)
+				.map(WOProjectResource::getEnclosingDateRange)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
@@ -115,18 +115,22 @@ public class WOProjectResource
 		return woProjectResourceId.getProjectId();
 	}
 
+	@Nullable
+	public CalendarDateRange getEnclosingDateRange()
+	{
+		return dateRange != null ? dateRange.toCalendarDateRange() : null;
+	}
+
 	@NonNull
 	public Optional<Instant> getStartDate()
 	{
-		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::getStartDate);
+		return Optional.ofNullable(dateRange).map(ResourceAndPersonDateRange::getStartDate);
 	}
 
 	@NonNull
 	public Optional<Instant> getEndDate()
 	{
-		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::getEndDate);
+		return Optional.ofNullable(dateRange).map(ResourceAndPersonDateRange::getEndDate);
 	}
 
 	@NonNull
@@ -143,9 +147,7 @@ public class WOProjectResource
 
 	public boolean isAllDay()
 	{
-		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::isAllDay)
-				.orElse(false);
+		return dateRange != null && dateRange.isAllDay();
 	}
 
 	public boolean isNotFullyResolved(@NonNull final WOProjectStep step)

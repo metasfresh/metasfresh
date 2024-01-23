@@ -23,6 +23,7 @@
 package de.metas.calendar.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
@@ -111,8 +112,32 @@ public class CalendarDateRange
 		return plus(duration.negated());
 	}
 
+	@Nullable
+	public static CalendarDateRange span(@Nullable CalendarDateRange range1, @Nullable CalendarDateRange range2)
+	{
+		if (range1 != null)
+		{
+			if (range2 != null)
+			{
+				return span(ImmutableList.of(range1, range2));
+			}
+			else
+			{
+				return range1;
+			}
+		}
+		else if (range2 != null)
+		{
+			return range2;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	/**
-	 * Returns the minimal range that encloses both this range and other.
+	 * Returns the minimal range that encloses all ranges
 	 */
 	public static CalendarDateRange span(@NonNull List<CalendarDateRange> dateRanges)
 	{

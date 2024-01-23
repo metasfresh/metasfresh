@@ -17,7 +17,7 @@ public class WOProjectResourceSimulation
 {
 	@NonNull WOProjectResourceId projectResourceId;
 
-	@NonNull CalendarDateRange dateRange;
+	@NonNull ResourceAndPersonDateRange dateRange;
 
 	boolean isAppliedOnActualData;
 	CalendarDateRange dateRangeBeforeApplying;
@@ -81,6 +81,6 @@ public class WOProjectResourceSimulation
 		@NonNull SimulationPlanId simulationId;
 		@NonNull WOProjectResourceId projectResourceId;
 
-		@NonNull CalendarDateRange dateRange;
+		@NonNull ResourceAndPersonDateRange dateRange;
 	}
 }

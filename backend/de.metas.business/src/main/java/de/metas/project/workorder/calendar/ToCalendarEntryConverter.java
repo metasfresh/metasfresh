@@ -72,7 +72,7 @@ class ToCalendarEntryConverter
 						.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 						.title(getCalendarWOEntryTitle(project, step, resource))
 						.description(TranslatableStrings.anyLanguage(resource.getDescription()))
-						.dateRange(dateRange)
+						.dateRange(dateRange.toCalendarDateRange())
 						.editable(isEditable(step, simulationHeaderRef))
 						.color(woProjectService.getCalendarColor(project))
 						.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
