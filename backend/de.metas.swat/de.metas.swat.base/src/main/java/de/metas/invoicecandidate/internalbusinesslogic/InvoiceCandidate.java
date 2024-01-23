@@ -352,7 +352,15 @@ public class InvoiceCandidate
 		final Quantity qtyInStockUOM;
 		if (InvoicableQtyBasedOn.CatchWeight.equals(invoicableQtyBasedOn))
 		{
-			qtyInStockUOM = toInvoiceOverride.getStockQty();
+			if (qtyToInvoiceOverrideInStockUom != null)
+			{
+				final I_C_UOM stockUom = uomDAO.getById(stockUOMId);
+				qtyInStockUOM = Quantity.of(qtyToInvoiceOverrideInStockUom, stockUom);
+			}
+			else
+			{
+				qtyInStockUOM = toInvoiceOverride.getStockQty();
+			}
 		}
 		else
 		{
