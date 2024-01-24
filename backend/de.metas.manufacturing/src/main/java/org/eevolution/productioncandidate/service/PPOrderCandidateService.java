@@ -25,6 +25,7 @@ package org.eevolution.productioncandidate.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -56,9 +57,12 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPMaturingCandidateV;
+import org.eevolution.productioncandidate.model.dao.PPMaturingCandidatesViewRepo;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -85,22 +89,27 @@ public class PPOrderCandidateService
 	private final ProductPlanningService productPlanningService;
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
+	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
+
+	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
-			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
+			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
+			@NonNull final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo)
 	{
 		this.productPlanningService = productPlanningService;
 		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
+		this.ppMaturingCandidatesViewRepo = ppMaturingCandidatesViewRepo;
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 	}
 
 	@NonNull
-	public I_PP_Order_Candidate createCandidate(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
+	public I_PP_Order_Candidate createUpdateCandidate(@NonNull final PPOrderCandidateCreateUpdateRequest ppOrderCandidateCreateUpdateRequest)
 	{
-		return CreateOrderCandidateCommand.builder()
-				.request(ppOrderCandidateCreateRequest)
+		return CreateUpdateOrderCandidateCommand.builder()
+				.request(ppOrderCandidateCreateUpdateRequest)
 				.build()
 				.execute();
 	}
@@ -368,4 +377,47 @@ public class PPOrderCandidateService
 
 		ppOrderCandidateDAO.saveLine(orderCandidateLine);
 	}
+
+	public void recomputeMaturingCandidates()
+	{
+		ppMaturingCandidatesViewRepo.deleteStaleCandidates();
+		ppMaturingCandidatesViewRepo.streamValidCandidates()
+				.forEach(this::createUpdateCandidate);
+	}
+
+	private void createUpdateCandidate(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
+	{
+		final ProductPlanningId productPlanningId = ppMaturingCandidatesV.getProductPlanningId();
+
+		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
+		if (!productPlanning.isMatured())
+		{
+			logger.warn("PP_Product_Planning_ID: {} is not matured", productPlanningId);
+			return;
+		}
+		if (productPlanning.getPlantId() == null)
+		{
+			logger.warn("No S_Resource_ID defined for PP_Product_Planning_ID:{}", productPlanningId);
+			return;
+		}
+
+		createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
+				.clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
+				.ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
+				.maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
+				.maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
+				.productId(ppMaturingCandidatesV.getProductId())
+				.warehouseId(ppMaturingCandidatesV.getWarehouseId())
+				.productPlanningId(productPlanningId)
+				.plantId(productPlanning.getPlantId())
+				.qtyRequired(ppMaturingCandidatesV.getQtyRequired())
+				.datePromised(ppMaturingCandidatesV.getDateStartSchedule())
+				.dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
+				.isMaturing(true)
+				.simulated(false)
+				.attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
+				.issueHuId(ppMaturingCandidatesV.getIssueHuId())
+				.build());
+	}
+
 }
