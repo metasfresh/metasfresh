@@ -237,7 +237,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 * @param typeCR type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
 	 * @return number of lines copied
 	 */
-	public int copyLinesFrom(final MJournal fromJournal, final Timestamp dateAcct, final char typeCR)
+	private int copyLinesFrom(final MJournal fromJournal, final Timestamp dateAcct, final char typeCR)
 	{
 		if (isProcessed() || fromJournal == null)
 			return 0;

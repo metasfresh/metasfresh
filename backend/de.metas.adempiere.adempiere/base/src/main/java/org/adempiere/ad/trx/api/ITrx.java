@@ -1,11 +1,14 @@
 package org.adempiere.ad.trx.api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.collections.ListAccumulator;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBException;
 
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,7 +24,7 @@ public interface ITrx
 {
 	/**
 	 * Old No Transaction Marker.
-	 *
+	 * <p>
 	 * NOTE: we keep this until we get rid of comparations with "null"
 	 */
 	String TRXNAME_None = null;
@@ -94,7 +97,7 @@ public interface ITrx
 
 	/**
 	 * Rollback.
-	 *
+	 * <p>
 	 * NOTE: this method NEVER EVER throws an exception.
 	 *
 	 * @return <code>true</code> if success, <code>false</code> if failed or the transaction is already rolled back, or if {@link #isAutoCommit()} is <code>true</code>.
@@ -143,7 +146,7 @@ public interface ITrx
 
 	/**
 	 * Sets custom transaction property.
-	 *
+	 * <p>
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
 	 * @return old value or null
@@ -153,7 +156,7 @@ public interface ITrx
 
 	/**
 	 * Gets custom transaction property.
-	 *
+	 * <p>
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
 	 * @return property's value or null
@@ -162,7 +165,7 @@ public interface ITrx
 
 	/**
 	 * Gets custom transaction property.
-	 *
+	 * <p>
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
 	 * @param valueInitializer used to create the new value in case it does not already exist
@@ -194,6 +197,19 @@ public interface ITrx
 			runAfterCommit(() -> afterCommitValueProcessor.accept(value));
 			return value;
 		});
+	}
+
+	default <T> void accumulateAndProcessAfterCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
+	{
+		getProperty(propertyName, () -> {
+			final ListAccumulator<T> accum = new ListAccumulator<>();
+			runAfterCommit(() -> accum.flush(afterCommitListProcessor));
+			return accum;
+		})
+				.addAll(itemsToAccumulate);
 	}
 
 	/**
