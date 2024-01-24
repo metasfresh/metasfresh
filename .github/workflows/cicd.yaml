@@ -174,15 +174,15 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
-      # - name: build-mobile
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
-          # .
+      - name: build-mobile
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: push-images
         uses: nick-fields/retry@v2
         with:
@@ -192,14 +192,14 @@ jobs:
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-#            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-#            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-#          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          
+          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+
   test-frontend:
     name: test (frontend)
     runs-on: ubuntu-latest
@@ -374,19 +374,10 @@ jobs:
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-procurement-frontend
-        run: |
-          docker buildx build \
-          --file misc/services/procurement-webui/procurement-webui-frontend/Dockerfile \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
-          .
       - name: build-procurement-nginx
         run: |
           docker buildx build \
-          --file misc/services/procurement-webui/ngnix/Dockerfile \
+          --file docker-builds/Dockerfile.procurement.ngnix \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-ngnix:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
@@ -395,11 +386,20 @@ jobs:
       - name: build-procurement-rabbitmq
         run: |
           docker buildx build \
-          --file misc/services/procurement-webui/rabbitmq/Dockerfile \
+          --file docker-builds/Dockerfile.procurement.rabbitmq \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-procurement-frontend
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.procurement.frontend \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         uses: nick-fields/retry@v2
@@ -410,19 +410,19 @@ jobs:
           command: |
             docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         
 
   compatibility-images:
@@ -461,16 +461,16 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      # - name: build-mobile-compat
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile.compat \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-          # .
+      - name: build-mobile-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
       - name: build-frontend-compat
         run: |
           docker buildx build \
@@ -482,8 +482,6 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         uses: nick-fields/retry@v2
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -502,6 +500,8 @@ jobs:
             docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
@@ -735,11 +735,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh webui
-#      - name: mobile health check
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./containerHealthCheck.sh mobile
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
 #      - name: run api health checks
 #        working-directory: docker-builds/health/
 #        if: success() || failure()
