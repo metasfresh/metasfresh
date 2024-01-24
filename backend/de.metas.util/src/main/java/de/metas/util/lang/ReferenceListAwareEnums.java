@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ReferenceListAwareEnums
@@ -68,7 +69,8 @@ public class ReferenceListAwareEnums
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);
 
-		@SuppressWarnings("unchecked") final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
+		@SuppressWarnings("unchecked")
+		final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
 
 		return enumObj;
 	}
@@ -77,9 +79,11 @@ public class ReferenceListAwareEnums
 	{
 		if (ReferenceListAwareEnum.class.isAssignableFrom(enumType))
 		{
-			@SuppressWarnings("unchecked") final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
 
-			@SuppressWarnings("unchecked") final T result = (T)ofCode(code, referenceListAwareEnumType);
+			@SuppressWarnings("unchecked")
+			final T result = (T)ofCode(code, referenceListAwareEnumType);
 
 			return result;
 		}
@@ -104,7 +108,8 @@ public class ReferenceListAwareEnums
 		final Set<ReferenceListAwareEnum> values = descriptor.getValues()
 				.orElseThrow(() -> Check.newException("Cannot extract values for " + clazz));
 
-		@SuppressWarnings("unchecked") final Set<T> retValue = (Set<T>)(values);
+		@SuppressWarnings("unchecked")
+		final Set<T> retValue = (Set<T>)(values);
 		return retValue;
 	}
 
@@ -213,12 +218,14 @@ public class ReferenceListAwareEnums
 			final Class<?> returnType = valuesMethod.getReturnType();
 			if (returnType.isArray())
 			{
-				@SuppressWarnings("unchecked") final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked")
+				final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesArr);
 			}
 			else if (Collection.class.isAssignableFrom(returnType))
 			{
-				@SuppressWarnings("unchecked") final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked")
+				final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesCollection);
 			}
 			else
@@ -329,5 +336,10 @@ public class ReferenceListAwareEnums
 			return type;
 		}
 
+		@NonNull
+		public Stream<T> streamValues()
+		{
+			return typesByCode.values().stream();
+		}
 	}
 }
