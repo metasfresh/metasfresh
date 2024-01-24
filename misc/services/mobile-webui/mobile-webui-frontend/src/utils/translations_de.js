@@ -30,6 +30,11 @@ const translations = {
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Wechseln zu...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Passwort',
+    },
   },
   logout: 'Abmelden',
   mobileui: {

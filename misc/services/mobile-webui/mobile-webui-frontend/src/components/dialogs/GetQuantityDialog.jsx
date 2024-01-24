@@ -208,10 +208,10 @@ const GetQuantityDialog = ({
             </table>
 
             <div className="buttons is-centered">
-              <button className="button is-danger" disabled={!allValid} onClick={onDialogYes}>
+              <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
                 {trl('activities.picking.confirmDone')}
               </button>
-              <button className="button is-success" onClick={onCloseDialog}>
+              <button className="button is-danger" onClick={onCloseDialog}>
                 {trl('general.cancelText')}
               </button>
             </div>
