@@ -205,7 +205,7 @@ public class InvoiceCandidate
 			}
 			else
 			{
-				overrideExceedsDelivered = qtyToInvoiceOverrideInUom.compareTo(toInvoiceExclOverrideCalc.getUOMQty().toBigDecimal()) > 0;
+				overrideExceedsDelivered = qtyToInvoiceOverrideInUom.compareTo(toInvoiceExclOverrideCalc.getUOMQtyNotNull().toBigDecimal()) > 0;
 			}
 
 			if (overrideExceedsDelivered)
@@ -229,23 +229,13 @@ public class InvoiceCandidate
 					qtysEffective = qtysToInvoice;
 				}
 			}
-			else if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
+			else if ((InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
+					|| ((InvoicableQtyBasedOn.CatchWeight.equals(invoicableQtyBasedOn)
+					&& qtyToInvoiceOverrideInStockUom == null))
+					|| (InvoiceRule.Immediate.equals(invoiceRule)))
 			{
-				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=NominalWeight; -> going to use qtyToInvoiceOverride",
-							 qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
-				qtysEffective = getQtysToInvoice(toInvoiceExclOverrideCalc);
-			}
-			else if (InvoicableQtyBasedOn.CatchWeight.equals(invoicableQtyBasedOn)
-					&& qtyToInvoiceOverrideInStockUom == null)
-			{
-				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=CatchWeight; -> going to use QtyToInvoiceInUOM_Override",
-							 qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
-				qtysEffective = getQtysToInvoice(toInvoiceExclOverrideCalc);
-			}
-			else if (InvoiceRule.Immediate.equals(invoiceRule))
-			{
-				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=CatchWeight and invoiceRule=Immediate; -> going to use qtyToInvoiceOverride",
-							 qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn={} and invoiceRule={}; -> going to use qtyToInvoiceOverride",
+							 qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal(), invoicableQtyBasedOn, invoiceRule);
 				qtysEffective = getQtysToInvoice(toInvoiceExclOverrideCalc);
 			}
 			else
