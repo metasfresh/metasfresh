@@ -377,9 +377,9 @@ jobs:
       - name: build-procurement-nginx
         run: |
           docker buildx build \
-          --file docker-builds/Dockerfile.procurement.ngnix \
+          --file docker-builds/Dockerfile.procurement.nginx \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-procurement-ngnix:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }} \
           .
