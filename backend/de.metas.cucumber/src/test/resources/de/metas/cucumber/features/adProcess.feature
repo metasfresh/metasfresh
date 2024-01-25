@@ -171,6 +171,7 @@ Feature: AD_Process validation
       | 584852        | WEBUI_M_HU_PrintFinishedGoodsLabel                                  | U                                   | de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintFinishedGoodsLabel                                         | Class not found |
       | 585316        | C_Order_Generate_Shipping_Notification                              | de.metas.shippingnotification       | de.metas.inoutcandidate.process.C_Order_Generate_Shipping_Notification                                       | webui           |
       | 585344        | C_Order_Generate_Shipping_Notification_ViewSelection                | de.metas.shippingnotification       | de.metas.inoutcandidate.process.C_Order_Generate_Shipping_Notification_ViewSelection                        | webui           |
+      | 585350        | AuthTokenPrintQrCode                                                | D                                   | de.metas.security.process.AuthTokenPrintQrCode                                                                   | webui           |
 
 
     Then assert selected AD_Processes are valid
