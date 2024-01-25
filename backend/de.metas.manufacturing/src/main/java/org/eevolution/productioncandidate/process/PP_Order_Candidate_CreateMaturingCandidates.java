@@ -25,6 +25,7 @@ package org.eevolution.productioncandidate.process;
 import de.metas.process.JavaProcess;
 import org.compiere.SpringContextHolder;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
+import org.eevolution.productioncandidate.service.RecomputeMaturingCandidatesResult;
 
 public class PP_Order_Candidate_CreateMaturingCandidates extends JavaProcess
 {
@@ -33,7 +34,8 @@ public class PP_Order_Candidate_CreateMaturingCandidates extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		ppOrderCandidateService.recomputeMaturingCandidates();
+		final RecomputeMaturingCandidatesResult recomputeMaturingCandidatesResult = ppOrderCandidateService.recomputeMaturingCandidates();
+		addLog("Result: {}", recomputeMaturingCandidatesResult);
 		return MSG_OK;
 	}
 

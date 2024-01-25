@@ -25,6 +25,7 @@ package org.eevolution.productioncandidate.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
@@ -46,6 +47,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -75,6 +77,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PPOrderCandidateService
@@ -378,28 +382,45 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.saveLine(orderCandidateLine);
 	}
 
-	public void recomputeMaturingCandidates()
+	public RecomputeMaturingCandidatesResult recomputeMaturingCandidates()
 	{
-		ppMaturingCandidatesViewRepo.deleteStaleCandidates();
-		ppMaturingCandidatesViewRepo.streamValidCandidates()
-				.forEach(this::createUpdateCandidate);
+		final int deletedCandidates = ppMaturingCandidatesViewRepo.deleteStaleCandidates();
+		final Map<CrudOperationResult, Long> resultMap = ppMaturingCandidatesViewRepo.streamValidCandidates()
+				.map(this::createUpdateCandidate)
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		return RecomputeMaturingCandidatesResult.builder()
+				.deleted(deletedCandidates)
+				.created(resultMap.get(CrudOperationResult.CREATED))
+				.updated(resultMap.get(CrudOperationResult.UPDATED))
+				.ignored(resultMap.get(CrudOperationResult.NO_OP))
+				.build();
 	}
 
-	private void createUpdateCandidate(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
+	private CrudOperationResult createUpdateCandidate(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
+	{
+		final Mutable<CrudOperationResult> result = new Mutable<>();
+
+		trxManager.runInNewTrx(() -> {
+			try
+			{
+				result.setValue(createUpdateCandidate0(ppMaturingCandidatesV));
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed to create/update a Maturing candidate for: {}", ppMaturingCandidatesV, ex);
+				result.setValue(CrudOperationResult.NO_OP);
+			}
+		});
+		return CoalesceUtil.coalesceNotNull(result.getValue(), CrudOperationResult.NO_OP);
+	}
+
+	@NonNull
+	private CrudOperationResult createUpdateCandidate0(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
 	{
 		final ProductPlanningId productPlanningId = ppMaturingCandidatesV.getProductPlanningId();
 
 		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
-		if (!productPlanning.isMatured())
-		{
-			logger.warn("PP_Product_Planning_ID: {} is not matured", productPlanningId);
-			return;
-		}
-		if (productPlanning.getPlantId() == null)
-		{
-			logger.warn("No S_Resource_ID defined for PP_Product_Planning_ID:{}", productPlanningId);
-			return;
-		}
+		Check.assume(productPlanning.isMatured(), "PP_Product_Planning_ID: {} is not matured", productPlanningId);
 
 		createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
 				.clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
@@ -418,6 +439,8 @@ public class PPOrderCandidateService
 				.attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
 				.issueHuId(ppMaturingCandidatesV.getIssueHuId())
 				.build());
+
+		return ppMaturingCandidatesV.getPpOrderCandidateId() == null ? CrudOperationResult.CREATED : CrudOperationResult.UPDATED;
 	}
 
 }

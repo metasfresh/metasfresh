@@ -60,7 +60,7 @@ public class PPMaturingCandidatesViewRepo
 				.create()
 				.iterateAndStream()
 				.filter(this::isValidCandidate)
-				.map(this::toPPMaturingCandidateV);
+				.map(PPMaturingCandidatesViewRepo::toPPMaturingCandidateV);
 	}
 
 	private boolean isValidCandidate(final @NonNull I_PP_Maturing_Candidates_v ppMaturingCandidatesV)
@@ -68,7 +68,7 @@ public class PPMaturingCandidatesViewRepo
 		return ppMaturingCandidatesV.getDateStartSchedule() != null;
 	}
 
-	private PPMaturingCandidateV toPPMaturingCandidateV(@NonNull final I_PP_Maturing_Candidates_v ppMaturingCandidatesV)
+	private static PPMaturingCandidateV toPPMaturingCandidateV(@NonNull final I_PP_Maturing_Candidates_v ppMaturingCandidatesV)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ppMaturingCandidatesV.getAD_Client_ID(), ppMaturingCandidatesV.getAD_Org_ID());
 		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(ppMaturingCandidatesV.getPP_Order_Candidate_ID());
@@ -97,11 +97,11 @@ public class PPMaturingCandidatesViewRepo
 				.build();
 	}
 
-	public void deleteStaleCandidates()
+	public int deleteStaleCandidates()
 	{
 		final IQuery<I_PP_Maturing_Candidates_v> ppMaturingCandidatesVQuery = queryBL.createQueryBuilder(I_PP_Maturing_Candidates_v.class)
 				.create();
-		queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, true)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, true)
 				.addNotInSubQueryFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, I_PP_Maturing_Candidates_v.COLUMNNAME_PP_Order_Candidate_ID, ppMaturingCandidatesVQuery)

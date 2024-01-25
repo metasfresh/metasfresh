@@ -29,12 +29,12 @@ FROM m_hu hu
          LEFT JOIN m_hu_item hui ON hu.m_hu_id = hui.m_hu_id
          LEFT JOIN m_hu childHu ON childHu.m_hu_item_parent_id = hui.m_hu_item_id
 WHERE hu.isactive = 'Y'
-    AND hu.hustatus IN ('A', 'I')
-    AND hu.isreserved != 'Y'
-    AND hu.locked != 'Y'
-    AND hus.qty > 0
-    AND ppoc.pp_order_candidate_id IS NULL
-   OR (ppoc.isclosed != 'Y' AND ppoc.processed != 'Y')
-    AND hua.valuedate IS NOT NULL
-    AND childHu.m_hu_id IS NULL
+  AND hu.hustatus IN ('A', 'I')
+  AND hu.isreserved != 'Y'
+  AND hu.locked != 'Y'
+  AND hus.qty > 0
+  AND (ppoc.pp_order_candidate_id IS NULL
+    OR (ppoc.isclosed != 'Y' AND ppoc.processed != 'Y'))
+  AND hua.valuedate IS NOT NULL
+  AND childHu.m_hu_id IS NULL
 ;

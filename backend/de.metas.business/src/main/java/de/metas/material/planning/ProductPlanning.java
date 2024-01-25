@@ -92,5 +92,70 @@ public class ProductPlanning
 	// Distribution
 	@Nullable DistributionNetworkId distributionNetworkId;
 
-	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
+	public ProductPlanning(final boolean disallowSaving,
+			@Nullable final ProductPlanningId id,
+			@Nullable final ProductPlanningSchemaId productPlanningSchemaId,
+			@Nullable final ProductId productId,
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ResourceId plantId,
+			final boolean isAttributeDependant,
+			@Nullable final String storageAttributesKey,
+			final int seqNo,
+			@Nullable final UserId plannerId,
+			final boolean isCreatePlan,
+			final int transferTimeDays,
+			final int leadTimeDays,
+			final boolean isDocComplete,
+			final boolean isManufactured,
+			final boolean isMatured,
+			@Nullable final ProductBOMVersionsId bomVersionsId,
+			@Nullable final PPRoutingId workflowId,
+			@Nullable final Quantity maxManufacturedQtyPerOrderDispo,
+			@Nullable final MaturingConfigId maturingConfigId,
+			@Nullable final MaturingConfigLineId maturingConfigLineId,
+			final boolean isPickingOrder,
+			final boolean isPickDirectlyIfFeasible,
+			final boolean isPurchased,
+			@Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
+			@Nullable final DistributionNetworkId distributionNetworkId)
+	{
+		if (isMatured)
+		{
+				Check.assume(maturingConfigId != null, "maturing configuration is mandatory");
+				Check.assume(maturingConfigLineId != null, "maturing configuration line is mandatory");
+				Check.assume(warehouseId != null, "warehouse is mandatory");
+				Check.assume(plantId != null, "plant is mandatory");
+		}
+		this.disallowSaving = disallowSaving;
+		this.id = id;
+		this.productPlanningSchemaId = productPlanningSchemaId;
+		this.productId = productId;
+		this.warehouseId = warehouseId;
+		this.plantId = plantId;
+		this.isAttributeDependant = isAttributeDependant;
+		this.storageAttributesKey = storageAttributesKey;
+		this.seqNo = seqNo;
+		this.plannerId = plannerId;
+		this.isCreatePlan = isCreatePlan;
+		this.transferTimeDays = transferTimeDays;
+		this.leadTimeDays = leadTimeDays;
+		this.isDocComplete = isDocComplete;
+		this.isManufactured = isManufactured;
+		this.isMatured = isMatured;
+		this.bomVersionsId = bomVersionsId;
+		this.workflowId = workflowId;
+		this.maxManufacturedQtyPerOrderDispo = maxManufacturedQtyPerOrderDispo;
+		this.maturingConfigId = maturingConfigId;
+		this.maturingConfigLineId = maturingConfigLineId;
+		this.isPickingOrder = isPickingOrder;
+		this.isPickDirectlyIfFeasible = isPickDirectlyIfFeasible;
+		this.isPurchased = isPurchased;
+		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
+		this.distributionNetworkId = distributionNetworkId;
+	}
+
+	public ProductPlanningId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "product planning is saved: {}", this);
+	}
 }
