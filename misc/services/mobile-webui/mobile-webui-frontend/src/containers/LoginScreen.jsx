@@ -1,111 +1,98 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
-
-import { trl } from '../utils/translations';
-import { extractUserFriendlyErrorMessageFromAxiosError } from '../utils/toast';
-import { useAuth } from '../hooks/useAuth';
+import React, { useEffect, useState } from 'react';
+import { toastError } from '../utils/toast';
 
 import ScreenToaster from '../components/ScreenToaster';
 import LogoHeader from '../components/LogoHeader';
+import { getMobileConfiguration } from '../api/configuration';
+import ButtonWithIndicator from '../components/buttons/ButtonWithIndicator';
+import UserAndPassAuth from './authMethods/UserAndPassAuth';
+import QrCodeAuth from './authMethods/QrCodeAuth';
+import { trl } from '../utils/translations';
+
+const KNOWN_AUTH_METHODS = {
+  QR_CODE: 'qrCode',
+  USER_PASS: 'userAndPass',
+};
+
+const VIEW = {
+  LOGIN: 'login',
+  ALTERNATIVE_METHODS: 'alternativeMethods',
+};
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loginPending, setLoginPending] = useState(false);
+  const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.USER_PASS);
+  const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
+  const [currentView, setCurrentView] = useState(VIEW.LOGIN);
+
+  const getAuthMethodScreen = () => {
+    if (currentAuthMethod === KNOWN_AUTH_METHODS.USER_PASS) {
+      return <UserAndPassAuth />;
+    } else if (currentAuthMethod === KNOWN_AUTH_METHODS.QR_CODE) {
+      return <QrCodeAuth />;
+    } else {
+      toastError({ plainMessage: 'Unknown auth method!' });
+    }
+  };
+
+  const getLoginScreen = () => {
+    return (
+      <>
+        {getAuthMethodScreen()}
+        {availableAuthMethods && availableAuthMethods.length > 1 && (
+          <div className="section is-size-5" style={{ paddingTop: 0 }}>
+            <div className="container px-6">
+              <ButtonWithIndicator
+                caption={trl('login.alternativeMethods')}
+                onClick={() => setCurrentView(VIEW.ALTERNATIVE_METHODS)}
+                additionalCssClass={'alternative-button'}
+              />
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const toggleAuthMethod = (method) => {
+    setCurrentAuthMethod(method);
+    setCurrentView(VIEW.LOGIN);
+  };
+
+  const getAlternativeMethodsScreen = () => {
+    return (
+      <div className="pt-3 section">
+        {availableAuthMethods.map((method, index) => (
+          <ButtonWithIndicator
+            key={index}
+            caption={trl(`login.authMethod.${method}`)}
+            onClick={() => toggleAuthMethod(method)}
+          />
+        ))}
+      </div>
+    );
+  };
 
   useEffect(() => {
     document.title = 'mobile UI';
   }, []);
 
-  const history = useHistory();
-  const auth = useAuth();
-  const location = useLocation();
-  const { from } = location.state || { from: { pathname: '/' } };
-  const usernameFieldRef = useRef(null);
   useEffect(() => {
-    if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
-    } else {
-      usernameFieldRef.current.focus();
-      usernameFieldRef.current.select();
-    }
-  }, []);
+    getMobileConfiguration().then((config) => {
+      setCurrentAuthMethod(KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.USER_PASS);
 
-  const submitForm = (e) => {
-    e.preventDefault();
+      const authMethods = config.availableAuthMethods
+        .map((method) => KNOWN_AUTH_METHODS[method])
+        .filter((method) => method !== null && method !== undefined);
 
-    setLoginPending(true);
-    auth
-      .login(username, password)
-      .then(() => history.replace(from))
-      .catch((axiosError) => {
-        setLoginPending(false);
-        setErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
-      });
-    // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
-  };
-
-  // Already logged in, no point to render this screen
-  if (auth.isLoggedIn()) {
-    console.log(`Already logged in, no point to render this screen`);
-    return null;
-  }
+      setAvailableAuthMethods(authMethods);
+    });
+  }, [setCurrentAuthMethod, setCurrentAuthMethod]);
 
   return (
     <div className="login-view">
       <LogoHeader />
-      <div className="section is-size-5">
-        <div className="container px-6">
-          <form>
-            <p className="help is-danger is-size-6 login-error">{errorMessage}</p>
-            <div className="field">
-              <p className="control has-icons-left">
-                <input
-                  className="input is-medium"
-                  type="text"
-                  id={username}
-                  name="username"
-                  value={username}
-                  autoComplete="username"
-                  ref={usernameFieldRef}
-                  disabled={loginPending}
-                  onInput={(e) => setUsername(e.target.value)}
-                />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-user" />
-                </span>
-              </p>
-            </div>
-            <div className="field">
-              <p className="control has-icons-left">
-                <input
-                  className="input is-medium"
-                  id="current-password"
-                  type="password"
-                  name="password"
-                  value={password}
-                  autoComplete="current-password"
-                  disabled={loginPending}
-                  onInput={(e) => setPassword(e.target.value)}
-                />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-lock" />
-                </span>
-              </p>
-            </div>
-            <div className="field">
-              <div className="control">
-                <button type="submit" className="button is-medium" disabled={loginPending} onClick={submitForm}>
-                  {/* eslint-disable-next-line no-undef */}
-                  {trl('login.submitButton')}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+      {currentView === VIEW.LOGIN && getLoginScreen()}
+      {currentView === VIEW.ALTERNATIVE_METHODS && getAlternativeMethodsScreen()}
       <ScreenToaster />
     </div>
   );

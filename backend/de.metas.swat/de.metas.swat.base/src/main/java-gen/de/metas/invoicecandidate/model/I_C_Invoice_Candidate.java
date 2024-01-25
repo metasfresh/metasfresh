@@ -3536,7 +3536,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
 
 	/**
-	 * Set Qty to invoice override.
+	 * Set To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToInvoiceInUOM_Override (@Nullable BigDecimal QtyToInvoiceInUOM_Override);
+
+	/**
+	 * Get To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToInvoiceInUOM_Override();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Override", null);
+	String COLUMNNAME_QtyToInvoiceInUOM_Override = "QtyToInvoiceInUOM_Override";
+
+	/**
+	 * Set Zu berechn. Menge abw..
+	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
