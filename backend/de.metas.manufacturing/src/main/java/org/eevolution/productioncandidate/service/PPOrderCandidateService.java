@@ -25,7 +25,6 @@ package org.eevolution.productioncandidate.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
@@ -47,7 +46,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -398,20 +396,17 @@ public class PPOrderCandidateService
 
 	private CrudOperationResult createUpdateCandidate(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
 	{
-		final Mutable<CrudOperationResult> result = new Mutable<>();
-
-		trxManager.runInNewTrx(() -> {
+		return trxManager.callInThreadInheritedTrx(() -> {
 			try
 			{
-				result.setValue(createUpdateCandidate0(ppMaturingCandidatesV));
+				return createUpdateCandidate0(ppMaturingCandidatesV);
 			}
 			catch (final Exception ex)
 			{
 				logger.warn("Failed to create/update a Maturing candidate for: {}", ppMaturingCandidatesV, ex);
-				result.setValue(CrudOperationResult.NO_OP);
 			}
+			return CrudOperationResult.NO_OP;
 		});
-		return CoalesceUtil.coalesceNotNull(result.getValue(), CrudOperationResult.NO_OP);
 	}
 
 	@NonNull

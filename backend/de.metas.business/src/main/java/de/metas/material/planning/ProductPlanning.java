@@ -37,9 +37,11 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 
@@ -121,10 +123,10 @@ public class ProductPlanning
 	{
 		if (isMatured)
 		{
-				Check.assume(maturingConfigId != null, "maturing configuration is mandatory");
-				Check.assume(maturingConfigLineId != null, "maturing configuration line is mandatory");
-				Check.assume(warehouseId != null, "warehouse is mandatory");
-				Check.assume(plantId != null, "plant is mandatory");
+			FillMandatoryException.assumeNotNull(maturingConfigId != null, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID);
+			FillMandatoryException.assumeNotNull(maturingConfigLineId != null, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID);
+			FillMandatoryException.assumeNotNull(warehouseId != null, I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
+			FillMandatoryException.assumeNotNull(plantId != null, I_PP_Product_Planning.COLUMNNAME_S_Resource_ID);
 		}
 		this.disallowSaving = disallowSaving;
 		this.id = id;
