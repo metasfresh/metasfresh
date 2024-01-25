@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;

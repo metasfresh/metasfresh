@@ -4,13 +4,14 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v2.authentication.JsonAuthRequest;
 import de.metas.common.rest_api.v2.authentication.JsonAuthResponse;
 import de.metas.common.rest_api.v2.i18n.JsonMessages;
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.v2.authentication.dto.JSONQrLoginAuthRequest;
 import de.metas.rest_api.v2.i18n.I18NRestController;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
+import de.metas.security.qr.UserAuthQRCodeJsonConverter;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -22,6 +23,7 @@ import de.metas.util.web.security.UserAuthTokenService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Login;
 import org.compiere.util.LoginAuthenticateResponse;
@@ -65,9 +67,7 @@ public class AuthenticationRestController
 	{
 		try
 		{
-			final LoginContext loginCtx = new LoginContext(Env.newTemporaryCtx());
-			loginCtx.setWebui(true);
-			final Login loginService = new Login(loginCtx);
+			final Login loginService = getLoginService();
 
 			final LoginAuthenticateResponse loginAuthResult = loginService.authenticate(
 					request.getUsername(),
@@ -88,16 +88,7 @@ public class AuthenticationRestController
 					.description("Created by " + AuthenticationRestController.class.getName())
 					.build());
 
-			final Language userLanguage = userBL.getUserLanguage(userAuthToken.getUserId());
-			final String adLanguage = userLanguage.getAD_Language();
-			final JsonMessages messages = i18nRestController.getMessages(null, adLanguage);
-
-			return ResponseEntity.ok(
-					JsonAuthResponse.ok(userAuthToken.getAuthToken())
-							.userId(userId.getRepoId())
-							.language(adLanguage)
-							.messages(messages.getMessages())
-							.build());
+			return getResponse(userAuthToken);
 		}
 		catch (final Exception ex)
 		{
@@ -117,6 +108,56 @@ public class AuthenticationRestController
 			}
 		}
 
+	}
+
+	@PostMapping("/by-qrcode")
+	public ResponseEntity<JsonAuthResponse> authenticate(@RequestBody final JSONQrLoginAuthRequest request)
+	{
+		try
+		{
+			final String authToken = UserAuthQRCodeJsonConverter
+					.fromGlobalQRCodeJsonString(request.getQrCode())
+					.getToken();
+
+			final UserAuthToken tokenInfo = userAuthTokenService.getByToken(authToken);
+			final I_AD_User user = userBL.getById(tokenInfo.getUserId());
+			final String username = userBL.extractUserLogin(user);
+			final HashableString password = userBL.extractUserPassword(user);
+
+			final LoginAuthenticateResponse loginAuthResult = getLoginService().authenticate(username, password);
+			loginAuthResult.getSingleRole()
+					.orElseThrow(() -> new AdempiereException("Multiple roles are not supported. Make sure user has only one role assigned"));
+
+			return getResponse(tokenInfo);
+		}
+		catch (final AdempiereException ex)
+		{
+			if (AdempiereException.isUserValidationError(ex))
+			{
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(JsonAuthResponse.error(AdempiereException.extractMessage(ex)));
+			}
+			else
+			{
+				logger.warn("Failed authenticating qrCode", ex);
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(JsonAuthResponse.error("Authentication error. Pls contact the system administrator."));
+			}
+		}
+	}
+
+	@NonNull
+	private ResponseEntity<JsonAuthResponse> getResponse(@NonNull final UserAuthToken tokenInfo)
+	{
+		final String adLanguage = userBL.getUserLanguage(tokenInfo.getUserId()).getAD_Language();
+		final JsonMessages messages = i18nRestController.getMessages(null, adLanguage);
+
+		return ResponseEntity.ok(
+				JsonAuthResponse.ok(tokenInfo.getAuthToken())
+						.userId(tokenInfo.getUserId().getRepoId())
+						.language(adLanguage)
+						.messages(messages.getMessages())
+						.build());
 	}
 
 	private static ClientId getClientId(
@@ -157,5 +198,13 @@ public class AuthenticationRestController
 			orgId = orgIds.iterator().next();
 		}
 		return orgId;
+	}
+
+	@NonNull
+	private static Login getLoginService()
+	{
+		final LoginContext loginCtx = new LoginContext(Env.newTemporaryCtx());
+		loginCtx.setWebui(true);
+		return new Login(loginCtx);
 	}
 }

@@ -30,6 +30,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.copy_with_details.CopyRecordRequest;
+import de.metas.copy_with_details.CopyRecordService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;

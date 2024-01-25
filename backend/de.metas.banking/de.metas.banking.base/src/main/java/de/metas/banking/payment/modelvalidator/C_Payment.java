@@ -37,6 +37,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
