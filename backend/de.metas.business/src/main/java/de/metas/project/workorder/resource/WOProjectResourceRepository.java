@@ -372,7 +372,10 @@ public class WOProjectResourceRepository
 
 	public static ResourceIdAndType extractResourceIdAndType(final @NonNull I_C_Project_WO_Resource resourceRecord)
 	{
-		return ResourceIdAndType.of(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()), WOResourceType.ofCode(resourceRecord.getResourceType()));
+		return ResourceIdAndType.of(
+				ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()),
+				WOResourceType.optionalOfNullableCode(resourceRecord.getResourceType()).orElse(WOResourceType.MACHINE)
+		);
 	}
 
 	@Nullable
