@@ -45,6 +45,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+
 @Value
 @Builder(toBuilder = true)
 public class ProductPlanning
@@ -57,10 +59,10 @@ public class ProductPlanning
 	// Selector
 	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
-	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
+	@NonNull OrgId orgId;
 	@Nullable ResourceId plantId;
 	boolean isAttributeDependant;
-	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable String storageAttributesKey;
 	int seqNo;
 
@@ -99,8 +101,10 @@ public class ProductPlanning
 			@Nullable final ProductPlanningSchemaId productPlanningSchemaId,
 			@Nullable final ProductId productId,
 			@Nullable final WarehouseId warehouseId,
+			@Nullable final OrgId orgId,
 			@Nullable final ResourceId plantId,
 			final boolean isAttributeDependant,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@Nullable final String storageAttributesKey,
 			final int seqNo,
 			@Nullable final UserId plannerId,
@@ -133,8 +137,10 @@ public class ProductPlanning
 		this.productPlanningSchemaId = productPlanningSchemaId;
 		this.productId = productId;
 		this.warehouseId = warehouseId;
+		this.orgId = coalesceNotNull(orgId, OrgId.ANY);
 		this.plantId = plantId;
 		this.isAttributeDependant = isAttributeDependant;
+		this.attributeSetInstanceId = coalesceNotNull(attributeSetInstanceId,AttributeSetInstanceId.NONE);
 		this.storageAttributesKey = storageAttributesKey;
 		this.seqNo = seqNo;
 		this.plannerId = plannerId;
