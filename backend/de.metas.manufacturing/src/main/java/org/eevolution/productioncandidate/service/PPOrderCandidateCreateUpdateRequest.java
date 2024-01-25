@@ -22,11 +22,12 @@
 
 package org.eevolution.productioncandidate.service;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -37,35 +38,42 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@JsonDeserialize(builder = PPOrderCreateRequest.PPOrderCreateRequestBuilder.class)
-public class PPOrderCandidateCreateRequest
+@Jacksonized
+@Builder
+public class PPOrderCandidateCreateUpdateRequest
 {
-	ClientAndOrgId clientAndOrgId;
-	ProductPlanningId productPlanningId;
-	MaterialDispoGroupId materialDispoGroupId;
-	ResourceId plantId;
-	WarehouseId warehouseId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	Quantity qtyRequired;
-	Instant datePromised;
-	Instant dateStartSchedule;
-	OrderLineId salesOrderLineId;
-	ShipmentScheduleId shipmentScheduleId;
+	@Nullable PPOrderCandidateId ppOrderCandidateId;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@Nullable ProductPlanningId productPlanningId;
+	@Nullable MaterialDispoGroupId materialDispoGroupId;
+	@NonNull ResourceId plantId;
+	@NonNull WarehouseId warehouseId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull Quantity qtyRequired;
+	@NonNull Instant datePromised;
+	@NonNull Instant dateStartSchedule;
+	@Nullable OrderLineId salesOrderLineId;
+	@Nullable ShipmentScheduleId shipmentScheduleId;
 	boolean simulated;
-	String traceId;
-	HUPIItemProductId packingMaterialId;
+	boolean isMaturing;
+	@Nullable String traceId;
+	@Nullable HUPIItemProductId packingMaterialId;
+	@Nullable MaturingConfigLineId maturingConfigLineId;
+	@Nullable MaturingConfigId maturingConfigId;
+	@Nullable HuId issueHuId;
 
-	@Builder
-	public PPOrderCandidateCreateRequest(
+	public PPOrderCandidateCreateUpdateRequest(
+			@Nullable final PPOrderCandidateId ppOrderCandidateId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -79,11 +87,24 @@ public class PPOrderCandidateCreateRequest
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
 			final boolean simulated,
+			@Nullable final Boolean isMaturing,
 			@Nullable final String traceId,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@Nullable final HUPIItemProductId packingMaterialId,
+			@Nullable final MaturingConfigLineId maturingConfigLineId,
+			@Nullable final MaturingConfigId maturingConfigId,
+			@Nullable final HuId issueHuId)
 	{
-		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
+		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
+		final boolean isMaturingActual = isMaturing != null && isMaturing;
+		if (isMaturingActual)
+		{
+			Check.assume(maturingConfigId != null, "maturing configuration is mandatory");
+			Check.assume(maturingConfigLineId != null, "maturing configuration line is mandatory");
+			Check.assume(issueHuId != null, "issueHUId is mandatory");
+
+		}
+		this.ppOrderCandidateId = ppOrderCandidateId;
 		this.clientAndOrgId = clientAndOrgId;
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;
@@ -97,12 +118,11 @@ public class PPOrderCandidateCreateRequest
 		this.salesOrderLineId = salesOrderLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.simulated = simulated;
+		this.isMaturing = isMaturingActual;
 		this.traceId = traceId;
 		this.packingMaterialId = packingMaterialId;
-	}
-
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class PPOrderCreateRequestBuilder
-	{
+		this.maturingConfigLineId = maturingConfigLineId;
+		this.maturingConfigId = maturingConfigId;
+		this.issueHuId = issueHuId;
 	}
 }

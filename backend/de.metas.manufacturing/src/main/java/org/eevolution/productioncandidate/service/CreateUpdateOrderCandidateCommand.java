@@ -23,7 +23,10 @@
 package org.eevolution.productioncandidate.service;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -47,25 +50,35 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CreateOrderCandidateCommand
+public class CreateUpdateOrderCandidateCommand
 {
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 
 	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
 
-	private final PPOrderCandidateCreateRequest request;
+	private final PPOrderCandidateCreateUpdateRequest request;
 
 	@Builder
-	public CreateOrderCandidateCommand(@NonNull final PPOrderCandidateCreateRequest request)
+	public CreateUpdateOrderCandidateCommand(@NonNull final PPOrderCandidateCreateUpdateRequest request)
 	{
 		this.request = request;
 	}
 
 	public I_PP_Order_Candidate execute()
 	{
+		final ProductPlanning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
 		// Create PP Order Candidate
-		final I_PP_Order_Candidate ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
+		final I_PP_Order_Candidate ppOrderCandidateRecord;
+		if (request.getPpOrderCandidateId() == null)
+		{
+			ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
+		}
+		else
+		{
+			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
+		}
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
@@ -77,7 +90,6 @@ public class CreateOrderCandidateCommand
 
 		ppOrderCandidateRecord.setM_Product_ID(request.getProductId().getRepoId());
 
-		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
 		ppOrderCandidateRecord.setPP_Product_BOM_ID(bom.getPP_Product_BOM_ID());
 
 		if (bom.getM_AttributeSetInstance_ID() > 0)
@@ -100,10 +112,13 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
-		final ProductPlanning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
 		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
 
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
+		ppOrderCandidateRecord.setIsMaturing(request.isMaturing());
+		ppOrderCandidateRecord.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(request.getMaturingConfigId()));
+		ppOrderCandidateRecord.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(request.getMaturingConfigLineId()));
+		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
 		if (request.isSimulated())
 		{
@@ -111,6 +126,7 @@ public class CreateOrderCandidateCommand
 		}
 
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
+		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 
