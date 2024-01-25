@@ -127,10 +127,10 @@ public class ProductPlanning
 	{
 		if (isMatured)
 		{
-			FillMandatoryException.assumeNotNull(maturingConfigId != null, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID);
-			FillMandatoryException.assumeNotNull(maturingConfigLineId != null, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID);
-			FillMandatoryException.assumeNotNull(warehouseId != null, I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
-			FillMandatoryException.assumeNotNull(plantId != null, I_PP_Product_Planning.COLUMNNAME_S_Resource_ID);
+			FillMandatoryException.assumeNotNull(maturingConfigId, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID);
+			FillMandatoryException.assumeNotNull(maturingConfigLineId, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID);
+			FillMandatoryException.assumeNotNull(warehouseId, I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
+			FillMandatoryException.assumeNotNull(plantId, I_PP_Product_Planning.COLUMNNAME_S_Resource_ID);
 		}
 		this.disallowSaving = disallowSaving;
 		this.id = id;
