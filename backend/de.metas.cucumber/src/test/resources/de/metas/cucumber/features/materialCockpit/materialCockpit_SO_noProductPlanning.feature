@@ -679,7 +679,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-  @ignore
+
   @Id:S0189_1100
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=8
@@ -753,7 +753,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                               | 8                       | 0                          | -8                            | 0                            | 8                                |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                               | 8                       | 2                          | -8                            | 0                            | 8                                |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            | 0                                |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
