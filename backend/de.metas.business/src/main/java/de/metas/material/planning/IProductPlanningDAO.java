@@ -1,5 +1,6 @@
 package de.metas.material.planning;
 
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -33,6 +34,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		@Nullable WarehouseId warehouseId;
 		@Nullable ResourceId plantId;
 		@Nullable ProductId productId;
+		@Nullable MaturingConfigLineId maturingConfigLineId;
 		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
@@ -48,12 +50,14 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
+				@Nullable final MaturingConfigLineId maturingConfigLineId,
 				@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
+			this.maturingConfigLineId = maturingConfigLineId;
 			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		}
 	}

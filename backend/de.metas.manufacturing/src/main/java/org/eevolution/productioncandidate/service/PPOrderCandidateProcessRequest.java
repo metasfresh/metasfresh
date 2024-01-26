@@ -41,4 +41,6 @@ public class PPOrderCandidateProcessRequest
 	Boolean isDocCompleteOverride;
 
 	boolean autoProcessCandidatesAfterProduction;
+
+	boolean autoCloseCandidatesAfterProduction;
 }
