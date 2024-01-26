@@ -83,7 +83,7 @@ public class PP_Order
 	public void onAfterComplete(@NonNull final I_PP_Order order)
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getCandidatesByOrderId(ppOrderId);
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByOrderId(ppOrderId);
 
 		if (!ppOrderBL.isAtLeastOneCandidateMaturing(candidates))
 		{

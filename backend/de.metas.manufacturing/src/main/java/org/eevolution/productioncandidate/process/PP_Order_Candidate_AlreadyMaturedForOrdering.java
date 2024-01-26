@@ -29,7 +29,7 @@ import org.eevolution.model.I_PP_Order_Candidate;
 
 import java.math.BigDecimal;
 
-public class PP_Order_Candidate_EnqueuePastForOrdering extends PP_Order_Candidate_EnqueueSelectionForOrdering
+public class PP_Order_Candidate_AlreadyMaturedForOrdering extends PP_Order_Candidate_EnqueueSelectionForOrdering
 {
 	@Override
 	protected IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
@@ -38,6 +38,7 @@ public class PP_Order_Candidate_EnqueuePastForOrdering extends PP_Order_Candidat
 				.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, false)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, true)
 				.addCompareFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.addCompareFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, Env.getDate())
 				.addOnlyActiveRecordsFilter()

@@ -45,6 +45,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -81,9 +82,9 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-	private final HUQRCodesService huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final MaturingConfigRepository maturingConfigRepository = SpringContextHolder.instance.getBean(MaturingConfigRepository.class);
-	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
+	private final ExtendedMemorizingSupplier<HUQRCodesService> huqrCodesServiceSupplier = ExtendedMemorizingSupplier.of(() -> SpringContextHolder.instance.getBean(HUQRCodesService.class));
+	private final ExtendedMemorizingSupplier<MaturingConfigRepository> maturingConfigRepositorySupplier = ExtendedMemorizingSupplier.of(() -> SpringContextHolder.instance.getBean(MaturingConfigRepository.class));
+	private final ExtendedMemorizingSupplier<PPOrderCandidateDAO> ppOrderCandidateDAOSupplier = ExtendedMemorizingSupplier.of(() -> SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class));
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -299,7 +300,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	{
 		return candidates
 				.stream()
-				.anyMatch(candidate -> candidate.isMaturing() && HuId.ofRepoIdOrNull(candidate.getIssue_HU_ID()) != null);
+				.anyMatch(I_PP_Order_Candidate::isMaturing);
 	}
 
 	private boolean isEligibleHuToIssue(final HuId huId)
@@ -327,14 +328,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			return false;
 		}
 
-		final ImmutableList<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory()
-				.streamHUProductStorages(hu)
-				.filter(huProductStorage -> !huProductStorage.isEmpty())
-				.collect(ImmutableList.toImmutableList());
+		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
+				.getSingleHUProductStorage(hu);
 
-		final IHUProductStorage productStorage = CollectionUtils.singleElement(productStorages);
-
-		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepository.getByFromProductId(productStorage.getProductId());
+		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepositorySupplier.get().getByFromProductId(productStorage.getProductId());
 
 		if (maturingConfigLines.isEmpty())
 		{
@@ -355,7 +352,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@NonNull
 	private I_PP_Order_Candidate getSingleMaturingCandidate(@NonNull final PPOrderId ppOrderId)
 	{
-		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAO.getCandidatesByOrderId(ppOrderId);
+		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAOSupplier.get().getByOrderId(ppOrderId);
 		if (!isAtLeastOneCandidateMaturing(maturingCandidates))
 		{
 			throw new AdempiereException("No maturing candidates found for PPOrderId!")
@@ -398,8 +395,8 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
 		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
 
-		final HUQRCode huqrCode = huqrCodesService.getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
+		final HUQRCode huqrCode = huqrCodesServiceSupplier.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
+		huqrCodesServiceSupplier.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}

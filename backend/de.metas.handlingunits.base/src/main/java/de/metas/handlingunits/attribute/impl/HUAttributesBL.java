@@ -31,7 +31,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -50,7 +49,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.stream.Collectors;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -285,9 +283,7 @@ public class HUAttributesBL implements IHUAttributesBL
 			final IHUStorage huStorageFrom = storageFactory.getStorage(huTo);
 
 			final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
-					.streamHUProductStorages(huTo)
-					.filter(huProductStorage -> !huProductStorage.isEmpty())
-					.collect(Collectors.collectingAndThen(ImmutableList.toImmutableList(), CollectionUtils::singleElement));
+					.getSingleHUProductStorage(huTo);
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
 					.setProductId(productStorage.getProductId())

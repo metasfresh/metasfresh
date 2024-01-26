@@ -41,22 +41,22 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585346,541913,541453,541756,TO_TIMESTAMP('2024-01-14 15:51:06','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y',TO_TIMESTAMP('2024-01-14 15:51:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
--- Value: PP_Order_Candidate_EnqueuePastForOrdering
--- Classname: org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering
+-- Value: PP_Order_Candidate_AlreadyMaturedForOrdering
+-- Classname: org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering
 -- 2024-01-15T20:15:14.630Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585347,'Y','org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering','N',TO_TIMESTAMP('2024-01-15 22:15:12','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Reifung für alle geeigneten Kandidaten einleiten','json','N','Y','xls','Java',TO_TIMESTAMP('2024-01-15 22:15:12','YYYY-MM-DD HH24:MI:SS'),100,'PP_Order_Candidate_EnqueuePastForOrdering')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585347,'Y','org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering','N',TO_TIMESTAMP('2024-01-15 22:15:12','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Reifung für alle geeigneten Kandidaten einleiten','json','N','Y','xls','Java',TO_TIMESTAMP('2024-01-15 22:15:12','YYYY-MM-DD HH24:MI:SS'),100,'PP_Order_Candidate_AlreadyMaturedForOrdering')
 ;
 
 -- 2024-01-15T20:15:14.640Z
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=585347 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- 2024-01-15T20:15:27.489Z
 UPDATE AD_Process_Trl SET Name='Initiate maturation for all eligible candidates',Updated=TO_TIMESTAMP('2024-01-15 22:15:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585347
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- ParameterName: IsDocComplete
 -- 2024-01-15T20:16:22.023Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,542644,0,585347,542769,20,'IsDocComplete',TO_TIMESTAMP('2024-01-15 22:16:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','Legt fest, ob ggf erstellte Belege (z.B. Produktionsaufträge) auch direkt automatisch fertig gestellt werden sollen.','1=0','EE01',0,'Y','N','Y','N','N','N','Beleg fertig stellen',10,TO_TIMESTAMP('2024-01-15 22:16:21','YYYY-MM-DD HH24:MI:SS'),100)
@@ -66,7 +66,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542769 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- ParameterName: AutoProcessCandidatesAfterProduction
 -- 2024-01-15T20:16:49.889Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,581640,0,585347,542770,20,'AutoProcessCandidatesAfterProduction',TO_TIMESTAMP('2024-01-15 22:16:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','Wenn angehakt werden die ausgewählten Kandidaten nach dem Erstellen des Produktionsauftrags sofort als bearbeitet markiert, auch wenn es sich um eine Teilmenge handelt.','1=0','EE01',0,'Y','N','Y','N','N','N','Immer als verarbeitet markieren',20,TO_TIMESTAMP('2024-01-15 22:16:49','YYYY-MM-DD HH24:MI:SS'),100)
@@ -76,28 +76,28 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542770 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- 2024-01-15T20:18:23.465Z
 UPDATE AD_Process_Trl SET Description='Checks all maturing candidates for any that have not yet been processed and whose "date promised" lies in the past, and creates manufacturing orders from them.',Updated=TO_TIMESTAMP('2024-01-15 22:18:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585347
 ;
 
--- Value: PP_Order_Candidate_EnqueuePastForOrdering
--- Classname: org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering
+-- Value: PP_Order_Candidate_AlreadyMaturedForOrdering
+-- Classname: org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering
 -- 2024-01-15T20:18:27.180Z
 UPDATE AD_Process SET Description='Prüft alle Reifende Kandidaten auf solche, die noch nicht verarbeitet wurden und deren "zugesagter Termin" in der Vergangenheit liegt, und erstellt daraus Produktionsaufträge.', Help=NULL, Name='Reifung für alle geeigneten Kandidaten einleiten',Updated=TO_TIMESTAMP('2024-01-15 22:18:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585347
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- 2024-01-15T20:18:27.175Z
 UPDATE AD_Process_Trl SET Description='Prüft alle Reifende Kandidaten auf solche, die noch nicht verarbeitet wurden und deren "zugesagter Termin" in der Vergangenheit liegt, und erstellt daraus Produktionsaufträge.',Updated=TO_TIMESTAMP('2024-01-15 22:18:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585347
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- 2024-01-15T20:18:29.222Z
 UPDATE AD_Process_Trl SET Description='Prüft alle Reifende Kandidaten auf solche, die noch nicht verarbeitet wurden und deren "zugesagter Termin" in der Vergangenheit liegt, und erstellt daraus Produktionsaufträge.',Updated=TO_TIMESTAMP('2024-01-15 22:18:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585347
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- 2024-01-15T20:18:31.901Z
 UPDATE AD_Process_Trl SET Description='Prüft alle Reifende Kandidaten auf solche, die noch nicht verarbeitet wurden und deren "zugesagter Termin" in der Vergangenheit liegt, und erstellt daraus Produktionsaufträge.',Updated=TO_TIMESTAMP('2024-01-15 22:18:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585347
 ;
@@ -139,7 +139,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542772 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: PP_Order_Candidate_EnqueuePastForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueuePastForOrdering)
+-- Process: PP_Order_Candidate_AlreadyMaturedForOrdering(org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering)
 -- ParameterName: AutoCloseCandidatesAfterProduction
 -- 2024-01-16T18:21:04.129Z
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,582901,0,585347,542773,20,'AutoCloseCandidatesAfterProduction',TO_TIMESTAMP('2024-01-16 20:21:04','YYYY-MM-DD HH24:MI:SS'),100,'Y','Wenn dieses Kontrollkästchen aktiviert ist, werden die ausgewählten Kandidaten sofort nach der Erstellung des Produktionsauftrags als abgeschlossen markiert, auch wenn es sich um eine Teilmenge handelt.','1=0','EE01',0,'Y','N','Y','N','N','N','Immer als geschlossen markieren',30,TO_TIMESTAMP('2024-01-16 20:21:04','YYYY-MM-DD HH24:MI:SS'),100)

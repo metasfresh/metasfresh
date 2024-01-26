@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.model.interceptor;
 
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -135,6 +136,23 @@ public class PP_Order_Candidate
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
 	}
 
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE ,
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_IsMaturing, I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID } )
+	public void checkMaturingCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		if (!ppOrderCandidateRecord.isMaturing())
+		{
+			return;
+		}
+
+		final HuId issueHuId = HuId.ofRepoIdOrNull(ppOrderCandidateRecord.getIssue_HU_ID());
+		if (issueHuId == null)
+		{
+			throw new AdempiereException("Mandatory property " + I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID + " for Maturing Candidates is missing!");
+		}
+	}
+	
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		validateQtyEntered(ppOrderCandidateRecord);

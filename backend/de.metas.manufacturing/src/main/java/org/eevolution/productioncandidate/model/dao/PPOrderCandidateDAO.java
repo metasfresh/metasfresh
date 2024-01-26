@@ -60,6 +60,11 @@ public class PPOrderCandidateDAO
 	@NonNull
 	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Set<PPOrderCandidateId> ppOrderCandidateIds)
 	{
+		if (ppOrderCandidateIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		return queryBL
 				.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateIds)
@@ -129,7 +134,7 @@ public class PPOrderCandidateDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_PP_Order_Candidate> getCandidatesByOrderId(@NonNull final PPOrderId ppOrderId)
+	public ImmutableList<I_PP_Order_Candidate> getByOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds = queryBL
 				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
