@@ -36,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -149,7 +150,7 @@ public class PP_Order_Candidate
 		final HuId issueHuId = HuId.ofRepoIdOrNull(ppOrderCandidateRecord.getIssue_HU_ID());
 		if (issueHuId == null)
 		{
-			throw new AdempiereException("Mandatory property " + I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID + " for Maturing Candidates is missing!");
+			throw new FillMandatoryException(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID);
 		}
 	}
 	
