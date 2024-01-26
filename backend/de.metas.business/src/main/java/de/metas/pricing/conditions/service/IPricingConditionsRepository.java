@@ -2,9 +2,7 @@ package de.metas.pricing.conditions.service;
 
 import java.util.Collection;
 
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
