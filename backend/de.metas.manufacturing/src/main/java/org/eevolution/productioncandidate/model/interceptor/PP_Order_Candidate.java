@@ -137,8 +137,8 @@ public class PP_Order_Candidate
 	}
 
 	@ModelChange(
-			timings = ModelValidator.TYPE_BEFORE_CHANGE ,
-			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_IsMaturing, I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID } )
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_IsMaturing, I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID })
 	public void checkMaturingCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		if (!ppOrderCandidateRecord.isMaturing())
