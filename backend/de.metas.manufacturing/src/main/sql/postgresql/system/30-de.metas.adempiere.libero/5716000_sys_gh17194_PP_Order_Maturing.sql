@@ -160,3 +160,8 @@ INSERT INTO C_Queue_Processor (AD_Client_ID,AD_Org_ID,C_Queue_Processor_ID,Creat
 -- 2024-01-25T19:25:08.743Z
 INSERT INTO C_Queue_Processor_Assign (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,C_Queue_Processor_Assign_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540105,540119,540076,TO_TIMESTAMP('2024-01-25 21:25:08','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2024-01-25 21:25:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- 2024-01-26T17:53:10.228Z
+INSERT INTO AD_Scheduler (AD_Client_ID, AD_Org_ID, AD_Process_ID, AD_Role_ID, AD_Scheduler_ID, Created, CreatedBy, CronPattern, Description, EntityType, Frequency, FrequencyType, IsActive, IsIgnoreProcessingTime, KeepLogDays, ManageScheduler, Name, Processing, SchedulerProcessType, ScheduleType, Status, Supervisor_ID, Updated, UpdatedBy)
+VALUES (0, 0, 585347, 0, 550110, TO_TIMESTAMP('2024-01-26 19:53:09', 'YYYY-MM-DD HH24:MI:SS'), 100, '00 2 * * *', 'Runs nightly to initiate maturation for all eligible candidates', 'EE01', 0, 'D', 'Y', 'N', 7, 'N', 'PP_Order_Candidate_AlreadyMaturedForOrdering', 'N', 'P', 'C', 'NEW', 100, TO_TIMESTAMP('2024-01-26 19:53:09', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
