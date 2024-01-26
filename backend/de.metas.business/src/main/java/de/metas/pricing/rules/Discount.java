@@ -27,12 +27,14 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
@@ -46,10 +48,14 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 /**
  * Discount Calculations
@@ -65,6 +71,11 @@ import java.math.BigDecimal;
 public class Discount implements IPricingRule
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
+	final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+	final IPricingConditionsRepository pricingConditionsRepository = Services.get(IPricingConditionsRepository.class);
+	final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
@@ -109,9 +120,7 @@ public class Discount implements IPricingRule
 			return;
 		}
 
-		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request).orElse(null);
-
 		result.setUsesDiscountSchema(true);
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
@@ -124,14 +133,40 @@ public class Discount implements IPricingRule
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final SOTrx soTrx = pricingCtx.getSoTrx();
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
-		if (pricingConditionsId == null)
+		final int discountSchemaIdSchemaId = bpartnerBL.getDiscountSchemaId(bpartner, soTrx);
+		final I_M_DiscountSchema discountSchemaRecord = pricingConditionsRepository.getDiscountSchemaById(discountSchemaIdSchemaId);
+		// discountSchemaRecord.getValidFrom().toInstant().isAfter()
+
+		boolean isDiscountSchemaApplicable = true; // by default, we apply discount
+
+		// search for cases when the shcmena is not valid
+		if (!discountSchemaRecord.isActive())
+		{
+			isDiscountSchemaApplicable = false;
+		}
+		else if (discountSchemaRecord.getValidFrom() != null)
+		{
+			final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
+			final LocalDate validfrom = TimeUtil.asLocalDate(discountSchemaRecord.getValidFrom(), timeZone);
+			if (!pricingCtx.getPriceDate().isAfter(validfrom))
+			{
+				isDiscountSchemaApplicable = false;
+			}
+		}
+
+		final PricingConditionsId pricingConditionsId;
+		if (isDiscountSchemaApplicable)
+		{
+			pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(discountSchemaIdSchemaId);
+			if (pricingConditionsId == null)
+			{
+				return null;
+			}
+		}
+		else
 		{
 			return null;
 		}

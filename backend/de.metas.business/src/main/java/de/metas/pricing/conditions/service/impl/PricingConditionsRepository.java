@@ -878,4 +878,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		return load(discountSchemaBreakId.getDiscountSchemaBreakId(), I_M_DiscountSchemaBreak.class);
 	}
+
+	public I_M_DiscountSchema getDiscountSchemaById(final int discountSchemaRecordId) { return loadOutOfTrx(discountSchemaRecordId, I_M_DiscountSchema.class); }
 }
