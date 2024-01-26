@@ -150,11 +150,7 @@ public class PPOrderCandidateService
 
 	public void closeCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
-		ppOrderCandidate.setIsClosed(true);
-		ppOrderCandidate.setProcessed(true);
-		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
-
-		ppOrderCandidateDAO.save(ppOrderCandidate);
+		ppOrderCandidateDAO.closeCandidate(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
 	}
 
 	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -388,9 +384,9 @@ public class PPOrderCandidateService
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		return RecomputeMaturingCandidatesResult.builder()
 				.deleted(deletedCandidates)
-				.created(resultMap.get(CrudOperationResult.CREATED))
-				.updated(resultMap.get(CrudOperationResult.UPDATED))
-				.ignored(resultMap.get(CrudOperationResult.NO_OP))
+				.created(resultMap.get(CrudOperationResult.CREATED) != null ? resultMap.get(CrudOperationResult.CREATED) : 0)
+				.updated(resultMap.get(CrudOperationResult.UPDATED) != null ? resultMap.get(CrudOperationResult.UPDATED) : 0)
+				.ignored(resultMap.get(CrudOperationResult.NO_OP) != null ? resultMap.get(CrudOperationResult.NO_OP) : 0)
 				.build();
 	}
 
@@ -418,22 +414,22 @@ public class PPOrderCandidateService
 		Check.assume(productPlanning.isMatured(), "PP_Product_Planning_ID: {} is not matured", productPlanningId);
 
 		createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
-				.clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
-				.ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
-				.maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
-				.maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
-				.productId(ppMaturingCandidatesV.getProductId())
-				.warehouseId(ppMaturingCandidatesV.getWarehouseId())
-				.productPlanningId(productPlanningId)
-				.plantId(productPlanning.getPlantId())
-				.qtyRequired(ppMaturingCandidatesV.getQtyRequired())
-				.datePromised(ppMaturingCandidatesV.getDateStartSchedule())
-				.dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
-				.isMaturing(true)
-				.simulated(false)
-				.attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
-				.issueHuId(ppMaturingCandidatesV.getIssueHuId())
-				.build());
+									  .clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
+									  .ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
+									  .maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
+									  .maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
+									  .productId(ppMaturingCandidatesV.getProductId())
+									  .warehouseId(ppMaturingCandidatesV.getWarehouseId())
+									  .productPlanningId(productPlanningId)
+									  .plantId(productPlanning.getPlantId())
+									  .qtyRequired(ppMaturingCandidatesV.getQtyRequired())
+									  .datePromised(ppMaturingCandidatesV.getDateStartSchedule())
+									  .dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
+									  .isMaturing(true)
+									  .simulated(false)
+									  .attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
+									  .issueHuId(ppMaturingCandidatesV.getIssueHuId())
+									  .build());
 
 		return ppMaturingCandidatesV.getPpOrderCandidateId() == null ? CrudOperationResult.CREATED : CrudOperationResult.UPDATED;
 	}

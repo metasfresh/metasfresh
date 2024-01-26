@@ -35,6 +35,7 @@ final class MaturingConfigMap
 {
 	private final ImmutableMap<MaturingConfigLineId, MaturingConfigLine> byId;
 	private final ImmutableListMultimap<ProductId, MaturingConfigLine> byMaturedProductId;
+	private final ImmutableListMultimap<ProductId, MaturingConfigLine> byFromProductId;
 
 	public MaturingConfigMap(@NonNull final List<MaturingConfigLine> maturingConfigLines)
 	{
@@ -42,6 +43,9 @@ final class MaturingConfigMap
 
 		byMaturedProductId = maturingConfigLines.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(MaturingConfigLine::getMaturedProductId, line -> line));
+
+		byFromProductId = maturingConfigLines.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(MaturingConfigLine::getFromProductId, line -> line));
 	}
 
 	@NonNull
@@ -58,5 +62,11 @@ final class MaturingConfigMap
 	public List<MaturingConfigLine> getByMaturedProductId(@NonNull final ProductId maturedProductId)
 	{
 		return byMaturedProductId.get(maturedProductId);
+	}
+
+	@NonNull
+	public List<MaturingConfigLine> getByFromProductId(@NonNull final ProductId maturedProductId)
+	{
+		return byFromProductId.get(maturedProductId);
 	}
 }
