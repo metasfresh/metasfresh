@@ -34,7 +34,6 @@ import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
-import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
@@ -72,7 +71,6 @@ public class Discount implements IPricingRule
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
 	final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-	final IPricingConditionsRepository pricingConditionsRepository = Services.get(IPricingConditionsRepository.class);
 	final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -136,8 +134,8 @@ public class Discount implements IPricingRule
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final int discountSchemaIdSchemaId = bpartnerBL.getDiscountSchemaId(bpartner, soTrx);
-		final I_M_DiscountSchema discountSchemaRecord = pricingConditionsRepository.getDiscountSchemaById(discountSchemaIdSchemaId);
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(bpartner, soTrx);
+		final I_M_DiscountSchema discountSchemaRecord = pricingConditionsService.getDiscountSchemaById(discountSchemaId);
 
 		boolean isDiscountSchemaApplicable = true; // by default, we apply discount
 
@@ -159,7 +157,7 @@ public class Discount implements IPricingRule
 		final PricingConditionsId pricingConditionsId;
 		if (isDiscountSchemaApplicable)
 		{
-			pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(discountSchemaIdSchemaId);
+			pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(discountSchemaId);
 			if (pricingConditionsId == null)
 			{
 				return null;
