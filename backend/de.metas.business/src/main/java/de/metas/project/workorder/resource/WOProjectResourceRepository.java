@@ -384,7 +384,7 @@ public class WOProjectResourceRepository
 		final InSetPredicate<ResourceIdAndType> resourceIdAndTypes = query.getResourceIds();
 		final InSetPredicate<ProjectId> projectIds = query.getProjectIds();
 
-		if (resourceIdAndTypes.isNone() || projectIds.isNone())
+		if (resourceIdAndTypes.isNone() && projectIds.isNone())
 		{
 			return null;
 		}
@@ -393,7 +393,7 @@ public class WOProjectResourceRepository
 				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
 
-		if (!resourceIdAndTypes.isOnly())
+		if (resourceIdAndTypes.isOnly())
 		{
 			final ICompositeQueryFilter<I_C_Project_WO_Resource> resourcesFilter = sqlQuery.addCompositeQueryFilter().setJoinOr();
 			for (final ResourceIdAndType resourceIdAndType : resourceIdAndTypes.toSet())

@@ -8,7 +8,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
-import de.metas.project.workorder.resource.WOResourceType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -45,7 +44,7 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 	ResourceAllocation alloc(final int startDay, final int endDay, @Nullable final SimulationPlanId simulationId, final WOProjectResourceId projectResourceId)
 	{
 		return ResourceAllocation.builder()
-				.resourceId(ResourceIdAndType.of(ResourceId.ofRepoId(1), WOResourceType.MACHINE))
+				.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 				.projectResourceId(projectResourceId)
 				.appliedSimulationId(simulationId)
 				.dateRange(allDay(startDay, endDay))

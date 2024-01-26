@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.product.ResourceId;
-import de.metas.resource.ResourceGroupId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,8 @@ class CalendarResourceIdTest
 	@Test
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
-		final CalendarResourceId id = CalendarResourceId.ofRepoId(ResourceId.ofRepoId(123456));
-		assertThat(id.getAsString()).isEqualTo("ResourceId-123456");
+		final CalendarResourceId id = ResourceIdAndType.machine(ResourceId.ofRepoId(123456)).toCalendarResourceId();
+		assertThat(id.getAsString()).isEqualTo("ResourceIdAndType-M-123456");
 
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		final String jsonString = objectMapper.writeValueAsString(id);
@@ -56,17 +56,16 @@ class CalendarResourceIdTest
 		@Test
 		void standardCase()
 		{
-			final ResourceId resourceId = ResourceId.ofRepoId(123456);
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceId);
-			assertThat(calendarResourceId.toRepoId(ResourceId.class)).isEqualTo(resourceId);
+			final ResourceIdAndType resourceIdAndType = ResourceIdAndType.machine((ResourceId.ofRepoId(123456)));
+			final CalendarResourceId calendarResourceId = resourceIdAndType.toCalendarResourceId();
+			assertThat(ResourceIdAndType.ofCalendarResourceId(calendarResourceId)).isEqualTo(resourceIdAndType);
 		}
 
 		@Test
 		void wrong_toRepoId_param()
 		{
-			final ResourceId resourceId = ResourceId.ofRepoId(123456);
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceId);
-			assertThatThrownBy(() -> calendarResourceId.toRepoId(ResourceGroupId.class))
+			final CalendarResourceId calendarResourceId = ResourceIdAndType.machine(ResourceId.ofRepoId(123456)).toCalendarResourceId();
+			assertThatThrownBy(calendarResourceId::toResourceGroupId)
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Cannot convert ");
 		}

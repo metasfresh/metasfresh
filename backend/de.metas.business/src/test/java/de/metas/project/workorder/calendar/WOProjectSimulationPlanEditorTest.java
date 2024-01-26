@@ -15,7 +15,6 @@ import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResources;
-import de.metas.project.workorder.resource.WOResourceType;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectSteps;
@@ -88,7 +87,7 @@ class WOProjectSimulationPlanEditorTest
 								WOProjectResource.builder()
 										.woProjectResourceId(WOProjectResourceId.ofRepoId(1, 1))
 										.woProjectStepId(WOProjectStepId.ofRepoId(1, 1))
-										.resourceIdAndType(ResourceIdAndType.of(ResourceId.ofRepoId(1), WOResourceType.MACHINE))
+										.resourceIdAndType(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 										.dateRange(allDay(1, 3))
 										.orgId(OrgId.ANY)
 										.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
@@ -97,7 +96,7 @@ class WOProjectSimulationPlanEditorTest
 								WOProjectResource.builder()
 										.woProjectResourceId(WOProjectResourceId.ofRepoId(1, 2))
 										.woProjectStepId(WOProjectStepId.ofRepoId(1, 1))
-										.resourceIdAndType(ResourceIdAndType.of(ResourceId.ofRepoId(2), WOResourceType.MACHINE))
+										.resourceIdAndType(ResourceIdAndType.machine(ResourceId.ofRepoId(2)))
 										.dateRange(allDay(4, 5))
 										.orgId(OrgId.ANY)
 										.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
@@ -106,7 +105,7 @@ class WOProjectSimulationPlanEditorTest
 								WOProjectResource.builder()
 										.woProjectResourceId(WOProjectResourceId.ofRepoId(1, 3))
 										.woProjectStepId(WOProjectStepId.ofRepoId(1, 2))
-										.resourceIdAndType(ResourceIdAndType.of(ResourceId.ofRepoId(1), WOResourceType.MACHINE))
+										.resourceIdAndType(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 										.dateRange(allDay(6, 8))
 										.orgId(OrgId.ANY)
 										.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
@@ -115,7 +114,7 @@ class WOProjectSimulationPlanEditorTest
 								WOProjectResource.builder()
 										.woProjectResourceId(WOProjectResourceId.ofRepoId(1, 4))
 										.woProjectStepId(WOProjectStepId.ofRepoId(1, 2))
-										.resourceIdAndType(ResourceIdAndType.of(ResourceId.ofRepoId(2), WOResourceType.MACHINE))
+										.resourceIdAndType(ResourceIdAndType.machine(ResourceId.ofRepoId(2)))
 										.dateRange(allDay(8, 9))
 										.orgId(OrgId.ANY)
 										.durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))

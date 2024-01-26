@@ -7,7 +7,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
-import de.metas.project.workorder.resource.WOResourceType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -24,12 +23,12 @@ public class ResourceAllocations_TestCase_TwoActualAllocations_Test
 				null,
 				ImmutableList.of(
 						ResourceAllocation.builder()
-								.resourceId(ResourceIdAndType.of(ResourceId.ofRepoId(1), WOResourceType.MACHINE))
+								.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 								.projectResourceId(WOProjectResourceId.ofRepoId(1, 1))
 								.dateRange(dateRange1)
 								.build(),
 						ResourceAllocation.builder()
-								.resourceId(ResourceIdAndType.of(ResourceId.ofRepoId(1), WOResourceType.MACHINE))
+								.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 								.projectResourceId(WOProjectResourceId.ofRepoId(1, 2))
 								.dateRange(dateRange2)
 								.build()

@@ -4,7 +4,6 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -15,6 +14,7 @@ import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.quantity.Quantity;
@@ -120,8 +120,7 @@ class ToCalendarEntryConverter
 		return CalendarEntry.builder()
 				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
-				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(),
-						budget.getResourceGroupId())))
+				.resourceId(extractCalendarResourceId(budget))
 				.title(getCalendarBudgetEntryTitle(project, budget.getPlannedDuration()))
 				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
 				.dateRange(budget.getDateRange())
@@ -129,6 +128,23 @@ class ToCalendarEntryConverter
 				.color(DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR) // metasfresh green
 				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))
 				.build();
+	}
+
+	@NonNull
+	private static CalendarResourceId extractCalendarResourceId(final @NonNull BudgetProjectResource budget)
+	{
+		if (budget.getResourceId() != null)
+		{
+			return ResourceIdAndType.machine(budget.getResourceId()).toCalendarResourceId();
+		}
+		else if (budget.getResourceGroupId() != null)
+		{
+			return CalendarResourceId.ofResourceGroupId(budget.getResourceGroupId());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot extract CalendarResourceId from " + budget);
+		}
 	}
 
 	@NonNull

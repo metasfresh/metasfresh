@@ -10,7 +10,7 @@ class ResourceIdAndTypeTest
 	@Test
 	void toCalendarResourceId_ofCalendarResourceId()
 	{
-		final ResourceIdAndType resourceIdAndType = ResourceIdAndType.of(ResourceId.ofRepoId(1234), WOResourceType.HUMAN);
+		final ResourceIdAndType resourceIdAndType = ResourceIdAndType.human(ResourceId.ofRepoId(1234));
 		final CalendarResourceId calendarResourceId = resourceIdAndType.toCalendarResourceId();
 		final ResourceIdAndType resourceIdAndType2 = ResourceIdAndType.ofCalendarResourceId(calendarResourceId);
 		Assertions.assertThat(resourceIdAndType2).isEqualTo(resourceIdAndType);

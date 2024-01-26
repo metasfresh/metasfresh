@@ -20,6 +20,10 @@ public class ResourceIdAndType
 	@NonNull ResourceId resourceId;
 	@NonNull WOResourceType type;
 
+	public static ResourceIdAndType machine(@NonNull final ResourceId resourceId) {return of(resourceId, WOResourceType.MACHINE);}
+
+	public static ResourceIdAndType human(@NonNull final ResourceId resourceId) {return of(resourceId, WOResourceType.HUMAN);}
+
 	public static boolean equals(@Nullable final ResourceIdAndType id1, @Nullable final ResourceIdAndType id2) {return Objects.equals(id1, id2);}
 
 	@Override

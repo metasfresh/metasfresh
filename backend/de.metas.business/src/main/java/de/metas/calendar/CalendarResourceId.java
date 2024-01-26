@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -63,6 +64,16 @@ public class CalendarResourceId
 
 		this.type = typeNorm;
 		this.localIdPart = localIdPartNorm;
+	}
+
+	public static CalendarResourceId ofResourceGroupId(@NonNull final ResourceGroupId resourceGroupId)
+	{
+		return ofRepoId(resourceGroupId);
+	}
+
+	private static <T extends RepoIdAware> CalendarResourceId ofRepoId(@NonNull final T id)
+	{
+		return ofTypeAndLocalIdPart(extractType(id.getClass()), String.valueOf(id.getRepoId()));
 	}
 
 	/**
@@ -118,20 +129,11 @@ public class CalendarResourceId
 
 	public static boolean equals(@Nullable final CalendarResourceId id1, @Nullable final CalendarResourceId id2) {return Objects.equals(id1, id2);}
 
-	public static <T extends RepoIdAware> CalendarResourceId ofRepoId(@NonNull final T id)
-	{
-		return ofTypeAndLocalIdPart(extractType(id.getClass()), String.valueOf(id.getRepoId()));
-	}
-
-	@Nullable
-	public static <T extends RepoIdAware> CalendarResourceId ofNullableRepoId(@Nullable final T id)
-	{
-		return id != null ? ofRepoId(id) : null;
-	}
-
 	private static <T extends RepoIdAware> String extractType(@NonNull final Class<T> clazz) {return clazz.getSimpleName();}
 
-	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)
+	public ResourceGroupId toResourceGroupId() {return toRepoId(ResourceGroupId.class);}
+
+	private <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)
 	{
 		final T id = toRepoIdOrNull(clazz);
 		if (id == null)
