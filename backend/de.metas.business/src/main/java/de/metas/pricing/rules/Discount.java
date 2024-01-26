@@ -24,12 +24,13 @@ package de.metas.pricing.rules;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
@@ -47,7 +48,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -69,11 +69,10 @@ import java.time.ZoneId;
  */
 public class Discount implements IPricingRule
 {
-	private final transient Logger log = LogManager.getLogger(getClass());
-	final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-	final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private static final Logger log = LogManager.getLogger(Discount.class);
+	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
@@ -130,44 +129,14 @@ public class Discount implements IPricingRule
 	{
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final SOTrx soTrx = pricingCtx.getSoTrx();
-
-		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
-		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
-
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(bpartner, soTrx);
-		final I_M_DiscountSchema discountSchemaRecord = pricingConditionsService.getDiscountSchemaById(discountSchemaId);
-
-		boolean isDiscountSchemaApplicable = true; // by default, we apply discount
-
-		// search for cases when the discount schema is not valid
-		if (!discountSchemaRecord.isActive())
-		{
-			isDiscountSchemaApplicable = false;
-		}
-		else if (discountSchemaRecord.getValidFrom() != null)
-		{
-			final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
-			final LocalDate validfrom = TimeUtil.asLocalDate(discountSchemaRecord.getValidFrom(), timeZone);
-			if (!pricingCtx.getPriceDate().isAfter(validfrom))
-			{
-				isDiscountSchemaApplicable = false;
-			}
-		}
-
-		final PricingConditionsId pricingConditionsId;
-		if (isDiscountSchemaApplicable)
-		{
-			pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(discountSchemaId);
-			if (pricingConditionsId == null)
-			{
-				return null;
-			}
-		}
-		else
+		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
+		if (!isPricingConditionsApplicable(pricingConditionsId, pricingCtx.getPriceDate(), pricingCtx.getOrgId()))
 		{
 			return null;
 		}
 
+		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 		final CalculatePricingConditionsRequestBuilder builder = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsId)
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
@@ -195,6 +164,27 @@ public class Discount implements IPricingRule
 		}
 
 		return builder.build();
+	}
+
+	private boolean isPricingConditionsApplicable(
+			@Nullable final PricingConditionsId pricingConditionsId,
+			@NonNull final LocalDate date,
+			@NonNull final OrgId orgId)
+	{
+		if (pricingConditionsId == null)
+		{
+			return false;
+		}
+
+		final PricingConditions pricingConditions = pricingConditionsService.getPricingConditionsById(pricingConditionsId);
+		if (!pricingConditions.isActive())
+		{
+			return false;
+		}
+
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final LocalDate validFrom = TimeUtil.asLocalDate(pricingConditions.getValidFrom(), timeZone);
+		return date.isAfter(validFrom);
 	}
 
 	private ImmutableAttributeSet getAttributes(final IPricingContext pricingCtx)

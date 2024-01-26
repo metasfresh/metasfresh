@@ -2,6 +2,7 @@ package de.metas.pricing.conditions.service;
 
 import java.util.Collection;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -41,6 +42,4 @@ public interface IPricingConditionsRepository extends ISingletonService
 	boolean isSingleProductId(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
 	ProductId retrieveUniqueProductIdForSelectionOrNull(IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter);
-
-	I_M_DiscountSchema getDiscountSchemaById(final int discountSchemaRecordId);
 }
