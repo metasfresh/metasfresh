@@ -138,7 +138,6 @@ public class Discount implements IPricingRule
 
 		final int discountSchemaIdSchemaId = bpartnerBL.getDiscountSchemaId(bpartner, soTrx);
 		final I_M_DiscountSchema discountSchemaRecord = pricingConditionsRepository.getDiscountSchemaById(discountSchemaIdSchemaId);
-		// discountSchemaRecord.getValidFrom().toInstant().isAfter()
 
 		boolean isDiscountSchemaApplicable = true; // by default, we apply discount
 
