@@ -147,7 +147,7 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 
 		private HumanResourceTestGroupMap(@NonNull final List<HumanResourceTestGroup> list)
 		{
-			this.allActive = list.stream().filter(HumanResourceTestGroup::getIsActive).collect(ImmutableList.toImmutableList());
+			this.allActive = list.stream().filter(HumanResourceTestGroup::isActive).collect(ImmutableList.toImmutableList());
 			this.byId = Maps.uniqueIndex(list, HumanResourceTestGroup::getId);
 		}
 
