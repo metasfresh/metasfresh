@@ -141,7 +141,7 @@ public class Discount implements IPricingRule
 
 		boolean isDiscountSchemaApplicable = true; // by default, we apply discount
 
-		// search for cases when the shcmena is not valid
+		// search for cases when the discount schema is not valid
 		if (!discountSchemaRecord.isActive())
 		{
 			isDiscountSchemaApplicable = false;
