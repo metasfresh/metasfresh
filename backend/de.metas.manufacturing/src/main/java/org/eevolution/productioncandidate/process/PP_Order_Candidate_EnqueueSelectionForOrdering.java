@@ -104,7 +104,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		}
 	}
 
-	private int createSelection()
+	protected int createSelection()
 	{
 		final IQueryBuilder<I_PP_Order_Candidate> queryBuilder = createOCQueryBuilder();
 
