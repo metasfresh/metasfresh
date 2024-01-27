@@ -22,8 +22,12 @@
 
 package org.eevolution.productioncandidate.process;
 
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 
@@ -31,6 +35,22 @@ import java.math.BigDecimal;
 
 public class PP_Order_Candidate_AlreadyMaturedForOrdering extends PP_Order_Candidate_EnqueueSelectionForOrdering
 {
+	@Override
+	protected int createSelection()
+	{
+		final IQueryBuilder<I_PP_Order_Candidate> queryBuilder = createOCQueryBuilder();
+
+		final PInstanceId adPInstanceId = getPinstanceId();
+
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId is not null");
+
+		DB.deleteT_Selection(adPInstanceId, ITrx.TRXNAME_ThreadInherited);
+
+		return queryBuilder
+				.create()
+				.createSelection(adPInstanceId);
+	}
+	
 	@Override
 	protected IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
 	{
