@@ -130,3 +130,123 @@ INSERT INTO LeichMehl_PluFile_Config (AD_Client_ID,AD_Org_ID,Created,CreatedBy,I
 UPDATE LeichMehl_PluFile_Config SET Description='???????????',Updated=TO_TIMESTAMP('2024-01-29 15:34:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540025
 ;
 
+
+-- 2024-01-29T14:58:43.274Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='GTIN',Updated=TO_TIMESTAMP('2024-01-29 16:58:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540017
+;
+
+-- 2024-01-29T14:59:14.833Z
+UPDATE LeichMehl_PluFile_ConfigGroup SET Name='Leich + Mehl Standard Configuration',Updated=TO_TIMESTAMP('2024-01-29 16:59:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_ConfigGroup_ID=540000
+;
+
+
+
+-- 2024-01-29T14:59:50.523Z
+UPDATE LeichMehl_PluFile_ConfigGroup SET Name='Leich + Mehl Standard',Updated=TO_TIMESTAMP('2024-01-29 16:59:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_ConfigGroup_ID=540000
+;
+
+
+
+
+-- 2024-01-29T16:19:01.138Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produktionsauftrag',
+Updated=TO_TIMESTAMP('2024-01-29 18:19:01','YYYY-MM-DD HH24:MI:SS'),
+UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540000
+;
+
+-- 2024-01-29T16:23:08.568Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Sektion_Suchschluessel',Updated=TO_TIMESTAMP('2024-01-29 18:23:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540001
+;
+
+-- 2024-01-29T16:24:01.777Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Nr',Updated=TO_TIMESTAMP('2024-01-29 18:24:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540002
+;
+
+-- 2024-01-29T16:25:11.666Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Beschreibung',Updated=TO_TIMESTAMP('2024-01-29 18:25:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540003
+;
+
+-- 2024-01-29T16:25:46.681Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Auftragsdatum',Updated=TO_TIMESTAMP('2024-01-29 18:25:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540004
+;
+
+-- 2024-01-29T16:26:38.266Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Zugesagter_Termin',Updated=TO_TIMESTAMP('2024-01-29 18:26:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540005
+;
+
+-- 2024-01-29T16:28:13.388Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Geplanter_Beginn',Updated=TO_TIMESTAMP('2024-01-29 18:28:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540006
+;
+
+-- 2024-01-29T16:28:23.637Z
+DELETE FROM LeichMehl_PluFile_Config WHERE LeichMehl_PluFile_Config_ID=540007
+;
+
+-- 2024-01-29T16:31:39.183Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Menge',Updated=TO_TIMESTAMP('2024-01-29 18:31:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540008
+;
+
+-- 2024-01-29T16:32:24.087Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produkt',Updated=TO_TIMESTAMP('2024-01-29 18:32:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540009
+;
+
+-- 2024-01-29T16:33:15.556Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Geschaeftspartner',Updated=TO_TIMESTAMP('2024-01-29 18:33:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540010
+;
+
+-- 2024-01-29T16:33:20.100Z
+DELETE FROM LeichMehl_PluFile_Config WHERE LeichMehl_PluFile_Config_ID=540011
+;
+
+-- 2024-01-29T16:33:24.914Z
+DELETE FROM LeichMehl_PluFile_Config WHERE LeichMehl_PluFile_Config_ID=540012
+;
+
+-- 2024-01-29T16:34:23.207Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produkt_Kategorie',Updated=TO_TIMESTAMP('2024-01-29 18:34:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540013
+;
+
+-- 2024-01-29T16:34:59.523Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produktnummer',Updated=TO_TIMESTAMP('2024-01-29 18:34:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540014
+;
+
+-- 2024-01-29T16:35:28.976Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produktname',Updated=TO_TIMESTAMP('2024-01-29 18:35:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540015
+;
+
+-- 2024-01-29T16:36:01.467Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Produktbeschreibung',Updated=TO_TIMESTAMP('2024-01-29 18:36:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540016
+;
+
+-- 2024-01-29T16:36:46.490Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Externe_ID',Updated=TO_TIMESTAMP('2024-01-29 18:36:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540018
+;
+
+-- 2024-01-29T16:37:44.528Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Masseinheit',Updated=TO_TIMESTAMP('2024-01-29 18:37:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540019
+;
+
+-- 2024-01-29T16:39:50.798Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Hersteller',Updated=TO_TIMESTAMP('2024-01-29 18:39:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540020
+;
+
+-- 2024-01-29T16:40:36.997Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Hersteller_Name',Updated=TO_TIMESTAMP('2024-01-29 18:40:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540021
+;
+
+-- 2024-01-29T16:41:13.354Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Hersteller_Nr',Updated=TO_TIMESTAMP('2024-01-29 18:41:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540022
+;
+
+-- 2024-01-29T16:42:07.422Z
+UPDATE LeichMehl_PluFile_Config SET TargetFieldName='Auslaufdatum',Updated=TO_TIMESTAMP('2024-01-29 18:42:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE LeichMehl_PluFile_Config_ID=540023
+;
+
+-- 2024-01-29T16:42:13.069Z
+DELETE FROM LeichMehl_PluFile_Config WHERE LeichMehl_PluFile_Config_ID=540024
+;
+
+-- 2024-01-29T16:42:15.630Z
+DELETE FROM LeichMehl_PluFile_Config WHERE LeichMehl_PluFile_Config_ID=540025
+;
+

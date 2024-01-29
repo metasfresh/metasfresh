@@ -171,3 +171,15 @@ UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2024-01-29 12:17:0
 
 
 
+-- Column: LeichMehl_PluFile_ConfigGroup.Name
+-- Column: LeichMehl_PluFile_ConfigGroup.Name
+-- 2024-01-29T15:24:15.127Z
+UPDATE AD_Column SET FieldLength=255,Updated=TO_TIMESTAMP('2024-01-29 17:24:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587641
+;
+
+-- 2024-01-29T15:24:15.834Z
+INSERT INTO t_alter_column values('leichmehl_plufile_configgroup','Name','VARCHAR(255)',null,null)
+;
+
+
+
