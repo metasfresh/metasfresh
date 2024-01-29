@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 
+@SuppressWarnings("ALL")
 public final class WOProjectsCalendarQueryExecutor
 {
 	// Services:

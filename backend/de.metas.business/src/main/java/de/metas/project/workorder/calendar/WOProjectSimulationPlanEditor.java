@@ -8,7 +8,6 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.resource.ResourceIdAndType;

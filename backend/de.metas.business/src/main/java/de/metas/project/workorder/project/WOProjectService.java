@@ -25,7 +25,6 @@ package de.metas.project.workorder.project;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;

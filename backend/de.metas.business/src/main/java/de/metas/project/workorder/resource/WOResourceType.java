@@ -10,6 +10,7 @@ import org.compiere.model.X_C_Project_WO_Resource;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+@Getter
 @RequiredArgsConstructor
 public enum WOResourceType implements ReferenceListAwareEnum
 {
@@ -17,7 +18,7 @@ public enum WOResourceType implements ReferenceListAwareEnum
 	HUMAN(X_C_Project_WO_Resource.RESOURCETYPE_HumanResource),
 	;
 
-	@NonNull @Getter private final String code;
+	@NonNull private final String code;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<WOResourceType> index = ReferenceListAwareEnums.index(values());
 

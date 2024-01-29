@@ -3,7 +3,6 @@ package de.metas.project.workorder.conflicts;
 import de.metas.calendar.conflicts.CalendarConflictEventsDispatcher;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
