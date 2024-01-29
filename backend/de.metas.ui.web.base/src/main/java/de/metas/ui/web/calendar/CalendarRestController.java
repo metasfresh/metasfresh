@@ -353,6 +353,13 @@ public class CalendarRestController
 				.build();
 	}
 
+	@GetMapping("/checkAllConflicts")
+	public void checkConflicts()
+	{
+		userSession.assertLoggedIn();
+		calendarService.checkAllConflicts();
+	}
+
 	@NonNull
 	private CalendarDateRange extractCalendarDateRange(
 			@NonNull final JsonDateTime startDate,

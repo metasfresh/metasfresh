@@ -1,11 +1,13 @@
 package de.metas.project.workorder.conflicts;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.CalendarConflictsQuery;
 import de.metas.calendar.conflicts.CalendarConflictsService;
 import de.metas.calendar.conflicts.CalendarEntryConflicts;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.workorder.calendar.WOProjectsCalendarQueryExecutor;
 import de.metas.project.workorder.resource.ResourceIdAndType;
+import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
 import lombok.NonNull;
@@ -33,5 +35,17 @@ public class WOProjectCalendarConflictsService implements CalendarConflictsServi
 		final SimulationPlanId simulationId = query.getSimulationId();
 
 		return toCalendarEntryConflicts(woProjectConflictService.getActualAndSimulation(simulationId, resourceIdAndTypes));
+	}
+
+	@Override
+	public void checkAllConflicts()
+	{
+		final ImmutableSet<ResourceIdAndType> resourceIds = resourceService.getAllActiveResources()
+				.stream()
+				.map(Resource::getResourceId)
+				.flatMap(ResourceIdAndType::allTypes)
+				.collect(ImmutableSet.toImmutableSet());
+
+		woProjectConflictService.checkAllConflicts(resourceIds);
 	}
 }

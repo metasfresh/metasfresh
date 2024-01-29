@@ -24,6 +24,11 @@ public class ResourceIdAndType
 
 	public static ResourceIdAndType human(@NonNull final ResourceId resourceId) {return of(resourceId, WOResourceType.HUMAN);}
 
+	public static Stream<ResourceIdAndType> allTypes(@NonNull final ResourceId resourceId)
+	{
+		return Stream.of(machine(resourceId), human(resourceId));
+	}
+
 	public static boolean equals(@Nullable final ResourceIdAndType id1, @Nullable final ResourceIdAndType id2) {return Objects.equals(id1, id2);}
 
 	@Override
