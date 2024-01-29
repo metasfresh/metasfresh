@@ -36,7 +36,7 @@ class StepPreviousEndDateUpdaterTest
 		final int stepRepoId = nextProjectStepRepoId.getAndIncrement();
 		return StepId.builder()
 				.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID, stepRepoId))
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID, stepRepoId))
+				.machineWOProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID, stepRepoId))
 				.build();
 	}
 

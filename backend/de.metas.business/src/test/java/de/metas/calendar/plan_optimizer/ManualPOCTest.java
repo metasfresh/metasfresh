@@ -220,7 +220,7 @@ public class ManualPOCTest
 		final int stepRepoId = nextStepRepoId.getAndIncrement();
 		return StepId.builder()
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project resource id because does not matter, and we just want something unique
+				.machineWOProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId)) // we use stepRepoId for project resource id because does not matter, and we just want something unique
 				.build();
 	}
 }

@@ -123,14 +123,7 @@ class BudgetProjectsCalendarQueryExecutor
 					continue;
 				}
 
-				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
-				if (resourceId != null)
-				{
-					resourceIdsSet.add(resourceId);
-					continue;
-				}
-
-				final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+				final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 				if (resourceGroupId != null)
 				{
 					resourceGroupIdsSet.add(resourceGroupId);

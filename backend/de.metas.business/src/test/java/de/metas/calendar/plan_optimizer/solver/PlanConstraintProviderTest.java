@@ -58,7 +58,7 @@ class PlanConstraintProviderTest
 		final int stepRepoId = nextProjectStepRepoId.getAndIncrement();
 		return StepId.builder()
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId))
+				.machineWOProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId))
 				.build();
 	}
 
@@ -88,8 +88,8 @@ class PlanConstraintProviderTest
 					.createAllocations()
 					.get(0);
 
-			assertThat(allocation.getStartDate()).isEqualTo(startDate);
-			assertThat(allocation.getEndDate()).isEqualTo(endDate);
+			assertThat(allocation.getResourceScheduledStartDate()).isEqualTo(startDate);
+			assertThat(allocation.getResourceScheduledEndDate()).isEqualTo(endDate);
 
 			return allocation;
 		}
@@ -99,7 +99,6 @@ class PlanConstraintProviderTest
 		{
 			final StepAllocation step1 = step(PROJECT_ID1, RESOURCE, "2023-04-01", "2023-04-05");
 			final StepAllocation step2 = step(PROJECT_ID2, RESOURCE, "2023-04-04", "2023-04-10");
-
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict).given(step1, step2).penalizesBy(24); // 24h=1day
 		}
 

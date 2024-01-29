@@ -27,12 +27,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.resource.ResourceIdAndType;
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CalendarResourceIdTest
 {
@@ -65,9 +63,7 @@ class CalendarResourceIdTest
 		void wrong_toRepoId_param()
 		{
 			final CalendarResourceId calendarResourceId = ResourceIdAndType.machine(ResourceId.ofRepoId(123456)).toCalendarResourceId();
-			assertThatThrownBy(calendarResourceId::toResourceGroupId)
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Cannot convert ");
+			assertThat(calendarResourceId.toResourceGroupIdOrNull()).isNull();
 		}
 	}
 

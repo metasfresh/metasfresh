@@ -131,8 +131,10 @@ public class CalendarResourceId
 
 	private static <T extends RepoIdAware> String extractType(@NonNull final Class<T> clazz) {return clazz.getSimpleName();}
 
-	public ResourceGroupId toResourceGroupId() {return toRepoId(ResourceGroupId.class);}
+	@Nullable
+	public ResourceGroupId toResourceGroupIdOrNull() {return toRepoIdOrNull(ResourceGroupId.class);}
 
+	@SuppressWarnings("SameParameterValue")
 	private <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)
 	{
 		final T id = toRepoIdOrNull(clazz);
@@ -145,7 +147,7 @@ public class CalendarResourceId
 	}
 
 	@Nullable
-	public <T extends RepoIdAware> T toRepoIdOrNull(@NonNull final Class<T> clazz)
+	private <T extends RepoIdAware> T toRepoIdOrNull(@NonNull final Class<T> clazz)
 	{
 		if (!isType(extractType(clazz)))
 		{
@@ -163,6 +165,7 @@ public class CalendarResourceId
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isType(@NonNull final String expectedType)
 	{
 		return Objects.equals(this.type, expectedType);

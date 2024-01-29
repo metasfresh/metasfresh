@@ -1,9 +1,9 @@
 package de.metas.calendar.plan_optimizer.domain;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +35,7 @@ public class StepId implements
 	@Override
 	public int compareTo(@NonNull final StepId other)
 	{
-		return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+		return NumberUtils.firstNonZero(
 				() -> woProjectStepId.compareTo(other.woProjectStepId),
 				() -> WOProjectResourceId.toRepoId(machineWOProjectResourceId) - WOProjectResourceId.toRepoId((other.machineWOProjectResourceId)),
 				() -> WOProjectResourceId.toRepoId(humanWOProjectResourceId) - WOProjectResourceId.toRepoId((other.humanWOProjectResourceId))

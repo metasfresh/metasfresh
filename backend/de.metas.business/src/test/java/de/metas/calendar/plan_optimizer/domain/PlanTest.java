@@ -28,7 +28,7 @@ class PlanTest
 		{
 			return StepId.builder()
 					.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID, id))
-					.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID, 1))
+					.machineWOProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID, 1))
 					.build();
 		}
 

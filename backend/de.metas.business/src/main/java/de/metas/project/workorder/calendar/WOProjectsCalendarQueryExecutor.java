@@ -241,7 +241,7 @@ public final class WOProjectsCalendarQueryExecutor
 					continue;
 				}
 
-				final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+				final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 				if (resourceGroupId != null)
 				{
 					resourceGroupIdsSet.add(resourceGroupId);

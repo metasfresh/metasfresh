@@ -57,7 +57,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						StepAllocation.class,
 						Joiners.equal(StepAllocation::getResourceId),
 						Joiners.overlapping(StepAllocation::getResourceScheduledStartDate, StepAllocation::getResourceScheduledEndDate))
-				.penalize(ONE_HARD_1, PlanConstraintProvider::getOverlappingDuration)
+				.penalize(ONE_HARD_1, PlanConstraintProvider::getMachineOverlappingDuration)
 				.asConstraint("Resource conflict");
 	}
 
@@ -83,7 +83,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						StepAllocation.class,
 						Joiners.equal(StepAllocation::getHumanResourceId),
 						Joiners.overlapping(StepAllocation::getHumanResourceScheduledStartDate, StepAllocation::getHumanResourceScheduledEndDate))
-				.penalize(ONE_HARD_2, PlanConstraintProvider::getOverlappingDuration)
+				.penalize(ONE_HARD_2, PlanConstraintProvider::getHumanOverlappingDuration)
 				.asConstraint("Human Resource conflict");
 	}
 
@@ -174,12 +174,22 @@ public class PlanConstraintProvider implements ConstraintProvider
 		}
 	}
 
-	private static int getOverlappingDuration(final StepAllocation step1, final StepAllocation step2)
+	static int getMachineOverlappingDuration(final StepAllocation step1, final StepAllocation step2)
 	{
-		final LocalDateTime step1Start = step1.getStartDate();
-		final LocalDateTime step1End = step1.getEndDate();
-		final LocalDateTime step2Start = step2.getStartDate();
-		final LocalDateTime step2End = step2.getEndDate();
+		return getOverlappingDuration(step1, step2, true);
+	}
+
+	private static int getHumanOverlappingDuration(final StepAllocation step1, final StepAllocation step2)
+	{
+		return getOverlappingDuration(step1, step2, false);
+	}
+
+	private static int getOverlappingDuration(final StepAllocation step1, final StepAllocation step2, boolean isMachine)
+	{
+		final LocalDateTime step1Start = isMachine ? step1.getResourceScheduledStartDate() : step1.getHumanResourceScheduledStartDate();
+		final LocalDateTime step1End = isMachine ? step1.getResourceScheduledEndDate() : step1.getHumanResourceScheduledEndDate();
+		final LocalDateTime step2Start = isMachine ? step2.getResourceScheduledStartDate() : step2.getHumanResourceScheduledStartDate();
+		final LocalDateTime step2End = isMachine ? step2.getResourceScheduledEndDate() : step2.getHumanResourceScheduledEndDate();
 
 		if (step1Start == null || step1End == null || step2Start == null || step2End == null)
 		{

@@ -231,7 +231,7 @@ public class CalendarRestController
 			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceIdAndType.getResourceId()), adLanguage);
 		}
 
-		final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+		final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 		if (resourceGroupId != null)
 		{
 			return JSONLookupValue.ofNullableLookupValue(resourceGroupLookup.findById(resourceGroupId), adLanguage);
