@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_LeichMehl_PluFile_ConfigGroup extends org.compiere.model.PO implements I_LeichMehl_PluFile_ConfigGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -774669360L;
+	private static final long serialVersionUID = -1124749116L;
 
     /** Standard Constructor */
     public X_LeichMehl_PluFile_ConfigGroup (final Properties ctx, final int LeichMehl_PluFile_ConfigGroup_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_LeichMehl_PluFile_ConfigGroup extends org.compiere.model.PO imple
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
