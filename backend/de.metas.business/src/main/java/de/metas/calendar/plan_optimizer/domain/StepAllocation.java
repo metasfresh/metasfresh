@@ -141,17 +141,6 @@ public class StepAllocation
 
 	private Duration getDelayAsDuration() {return Duration.of(getDelayAsInt(), Plan.PLANNING_TIME_PRECISION);}
 
-	public int getAccumulatedDelayAsInt()
-	{
-		int accumulatedDelay = 0;
-		for (StepAllocation step = this; step != null; step = step.getPrevious())
-		{
-			accumulatedDelay += step.getDelayAsInt();
-		}
-
-		return accumulatedDelay;
-	}
-
 	@ShadowVariable(variableListenerClass = StepPreviousEndDateUpdater.class, sourceVariableName = FIELD_delay)
 	@Nullable
 	public LocalDateTime getPreviousStepEndDate()
@@ -217,18 +206,32 @@ public class StepAllocation
 	public LocalDateTime getStartDate()
 	{
 		computeVariablesIfNeeded();
-		return isScheduled()
-				? TimeUtil.minOfNullables(resourceScheduledRange.getStartDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getStartDate() : null)
-				: null;
+
+		if (!isScheduled())
+		{
+			return null;
+		}
+
+		return TimeUtil.minOfNullables(
+				resourceScheduledRange != null ? resourceScheduledRange.getStartDate() : null,
+				humanResourceScheduledRange != null ? humanResourceScheduledRange.getStartDate() : null
+		);
 	}
 
 	@Nullable
 	public LocalDateTime getEndDate()
 	{
 		computeVariablesIfNeeded();
-		return isScheduled()
-				? TimeUtil.maxOfNullables(resourceScheduledRange.getEndDate(), humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null)
-				: null;
+
+		if (!isScheduled())
+		{
+			return null;
+		}
+
+		return TimeUtil.maxOfNullables(
+				resourceScheduledRange != null ? resourceScheduledRange.getEndDate() : null,
+				humanResourceScheduledRange != null ? humanResourceScheduledRange.getEndDate() : null
+		);
 	}
 
 	@Nullable

@@ -16,7 +16,7 @@ public class StepAllocationId
 	public String toString()
 	{
 		return "P" + stepId.getProjectId().getRepoId()
-				+ "-S" + stepId.getWoProjectResourceId().getRepoId();
+				+ "-S" + stepId.getWoProjectStepId().getRepoId();
 	}
 
 	@Override
@@ -27,7 +27,9 @@ public class StepAllocationId
 
 	public ProjectId getProjectId() {return stepId.getProjectId();}
 
-	public WOProjectResourceId getWoProjectResourceId() {return stepId.getWoProjectResourceId();}
-
 	public WOProjectStepId getWoProjectStepId() {return stepId.getWoProjectStepId();}
+
+	public WOProjectResourceId getMachineWOProjectResourceId() {return stepId.getMachineWOProjectResourceId();}
+
+	public WOProjectResourceId getHumanWOProjectResourceId() {return stepId.getHumanWOProjectResourceId();}
 }

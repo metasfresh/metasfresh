@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.calendar.util.CalendarDateRange;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -102,15 +101,20 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 				continue;
 			}
 
-			final CalendarDateRange dateRange = CalendarDateRange.builder()
-					.startDate(step.getStartDate().atZone(timeZone).toInstant())
-					.endDate(step.getEndDate().atZone(timeZone).toInstant())
-					.build();
-
-			editor.changeResourceDateRange(
-					step.getId().getWoProjectResourceId(),
-					dateRange,
-					step.getId().getWoProjectStepId());
+			if (step.getResourceScheduledRange() != null)
+			{
+				editor.changeResourceDateRange(
+						step.getId().getMachineWOProjectResourceId(),
+						step.getResourceScheduledRange().toCalendarDateRange(timeZone),
+						step.getId().getWoProjectStepId());
+			}
+			if (step.getHumanResourceScheduledRange() != null)
+			{
+				editor.changeResourceDateRange(
+						step.getId().getHumanWOProjectResourceId(),
+						step.getHumanResourceScheduledRange().toCalendarDateRange(timeZone),
+						step.getId().getWoProjectStepId());
+			}
 		}
 
 		runInCtx(clientId, orgId, () -> {

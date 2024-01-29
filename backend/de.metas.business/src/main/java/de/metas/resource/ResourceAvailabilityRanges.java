@@ -1,6 +1,7 @@
 package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.threeten.extra.YearWeek;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -61,5 +63,13 @@ public final class ResourceAvailabilityRanges
 			partialResult.forEach((week, duration) -> result.merge(week, duration, Duration::plus));
 		}
 		return result;
+	}
+
+	public CalendarDateRange toCalendarDateRange(@NonNull final ZoneId timeZone)
+	{
+		return CalendarDateRange.builder()
+				.startDate(startDate.atZone(timeZone).toInstant())
+				.endDate(endDate.atZone(timeZone).toInstant())
+				.build();
 	}
 }

@@ -224,7 +224,8 @@ public class DatabasePlanLoaderInstance
 		final StepDef stepDef = StepDef.builder()
 				.id(StepId.builder()
 						.woProjectStepId(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, WOProjectResource::getWoProjectStepId))
-						.woProjectResourceId(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, WOProjectResource::getWoProjectResourceId))
+						.machineWOProjectResourceId(woStepResource_Machine != null ? woStepResource_Machine.getWoProjectResourceId() : null)
+						.humanWOProjectResourceId(woStepResource_Human != null ? woStepResource_Human.getWoProjectResourceId() : null)
 						.build())
 				.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
 				.resource(toTimefoldResource(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, resource -> resource.getResourceIdAndType().getResourceId())))
@@ -275,7 +276,7 @@ public class DatabasePlanLoaderInstance
 			{
 				final T value1 = valueGetter.apply(resource1);
 				final T value2 = valueGetter.apply(resource2);
-				Check.assumeEquals(value1, value2, "Extracted values shall be the same for: ", resource1, resource2, valueGetter);
+				Check.assumeEquals(value1, value2, "Extracted values shall be the same for: {}, {} when using {}. But we got: {}, {}", resource1, resource2, valueGetter, value1, value2);
 				return value1;
 			}
 		}
