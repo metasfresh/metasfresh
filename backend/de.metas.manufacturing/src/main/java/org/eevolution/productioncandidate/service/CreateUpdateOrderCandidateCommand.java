@@ -23,7 +23,10 @@
 package org.eevolution.productioncandidate.service;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -48,17 +51,17 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CreateOrderCandidateCommand
+public class CreateUpdateOrderCandidateCommand
 {
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
-	private final PPOrderCandidateCreateRequest request;
+	private final PPOrderCandidateCreateUpdateRequest request;
 
 	@Builder
-	public CreateOrderCandidateCommand(@NonNull final PPOrderCandidateCreateRequest request)
+	public CreateUpdateOrderCandidateCommand(@NonNull final PPOrderCandidateCreateUpdateRequest request)
 	{
 		this.request = request;
 	}
@@ -107,6 +110,10 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
 
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
+		ppOrderCandidateRecord.setIsMaturing(request.isMaturing());
+		ppOrderCandidateRecord.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(request.getMaturingConfigId()));
+		ppOrderCandidateRecord.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(request.getMaturingConfigLineId()));
+		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
 		if (request.isSimulated())
 		{
@@ -114,6 +121,7 @@ public class CreateOrderCandidateCommand
 		}
 
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
+		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
 		if(!Utils.isEmpty(request.getLotForLot()))
 		{

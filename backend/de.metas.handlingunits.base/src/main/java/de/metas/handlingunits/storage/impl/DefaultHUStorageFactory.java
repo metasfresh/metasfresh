@@ -32,6 +32,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -106,5 +107,17 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 		final List<IHUProductStorage> productStorages = getStorage(hu).getProductStorages();
 		return productStorages.size() == 1
 				&& ProductId.equals(productStorages.get(0).getProductId(), productId);
+	}
+
+	@NonNull
+	public IHUProductStorage getSingleHUProductStorage(@NonNull final I_M_HU hu)
+	{
+		final List<IHUProductStorage> productStorages = getStorage(hu)
+				.getProductStorages()
+				.stream()
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.collect(ImmutableList.toImmutableList());
+
+		return CollectionUtils.singleElement(productStorages);
 	}
 }

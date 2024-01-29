@@ -69,4 +69,6 @@ public interface IHUStorageFactory
 
 	boolean isSingleProductStorageMatching(@NonNull I_M_HU hu, @NonNull ProductId productId);
 
+	@NonNull
+	IHUProductStorage getSingleHUProductStorage(@NonNull I_M_HU hu);
 }
