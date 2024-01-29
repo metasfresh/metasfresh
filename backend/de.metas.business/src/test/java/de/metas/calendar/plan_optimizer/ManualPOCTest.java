@@ -163,8 +163,8 @@ public class ManualPOCTest
 				//.resource(resource(resourceIdx))
 				// .duration(Duration.ofHours(1))
 				// .humanResourceTestGroupDuration(Duration.ofHours(1))
-				.startDateMin(LocalDateTime.parse("2023-11-20T00:00"))
-				.dueDate(LocalDateTime.parse("2025-12-31T23:59")) // far in the future
+				.startDateMin(LocalDateTime.parse("2024-01-25T00:00"))
+				.dueDate(LocalDateTime.parse("2024-12-31T23:59")) // far in the future
 				.projectPriority(InternalPriority.MEDIUM)
 				//.delay(0)
 				;
