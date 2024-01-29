@@ -25,6 +25,7 @@ package org.eevolution.productioncandidate.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -56,9 +57,13 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPMaturingCandidateV;
+import org.eevolution.productioncandidate.model.dao.PPMaturingCandidatesViewRepo;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -71,6 +76,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PPOrderCandidateService
@@ -85,20 +92,28 @@ public class PPOrderCandidateService
 
 	private final ProductPlanningService productPlanningService;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
+	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
+
+	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
+			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
+			@NonNull final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo)
 	{
 		this.productPlanningService = productPlanningService;
+		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
+		this.ppMaturingCandidatesViewRepo = ppMaturingCandidatesViewRepo;
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 	}
 
 	@NonNull
-	public I_PP_Order_Candidate createCandidate(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
+	public I_PP_Order_Candidate createUpdateCandidate(@NonNull final PPOrderCandidateCreateUpdateRequest ppOrderCandidateCreateUpdateRequest)
 	{
-		return CreateOrderCandidateCommand.builder()
-				.request(ppOrderCandidateCreateRequest)
+		return CreateUpdateOrderCandidateCommand.builder()
+				.request(ppOrderCandidateCreateUpdateRequest)
 				.build()
 				.execute();
 	}
@@ -137,11 +152,7 @@ public class PPOrderCandidateService
 
 	public void closeCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
-		ppOrderCandidate.setIsClosed(true);
-		ppOrderCandidate.setProcessed(true);
-		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
-
-		ppOrderCandidateDAO.save(ppOrderCandidate);
+		ppOrderCandidateDAO.closeCandidate(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
 	}
 
 	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -366,4 +377,63 @@ public class PPOrderCandidateService
 
 		ppOrderCandidateDAO.saveLine(orderCandidateLine);
 	}
+
+	public RecomputeMaturingCandidatesResult recomputeMaturingCandidates()
+	{
+		final int deletedCandidates = ppMaturingCandidatesViewRepo.deleteStaleCandidates();
+		final Map<CrudOperationResult, Long> resultMap = ppMaturingCandidatesViewRepo.streamValidCandidates()
+				.map(this::createUpdateCandidate)
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		return RecomputeMaturingCandidatesResult.builder()
+				.deleted(deletedCandidates)
+				.created(resultMap.get(CrudOperationResult.CREATED) != null ? resultMap.get(CrudOperationResult.CREATED) : 0)
+				.updated(resultMap.get(CrudOperationResult.UPDATED) != null ? resultMap.get(CrudOperationResult.UPDATED) : 0)
+				.ignored(resultMap.get(CrudOperationResult.NO_OP) != null ? resultMap.get(CrudOperationResult.NO_OP) : 0)
+				.build();
+	}
+
+	private CrudOperationResult createUpdateCandidate(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> {
+			try
+			{
+				return createUpdateCandidate0(ppMaturingCandidatesV);
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed to create/update a Maturing candidate for: {}", ppMaturingCandidatesV, ex);
+			}
+			return CrudOperationResult.NO_OP;
+		});
+	}
+
+	@NonNull
+	private CrudOperationResult createUpdateCandidate0(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
+	{
+		final ProductPlanningId productPlanningId = ppMaturingCandidatesV.getProductPlanningId();
+
+		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
+		Check.assume(productPlanning.isMatured(), "PP_Product_Planning_ID: {} is not matured", productPlanningId);
+
+		createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
+									  .clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
+									  .ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
+									  .maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
+									  .maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
+									  .productId(ppMaturingCandidatesV.getProductId())
+									  .warehouseId(ppMaturingCandidatesV.getWarehouseId())
+									  .productPlanningId(productPlanningId)
+									  .plantId(productPlanning.getPlantId())
+									  .qtyRequired(ppMaturingCandidatesV.getQtyRequired())
+									  .datePromised(ppMaturingCandidatesV.getDateStartSchedule())
+									  .dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
+									  .isMaturing(true)
+									  .simulated(false)
+									  .attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
+									  .issueHuId(ppMaturingCandidatesV.getIssueHuId())
+									  .build());
+
+		return ppMaturingCandidatesV.getPpOrderCandidateId() == null ? CrudOperationResult.CREATED : CrudOperationResult.UPDATED;
+	}
+
 }

@@ -56,6 +56,12 @@ public class MaturingConfigRepository
 		return getMaturingConfigMap().getByMaturedProductId(maturedProductId);
 	}
 
+	@NonNull
+	public List<MaturingConfigLine> getByFromProductId(@NonNull final ProductId maturedProductId)
+	{
+		return getMaturingConfigMap().getByFromProductId(maturedProductId);
+	}
+
 	final MaturingConfigMap getMaturingConfigMap()
 	{
 		return cache.getOrLoad(0, this::retrieveMaturingConfigMap);

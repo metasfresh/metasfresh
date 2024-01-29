@@ -168,7 +168,9 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.defaultVendor(false)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
-				.pricingConditions(PricingConditions.builder().build())
+				.pricingConditions(PricingConditions.builder()
+										   .validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
+										   .build())
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()

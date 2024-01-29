@@ -279,6 +279,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		sqlQueryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, query.getProductId(), null);
 
+		if (query.getMaturingConfigLineId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID, query.getMaturingConfigLineId());
+		}
+		
 		// Filter by ASI
 		sqlQueryBuilder.filter(createAttributesFilter(query.getAttributeSetInstanceId()));
 
