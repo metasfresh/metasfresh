@@ -134,6 +134,7 @@ public class PPOrderCandidateDAO implements IPPOrderCandidateDAO
 	}
 
 	@NonNull
+	@Override
 	public ImmutableList<I_PP_Order_Candidate> getByOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds = queryBL
@@ -200,6 +201,7 @@ public class PPOrderCandidateDAO implements IPPOrderCandidateDAO
 		save(candidate);
 	}
 
+	@Override
 	public void closeCandidate(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		final I_PP_Order_Candidate ppOrderCandidate = getById(ppOrderCandidateId);

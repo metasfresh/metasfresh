@@ -22,8 +22,8 @@
 
 package de.metas.handlingunits.pporder.interceptor;
 
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.impl.async.HUMaturingWorkpackageProcessor;
@@ -43,7 +43,7 @@ import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_PP_Order.class)
@@ -55,16 +55,13 @@ public class PP_Order
 	private final HUUniqueAttributesService huUniqueAttributesService;
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	public PP_Order(
 			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
 			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
-			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
 	{
 		this.ppOrderIssueScheduleRepository = ppOrderIssueScheduleRepository;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 

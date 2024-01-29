@@ -50,7 +50,7 @@ import java.time.Instant;
 
 @Value
 @JsonDeserialize(builder = PPOrderCreateRequest.PPOrderCreateRequestBuilder.class)
-public class PPOrderCandidateCreateRequest
+public class PPOrderCandidateCreateUpdateRequest
 {
 	PPOrderCandidateId ppOrderCandidateId;
 	ClientAndOrgId clientAndOrgId;
@@ -75,7 +75,7 @@ public class PPOrderCandidateCreateRequest
 	HuId issueHuId;
 
 	@Builder
-	public PPOrderCandidateCreateRequest(
+	public PPOrderCandidateCreateUpdateRequest(
 		@Nullable final PPOrderCandidateId ppOrderCandidateId,
 		@NonNull final ClientAndOrgId clientAndOrgId,
 		@Nullable final ProductPlanningId productPlanningId,

@@ -51,14 +51,14 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CreateOrderCandidateCommand
+public class CreateUpdateOrderCandidateCommand
 {
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
-	private final PPOrderCandidateCreateRequest request;
+	private final PPOrderCandidateCreateUpdateRequest request;
 
 	@Builder
 	public CreateUpdateOrderCandidateCommand(@NonNull final PPOrderCandidateCreateUpdateRequest request)

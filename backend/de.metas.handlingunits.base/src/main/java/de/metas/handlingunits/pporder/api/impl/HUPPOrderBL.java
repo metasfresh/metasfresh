@@ -58,7 +58,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +83,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
-	private final SpringContextHolder.Lazy<PPOrderCandidateDAO> ppOrderCandidateDAO = SpringContextHolder.lazyBean(PPOrderCandidateDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -351,7 +351,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@NonNull
 	private I_PP_Order_Candidate getSingleMaturingCandidate(@NonNull final PPOrderId ppOrderId)
 	{
-		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAO.get().getByOrderId(ppOrderId);
+		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAO.getByOrderId(ppOrderId);
 		if (!isAtLeastOneCandidateMaturing(maturingCandidates))
 		{
 			throw new AdempiereException("No maturing candidates found for PPOrderId!")

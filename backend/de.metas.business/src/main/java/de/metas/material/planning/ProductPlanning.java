@@ -115,11 +115,13 @@ public class ProductPlanning
 			final int transferTimeDays,
 			final int leadTimeDays,
 			final boolean isDocComplete,
+			final boolean isLotForLot,
 			final boolean isManufactured,
 			final boolean isMatured,
 			@Nullable final ProductBOMVersionsId bomVersionsId,
 			@Nullable final PPRoutingId workflowId,
 			@Nullable final Quantity maxManufacturedQtyPerOrderDispo,
+			@Nullable final BigDecimal qtyProcessedOnDate,
 			@Nullable final MaturingConfigId maturingConfigId,
 			@Nullable final MaturingConfigLineId maturingConfigLineId,
 			final boolean isPickingOrder,
@@ -128,6 +130,8 @@ public class ProductPlanning
 			@Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
 			@Nullable final DistributionNetworkId distributionNetworkId)
 	{
+		this.isLotForLot = isLotForLot;
+		qtyProcessed_OnDate = qtyProcessedOnDate;
 		if (isMatured)
 		{
 			FillMandatoryException.assumeNotNull(maturingConfigId, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID);

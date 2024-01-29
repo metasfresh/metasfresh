@@ -57,12 +57,11 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.eevolution.productioncandidate.model.dao.PPMaturingCandidateV;
 import org.eevolution.productioncandidate.model.dao.PPMaturingCandidatesViewRepo;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
-import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -98,13 +97,10 @@ public class PPOrderCandidateService
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
 			@NonNull final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo)
 	{
 		this.productPlanningService = productPlanningService;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.ppMaturingCandidatesViewRepo = ppMaturingCandidatesViewRepo;
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 	}
