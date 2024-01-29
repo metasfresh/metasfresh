@@ -184,7 +184,7 @@ public class Discount implements IPricingRule
 
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		final LocalDate validFrom = TimeUtil.asLocalDate(pricingConditions.getValidFrom(), timeZone);
-		return date.isAfter(validFrom);
+		return date.isAfter(validFrom) || date.isEqual(validFrom) ;
 	}
 
 	private ImmutableAttributeSet getAttributes(final IPricingContext pricingCtx)
