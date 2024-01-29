@@ -134,3 +134,40 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2024-01-29 12:01:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=622141
 ;
 
+
+
+-- UI Element: PLU-Datei Konfiguration -> PLU-Datei Konfiguration.Aktiv
+-- Column: LeichMehl_PluFile_ConfigGroup.IsActive
+-- UI Element: PLU-Datei Konfiguration(541751,de.metas.externalsystem) -> PLU-Datei Konfiguration(547278,de.metas.externalsystem) -> main -> 20 -> default.Aktiv
+-- Column: LeichMehl_PluFile_ConfigGroup.IsActive
+-- 2024-01-29T10:12:57.198Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2024-01-29 12:12:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621255
+;
+
+-- UI Element: PLU-Datei Konfiguration -> PLU-Datei Konfiguration.Sektion
+-- Column: LeichMehl_PluFile_ConfigGroup.AD_Org_ID
+-- UI Element: PLU-Datei Konfiguration(541751,de.metas.externalsystem) -> PLU-Datei Konfiguration(547278,de.metas.externalsystem) -> main -> 20 -> orgClient.Sektion
+-- Column: LeichMehl_PluFile_ConfigGroup.AD_Org_ID
+-- 2024-01-29T10:16:12.853Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2024-01-29 12:16:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621256
+;
+
+-- UI Element: PLU-Datei Konfiguration -> PLU-Datei Konfiguration.Name
+-- Column: LeichMehl_PluFile_ConfigGroup.Name
+-- UI Element: PLU-Datei Konfiguration(541751,de.metas.externalsystem) -> PLU-Datei Konfiguration(547278,de.metas.externalsystem) -> main -> 10 -> default.Name
+-- Column: LeichMehl_PluFile_ConfigGroup.Name
+-- 2024-01-29T10:17:00.914Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2024-01-29 12:17:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=621254
+;
+
+-- UI Element: PLU-Datei Konfiguration -> PLU-Datei Konfiguration.Beschreibung
+-- Column: LeichMehl_PluFile_ConfigGroup.Description
+-- UI Element: PLU-Datei Konfiguration(541751,de.metas.externalsystem) -> PLU-Datei Konfiguration(547278,de.metas.externalsystem) -> main -> 10 -> default.Beschreibung
+-- Column: LeichMehl_PluFile_ConfigGroup.Description
+-- 2024-01-29T10:17:05.578Z
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2024-01-29 12:17:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=622142
+;
+
+
+
+
