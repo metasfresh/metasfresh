@@ -19,6 +19,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -75,11 +76,24 @@ public class PackToHUsProducer
 	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
+		final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
+		if (handlingUnitsBL.isDestroyed(pickFromHU))
+		{
+			// TODO: create an inventory which adds back the missing qty
+			// consider creating a new HU out of the blue
+			// make sure we resurrect the original attributes somehow
+		}
+		else if (pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM()).compareTo(qtyPicked) < 0)
+		{
+			// TODO: create an inventory which adds back the missing qty
+
+		}
+
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions
 		if (checkIfAlreadyPacked
-				&& huContext.getHUStorageFactory().isSingleProductWithQtyEqualsTo(pickFromHU, productId, qtyPicked)
+				&& pickFromHUStorage.isSingleProductWithQtyEqualsTo(productId, qtyPicked)
 				&& HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHU)))
 		{
 			handlingUnitsBL.setHUStatus(pickFromHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
