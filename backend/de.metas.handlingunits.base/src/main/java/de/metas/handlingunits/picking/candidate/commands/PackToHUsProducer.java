@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -15,11 +16,14 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -27,7 +31,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
@@ -42,6 +48,7 @@ public class PackToHUsProducer
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
 	private final IHUCapacityBL huCapacityBL;
+	private final InventoryService inventoryService;
 
 	// Params
 	private final boolean alwaysPackEachCandidateInItsOwnHU;
@@ -56,11 +63,14 @@ public class PackToHUsProducer
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUPIItemProductBL huPIItemProductBL,
 			@NonNull final IHUCapacityBL huCapacityBL,
+			@NonNull InventoryService inventoryService,
+			//
 			final boolean alwaysPackEachCandidateInItsOwnHU)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huPIItemProductBL = huPIItemProductBL;
 		this.huCapacityBL = huCapacityBL;
+		this.inventoryService = inventoryService;
 
 		this.alwaysPackEachCandidateInItsOwnHU = alwaysPackEachCandidateInItsOwnHU;
 	}
@@ -72,30 +82,51 @@ public class PackToHUsProducer
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyPicked,
 			@NonNull final TableRecordReference documentRef,
-			final boolean checkIfAlreadyPacked)
+			final boolean checkIfAlreadyPacked,
+			final boolean createInventoryForMissingQty)
 	{
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-
-		final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
-		if (handlingUnitsBL.isDestroyed(pickFromHU))
+		final List<I_M_HU> pickFromHUs;
+		if (createInventoryForMissingQty)
 		{
-			// TODO: create an inventory which adds back the missing qty
-			// consider creating a new HU out of the blue
-			// make sure we resurrect the original attributes somehow
+			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+			final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
+			final Quantity huQty = pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM());
+			if (huQty.compareTo(qtyPicked) < 0)
+			{
+				final HuId newHuId = inventoryService.createInventoryForMissingQty(CreateVirtualInventoryWithQtyReq.builder()
+						.clientId(ClientId.ofRepoId(pickFromHU.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(pickFromHU.getAD_Org_ID()))
+						.warehouseId(packToInfo.getShipFromLocatorId().getWarehouseId())
+						.productId(productId)
+						.qty(huQty.subtract(qtyPicked))
+						.movementDate(SystemTime.asZonedDateTime())
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.build());
+
+				final I_M_HU newHU = handlingUnitsBL.getById(newHuId);
+				pickFromHUs = ImmutableList.of(pickFromHU, newHU);
+			}
+			else
+			{
+				pickFromHUs = ImmutableList.of(pickFromHU);
+			}
 		}
-		else if (pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM()).compareTo(qtyPicked) < 0)
+		else
 		{
-			// TODO: create an inventory which adds back the missing qty
-
+			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+			pickFromHUs = ImmutableList.of(pickFromHU);
 		}
 
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions
 		if (checkIfAlreadyPacked
-				&& pickFromHUStorage.isSingleProductWithQtyEqualsTo(productId, qtyPicked)
-				&& HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHU)))
+				&& pickFromHUs.size() == 1
+				&& huContext.getHUStorageFactory().getStorage(pickFromHUs.get(0)).isSingleProductWithQtyEqualsTo(productId, qtyPicked)
+				&& HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHUs.get(0))))
+
 		{
+			final I_M_HU pickFromHU = pickFromHUs.get(0);
 			handlingUnitsBL.setHUStatus(pickFromHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
 			return ImmutableList.of(pickFromHU);
 		}
@@ -105,7 +136,7 @@ public class PackToHUsProducer
 		{
 			final IHUProducerAllocationDestination packToDestination;
 			HULoader.builder()
-					.source(HUListAllocationSourceDestination.of(pickFromHU).setDestroyEmptyHUs(true))
+					.source(HUListAllocationSourceDestination.of(pickFromHUs).setDestroyEmptyHUs(true))
 					.destination(packToDestination = getPackToDestination(packToInfo))
 					.load(AllocationUtils.builder()
 							.setHUContext(huContext)
@@ -169,7 +200,13 @@ public class PackToHUsProducer
 	{
 		final ProductId productId = ProductId.optionalOfRepoId(tuPIItemProduct.getM_Product_ID())
 				.orElseThrow(() -> new AdempiereException("Product shall be set for " + tuPIItemProduct));
+
 		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
+		if (uom == null)
+		{
+			throw new AdempiereException("Cannot determine the UOM of " + tuPIItemProduct);
+		}
+
 		return huCapacityBL.getCapacity(tuPIItemProduct, productId, uom);
 	}
 

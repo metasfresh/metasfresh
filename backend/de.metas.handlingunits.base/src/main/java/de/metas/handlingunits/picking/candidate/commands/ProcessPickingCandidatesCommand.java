@@ -11,6 +11,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -36,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 
 import java.util.HashMap;
@@ -99,6 +101,7 @@ public class ProcessPickingCandidatesCommand
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
 				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
+				.inventoryService(SpringContextHolder.instance.getBean(InventoryService.class))
 				.build();
 
 		this.packToMap = new PackToMap(packToHUsProducer);
@@ -396,7 +399,8 @@ public class ProcessPickingCandidatesCommand
 					productId,
 					qtyPicked,
 					pickingCandidateId.toTableRecordReference(),
-					checkIfAlreadyPacked);
+					checkIfAlreadyPacked,
+					false);
 
 			if (packedToHUs.isEmpty())
 			{
