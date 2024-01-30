@@ -133,11 +133,6 @@ FROM M_ProductPrice pp
 
          LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa ON TRUE
 
-         LEFT OUTER JOIN m_hu_pi_item_product hupip ON hupip.m_hu_pi_item_product_id = pp.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
-
          INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID AND plv.IsActive = 'Y'
 
 
@@ -150,7 +145,7 @@ FROM M_ProductPrice pp
          LEFT JOIN M_PriceList_Version plv2 ON plv2.M_PriceList_ID = plv.M_PriceList_ID AND plv2.IsActive = 'Y'
 
          LEFT OUTER JOIN LATERAL (
-    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature
+    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature,pp2.m_hu_pi_item_product_ID
     FROM M_ProductPrice pp2
              INNER JOIN report.getProductPriceAndAttributes(M_ProductPrice_ID := pp2.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa2 ON TRUE
 
@@ -172,6 +167,11 @@ FROM M_ProductPrice pp
          LEFT JOIN M_Pricelist pl2 ON plv2.M_PriceList_ID = pl2.M_Pricelist_ID AND pl2.isActive = 'Y'
          INNER JOIN C_Currency c ON pl.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
          LEFT JOIN C_Currency c2 ON pl2.C_Currency_ID = c2.C_CUrrency_ID AND c2.isActive = 'Y'
+
+         LEFT OUTER JOIN m_hu_pi_item_product hupip ON hupip.m_hu_pi_item_product_id = pp2.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
 
 WHERE plv.M_Pricelist_Version_ID = $2
   AND plv2.M_Pricelist_Version_ID = COALESCE($3, plv.m_pricelist_version_id)
