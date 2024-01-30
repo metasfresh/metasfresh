@@ -196,6 +196,7 @@ const GetQuantityDialog = ({
                   <tr>
                     <td colSpan="2">
                       <BarcodeScannerComponent
+                        continuousRunning={true}
                         onResolvedResult={(result) => {
                           const qrCode = parseQRCodeString(result.scannedBarcode);
                           onQtyChange({
