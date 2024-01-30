@@ -416,6 +416,7 @@ class PickingJobLoaderAndSaver
 						.deliveryRenderedAddress(record.getDeliveryToAddress())
 						.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 						.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
+						.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getHandover_Location_ID()))
 						.build())
 				.pickingSlot(pickingSlot)
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))

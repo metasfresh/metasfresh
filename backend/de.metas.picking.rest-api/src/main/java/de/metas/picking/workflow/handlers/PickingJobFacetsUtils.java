@@ -24,9 +24,12 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.config.PickingJobFilterOption;
+import de.metas.util.JSONObjectMapper;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
@@ -42,8 +45,9 @@ import java.util.Set;
 @UtilityClass
 class PickingJobFacetsUtils
 {
-	private static final WorkflowLaunchersFacetGroupId CUSTOMERS_FACET_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("customer");
-	private static final WorkflowLaunchersFacetGroupId DELIVERY_DAY_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("deliveryDay");
+	private static final WorkflowLaunchersFacetGroupId CUSTOMERS_FACET_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString(PickingJobFilterOption.CUSTOMER.getCode());
+	private static final WorkflowLaunchersFacetGroupId DELIVERY_DAY_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString(PickingJobFilterOption.DELIVERY_DATE.getCode());
+	private static final WorkflowLaunchersFacetGroupId HANDOVER_LOCATION_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString(PickingJobFilterOption.HANDOVER_LOCATION.getCode());
 
 	public static PickingJobFacetsQuery toPickingJobFacetsQuery(@Nullable final Set<WorkflowLaunchersFacetId> facetIds)
 	{
@@ -62,6 +66,10 @@ class PickingJobFacetsUtils
 			{
 				builder.deliveryDay(facetId.getAsLocalDate());
 			}
+			else if (facetId.isGroupId(HANDOVER_LOCATION_GROUP_ID))
+			{
+				builder.handoverLocationId(facetId.deserializeTo(BPartnerLocationId.class));
+			}
 		});
 
 		return builder.build();
@@ -76,29 +84,41 @@ class PickingJobFacetsUtils
 		if (pickingFacets.getCustomers().size() > 1)
 		{
 			groups.add(WorkflowLaunchersFacetGroup.builder()
-					.id(CUSTOMERS_FACET_GROUP_ID)
-					.caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
-					.facets(pickingFacets.getCustomers().stream()
-							.map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
-							.distinct()
-							.collect(ImmutableList.toImmutableList()))
-					.build());
+							   .id(CUSTOMERS_FACET_GROUP_ID)
+							   .caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
+							   .facets(pickingFacets.getCustomers().stream()
+											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
+											   .distinct()
+											   .collect(ImmutableList.toImmutableList()))
+							   .build());
 		}
 		if (pickingFacets.getDeliveryDays().size() > 1)
 		{
 			groups.add(WorkflowLaunchersFacetGroup.builder()
-					.id(DELIVERY_DAY_GROUP_ID)
-					.caption(TranslatableStrings.adElementOrMessage("DeliveryDate"))
-					.facets(pickingFacets.getDeliveryDays().stream()
-							.map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
-							.distinct()
-							.collect(ImmutableList.toImmutableList()))
-					.build());
+							   .id(DELIVERY_DAY_GROUP_ID)
+							   .caption(TranslatableStrings.adElementOrMessage("DeliveryDate"))
+							   .facets(pickingFacets.getDeliveryDays().stream()
+											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
+											   .distinct()
+											   .collect(ImmutableList.toImmutableList()))
+							   .build());
+		}
+		if (pickingFacets.getHandoverLocations().size() > 1)
+		{
+			groups.add(WorkflowLaunchersFacetGroup.builder()
+							   .id(HANDOVER_LOCATION_GROUP_ID)
+							   .caption(TranslatableStrings.adElementOrMessage(PickingJobFilterOption.HANDOVER_LOCATION.getCode()))
+							   .facets(pickingFacets.getHandoverLocations().stream()
+											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
+											   .distinct()
+											   .collect(ImmutableList.toImmutableList()))
+							   .build());
 		}
 
 		return WorkflowLaunchersFacetGroupList.ofList(groups);
 	}
 
+	@NonNull
 	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.CustomerFacet customer)
 	{
 		return WorkflowLaunchersFacet.builder()
@@ -107,6 +127,7 @@ class PickingJobFacetsUtils
 				.build();
 	}
 
+	@NonNull
 	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.DeliveryDayFacet deliveryDay)
 	{
 		return WorkflowLaunchersFacet.builder()
@@ -115,4 +136,14 @@ class PickingJobFacetsUtils
 				.build();
 	}
 
+	@NonNull
+	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.HandoverLocationFacet handoverLocation)
+	{
+		return WorkflowLaunchersFacet.builder()
+				.facetId(WorkflowLaunchersFacetId.ofString(
+						HANDOVER_LOCATION_GROUP_ID,
+						JSONObjectMapper.forClass(BPartnerLocationId.class).writeValueAsString(handoverLocation.getBPartnerLocationId())))
+				.caption(TranslatableStrings.anyLanguage(handoverLocation.getRenderedAddress()))
+				.build();
+	}
 }

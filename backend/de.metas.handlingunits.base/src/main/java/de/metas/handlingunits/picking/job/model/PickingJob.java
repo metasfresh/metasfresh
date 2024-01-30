@@ -111,6 +111,9 @@ public final class PickingJob
 
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
 
+	@Nullable
+	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
+
 	public String getDeliveryRenderedAddress() {return header.getDeliveryRenderedAddress();}
 
 	@JsonIgnore

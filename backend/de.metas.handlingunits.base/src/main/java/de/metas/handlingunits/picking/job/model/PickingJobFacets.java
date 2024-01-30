@@ -24,7 +24,10 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import lombok.Builder;
@@ -34,6 +37,7 @@ import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -44,7 +48,11 @@ import java.util.stream.Collector;
 @Builder
 public class PickingJobFacets
 {
-	@NonNull @Singular ImmutableSet<CustomerFacet> customers;
+	public static PickingJobFacets EMPTY = PickingJobFacets.builder().build();
+
+	@NonNull
+	@Singular
+	ImmutableSet<CustomerFacet> customers;
 
 	@Value(staticConstructor = "of")
 	public static class CustomerFacet
@@ -54,7 +62,9 @@ public class PickingJobFacets
 		@NonNull String customerName;
 	}
 
-	@NonNull @Singular ImmutableSet<DeliveryDayFacet> deliveryDays;
+	@NonNull
+	@Singular
+	ImmutableSet<DeliveryDayFacet> deliveryDays;
 
 	@Value(staticConstructor = "of")
 	public static class DeliveryDayFacet
@@ -63,12 +73,24 @@ public class PickingJobFacets
 		@NonNull ZoneId timeZone;
 	}
 
-	public static Collector<Packageable, ?, PickingJobFacets> collectFromPackageables()
+	@NonNull
+	@Singular
+	ImmutableSet<HandoverLocationFacet> handoverLocations;
+
+	@Value(staticConstructor = "of")
+	public static class HandoverLocationFacet
+	{
+		@NonNull BPartnerLocationId bPartnerLocationId;
+		@NonNull String renderedAddress;
+	}
+
+	public static Collector<Packageable, ?, PickingJobFacets> collectFromPackageables(@NonNull final CollectingParameters parameters)
 	{
 		final Supplier<PickingJobFacetsBuilder> supplier = PickingJobFacets::builder;
 		final BiConsumer<PickingJobFacetsBuilder, Packageable> accumulator = (builder, item) -> {
-			builder.customer(extractCustomerFacet(item));
-			builder.deliveryDay(extractDeliveryDateFacet(item));
+			extractCustomerFacet(item, parameters).ifPresent(builder::customer);
+			extractDeliveryDateFacet(item, parameters).ifPresent(builder::deliveryDay);
+			extractHandoverLocation(item, parameters).ifPresent(builder::handoverLocation);
 		};
 		final BinaryOperator<PickingJobFacetsBuilder> combiner = (builder1, builder2) -> {
 			final PickingJobFacets facetsToAdd = builder2.build();
@@ -81,18 +103,66 @@ public class PickingJobFacets
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	private static PickingJobFacets.CustomerFacet extractCustomerFacet(final Packageable packageable)
+	@NonNull
+	private static Optional<PickingJobFacets.CustomerFacet> extractCustomerFacet(
+			@NonNull final Packageable packageable,
+			@NonNull final CollectingParameters collectingParameters)
 	{
-		return PickingJobFacets.CustomerFacet.of(packageable.getCustomerId(), packageable.getCustomerBPValue(), packageable.getCustomerName());
+		if (!collectingParameters.isCollectBPartner())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(PickingJobFacets.CustomerFacet.of(packageable.getCustomerId(),
+															 packageable.getCustomerBPValue(),
+															 packageable.getCustomerName()));
 	}
 
-	private static PickingJobFacets.DeliveryDayFacet extractDeliveryDateFacet(final Packageable packageable)
+	@NonNull
+	private static Optional<PickingJobFacets.DeliveryDayFacet> extractDeliveryDateFacet(
+			@NonNull final Packageable packageable,
+			@NonNull final CollectingParameters collectingParameters)
 	{
+		if (!collectingParameters.isCollectDeliveryDate())
+		{
+			return Optional.empty();
+		}
+
 		final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
 		//final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
 		final ZoneId timeZone = SystemTime.zoneId();
 		final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();
-		return PickingJobFacets.DeliveryDayFacet.of(deliveryDay, timeZone);
+		return Optional.of(PickingJobFacets.DeliveryDayFacet.of(deliveryDay, timeZone));
 	}
 
+	@NonNull
+	private static Optional<HandoverLocationFacet> extractHandoverLocation(
+			@NonNull final Packageable packageable,
+			@NonNull final CollectingParameters collectingParameters)
+	{
+		if (!collectingParameters.isCollectHandoverLocation())
+		{
+			return Optional.empty();
+		}
+		if (packageable.getHandoverLocationId() == null)
+		{
+			return Optional.of(HandoverLocationFacet.of(packageable.getCustomerLocationId(), packageable.getCustomerAddress()));
+		}
+
+		final String renderedAddress = collectingParameters.getDocumentLocationBL()
+				.computeRenderedAddress(DocumentLocation.ofBPartnerLocationId(packageable.getHandoverLocationId()))
+				.getRenderedAddress();
+
+		return Optional.of(HandoverLocationFacet.of(packageable.getHandoverLocationId(), renderedAddress));
+	}
+
+	@Value
+	@Builder
+	public static class CollectingParameters
+	{
+		@NonNull IDocumentLocationBL documentLocationBL;
+		boolean collectBPartner;
+		boolean collectHandoverLocation;
+		boolean collectDeliveryDate;
+	}
 }

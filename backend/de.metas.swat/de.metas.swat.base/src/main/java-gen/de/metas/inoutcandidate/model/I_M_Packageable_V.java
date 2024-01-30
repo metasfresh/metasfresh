@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -1084,4 +1085,24 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_WarehouseName = new ModelColumn<>(I_M_Packageable_V.class, "WarehouseName", null);
 	String COLUMNNAME_WarehouseName = "WarehouseName";
+
+	/**
+	 * Set Handover Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandover_Location_ID (int Handover_Location_ID);
+
+	/**
+	 * Get Handover Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandover_Location_ID();
+
+	String COLUMNNAME_Handover_Location_ID = "Handover_Location_ID";
 }

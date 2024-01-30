@@ -22,6 +22,7 @@
 
 package de.metas.picking.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -39,4 +40,26 @@ public class MobileUIPickingUserProfile
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 	boolean isAllowPickingAnyHU;
 	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
+	@NonNull @Builder.Default ImmutableSet<PickingJobFilterOption> availablePickingFilters = ImmutableSet.of();
+	@NonNull @Builder.Default ImmutableList<PickingJobUIConfig> pickingJobConfigs = ImmutableList.of();
+
+	public boolean isFilterByCustomerEnabled()
+	{
+		return availablePickingFilters.contains(PickingJobFilterOption.CUSTOMER);
+	}
+
+	public boolean isFilterByHandoverAddressEnabled()
+	{
+		return availablePickingFilters.contains(PickingJobFilterOption.HANDOVER_LOCATION);
+	}
+
+	public boolean isFilterByDeliveryDateEnabled()
+	{
+		return availablePickingFilters.contains(PickingJobFilterOption.DELIVERY_DATE);
+	}
+
+	public boolean isAnyFilterEnabled()
+	{
+		return !availablePickingFilters.isEmpty();
+	}
 }

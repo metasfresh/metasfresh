@@ -337,9 +337,15 @@ public class ReferenceListAwareEnums
 		}
 
 		@NonNull
-		public Stream<T> streamValues()
+		public Stream<T> stream()
 		{
 			return typesByCode.values().stream();
+		}
+
+		@NonNull
+		public ImmutableList<T> toList()
+		{
+			return stream().collect(ImmutableList.toImmutableList());
 		}
 	}
 }
