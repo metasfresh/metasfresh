@@ -30,6 +30,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -87,6 +89,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
+		discountSchemaRecord.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		save(discountSchemaRecord);
 
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);

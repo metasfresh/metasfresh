@@ -571,6 +571,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 		final IQueryBuilder<I_PP_Product_BOM> productBOMQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, X_PP_Product_BOM.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter();
 
 		if (!Check.isEmpty(bomTypes))

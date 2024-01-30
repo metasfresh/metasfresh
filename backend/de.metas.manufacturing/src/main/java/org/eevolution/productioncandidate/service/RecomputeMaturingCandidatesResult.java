@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +22,15 @@
 
 package org.eevolution.productioncandidate.service;
 
-import com.google.common.collect.ImmutableList;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.productioncandidate.service.produce.PPOrderCandidateToAllocate;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class PPOrderCandidateProcessRequest
+public class RecomputeMaturingCandidatesResult
 {
-	@NonNull
-	ImmutableList<PPOrderCandidateToAllocate> sortedCandidates;
-
-	@Nullable
-	Boolean isDocCompleteOverride;
-
-	boolean autoProcessCandidatesAfterProduction;
-
-	boolean autoCloseCandidatesAfterProduction;
+	long created;
+	long updated;
+	long deleted;
+	long ignored;
 }
