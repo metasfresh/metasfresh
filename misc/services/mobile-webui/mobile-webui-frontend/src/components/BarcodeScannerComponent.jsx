@@ -62,6 +62,9 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult, inpu
       toastErrorFromObj(error);
     } finally {
       scanningStatus.running = false;
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = '';
+      }
     }
   };
 
