@@ -44,7 +44,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-		FROM report.Current_Vs_Next_Pricelist_Comparison_Report(
+		FROM report.Current_Vs_Next_Pricelist_Comparison_Report_V2(
 			$P{C_BPartner_ID},
 			$P{C_BP_Group_ID},
 			$P{IsSOTrx}, $P{ad_language},
@@ -52,7 +52,7 @@
 		) where show_product_price_pi_flag = 'N'
 		UNION ALL
 		SELECT *
-		FROM report.Current_Vs_Next_Pricelist_Comparison_Report_With_PP_PI(
+		FROM report.Current_Vs_Next_Pricelist_Comparison_Report_With_PP_PI_V2(
 			$P{C_BPartner_ID},
 			$P{C_BP_Group_ID},
 			$P{IsSOTrx}, $P{ad_language},
