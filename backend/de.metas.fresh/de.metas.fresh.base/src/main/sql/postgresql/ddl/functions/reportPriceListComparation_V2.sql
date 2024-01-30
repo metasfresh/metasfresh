@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 DROP FUNCTION IF EXISTS report.reportPriceListComparation_V2(
     C_BPartner_ID            numeric, -- 1
     M_PriceList_Version_ID   numeric, -- 2
@@ -131,15 +109,6 @@ FROM M_ProductPrice pp
 
          LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes_V2(M_ProductPrice_ID := pp.M_ProductPrice_ID) ppa ON TRUE
 
-         LEFT OUTER JOIN m_hu_pi_item_product hupip ON (CASE
-                                                            WHEN pp.m_hu_pi_item_product_id IS NULL
-                                                                THEN hupip.m_hu_pi_item_product_id = bpProductPackingMaterial.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
-                                                                ELSE hupip.m_product_id = bpProductPackingMaterial.m_product_id AND hupip.isActive = 'Y'
-                                                        END)
-         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
-
          INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID AND plv.IsActive = 'Y'
 
     --
@@ -150,15 +119,15 @@ FROM M_ProductPrice pp
     -- limited to the same PriceList because the Parameter validation rule is enforcing this
          LEFT JOIN M_PriceList_Version plv2 ON plv2.M_PriceList_ID = plv.M_PriceList_ID AND plv2.IsActive = 'Y'
          LEFT OUTER JOIN LATERAL (
-    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature
+    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature,pp2.m_hu_pi_item_product_id
     FROM M_ProductPrice pp2
              INNER JOIN report.getProductPriceAndAttributes_V2(M_ProductPrice_ID := pp2.M_ProductPrice_ID) ppa2 ON TRUE
 
     WHERE pp2.M_Product_ID = pp.M_Product_ID
       AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
       AND pp2.IsActive = 'Y'
-      AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
-           (pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
+      --AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
+      --(pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
       AND pp2.isAttributeDependant = pp.isAttributeDependant
       --avoid comparing different product prices in same pricelist
       AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
@@ -173,6 +142,15 @@ FROM M_ProductPrice pp
          LEFT JOIN M_Pricelist pl2 ON plv2.M_PriceList_ID = pl2.M_Pricelist_ID AND pl2.isActive = 'Y'
          INNER JOIN C_Currency c ON pl.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
          LEFT JOIN C_Currency c2 ON pl2.C_Currency_ID = c2.C_CUrrency_ID AND c2.isActive = 'Y'
+
+         LEFT OUTER JOIN m_hu_pi_item_product hupip ON (CASE
+                                                            WHEN pp2.m_hu_pi_item_product_id IS NULL
+                                                                THEN hupip.m_hu_pi_item_product_id = bpProductPackingMaterial.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
+                                                                ELSE hupip.m_product_id = bpProductPackingMaterial.m_product_id AND hupip.isActive = 'Y'
+                                                        END)
+         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
 
 WHERE plv.M_Pricelist_Version_ID = $2
   AND plv2.M_Pricelist_Version_ID = COALESCE($3, plv.m_pricelist_version_id)
