@@ -83,9 +83,18 @@ const PickLineScanScreen = () => {
     catchWeight = null,
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
+    gotoPickingLineScreen = true,
     ...others
   }) => {
-    console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
+    console.log('onResult', {
+      qty,
+      reason,
+      scannedBarcode,
+      catchWeight,
+      catchWeightUom,
+      gotoPickingLineScreen,
+      ...others,
+    });
 
     postStepPicked({
       wfProcessId,
@@ -101,7 +110,9 @@ const PickLineScanScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.go(-1); // go to picking line screen
+        if (gotoPickingLineScreen) {
+          history.go(-1);
+        }
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
