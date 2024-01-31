@@ -101,6 +101,6 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 
 		final IQuery<I_C_Queue_WorkPackage> query = queueDAO.createQuery(item.getCtx(), existingWorkpackageQuery);
 
-		return !query.anyMatch();
+		return query.count() < 10;
 	}
 }
