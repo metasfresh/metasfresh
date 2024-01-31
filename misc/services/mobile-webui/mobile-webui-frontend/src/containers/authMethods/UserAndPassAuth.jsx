@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
@@ -29,6 +29,11 @@ const UserAndPassAuth = () => {
       });
     // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
   };
+
+  useEffect(() => {
+    usernameFieldRef?.current?.focus();
+    usernameFieldRef?.current?.select();
+  }, []);
 
   return (
     <div className="section is-size-5">
