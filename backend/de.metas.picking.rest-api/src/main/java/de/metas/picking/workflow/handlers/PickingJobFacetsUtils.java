@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.PickingJobFilterOption;
 import de.metas.util.JSONObjectMapper;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
@@ -40,6 +41,7 @@ import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 
 @UtilityClass
@@ -75,7 +77,9 @@ class PickingJobFacetsUtils
 		return builder.build();
 	}
 
-	public WorkflowLaunchersFacetGroupList toWorkflowLaunchersFacetGroupList(@NonNull final PickingJobFacets pickingFacets)
+	public WorkflowLaunchersFacetGroupList toWorkflowLaunchersFacetGroupList(
+			@NonNull final PickingJobFacets pickingFacets,
+			@NonNull final MobileUIPickingUserProfile profile)
 	{
 		final ArrayList<WorkflowLaunchersFacetGroup> groups = new ArrayList<>();
 
@@ -114,6 +118,10 @@ class PickingJobFacetsUtils
 											   .collect(ImmutableList.toImmutableList()))
 							   .build());
 		}
+
+		final Comparator<WorkflowLaunchersFacetGroup> groupDisplayComparator = Comparator.comparing(group -> group.getId().getAsString(),
+																									profile.getFilterDisplayOrderComparator());
+		groups.sort(groupDisplayComparator);
 
 		return WorkflowLaunchersFacetGroupList.ofList(groups);
 	}

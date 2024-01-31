@@ -20,6 +20,7 @@ public class PickingJobReference
 	@NonNull BPartnerId customerId;
 	@NonNull String customerName;
 	@NonNull ZonedDateTime deliveryDate;
+	@NonNull ZonedDateTime preparationDate;
 	@NonNull BPartnerLocationId deliveryLocationId;
 	@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
