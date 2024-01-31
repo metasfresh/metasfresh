@@ -88,6 +88,7 @@ public class ProcessPickingCandidatesCommand
 	@Builder
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final InventoryService inventoryService,
 			@NonNull final ProcessPickingCandidatesRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
@@ -101,7 +102,7 @@ public class ProcessPickingCandidatesCommand
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
 				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
-				.inventoryService(SpringContextHolder.instance.getBean(InventoryService.class))
+				.inventoryService(inventoryService)
 				.build();
 
 		this.packToMap = new PackToMap(packToHUsProducer);

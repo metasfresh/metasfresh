@@ -16,7 +16,6 @@ import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
@@ -51,7 +50,6 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
@@ -141,7 +139,7 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
-		final InventoryService inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
+		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -151,7 +149,8 @@ public class PickingJobTestHelper
 						pickingCandidateRepository,
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
-						bpartnerBL
+						bpartnerBL,
+						inventoryService
 				),
 				new PickingJobHUReservationService(huReservationService),
 				new DefaultPickingJobLoaderSupportingServicesFactory(
