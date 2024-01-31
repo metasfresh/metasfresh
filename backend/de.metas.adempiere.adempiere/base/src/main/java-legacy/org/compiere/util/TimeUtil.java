@@ -2179,7 +2179,11 @@ public class TimeUtil
 	@SuppressWarnings("rawtypes")
 	public static <T extends Temporal & Comparable> T maxOfNullables(@Nullable final T date1, @Nullable final T date2)
 	{
-		if (date1 == null)
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else if (date1 == null)
 		{
 			return date2;
 		}
