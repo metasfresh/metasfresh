@@ -1,7 +1,9 @@
 package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -14,6 +16,7 @@ import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.Language;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
@@ -21,6 +24,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
@@ -30,6 +34,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
@@ -99,10 +104,12 @@ class PickingMobileApplicationTest
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 		Env.setAD_Language(Env.getCtx(), "de_DE");
 
-		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository());
+		final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(partnerBL);
+		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository(), documentLocationBL);
 		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
 		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
-		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
+		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService, new DisplayValueProvider(documentLocationBL));
 
 		final WorkflowRestAPIService workflowRestAPIService = new WorkflowRestAPIService(
 				Optional.of(ImmutableList.of(pickingMobileApplication)),
