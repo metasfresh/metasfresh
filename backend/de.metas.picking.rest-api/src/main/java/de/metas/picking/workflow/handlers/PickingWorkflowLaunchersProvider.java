@@ -183,7 +183,7 @@ class PickingWorkflowLaunchersProvider
 																					   .build(),
 																			   profile);
 
-		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets);
+		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
 	}
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)

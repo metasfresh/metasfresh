@@ -30,51 +30,81 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Comparator;
+import java.util.Optional;
+
 @Value
 @Builder(toBuilder = true)
 public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
-			.availablePickingFilters(ImmutableSet.of(PickingJobFilterOption.CUSTOMER, PickingJobFilterOption.DELIVERY_DATE))
-			.pickingJobConfigs(ImmutableList.of(PickingJobUIConfig.builder()
-														.seqNo(10)
-														.field(PickingJobField.DOCUMENT_NO)
-														.isShowInDetailed(true)
-														.isShowInSummary(true)
-														.build(),
-												PickingJobUIConfig.builder()
-														.seqNo(20)
-														.field(PickingJobField.CUSTOMER)
-														.isShowInDetailed(true)
-														.isShowInSummary(true)
-														.build()))
+			.availablePickingFilters(ImmutableList.of(
+					PickingFilter.of(PickingJobFilterOption.CUSTOMER, 10),
+					PickingFilter.of(PickingJobFilterOption.DELIVERY_DATE, 20)))
+			.pickingJobConfigs(ImmutableList.of(
+					PickingJobUIConfig.builder()
+							.seqNo(10)
+							.field(PickingJobField.DOCUMENT_NO)
+							.isShowInDetailed(true)
+							.isShowInSummary(true)
+							.build(),
+					PickingJobUIConfig.builder()
+							.seqNo(20)
+							.field(PickingJobField.CUSTOMER)
+							.isShowInDetailed(true)
+							.isShowInSummary(true)
+							.build()))
 			.build();
 
 	@NonNull String name;
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 	boolean isAllowPickingAnyHU;
 	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
-	@NonNull @Builder.Default ImmutableSet<PickingJobFilterOption> availablePickingFilters = ImmutableSet.of();
+	@NonNull @Builder.Default ImmutableList<PickingFilter> availablePickingFilters = ImmutableList.of();
 	@NonNull @Builder.Default ImmutableList<PickingJobUIConfig> pickingJobConfigs = ImmutableList.of();
 
 	public boolean isFilterByCustomerEnabled()
 	{
-		return availablePickingFilters.contains(PickingJobFilterOption.CUSTOMER);
+		return hasFilterOption(PickingJobFilterOption.CUSTOMER);
 	}
 
 	public boolean isFilterByHandoverAddressEnabled()
 	{
-		return availablePickingFilters.contains(PickingJobFilterOption.HANDOVER_LOCATION);
+		return hasFilterOption(PickingJobFilterOption.HANDOVER_LOCATION);
 	}
 
 	public boolean isFilterByDeliveryDateEnabled()
 	{
-		return availablePickingFilters.contains(PickingJobFilterOption.DELIVERY_DATE);
+		return hasFilterOption(PickingJobFilterOption.DELIVERY_DATE);
 	}
 
 	public boolean isAnyFilterEnabled()
 	{
 		return !availablePickingFilters.isEmpty();
+	}
+
+	public boolean hasFilterOption(@NonNull final PickingJobFilterOption option)
+	{
+		return getFilterByOptionCode(option.getCode()).isPresent();
+	}
+
+	@NonNull
+	public Comparator<String> getFilterDisplayOrderComparator()
+	{
+		return (filterOption1, filterOption2) -> {
+			final int option1SeqNo = getFilterByOptionCode(filterOption1).map(PickingFilter::getSeqNo).orElse(-1);
+			final int option2SeqNo = getFilterByOptionCode(filterOption2).map(PickingFilter::getSeqNo).orElse(-1);
+
+			return Integer.compare(option1SeqNo, option2SeqNo);
+		};
+	}
+
+	@NonNull
+	private Optional<PickingFilter> getFilterByOptionCode(@NonNull final String optionCode)
+	{
+		return availablePickingFilters.stream()
+				.filter(pickingFilter -> pickingFilter.getOption().getCode().equals(optionCode))
+				.findFirst();
 	}
 }

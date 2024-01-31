@@ -138,16 +138,15 @@ public class MobileUIPickingUserProfileRepository
 	}
 
 	@NonNull
-	private ImmutableSet<PickingJobFilterOption> getPickingProfileFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	private ImmutableList<PickingFilter> getPickingProfileFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
 	{
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
 				.create()
 				.stream()
-				.map(I_PickingProfile_Filter::getFilterType)
-				.map(PickingJobFilterOption::ofCode)
-				.collect(ImmutableSet.toImmutableSet());
+				.map(record -> PickingFilter.of(PickingJobFilterOption.ofCode(record.getFilterType()), record.getSeqNo()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull

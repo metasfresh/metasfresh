@@ -99,7 +99,7 @@ public class DisplayValueProvider
 				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 				.customerName(pickingJob.getCustomerName())
-				.deliveryDate(pickingJob.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
+				.preparationDate(pickingJob.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.build();
 	}
@@ -111,7 +111,7 @@ public class DisplayValueProvider
 				.deliveryLocationId(pickingJobReference.getDeliveryLocationId())
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
-				.deliveryDate(pickingJobReference.getDeliveryDate())
+				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
 				.build();
 	}
@@ -123,7 +123,7 @@ public class DisplayValueProvider
 				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 				.customerName(pickingJob.getCustomerName())
-				.deliveryDate(pickingJob.getDeliveryDate())
+				.preparationDate(pickingJob.getPreparationDate())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.build();
 	}
@@ -139,7 +139,7 @@ public class DisplayValueProvider
 			case CUSTOMER:
 				return TranslatableStrings.anyLanguage(pickingJob.getCustomerName());
 			case DATE_READY:
-				return TranslatableStrings.dateAndTime(pickingJob.getDeliveryDate());
+				return TranslatableStrings.dateAndTime(pickingJob.getPreparationDate());
 			case DOCUMENT_NO:
 				return TranslatableStrings.anyLanguage(pickingJob.getSalesOrderDocumentNo());
 			case RUESTPLATZ_NR:
@@ -181,7 +181,7 @@ public class DisplayValueProvider
 	{
 		@NonNull String salesOrderDocumentNo;
 		@NonNull String customerName;
-		@NonNull ZonedDateTime deliveryDate;
+		@NonNull ZonedDateTime preparationDate;
 		@NonNull BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
 
