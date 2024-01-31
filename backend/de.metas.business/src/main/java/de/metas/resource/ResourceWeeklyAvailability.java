@@ -2,6 +2,8 @@ package de.metas.resource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Builder(toBuilder = true)
 @EqualsAndHashCode
@@ -30,6 +33,7 @@ import java.util.Optional;
 public class ResourceWeeklyAvailability
 {
 	public static ResourceWeeklyAvailability ALWAYS_AVAILABLE = builder().availableDaysOfWeek(ImmutableSet.copyOf(DayOfWeek.values())).build();
+	public static ResourceWeeklyAvailability NOT_AVAILABLE = builder().availableDaysOfWeek(ImmutableSet.of()).build();
 	public static ResourceWeeklyAvailability MONDAY_TO_FRIDAY_09_TO_17 = ResourceWeeklyAvailability.builder()
 			.availableDaysOfWeek(ImmutableSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
 			.timeSlot(true).timeSlotStart(LocalTime.parse("09:00")).timeSlotEnd(LocalTime.parse("17:00"))
@@ -170,8 +174,7 @@ public class ResourceWeeklyAvailability
 				: Optional.of(ResourceAvailabilityRanges.ofList(ranges));
 	}
 
-	@VisibleForTesting
-	LocalDateTime findNextSlotStart(@NonNull final LocalDateTime dateTime)
+	public LocalDateTime findNextSlotStart(@NonNull final LocalDateTime dateTime)
 	{
 		assertAvailable();
 
@@ -250,5 +253,87 @@ public class ResourceWeeklyAvailability
 		}
 
 		return toBuilder().timeSlotStart(timeSlotStartNew).timeSlotEnd(timeSlotEndNew).build();
+	}
+
+	public ResourceWeeklyAvailability intersectWith(@NonNull final ResourceWeeklyAvailability other)
+	{
+		//
+		// Compute the new available days
+		final Set<DayOfWeek> availableDaysOfWeekNew = Sets.intersection(this.availableDaysOfWeek, other.availableDaysOfWeek);
+		if (availableDaysOfWeekNew.isEmpty())
+		{
+			return NOT_AVAILABLE;
+		}
+
+		//
+		// Compute the new time slot
+		final boolean timeSlotNew;
+		final LocalTime timeSlotStartNew;
+		final LocalTime timeSlotEndNew;
+		if (this.timeSlot)
+		{
+			if (other.timeSlot)
+			{
+				final Range<LocalTime> timeSlotRange = Range.closed(this.timeSlotStart, this.timeSlotEnd);
+				final Range<LocalTime> other_timeSlotRange = Range.closed(other.timeSlotStart, other.timeSlotEnd);
+				if (timeSlotRange.isConnected(other_timeSlotRange))
+				{
+					timeSlotNew = true;
+					final Range<LocalTime> new_timeSlotRange = timeSlotRange.intersection(other_timeSlotRange);
+					timeSlotStartNew = new_timeSlotRange.lowerEndpoint();
+					timeSlotEndNew = new_timeSlotRange.upperEndpoint();
+					if (timeSlotStartNew.equals(timeSlotEndNew))
+					{
+						return NOT_AVAILABLE;
+					}
+				}
+				else
+				{
+					return NOT_AVAILABLE;
+				}
+			}
+			else
+			{
+				timeSlotNew = this.timeSlot; // true
+				timeSlotStartNew = this.timeSlotStart;
+				timeSlotEndNew = this.timeSlotEnd;
+			}
+		}
+		else // this.timeSlot == false
+		{
+			timeSlotNew = other.timeSlot;
+			timeSlotStartNew = other.timeSlotStart;
+			timeSlotEndNew = other.timeSlotEnd;
+		}
+
+		final ResourceWeeklyAvailability intersection = builder()
+				.availableDaysOfWeek(ImmutableSet.copyOf(availableDaysOfWeekNew))
+				.timeSlot(timeSlotNew)
+				.timeSlotStart(timeSlotStartNew)
+				.timeSlotEnd(timeSlotEndNew)
+				.build();
+
+		//
+		// "intern" and return
+		if (ALWAYS_AVAILABLE.equals(intersection))
+		{
+			return ALWAYS_AVAILABLE;
+		}
+		else if (NOT_AVAILABLE.equals(intersection))
+		{
+			return NOT_AVAILABLE;
+		}
+		else if (this.equals(intersection))
+		{
+			return this;
+		}
+		else if (other.equals(intersection))
+		{
+			return other;
+		}
+		else
+		{
+			return intersection;
+		}
 	}
 }
