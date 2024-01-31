@@ -4,6 +4,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
 import de.metas.resource.ResourceAvailabilityRanges;
+import de.metas.resource.ResourceWeeklyAvailability;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -85,15 +86,35 @@ public class StepDef
 	@Nullable
 	public ResourceAvailabilityRanges computeResourceScheduledRange(@NonNull final LocalDateTime startDate)
 	{
-		return resource.getAvailability().computeAvailabilityRanges(startDate, requiredResourceCapacity).orElse(null);
+		// IMPORTANT: step shall start when both machine & resource are available
+		final LocalDateTime startDateEffective = findResourceAndHumanCommonStartDate(startDate);
+		return resource.getAvailability().computeAvailabilityRanges(startDateEffective, requiredResourceCapacity).orElse(null);
 	}
 
 	@Nullable
 	public ResourceAvailabilityRanges computeHumanResourceScheduledRange(@NonNull final LocalDateTime startDate)
 	{
 		final HumanResource humanResource = resource.getHumanResource();
-		return humanResource != null
-				? humanResource.getAvailability().computeAvailabilityRanges(startDate, requiredHumanCapacity).orElse(null)
-				: null;
+		if (humanResource == null)
+		{
+			return null;
+		}
+
+		// IMPORTANT: step shall start when both machine & resource are available
+		final LocalDateTime startDateEffective = findResourceAndHumanCommonStartDate(startDate);
+		return humanResource.getAvailability().computeAvailabilityRanges(startDateEffective, requiredHumanCapacity).orElse(null);
+	}
+
+	private LocalDateTime findResourceAndHumanCommonStartDate(@NonNull final LocalDateTime startDate)
+	{
+		ResourceWeeklyAvailability availability = resource.getAvailability();
+
+		final HumanResource humanResource = resource.getHumanResource();
+		if (humanResource != null)
+		{
+			availability = availability.intersectWith(humanResource.getAvailability());
+		}
+
+		return availability.findNextSlotStart(startDate);
 	}
 }
