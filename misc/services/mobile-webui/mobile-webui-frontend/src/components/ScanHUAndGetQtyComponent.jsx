@@ -156,7 +156,14 @@ const ScanHUAndGetQtyComponent = ({
     return null;
   };
 
-  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason, catchWeight, catchWeightUom }) => {
+  const onQtyEntered = ({
+    qtyEnteredAndValidated,
+    qtyRejected,
+    qtyRejectedReason,
+    catchWeight,
+    catchWeightUom,
+    gotoPickingLineScreen = true,
+  }) => {
     onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
@@ -166,6 +173,7 @@ const ScanHUAndGetQtyComponent = ({
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
+      gotoPickingLineScreen,
     });
   };
 

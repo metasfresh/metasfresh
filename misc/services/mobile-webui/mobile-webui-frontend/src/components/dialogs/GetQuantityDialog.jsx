@@ -10,6 +10,8 @@ import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
+import BarcodeScannerComponent from '../BarcodeScannerComponent';
+import { parseQRCodeString } from '../../utils/huQRCodes';
 
 const GetQuantityDialog = ({
   readOnly = false,
@@ -41,10 +43,11 @@ const GetQuantityDialog = ({
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
   const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+  const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(false);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
-  const onCatchWeghtEntered = (qtyInfo) => setCatchWeight(qtyInfo);
+  const onCatchWeightEntered = (qtyInfo) => setCatchWeight(qtyInfo);
 
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
@@ -138,7 +141,7 @@ const GetQuantityDialog = ({
                       <td>{item.value}</td>
                     </tr>
                   ))}
-                {!hideQtyInput && (
+                {!hideQtyInput && !showCatchWeightQRCodeReader && (
                   <tr>
                     <th>Qty</th>
                     <td>
@@ -153,7 +156,7 @@ const GetQuantityDialog = ({
                     </td>
                   </tr>
                 )}
-                {scaleDevice && allowManualInput && (
+                {scaleDevice && allowManualInput && !showCatchWeightQRCodeReader && (
                   <tr>
                     <td colSpan="2">
                       <div className="buttons has-addons">
@@ -173,20 +176,42 @@ const GetQuantityDialog = ({
                     </td>
                   </tr>
                 )}
-                {useCatchWeight && (
+                {useCatchWeight && !showCatchWeightQRCodeReader && (
                   <tr>
                     <th>{trl('general.CatchWeight')}</th>
                     <td>
                       <QtyInputField
                         qty={qtyInfos.toNumberOrString(catchWeight)}
                         uom={catchWeightUom}
-                        onQtyChange={onCatchWeghtEntered}
+                        onQtyChange={onCatchWeightEntered}
                         readonly={readOnly}
+                      />
+                      <button className="button" onClick={() => setShowCatchWeightQRCodeReader(true)}>
+                        {trl('general.QRCode')}
+                      </button>
+                    </td>
+                  </tr>
+                )}
+                {showCatchWeightQRCodeReader && (
+                  <tr>
+                    <td colSpan="2">
+                      <BarcodeScannerComponent
+                        continuousRunning={true}
+                        onResolvedResult={(result) => {
+                          const qrCode = parseQRCodeString(result.scannedBarcode);
+                          onQtyChange({
+                            qtyEnteredAndValidated: 1,
+                            catchWeight: qrCode.weightNet,
+                            catchWeightUom: catchWeightUom,
+                            gotoPickingLineScreen: false,
+                          });
+                        }}
                       />
                     </td>
                   </tr>
                 )}
-                {qtyRejected > 0 && (
+
+                {qtyRejected > 0 && !showCatchWeightQRCodeReader && (
                   <>
                     <tr>
                       <th>{trl('general.QtyRejected')}</th>
@@ -208,12 +233,21 @@ const GetQuantityDialog = ({
             </table>
 
             <div className="buttons is-centered">
-              <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
-                {trl('activities.picking.confirmDone')}
-              </button>
-              <button className="button is-danger" onClick={onCloseDialog}>
-                {trl('general.cancelText')}
-              </button>
+              {!showCatchWeightQRCodeReader && (
+                <>
+                  <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
+                    {trl('activities.picking.confirmDone')}
+                  </button>
+                  <button className="button is-danger" onClick={onCloseDialog}>
+                    {trl('general.cancelText')}
+                  </button>
+                </>
+              )}
+              {showCatchWeightQRCodeReader && (
+                <button className="button is-danger" onClick={onCloseDialog}>
+                  {trl('general.closeText')}
+                </button>
+              )}
             </div>
           </div>
         </article>

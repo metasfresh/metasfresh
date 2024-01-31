@@ -20,6 +20,7 @@ const translations = {
     CatchWeight: 'Gewicht',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    closeText: 'Schließen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',

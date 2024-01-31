@@ -20,6 +20,7 @@ const translations = {
     CatchWeight: 'Weight',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
+    closeText: 'Close',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',

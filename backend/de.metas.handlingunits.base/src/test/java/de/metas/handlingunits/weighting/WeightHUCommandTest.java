@@ -21,7 +21,6 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -29,7 +28,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
@@ -96,8 +94,7 @@ public class WeightHUCommandTest
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
-		final InventoryRepository inventoryRepo = new InventoryRepository();
-		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
+		this.inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}

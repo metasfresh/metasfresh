@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.dao.ValueRestriction;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -59,7 +60,8 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
-	@NonNull private HUQRCodesService huQRCodesService;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final InventoryService inventoryService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -192,7 +194,7 @@ public class PickingJobService
 		{
 			builder.handoverLocationIds(locationIds);
 		}
-		
+
 		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
 		if (workplaceWarehouseId != null)
 		{
@@ -280,6 +282,7 @@ public class PickingJobService
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
+						.inventoryService(inventoryService)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -288,6 +291,7 @@ public class PickingJobService
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
+						.createInventoryForMissingQty(true)
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						.catchWeightBD(event.getCatchWeight())

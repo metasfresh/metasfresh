@@ -14,6 +14,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -81,6 +82,7 @@ public class PickingJobPickCommand
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
+	@NonNull private final InventoryService inventoryService;
 
 	//
 	// Params
@@ -91,6 +93,7 @@ public class PickingJobPickCommand
 	@Nullable private final QtyRejectedWithReason qtyRejected;
 	@Nullable private final Quantity catchWeight;
 	private final boolean isPickWholeTU;
+	private final boolean createInventoryForMissingQty;
 
 	//
 	// State
@@ -102,6 +105,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull HUQRCodesService huQRCodesService,
+			final @NonNull InventoryService inventoryService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId pickingJobLineId,
@@ -112,8 +116,10 @@ public class PickingJobPickCommand
 			final @Nullable BigDecimal qtyRejectedBD,
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
 			final @Nullable BigDecimal catchWeightBD,
-			final boolean isPickWholeTU)
+			final boolean isPickWholeTU,
+			final boolean createInventoryForMissingQty)
 	{
+		this.inventoryService = inventoryService;
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
@@ -124,6 +130,7 @@ public class PickingJobPickCommand
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
+				.inventoryService(inventoryService)
 				.build();
 
 		this.pickingJob = pickingJob;
@@ -136,6 +143,7 @@ public class PickingJobPickCommand
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.isPickWholeTU = isPickWholeTU;
+		this.createInventoryForMissingQty = createInventoryForMissingQty;
 		this.qtyToPick =  Quantity.of(qtyToPickBD, uom);
 
 		if (qtyRejectedReasonCode != null)
@@ -340,7 +348,8 @@ public class PickingJobPickCommand
 				productId,
 				qtyToPick,
 				lineId.toTableRecordReference(),
-				true);
+				true,
+				createInventoryForMissingQty);
 
 		if (packedHUs.isEmpty())
 		{
