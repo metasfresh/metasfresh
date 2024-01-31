@@ -37,6 +37,7 @@ package de.metas.picking.workflow.handlers;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+	import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -45,10 +46,10 @@ package de.metas.picking.workflow.handlers;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
+	import de.metas.picking.config.PickingJobField;
 	import de.metas.picking.config.PickingJobUIConfig;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
 	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
-	import de.metas.picking.workflow.BPLocationIndex;
 	import de.metas.picking.workflow.DisplayValueProvider;
 	import de.metas.picking.workflow.PickingJobRestService;
 	import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -175,7 +176,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		final BPLocationIndex<String> locationCaptionIndex = new BPLocationIndex<>();
+		final RenderedAddressProvider addressProvider = displayValueProvider.newAddressProvider();
 
 		final DisplayValueProvider.PickingJobUIDescriptor uiDescriptor = DisplayValueProvider.toUIDescriptor(pickingJob);
 		final ImmutableList<WFProcessHeaderProperty> entries = mobileUIPickingUserProfileRepository.getProfile()
@@ -184,8 +185,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.filter(PickingJobUIConfig::isShowInDetailed)
 				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
 				.map(uiConfig -> WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage(uiConfig.getField().getCode()))
-						.value(displayValueProvider.getDisplayValue(uiConfig.getField(), uiDescriptor, locationCaptionIndex))
+						.caption(TranslatableStrings.adRefList(PickingJobField.PICKING_JOB_FIELD_REFERENCE_ID, uiConfig.getField().getCode()))
+						.value(displayValueProvider.getDisplayValue(uiConfig.getField(), uiDescriptor, addressProvider))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 

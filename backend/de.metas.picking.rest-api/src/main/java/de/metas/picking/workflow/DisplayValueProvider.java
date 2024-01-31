@@ -24,11 +24,11 @@ package de.metas.picking.workflow;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.IOrgDAO;
@@ -64,21 +64,27 @@ public class DisplayValueProvider
 			@NonNull final MobileUIPickingUserProfile profile,
 			@NonNull final PickingJobUIDescriptor pickingJob)
 	{
-		return computeSummaryCaption(profile, pickingJob, new BPLocationIndex<>());
+		return computeSummaryCaption(profile, pickingJob, newAddressProvider());
+	}
+
+	@NonNull
+	public RenderedAddressProvider newAddressProvider()
+	{
+		return RenderedAddressProvider.of(documentLocationBL);
 	}
 
 	@NonNull
 	public ITranslatableString computeSummaryCaption(
 			@NonNull final MobileUIPickingUserProfile profile,
 			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final BPLocationIndex<String> locationCaptionIndex)
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
 		final String workflowCaption = profile.getPickingJobConfigs()
 				.stream()
 				.filter(PickingJobUIConfig::isShowInSummary)
 				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
 				.map(PickingJobUIConfig::getField)
-				.map(uiFiled -> getDisplayValue(uiFiled, pickingJob, locationCaptionIndex))
+				.map(uiFiled -> getDisplayValue(uiFiled, pickingJob, addressProvider))
 				.map(caption -> caption.translate(Env.getAD_Language()))
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(" | "));
@@ -115,7 +121,6 @@ public class DisplayValueProvider
 	{
 		return PickingJobUIDescriptor.builder()
 				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
-				.deliveryLocationRenderedAddress(pickingJob.getDeliveryRenderedAddress())
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 				.customerName(pickingJob.getCustomerName())
 				.deliveryDate(pickingJob.getDeliveryDate())
@@ -127,7 +132,7 @@ public class DisplayValueProvider
 	public ITranslatableString getDisplayValue(
 			@NonNull final PickingJobField uiField,
 			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final BPLocationIndex<String> locationId2RenderedAddress)
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
 		switch (uiField)
 		{
@@ -140,9 +145,9 @@ public class DisplayValueProvider
 			case RUESTPLATZ_NR:
 				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob));
 			case DELIVERY_ADDRESS:
-				return TranslatableStrings.anyLanguage(pickingJob.getDeliveryLocationRenderedAddress());
+				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob, addressProvider));
 			case HANDOVER_LOCATION:
-				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, locationId2RenderedAddress));
+				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, addressProvider));
 			default:
 				throw new AdempiereException("Unknown filed=" + uiField);
 		}
@@ -151,27 +156,23 @@ public class DisplayValueProvider
 	@Nullable
 	private String getRuestplatz(@NonNull final PickingJobUIDescriptor pickingJob)
 	{
-		return partnerDAO.getBPartnerLocationByIdEvenInactive(pickingJob.getHandoverLocationIdWithFallback()).getSetup_Place_No();
+		return partnerDAO.getBPartnerLocationByIdEvenInactive(pickingJob.getDeliveryLocationId()).getSetup_Place_No();
 	}
 
-	@Nullable
+	@NonNull
 	private String getHandoverAddress(
 			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final BPLocationIndex<String> locationId2RenderedAddress)
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
-		if (pickingJob.getHandoverLocationId() == null && Check.isNotBlank(pickingJob.getDeliveryLocationRenderedAddress()))
-		{
-			return pickingJob.getDeliveryLocationRenderedAddress();
-		}
-
-		return locationId2RenderedAddress.getOrCompute(pickingJob.getHandoverLocationIdWithFallback(), this::computeRenderedAddress);
+		return addressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback());
 	}
 
-	@Nullable
-	private String computeRenderedAddress(@NonNull final BPartnerLocationId locationId)
+	@NonNull
+	private String getDeliveryAddress(
+			@NonNull final PickingJobUIDescriptor pickingJob,
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
-		return documentLocationBL.computeRenderedAddress(DocumentLocation.ofBPartnerLocationId(locationId))
-				.getRenderedAddress();
+		return addressProvider.getAddress(pickingJob.getDeliveryLocationId());
 	}
 
 	@Value
@@ -182,10 +183,7 @@ public class DisplayValueProvider
 		@NonNull String customerName;
 		@NonNull ZonedDateTime deliveryDate;
 		@NonNull BPartnerLocationId deliveryLocationId;
-		@Nullable
-		BPartnerLocationId handoverLocationId;
-		@Nullable
-		String deliveryLocationRenderedAddress;
+		@Nullable BPartnerLocationId handoverLocationId;
 
 		@NonNull
 		public BPartnerLocationId getHandoverLocationIdWithFallback()

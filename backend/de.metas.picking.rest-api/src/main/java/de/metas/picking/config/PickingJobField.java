@@ -24,6 +24,7 @@ package de.metas.picking.config;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
+import de.metas.reflist.ReferenceId;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_AD_Reference_ID;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_Customer;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DateReady;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DeliveryAddress;
@@ -50,6 +52,8 @@ public enum PickingJobField implements ReferenceListAwareEnum
 	HANDOVER_LOCATION(PICKINGJOBFIELD_HandoverLocation),
 	RUESTPLATZ_NR(PICKINGJOBFIELD_RuestplatzNr),
 	;
+
+	public static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
 
 	private final String code;
 

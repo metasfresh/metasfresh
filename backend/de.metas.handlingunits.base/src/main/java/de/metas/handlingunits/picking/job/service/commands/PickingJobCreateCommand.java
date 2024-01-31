@@ -41,7 +41,6 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class PickingJobCreateCommand
@@ -176,7 +175,7 @@ public class PickingJobCreateCommand
 		@NonNull InstantAndOrgId deliveryDate;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@NonNull String deliveryRenderedAddress;
-		@Nullable BPartnerLocationId handoverLocationId;
+		@NonNull BPartnerLocationId handoverLocationId;
 	}
 
 	private static PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final Packageable item)

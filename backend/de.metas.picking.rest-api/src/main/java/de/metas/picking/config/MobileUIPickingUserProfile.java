@@ -34,7 +34,22 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class MobileUIPickingUserProfile
 {
-	public static final MobileUIPickingUserProfile DEFAULT = builder().name("default").build();
+	public static final MobileUIPickingUserProfile DEFAULT = builder()
+			.name("default")
+			.availablePickingFilters(ImmutableSet.of(PickingJobFilterOption.CUSTOMER, PickingJobFilterOption.DELIVERY_DATE))
+			.pickingJobConfigs(ImmutableList.of(PickingJobUIConfig.builder()
+														.seqNo(10)
+														.field(PickingJobField.DOCUMENT_NO)
+														.isShowInDetailed(true)
+														.isShowInSummary(true)
+														.build(),
+												PickingJobUIConfig.builder()
+														.seqNo(20)
+														.field(PickingJobField.CUSTOMER)
+														.isShowInDetailed(true)
+														.isShowInSummary(true)
+														.build()))
+			.build();
 
 	@NonNull String name;
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();

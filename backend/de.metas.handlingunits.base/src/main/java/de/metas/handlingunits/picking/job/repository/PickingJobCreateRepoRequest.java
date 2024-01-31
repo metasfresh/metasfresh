@@ -33,7 +33,7 @@ public class PickingJobCreateRepoRequest
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
-	@Nullable BPartnerLocationId handoverLocationId;
+	@NonNull BPartnerLocationId handoverLocationId;
 	boolean isAllowPickingAnyHU;
 
 	@Singular @NonNull ImmutableList<Line> lines;

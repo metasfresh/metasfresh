@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
 
@@ -51,7 +29,14 @@ FROM (SELECT
           o.DocumentNo                                                            AS OrderDocumentNo,
           o.poreference,
           o.FreightCostRule,
-          o.Handover_Location_ID,
+          coalesce(
+                  (case when o.IsUseHandOver_Location='Y' then o.HandOver_Location_ID else o.C_BPartner_Location_ID end),
+                  o.C_BPartner_Location_ID
+              )                                                                       AS HandOver_Location_ID,
+          coalesce(
+                  (case when o.IsUseHandOver_Location='Y' then o.Handover_Partner_ID else o.C_BPartner_ID end),
+                  o.C_BPartner_ID
+              )                                                                       AS HandOver_Partner_ID,
           dt.DocSubType,
           s.DateOrdered,
           s.C_OrderLine_ID                                                        AS C_OrderLineSO_ID,
@@ -101,7 +86,7 @@ FROM (SELECT
                   pc.C_UOM_ID, -- from UOM
                   prod.C_UOM_ID, -- to UOM: shipment schedule's UOM (see above)
                   pc.QtyPicked
-                               )), 0)
+              )), 0)
            FROM M_Picking_Candidate pc
            WHERE pc.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
              -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
@@ -173,7 +158,7 @@ SELECT db_alter_view(
                (SELECT view_definition
                 FROM information_schema.views
                 WHERE views.table_name = 'm_packageable_v$new')
-       )
+           )
 ;
 
 DROP VIEW IF EXISTS m_packageable_v$new

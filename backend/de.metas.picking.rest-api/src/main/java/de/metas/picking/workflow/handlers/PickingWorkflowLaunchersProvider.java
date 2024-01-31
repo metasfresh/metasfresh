@@ -10,11 +10,11 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
+import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
-import de.metas.picking.workflow.BPLocationIndex;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -83,7 +83,7 @@ class PickingWorkflowLaunchersProvider
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		final PickingJobFacetsQuery facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
-		final BPLocationIndex<String> locationCaptionIndex = new BPLocationIndex<>();
+		final RenderedAddressProvider addressProvider = displayValueProvider.newAddressProvider();
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
@@ -102,7 +102,7 @@ class PickingWorkflowLaunchersProvider
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
-				.map(pickingJobReference -> this.toExistingWorkflowLauncher(pickingJobReference, profile, locationCaptionIndex))
+				.map(pickingJobReference -> this.toExistingWorkflowLauncher(pickingJobReference, profile, addressProvider))
 				.forEach(currentResult::add);
 
 		//
@@ -121,7 +121,7 @@ class PickingWorkflowLaunchersProvider
 																	 .warehouseId(workplaceWarehouseId)
 																	 .build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
-					.map(pickingJobCandidate -> toNewWorkflowLauncher(pickingJobCandidate, profile, locationCaptionIndex))
+					.map(pickingJobCandidate -> toNewWorkflowLauncher(pickingJobCandidate, profile, addressProvider))
 					.forEach(currentResult::add);
 		}
 
@@ -135,12 +135,12 @@ class PickingWorkflowLaunchersProvider
 	private WorkflowLauncher toNewWorkflowLauncher(
 			@NonNull final PickingJobCandidate pickingJobCandidate,
 			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final BPLocationIndex<String> locationCaptionIndex)
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
 		final ITranslatableString caption = displayValueProvider.computeSummaryCaption(
 				profile,
 				displayValueProvider.toUIDescriptor(pickingJobCandidate),
-				locationCaptionIndex);
+				addressProvider);
 
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)
@@ -155,12 +155,12 @@ class PickingWorkflowLaunchersProvider
 	private WorkflowLauncher toExistingWorkflowLauncher(
 			@NonNull final PickingJobReference pickingJobReference,
 			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final BPLocationIndex<String> locationIndex)
+			@NonNull final RenderedAddressProvider addressProvider)
 	{
 		final ITranslatableString caption = displayValueProvider.computeSummaryCaption(
 				profile,
 				DisplayValueProvider.toUIDescriptor(pickingJobReference),
-				locationIndex);
+				addressProvider);
 
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)

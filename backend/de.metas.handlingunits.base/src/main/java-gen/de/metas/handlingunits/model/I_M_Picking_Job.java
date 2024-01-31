@@ -397,4 +397,24 @@ public interface I_M_Picking_Job
 	int getHandover_Location_ID();
 
 	String COLUMNNAME_Handover_Location_ID = "Handover_Location_ID";
+
+	/**
+	 * Set Handover Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandover_Partner_ID (int Handover_Partner_ID);
+
+	/**
+	 * Get Handover Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandover_Partner_ID();
+
+	String COLUMNNAME_Handover_Partner_ID = "Handover_Partner_ID";
 }

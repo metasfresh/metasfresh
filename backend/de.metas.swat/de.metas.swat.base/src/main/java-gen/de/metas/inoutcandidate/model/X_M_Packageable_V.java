@@ -852,4 +852,19 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	{
 		return get_ValueAsInt(COLUMNNAME_Handover_Location_ID);
 	}
+
+	@Override
+	public void setHandover_Partner_ID (final int Handover_Partner_ID)
+	{
+		if (Handover_Partner_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, Handover_Partner_ID);
+	}
+
+	@Override
+	public int getHandover_Partner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Handover_Partner_ID);
+	}
 }

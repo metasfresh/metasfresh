@@ -153,15 +153,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: Handover Location
 		if (!query.getHandoverLocationIds().isEmpty())
 		{
-			final ICompositeQueryFilter<I_M_Packageable_V> orJoinedHandoverFilter = queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-					.setJoinOr()
-					.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-									   .addEqualsFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, null)
-									   .addInArrayFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, query.getHandoverLocationIds()))
-					.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-									   .addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds()));
-
-			queryBuilder.filter(orJoinedHandoverFilter);
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
 		}
 
 		//
@@ -237,7 +229,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
-		packageable.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, record.getHandover_Location_ID()));
+		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandover_Partner_ID(), record.getHandover_Location_ID()));
 
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));

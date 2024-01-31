@@ -26,8 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import lombok.Builder;
@@ -96,6 +94,7 @@ public class PickingJobFacets
 			final PickingJobFacets facetsToAdd = builder2.build();
 			builder1.customers(facetsToAdd.getCustomers());
 			builder1.deliveryDays(facetsToAdd.getDeliveryDays());
+			builder1.handoverLocations(facetsToAdd.getHandoverLocations());
 			return builder1;
 		};
 		final Function<PickingJobFacetsBuilder, PickingJobFacets> finisher = PickingJobFacetsBuilder::build;
@@ -144,14 +143,7 @@ public class PickingJobFacets
 		{
 			return Optional.empty();
 		}
-		if (packageable.getHandoverLocationId() == null)
-		{
-			return Optional.of(HandoverLocationFacet.of(packageable.getCustomerLocationId(), packageable.getCustomerAddress()));
-		}
-
-		final String renderedAddress = collectingParameters.getDocumentLocationBL()
-				.computeRenderedAddress(DocumentLocation.ofBPartnerLocationId(packageable.getHandoverLocationId()))
-				.getRenderedAddress();
+		final String renderedAddress = collectingParameters.getAddressProvider().getAddress(packageable.getHandoverLocationId());
 
 		return Optional.of(HandoverLocationFacet.of(packageable.getHandoverLocationId(), renderedAddress));
 	}
@@ -160,7 +152,7 @@ public class PickingJobFacets
 	@Builder
 	public static class CollectingParameters
 	{
-		@NonNull IDocumentLocationBL documentLocationBL;
+		@NonNull RenderedAddressProvider addressProvider;
 		boolean collectBPartner;
 		boolean collectHandoverLocation;
 		boolean collectDeliveryDate;

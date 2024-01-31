@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.picking.config.MobileUIPickingUserProfile;
@@ -74,13 +75,13 @@ public class PickingJobRestService
 			@NonNull final PickingJobQuery query,
 			@NonNull final MobileUIPickingUserProfile pickingUserProfile)
 	{
-		if (pickingUserProfile.isAnyFilterEnabled())
+		if (!pickingUserProfile.isAnyFilterEnabled())
 		{
 			return PickingJobFacets.EMPTY;
 		}
 
 		final PickingJobFacets.CollectingParameters parameters = PickingJobFacets.CollectingParameters.builder()
-				.documentLocationBL(documentLocationBL)
+				.addressProvider(RenderedAddressProvider.of(documentLocationBL))
 				.collectHandoverLocation(pickingUserProfile.isFilterByHandoverAddressEnabled())
 				.collectBPartner(pickingUserProfile.isFilterByCustomerEnabled())
 				.collectDeliveryDate(pickingUserProfile.isFilterByDeliveryDateEnabled())

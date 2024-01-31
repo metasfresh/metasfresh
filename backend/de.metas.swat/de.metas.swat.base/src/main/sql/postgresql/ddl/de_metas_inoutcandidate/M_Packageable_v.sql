@@ -29,7 +29,14 @@ FROM (SELECT
           o.DocumentNo                                                            AS OrderDocumentNo,
           o.poreference,
           o.FreightCostRule,
-          o.Handover_Location_ID,
+          coalesce(
+            (case when o.IsUseHandOver_Location='Y' then o.HandOver_Location_ID else o.C_BPartner_Location_ID end),
+            o.C_BPartner_Location_ID
+          )                                                                       AS HandOver_Location_ID,
+          coalesce(
+            (case when o.IsUseHandOver_Location='Y' then o.Handover_Partner_ID else o.C_BPartner_ID end),
+            o.C_BPartner_ID
+          )                                                                       AS HandOver_Partner_ID,
           dt.DocSubType,
           s.DateOrdered,
           s.C_OrderLine_ID                                                        AS C_OrderLineSO_ID,

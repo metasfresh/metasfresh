@@ -24,6 +24,7 @@ package de.metas.picking.config;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
+import de.metas.reflist.ReferenceId;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_AD_Reference_ID;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Customer;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_DeliveryDate;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_HandoverLocation;
@@ -44,6 +46,8 @@ public enum PickingJobFilterOption implements ReferenceListAwareEnum
 	DELIVERY_DATE(FILTERTYPE_DeliveryDate),
 	HANDOVER_LOCATION(FILTERTYPE_HandoverLocation),
 	;
+
+	public static final ReferenceId PICKING_JOB_FILTER_OPTION_REFERENCE_ID = ReferenceId.ofRepoId(FILTERTYPE_AD_Reference_ID);
 
 	@Nullable
 	public static PickingJobFilterOption ofNullableCode(@Nullable final String code)

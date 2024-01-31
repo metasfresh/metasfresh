@@ -85,7 +85,7 @@ class PickingJobFacetsUtils
 		{
 			groups.add(WorkflowLaunchersFacetGroup.builder()
 							   .id(CUSTOMERS_FACET_GROUP_ID)
-							   .caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
+							   .caption(TranslatableStrings.adRefList(PickingJobFilterOption.PICKING_JOB_FILTER_OPTION_REFERENCE_ID, PickingJobFilterOption.CUSTOMER.getCode()))
 							   .facets(pickingFacets.getCustomers().stream()
 											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
 											   .distinct()
@@ -96,7 +96,7 @@ class PickingJobFacetsUtils
 		{
 			groups.add(WorkflowLaunchersFacetGroup.builder()
 							   .id(DELIVERY_DAY_GROUP_ID)
-							   .caption(TranslatableStrings.adElementOrMessage("DeliveryDate"))
+							   .caption(TranslatableStrings.adRefList(PickingJobFilterOption.PICKING_JOB_FILTER_OPTION_REFERENCE_ID, PickingJobFilterOption.DELIVERY_DATE.getCode()))
 							   .facets(pickingFacets.getDeliveryDays().stream()
 											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
 											   .distinct()
@@ -107,7 +107,7 @@ class PickingJobFacetsUtils
 		{
 			groups.add(WorkflowLaunchersFacetGroup.builder()
 							   .id(HANDOVER_LOCATION_GROUP_ID)
-							   .caption(TranslatableStrings.adElementOrMessage(PickingJobFilterOption.HANDOVER_LOCATION.getCode()))
+							   .caption(TranslatableStrings.adRefList(PickingJobFilterOption.PICKING_JOB_FILTER_OPTION_REFERENCE_ID, PickingJobFilterOption.HANDOVER_LOCATION.getCode()))
 							   .facets(pickingFacets.getHandoverLocations().stream()
 											   .map(PickingJobFacetsUtils::toWorkflowLaunchersFacet)
 											   .distinct()

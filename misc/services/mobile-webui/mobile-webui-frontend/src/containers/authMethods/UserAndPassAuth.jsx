@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
@@ -15,15 +15,6 @@ const UserAndPassAuth = () => {
   const location = useLocation();
   const { from } = location.state || { from: { pathname: '/' } };
   const usernameFieldRef = useRef(null);
-  useEffect(() => {
-    if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
-    } else {
-      usernameFieldRef.current.focus();
-      usernameFieldRef.current.select();
-    }
-  }, []);
 
   const submitForm = (e) => {
     e.preventDefault();
