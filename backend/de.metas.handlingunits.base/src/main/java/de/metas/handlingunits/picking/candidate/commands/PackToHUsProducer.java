@@ -39,6 +39,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,24 +92,33 @@ public class PackToHUsProducer
 			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 			final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
 			final Quantity huQty = pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM());
-			if (huQty.compareTo(qtyPicked) < 0)
+
+			pickFromHUs = new ArrayList<>();
+			final Quantity qtyMissing;
+			if (huQty.signum() <= 0)
+			{
+				qtyMissing = qtyPicked;
+			}
+			else
+			{
+				qtyMissing = qtyPicked.subtract(huQty).toZeroIfNegative();
+				pickFromHUs.add(pickFromHU);
+			}
+
+			if (qtyMissing.signum() > 0)
 			{
 				final HuId newHuId = inventoryService.createInventoryForMissingQty(CreateVirtualInventoryWithQtyReq.builder()
 						.clientId(ClientId.ofRepoId(pickFromHU.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(pickFromHU.getAD_Org_ID()))
 						.warehouseId(packToInfo.getShipFromLocatorId().getWarehouseId())
 						.productId(productId)
-						.qty(huQty.subtract(qtyPicked))
+						.qty(qtyMissing)
 						.movementDate(SystemTime.asZonedDateTime())
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.build());
 
 				final I_M_HU newHU = handlingUnitsBL.getById(newHuId);
-				pickFromHUs = ImmutableList.of(pickFromHU, newHU);
-			}
-			else
-			{
-				pickFromHUs = ImmutableList.of(pickFromHU);
+				pickFromHUs.add(newHU);
 			}
 		}
 		else
