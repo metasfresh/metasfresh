@@ -60,6 +60,7 @@ public class ManualPOCTest
 		final InMemoryPlanLoaderAndSaver planLoaderAndSaver = new InMemoryPlanLoaderAndSaver();
 		//planLoaderAndSaver.saveSolution(generateProblem_X_Projects_with_Y_Steps(simulationId));
 		planLoaderAndSaver.saveSolution(generateProblem_StepHRRequirementExceedingWeeklyCapacity(simulationId));
+		// planLoaderAndSaver.saveSolution(generateProblem_oneStep_ToTestThatMachineAndHRShallStartAtTheSameTime(simulationId));
 
 		do
 		{
@@ -182,6 +183,33 @@ public class ManualPOCTest
 						.build(),
 				Project.builder()
 						.step(stepTemplate.id(nextStepId(P4)).resource(R2).requiredResourceCapacity(Duration.ofHours(41)).requiredHumanCapacity(Duration.ofHours(16)).build())
+						.build()
+		);
+
+		return createPlan(simulationId, projects);
+	}
+
+	private Plan generateProblem_oneStep_ToTestThatMachineAndHRShallStartAtTheSameTime(@NonNull final SimulationPlanId simulationId)
+	{
+		final ProjectId P1 = projectId(1); // A
+
+		final HumanResource humanResourceCapacity = humanResource(ResourceWeeklyAvailability.MONDAY_TO_FRIDAY_09_TO_17);
+		final Resource R1 = resource(1, ResourceWeeklyAvailability.ALWAYS_AVAILABLE, humanResourceCapacity);
+
+		final StepDef.StepDefBuilder stepTemplate = StepDef.builder()
+				//.id(nextStepId(projectId))
+				//.resource(resource(resourceIdx))
+				// .duration(Duration.ofHours(1))
+				// .humanResourceTestGroupDuration(Duration.ofHours(1))
+				.startDateMin(LocalDateTime.parse("2024-01-25T00:00"))
+				.dueDate(LocalDateTime.parse("2024-12-31T23:59")) // far in the future
+				.projectPriority(InternalPriority.MEDIUM)
+				//.delay(0)
+				;
+
+		final ImmutableList<Project> projects = ImmutableList.of(
+				Project.builder()
+						.step(stepTemplate.id(nextStepId(P1)).resource(R1).requiredResourceCapacity(Duration.ofHours(10)).requiredHumanCapacity(Duration.ofHours(5)).build())
 						.build()
 		);
 
