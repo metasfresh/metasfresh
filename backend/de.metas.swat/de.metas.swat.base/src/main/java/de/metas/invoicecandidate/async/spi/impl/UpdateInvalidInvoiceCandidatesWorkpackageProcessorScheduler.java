@@ -11,6 +11,7 @@ import de.metas.common.util.Check;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
@@ -76,12 +77,16 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	 */
 	protected boolean isEligibleForScheduling(@NonNull final IInvoiceCandUpdateSchedulerRequest item)
 	{
+		if(Adempiere.isUnitTestMode())
+		{
+			return true;
+		}
+		
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		final String classname = UpdateInvalidInvoiceCandidatesWorkpackageProcessor.class.getName();
 		final QueuePackageProcessorId packageProcessorId = queueDAO.retrieveQueuePackageProcessorIdFor(classname);
-		;
-
+		
 		// if there is already a workpackage, don't enqueue another one
 		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = ImmutableSet.of(
 				Check.assumeNotNull(
