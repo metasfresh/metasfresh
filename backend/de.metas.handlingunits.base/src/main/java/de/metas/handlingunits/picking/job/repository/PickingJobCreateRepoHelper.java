@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -77,6 +79,8 @@ class PickingJobCreateRepoHelper
 		record.setIsAllowPickingAnyHU(request.isAllowPickingAnyHU());
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setProcessed(false);
+		record.setHandover_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
+		record.setHandover_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);

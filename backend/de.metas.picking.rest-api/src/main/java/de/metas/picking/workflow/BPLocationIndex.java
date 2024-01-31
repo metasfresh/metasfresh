@@ -2,7 +2,7 @@
  * #%L
  * de.metas.picking.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,22 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.job.model;
+package de.metas.picking.workflow;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.order.OrderId;
-import de.metas.organization.InstantAndOrgId;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.warehouse.WarehouseTypeId;
 
-import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
-@Value
-@Builder
-public class PickingJobCandidate
+public class BPLocationIndex<T>
 {
-	@NonNull InstantAndOrgId preparationDate;
-	@NonNull String salesOrderDocumentNo;
-	@NonNull OrderId salesOrderId;
-	@NonNull String customerName;
-	@NonNull BPartnerLocationId deliveryBPLocationId;
-	@Nullable WarehouseTypeId warehouseTypeId;
-	boolean partiallyPickedBefore;
-	@Nullable BPartnerLocationId handoverLocationId;
+	private final Map<BPartnerLocationId, T> locationId2IndexedData = new HashMap<>();
+
+	@NonNull
+	public T getOrCompute(@NonNull final BPartnerLocationId locationId, @NonNull final Function<BPartnerLocationId, T> computeFunction)
+	{
+		return locationId2IndexedData.computeIfAbsent(locationId, computeFunction);
+	}
 }

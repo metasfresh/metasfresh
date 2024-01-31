@@ -70,7 +70,7 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			//
-			@NonNull PickingJobCreateRequest request)
+			@NonNull final PickingJobCreateRequest request)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
@@ -113,6 +113,7 @@ public class PickingJobCreateCommand
 							.pickerId(request.getPickerId())
 							.isAllowPickingAnyHU(request.isAllowPickingAnyHU())
 							.lines(createLinesRequests(items))
+							.handoverLocationId(headerKey.getHandoverLocationId())
 							.build(),
 					loadingSupportServices);
 
@@ -174,6 +175,7 @@ public class PickingJobCreateCommand
 		@NonNull InstantAndOrgId deliveryDate;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@NonNull String deliveryRenderedAddress;
+		@NonNull BPartnerLocationId handoverLocationId;
 	}
 
 	private static PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final Packageable item)
@@ -185,6 +187,7 @@ public class PickingJobCreateCommand
 				.deliveryDate(item.getDeliveryDate())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.deliveryRenderedAddress(item.getCustomerAddress())
+				.handoverLocationId(item.getHandoverLocationId())
 				.build();
 	}
 

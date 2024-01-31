@@ -90,19 +90,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -117,6 +105,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -394,19 +386,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -421,6 +401,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -704,19 +688,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -731,6 +703,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -1014,19 +990,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -1041,6 +1005,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -1322,19 +1290,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -1349,6 +1305,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -1669,19 +1629,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -1696,6 +1644,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2018,19 +1970,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -2128,19 +2068,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -2155,6 +2083,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2465,19 +2397,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -2492,6 +2412,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2719,6 +2643,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3001,19 +2929,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -3028,6 +2944,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3313,19 +3233,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -3340,6 +3248,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3642,19 +3554,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -3752,19 +3652,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -3779,6 +3667,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4056,19 +3948,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -4083,6 +3963,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4279,6 +4163,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4561,19 +4449,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -4588,6 +4464,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4873,19 +4753,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
-        "entries" : [ {
-          "caption" : "DocumentNo",
-          "value" : "salesOrder01"
-        }, {
-          "caption" : "C_BPartner_Customer_ID",
-          "value" : "BPartner1"
-        }, {
-          "caption" : "PreparationDate",
-          "value" : "09.11.2021, 08:58:52"
-        }, {
-          "caption" : "DeliveryToAddress",
-          "value" : "deliveryRenderedAddress"
-        } ]
+        "entries" : [ ]
       },
       "id" : "picking-1000000"
     },
@@ -4900,6 +4768,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",

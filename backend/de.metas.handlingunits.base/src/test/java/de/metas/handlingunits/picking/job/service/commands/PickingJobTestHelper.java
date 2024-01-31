@@ -279,6 +279,8 @@ public class PickingJobTestHelper
 		item.setQtyToDeliver(sched.getQtyToDeliver());
 		item.setC_BPartner_Customer_ID(sched.getC_BPartner_ID());
 		item.setC_BPartner_Location_ID(sched.getC_BPartner_Location_ID());
+		item.setHandover_Partner_ID(sched.getC_BPartner_ID());
+		item.setHandover_Location_ID(sched.getC_BPartner_Location_ID());
 		item.setBPartnerAddress_Override("deliveryRenderedAddress");
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());

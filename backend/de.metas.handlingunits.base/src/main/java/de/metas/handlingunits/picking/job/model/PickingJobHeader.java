@@ -21,4 +21,5 @@ public class PickingJobHeader
 	@NonNull String deliveryRenderedAddress;
 	boolean isAllowPickingAnyHU;
 	@Nullable UserId lockedBy;
+	@Nullable BPartnerLocationId handoverLocationId;
 }

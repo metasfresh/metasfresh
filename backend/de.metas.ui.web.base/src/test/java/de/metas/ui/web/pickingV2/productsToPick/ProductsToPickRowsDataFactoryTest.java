@@ -67,7 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ProductsToPickRowsDataFactoryTest
 {
@@ -126,6 +126,8 @@ public class ProductsToPickRowsDataFactoryTest
 										//
 										.customerId(customerAndLocationId.getBpartnerId())
 										.customerLocationId(customerAndLocationId)
+										//
+										.handoverLocationId(customerAndLocationId)
 										//
 										.warehouseId(locatorId.getWarehouseId())
 										//

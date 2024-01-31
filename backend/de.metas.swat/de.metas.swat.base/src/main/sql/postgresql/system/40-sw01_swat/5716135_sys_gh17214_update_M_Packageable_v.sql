@@ -30,13 +30,13 @@ FROM (SELECT
           o.poreference,
           o.FreightCostRule,
           coalesce(
-            (case when o.IsUseHandOver_Location='Y' then o.HandOver_Location_ID else o.C_BPartner_Location_ID end),
-            o.C_BPartner_Location_ID
-          )                                                                       AS HandOver_Location_ID,
+                  (case when o.IsUseHandOver_Location='Y' then o.HandOver_Location_ID else o.C_BPartner_Location_ID end),
+                  o.C_BPartner_Location_ID
+              )                                                                       AS HandOver_Location_ID,
           coalesce(
-            (case when o.IsUseHandOver_Location='Y' then o.Handover_Partner_ID else o.C_BPartner_ID end),
-            o.C_BPartner_ID
-          )                                                                       AS HandOver_Partner_ID,
+                  (case when o.IsUseHandOver_Location='Y' then o.Handover_Partner_ID else o.C_BPartner_ID end),
+                  o.C_BPartner_ID
+              )                                                                       AS HandOver_Partner_ID,
           dt.DocSubType,
           s.DateOrdered,
           s.C_OrderLine_ID                                                        AS C_OrderLineSO_ID,
@@ -86,7 +86,7 @@ FROM (SELECT
                   pc.C_UOM_ID, -- from UOM
                   prod.C_UOM_ID, -- to UOM: shipment schedule's UOM (see above)
                   pc.QtyPicked
-                               )), 0)
+              )), 0)
            FROM M_Picking_Candidate pc
            WHERE pc.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
              -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
@@ -158,7 +158,7 @@ SELECT db_alter_view(
                (SELECT view_definition
                 FROM information_schema.views
                 WHERE views.table_name = 'm_packageable_v$new')
-       )
+           )
 ;
 
 DROP VIEW IF EXISTS m_packageable_v$new

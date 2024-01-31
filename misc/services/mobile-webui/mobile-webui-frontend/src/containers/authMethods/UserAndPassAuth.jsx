@@ -15,15 +15,6 @@ const UserAndPassAuth = () => {
   const location = useLocation();
   const { from } = location.state || { from: { pathname: '/' } };
   const usernameFieldRef = useRef(null);
-  useEffect(() => {
-    if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
-    } else {
-      usernameFieldRef.current.focus();
-      usernameFieldRef.current.select();
-    }
-  }, []);
 
   const submitForm = (e) => {
     e.preventDefault();
@@ -38,6 +29,11 @@ const UserAndPassAuth = () => {
       });
     // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
   };
+
+  useEffect(() => {
+    usernameFieldRef?.current?.focus();
+    usernameFieldRef?.current?.select();
+  }, []);
 
   return (
     <div className="section is-size-5">
