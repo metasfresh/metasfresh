@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -84,19 +85,22 @@ public class PickingCandidateService
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final InventoryService inventoryService;
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final IBPartnerBL bpartnersService)
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final InventoryService inventoryService)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.huReservationService = huReservationService;
 		this.bpartnersService = bpartnersService;
+		this.inventoryService = inventoryService;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
@@ -253,6 +257,7 @@ public class PickingCandidateService
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.inventoryService(inventoryService)
 				.request(request)
 				.build()
 				.execute();
