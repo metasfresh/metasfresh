@@ -101,6 +101,9 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 
 		final IQuery<I_C_Queue_WorkPackage> query = queueDAO.createQuery(item.getCtx(), existingWorkpackageQuery);
 
-		return query.count() < 10;
+		// I can't tell why there have be two (why .anyMatch() does not work).
+		// But note that even < 100 would serve the purpose
+		final boolean workpackagesExist = query.count() < 2; 
+		return workpackagesExist;
 	}
 }
