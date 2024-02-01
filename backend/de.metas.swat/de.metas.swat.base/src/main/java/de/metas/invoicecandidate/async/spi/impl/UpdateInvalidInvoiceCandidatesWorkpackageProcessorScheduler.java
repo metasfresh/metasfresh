@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQuery;
@@ -9,10 +10,13 @@ import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.common.util.Check;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -41,6 +45,8 @@ import java.util.Properties;
 
 class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends WorkpackagesOnCommitSchedulerTemplate<IInvoiceCandUpdateSchedulerRequest>
 {
+	private final static Logger logger = LogManager.getLogger(UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler.class);
+
 	public UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{
 		super(UpdateInvalidInvoiceCandidatesWorkpackageProcessor.class);
@@ -77,16 +83,16 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	 */
 	protected boolean isEligibleForScheduling(@NonNull final IInvoiceCandUpdateSchedulerRequest item)
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return true;
 		}
-		
+
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		final String classname = UpdateInvalidInvoiceCandidatesWorkpackageProcessor.class.getName();
 		final QueuePackageProcessorId packageProcessorId = queueDAO.retrieveQueuePackageProcessorIdFor(classname);
-		
+
 		// if there is already a workpackage, don't enqueue another one
 		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = ImmutableSet.of(
 				Check.assumeNotNull(
@@ -101,9 +107,13 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 
 		final IQuery<I_C_Queue_WorkPackage> query = queueDAO.createQuery(item.getCtx(), existingWorkpackageQuery);
 
-		// I can't tell why there have be two (why .anyMatch() does not work).
-		// But note that even < 100 would serve the purpose
-		final boolean workpackagesExist = query.count() < 2; 
-		return workpackagesExist;
+		// The item is eligible if there is one unprocessed WP or zero
+		// If found that one mass-invocing cucumber-test failed when I checked for <=2 packages.
+		// I'm not 100% sure why (very probably trx and multithreading-related), but for good measure I'm even adding another WP if there are already 10 existing.
+		final int existingWorkpackagesCnt = query.count();
+		final boolean result = existingWorkpackagesCnt <= 10;
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog("UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler.isEligibleForScheduling - existingWorkpackagesCnt={} => returning {}", existingWorkpackagesCnt, result);
+		return result;
 	}
 }
