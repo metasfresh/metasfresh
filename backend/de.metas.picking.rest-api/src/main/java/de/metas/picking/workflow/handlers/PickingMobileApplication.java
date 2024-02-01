@@ -1,4 +1,4 @@
-/*
+	/*
  * #%L
  * de.metas.picking.rest-api
  * %%
@@ -22,61 +22,67 @@
 
 package de.metas.picking.workflow.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.time.SystemTime;
-import de.metas.document.engine.IDocument;
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobId;
-import de.metas.handlingunits.picking.job.model.PickingJobLineId;
-import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
-import de.metas.handlingunits.picking.job.model.PickingJobStepId;
-import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.picking.config.MobileUIPickingUserProfileRepository;
-import de.metas.picking.rest_api.json.JsonPickingEventsList;
-import de.metas.picking.rest_api.json.JsonPickingStepEvent;
-import de.metas.picking.workflow.PickingJobRestService;
-import de.metas.picking.workflow.PickingWFProcessStartParams;
-import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
-import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
+	import com.google.common.annotations.VisibleForTesting;
+	import com.google.common.collect.ImmutableList;
+	import com.google.common.collect.ImmutableListMultimap;
+	import com.google.common.collect.ImmutableMap;
+	import com.google.common.collect.ImmutableSet;
+	import de.metas.common.util.time.SystemTime;
+	import de.metas.document.engine.IDocument;
+	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+	import de.metas.handlingunits.picking.job.model.PickingJob;
+	import de.metas.handlingunits.picking.job.model.PickingJobId;
+	import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+	import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+	import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
+	import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+	import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+	import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
+	import de.metas.handlingunits.qrcodes.model.HUQRCode;
+	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+	import de.metas.i18n.AdMessageKey;
+	import de.metas.i18n.ITranslatableString;
+	import de.metas.i18n.ImmutableTranslatableString;
+	import de.metas.i18n.TranslatableStrings;
+	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
+	import de.metas.picking.config.PickingJobField;
+	import de.metas.picking.config.PickingJobUIConfig;
+	import de.metas.picking.rest_api.json.JsonPickingEventsList;
+	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+	import de.metas.picking.workflow.DisplayValueProvider;
+	import de.metas.picking.workflow.PickingJobRestService;
+	import de.metas.picking.workflow.PickingWFProcessStartParams;
+	import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
+	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
-import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
-import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.CustomApplicationParameter;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
-import de.metas.workflow.rest_api.model.WFActivity;
-import de.metas.workflow.rest_api.model.WFActivityId;
-import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
-import de.metas.workflow.rest_api.model.WFProcessId;
-import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.WorkplaceSettings;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
-import de.metas.workflow.rest_api.service.WorkflowStartRequest;
-import de.metas.workplace.WorkplaceService;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Component;
+	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
+	import de.metas.user.UserId;
+	import de.metas.workflow.rest_api.model.CustomApplicationParameter;
+	import de.metas.workflow.rest_api.model.MobileApplicationId;
+	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+	import de.metas.workflow.rest_api.model.WFActivity;
+	import de.metas.workflow.rest_api.model.WFActivityId;
+	import de.metas.workflow.rest_api.model.WFProcess;
+	import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+	import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
+	import de.metas.workflow.rest_api.model.WFProcessId;
+	import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+	import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+	import de.metas.workflow.rest_api.model.WorkplaceSettings;
+	import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+	import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
+	import de.metas.workflow.rest_api.service.WorkflowStartRequest;
+	import de.metas.workplace.WorkplaceService;
+	import lombok.NonNull;
+	import org.adempiere.exceptions.AdempiereException;
+	import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.function.UnaryOperator;
+	import java.util.Collection;
+	import java.util.Comparator;
+	import java.util.function.UnaryOperator;
 
-import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
+	import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
@@ -89,15 +95,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private final PickingJobRestService pickingJobRestService;
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final WorkplaceService workplaceService;
+	private final DisplayValueProvider displayValueProvider;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingMobileApplication(
 			@NonNull final PickingJobRestService pickingJobRestService,
 			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
-			@NonNull final WorkplaceService workplaceService)
+			@NonNull final WorkplaceService workplaceService,
+			@NonNull final DisplayValueProvider displayValueProvider)
 	{
 		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService);
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService, displayValueProvider);
 		this.workplaceService = workplaceService;
+		this.displayValueProvider = displayValueProvider;
+		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 	}
 
 	@Override
@@ -166,24 +177,22 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
+		final RenderedAddressProvider addressProvider = displayValueProvider.newAddressProvider();
+
+		final DisplayValueProvider.PickingJobUIDescriptor uiDescriptor = DisplayValueProvider.toUIDescriptor(pickingJob);
+		final ImmutableList<WFProcessHeaderProperty> entries = mobileUIPickingUserProfileRepository.getProfile()
+				.getPickingJobConfigs()
+				.stream()
+				.filter(PickingJobUIConfig::isShowInDetailed)
+				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
+				.map(uiConfig -> WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adRefList(PickingJobField.PICKING_JOB_FIELD_REFERENCE_ID, uiConfig.getField().getCode()))
+						.value(displayValueProvider.getDisplayValue(uiConfig.getField(), uiDescriptor, addressProvider))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 
 		return WFProcessHeaderProperties.builder()
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
-						.value(pickingJob.getSalesOrderDocumentNo())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
-						.value(pickingJob.getCustomerName())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("PreparationDate"))
-						.value(pickingJob.getPreparationDate())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DeliveryToAddress"))
-						.value(pickingJob.getDeliveryRenderedAddress())
-						.build())
+				.entries(entries)
 				.build();
 	}
 
@@ -230,7 +239,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		wfLaunchersProvider.invalidateCacheByUserId(callerId);
 	}
 
-	private static WFProcess toWFProcess(final PickingJob pickingJob)
+	private WFProcess toWFProcess(final PickingJob pickingJob)
 	{
 		final UserId responsibleId = pickingJob.getLockedBy();
 
@@ -271,13 +280,13 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					.build());
 		}
 
+		final ITranslatableString caption = displayValueProvider.computeSummaryCaption(mobileUIPickingUserProfileRepository.getProfile(),
+				DisplayValueProvider.toUIDescriptor(pickingJob));
+
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))
 				.responsibleId(responsibleId)
-				.caption(PickingWFProcessUtils.workflowCaption()
-						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
-						.customerName(pickingJob.getCustomerName())
-						.build())
+				.caption(caption)
 				.document(pickingJob)
 				.activities(activities.build())
 				.build();

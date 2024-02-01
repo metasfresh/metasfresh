@@ -3,6 +3,7 @@ import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import PropTypes from 'prop-types';
 import { countLaunchers, getFacets } from '../../api/launchers';
 import { trl } from '../../utils/translations';
+import { compareStringEmptyLast } from '../../utils/stringUtils';
 
 const toggleFacet = (groups, facetId) => {
   return changeFacets(groups, (facet) => (facet.facetId === facetId ? { ...facet, active: !facet.active } : facet));
@@ -21,6 +22,8 @@ const changeFacets = (groups, facetMapper) => {
         facetChanged = true;
       }
     }
+
+    newFacets.sort((f1, f2) => compareStringEmptyLast(f1.caption, f2.caption));
 
     const newGroup = facetChanged ? { ...group, facets: newFacets } : group;
     result.push(newGroup);

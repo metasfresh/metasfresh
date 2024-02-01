@@ -9,6 +9,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -93,6 +94,7 @@ public class PickingCandidateService
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final ADReferenceService adReferenceService;
+	private final InventoryService inventoryService;
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
@@ -248,6 +250,7 @@ public class PickingCandidateService
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.inventoryService(inventoryService)
 				.request(request)
 				.build()
 				.execute();

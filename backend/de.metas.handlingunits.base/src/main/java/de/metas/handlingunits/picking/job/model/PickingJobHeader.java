@@ -23,4 +23,5 @@ public class PickingJobHeader
 	boolean isAllowPickingAnyHU;
 	@Nullable UserId lockedBy;
 	boolean isPickingReviewRequired;
+	@Nullable BPartnerLocationId handoverLocationId;
 }

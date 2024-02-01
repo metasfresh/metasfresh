@@ -8,8 +8,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Optional;
-
 @Value
 @Builder
 public class LoginAuthenticateResponse
@@ -17,9 +15,4 @@ public class LoginAuthenticateResponse
 	@NonNull UserId userId;
 	boolean is2FARequired;
 	@NonNull @Singular ImmutableList<Role> availableRoles;
-
-	public Optional<Role> getSingleRole()
-	{
-		return availableRoles.size() == 1 ? Optional.of(availableRoles.get(0)) : Optional.empty();
-	}
 }

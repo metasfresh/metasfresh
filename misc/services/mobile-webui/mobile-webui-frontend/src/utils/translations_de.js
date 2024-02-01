@@ -22,6 +22,7 @@ const translations = {
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     okText: 'OK',
+    closeText: 'Schließen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',

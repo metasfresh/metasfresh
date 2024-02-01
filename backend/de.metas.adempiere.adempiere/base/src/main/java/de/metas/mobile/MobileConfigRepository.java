@@ -22,6 +22,7 @@
 
 package de.metas.mobile;
 
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -35,8 +36,19 @@ public class MobileConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<Integer, Optional<MobileConfig>> cache = CCache.<Integer, Optional<MobileConfig>>builder()
+			.tableName(I_MobileConfiguration.Table_Name)
+			.initialCapacity(1)
+			.build();
+
 	@NonNull
 	public Optional<MobileConfig> getConfig()
+	{
+		return cache.getOrLoad(0, this::retrieveConfig);
+	}
+
+	@NonNull
+	private Optional<MobileConfig> retrieveConfig()
 	{
 		return queryBL.createQueryBuilder(I_MobileConfiguration.class)
 				.addOnlyActiveRecordsFilter()
