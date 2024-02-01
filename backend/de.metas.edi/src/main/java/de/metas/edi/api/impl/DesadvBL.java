@@ -107,7 +107,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class DesadvBL implements IDesadvBL
 {
-	private final static transient Logger logger = LogManager.getLogger(DesadvBL.class);
+	private final static Logger logger = LogManager.getLogger(DesadvBL.class);
 
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
@@ -761,7 +761,7 @@ public class DesadvBL implements IDesadvBL
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
-			return Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
+			return Optional.ofNullable(TimeUtil.asTimestamp(bestBeforeDate));
 		}
 		return Optional.empty();
 	}
@@ -773,7 +773,7 @@ public class DesadvBL implements IDesadvBL
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
 			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
-			return Optional.of(lotNumber);
+			return Optional.ofNullable(lotNumber); // notre that the attribute might be there, but with a null value
 		}
 		return Optional.empty();
 	}
