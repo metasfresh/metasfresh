@@ -24,12 +24,14 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -39,11 +41,13 @@ public class PickingJobFacetsQuery
 
 	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
+	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
 	public boolean isMatching(final PickingJobReference pickingJobReference)
 	{
 		return isCustomerMatching(pickingJobReference)
-				&& isDeliveryDateMatching(pickingJobReference);
+				&& isDeliveryDateMatching(pickingJobReference)
+				&& isHandoverLocationMatching(pickingJobReference);
 	}
 
 	private boolean isCustomerMatching(final PickingJobReference pickingJobReference)
@@ -56,8 +60,22 @@ public class PickingJobFacetsQuery
 		return deliveryDays.isEmpty() || deliveryDays.stream().anyMatch(deliveryDay -> isDeliveryDayMatching(pickingJobReference, deliveryDay));
 	}
 
+	private boolean isHandoverLocationMatching(final PickingJobReference pickingJobReference)
+	{
+		return handoverLocationIds.isEmpty() || handoverLocationIds.stream().anyMatch(locationId -> isHandoverLocationMatching(pickingJobReference, locationId));
+	}
+
 	private static boolean isDeliveryDayMatching(final PickingJobReference pickingJobReference, final LocalDate deliveryDay)
 	{
 		return pickingJobReference.getDeliveryDate().toLocalDate().equals(deliveryDay);
+	}
+
+	private static boolean isHandoverLocationMatching(@NonNull final PickingJobReference pickingJobReference, @NonNull final BPartnerLocationId locationId)
+	{
+		final BPartnerLocationId locationToCompareWith = Optional
+				.ofNullable(pickingJobReference.getHandoverLocationId())
+				.orElse(pickingJobReference.getDeliveryLocationId());
+
+		return BPartnerLocationId.equals(locationId, locationToCompareWith);
 	}
 }

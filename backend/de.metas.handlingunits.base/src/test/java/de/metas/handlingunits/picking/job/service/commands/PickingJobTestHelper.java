@@ -17,6 +17,7 @@ import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -141,6 +142,7 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -151,7 +153,9 @@ public class PickingJobTestHelper
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
 						bpartnerBL,
-						ADReferenceService.newMocked()),
+						ADReferenceService.newMocked()
+						inventoryService
+				),
 				new PickingJobHUReservationService(huReservationService),
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
@@ -160,7 +164,8 @@ public class PickingJobTestHelper
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
-				huQRCodeService);
+				huQRCodeService,
+				inventoryService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -279,6 +284,8 @@ public class PickingJobTestHelper
 		item.setQtyToDeliver(sched.getQtyToDeliver());
 		item.setC_BPartner_Customer_ID(sched.getC_BPartner_ID());
 		item.setC_BPartner_Location_ID(sched.getC_BPartner_Location_ID());
+		item.setHandover_Partner_ID(sched.getC_BPartner_ID());
+		item.setHandover_Location_ID(sched.getC_BPartner_Location_ID());
 		item.setBPartnerAddress_Override("deliveryRenderedAddress");
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());

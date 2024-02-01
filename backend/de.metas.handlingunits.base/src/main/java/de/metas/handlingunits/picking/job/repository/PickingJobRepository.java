@@ -138,7 +138,10 @@ public class PickingJobRepository
 				.customerId(pickingJob.getCustomerId())
 				.customerName(pickingJob.getCustomerName())
 				.deliveryDate(pickingJob.getDeliveryDate())
+				.preparationDate(pickingJob.getPreparationDate())
 				.shipmentScheduleIds(pickingJob.getShipmentScheduleIds())
+				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
+				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.build();
 	}
 

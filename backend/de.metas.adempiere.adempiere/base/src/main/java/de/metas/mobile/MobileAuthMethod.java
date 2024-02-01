@@ -47,7 +47,7 @@ public enum MobileAuthMethod implements ReferenceListAwareEnum
 	@NonNull
 	public static Stream<MobileAuthMethod> stream()
 	{
-		return index.streamValues();
+		return index.stream();
 	}
 
 	@NonNull
@@ -59,7 +59,7 @@ public enum MobileAuthMethod implements ReferenceListAwareEnum
 	@Nullable
 	public static MobileAuthMethod ofNullableCode(final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return index.ofNullableCode(code);
 	}
 
 	@NonNull

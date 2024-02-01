@@ -72,5 +72,14 @@ describe('huQRCodes tests', () => {
         weightNet: 2427.425,
       });
     });
+    it('Leich+Mehl standard', () => {
+      const code = 'LMQ#1#ppOrderCode#123.45';
+      expect(parseQRCodeString(code)).toEqual({
+        code,
+        displayable: '123.45',
+        weightNet: 123.45,
+        isTUToBePickedAsWhole: true,
+      });
+    });
   });
 });

@@ -38,7 +38,7 @@ const PickLineScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { productId, qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
+  const { productId, qtyToPickRemaining, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -83,9 +83,18 @@ const PickLineScanScreen = () => {
     catchWeight = null,
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
+    gotoPickingLineScreen = true,
     ...others
   }) => {
-    console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
+    console.log('onResult', {
+      qty,
+      reason,
+      scannedBarcode,
+      catchWeight,
+      catchWeightUom,
+      gotoPickingLineScreen,
+      ...others,
+    });
 
     postStepPicked({
       wfProcessId,
@@ -101,7 +110,9 @@ const PickLineScanScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.go(-1); // go to picking line screen
+        if (gotoPickingLineScreen) {
+          history.go(-1);
+        }
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -109,8 +120,8 @@ const PickLineScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       qtyCaption={trl('general.QtyToPick')}
-      qtyMax={qtyToPick}
-      qtyTarget={qtyToPick}
+      qtyMax={qtyToPickRemaining}
+      qtyTarget={qtyToPickRemaining}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
@@ -128,9 +139,13 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
+  const qtyPickedOrRejectedTotal = Object.values(line.steps)
+    .map((step) => step.mainPickFrom.qtyPicked + step.mainPickFrom.qtyRejected)
+    .reduce((acc, qtyPickedOrRejected) => acc + qtyPickedOrRejected, 0);
+
   return {
     productId: line.productId,
-    qtyToPick: line.qtyToPick,
+    qtyToPickRemaining: line.qtyToPick - qtyPickedOrRejectedTotal,
     uom: line.uom,
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,

@@ -41,7 +41,8 @@ class ManufacturingJobServiceTest
 
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				new HUQtyService(new InventoryService(new InventoryRepository(), new SourceHUsService()))
+				new HUQtyService(new InventoryService(new InventoryRepository(), new SourceHUsService())),
+				InventoryService.newInstanceForUnitTesting()
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
