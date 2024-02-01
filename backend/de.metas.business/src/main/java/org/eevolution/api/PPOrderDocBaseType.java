@@ -79,7 +79,6 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 		switch (this)
 		{
 			case REPAIR_ORDER:
-				return ImmutableSet.of(BOMType.PreviousSpare);
 			case QUALITY_ORDER:
 			case MAINTENANCE_ORDER:
 			case MANUFACTURING_ORDER:
