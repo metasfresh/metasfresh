@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.base.Joiner;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
@@ -20,6 +21,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -34,6 +36,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
@@ -51,6 +54,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
+	private final static Logger logger = LogManager.getLogger(InvoiceCandidateEnqueuer.class);
+	
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_QtyToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing");
 	private static final AdMessageKey MSG_IncompleteGroupsFound_1P = AdMessageKey.of("InvoiceCandEnqueuer_IncompleteGroupsFound");
@@ -75,7 +80,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private boolean setWorkpackageADPInstanceCreatorId = true;
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Set<InvoiceCandidateId> invoiceCandidateIds)
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
 
@@ -246,6 +251,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
 	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; SelectionID={}",pinstanceId.getRepoId());
 		try
 		{
 			TryAndWaitUtil.tryAndWait(
@@ -259,6 +265,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
 					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
+		}
+		finally
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; SelectionID={}",pinstanceId.getRepoId());
 		}
 	}
 
