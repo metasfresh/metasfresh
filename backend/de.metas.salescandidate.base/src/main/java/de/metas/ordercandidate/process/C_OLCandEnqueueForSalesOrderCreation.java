@@ -51,7 +51,7 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
 		final PInstanceId userSelectionId = queryBL.createQueryBuilder(I_C_OLCand.class)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_IsActive, true)
+.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.filter(getProcessInfo().getQueryFilterOrElseTrue())
 				.create()
