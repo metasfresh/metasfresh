@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
@@ -88,17 +89,19 @@ public class PickingHURowsRepository
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final PickingCandidateService pickingCandidateService)
+			@NonNull final PickingCandidateService pickingCandidateService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this(
-				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
+				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService, adReferenceService),
 				pickingCandidatesRepo,
 				pickingCandidateService);
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
@@ -107,6 +110,7 @@ public class PickingHURowsRepository
 				//.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 	}
 
