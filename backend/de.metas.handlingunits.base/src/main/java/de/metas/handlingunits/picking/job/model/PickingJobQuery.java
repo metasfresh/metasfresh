@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
@@ -68,8 +69,15 @@ public class PickingJobQuery
 		}
 	}
 
+	@NonNull
 	public ImmutableSet<LocalDate> getDeliveryDays()
 	{
 		return facets != null ? facets.getDeliveryDays() : ImmutableSet.of();
+	}
+
+	@NonNull
+	public ImmutableSet<BPartnerLocationId> getOnlyHandoverLocationIds()
+	{
+		return facets != null ? facets.getHandoverLocationIds() : ImmutableSet.of();
 	}
 }

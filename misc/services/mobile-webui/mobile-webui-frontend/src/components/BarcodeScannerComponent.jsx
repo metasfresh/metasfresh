@@ -18,7 +18,12 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult, inputPlaceholderText }) => {
+const BarcodeScannerComponent = ({
+  resolveScannedBarcode,
+  onResolvedResult,
+  inputPlaceholderText,
+  continuousRunning,
+}) => {
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -55,13 +60,18 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult, inpu
       } else {
         await onResolvedResult(resolvedResult);
 
-        scanningStatus.done = true;
-        controls?.stop();
+        if (!continuousRunning) {
+          scanningStatus.done = true;
+          controls?.stop();
+        }
       }
     } catch (error) {
       toastErrorFromObj(error);
     } finally {
       scanningStatus.running = false;
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = '';
+      }
     }
   };
 
@@ -157,6 +167,7 @@ BarcodeScannerComponent.propTypes = {
   resolveScannedBarcode: PropTypes.func,
   onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
+  continuousRunning: PropTypes.bool,
 };
 
 export default BarcodeScannerComponent;

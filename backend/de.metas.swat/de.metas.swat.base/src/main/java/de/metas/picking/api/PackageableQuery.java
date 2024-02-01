@@ -47,6 +47,7 @@ public class PackageableQuery
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
 	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
+	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;

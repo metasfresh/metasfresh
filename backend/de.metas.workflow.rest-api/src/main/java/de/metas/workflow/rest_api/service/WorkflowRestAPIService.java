@@ -182,6 +182,7 @@ public class WorkflowRestAPIService
 		}
 	}
 
+	@NonNull
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return getWorkflowBasedMobileApplication(wfProcess.getId().getApplicationId())
