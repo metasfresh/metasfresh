@@ -26,15 +26,14 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LMQRCodeTest
 {
 	@Test
 	void fromGlobalQRCodeJsonString()
 	{
-		final LMQRCode qrCode = LMQRCode.fromGlobalQRCodeJsonString("LMQ#1#lotNumber1#123.45");
-		assertThat(qrCode.getLotNumber()).isEqualTo("lotNumber1");
-		assertThat(qrCode.getWeight()).isEqualTo(new BigDecimal("123.45"));
+		final LMQRCode qrCode = LMQRCode.fromGlobalQRCodeJsonString("LMQ#1#123.456");
+		assertThat(qrCode.getWeightInKg()).isEqualTo(new BigDecimal("123.456"));
 	}
 }

@@ -24,12 +24,14 @@ package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.i18n.AdMessageKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.AttributeCode;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -43,8 +45,8 @@ import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotN
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
 public class LMQRCode implements IHUQRCode
 {
-	@NonNull String lotNumber;
-	@NonNull BigDecimal weight;
+	@NonNull BigDecimal weightInKg;
+	@Nullable String lotNumber;
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -67,7 +69,7 @@ public class LMQRCode implements IHUQRCode
 	{
 		if (HU_ExternalLotNumber.equals(attributeCode))
 		{
-			return Optional.of(lotNumber);
+			return Optional.ofNullable(lotNumber);
 		}
 
 		return Optional.empty();

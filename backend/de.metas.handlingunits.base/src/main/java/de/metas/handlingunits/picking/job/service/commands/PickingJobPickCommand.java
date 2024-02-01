@@ -144,7 +144,7 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.isPickWholeTU = isPickWholeTU;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
-		this.qtyToPick =  Quantity.of(qtyToPickBD, uom);
+		this.qtyToPick = Quantity.of(qtyToPickBD, uom);
 
 		if (qtyRejectedReasonCode != null)
 		{
@@ -260,7 +260,12 @@ public class PickingJobPickCommand
 		{
 			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
 			final String lotNumber = lmQRCode.getLotNumber();
-			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lmQRCode.getLotNumber())
+			if (lotNumber == null)
+			{
+				throw new AdempiereException("L+M QR code does not contain external lot number");
+			}
+
+			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
 					.map(huQRCodesService::getQRCodeByHuId)
 					.orElseThrow(() -> new AdempiereException("No HU associated with external lot number: " + lotNumber));
 		}
@@ -366,12 +371,12 @@ public class PickingJobPickCommand
 					: qtyToPick;
 
 			return ImmutableList.of(PickedToHU.builder()
-											.pickedFromHU(pickFromHU)
-											.pickFromLocatorId(pickFromLocatorId)
-											.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-											.pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
-											.qtyPicked(pickedQty)
-											.build());
+					.pickedFromHU(pickFromHU)
+					.pickFromLocatorId(pickFromLocatorId)
+					.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+					.pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
+					.qtyPicked(pickedQty)
+					.build());
 		}
 		else
 		{
@@ -386,12 +391,12 @@ public class PickingJobPickCommand
 			{
 				final Quantity qtyPicked = huStorageFactory.getStorage(packedHU).getQuantity(productId, qtyToPick.getUOM());
 				result.add(PickedToHU.builder()
-								   .pickedFromHU(pickFromHU)
-								   .pickFromLocatorId(pickFromLocatorId)
-								   .actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-								   .pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
-								   .qtyPicked(qtyPicked)
-								   .build());
+						.pickedFromHU(pickFromHU)
+						.pickFromLocatorId(pickFromLocatorId)
+						.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+						.pickToSpecUsed(PackToSpec.ofGenericPackingInstructionsId(handlingUnitsBL.getEffectivePackingInstructionsId(packedHU)))
+						.qtyPicked(qtyPicked)
+						.build());
 			}
 
 			return result.build();
@@ -504,7 +509,7 @@ public class PickingJobPickCommand
 					.setParameter("catchWeightBD", catchWeightBD);
 		}
 
-		if (((LMQRCode)pickFromHUQRCode).getWeight().compareTo(catchWeightBD) != 0)
+		if (((LMQRCode)pickFromHUQRCode).getWeightInKg().compareTo(catchWeightBD) != 0)
 		{
 			throw new AdempiereException("catchWeightBD must match the LMQRCode.Weight")
 					.appendParametersToMessage()
