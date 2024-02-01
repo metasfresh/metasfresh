@@ -2,8 +2,6 @@ package de.metas.ordercandidate.process;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
 import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -16,7 +14,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.validator.Msg;
 import org.compiere.SpringContextHolder;
 
 /**
@@ -34,6 +31,7 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
 	private int olCandProcessorId;
 	private static final AdMessageKey MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED = AdMessageKey.of("C_OLCandEnqueueForSalesOrderCreation.NoValidRecordSelected");
+
 	@Override
 	protected void prepare()
 	{
@@ -51,7 +49,7 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
 		final PInstanceId userSelectionId = queryBL.createQueryBuilder(I_C_OLCand.class)
-.addOnlyActiveRecordsFilter()
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.filter(getProcessInfo().getQueryFilterOrElseTrue())
 				.create()
@@ -59,7 +57,7 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 
 		if (userSelectionId == null)
 		{
-throw new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED).markAsUserValidationError();
+			throw new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED).markAsUserValidationError();
 		}
 
 		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
