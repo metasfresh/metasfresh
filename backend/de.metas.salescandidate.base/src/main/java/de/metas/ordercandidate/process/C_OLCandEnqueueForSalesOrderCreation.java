@@ -59,8 +59,7 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 
 		if (userSelectionId == null)
 		{
-			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED);
-			throw new AdempiereException(msg).markAsUserValidationError();
+throw new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED).markAsUserValidationError();
 		}
 
 		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
