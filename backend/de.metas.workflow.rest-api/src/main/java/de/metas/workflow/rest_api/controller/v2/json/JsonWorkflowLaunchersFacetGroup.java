@@ -48,7 +48,8 @@ public class JsonWorkflowLaunchersFacetGroup
 				.caption(group.getCaption().translate(jsonOpts.getAdLanguage()))
 				.facets(group.getFacets().stream()
 						.map(facet -> JsonWorkflowLaunchersFacet.of(facet, group.getId(), jsonOpts))
-						.sorted(Comparator.comparing(JsonWorkflowLaunchersFacet::getCaption))
+						.sorted(Comparator.comparing(JsonWorkflowLaunchersFacet::getSortNo)
+								.thenComparing(JsonWorkflowLaunchersFacet::getCaption))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

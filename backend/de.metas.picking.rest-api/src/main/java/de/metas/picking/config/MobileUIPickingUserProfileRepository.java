@@ -152,7 +152,7 @@ public class MobileUIPickingUserProfileRepository
 	@NonNull
 	private ImmutableList<PickingJobUIConfig> getPickingJobConfigs(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
 	{
-		return queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+		final ImmutableList<PickingJobUIConfig> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
 				.create()
@@ -164,5 +164,7 @@ public class MobileUIPickingUserProfileRepository
 						.isShowInSummary(config.isDisplayInSummary())
 						.build())
 				.collect(ImmutableList.toImmutableList());
+
+		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getPickingJobConfigs();
 	}
 }

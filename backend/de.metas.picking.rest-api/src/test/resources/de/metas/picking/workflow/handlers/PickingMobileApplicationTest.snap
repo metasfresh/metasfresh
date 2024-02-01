@@ -102,7 +102,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -420,7 +426,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -746,7 +758,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -1072,7 +1090,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -1394,7 +1418,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -1761,7 +1791,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -2132,7 +2168,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -2241,7 +2283,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -2598,7 +2646,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -3169,7 +3223,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -3495,7 +3555,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -3844,7 +3910,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -3953,7 +4025,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -4271,7 +4349,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -4805,7 +4889,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
@@ -5131,7 +5221,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         ],
         "headerProperties": {
-          "entries": [ ]
+        "entries" : [ {
+          "caption" : "DocumentNo",
+          "value" : "salesOrder01"
+        }, {
+          "caption" : "Customer",
+          "value" : "BPartner1"
+        } ]
         },
         "id": "picking-1000000"
       },
