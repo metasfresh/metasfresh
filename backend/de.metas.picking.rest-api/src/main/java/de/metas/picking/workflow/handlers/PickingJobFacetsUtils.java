@@ -141,6 +141,7 @@ class PickingJobFacetsUtils
 		return WorkflowLaunchersFacet.builder()
 				.facetId(WorkflowLaunchersFacetId.ofLocalDate(DELIVERY_DAY_GROUP_ID, deliveryDay.getDeliveryDate()))
 				.caption(TranslatableStrings.date(deliveryDay.getDeliveryDate()))
+				.sortNo(deliveryDay.getDeliveryDate().atStartOfDay(deliveryDay.getTimeZone()).toInstant().toEpochMilli())
 				.build();
 	}
 
