@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -194,7 +195,7 @@ public final class CollectionUtils
 			return Optional.empty();
 		}
 	}
-	
+
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>
@@ -270,7 +271,7 @@ public final class CollectionUtils
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
-		if(collection.isEmpty())
+		if (collection.isEmpty())
 		{
 			return defaultValue;
 		}
@@ -296,7 +297,7 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
-		if(collection.isEmpty())
+		if (collection.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -660,4 +661,20 @@ public final class CollectionUtils
 				.filter(elem -> value.equals(elem))
 				.count() > 1;
 	}
+
+	public static <K, V> ImmutableMap<K, ImmutableList<V>> toImmutableMap(final ListMultimap<K, V> multimap)
+	{
+		if (multimap.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<K, ImmutableList<V>> result = ImmutableMap.builder();
+		for (K key : multimap.keySet())
+		{
+			result.put(key, ImmutableList.copyOf(multimap.get(key)));
+		}
+		return result.build();
+	}
+
 }

@@ -2,7 +2,7 @@ package de.metas.project.workorder.conflicts;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.product.ResourceId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,14 +14,14 @@ import javax.annotation.Nullable;
 @Builder
 class ResourceAllocation
 {
-	@NonNull ResourceId resourceId;
+	@NonNull ResourceIdAndType resourceId;
 	@NonNull WOProjectResourceId projectResourceId;
 	@Nullable SimulationPlanId appliedSimulationId;
 	@NonNull CalendarDateRange dateRange;
 
 	public boolean isInConflictWith(@NonNull final ResourceAllocation other)
 	{
-		return ResourceId.equals(this.resourceId, other.resourceId)
+		return ResourceIdAndType.equals(this.resourceId, other.resourceId)
 				&& this.dateRange.isOverlappingWith(other.dateRange);
 	}
 }

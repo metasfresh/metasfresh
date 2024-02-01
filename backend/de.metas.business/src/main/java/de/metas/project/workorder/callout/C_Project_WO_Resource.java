@@ -31,6 +31,7 @@ import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
@@ -55,6 +56,7 @@ import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 @Component
 public class C_Project_WO_Resource
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
@@ -82,7 +84,8 @@ public class C_Project_WO_Resource
 		if (resourceId != null)
 		{
 			final ResourceType resourceType = resourceService.getResourceTypeByResourceId(resourceId);
-			woResource.setDurationUnit(WFDurationUnit.ofTemporalUnit(resourceType.getDurationUnit()).getCode());
+			final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(resourceType.getDurationUomId());
+			woResource.setDurationUnit(WFDurationUnit.ofTemporalUnit(durationUnit).getCode());
 		}
 
 		updateDuration(woResource);
