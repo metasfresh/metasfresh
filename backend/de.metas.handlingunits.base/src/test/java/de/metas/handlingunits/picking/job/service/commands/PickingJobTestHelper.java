@@ -153,7 +153,7 @@ public class PickingJobTestHelper
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
 						bpartnerBL,
-						ADReferenceService.newMocked()
+						ADReferenceService.newMocked(),
 						inventoryService
 				),
 				new PickingJobHUReservationService(huReservationService),
