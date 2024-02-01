@@ -80,8 +80,8 @@ class LMQRCodeParser
 		{
 			final List<String> parts = SPLITTER.splitToList(globalQRCode.getPayloadAsJson());
 			return LMQRCode.builder()
-					.lotNumber(parts.get(0))
-					.weight(new BigDecimal(parts.get(1)))
+					.weightInKg(new BigDecimal(parts.get(0)))
+					//.lotNumber(parts.get()) // not available in current agreed format
 					.build();
 		}
 		catch (Exception ex)
