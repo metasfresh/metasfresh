@@ -1201,10 +1201,32 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class);
+
+		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
+		{
+			@Override
+			public void empty()
+			{
+				queryBuilder.filter(ConstantQueryFilter.of(false));
+			}
+
+			@Override
+			public void fixedSet(@NonNull final ImmutableSet<InvoiceCandidateId> ids)
+			{
+				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, ids);
+			}
+
+			@Override
+			public void selectionId(@NonNull final PInstanceId selectionId)
+			{
+				queryBuilder.setOnlySelection(selectionId);
+			}
+		});
+
+		return queryBuilder
 				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();

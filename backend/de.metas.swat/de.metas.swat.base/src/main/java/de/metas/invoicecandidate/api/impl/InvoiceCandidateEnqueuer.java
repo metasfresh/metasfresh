@@ -108,7 +108,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
 
-		ensureICsAreUpdated(pInstanceId);
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
@@ -227,49 +227,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
 				icLock);
-	}
-
-	private void ensureICsAreUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
-			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
-			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
-			invoiceCandBL.updateInvalid()
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-					.setTaggedWithAnyTag()
-					.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
-					.update();
-		}
-		else
-		{
-			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
-			waitForInvoiceCandidatesUpdated(pinstanceId);
-		}
-	}
-
-	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; SelectionID={}",pinstanceId.getRepoId());
-		try
-		{
-			TryAndWaitUtil.tryAndWait(
-					3600 /*let's wait a full hour*/,
-					1000 /*check once a second*/,
-					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
-					null);
-		}
-		catch (final InterruptedException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
-		}
-		finally
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; SelectionID={}",pinstanceId.getRepoId());
-		}
 	}
 
 	/**
