@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
@@ -425,7 +424,13 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
-	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
+	Set<InvoiceCandidateId> reverseAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
+
+	/**
+	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
+	 * 
+	 */
+	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
