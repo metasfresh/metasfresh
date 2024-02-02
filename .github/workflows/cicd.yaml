@@ -735,11 +735,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh webui
-#      - name: mobile health check
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./containerHealthCheck.sh mobile
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
 #      - name: run api health checks
 #        working-directory: docker-builds/health/
 #        if: success() || failure()
@@ -757,7 +757,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
-#          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
       - name: stop docker-compose
         working-directory: docker-builds/compose/
         env:
