@@ -10,9 +10,6 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.weightable.IWeightable;
-import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -24,6 +21,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
+import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.handlingunits.picking.job.model.HUInfo;
@@ -82,7 +80,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final InventoryService inventoryService;
 
 	//
 	// Params
@@ -119,7 +116,6 @@ public class PickingJobPickCommand
 			final boolean isPickWholeTU,
 			final boolean createInventoryForMissingQty)
 	{
-		this.inventoryService = inventoryService;
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
@@ -130,6 +126,7 @@ public class PickingJobPickCommand
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
+				.uomConversionBL(uomConversionBL)
 				.inventoryService(inventoryService)
 				.build();
 
@@ -352,6 +349,7 @@ public class PickingJobPickCommand
 				packToInfo,
 				productId,
 				qtyToPick,
+				catchWeight,
 				lineId.toTableRecordReference(),
 				true,
 				createInventoryForMissingQty);
@@ -405,17 +403,8 @@ public class PickingJobPickCommand
 
 	private void updateHUWeightFromCatchWeight(final I_M_HU hu, final IHUContext huContext, final ProductId productId)
 	{
-		if (catchWeight == null)
-		{
-			return;
-		}
-
-		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-		huAttributes.setSaveOnChange(true);
-
-		final IWeightable weightable = Weightables.wrap(huAttributes);
-		final Quantity catchWeightConv = uomConversionBL.convertQuantityTo(catchWeight, productId, weightable.getWeightNetUOM());
-		weightable.setWeightNet(catchWeightConv.toBigDecimal());
+		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, huContext, productId, catchWeight);
+		weightUpdater.updatePackToHU(hu);
 	}
 
 	private PickingJobStep updateStepFromPickingCandidate(

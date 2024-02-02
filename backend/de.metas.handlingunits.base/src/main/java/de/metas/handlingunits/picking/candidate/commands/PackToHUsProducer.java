@@ -27,6 +27,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,6 +50,7 @@ public class PackToHUsProducer
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
 	private final IHUCapacityBL huCapacityBL;
+	private final IUOMConversionBL uomConversionBL;
 	private final InventoryService inventoryService;
 
 	// Params
@@ -64,6 +66,7 @@ public class PackToHUsProducer
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUPIItemProductBL huPIItemProductBL,
 			@NonNull final IHUCapacityBL huCapacityBL,
+			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull InventoryService inventoryService,
 			//
 			final boolean alwaysPackEachCandidateInItsOwnHU)
@@ -71,6 +74,7 @@ public class PackToHUsProducer
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huPIItemProductBL = huPIItemProductBL;
 		this.huCapacityBL = huCapacityBL;
+		this.uomConversionBL = uomConversionBL;
 		this.inventoryService = inventoryService;
 
 		this.alwaysPackEachCandidateInItsOwnHU = alwaysPackEachCandidateInItsOwnHU;
@@ -82,14 +86,19 @@ public class PackToHUsProducer
 			@NonNull final PackToInfo packToInfo,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyPicked,
+			@Nullable final Quantity catchWeight,
 			@NonNull final TableRecordReference documentRef,
 			final boolean checkIfAlreadyPacked,
 			final boolean createInventoryForMissingQty)
 	{
+		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, huContext, productId, catchWeight);
+
 		final List<I_M_HU> pickFromHUs;
 		if (createInventoryForMissingQty)
 		{
 			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU);
+
 			final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
 			final Quantity huQty = pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM());
 
@@ -97,6 +106,7 @@ public class PackToHUsProducer
 			final Quantity qtyMissing;
 			if (huQty.signum() <= 0)
 			{
+				// pickFromHU is destroyed/empty
 				qtyMissing = qtyPicked;
 			}
 			else
@@ -107,6 +117,9 @@ public class PackToHUsProducer
 
 			if (qtyMissing.signum() > 0)
 			{
+				// pickFromHU contains partial quantity of what we need,
+				// so we will do an inventory+ to get the missing qty
+
 				final HuId newHuId = inventoryService.createInventoryForMissingQty(CreateVirtualInventoryWithQtyReq.builder()
 						.clientId(ClientId.ofRepoId(pickFromHU.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(pickFromHU.getAD_Org_ID()))
@@ -124,6 +137,8 @@ public class PackToHUsProducer
 		else
 		{
 			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU);
+
 			pickFromHUs = ImmutableList.of(pickFromHU);
 		}
 
@@ -138,7 +153,11 @@ public class PackToHUsProducer
 		{
 			final I_M_HU pickFromHU = pickFromHUs.get(0);
 			handlingUnitsBL.setHUStatus(pickFromHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
-			return ImmutableList.of(pickFromHU);
+
+			final List<I_M_HU> packedHUs = ImmutableList.of(pickFromHU);
+			weightUpdater.updatePackToHUs(packedHUs);
+
+			return packedHUs;
 		}
 		//
 		// Case: We have to split out and pack our HU
@@ -156,7 +175,11 @@ public class PackToHUsProducer
 							.setForceQtyAllocation(true)
 							.create());
 
-			return packToDestination.getCreatedHUs();
+			weightUpdater.updatePickFromHUs(pickFromHUs);
+
+			final List<I_M_HU> packedHUs = packToDestination.getCreatedHUs();
+			weightUpdater.updatePackToHUs(packedHUs);
+			return packedHUs;
 		}
 	}
 
@@ -267,6 +290,7 @@ public class PackToHUsProducer
 	// ------------------------------------
 	//
 	//
+
 	@Value
 	@Builder
 	public static class PackToInfo
