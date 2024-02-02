@@ -29,6 +29,11 @@ public class GlobalQRCodeService
 		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
 	}
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);

@@ -24,6 +24,7 @@ package de.metas.security.process;
 
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
+import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenId;
@@ -33,6 +34,8 @@ import org.compiere.SpringContextHolder;
 
 public class AuthTokenPrintQrCode extends JavaProcess
 {
+	private static final AdProcessId badgeReportId = AdProcessId.ofRepoId(585352);
+
 	private final UserAuthTokenRepository userAuthTokenRepository = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
 	private final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
 
@@ -40,7 +43,7 @@ public class AuthTokenPrintQrCode extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final UserAuthToken authToken = userAuthTokenRepository.getById(UserAuthTokenId.ofRepoId(getRecord_ID()));
-		final QRCodePDFResource pdf = globalQRCodeService.createPDF(UserAuthQRCode.ofAuthToken(authToken).toPrintableQRCode());
+		final QRCodePDFResource pdf = globalQRCodeService.createPDF(UserAuthQRCode.ofAuthToken(authToken).toPrintableQRCode(), badgeReportId);
 
 		getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 
