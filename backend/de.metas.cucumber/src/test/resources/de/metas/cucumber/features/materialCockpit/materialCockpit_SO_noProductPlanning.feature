@@ -117,6 +117,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # QtyStockCurrent_AtDate=0 because we directly add an "unspecified" MD_Candidate with +10 ATP for our shipment-schedule's -10 ATP 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            | 10                               |
@@ -125,12 +126,14 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     When the order identified by o_1 is reactivated
-
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # the reactivation leads to the shipment-schedule's -10 ATP being increased to 0 and this pushes the "unspecified" MD_Candidate from 0 to +10 
+    # the 1st question is how MD_Candidates looks after the reactivation. but either way, it's not OK to have QtyStockCurrent_AtDate=10
+    # the fix has to be not in the cockpit area, but in the material-dispo
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 10                         | 0                             | 0                            | 0                                |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            | 0                                |
 
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
