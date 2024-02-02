@@ -14,7 +14,6 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
@@ -26,11 +25,7 @@ import java.util.List;
 @Service
 public class GlobalQRCodeService
 {
-	public static final String SYSCONFIG_DEFAULT_QR_CODE_PROCESS_ID = "de.metas.global_qrcodes.service.GlobalQRCodeService.qrCodeProcessId";
-
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(sysConfigBL.getIntValue(SYSCONFIG_DEFAULT_QR_CODE_PROCESS_ID,584977));
+	private static final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(585352); // hard coded process id
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
