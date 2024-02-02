@@ -27,6 +27,7 @@ RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code |
 WORKDIR /java
 VOLUME /reports
 
+# aggregate test results under /reports
 CMD set -o pipefail \
 	&& shopt -s globstar \
 	&& find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p \
