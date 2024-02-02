@@ -97,7 +97,7 @@ public class PickingJobRepository
 			@NonNull final PickingJobReferenceQuery query,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsTo(query.getPickerId()));
+		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsToOrNull(query.getPickerId()));
 		final Set<BPartnerId> onlyCustomerIds = query.getOnlyBPartnerIds(); 
 		if (!onlyCustomerIds.isEmpty())
 		{
