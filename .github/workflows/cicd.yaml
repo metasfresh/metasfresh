@@ -461,16 +461,16 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-       - name: build-mobile-compat
-         run: |
-           docker buildx build \
-           --file docker-builds/Dockerfile.mobile.compat \
-           --cache-to type=inline \
-           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-           .
+      - name: build-mobile-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
       - name: build-frontend-compat
         run: |
           docker buildx build \
