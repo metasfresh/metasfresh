@@ -30,6 +30,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -37,7 +38,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 
 import java.util.HashMap;
@@ -101,8 +101,9 @@ public class ProcessPickingCandidatesCommand
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
-				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
+				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.inventoryService(inventoryService)
+				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
 				.build();
 
 		this.packToMap = new PackToMap(packToHUsProducer);
@@ -399,6 +400,7 @@ public class ProcessPickingCandidatesCommand
 					packToInfo,
 					productId,
 					qtyPicked,
+					null,
 					pickingCandidateId.toTableRecordReference(),
 					checkIfAlreadyPacked,
 					false);
