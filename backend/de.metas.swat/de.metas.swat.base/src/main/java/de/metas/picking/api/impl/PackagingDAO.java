@@ -148,6 +148,12 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
 		}
 
+		// Filter: Handover Location
+		if (!query.getHandoverLocationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
+		}
+
 		//
 		return queryBuilder.create();
 	}
@@ -221,6 +227,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
+		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandover_Partner_ID(), record.getHandover_Location_ID()));
 
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));

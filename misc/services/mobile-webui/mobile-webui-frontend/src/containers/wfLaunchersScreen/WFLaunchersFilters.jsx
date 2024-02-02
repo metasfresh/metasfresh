@@ -10,9 +10,9 @@ const toggleFacet = (groups, facetId) => {
 
 const changeFacets = (groups, facetMapper) => {
   const result = [];
-  let groupChages = false;
+  let groupChanges = false;
   for (const group of groups) {
-    const newFacets = [];
+    let newFacets = [];
     let facetChanged = false;
     for (const facet of group.facets) {
       const newFacet = facetMapper(facet);
@@ -25,11 +25,11 @@ const changeFacets = (groups, facetMapper) => {
     const newGroup = facetChanged ? { ...group, facets: newFacets } : group;
     result.push(newGroup);
     if (group !== newGroup) {
-      groupChages = true;
+      groupChanges = true;
     }
   }
 
-  return groupChages ? result : groups;
+  return groupChanges ? result : groups;
 };
 
 const activateFacets = (groups, activeFacets) => {

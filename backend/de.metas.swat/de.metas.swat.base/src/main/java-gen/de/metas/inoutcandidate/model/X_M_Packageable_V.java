@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -836,5 +836,35 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getWarehouseName() 
 	{
 		return get_ValueAsString(COLUMNNAME_WarehouseName);
+	}
+
+	@Override
+	public void setHandover_Location_ID (final int Handover_Location_ID)
+	{
+		if (Handover_Location_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, Handover_Location_ID);
+	}
+
+	@Override
+	public int getHandover_Location_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Handover_Location_ID);
+	}
+
+	@Override
+	public void setHandover_Partner_ID (final int Handover_Partner_ID)
+	{
+		if (Handover_Partner_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, Handover_Partner_ID);
+	}
+
+	@Override
+	public int getHandover_Partner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Handover_Partner_ID);
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.rest_api.v2.authentication;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v2.authentication.JsonAuthRequest;
 import de.metas.common.rest_api.v2.authentication.JsonAuthResponse;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 @RestController
@@ -74,9 +76,7 @@ public class AuthenticationRestController
 					HashableString.ofPlainValue(request.getPassword()));
 
 			final UserId userId = loginAuthResult.getUserId();
-			final RoleId roleId = loginAuthResult.getSingleRole()
-					.map(Role::getId)
-					.orElseThrow(() -> new AdempiereException("Multiple roles are not supported. Make sure user has only one role assigned"));
+			final RoleId roleId = getRoleToLogin(loginAuthResult).getId();
 			final ClientId clientId = getClientId(loginService, userId, roleId);
 			final OrgId orgId = getOrgId(loginService, userId, roleId, clientId);
 
@@ -125,8 +125,7 @@ public class AuthenticationRestController
 			final HashableString password = userBL.extractUserPassword(user);
 
 			final LoginAuthenticateResponse loginAuthResult = getLoginService().authenticate(username, password);
-			loginAuthResult.getSingleRole()
-					.orElseThrow(() -> new AdempiereException("Multiple roles are not supported. Make sure user has only one role assigned"));
+			getRoleToLogin(loginAuthResult); // make sure we have one eligible role to login
 
 			return getResponse(tokenInfo);
 		}
@@ -198,6 +197,41 @@ public class AuthenticationRestController
 			orgId = orgIds.iterator().next();
 		}
 		return orgId;
+	}
+
+	private Role getRoleToLogin(LoginAuthenticateResponse response)
+	{
+		final ImmutableList<Role> roles = response.getAvailableRoles();
+		if (roles.isEmpty())
+		{
+			throw new AdempiereException("User has no role assigned");
+		}
+		else if (roles.size() == 1)
+		{
+			return roles.get(0);
+		}
+		else
+		{
+			final ArrayList<Role> nonSysAdminRoles = new ArrayList<>();
+			for (final Role role : roles)
+			{
+				if (role.isSystem())
+				{
+					continue;
+				}
+
+				nonSysAdminRoles.add(role);
+			}
+
+			if (nonSysAdminRoles.size() == 1)
+			{
+				return nonSysAdminRoles.get(0);
+			}
+			else
+			{
+				throw new AdempiereException("Multiple roles are not supported. Make sure user has only one role assigned");
+			}
+		}
 	}
 
 	@NonNull

@@ -110,7 +110,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
 
-	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 

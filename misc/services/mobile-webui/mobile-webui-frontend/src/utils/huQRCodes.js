@@ -174,11 +174,13 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
 
   const parts = payload.split('#');
-  if (parts.length >= 2 && parts[1] != null) {
+  if (parts.length >= 1 && parts[0] != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * parts[1];
-    result['displayable'] = '' + parts[1];
-    result['isTUToBePickedAsWhole'] = true;
+    result['weightNet'] = 1 * parts[0];
+    result['displayable'] = '' + parts[0];
+    result['isTUToBePickedAsWhole'] = true; // todo clean up needed!!!
+    // for LeichMehl it will always be kg
+    result['weightNetUOM'] = 'kg';
   }
 
   return result;

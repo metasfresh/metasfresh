@@ -24,7 +24,6 @@ import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -32,7 +31,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
@@ -63,7 +61,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -98,8 +96,7 @@ public class WeightHUCommandTest
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
-		final InventoryRepository inventoryRepo = new InventoryRepository();
-		final InventoryService inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
+		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		this.huQtyService = new HUQtyService(inventoryService);
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));

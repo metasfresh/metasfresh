@@ -72,5 +72,15 @@ describe('huQRCodes tests', () => {
         weightNet: 2427.425,
       });
     });
+    it('Leich+Mehl standard', () => {
+      // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+      const code = 'LMQ#1#123.456';
+      expect(parseQRCodeString(code)).toEqual({
+        code,
+        displayable: '123.456',
+        weightNet: 123.456,
+        isTUToBePickedAsWhole: true,
+      });
+    });
   });
 });

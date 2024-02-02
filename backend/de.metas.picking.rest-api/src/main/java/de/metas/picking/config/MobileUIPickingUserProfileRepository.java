@@ -22,10 +22,13 @@
 
 package de.metas.picking.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.picking.model.I_PickingProfile_Filter;
+import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -71,6 +74,8 @@ public class MobileUIPickingUserProfileRepository
 				.onlyBPartnerIds(onlyBPartnerIds)
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
+				.availablePickingFilters(getPickingProfileFilters(profileRecord))
+				.pickingJobConfigs(getPickingJobConfigs(profileRecord))
 				.build();
 	}
 
@@ -130,5 +135,36 @@ public class MobileUIPickingUserProfileRepository
 		}
 
 		InterfaceWrapperHelper.deleteAll(profileBPartnerRecords.values());
+	}
+
+	@NonNull
+	private ImmutableList<PickingFilter> getPickingProfileFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream()
+				.map(record -> PickingFilter.of(PickingJobFilterOption.ofCode(record.getFilterType()), record.getSeqNo()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<PickingJobUIConfig> getPickingJobConfigs(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		final ImmutableList<PickingJobUIConfig> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream()
+				.map(config -> PickingJobUIConfig.builder()
+						.field(PickingJobField.ofCode(config.getPickingJobField()))
+						.seqNo(config.getSeqNo())
+						.isShowInDetailed(config.isDisplayInDetailed())
+						.isShowInSummary(config.isDisplayInSummary())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getPickingJobConfigs();
 	}
 }

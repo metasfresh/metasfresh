@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefDat
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -78,6 +79,7 @@ public class Picking_Terminal_StepDef
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
@@ -136,6 +138,7 @@ public class Picking_Terminal_StepDef
 
 		final ProcessPickingCandidatesCommand processPickingCandidatesCommand = ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.inventoryService(inventoryService)
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
 						.build())

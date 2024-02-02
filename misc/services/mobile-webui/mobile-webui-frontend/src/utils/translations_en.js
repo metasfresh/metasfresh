@@ -22,6 +22,7 @@ const translations = {
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     okText: 'OK',
+    closeText: 'Close',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
@@ -83,6 +84,10 @@ const translations = {
       target: 'To Pick',
       picked: 'Picked',
       Workplace: 'Workplace',
+      qrcode: {
+        missingQty: 'The scanned QR, has no qty information!',
+        differentUOM: 'The scanned QR UOM does not match the target!',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',

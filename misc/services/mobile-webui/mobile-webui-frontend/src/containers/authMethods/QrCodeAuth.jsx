@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
@@ -9,13 +9,6 @@ const QrCodeAuth = () => {
   const auth = useAuth();
   const location = useLocation();
   const { from } = location.state || { from: { pathname: '/' } };
-
-  useEffect(() => {
-    if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
-    }
-  }, []);
 
   const performLogin = ({ scannedBarcode }) => {
     auth

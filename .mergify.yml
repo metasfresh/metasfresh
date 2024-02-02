@@ -33,6 +33,7 @@ pull_request_rules:
               - base=middle_ages_uat
               - base=modified_carbon_uat
               - base=neon_underwear_uat
+              - base=pink_rooster_uat
               - base=release
               - base=soft_panda_uat
               - base=science_vessel_uat
@@ -46,6 +47,7 @@ pull_request_rules:
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
+              - base=pink_rooster_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
               - base=tasty_ham_hotfix
