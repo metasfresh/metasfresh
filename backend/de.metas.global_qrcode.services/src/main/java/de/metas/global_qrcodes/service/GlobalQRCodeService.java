@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 public class GlobalQRCodeService
 {
-	private static final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(585352); // hard coded process id
+	private static final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
