@@ -14,6 +14,7 @@ COPY --from=camel /root/.m2 /root/.m2/
 COPY --from=camel /camel .
 
 # removing project specific surefire configurations, to use a single and more recent version of the surefire plugin
+# without disrupting jenkins pipelines
 RUN set -o pipefail && find -type f -name 'pom.xml' | xargs perl -i -p0e 's/<plugin>.*?maven-surefire-plugin.*?<\/plugin>//s'
 
 # run all tests, never fail, never surrender, and capture log and exit code
@@ -26,6 +27,7 @@ RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code |
 WORKDIR /java
 VOLUME /reports
 
+# aggregate test results under /reports
 CMD set -o pipefail \
 	&& shopt -s globstar \
 	&& find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p \
