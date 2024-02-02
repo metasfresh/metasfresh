@@ -84,6 +84,10 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       Workplace: 'Arbeitsplatz',
+      qrcode: {
+        missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
+        differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+      },
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
