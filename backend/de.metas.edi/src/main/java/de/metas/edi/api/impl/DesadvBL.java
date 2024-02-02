@@ -765,7 +765,7 @@ public class DesadvBL implements IDesadvBL
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
-			return Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
+			return Optional.ofNullable(TimeUtil.asTimestamp(bestBeforeDate));
 		}
 		return Optional.empty();
 	}
@@ -777,7 +777,7 @@ public class DesadvBL implements IDesadvBL
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
 			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
-			return Optional.of(lotNumber);
+			return Optional.ofNullable(lotNumber);
 		}
 		return Optional.empty();
 	}
