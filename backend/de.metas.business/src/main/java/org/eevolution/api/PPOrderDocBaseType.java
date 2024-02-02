@@ -53,6 +53,7 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	public static PPOrderDocBaseType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@NonNull
+<<<<<<< HEAD
 	public static Optional<PPOrderDocBaseType> optionalOfNullable(@Nullable final String code) {return Optional.ofNullable(ofNullableCode(code));}
 
 	public static PPOrderDocBaseType ofDocBaseType(@NonNull final DocBaseType docBaseType) {return ofCode(docBaseType.getCode());}
@@ -67,4 +68,19 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
 
 	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
+=======
+	public Set<BOMType> getBOMTypes()
+	{
+		switch (this)
+		{
+			case REPAIR_ORDER:
+			case QUALITY_ORDER:
+			case MAINTENANCE_ORDER:
+			case MANUFACTURING_ORDER:
+				return ImmutableSet.of(BOMType.CurrentActive, BOMType.MakeToOrder);
+			default:
+				throw new AdempiereException("Unsupported type=" + this);
+		}
+	}
+>>>>>>> a17615d0b36 (Do no return Spare Part as BOM Type (#17238))
 }
