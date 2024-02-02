@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 
@@ -12,6 +12,7 @@ import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/huQRCodes';
+import { toastError } from '../../utils/toast';
 
 const GetQuantityDialog = ({
   readOnly = false,
@@ -80,6 +81,27 @@ const GetQuantityDialog = ({
       });
     }
   };
+
+  const readQtyFromQrCode = useCallback(
+    (result) => {
+      const qrCode = parseQRCodeString(result.scannedBarcode);
+      if (!qrCode.weightNet || !qrCode.weightNetUOM) {
+        toastError({ messageKey: 'activities.picking.qrcode.missingQty' });
+        return;
+      }
+      if (qrCode.weightNetUOM !== catchWeightUom) {
+        toastError({ messageKey: 'activities.picking.qrCode.differentUOM' });
+        return;
+      }
+      onQtyChange({
+        qtyEnteredAndValidated: 1,
+        catchWeight: qrCode.weightNet,
+        catchWeightUom: catchWeightUom,
+        gotoPickingLineScreen: false,
+      });
+    },
+    [parseQRCodeString, toastError, onQtyChange]
+  );
 
   const wsClientRef = useRef(null);
   useEffect(() => {
@@ -195,22 +217,10 @@ const GetQuantityDialog = ({
                 {showCatchWeightQRCodeReader && (
                   <tr>
                     <td colSpan="2">
-                      <BarcodeScannerComponent
-                        continuousRunning={true}
-                        onResolvedResult={(result) => {
-                          const qrCode = parseQRCodeString(result.scannedBarcode);
-                          onQtyChange({
-                            qtyEnteredAndValidated: 1,
-                            catchWeight: qrCode.weightNet,
-                            catchWeightUom: catchWeightUom,
-                            gotoPickingLineScreen: false,
-                          });
-                        }}
-                      />
+                      <BarcodeScannerComponent continuousRunning={true} onResolvedResult={readQtyFromQrCode} />
                     </td>
                   </tr>
                 )}
-
                 {qtyRejected > 0 && !showCatchWeightQRCodeReader && (
                   <>
                     <tr>
