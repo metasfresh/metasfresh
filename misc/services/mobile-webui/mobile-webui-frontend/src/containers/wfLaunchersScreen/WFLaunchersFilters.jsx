@@ -54,6 +54,7 @@ const getActiveFacets = (groups) => {
 };
 
 const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) => {
+  const [groupsLoading, setGroupsLoading] = useState(false);
   const [groups, setGroups] = useState([]);
   const [resultsCount, setResultsCount] = useState(-1);
   const [resultsCountLoading, setResultsCountLoading] = useState(false);
@@ -62,9 +63,14 @@ const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) =>
   //
   // Fetch available facets
   useEffect(() => {
-    getFacets(applicationId).then((response) => {
-      setGroups(activateFacets(response.groups, facetsInitial));
-    });
+    setGroupsLoading(true);
+    getFacets(applicationId)
+      .then((response) => {
+        setGroups(activateFacets(response.groups, facetsInitial));
+      })
+      .finally(() => {
+        setGroupsLoading(false);
+      });
   }, [facetsInitial]);
 
   //
@@ -93,12 +99,17 @@ const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) =>
 
   return (
     <div className="filters">
+      {groupsLoading && (
+        <div className="loading">
+          <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
+        </div>
+      )}
       {groups &&
         groups.map((group) => (
           <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
         ))}
       <div className="bottom-buttons">
-        {resultsCount > 0 && (
+        {!groupsLoading && resultsCount > 0 && (
           <ButtonWithIndicator
             caption={trl('general.filter.showResults', { count: resultsCount })}
             typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
