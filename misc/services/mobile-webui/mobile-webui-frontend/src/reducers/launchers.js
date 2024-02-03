@@ -4,6 +4,8 @@ import { toQRCodeObject } from '../utils/huQRCodes';
 export const initialState = {};
 
 export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
+export const getApplicationLaunchersFacets = (state, applicationId) =>
+  state?.launchers?.[applicationId]?.activeFacets ?? [];
 
 export default function launchers(state = initialState, action) {
   const { payload } = action;

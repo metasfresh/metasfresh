@@ -4,7 +4,7 @@ import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
 import { setActiveFacets } from '../../actions/LauncherActions';
-import { getApplicationLaunchers } from '../../reducers/launchers';
+import { getApplicationLaunchersFacets } from '../../reducers/launchers';
 
 const WFLaunchersFiltersScreen = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const WFLaunchersFiltersScreen = () => {
     params: { applicationId },
   } = useRouteMatch();
 
-  const { activeFacets } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+  const activeFacets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
 
   useEffect(() => {
     dispatch(
