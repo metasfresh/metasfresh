@@ -5,7 +5,7 @@ import { map } from 'lodash';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
-import { getApplicationLaunchers } from '../../reducers/launchers';
+import { getApplicationLaunchers, getApplicationLaunchersFacets } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
@@ -62,8 +62,9 @@ const WFLaunchersScreen = () => {
     filterByQRCode: currentFilterByQRCode,
     requestTimestamp,
     list: launchers,
-    activeFacets: facets,
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+
+  const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
 
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
   const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode || !showWorkplaceScanner;
