@@ -25,6 +25,12 @@ export default function launchers(state = initialState, action) {
         list: applicationLaunchers.launchers,
       });
     }
+    case types.SET_ACTIVE_FACETS: {
+      const { applicationId, facets } = payload;
+      return copyAndMergeToState(state, applicationId, {
+        activeFacets: facets,
+      });
+    }
     default: {
       return state;
     }
