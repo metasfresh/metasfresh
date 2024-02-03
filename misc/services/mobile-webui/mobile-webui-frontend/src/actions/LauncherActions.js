@@ -1,4 +1,8 @@
-import { POPULATE_LAUNCHERS_COMPLETE, POPULATE_LAUNCHERS_START } from '../constants/LaunchersActionTypes';
+import {
+  POPULATE_LAUNCHERS_COMPLETE,
+  POPULATE_LAUNCHERS_START,
+  SET_ACTIVE_FACETS,
+} from '../constants/LaunchersActionTypes';
 import { compareStringEmptyLast } from '../utils/stringUtils';
 
 export const populateLaunchersStart = ({ applicationId, filterByQRCode }) => {
@@ -16,5 +20,12 @@ export const populateLaunchersComplete = ({ applicationId, applicationLaunchers 
   return {
     type: POPULATE_LAUNCHERS_COMPLETE,
     payload: { applicationId, applicationLaunchers },
+  };
+};
+
+export const setActiveFacets = ({ applicationId, facets }) => {
+  return {
+    type: SET_ACTIVE_FACETS,
+    payload: { applicationId, facets },
   };
 };
