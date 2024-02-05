@@ -656,8 +656,6 @@ public class CandidateRepositoryWriteService
 		{
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
 					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
@@ -721,13 +719,20 @@ public class CandidateRepositoryWriteService
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo.builder()
-																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-																   .seqNo(candidateRecord.getSeqNo())
-																   .build(),
-														   candidateRecord.getQty());
+				DateAndSeqNo.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
+		deleteRelatedRecordsForId(candidateRecord, new HashSet<>());
 
-		deleteRecord(candidateRecord);
+		if (queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, candidateId)
+				.create()
+				.anyMatch())
+		{
+			deleteRecord(candidateRecord);
+		}
 		return deleteResult;
 	}
 
@@ -758,14 +763,20 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo
-																   .builder()
-																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-																   .seqNo(candidateRecord.getSeqNo())
-																   .build(),
-														   candidateRecord.getQty());
+				DateAndSeqNo
+						.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
 
-		deleteRecord(candidateRecord);
+		if (queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, candidateId)
+				.create()
+				.anyMatch())
+		{
+			deleteRecord(candidateRecord);
+		}
 
 		return deleteResult;
 	}

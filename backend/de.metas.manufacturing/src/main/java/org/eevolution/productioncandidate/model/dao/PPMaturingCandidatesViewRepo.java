@@ -36,12 +36,10 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_PP_Maturing_Candidates_v;
-import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Repository;
@@ -103,16 +101,11 @@ public class PPMaturingCandidatesViewRepo
 	{
 		final IQuery<I_PP_Maturing_Candidates_v> ppMaturingCandidatesVQuery = queryBL.createQueryBuilder(I_PP_Maturing_Candidates_v.class)
 				.create();
-		final IQueryBuilder<I_PP_Order_Candidate> commonQueryBuilder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, true)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, true)
-				.addNotInSubQueryFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, I_PP_Maturing_Candidates_v.COLUMNNAME_PP_Order_Candidate_ID, ppMaturingCandidatesVQuery);
-
-		commonQueryBuilder.andCollectChildren(I_PP_OrderLine_Candidate.COLUMN_PP_Order_Candidate_ID)
+				.addNotInSubQueryFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, I_PP_Maturing_Candidates_v.COLUMNNAME_PP_Order_Candidate_ID, ppMaturingCandidatesVQuery)
 				.create()
-				.delete();
-
-		return commonQueryBuilder.create()
 				.delete();
 	}
 

@@ -434,4 +434,8 @@ public class PPOrderCandidateService
 		return ppMaturingCandidatesV.getPpOrderCandidateId() == null ? CrudOperationResult.CREATED : CrudOperationResult.UPDATED;
 	}
 
+	public void deleteLines(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
+	}
 }
