@@ -16,17 +16,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Document Type Model
@@ -92,7 +91,7 @@ public class MDocType extends X_C_DocType
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(C_DocType_ID);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(C_DocType_ID);
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
 

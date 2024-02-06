@@ -65,7 +65,6 @@ services:
       - "${POSTGREST_PORT}:3000"
     depends_on:
       - db
-
   papercut-smtp:
     build: papercut-smtp
     image: docker-papercut-smtp

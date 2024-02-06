@@ -724,6 +724,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				get_TrxName());
 		for (final String refName : parseNeededReferences())
 		{
+			final int Ref_BoilerPlate_ID = MADBoilerPlate.getIdByName(getCtx(), refName, get_TrxName());
+			if (Ref_BoilerPlate_ID <= 0)
+			{
+				log.warn("BoilerPlate entry '" + refName + "' does not exist");
+				continue;
+			}
+			
 			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
 			ref.saveEx();
 		}

@@ -834,7 +834,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		if (docType == null)
 		{
 			return;
@@ -1480,11 +1480,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		if (invoice.getC_DocType_ID() > 0)
 		{
-			return docTypeDAO.getById(invoice.getC_DocType_ID());
+			return docTypeDAO.getRecordById(invoice.getC_DocType_ID());
 		}
 		else if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
-			return docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+			return docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
 		}
 
 		return null;
@@ -1690,7 +1690,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			docSubType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID()).getDocSubType();
+			docSubType = docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID()).getDocSubType();
 		}
 		else
 		{

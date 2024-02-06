@@ -1689,7 +1689,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 						// task 08927
-						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						note = "@C_DocType_ID@=" + docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 						if (creditMemoReinvoicable)
 						{
 							qtysInvoiced = StockQtyAndUOMQtys

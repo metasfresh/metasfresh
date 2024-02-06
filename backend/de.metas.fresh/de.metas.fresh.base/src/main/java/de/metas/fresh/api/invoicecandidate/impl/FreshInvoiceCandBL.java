@@ -1,8 +1,5 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
@@ -13,6 +10,8 @@ import de.metas.fresh.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.util.Services;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
 
 public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 {
@@ -67,7 +66,7 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 		{
 
 			// check if we already have another special docType from material tracking
-			final I_C_DocType docTypeInvoice = docTypeDAO.getById(DocTypeId.ofRepoId(candidate.getC_DocTypeInvoice_ID()));
+			final I_C_DocType docTypeInvoice = docTypeDAO.getRecordById(DocTypeId.ofRepoId(candidate.getC_DocTypeInvoice_ID()));
 			if (X_C_DocType.DOCBASETYPE_APInvoice.equals(docTypeInvoice.getDocBaseType()) &&
 					(IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment.equals(docTypeInvoice.getDocSubType()) ||
 							IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement.equals(docTypeInvoice.getDocSubType())))

@@ -17,7 +17,6 @@ import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
-import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
@@ -95,7 +94,7 @@ public class ESRDataLoaderUtil
 
 		// all lines of one esrImport have the same C_BP_BankAccount_ID, so in future these two column can be removed from the line
 
-		int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
+		final int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
 		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
 
 		newLine.setC_BP_BankAccount_ID(bankAccountRecordId);
@@ -110,9 +109,6 @@ public class ESRDataLoaderUtil
 	/**
 	 * This method evaluates the given ESR reference number string and updates the given {@code importLine} accordingly.
 	 * The ESR reference number string can come from a {@code .v11} file or a camt.54 {@code .xml} file.
-	 *
-	 * @param importLine
-	 * @param completeEsrReferenceNumberStr
 	 */
 	public void evaluateEsrReferenceNumber(@NonNull final I_ESR_ImportLine importLine)
 	{
@@ -190,15 +186,11 @@ public class ESRDataLoaderUtil
 		importLine.setC_BPartner_ID(invoice.getC_BPartner_ID()); // 04582: no need to load the whole bpartner when we just need the ID
 		importLine.setOrg_ID(invoice.getAD_Org_ID());
 
-		InterfaceWrapperHelper.save(importLine);
 	}
 
 	/**
 	 * This method evaluated the ESR reference string, and matches/verifies that everything is consistent with the system.<br>
 	 * Any problems are logged to {@link I_ESR_ImportLine#COLUMN_MatchErrorMsg}.
-	 *
-	 * @param importLine
-	 * @param completeEsrReferenceNumberStr
 	 */
 	private void setValuesFromESRString(
 			@NonNull final I_ESR_ImportLine importLine,
@@ -270,7 +262,7 @@ public class ESRDataLoaderUtil
 		final String documentNo = removeLeftZeros(completeEsrReferenceNumberStr.substring(18, 26));
 		importLine.setESR_DocumentNo(documentNo);
 
-		I_C_Invoice invoice = importLine.getC_Invoice();
+		final I_C_Invoice invoice = importLine.getC_Invoice();
 
 		if (invoice != null)
 		{
@@ -354,13 +346,11 @@ public class ESRDataLoaderUtil
 				}
 			}
 		}
-		InterfaceWrapperHelper.save(importLine);
 	}
 
 	/**
 	 * Method to remove the left zeros from a string.
 	 *
-	 * @param value
 	 * @return the initial String if it's made of only zeros; the string without the left zeros otherwise.
 	 */
 	public String removeLeftZeros(final String value)
@@ -411,7 +401,7 @@ public class ESRDataLoaderUtil
 
 	public void evaluateESRAccountNumber(final I_ESR_ImportFile esrImportFile, final I_ESR_ImportLine importLine)
 	{
-		int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
+		final int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
 		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
 
 		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
@@ -420,7 +410,7 @@ public class ESRDataLoaderUtil
 
 		if (isQRR(importLine))
 		{
-			if (!bankAccount.isAccountNoMatching(postAcctNo))
+			if (Check.isBlank(postAcctNo) || !bankAccount.isAccountNoMatching(postAcctNo))
 			{
 				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
 																								 new Object[] { bankAccount, postAcctNo }));
@@ -437,7 +427,7 @@ public class ESRDataLoaderUtil
 			final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = esrbpBankAccountRepo
 					.retrieveESRPostFinanceUserNumbers(BankAccountId.ofRepoId(bankAccountRecordId));
 
-			final boolean existsFittingPostFinanceUserNumber = existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
+			final boolean existsFittingPostFinanceUserNumber = Check.isNotBlank(postAcctNo) && existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
 
 			final boolean esrNumbersFit = esrLineFitsBankAcctESRPostAcct || existsFittingPostFinanceUserNumber;
 
@@ -488,6 +478,7 @@ public class ESRDataLoaderUtil
 		return false;
 	}
 
+	@NonNull
 	private String unrenderPostAccountNo(final String renderedPostAccountNo)
 	{
 		final String[] renderenNoComponents = renderedPostAccountNo.split("-");

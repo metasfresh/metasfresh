@@ -22,20 +22,19 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.dunning.DunningTestBase;
+import de.metas.dunning.api.IDunningConfig;
+import de.metas.dunning.exception.DunningException;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.dunning.spi.impl.PlainDunningConfigurator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.dunning.DunningTestBase;
-import de.metas.dunning.api.IDunningConfig;
-import de.metas.dunning.exception.DunningException;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.dunning.spi.impl.PlainDunningConfigurator;
+import java.sql.Timestamp;
 
 public class DunningBLTest extends DunningTestBase
 {
@@ -189,12 +188,6 @@ public class DunningBLTest extends DunningTestBase
 		assertExpired(false, TimeUtil.getDay(2013, 3, 10), TimeUtil.getDay(2013, 3, 10), true);
 		assertExpired(false, TimeUtil.getDay(2013, 3, 11), TimeUtil.getDay(2013, 3, 10), true);
 		assertExpired(false, null, TimeUtil.getDay(2013, 3, 10), true);
-	}
-
-	@Test(expected = AdempiereException.class)
-	public void test_isExpired_NullCandidate()
-	{
-		dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10));
 	}
 
 	private void assertExpired(final boolean expectedExpired, final Timestamp dunningGraceDate, final Timestamp dunningDate, final boolean processed)

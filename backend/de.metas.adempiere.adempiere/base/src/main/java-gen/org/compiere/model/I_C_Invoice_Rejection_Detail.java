@@ -1,5 +1,8 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Invoice_Rejection_Detail
  *  @author Adempiere (generated) 
@@ -438,4 +441,27 @@ public interface I_C_Invoice_Rejection_Detail
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, org.compiere.model.I_AD_User>(I_C_Invoice_Rejection_Detail.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Date received.
+	 * Date a product was received
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
+
+	/**
+	 * Get Date received.
+	 * Date a product was received
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateReceived();
+
+	ModelColumn<I_C_Invoice_Rejection_Detail, Object> COLUMN_DateReceived = new ModelColumn<>(I_C_Invoice_Rejection_Detail.class, "DateReceived", null);
+	String COLUMNNAME_DateReceived = "DateReceived";
 }
