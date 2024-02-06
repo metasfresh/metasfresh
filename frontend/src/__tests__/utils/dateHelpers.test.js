@@ -20,12 +20,11 @@
  * #L%
  */
 
-import Moment from 'moment-timezone';
+import MomentTZ from 'moment-timezone';
 import {
   convertMomentToTimezone,
   setTimezoneToMoment
 } from '../../utils/dateHelpers';
-import MomentTZ from 'moment-timezone';
 
 const DATETIME_FORMAT = 'YYYY-MM-DDTHH:mmZ';
 
