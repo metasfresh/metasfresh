@@ -162,7 +162,12 @@ class DatePicker extends PureComponent {
 
       //
       // Try converting using display format
-      let moment = MomentTZ(value, this.getMomentDisplayFormat(value), strict, this.props.timeZone);
+      let moment = MomentTZ(
+        value,
+        this.getMomentDisplayFormat(value),
+        strict,
+        this.props.timeZone
+      );
       if (moment && moment.isValid()) {
         // IMPORTANT: display format might not contain timezone so make sure we set it to our timezone.
         // noinspection UnnecessaryLocalVariableJS
