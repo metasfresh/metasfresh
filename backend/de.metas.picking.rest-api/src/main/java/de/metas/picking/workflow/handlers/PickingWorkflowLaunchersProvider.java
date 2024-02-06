@@ -10,12 +10,12 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
-import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.DisplayValueProvider;
+import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
@@ -41,7 +41,7 @@ class PickingWorkflowLaunchersProvider
 	private final PickingJobRestService pickingJobRestService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 	private final WorkplaceService workplaceService;
-	private final DisplayValueProvider displayValueProvider;
+	private final DisplayValueProviderService displayValueProviderService;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
@@ -50,12 +50,12 @@ class PickingWorkflowLaunchersProvider
 			@NonNull final PickingJobRestService pickingJobRestService,
 			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 			@NonNull final WorkplaceService workplaceService,
-			@NonNull final DisplayValueProvider displayValueProvider)
+			@NonNull final DisplayValueProviderService displayValueProviderService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
 		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 		this.workplaceService = workplaceService;
-		this.displayValueProvider = displayValueProvider;
+		this.displayValueProviderService = displayValueProviderService;
 	}
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -83,7 +83,6 @@ class PickingWorkflowLaunchersProvider
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		final PickingJobFacetsQuery facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
-		final RenderedAddressProvider addressProvider = displayValueProvider.newAddressProvider();
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
@@ -101,8 +100,12 @@ class PickingWorkflowLaunchersProvider
 								.build())
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
+
+		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
+		displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
+
 		existingPickingJobs.stream()
-				.map(pickingJobReference -> this.toExistingWorkflowLauncher(pickingJobReference, profile, addressProvider))
+				.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
 				.forEach(currentResult::add);
 
 		//
@@ -113,15 +116,20 @@ class PickingWorkflowLaunchersProvider
 					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
 					.collect(ImmutableSet.toImmutableSet());
 
-			pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
-																	 .userId(userId)
-																	 .excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
-																	 .facets(facets)
-																	 .onlyBPartnerIds(profile.getOnlyBPartnerIds())
-																	 .warehouseId(workplaceWarehouseId)
-																	 .build())
+			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
+							.userId(userId)
+							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+							.facets(facets)
+							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+							.warehouseId(workplaceWarehouseId)
+							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
-					.map(pickingJobCandidate -> toNewWorkflowLauncher(pickingJobCandidate, profile, addressProvider))
+					.collect(ImmutableList.toImmutableList());
+
+			displayValueProvider.cacheWarmUpForPickingJobCandidates(newPickingJobCandidates);
+
+			newPickingJobCandidates.stream()
+					.map(pickingJobCandidate -> toNewWorkflowLauncher(pickingJobCandidate, displayValueProvider))
 					.forEach(currentResult::add);
 		}
 
@@ -132,19 +140,13 @@ class PickingWorkflowLaunchersProvider
 	}
 
 	@NonNull
-	private WorkflowLauncher toNewWorkflowLauncher(
+	private static WorkflowLauncher toNewWorkflowLauncher(
 			@NonNull final PickingJobCandidate pickingJobCandidate,
-			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final RenderedAddressProvider addressProvider)
+			@NonNull final DisplayValueProvider displayValueProvider)
 	{
-		final ITranslatableString caption = displayValueProvider.computeSummaryCaption(
-				profile,
-				displayValueProvider.toUIDescriptor(pickingJobCandidate),
-				addressProvider);
-
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)
-				.caption(caption)
+				.caption(displayValueProvider.computeLauncherCaption(pickingJobCandidate))
 				.startedWFProcessId(null)
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
 				.partiallyHandledBefore(pickingJobCandidate.isPartiallyPickedBefore())
@@ -152,15 +154,11 @@ class PickingWorkflowLaunchersProvider
 	}
 
 	@NonNull
-	private WorkflowLauncher toExistingWorkflowLauncher(
+	private static WorkflowLauncher toExistingWorkflowLauncher(
 			@NonNull final PickingJobReference pickingJobReference,
-			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final RenderedAddressProvider addressProvider)
+			@NonNull final DisplayValueProvider displayValueProvider)
 	{
-		final ITranslatableString caption = displayValueProvider.computeSummaryCaption(
-				profile,
-				DisplayValueProvider.toUIDescriptor(pickingJobReference),
-				addressProvider);
+		final ITranslatableString caption = displayValueProvider.computeLauncherCaption(pickingJobReference);
 
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)
@@ -177,11 +175,11 @@ class PickingWorkflowLaunchersProvider
 				.orElse(null);
 
 		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.builder()
-																					   .userId(userId)
-																					   .onlyBPartnerIds(profile.getOnlyBPartnerIds())
-																					   .warehouseId(workplaceWarehouseId)
-																					   .build(),
-																			   profile);
+						.userId(userId)
+						.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+						.warehouseId(workplaceWarehouseId)
+						.build(),
+				profile);
 
 		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
 	}

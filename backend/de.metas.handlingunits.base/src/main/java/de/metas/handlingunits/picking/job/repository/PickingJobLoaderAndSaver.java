@@ -386,19 +386,29 @@ class PickingJobLoaderAndSaver
 				.stream()
 				.forEach(pickedHU -> pickedHUs.put(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID()), pickedHU));
 
-		final ImmutableSet<OrderId> salesOrderIds = records.stream().map(PickingJobLoaderAndSaver::extractSalesOrderId).collect(ImmutableSet.toImmutableSet());
-		loadingSupportingServices().warmUpSalesOrderDocumentNosCache(salesOrderIds);
+		final PickingJobLoaderSupportingServices loadingSupportingServices = loadingSupportingServicesOrNull();
+		if (loadingSupportingServices != null)
+		{
+			final ImmutableSet<OrderId> salesOrderIds = records.stream().map(PickingJobLoaderAndSaver::extractSalesOrderId).collect(ImmutableSet.toImmutableSet());
+			loadingSupportingServices.warmUpSalesOrderDocumentNosCache(salesOrderIds);
 
-		final ImmutableSet<BPartnerId> customerIds = records.stream().map(record -> extractDeliveryBPLocationId(record).getBpartnerId()).collect(ImmutableSet.toImmutableSet());
-		loadingSupportingServices().warmUpBPartnerNamesCache(customerIds);
+			final ImmutableSet<BPartnerId> customerIds = records.stream().map(record -> extractDeliveryBPLocationId(record).getBpartnerId()).collect(ImmutableSet.toImmutableSet());
+			loadingSupportingServices.warmUpBPartnerNamesCache(customerIds);
+		}
 	}
 
+	@NonNull
 	private PickingJobLoaderSupportingServices loadingSupportingServices()
 	{
 		if (_loadingSupportingServices == null)
 		{
 			throw new AdempiereException("No loadingSupportingServices available when saving");
 		}
+		return _loadingSupportingServices;
+	}
+
+	private PickingJobLoaderSupportingServices loadingSupportingServicesOrNull()
+	{
 		return _loadingSupportingServices;
 	}
 

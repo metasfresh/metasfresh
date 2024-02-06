@@ -31,6 +31,7 @@ import lombok.Value;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Value
 @Builder
@@ -46,6 +47,11 @@ public class RenderedAddressProvider
 				.documentLocationBL(locationBL)
 				.locationId2RenderedAddress(new HashMap<>())
 				.build();
+	}
+
+	public void warmUpForBPartnerLocationIds(@NonNull final Set<BPartnerLocationId> locationIds)
+	{
+		// TODO
 	}
 
 	@NonNull
