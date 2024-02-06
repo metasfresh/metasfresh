@@ -18,7 +18,9 @@ import org.adempiere.warehouse.LocatorId;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 public class MockedPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
 {
@@ -32,9 +34,21 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public void warmUpSalesOrderDocumentNosCache(@NonNull final Collection<OrderId> orderIds)
+	{
+		// do nothing
+	}
+
+	@Override
 	public String getSalesOrderDocumentNo(@NonNull final OrderId salesOrderId)
 	{
 		return "docno-" + salesOrderId.getRepoId();
+	}
+
+	@Override
+	public void warmUpBPartnerNamesCache(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		// do nothing
 	}
 
 	@Override

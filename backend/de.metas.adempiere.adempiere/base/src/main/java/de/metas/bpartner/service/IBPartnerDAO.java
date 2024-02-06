@@ -81,6 +81,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
+	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
+
 	/**
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
 	 */
