@@ -119,11 +119,11 @@ class DatePicker extends PureComponent {
         // });
       }
     } catch (error) {
-      // console.log(`callPatchIfNeeded: error patching field ${field}`, {
-      //   date,
-      //   datePatched,
-      //   error,
-      // });
+      console.log(`callPatchIfNeeded: error patching field ${field}`, {
+        date,
+        datePatched,
+        error,
+      });
     }
 
     this.setState({ datePatched: date });
