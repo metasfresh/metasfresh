@@ -44,7 +44,7 @@ const GetQuantityDialog = ({
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
   const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
-  const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(false);
+  const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
@@ -143,122 +143,164 @@ const GetQuantityDialog = ({
     };
   }, [scaleDevice, useScaleDevice]);
 
+  const isCustomView = () => {
+    return showCatchWeightQRCodeReader;
+  };
+
+  const getCustomView = () => {
+    if (showCatchWeightQRCodeReader) {
+      return getQRCodeCatchWeightView();
+    } else {
+      return <></>;
+    }
+  };
+
+  const getQRCodeCatchWeightView = () => {
+    return (
+      <>
+        <table className="table">
+          <tbody>
+            {qtyCaption && (
+              <tr>
+                <th>{qtyCaption}</th>
+                <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+              </tr>
+            )}
+            {userInfo &&
+              userInfo.map((item) => (
+                <tr key={computeKeyFromUserInfoItem(item)}>
+                  <th>{computeCaptionFromUserInfoItem(item)}</th>
+                  <td>{item.value}</td>
+                </tr>
+              ))}
+            <tr>
+              <td colSpan="2">
+                <BarcodeScannerComponent continuousRunning={true} onResolvedResult={readQtyFromQrCode} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="buttons is-centered">
+          <button className="button" onClick={() => setShowCatchWeightQRCodeReader(false)}>
+            {trl('activities.picking.switchToManualInput')}
+          </button>
+          <button className="button is-danger" onClick={onCloseDialog}>
+            {trl('general.closeText')}
+          </button>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div>
       <div className="prompt-dialog get-qty-dialog">
         <article className="message is-dark">
           <div className="message-body">
-            <table className="table">
-              <tbody>
-                {qtyCaption && (
-                  <tr>
-                    <th>{qtyCaption}</th>
-                    <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
-                  </tr>
-                )}
-                {userInfo &&
-                  userInfo.map((item) => (
-                    <tr key={computeKeyFromUserInfoItem(item)}>
-                      <th>{computeCaptionFromUserInfoItem(item)}</th>
-                      <td>{item.value}</td>
-                    </tr>
-                  ))}
-                {!hideQtyInput && !showCatchWeightQRCodeReader && (
-                  <tr>
-                    <th>Qty</th>
-                    <td>
-                      <QtyInputField
-                        qty={qtyInfos.toNumberOrString(qtyInfo)}
-                        uom={uom}
-                        validateQtyEntered={validateQtyEntered}
-                        readonly={useScaleDevice || readOnly}
-                        onQtyChange={onQtyEntered}
-                        isRequestFocus={true}
-                      />
-                    </td>
-                  </tr>
-                )}
-                {scaleDevice && allowManualInput && !showCatchWeightQRCodeReader && (
-                  <tr>
-                    <td colSpan="2">
-                      <div className="buttons has-addons">
-                        <button
-                          className={cx('button', { 'is-success': useScaleDevice, 'is-selected': useScaleDevice })}
-                          onClick={() => setUseScaleDevice(true)}
-                        >
-                          {scaleDevice.caption}
-                        </button>
-                        <button
-                          className={cx('button', { 'is-success': !useScaleDevice, 'is-selected': !useScaleDevice })}
-                          onClick={() => setUseScaleDevice(false)}
-                        >
-                          Manual
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-                {useCatchWeight && !showCatchWeightQRCodeReader && (
-                  <tr>
-                    <th>{trl('general.CatchWeight')}</th>
-                    <td>
-                      <QtyInputField
-                        qty={qtyInfos.toNumberOrString(catchWeight)}
-                        uom={catchWeightUom}
-                        onQtyChange={onCatchWeightEntered}
-                        readonly={readOnly}
-                      />
-                      <button className="button" onClick={() => setShowCatchWeightQRCodeReader(true)}>
-                        {trl('general.QRCode')}
-                      </button>
-                    </td>
-                  </tr>
-                )}
-                {showCatchWeightQRCodeReader && (
-                  <tr>
-                    <td colSpan="2">
-                      <BarcodeScannerComponent continuousRunning={true} onResolvedResult={readQtyFromQrCode} />
-                    </td>
-                  </tr>
-                )}
-                {qtyRejected > 0 && !showCatchWeightQRCodeReader && (
-                  <>
-                    <tr>
-                      <th>{trl('general.QtyRejected')}</th>
-                      <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <QtyReasonsRadioGroup
-                          reasons={qtyRejectedReasons}
-                          selectedReason={rejectedReason}
-                          disabled={qtyRejected === 0}
-                          onReasonSelected={onReasonSelected}
-                        />
-                      </td>
-                    </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-
-            <div className="buttons is-centered">
-              {!showCatchWeightQRCodeReader && (
-                <>
+            {isCustomView() && getCustomView()}
+            {!isCustomView() && (
+              <>
+                <table className="table">
+                  <tbody>
+                    {qtyCaption && (
+                      <tr>
+                        <th>{qtyCaption}</th>
+                        <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                      </tr>
+                    )}
+                    {userInfo &&
+                      userInfo.map((item) => (
+                        <tr key={computeKeyFromUserInfoItem(item)}>
+                          <th>{computeCaptionFromUserInfoItem(item)}</th>
+                          <td>{item.value}</td>
+                        </tr>
+                      ))}
+                    {!hideQtyInput && (
+                      <tr>
+                        <th>Qty</th>
+                        <td>
+                          <QtyInputField
+                            qty={qtyInfos.toNumberOrString(qtyInfo)}
+                            uom={uom}
+                            validateQtyEntered={validateQtyEntered}
+                            readonly={useScaleDevice || readOnly}
+                            onQtyChange={onQtyEntered}
+                            isRequestFocus={true}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    {scaleDevice && allowManualInput && (
+                      <tr>
+                        <td colSpan="2">
+                          <div className="buttons has-addons">
+                            <button
+                              className={cx('button', { 'is-success': useScaleDevice, 'is-selected': useScaleDevice })}
+                              onClick={() => setUseScaleDevice(true)}
+                            >
+                              {scaleDevice.caption}
+                            </button>
+                            <button
+                              className={cx('button', {
+                                'is-success': !useScaleDevice,
+                                'is-selected': !useScaleDevice,
+                              })}
+                              onClick={() => setUseScaleDevice(false)}
+                            >
+                              Manual
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {useCatchWeight && (
+                      <tr>
+                        <th>{trl('general.CatchWeight')}</th>
+                        <td>
+                          <>
+                            <QtyInputField
+                              qty={qtyInfos.toNumberOrString(catchWeight)}
+                              uom={catchWeightUom}
+                              onQtyChange={onCatchWeightEntered}
+                              readonly={readOnly}
+                            />
+                            <button className="button" onClick={() => setShowCatchWeightQRCodeReader(true)}>
+                              {trl('activities.picking.switchToQrCodeInput')}
+                            </button>
+                          </>
+                        </td>
+                      </tr>
+                    )}
+                    {qtyRejected > 0 && (
+                      <>
+                        <tr>
+                          <th>{trl('general.QtyRejected')}</th>
+                          <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
+                        </tr>
+                        <tr>
+                          <td colSpan={2}>
+                            <QtyReasonsRadioGroup
+                              reasons={qtyRejectedReasons}
+                              selectedReason={rejectedReason}
+                              disabled={qtyRejected === 0}
+                              onReasonSelected={onReasonSelected}
+                            />
+                          </td>
+                        </tr>
+                      </>
+                    )}
+                  </tbody>
+                </table>
+                <div className="buttons is-centered">
                   <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
                     {trl('activities.picking.confirmDone')}
                   </button>
                   <button className="button is-danger" onClick={onCloseDialog}>
                     {trl('general.cancelText')}
                   </button>
-                </>
-              )}
-              {showCatchWeightQRCodeReader && (
-                <button className="button is-danger" onClick={onCloseDialog}>
-                  {trl('general.closeText')}
-                </button>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </article>
       </div>
