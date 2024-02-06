@@ -6,7 +6,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
-import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
+import { pickingStepScanScreenLocation } from '../../../routes/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
@@ -54,8 +54,6 @@ const PickStepScreen = () => {
 
   const history = useHistory();
   const onUnpickButtonClick = () => {
-    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-
     postStepUnPicked({
       wfProcessId,
       activityId,
@@ -65,7 +63,7 @@ const PickStepScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.push(location);
+        history.go(-1);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
