@@ -94,7 +94,7 @@ import java.util.stream.Stream;
 /* package */ class ADProcessDescriptorsFactory
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -119,7 +119,7 @@ import java.util.stream.Stream;
 
 		Stream<RelatedProcessDescriptor> relatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors().stream();
 
-		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors())
+		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors(ProcessId.PROCESSHANDLERTYPE_AD_Process))
 		{
 			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessService.getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
@@ -510,7 +510,7 @@ import java.util.stream.Stream;
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 	{
-		public static final transient ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
+		public static final ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
 
 		private static final DocumentEntityDataBindingDescriptor dataBinding = () -> ADProcessParametersRepository.instance;
 
