@@ -144,7 +144,7 @@ class DocApprovalStrategyServiceTest
 		{
 			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("1000")).requestorId(approvalUserId1).build());
 			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-			assertThat(userIdsToApprove).containsOnly(approvalUserId1, cfoId);
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, cfoId);
 		}
 
 		@Test
