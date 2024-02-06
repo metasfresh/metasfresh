@@ -119,7 +119,7 @@ import java.util.stream.Stream;
 
 		Stream<RelatedProcessDescriptor> relatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors().stream();
 
-		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors())
+		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors(ProcessId.PROCESSHANDLERTYPE_AD_Process))
 		{
 			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessService.getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
