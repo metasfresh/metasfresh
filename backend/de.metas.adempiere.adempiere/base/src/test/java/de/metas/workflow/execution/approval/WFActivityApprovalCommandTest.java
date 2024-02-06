@@ -206,6 +206,10 @@ class WFActivityApprovalCommandTest
 
 				approveByUserId(approvalUserId1);
 				response = command.execute();
+				assertThat(response).isEqualTo(WFActivityApprovalResponse.forwardTo(approvalUserId2));
+
+				approveByUserId(approvalUserId2);
+				response = command.execute();
 				assertThat(response).isEqualTo(WFActivityApprovalResponse.forwardTo(cfoId));
 
 				approveByUserId(cfoId);
@@ -227,6 +231,10 @@ class WFActivityApprovalCommandTest
 				assertThat(response).isEqualTo(WFActivityApprovalResponse.forwardTo(approvalUserId2));
 
 				approveByUserId(approvalUserId2);
+				response = command.execute();
+				assertThat(response).isEqualTo(WFActivityApprovalResponse.forwardTo(approvalUserId3));
+
+				approveByUserId(approvalUserId3);
 				response = command.execute();
 				assertThat(response).isEqualTo(WFActivityApprovalResponse.forwardTo(cfoId));
 
