@@ -47,9 +47,18 @@ class AllMatchingSupervisorsStrategy implements CheckSupervisorStrategy
 			if (isRoleApprovalRequired(request, supervisorId))
 			{
 				userIdsToApprove.add(supervisorId);
-			}
 
-			supervisorId = userBL.getSupervisorId(supervisorId, orgId).orElse(null);
+				// dev-note: if the current supervisor's threshold is exceeded, then its supervisor shall also be directly asked to approve
+				supervisorId = userBL.getSupervisorId(supervisorId, orgId).orElse(null);
+				if (supervisorId != null)
+				{
+					userIdsToApprove.add(supervisorId);
+				}
+			}
+			else
+			{
+				supervisorId = userBL.getSupervisorId(supervisorId, orgId).orElse(null);
+			}
 		}
 
 		return userIdsToApprove.toList();
