@@ -51,6 +51,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ import java.util.Set;
 
 public class QueueDAO extends AbstractQueueDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(QueueDAO.class);
+	private static final Logger logger = LogManager.getLogger(QueueDAO.class);
 
 	public QueueDAO()
 	{
@@ -138,7 +139,7 @@ public class QueueDAO extends AbstractQueueDAO
 
 	@Override
 	@NonNull
-	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
+	protected <T> T retrieveItem(@NonNull final I_C_Queue_Element element, @NonNull final Class<T> clazz, @Nullable final String trxName)
 	{
 		final int adTableId = element.getAD_Table_ID();
 		final int recordId = element.getRecord_ID();

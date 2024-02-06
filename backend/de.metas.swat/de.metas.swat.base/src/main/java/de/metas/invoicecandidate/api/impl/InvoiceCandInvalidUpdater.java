@@ -533,7 +533,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
 		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);
