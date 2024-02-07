@@ -59,7 +59,7 @@ const ScanHUAndGetQtyComponent = ({
   });
 
   useEffect(() => {
-    setResolvedBarcodeData({
+    setResolvedBarcodeData((prevState) => ({
       userInfo,
       qtyCaption,
       qtyTarget,
@@ -74,7 +74,9 @@ const ScanHUAndGetQtyComponent = ({
       scaleTolerance,
       catchWeight,
       catchWeightUom,
-    });
+      // remember the scanned barcode as no new scan has been performed
+      scannedBarcode: prevState?.scannedBarcode,
+    }));
   }, [
     userInfo,
     qtyCaption,
