@@ -62,4 +62,5 @@ public class JsonPickingStepEvent
 	@Nullable String qtyRejectedReasonCode;
 	@Nullable BigDecimal catchWeight;
 	boolean pickWholeTU;
+	@Nullable Boolean checkIfAlreadyPacked;
 }

@@ -114,7 +114,7 @@ public final class PickingJob
 
 	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
 
-	public BPartnerId getCustomerId() {return header.getDeliveryBPLocationId().getBpartnerId();}
+	public BPartnerId getCustomerId() {return header.getCustomerId();}
 
 	public String getCustomerName() {return header.getCustomerName();}
 

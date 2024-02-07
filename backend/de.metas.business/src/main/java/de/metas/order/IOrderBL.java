@@ -359,6 +359,8 @@ public interface IOrderBL extends ISingletonService
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
 
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 
 	@NonNull
