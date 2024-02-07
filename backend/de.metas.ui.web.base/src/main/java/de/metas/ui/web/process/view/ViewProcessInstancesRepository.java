@@ -1,20 +1,13 @@
 package de.metas.ui.web.process.view;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
+import de.metas.cache.CCache;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import de.metas.cache.CCache;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
@@ -26,7 +19,14 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -51,24 +51,24 @@ import lombok.ToString;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ViewProcessInstancesRepository implements IProcessInstancesRepository
 {
-	@Autowired
-	private IViewsRepository viewsRepository;
+	private final IViewsRepository viewsRepository;
 
-	private static final String PROCESS_HANDLER_TYPE = "View";
+	private static final ProcessHandlerType PROCESS_HANDLER_TYPE = ProcessHandlerType.ofCode("View");
 
 	// private final CCache<String, ViewActionDescriptorsList> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
 
 	private final CCache<String, ViewActionInstancesList> viewActionInstancesByViewId = CCache.newLRUCache("viewActionInstancesByViewId", 100, 60);
 
 	@Override
-	public String getProcessHandlerType()
+	public ProcessHandlerType getProcessHandlerType()
 	{
 		return PROCESS_HANDLER_TYPE;
 	}
 
-	private final ViewActionDescriptorsList getViewActionDescriptors(@NonNull final IView view)
+	private ViewActionDescriptorsList getViewActionDescriptors(@NonNull final IView view)
 	{
 		final ViewActionDescriptorsList viewClassActions = ViewActionDescriptorsFactory.instance.getFromClass(view.getClass());
 
@@ -77,7 +77,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return viewClassActions.mergeWith(viewActions);
 	}
 
-	private final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
+	private ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
 	{
 		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(processId);
 		final String viewId = viewIdAndActionId.getLeft();
@@ -108,12 +108,12 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 				.streamDocumentRelatedProcesses(viewContext);
 	}
 
-	static final ProcessId buildProcessId(final ViewId viewId, final String viewActionId)
+	static ProcessId buildProcessId(final ViewId viewId, final String viewActionId)
 	{
 		return ProcessId.of(PROCESS_HANDLER_TYPE, viewId.getViewId() + "_" + viewActionId);
 	}
 
-	private static final IPair<String, String> extractViewIdAndActionId(final ProcessId processId)
+	private static IPair<String, String> extractViewIdAndActionId(final ProcessId processId)
 	{
 		final String processIdStr = processId.getProcessId();
 		final int idx = processIdStr.indexOf("_");
@@ -222,12 +222,11 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 			return DocumentId.ofString(viewId + "_" + nextId);
 		}
 
-		public static final String extractViewId(@NonNull final DocumentId pinstanceId)
+		public static String extractViewId(@NonNull final DocumentId pinstanceId)
 		{
 			final String pinstanceIdStr = pinstanceId.toJson();
 			final int idx = pinstanceIdStr.indexOf("_");
-			final String viewId = pinstanceIdStr.substring(0, idx);
-			return viewId;
+			return pinstanceIdStr.substring(0, idx);
 		}
 
 		public void add(final ViewActionInstance viewActionInstance)

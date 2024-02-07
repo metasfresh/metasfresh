@@ -11,6 +11,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
@@ -58,7 +59,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) row selected");
 		}
 
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 		if (hu == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
@@ -71,7 +72,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 
 		huLabelService.print(HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.MaterialReceipt)

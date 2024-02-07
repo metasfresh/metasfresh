@@ -5,13 +5,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.report.HUToReport;
-import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.view.IViewRow;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 
 /*
  * #%L
@@ -37,27 +37,33 @@ import java.util.Objects;
 
 @EqualsAndHashCode(of = "huId")
 @ToString(exclude = "row")
-public final class HUEditorRowAsHUToReport implements HUToReport
+public final class HUReportAwareViewRowAsHUToReport implements HUToReport
 {
-	public static HUEditorRowAsHUToReport of(final HUEditorRow row)
+	public static HUReportAwareViewRowAsHUToReport of(final HUReportAwareViewRow row)
 	{
-		return new HUEditorRowAsHUToReport(row);
+		return new HUReportAwareViewRowAsHUToReport(row);
 	}
 
-	private final HUEditorRow row;
+	@Nullable
+	public static HUReportAwareViewRowAsHUToReport ofOrNull(final IViewRow row)
+	{
+		return row instanceof HUReportAwareViewRow ? new HUReportAwareViewRowAsHUToReport((HUReportAwareViewRow)row) : null;
+	}
+
+	private final HUReportAwareViewRow row;
 
 	private final HuId huId;
 	private final BPartnerId partnerId;
 	private final HuUnitType huUnitType;
 	private final boolean topLevel;
 
-	private HUEditorRowAsHUToReport(@NonNull final HUEditorRow row)
+	private HUReportAwareViewRowAsHUToReport(@NonNull final HUReportAwareViewRow row)
 	{
 		this.row = row;
 
 		huId = row.getHuId();
 		partnerId = row.getBpartnerId();
-		huUnitType = row.getType().toHUUnitType();
+		huUnitType = row.getHUUnitType();
 		topLevel = row.isTopLevel();
 	}
 
@@ -88,10 +94,8 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 	@Override
 	public List<HUToReport> getIncludedHUs()
 	{
-		return row.getIncludedRows()
-				.stream()
-				.map(HUEditorRow::getAsHUToReportOrNull)
-				.filter(Objects::nonNull)
+		return row.streamIncludedHUReportAwareRows()
+				.map(HUReportAwareViewRowAsHUToReport::of)
 				.collect(ImmutableList.toImmutableList());
 	}
 
