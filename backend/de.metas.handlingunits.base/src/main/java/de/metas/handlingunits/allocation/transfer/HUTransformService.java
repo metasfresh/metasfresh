@@ -1401,7 +1401,7 @@ public class HUTransformService
 	}
 
 	@NonNull
-	public HuId extractToTopLevelByQRCode(@NonNull final HuId huId, @Nullable final HUQRCode huQRCode)
+	public HuId extractToTopLevel(@NonNull final HuId huId, @Nullable final HUQRCode huQRCode)
 	{
 		if (huQRCode != null)
 		{
@@ -1449,7 +1449,7 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU)
 	{
-		return tusToLU(tusOrVhus, existingLU, null);
+		return trxManager.callInThreadInheritedTrx(() ->tusToLU(tusOrVhus, existingLU, null));
 	}
 
 	private HuId tusToLU(
@@ -1489,40 +1489,49 @@ public class HUTransformService
 	}
 
 	@NonNull
-	public List<I_M_HU> cusToExistingTU(
+	public ImmutableList<I_M_HU> cusToExistingTU(
 			@NonNull final List<I_M_HU> sourceCuHUs,
 			@NonNull final I_M_HU targetTuHU)
 	{
-		final ArrayList<I_M_HU> resultCollector = new ArrayList<>();
+		final ImmutableList.Builder<I_M_HU> resultCollector = ImmutableList.builder();
 		sourceCuHUs.forEach(sourceCU -> {
 			 final Quantity quantity = getSingleProductStorage(sourceCU).getQtyInStockingUOM();
 			 resultCollector.addAll(cuToExistingTU(sourceCU, quantity, targetTuHU));
 		});
 
-		return resultCollector;
+		return resultCollector.build();
 	}
 
 	public void cusToExistingCU(@NonNull final List<I_M_HU> sourceCuHUs, @NonNull final I_M_HU targetCU)
 	{
-		final IHUProductStorage targetHUStorage = getSingleProductStorage(targetCU);
+		final ProductId targetHUProductId = getSingleProductStorage(targetCU).getProductId();
 
-		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU, targetHUStorage));
+		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU, targetHUProductId));
 	}
 
 	public void cuToExistingCU(
 			@NonNull final I_M_HU sourceCuHU,
 			@NonNull final I_M_HU targetHU,
-			@NonNull final IHUProductStorage targetProductStorage)
+			@NonNull final ProductId targetHUProductId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> cuToExistingCU_InTrx(sourceCuHU, targetHU, targetHUProductId));
+	}
+
+	private void cuToExistingCU_InTrx(
+			@NonNull final I_M_HU sourceCuHU,
+			@NonNull final I_M_HU targetHU,
+			@NonNull final ProductId targetHUProductId)
 	{
 		final IMutableHUContext huContextWithOrgId = huContextFactory.createMutableHUContext(InterfaceWrapperHelper.getContextAware(targetHU));
 
-		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceCuHU, AllocationStrategyType.UNIFORM)
+		final IAllocationSource source = HUListAllocationSourceDestination
+				.of(sourceCuHU, AllocationStrategyType.UNIFORM)
 				.setDestroyEmptyHUs(true);
 		final IAllocationDestination destination = HUListAllocationSourceDestination.of(targetHU, AllocationStrategyType.UNIFORM);
 
 		final IHUProductStorage sourceProductStorage = getSingleProductStorage(sourceCuHU);
 
-		Check.assume(sourceProductStorage.getProductId().equals(targetProductStorage.getProductId()), "Source and Target HU productId must match!");
+		Check.assume(sourceProductStorage.getProductId().equals(targetHUProductId), "Source and Target HU productId must match!");
 
 		HULoader.of(source, destination)
 				.load(AllocationUtils.builder()

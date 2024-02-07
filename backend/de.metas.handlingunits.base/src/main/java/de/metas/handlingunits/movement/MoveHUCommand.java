@@ -55,6 +55,11 @@ public class MoveHUCommand
 
 	public void execute()
 	{
+		if (huIdAndQRCodes.isEmpty())
+		{
+			return;
+		}
+
 		trxManager.runInThreadInheritedTrx(this::executeInTrx);
 	}
 
@@ -109,8 +114,7 @@ public class MoveHUCommand
 	{
 		if (!handlingUnitsBL.isVirtual(targetHU))
 		{
-			throw new AdempiereException("Invalid target HU! Expecting CU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU))
-					.markAsUserValidationError();
+			throw new AdempiereException("Invalid target HU! Expecting CU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU));
 		}
 
 		final LocatorId locatorIdOfTargetHU = warehouseDAO.getLocatorIdByRepoId(targetHU.getM_Locator_ID());
@@ -134,8 +138,7 @@ public class MoveHUCommand
 	{
 		if (!handlingUnitsBL.isLoadingUnit(targetHU))
 		{
-			throw new AdempiereException("Invalid target HU! Expecting LU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU))
-					.markAsUserValidationError();
+			throw new AdempiereException("Invalid target HU! Expecting LU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU));
 		}
 
 		final LocatorId locatorIdOfTargetHU = warehouseDAO.getLocatorIdByRepoId(targetHU.getM_Locator_ID());
@@ -159,8 +162,7 @@ public class MoveHUCommand
 	{
 		if (!handlingUnitsBL.isTransportUnit(targetHU))
 		{
-			throw new AdempiereException("Invalid target HU! Expecting TU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU))
-					.markAsUserValidationError();
+			throw new AdempiereException("Invalid target HU! Expecting TU type, but got=" + handlingUnitsBL.getHU_UnitType(targetHU));
 		}
 
 		final LocatorId locatorIdOfTargetHU = warehouseDAO.getLocatorIdByRepoId(targetHU.getM_Locator_ID());
@@ -183,7 +185,7 @@ public class MoveHUCommand
 	private List<HuId> extractHUIdsToMove()
 	{
 		return huIdAndQRCodes.stream()
-				.map(huIdAndQRCode -> huTransformService.extractToTopLevelByQRCode(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
+				.map(huIdAndQRCode -> huTransformService.extractToTopLevel(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
 				.collect(ImmutableList.toImmutableList());
 	}
 

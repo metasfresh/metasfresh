@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../../../utils/translations';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
 const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
-  const onResolvedQrCode = ({ scannedBarcode }) => {
-    onSubmit({ unpickToTargetQRCode: scannedBarcode });
-  };
+  const onResolvedQrCode = useCallback(
+    ({ scannedBarcode }) => {
+      onSubmit({ unpickToTargetQRCode: scannedBarcode });
+    },
+    [onSubmit]
+  );
 
   return (
     <div className="prompt-dialog screen">

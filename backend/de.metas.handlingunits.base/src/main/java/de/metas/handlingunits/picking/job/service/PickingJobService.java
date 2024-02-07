@@ -305,7 +305,7 @@ public class PickingJobService
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
-						.huqrCodesService(huQRCodesService)
+						.huQRCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())

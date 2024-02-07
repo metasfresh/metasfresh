@@ -30,16 +30,23 @@ import java.util.stream.Stream;
 
 public class PickingJobUnPickCommand
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final PickingJobRepository pickingJobRepository;
-	@NonNull private final PickingCandidateService pickingCandidateService;
-	@NonNull private final HUQRCodesService huqrCodesService;
+	@NonNull
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull
+	private final PickingJobRepository pickingJobRepository;
+	@NonNull
+	private final PickingCandidateService pickingCandidateService;
+	@NonNull
+	private final HUQRCodesService huQRCodesService;
 
 	//
 	// Params
-	@NonNull private final PickingJob initialPickingJob;
-	@NonNull private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
-	@Nullable private final HUQRCode unpickToHU;
+	@NonNull
+	private final PickingJob initialPickingJob;
+	@NonNull
+	private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
+	@Nullable
+	private final HUQRCode unpickToHU;
 
 	//
 	// State
@@ -49,7 +56,7 @@ public class PickingJobUnPickCommand
 	private PickingJobUnPickCommand(
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
-			final @NonNull HUQRCodesService huqrCodesService,
+			final @NonNull HUQRCodesService huQRCodesService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @Nullable PickingJobStepId onlyPickingJobStepId,
@@ -58,7 +65,7 @@ public class PickingJobUnPickCommand
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
-		this.huqrCodesService = huqrCodesService;
+		this.huQRCodesService = huQRCodesService;
 
 		this.initialPickingJob = pickingJob;
 
@@ -129,11 +136,10 @@ public class PickingJobUnPickCommand
 			changedStep = unpickStep(changedStep, pickFromKey);
 		}
 
-		if(changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
+		if (changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
 		{
 			return null;
 		}
-
 
 		return changedStep;
 	}
@@ -163,9 +169,10 @@ public class PickingJobUnPickCommand
 				PickingJobStepUnpickInfo.builder().build());
 	}
 
-	private void moveToTargetHU(final ImmutableList<PickingJobStepPickedToHU> pickedToHUs)
+	private void moveToTargetHU(@NonNull final ImmutableList<PickingJobStepPickedToHU> pickedToHUs)
 	{
-		if (unpickToHU == null) {
+		if (unpickToHU == null)
+		{
 			return;
 		}
 
@@ -175,7 +182,7 @@ public class PickingJobUnPickCommand
 				.collect(ImmutableList.toImmutableList());
 
 		MoveHUCommand.builder()
-				.huQRCodesService(huqrCodesService)
+				.huQRCodesService(huQRCodesService)
 				.husToMove(huIdAndQRCodeList)
 				.targetQRCode(unpickToHU.toGlobalQRCode())
 				.build()
