@@ -40,6 +40,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_PP_Maturing_Candidates_v;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Repository;
@@ -74,7 +75,9 @@ public class PPMaturingCandidatesViewRepo
 		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(ppMaturingCandidatesV.getPP_Order_Candidate_ID());
 		final MaturingConfigId maturingConfigId = MaturingConfigId.ofRepoId(ppMaturingCandidatesV.getM_Maturing_Configuration_ID());
 		final MaturingConfigLineId maturingConfigLineId = MaturingConfigLineId.ofRepoId(ppMaturingCandidatesV.getM_Maturing_Configuration_Line_ID());
+		final ProductBOMVersionsId productBOMVersionsId = ProductBOMVersionsId.ofRepoId(ppMaturingCandidatesV.getPP_Product_BOMVersions_ID());
 		final ProductId productId = ProductId.ofRepoId(ppMaturingCandidatesV.getM_Product_ID());
+		final ProductId issueProductId = ProductId.ofRepoId(ppMaturingCandidatesV.getIssue_M_Product_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppMaturingCandidatesV.getM_Warehouse_ID());
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppMaturingCandidatesV.getPP_Product_Planning_ID());
 		final Quantity quantity = Quantitys.create(ppMaturingCandidatesV.getQty(), UomId.ofRepoId(ppMaturingCandidatesV.getC_UOM_ID()));
@@ -87,7 +90,9 @@ public class PPMaturingCandidatesViewRepo
 				.ppOrderCandidateId(ppOrderCandidateId)
 				.maturingConfigId(maturingConfigId)
 				.maturingConfigLineId(maturingConfigLineId)
+				.productBOMVersionsId(productBOMVersionsId)
 				.productId(productId)
+				.issueProductId(issueProductId)
 				.warehouseId(warehouseId)
 				.productPlanningId(productPlanningId)
 				.qtyRequired(quantity)

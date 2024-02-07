@@ -287,7 +287,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public Quantity getQtyRequired(@NonNull final ComputeQtyRequiredRequest computeQtyRequiredRequest)
 	{
 		final I_PP_Product_BOMLine productBomLine = bomDAO.getBOMLineById(computeQtyRequiredRequest.getProductBOMLineId().getRepoId());
-		return computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty());
+		return computeQtyRequiredRequest.getFinishedGoodQty() != null
+				? computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty())
+				: computeQtyRequiredByQtyOfIssuedProduct(productBomLine, computeQtyRequiredRequest.getIssuedQty());
 	}
 
 	Quantity computeQtyRequiredByQtyOfFinishedGoods(
@@ -304,6 +306,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@NonNull final Quantity qtyFinishedGood)
 	{
 		return toQtyCalculationsBOMLine(productBOMLine).computeQtyRequired(qtyFinishedGood);
+	}
+
+	@Override
+	public Quantity computeQtyRequiredByQtyOfIssuedProduct(
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
+			@NonNull final Quantity qtyFinishedGood)
+	{
+		return toQtyCalculationsBOMLine(productBOMLine).computeQtyOfFinishedGoodsForComponentQty(qtyFinishedGood);
 	}
 
 	@Override

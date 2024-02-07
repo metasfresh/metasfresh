@@ -53,6 +53,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -724,16 +725,16 @@ public class CandidateRepositoryWriteService
 						.seqNo(candidateRecord.getSeqNo())
 						.build(),
 				candidateRecord.getQty());
-		deleteRelatedRecordsForId(candidateRecord, new HashSet<>());
+		deleteRelatedRecordsForCandidate(candidateRecord);
 
-		if (queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, candidateId)
-				.create()
-				.anyMatch())
-		{
-			deleteRecord(candidateRecord);
-		}
+		deleteRecord(candidateRecord);
 		return deleteResult;
+	}
+
+	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
+	{
+		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
+		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 	}
 
 	@NonNull
@@ -770,13 +771,7 @@ public class CandidateRepositoryWriteService
 						.build(),
 				candidateRecord.getQty());
 
-		if (queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, candidateId)
-				.create()
-				.anyMatch())
-		{
-			deleteRecord(candidateRecord);
-		}
+		deleteRecord(candidateRecord);
 
 		return deleteResult;
 	}

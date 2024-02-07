@@ -4,17 +4,16 @@ DROP VIEW IF EXISTS PP_Maturing_Candidates_v
 CREATE OR REPLACE VIEW PP_Maturing_Candidates_v AS
 SELECT hu.m_hu_id                                                 AS PP_Maturing_Candidates_v_ID,
        hu.m_hu_id,
-       CASE
-           WHEN boml.isqtypercentage = 'Y' THEN FLOOR(hus.qty * 100 / boml.qtybom)
-                                           ELSE FLOOR(hus.qty / boml.qtybom)
-       END as qty,
+       hus.qty,
        hu.hustatus,
        pp.m_product_id,
+       hus.m_product_id as issue_m_product_id,
        hus.c_uom_id,
        w.m_warehouse_id,
        mc.m_maturing_configuration_id,
        mcl.m_maturing_configuration_line_id,
        pp.pp_product_planning_id,
+       pp.pp_product_bomversions_id,
        pp.m_attributesetinstance_id,
        hua.valuedate + MAKE_INTERVAL(0, mcl.maturityage::integer) AS DateStartSchedule,
        ppoc.pp_order_candidate_id,
@@ -28,9 +27,6 @@ FROM m_hu hu
          INNER JOIN m_maturing_configuration_line mcl ON hus.m_product_id = mcl.from_product_id AND mcl.isactive = 'Y'
          INNER JOIN m_maturing_configuration mc ON mcl.m_maturing_configuration_id = mc.m_maturing_configuration_id AND mc.isactive = 'Y'
          INNER JOIN pp_product_planning pp ON w.m_warehouse_id = pp.m_warehouse_id AND mcl.m_maturing_configuration_line_id = pp.m_maturing_configuration_line_id AND pp.m_product_id = mcl.matured_product_id AND pp.isactive = 'Y' AND pp.ismatured = 'Y'
-         INNER JOIN pp_product_bomversions bomv ON bomv.pp_product_bomversions_id = pp.pp_product_bomversions_id
-         INNER JOIN pp_product_bom bom ON bomv.pp_product_bomversions_id = bom.pp_product_bomversions_id
-         INNER JOIN pp_product_bomline boml ON boml.pp_product_bom_id = bom.pp_product_bom_id AND boml.m_product_id = hus.m_product_id
          LEFT JOIN pp_order_candidate ppoc ON hu.m_hu_id = ppoc.issue_hu_id
          LEFT JOIN m_hu_item hui ON hu.m_hu_id = hui.m_hu_id
          LEFT JOIN m_hu childHu ON childHu.m_hu_item_parent_id = hui.m_hu_item_id
@@ -38,10 +34,7 @@ WHERE hu.isactive = 'Y'
   AND hu.hustatus IN ('A', 'I')
   AND hu.isreserved != 'Y'
   AND hu.locked != 'Y'
-  AND CASE
-          WHEN boml.isqtypercentage = 'Y' THEN FLOOR(hus.qty * 100 / boml.qtybom)
-                                          ELSE FLOOR(hus.qty / boml.qtybom)
-      END > 0
+  AND hus.qty > 0
   AND (ppoc.pp_order_candidate_id IS NULL
     OR (ppoc.isclosed != 'Y' AND ppoc.processed != 'Y'))
   AND hua.valuedate IS NOT NULL
