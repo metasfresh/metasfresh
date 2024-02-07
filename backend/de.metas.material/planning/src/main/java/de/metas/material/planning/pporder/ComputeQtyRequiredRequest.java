@@ -39,7 +39,7 @@ public class ComputeQtyRequiredRequest
 			@Nullable final Quantity issuedQty,
 			@NonNull final ProductBOMLineId productBOMLineId)
 	{
-		Check.assume(finishedGoodQty != null || issuedQty != null, "at least finishedGoodQty={} or issuedQty={} shall be not null", finishedGoodQty, issuedQty);
+		Check.assume(finishedGoodQty != null ^ issuedQty != null, "only one of finishedGoodQty={} and issuedQty={} shall be provided", finishedGoodQty, issuedQty);
 		this.finishedGoodQty = finishedGoodQty;
 		this.issuedQty = issuedQty;
 		this.productBOMLineId = productBOMLineId;

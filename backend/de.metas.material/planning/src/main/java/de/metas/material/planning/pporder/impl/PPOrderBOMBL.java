@@ -308,8 +308,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return toQtyCalculationsBOMLine(productBOMLine).computeQtyRequired(qtyFinishedGood);
 	}
 
-	@Override
-	public Quantity computeQtyRequiredByQtyOfIssuedProduct(
+	private Quantity computeQtyRequiredByQtyOfIssuedProduct(
 			@NonNull final I_PP_Product_BOMLine productBOMLine,
 			@NonNull final Quantity qtyFinishedGood)
 	{

@@ -82,16 +82,4 @@ public class ProductBOMVersionsDAO
 				.create()
 				.firstOnlyOptional(I_PP_Product_BOMVersions.class);
 	}
-	//
-	// @NonNull
-	// private Optional<ProductBOMLineId> getBOMVersionsByProductId(@NonNull final ProductId finishedGoodsProductId, @NonNull final ProductId issuedProductId, @NonNull )
-	// {
-	// 	return queryBL.createQueryBuilder(I_PP_Product_BOMVersions.class)
-	// 			.addEqualsFilter(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID, finishedGoodsProductId.getRepoId())
-	// 			.andCollect(I_PP_Product_BOM.COLUMN_PP_Product_BOMVersions_ID)
-	//
-	// 			.addOnlyActiveRecordsFilter()
-	// 			.create()
-	// 			.firstIdOnlyOptional(ProductBOMLineId::ofRepoId);
-	// }
 }

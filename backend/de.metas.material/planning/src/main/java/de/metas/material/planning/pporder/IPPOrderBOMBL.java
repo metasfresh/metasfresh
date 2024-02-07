@@ -121,10 +121,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 			I_PP_Product_BOMLine productBOMLine,
 			Quantity qtyFinishedGood);
 
-	Quantity computeQtyRequiredByQtyOfIssuedProduct(
-			@NonNull I_PP_Product_BOMLine productBOMLine,
-			@NonNull Quantity qtyFinishedGood);
-
 	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
 	 *
