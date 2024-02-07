@@ -305,10 +305,12 @@ public class PickingJobService
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
+						.huqrCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
+						.unpickToHU(event.getUnpickToTargetQRCode())
 						//
 						.build().execute();
 			}
