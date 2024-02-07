@@ -74,7 +74,7 @@ const ScanHUAndGetQtyComponent = ({
       scaleTolerance,
       catchWeight,
       catchWeightUom,
-      // remember the scanned barcode if no new scan has been performed
+      // remember the scanned barcode as no new scan has been performed
       scannedBarcode: prevState?.scannedBarcode,
     }));
   }, [
