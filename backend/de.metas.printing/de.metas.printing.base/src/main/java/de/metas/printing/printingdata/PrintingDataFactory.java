@@ -23,9 +23,9 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -48,7 +48,6 @@ import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -130,6 +129,8 @@ public class PrintingDataFactory
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
 
+		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
+		
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
 		{
 			final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
@@ -144,7 +145,7 @@ public class PrintingDataFactory
 				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
 				if (printingSegment != null)
 				{
-					printingData.segment(printingSegment);
+					addSegmentToData(printingData, printingSegment, copies);
 					break; // there might be multiple matching printerRoutings, but the first one is the best match
 				}
 			}
@@ -152,10 +153,23 @@ public class PrintingDataFactory
 		else
 		{
 			final PrintingSegment printingSegment = createPrintingSegmentForQueueItem(queueItem);
-			printingData.segment(printingSegment);
+			addSegmentToData(printingData, printingSegment, copies);
 
 		}
 		return printingData.build();
+	}
+
+	private static void addSegmentToData(
+			@NonNull final PrintingData.PrintingDataBuilder printingData, 
+			@NonNull final PrintingSegment printingSegment, 
+			final int copies)
+	{
+		printingData.segment(printingSegment);
+		
+		for (int i = 1; i < copies; i++)
+		{
+			printingData.segment(printingSegment.copy());
+		}
 	}
 
 	public PrintingData createPrintingDataForPrintJobLine(
@@ -203,6 +217,7 @@ public class PrintingDataFactory
 		return data;
 	}
 
+	@NonNull
 	private PrintingSegment createPrintingSegmentForQueueItem(
 			@NonNull final I_C_Printing_Queue printingQueue)
 	{
