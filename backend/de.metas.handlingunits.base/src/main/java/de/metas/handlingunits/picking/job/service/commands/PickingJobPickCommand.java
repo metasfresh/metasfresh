@@ -90,6 +90,7 @@ public class PickingJobPickCommand
 	@Nullable private final QtyRejectedWithReason qtyRejected;
 	@Nullable private final Quantity catchWeight;
 	private final boolean isPickWholeTU;
+	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 
 	//
@@ -114,6 +115,7 @@ public class PickingJobPickCommand
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
 			final @Nullable BigDecimal catchWeightBD,
 			final boolean isPickWholeTU,
+			final @Nullable Boolean checkIfAlreadyPacked,
 			final boolean createInventoryForMissingQty)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -140,6 +142,7 @@ public class PickingJobPickCommand
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.isPickWholeTU = isPickWholeTU;
+		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 		this.qtyToPick = Quantity.of(qtyToPickBD, uom);
 
@@ -351,7 +354,7 @@ public class PickingJobPickCommand
 				qtyToPick,
 				catchWeight,
 				lineId.toTableRecordReference(),
-				true,
+				checkIfAlreadyPacked,
 				createInventoryForMissingQty);
 
 		if (packedHUs.isEmpty())

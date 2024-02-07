@@ -14,6 +14,8 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Services Facade used to load Picking Jobs.
@@ -22,7 +24,11 @@ public interface PickingJobLoaderSupportingServices
 {
 	void warmUpCachesFrom(@NonNull PackageableList items);
 
+	void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds);
+
 	String getSalesOrderDocumentNo(@NonNull OrderId salesOrderId);
+
+	void warmUpBPartnerNamesCache(@NonNull Set<BPartnerId> bpartnerIds);
 
 	String getBPartnerName(@NonNull BPartnerId bpartnerId);
 

@@ -207,6 +207,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return load(bpartnerId.getRepoId(), modelClass);
 	}
 
+	@Override
 	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
 		if (bpartnerIds.isEmpty())
@@ -597,6 +598,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(final Set<BPartnerLocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_BPartner_Location.class);
 	}
 
 	@Override

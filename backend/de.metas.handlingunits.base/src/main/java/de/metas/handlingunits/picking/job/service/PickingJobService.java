@@ -217,7 +217,7 @@ public class PickingJobService
 			builder.handoverLocationIds(locationIds);
 		}
 
-		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
+		final WarehouseId workplaceWarehouseId = query.getWarehouseId();
 		if (workplaceWarehouseId != null)
 		{
 			builder.warehouseId(workplaceWarehouseId);
@@ -313,6 +313,7 @@ public class PickingJobService
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
+						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
 						.createInventoryForMissingQty(true)
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
