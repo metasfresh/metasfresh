@@ -15,8 +15,6 @@ import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
-import java.util.List;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -62,10 +60,9 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		}
 
 		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
-		if (husToProcess.isEmpty())
+		if (hu == null)
 		{
-			return ProcessPreconditionsResolution.reject("current HU's type does not match the receipt label process");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -425,7 +426,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	}
 
 	@Override
-	public String getHUUnitTypeOrNull()
+	public HuUnitType getHUUnitTypeOrNull()
 	{
 		return getType().toHUUnitTypeOrNull();
 	}

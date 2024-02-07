@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
@@ -106,7 +107,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 
 	@Getter
 	private final HuId huId;
-	@Nullable private final String huUnitType;
+	@Nullable private final HuUnitType huUnitType;
 	@Nullable private final BPartnerId huBPartnerId;
 	@Getter
 	private final boolean sourceHU;
@@ -538,7 +539,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	}
 
 	@Override
-	public String getHUUnitTypeOrNull() {return huUnitType;}
+	public HuUnitType getHUUnitTypeOrNull() {return huUnitType;}
 
 	@Override
 	public BPartnerId getBpartnerId() {return huBPartnerId;}
