@@ -214,7 +214,7 @@ class DatePicker extends PureComponent {
   };
 
   setTimezone = (moment) => {
-    if (moment == null) {
+    if (!moment) {
       return null;
     }
 
@@ -227,7 +227,7 @@ class DatePicker extends PureComponent {
   };
 
   convertToTimezone = (moment) => {
-    if (moment == null) {
+    if (!moment) {
       return null;
     }
 
