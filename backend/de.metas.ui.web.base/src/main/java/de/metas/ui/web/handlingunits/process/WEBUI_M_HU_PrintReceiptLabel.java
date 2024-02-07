@@ -11,8 +11,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
+
+import java.util.List;
 
 /*
  * #%L
@@ -58,10 +61,11 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) row selected");
 		}
 
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
-		if (hu == null)
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
+		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
+		if (husToProcess.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
+			return ProcessPreconditionsResolution.reject("current HU's type does not match the receipt label process");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -71,7 +75,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 
 		huLabelService.print(HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.MaterialReceipt)
