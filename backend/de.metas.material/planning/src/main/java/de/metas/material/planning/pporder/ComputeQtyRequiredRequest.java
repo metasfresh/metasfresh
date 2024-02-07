@@ -23,17 +23,33 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.ProductBOMLineId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class ComputeQtyRequiredRequest
 {
-	@NonNull
+	public ComputeQtyRequiredRequest(@Nullable final Quantity finishedGoodQty,
+			@Nullable final Quantity issuedQty,
+			@NonNull final ProductBOMLineId productBOMLineId)
+	{
+		Check.assume(finishedGoodQty != null ^ issuedQty != null, "only one of finishedGoodQty={} and issuedQty={} shall be provided", finishedGoodQty, issuedQty);
+		this.finishedGoodQty = finishedGoodQty;
+		this.issuedQty = issuedQty;
+		this.productBOMLineId = productBOMLineId;
+	}
+
+	@Nullable
 	Quantity finishedGoodQty;
+
+	@Nullable
+	Quantity issuedQty;
 
 	@NonNull
 	ProductBOMLineId productBOMLineId;
