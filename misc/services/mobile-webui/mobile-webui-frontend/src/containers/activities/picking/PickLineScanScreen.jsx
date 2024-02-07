@@ -107,6 +107,7 @@ const PickLineScanScreen = () => {
       qtyRejected,
       catchWeight,
       pickWholeTU: isTUToBePickedAsWhole,
+      checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));

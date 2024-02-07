@@ -81,6 +81,8 @@ const translations = {
       target: 'To Pick',
       picked: 'Picked',
       Workplace: 'Workplace',
+      switchToManualInput: 'Manually',
+      switchToQrCodeInput: 'Scan QR',
       qrcode: {
         missingQty: 'The scanned QR, has no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',

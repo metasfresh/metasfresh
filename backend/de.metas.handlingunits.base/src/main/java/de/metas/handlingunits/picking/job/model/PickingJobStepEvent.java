@@ -32,6 +32,7 @@ public class PickingJobStepEvent
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 	@Nullable BigDecimal catchWeight;
 	boolean isPickWholeTU;
+	@Builder.Default boolean checkIfAlreadyPacked = true;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)
 	{
