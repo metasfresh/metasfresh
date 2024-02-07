@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -22,4 +23,7 @@ public class PickingJobHeader
 	boolean isAllowPickingAnyHU;
 	@Nullable UserId lockedBy;
 	@Nullable BPartnerLocationId handoverLocationId;
+
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
+
 }
