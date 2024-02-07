@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
@@ -14,6 +15,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
@@ -46,6 +49,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -70,7 +74,7 @@ import java.util.function.Supplier;
  */
 
 @ToString
-public class PPOrderLineRow implements IViewRow
+public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 {
 	@Getter
 	private final DocumentPath documentPath;
@@ -101,6 +105,8 @@ public class PPOrderLineRow implements IViewRow
 
 	@Getter
 	private final HuId huId;
+	@Nullable private final String huUnitType;
+	@Nullable private final BPartnerId huBPartnerId;
 	@Getter
 	private final boolean sourceHU;
 	@Getter
@@ -155,11 +161,12 @@ public class PPOrderLineRow implements IViewRow
 	@lombok.Builder(builderMethodName = "builderForIssuedOrReceivedHU", builderClassName = "BuilderForIssuedOrReceivedHU")
 	private PPOrderLineRow(
 			@NonNull final PPOrderLineRowId rowId,
-			@NonNull final PPOrderLineType type,
+			@NonNull final HUEditorRowType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			final boolean parentRowReadonly,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@Nullable final String code, // can be null if type=HU_Storage
+			@Nullable final BPartnerId huBPartnerId,
 			@Nullable final JSONLookupValue product,
 			@Nullable final String packingInfo,  // can be null if type=HU_Storage
 			@NonNull final Quantity quantity,
@@ -169,11 +176,13 @@ public class PPOrderLineRow implements IViewRow
 			@Nullable final JSONLookupValue clearanceStatus)
 	{
 		this.rowId = rowId;
-		this.type = type;
+		this.type = PPOrderLineType.ofHUEditorRowType(type);
 
 		this.orderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
 		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
+		this.huUnitType = type.toHUUnitTypeOrNull();
+		this.huBPartnerId = huBPartnerId;
 		this.ppOrderQtyId = PPOrderQtyId.ofRepoId(ppOrderQty.getPP_Order_Qty_ID());
 
 		this.issueOrReceiveCandidateStatus = PPOrderQtyStatus.ofProcessedFlag(ppOrderQty.isProcessed());
@@ -219,6 +228,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		this.orderBOMLineId = null;
 		this.huId = null;
+		this.huUnitType = null;
+		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -280,6 +291,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.huId = null;
+		this.huUnitType = null;
+		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -343,6 +356,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = null;
 		this.orderBOMLineId = null;
 		this.huId = huId;
+		this.huUnitType = null; // N/A
+		this.huBPartnerId = null; // N/A
 		this.ppOrderQtyId = null;
 
 		this.processed = true;
@@ -514,4 +529,17 @@ public class PPOrderLineRow implements IViewRow
 		return attributes;
 	}
 
+	@Override
+	public String getHUUnitTypeOrNull() {return huUnitType;}
+
+	@Override
+	public BPartnerId getBpartnerId() {return huBPartnerId;}
+
+	@Override
+	public boolean isTopLevel() {return topLevelHU;}
+
+	@Override
+	public Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows() {return getIncludedRows().stream().map(PPOrderLineRow::toHUReportAwareViewRow);}
+
+	private HUReportAwareViewRow toHUReportAwareViewRow() {return this;}
 }

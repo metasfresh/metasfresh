@@ -26,15 +26,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Optional;
 
 @Value
-@Builder(toBuilder = true)
 public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
@@ -58,11 +60,44 @@ public class MobileUIPickingUserProfile
 			.build();
 
 	@NonNull String name;
-	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
-	@NonNull @Builder.Default CreateShipmentPolicy createShipmentPolicy = CreateShipmentPolicy.DO_NOT_CREATE;
-	@NonNull @Builder.Default ImmutableList<PickingFilter> availablePickingFilters = ImmutableList.of();
-	@NonNull @Builder.Default ImmutableList<PickingJobUIConfig> pickingJobConfigs = ImmutableList.of();
+	@NonNull CreateShipmentPolicy createShipmentPolicy;
+	@NonNull ImmutableList<PickingFilter> availablePickingFilters;
+	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobUIConfig> pickingJobConfigs;
+
+	@NonNull ImmutableList<PickingJobField> launcherFieldsInOrder;
+	@NonNull ImmutableList<PickingJobField> detailFieldsInOrder;
+
+	@Builder(toBuilder = true)
+	private MobileUIPickingUserProfile(
+			@NonNull String name,
+			@Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
+			boolean isAllowPickingAnyHU,
+			@Nullable CreateShipmentPolicy createShipmentPolicy,
+			@Nullable ImmutableList<PickingFilter> availablePickingFilters,
+			@Nullable ImmutableList<PickingJobUIConfig> pickingJobConfigs)
+	{
+		this.name = name;
+		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
+		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
+		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
+		this.availablePickingFilters = availablePickingFilters != null ? availablePickingFilters : ImmutableList.of();
+		this.pickingJobConfigs = pickingJobConfigs != null ? pickingJobConfigs : ImmutableList.of();
+
+		this.launcherFieldsInOrder = this.pickingJobConfigs.stream()
+				.filter(PickingJobUIConfig::isShowInSummary)
+				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
+				.map(PickingJobUIConfig::getField)
+				.collect(ImmutableList.toImmutableList());
+
+		this.detailFieldsInOrder = this.pickingJobConfigs.stream()
+				.filter(PickingJobUIConfig::isShowInDetailed)
+				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
+				.map(PickingJobUIConfig::getField)
+				.collect(ImmutableList.toImmutableList());
+
+	}
 
 	public boolean isFilterByCustomerEnabled()
 	{
@@ -106,5 +141,10 @@ public class MobileUIPickingUserProfile
 		return availablePickingFilters.stream()
 				.filter(pickingFilter -> pickingFilter.getOption().getCode().equals(optionCode))
 				.findFirst();
+	}
+
+	public boolean isLauncherField(@NonNull final PickingJobField field)
+	{
+		return launcherFieldsInOrder.contains(field);
 	}
 }

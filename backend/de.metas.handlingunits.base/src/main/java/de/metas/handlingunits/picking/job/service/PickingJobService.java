@@ -195,7 +195,7 @@ public class PickingJobService
 			builder.handoverLocationIds(locationIds);
 		}
 
-		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
+		final WarehouseId workplaceWarehouseId = query.getWarehouseId();
 		if (workplaceWarehouseId != null)
 		{
 			builder.warehouseId(workplaceWarehouseId);
@@ -291,6 +291,7 @@ public class PickingJobService
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
+						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
 						.createInventoryForMissingQty(true)
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
@@ -304,10 +305,12 @@ public class PickingJobService
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
+						.huQRCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
+						.unpickToHU(event.getUnpickToTargetQRCode())
 						//
 						.build().execute();
 			}

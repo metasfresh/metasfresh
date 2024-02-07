@@ -1,6 +1,8 @@
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -53,6 +55,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -122,10 +125,37 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		if (bpartner == null)
 		{
-			return "<" + bpartnerId + ">";
+			return unknownBPName(bpartnerId);
 		}
 
 		return toString.apply(bpartner);
+	}
+
+	@NonNull
+	private static String unknownBPName(final @NonNull BPartnerId bpartnerId)
+	{
+		return "<" + bpartnerId.getRepoId() + ">";
+	}
+
+	@Override
+	public Map<BPartnerId, String> getBPartnerNames(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartners = Maps.uniqueIndex(bpartnersRepo.getByIds(bpartnerIds), bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
+
+		final ImmutableMap.Builder<BPartnerId, String> result = ImmutableMap.builder();
+		for (final BPartnerId bpartnerId : bpartnerIds)
+		{
+			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
+			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			result.put(bpartnerId, name);
+		}
+
+		return result.build();
 	}
 
 	@Override

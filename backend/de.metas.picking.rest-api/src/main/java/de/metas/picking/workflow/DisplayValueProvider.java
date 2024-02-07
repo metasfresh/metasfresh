@@ -22,6 +22,10 @@
 
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
@@ -34,80 +38,162 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.IOrgDAO;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.PickingJobField;
-import de.metas.picking.config.PickingJobUIConfig;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
+import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
 public class DisplayValueProvider
 {
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerDAO partnerDAO;
+	@NonNull private final IOrgDAO orgDAO;
+	@NonNull private final RenderedAddressProvider renderedAddressProvider;
 
-	private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final MobileUIPickingUserProfile profile;
 
-	@NonNull
-	public ITranslatableString computeSummaryCaption(
-			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final PickingJobUIDescriptor pickingJob)
+	@NonNull private final HashMap<BPartnerLocationId, Optional<String>> ruestplatzCache = new HashMap<>();
+
+	@Builder
+	private DisplayValueProvider(
+			@NonNull final IBPartnerDAO partnerDAO,
+			@NonNull final IOrgDAO orgDAO,
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			//
+			@NonNull final MobileUIPickingUserProfile profile)
 	{
-		return computeSummaryCaption(profile, pickingJob, newAddressProvider());
+		this.partnerDAO = partnerDAO;
+		this.orgDAO = orgDAO;
+		this.renderedAddressProvider = RenderedAddressProvider.of(documentLocationBL);
+
+		this.profile = profile;
+	}
+
+	public void cacheWarmUpForPickingJobReferences(final ImmutableList<PickingJobReference> pickingJobReferences)
+	{
+		if (pickingJobReferences.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<Context> contexts = pickingJobReferences.stream().map(DisplayValueProvider::toContext).collect(ImmutableList.toImmutableList());
+		cacheWarmUpForContexts(contexts);
+	}
+
+	public void cacheWarmUpForPickingJobCandidates(final ImmutableList<PickingJobCandidate> pickingJobCandidates)
+	{
+		if (pickingJobCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<Context> contexts = pickingJobCandidates.stream().map(this::toContext).collect(ImmutableList.toImmutableList());
+		cacheWarmUpForContexts(contexts);
+	}
+
+	private void cacheWarmUpForContexts(final ImmutableList<Context> contexts)
+	{
+		if (contexts.isEmpty())
+		{
+			return;
+		}
+
+		if (profile.isLauncherField(PickingJobField.RUESTPLATZ_NR))
+		{
+			loadRuestplatz(contexts);
+		}
+
+		final HashSet<BPartnerLocationId> locationIds = new HashSet<>();
+		if (profile.isLauncherField(PickingJobField.DELIVERY_ADDRESS))
+		{
+			locationIds.addAll(extractDeliveryLocationIds(contexts));
+		}
+		if (profile.isLauncherField(PickingJobField.HANDOVER_LOCATION))
+		{
+			locationIds.addAll(extractHandoverLocationIds(contexts));
+		}
+
+		renderedAddressProvider.warmUpForBPartnerLocationIds(locationIds);
+	}
+
+	private void loadRuestplatz(@NonNull final ImmutableList<Context> contexts)
+	{
+		final ImmutableSet<BPartnerLocationId> deliveryLocationIds = extractDeliveryLocationIds(contexts);
+
+		final ImmutableMap<BPartnerLocationId, I_C_BPartner_Location> locationsById = Maps.uniqueIndex(
+				partnerDAO.retrieveBPartnerLocationsByIds(deliveryLocationIds),
+				location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID())
+		);
+
+		deliveryLocationIds.forEach(locationId -> {
+			ruestplatzCache.put(locationId, extractRuestplatz(locationsById.get(locationId)));
+		});
+	}
+
+	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
+	{
+		return contexts.stream().map(Context::getDeliveryLocationId).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static ImmutableSet<BPartnerLocationId> extractHandoverLocationIds(final @NonNull ImmutableList<Context> contexts)
+	{
+		return contexts.stream().map(Context::getHandoverLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
-	public RenderedAddressProvider newAddressProvider()
+	public ITranslatableString computeLauncherCaption(@NonNull final PickingJob pickingJob)
 	{
-		return RenderedAddressProvider.of(documentLocationBL);
+		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull
-	public ITranslatableString computeSummaryCaption(
-			@NonNull final MobileUIPickingUserProfile profile,
-			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final RenderedAddressProvider addressProvider)
+	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
-		final String workflowCaption = profile.getPickingJobConfigs()
+		return computeLauncherCaption(toContext(pickingJobCandidate));
+	}
+
+	@NonNull
+	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobReference pickingJobReference)
+	{
+		return computeLauncherCaption(toContext(pickingJobReference));
+	}
+
+	@NonNull
+	private ITranslatableString computeLauncherCaption(@NonNull final Context context)
+	{
+		final ImmutableList<ITranslatableString> parts = profile.getLauncherFieldsInOrder()
 				.stream()
-				.filter(PickingJobUIConfig::isShowInSummary)
-				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
-				.map(PickingJobUIConfig::getField)
-				.map(uiFiled -> getDisplayValue(uiFiled, pickingJob, addressProvider))
-				.map(caption -> caption.translate(Env.getAD_Language()))
-				.filter(Check::isNotBlank)
-				.collect(Collectors.joining(" | "));
+				.map(uiFiled -> getDisplayValue(uiFiled, context))
+				.filter(caption -> !TranslatableStrings.isBlank(caption))
+				.collect(ImmutableList.toImmutableList());
 
-		return TranslatableStrings.anyLanguage(workflowCaption);
+		return TranslatableStrings.join(" | ", parts);
 	}
 
 	@NonNull
-	public PickingJobUIDescriptor toUIDescriptor(@NonNull final PickingJobCandidate pickingJob)
+	private Context toContext(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
-		return PickingJobUIDescriptor.builder()
-				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
-				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
-				.customerName(pickingJob.getCustomerName())
-				.preparationDate(pickingJob.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
-				.handoverLocationId(pickingJob.getHandoverLocationId())
+		return Context.builder()
+				.deliveryLocationId(pickingJobCandidate.getDeliveryBPLocationId())
+				.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
+				.customerName(pickingJobCandidate.getCustomerName())
+				.preparationDate(pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
+				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
 				.build();
 	}
 
 	@NonNull
-	public static PickingJobUIDescriptor toUIDescriptor(@NonNull final PickingJobReference pickingJobReference)
+	private static Context toContext(@NonNull final PickingJobReference pickingJobReference)
 	{
-		return PickingJobUIDescriptor.builder()
+		return Context.builder()
 				.deliveryLocationId(pickingJobReference.getDeliveryLocationId())
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
@@ -117,9 +203,9 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	public static PickingJobUIDescriptor toUIDescriptor(@NonNull final PickingJob pickingJob)
+	private static Context toContext(@NonNull final PickingJob pickingJob)
 	{
-		return PickingJobUIDescriptor.builder()
+		return Context.builder()
 				.deliveryLocationId(pickingJob.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 				.customerName(pickingJob.getCustomerName())
@@ -129,10 +215,13 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	public ITranslatableString getDisplayValue(
-			@NonNull final PickingJobField uiField,
-			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final RenderedAddressProvider addressProvider)
+	public ITranslatableString getDisplayValue(@NonNull final PickingJobField uiField, @NonNull final PickingJob pickingJob)
+	{
+		return getDisplayValue(uiField, toContext(pickingJob));
+	}
+
+	@NonNull
+	private ITranslatableString getDisplayValue(@NonNull final PickingJobField uiField, @NonNull final Context pickingJob)
 	{
 		switch (uiField)
 		{
@@ -143,41 +232,49 @@ public class DisplayValueProvider
 			case DOCUMENT_NO:
 				return TranslatableStrings.anyLanguage(pickingJob.getSalesOrderDocumentNo());
 			case RUESTPLATZ_NR:
-				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob));
+				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob).orElse(null));
 			case DELIVERY_ADDRESS:
-				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob, addressProvider));
+				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob));
 			case HANDOVER_LOCATION:
-				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, addressProvider));
+				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob));
 			default:
-				throw new AdempiereException("Unknown filed=" + uiField);
+				throw new AdempiereException("Unknown filed: " + uiField);
 		}
 	}
 
-	@Nullable
-	private String getRuestplatz(@NonNull final PickingJobUIDescriptor pickingJob)
+	private Optional<String> getRuestplatz(@NonNull final Context pickingJob)
 	{
-		return partnerDAO.getBPartnerLocationByIdEvenInactive(pickingJob.getDeliveryLocationId()).getSetup_Place_No();
+		final BPartnerLocationId deliveryLocationId = pickingJob.getDeliveryLocationId();
+		return ruestplatzCache.computeIfAbsent(deliveryLocationId, this::retrieveRuestplatz);
+	}
+
+	private Optional<String> retrieveRuestplatz(final BPartnerLocationId deliveryLocationId)
+	{
+		return extractRuestplatz(partnerDAO.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
+	}
+
+	private static Optional<String> extractRuestplatz(@Nullable final I_C_BPartner_Location location)
+	{
+		return Optional.ofNullable(location)
+				.map(I_C_BPartner_Location::getSetup_Place_No)
+				.map(StringUtils::trimBlankToNull);
 	}
 
 	@NonNull
-	private String getHandoverAddress(
-			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final RenderedAddressProvider addressProvider)
+	private String getHandoverAddress(@NonNull final Context pickingJob)
 	{
-		return addressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback());
+		return renderedAddressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback());
 	}
 
 	@NonNull
-	private String getDeliveryAddress(
-			@NonNull final PickingJobUIDescriptor pickingJob,
-			@NonNull final RenderedAddressProvider addressProvider)
+	private String getDeliveryAddress(@NonNull final Context context)
 	{
-		return addressProvider.getAddress(pickingJob.getDeliveryLocationId());
+		return renderedAddressProvider.getAddress(context.getDeliveryLocationId());
 	}
 
 	@Value
 	@Builder
-	public static class PickingJobUIDescriptor
+	private static class Context
 	{
 		@NonNull String salesOrderDocumentNo;
 		@NonNull String customerName;
