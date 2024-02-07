@@ -13,6 +13,7 @@ export const postStepPicked = ({
   qtyRejectedReasonCode,
   catchWeight,
   pickWholeTU,
+  checkIfAlreadyPacked,
 }) => {
   return postEvent({
     wfProcessId,
@@ -26,6 +27,7 @@ export const postStepPicked = ({
     qtyRejected,
     catchWeight,
     pickWholeTU,
+    checkIfAlreadyPacked,
   });
 };
 

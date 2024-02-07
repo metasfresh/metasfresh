@@ -354,6 +354,7 @@
 					.huQRCode(qrCode)
 					.qtyPicked(json.getQtyPicked())
 					.isPickWholeTU(json.isPickWholeTU())
+					.checkIfAlreadyPacked(json.getCheckIfAlreadyPacked() != null ? json.getCheckIfAlreadyPacked() : true)
 					.qtyRejected(json.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 					.catchWeight(json.getCatchWeight())
