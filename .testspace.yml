@@ -9,7 +9,6 @@ release:
   - epic_party_uat
   - hard_encoded_uat
   - hard_encoded_hotfix
-  - koala_yawn_uat
   - inner_silence_uat
   - intensive_care_uat
   - intensive_care_hotfix
