@@ -128,6 +128,7 @@ public class PrintingDataFactory
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
+		
 
 		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
 		

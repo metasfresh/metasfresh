@@ -60,6 +60,11 @@ public class PrintingSegment
 	@Getter
 	private final HardwareTrayId trayId;
 
+	/**
+	 * Needed to make sure that when we invoke {@link #copy()}, the result has a different hascode and is not "reduced away" when {@link PrintingData} is created with {@code adjustSegmentPageRanges=true}.
+	 */
+	private final int copyCount;
+
 	@Builder
 	private PrintingSegment(
 			final int initialPageFrom,
@@ -68,7 +73,8 @@ public class PrintingSegment
 			@Nullable final String routingType,
 			@Nullable final PrinterRoutingId printerRoutingId,
 			@NonNull final HardwarePrinter printer,
-			@Nullable final HardwareTrayId trayId)
+			@Nullable final HardwareTrayId trayId,
+			final int copyCount)
 	{
 		this.initialPageFrom = initialPageFrom;
 		this.initialPageTo = initialPageTo;
@@ -77,6 +83,7 @@ public class PrintingSegment
 		this.printerRoutingId = printerRoutingId;
 		this.printer = printer;
 		this.trayId = trayId;
+		this.copyCount = copyCount;
 
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
 	}
@@ -84,9 +91,9 @@ public class PrintingSegment
 	@NonNull
 	public PrintingSegment copy()
 	{
-		return new PrintingSegment(initialPageFrom, initialPageTo, lastPages, routingType, printerRoutingId, printer, trayId);
+		return new PrintingSegment(initialPageFrom, initialPageTo, lastPages, routingType, printerRoutingId, printer, trayId, copyCount + 1);
 	}
-	
+
 	public void setPageFrom(final int pageFrom)
 	{
 		this.pageFrom = pageFrom;
