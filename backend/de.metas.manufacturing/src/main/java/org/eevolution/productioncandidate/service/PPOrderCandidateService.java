@@ -47,10 +47,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.api.ProductBOMLineId;
+import org.eevolution.api.*;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -435,7 +432,7 @@ public class PPOrderCandidateService
 	@NonNull
 	private Quantity getQtyRequired(final @NonNull PPMaturingCandidateV ppMaturingCandidatesV)
 	{
-		final ProductBOMLineId productBOMLineId = productBOMsRepo.getLatestBOMByVersion(ppMaturingCandidatesV.getProductBOMVersionsId())
+		final ProductBOMLineId productBOMLineId = productBOMsRepo.getLatestBOMIdByVersionAndType(ppMaturingCandidatesV.getProductBOMVersionsId(), PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes())
 				.flatMap(bom -> productBOMsRepo.getBomLineByProductId(bom, ppMaturingCandidatesV.getIssueProductId()))
 						.orElseThrow(() -> new AdempiereException("Cannot identify current BOM line for ProductBOMVersionsId=" + ppMaturingCandidatesV.getProductBOMVersionsId()));
 		final ComputeQtyRequiredRequest computeQtyRequiredRequest = ComputeQtyRequiredRequest.builder()
