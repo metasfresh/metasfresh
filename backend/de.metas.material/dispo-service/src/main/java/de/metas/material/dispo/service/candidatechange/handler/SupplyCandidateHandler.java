@@ -131,7 +131,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
+		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
