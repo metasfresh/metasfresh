@@ -129,7 +129,6 @@ public class PrintingDataFactory
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
 		
-
 		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
 		
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
