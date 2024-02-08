@@ -62,8 +62,8 @@ public class GenerateShipmentsRequest
 	@NonNull
 	AsyncBatchId asyncBatchId;
 
-	@NonNull
-	Boolean isCompleteShipment;
+	@NonNull Boolean isCompleteShipment;
+	boolean isCloseShipmentSchedules;
 
 	@Nullable
 	Boolean isShipDateToday;

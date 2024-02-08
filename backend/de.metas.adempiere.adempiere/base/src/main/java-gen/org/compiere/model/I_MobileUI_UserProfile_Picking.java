@@ -121,7 +121,7 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow Picking any HU.
+	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -130,7 +130,7 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
 
 	/**
-	 * Get Allow Picking any HU.
+	 * Get Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

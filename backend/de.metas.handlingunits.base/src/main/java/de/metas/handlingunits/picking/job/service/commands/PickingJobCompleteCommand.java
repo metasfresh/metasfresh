@@ -99,6 +99,7 @@ public class PickingJobCompleteCommand
 					.quantityTypeToUse(TYPE_PICKED_QTY)
 					.onTheFlyPickToPackingInstructions(true)
 					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
+					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
 					.build());
 		}
 	}
