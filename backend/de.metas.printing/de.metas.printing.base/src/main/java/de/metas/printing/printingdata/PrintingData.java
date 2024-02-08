@@ -48,7 +48,7 @@ import java.util.Objects;
 public class PrintingData
 {
 	// Services
-	private static final transient Logger logger = LogManager.getLogger(PrintingData.class);
+	private static final Logger logger = LogManager.getLogger(PrintingData.class);
 
 	@Getter
 	private final ImmutableList<PrintingSegment> segments;
