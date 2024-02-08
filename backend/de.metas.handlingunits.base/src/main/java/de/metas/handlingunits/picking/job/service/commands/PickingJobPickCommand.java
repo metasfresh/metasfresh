@@ -130,6 +130,7 @@ public class PickingJobPickCommand
 				.huCapacityBL(Services.get(IHUCapacityBL.class))
 				.uomConversionBL(uomConversionBL)
 				.inventoryService(inventoryService)
+				.contextPickingJobId(pickingJob.getId())
 				.build();
 
 		this.pickingJob = pickingJob;
