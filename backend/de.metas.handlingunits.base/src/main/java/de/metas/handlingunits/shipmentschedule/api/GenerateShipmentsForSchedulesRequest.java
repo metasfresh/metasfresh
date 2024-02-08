@@ -46,8 +46,8 @@ public class GenerateShipmentsForSchedulesRequest
 	@Builder.Default
 	boolean onTheFlyPickToPackingInstructions = false;
 
-	@NonNull
-	Boolean isCompleteShipment;
+	@NonNull Boolean isCompleteShipment;
+	boolean isCloseShipmentSchedules;
 
 	@Nullable
 	Boolean isShipDateToday;
