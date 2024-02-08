@@ -2,11 +2,22 @@ package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.printing.IMassPrintingService;
+>>>>>>> db84b92dab1 (Fix AD_PrinterRouting matching and NumberOfCopies (#17291))
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+<<<<<<< HEAD
+=======
+import de.metas.report.PrintCopies;
+import de.metas.report.server.OutputType;
+import lombok.NonNull;
+>>>>>>> db84b92dab1 (Fix AD_PrinterRouting matching and NumberOfCopies (#17291))
 import org.compiere.SpringContextHolder;
 
 /*
@@ -62,7 +73,12 @@ public class M_HU_Report_QRCode extends JavaProcess
 		}
 		else
 		{
+<<<<<<< HEAD
 			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId);
+=======
+			final int copies = getProcessInfo().getParameterAsIParams().getParameterAsInt(IMassPrintingService.PARAM_PrintCopies, 1);
+			huQRCodesService.print(pdf, PrintCopies.ofInt(copies));
+>>>>>>> db84b92dab1 (Fix AD_PrinterRouting matching and NumberOfCopies (#17291))
 		}
 
 		return MSG_OK;

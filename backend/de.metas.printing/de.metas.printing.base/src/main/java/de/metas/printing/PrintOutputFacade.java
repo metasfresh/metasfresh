@@ -109,7 +109,7 @@ public class PrintOutputFacade
 						source.markPrinted(item);
 					}
 
-					// with there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
+					// if there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
 					if (printingDataItem.getSegments().isEmpty() || printingDataItem.getSegments().size() != printingDataToStore.getSegments().size())
 					{
 						logger.debug("Also invoke printJobBL, in case there are also items to be printed");

@@ -89,7 +89,22 @@ public interface IQueryBuilder<T>
 	@Override
 	IQueryBuilderOrderByClause<T> orderBy();
 
+<<<<<<< HEAD
 	@Override
+=======
+	//@formatter:off
+	default IQueryBuilder<T> clearOrderBys() { orderBy().clear(); return this; }
+	
+	/** order ascending, with {@code NULLS LAST} */
+	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
+	
+	/** order ascending, with {@code NULLS LAST} */
+	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
+	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
+	default IQueryBuilder<T> orderByDescending(final ModelColumn<T, ?> column) { orderBy().addColumnDescending(column.getColumnName()); return this; }
+	//@formatter:on
+
+>>>>>>> db84b92dab1 (Fix AD_PrinterRouting matching and NumberOfCopies (#17291))
 	IQuery<T> create();
 
 	@Deprecated
