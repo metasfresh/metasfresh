@@ -2,7 +2,6 @@ package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.printing.IMassPrintingService;

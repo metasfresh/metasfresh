@@ -112,9 +112,4 @@ public class HUQRCode implements IHUQRCode
 	{
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
-
-	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
-	{
-		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
-	}
 }
