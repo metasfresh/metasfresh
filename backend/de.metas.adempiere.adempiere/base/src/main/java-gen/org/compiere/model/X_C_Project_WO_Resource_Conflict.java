@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO implements I_C_Project_WO_Resource_Conflict, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1805985154L;
+	private static final long serialVersionUID = -248514818L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource_Conflict (final Properties ctx, final int C_Project_WO_Resource_Conflict_ID, @Nullable final String trxName)
@@ -35,6 +35,21 @@ public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setC_Project2_ID (final int C_Project2_ID)
+	{
+		if (C_Project2_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Project2_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Project2_ID, C_Project2_ID);
+	}
+
+	@Override
+	public int getC_Project2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project2_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -47,6 +62,33 @@ public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO impl
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Project_WO_Resource getC_Project_WO_Resource2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Project_WO_Resource2_ID, org.compiere.model.I_C_Project_WO_Resource.class);
+	}
+
+	@Override
+	public void setC_Project_WO_Resource2(final org.compiere.model.I_C_Project_WO_Resource C_Project_WO_Resource2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Project_WO_Resource2_ID, org.compiere.model.I_C_Project_WO_Resource.class, C_Project_WO_Resource2);
+	}
+
+	@Override
+	public void setC_Project_WO_Resource2_ID (final int C_Project_WO_Resource2_ID)
+	{
+		if (C_Project_WO_Resource2_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Resource2_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Resource2_ID, C_Project_WO_Resource2_ID);
+	}
+
+	@Override
+	public int getC_Project_WO_Resource2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_WO_Resource2_ID);
 	}
 
 	@Override
@@ -89,48 +131,6 @@ public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO impl
 	public int getC_Project_WO_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_WO_Resource_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Project_WO_Resource getC_Project_WO_Resource2()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_WO_Resource2_ID, org.compiere.model.I_C_Project_WO_Resource.class);
-	}
-
-	@Override
-	public void setC_Project_WO_Resource2(final org.compiere.model.I_C_Project_WO_Resource C_Project_WO_Resource2)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_WO_Resource2_ID, org.compiere.model.I_C_Project_WO_Resource.class, C_Project_WO_Resource2);
-	}
-
-	@Override
-	public void setC_Project_WO_Resource2_ID (final int C_Project_WO_Resource2_ID)
-	{
-		if (C_Project_WO_Resource2_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Resource2_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Resource2_ID, C_Project_WO_Resource2_ID);
-	}
-
-	@Override
-	public int getC_Project_WO_Resource2_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Project_WO_Resource2_ID);
-	}
-
-	@Override
-	public void setC_Project2_ID (final int C_Project2_ID)
-	{
-		if (C_Project2_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Project2_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Project2_ID, C_Project2_ID);
-	}
-
-	@Override
-	public int getC_Project2_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Project2_ID);
 	}
 
 	@Override

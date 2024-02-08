@@ -238,7 +238,7 @@ public class ResourceService
 
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
+		final ResourceType resourceType = ResourceTypeRepository.fromRecord(resourceTypeRecord);
 
 		final Set<ResourceId> resourceIds = resourceRepository.getActiveResourceIdsByResourceTypeId(resourceType.getId());
 		if (resourceIds.isEmpty())

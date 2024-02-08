@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -752,6 +753,22 @@ public final class CollectionUtils
 	public static <T> Optional<T> firstOptional(@NonNull final Collection<T> collection)
 	{
 		return Optional.ofNullable(first(collection));
+	}
+
+
+	public static <K, V> ImmutableMap<K, ImmutableList<V>> toImmutableMap(final ListMultimap<K, V> multimap)
+	{
+		if (multimap.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<K, ImmutableList<V>> result = ImmutableMap.builder();
+		for (K key : multimap.keySet())
+		{
+			result.put(key, ImmutableList.copyOf(multimap.get(key)));
+		}
+		return result.build();
 	}
 
 }

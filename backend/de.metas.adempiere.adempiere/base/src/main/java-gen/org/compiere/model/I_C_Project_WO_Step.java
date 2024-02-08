@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -230,6 +229,7 @@ public interface I_C_Project_WO_Step
 
 	/**
 	 * Set Manually locked.
+	 * Start date and end date cannot be moved.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -239,6 +239,7 @@ public interface I_C_Project_WO_Step
 
 	/**
 	 * Get Manually locked.
+	 * Start date and end date cannot be moved.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -386,7 +387,8 @@ public interface I_C_Project_WO_Step
 	String COLUMNNAME_WODeliveryDate = "WODeliveryDate";
 
 	/**
-	 * Set Due date.
+	 * Set Due Date.
+	 * Due date for test step
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -395,7 +397,8 @@ public interface I_C_Project_WO_Step
 	void setWODueDate (@Nullable java.sql.Timestamp WODueDate);
 
 	/**
-	 * Get Due date.
+	 * Get Due Date.
+	 * Due date for test step
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -516,6 +519,31 @@ public interface I_C_Project_WO_Step
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOPlannedResourceDurationHours = new ModelColumn<>(I_C_Project_WO_Step.class, "WOPlannedResourceDurationHours", null);
 	String COLUMNNAME_WOPlannedResourceDurationHours = "WOPlannedResourceDurationHours";
+
+	/**
+	 * Set WO Step ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWO_Step_ExternalId (@Nullable java.lang.String WO_Step_ExternalId);
+
+	/**
+	 * Get WO Step ExternalId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getWO_Step_ExternalId();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WO_Step_ExternalId = new ModelColumn<>(I_C_Project_WO_Step.class, "WO_Step_ExternalId", null);
+	String COLUMNNAME_WO_Step_ExternalId = "WO_Step_ExternalId";
 
 	/**
 	 * Set State.
