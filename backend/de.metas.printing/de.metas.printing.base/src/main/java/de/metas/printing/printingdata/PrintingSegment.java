@@ -22,6 +22,7 @@
 
 package de.metas.printing.printingdata;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrinterRoutingId;
@@ -48,7 +49,10 @@ public class PrintingSegment
 
 	private final int initialPageFrom;
 	private final int initialPageTo;
+
+	@Getter
 	private final int lastPages;
+
 	private final String routingType;
 
 	@Getter
@@ -60,10 +64,8 @@ public class PrintingSegment
 	@Getter
 	private final HardwareTrayId trayId;
 
-	/**
-	 * Needed to make sure that when we invoke {@link #copy()}, the result has a different hascode and is not "reduced away" when {@link PrintingData} is created with {@code adjustSegmentPageRanges=true}.
-	 */
-	private final int copyCount;
+	@Getter
+	private final int copies;
 
 	@Builder
 	private PrintingSegment(
@@ -74,7 +76,7 @@ public class PrintingSegment
 			@Nullable final PrinterRoutingId printerRoutingId,
 			@NonNull final HardwarePrinter printer,
 			@Nullable final HardwareTrayId trayId,
-			final int copyCount)
+			final int copies)
 	{
 		this.initialPageFrom = initialPageFrom;
 		this.initialPageTo = initialPageTo;
@@ -83,15 +85,9 @@ public class PrintingSegment
 		this.printerRoutingId = printerRoutingId;
 		this.printer = printer;
 		this.trayId = trayId;
-		this.copyCount = copyCount;
+		this.copies = CoalesceUtil.firstGreaterThanZero(copies, 1);
 
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
-	}
-
-	@NonNull
-	public PrintingSegment copy()
-	{
-		return new PrintingSegment(initialPageFrom, initialPageTo, lastPages, routingType, printerRoutingId, printer, trayId, copyCount + 1);
 	}
 
 	public void setPageFrom(final int pageFrom)
@@ -106,11 +102,6 @@ public class PrintingSegment
 			return pageFrom;
 		}
 		return initialPageFrom;
-	}
-
-	public int getLastPages()
-	{
-		return lastPages;
 	}
 
 	public void setPageTo(final int pageTo)
