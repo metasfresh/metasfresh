@@ -168,7 +168,7 @@ public class PP_Order_Candidate
 				.build();
 
 		ppOrderCandidateService.deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()));
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateDeletedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateDeletedEvent);
 	}
 
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
