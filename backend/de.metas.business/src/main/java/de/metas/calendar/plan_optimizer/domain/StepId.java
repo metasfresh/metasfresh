@@ -3,30 +3,42 @@ package de.metas.calendar.plan_optimizer.domain;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-@Builder
 public class StepId implements
-		// IMPORTANT: Comparable is required by OptaPlanner
+		// IMPORTANT: Comparable is required by Timefold
 		Comparable<StepId>
 {
 	@NonNull WOProjectStepId woProjectStepId;
-	@NonNull WOProjectResourceId woProjectResourceId;
+	@Nullable WOProjectResourceId machineWOProjectResourceId;
+	@Nullable WOProjectResourceId humanWOProjectResourceId;
 
-	public ProjectId getProjectId() {return woProjectResourceId.getProjectId();}
+	@Builder
+	private StepId(
+			@NonNull final WOProjectStepId woProjectStepId,
+			@Nullable final WOProjectResourceId machineWOProjectResourceId,
+			@Nullable final WOProjectResourceId humanWOProjectResourceId)
+	{
+		this.woProjectStepId = woProjectStepId;
+		this.machineWOProjectResourceId = machineWOProjectResourceId;
+		this.humanWOProjectResourceId = humanWOProjectResourceId;
+	}
+
+	public ProjectId getProjectId() {return woProjectStepId.getProjectId();}
 
 	@Override
 	public int compareTo(@NonNull final StepId other)
 	{
-		final int c = woProjectStepId.compareTo(other.woProjectStepId);
-		if (c != 0)
-		{
-			return c;
-		}
-
-		return woProjectResourceId.compareTo(other.woProjectResourceId);
+		return NumberUtils.firstNonZero(
+				() -> woProjectStepId.compareTo(other.woProjectStepId),
+				() -> WOProjectResourceId.toRepoId(machineWOProjectResourceId) - WOProjectResourceId.toRepoId((other.machineWOProjectResourceId)),
+				() -> WOProjectResourceId.toRepoId(humanWOProjectResourceId) - WOProjectResourceId.toRepoId((other.humanWOProjectResourceId))
+		);
 	}
 }

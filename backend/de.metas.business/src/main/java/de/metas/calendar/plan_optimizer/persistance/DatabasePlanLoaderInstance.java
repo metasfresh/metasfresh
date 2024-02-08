@@ -1,9 +1,13 @@
 package de.metas.calendar.plan_optimizer.persistance;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.plan_optimizer.domain.HumanResource;
+import de.metas.calendar.plan_optimizer.domain.HumanResourceId;
 import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.domain.Project;
 import de.metas.calendar.plan_optimizer.domain.Resource;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepDef;
 import de.metas.calendar.plan_optimizer.domain.StepId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.CoalesceUtil;
@@ -19,9 +23,16 @@ import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourcesCollection;
+import de.metas.project.workorder.resource.WOResourceType;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepsCollection;
+import de.metas.resource.HumanResourceTestGroup;
+import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
+import de.metas.resource.ResourceWeeklyAvailability;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -34,7 +45,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DatabasePlanLoaderInstance
 {
@@ -45,6 +59,7 @@ public class DatabasePlanLoaderInstance
 	private final WOProjectService woProjectService;
 	private final WOProjectSimulationService woProjectSimulationService;
 	private final ResourceService resourceService;
+	private final HumanResourceTestGroupService humanResourceTestGroupService;
 
 	//
 	// Params
@@ -56,7 +71,7 @@ public class DatabasePlanLoaderInstance
 	private WOProjectResourcesCollection resources;
 	private ZoneId timeZone;
 	private WOProjectSimulationPlan simulationPlan;
-	private final HashMap<ResourceId, Resource> optaPlannerResources = new HashMap<>();
+	private final HashMap<ResourceId, Resource> timefoldResources = new HashMap<>();
 
 	@Builder
 	private DatabasePlanLoaderInstance(
@@ -64,6 +79,7 @@ public class DatabasePlanLoaderInstance
 			final @NonNull WOProjectService woProjectService,
 			final @NonNull WOProjectSimulationService woProjectSimulationService,
 			final @NonNull ResourceService resourceService,
+			final @NonNull HumanResourceTestGroupService humanResourceTestGroupService,
 			//
 			final @NonNull SimulationPlanId simulationId)
 	{
@@ -71,6 +87,7 @@ public class DatabasePlanLoaderInstance
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
 		this.resourceService = resourceService;
+		this.humanResourceTestGroupService = humanResourceTestGroupService;
 		this.simulationId = simulationId;
 	}
 
@@ -79,7 +96,7 @@ public class DatabasePlanLoaderInstance
 		final List<WOProject> woProjects = woProjectService.getAllActiveProjects();
 		if (woProjects.isEmpty())
 		{
-			return new Plan();
+			return Plan.newInstance();
 		}
 		final ImmutableSet<ProjectId> projectIds = woProjects.stream().map(WOProject::getProjectId).collect(ImmutableSet.toImmutableSet());
 		this.stepsByProjectId = woProjectService.getStepsByProjectIds(projectIds);
@@ -87,27 +104,28 @@ public class DatabasePlanLoaderInstance
 		this.timeZone = orgDAO.getTimeZone(woProjects.get(0).getOrgId()); // use the time zone of the first project
 		this.simulationPlan = woProjectSimulationService.getSimulationPlanById(simulationId);
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
+		final ArrayList<Project> projects = new ArrayList<>();
 		for (final WOProject woProject : woProjects)
 		{
-			stepsList.addAll(loadStepsFromWOProject(woProject));
+			final Project project = Project.builder()
+					.steps(loadStepsFromWOProject(woProject))
+					.build();
+			projects.add(project);
 		}
 
-		final Plan optaPlannerPlan = new Plan();
-		optaPlannerPlan.setSimulationId(simulationId);
-		optaPlannerPlan.setTimeZone(timeZone);
-		optaPlannerPlan.setStepsList(stepsList);
+		final Plan plan = Plan.newInstance();
+		plan.setSimulationId(simulationId);
+		plan.setTimeZone(timeZone);
+		plan.setStepsList(new ArrayList<>(Project.createAllocations(projects)));
 
-		return optaPlannerPlan;
+		return plan;
 	}
 
-	private List<Step> loadStepsFromWOProject(final WOProject woProject)
+	private List<StepDef> loadStepsFromWOProject(final WOProject woProject)
 	{
 		final LocalDateTime projectStartDate = extractProjectStartDate(woProject);
 
-		final ArrayList<Step> stepsList = new ArrayList<>();
-		Step prevStep = null;
-
+		final ArrayList<StepDef> stepsList = new ArrayList<>();
 		for (WOProjectStep woStep : stepsByProjectId.getByProjectId(woProject.getProjectId()).toOrderedList())
 		{
 			final LocalDateTime startDateMin = Optional.ofNullable(woStep.getDeliveryDate())
@@ -128,22 +146,26 @@ public class DatabasePlanLoaderInstance
 				continue;
 			}
 
-			for (final WOProjectResource woStepResourceOrig : resources.getByStepId(woStep.getWoProjectStepId()))
+			final Map<ResourceId, ImmutableMap<WOResourceType, WOProjectResource>> woStepResources = this.resources.streamByStepId(woStep.getWoProjectStepId())
+					.collect(Collectors.groupingBy(
+							resource -> resource.getResourceIdAndType().getResourceId(),
+							ImmutableMap.toImmutableMap(
+									resource -> resource.getResourceIdAndType().getType(),
+									resource -> resource
+							)
+					));
+
+			for (final ResourceId resourceId : woStepResources.keySet())
 			{
-				final Step step = fromWOStepResource(woProject, woStep, woStepResourceOrig, prevStep, startDateMin, dueDate);
+				WOProjectResource machineProjectResource = woStepResources.get(resourceId).get(WOResourceType.MACHINE);
+				WOProjectResource humanProjectResource = woStepResources.get(resourceId).get(WOResourceType.HUMAN);
+				final StepDef step = fromWOStepResource(woProject, woStep, machineProjectResource, humanProjectResource, startDateMin, dueDate);
 				if (step == null)
 				{
 					continue;
 				}
 
-				if (prevStep != null)
-				{
-					prevStep.setNextStep(step);
-				}
-
 				stepsList.add(step);
-
-				prevStep = step;
 			}
 		}
 
@@ -165,91 +187,133 @@ public class DatabasePlanLoaderInstance
 	}
 
 	@Nullable
-	private Step fromWOStepResource(
-			final WOProject woProject,
-			final WOProjectStep woStep,
-			final WOProjectResource woStepResourceOrig,
-			final Step prevStep,
-			final LocalDateTime startDateMin,
-			final LocalDateTime dueDate)
+	private StepDef fromWOStepResource(
+			@NonNull final WOProject woProject,
+			@NonNull final WOProjectStep woStep,
+			@Nullable final WOProjectResource woStepResourceOrig_Machine,
+			@Nullable final WOProjectResource woStepResourceOrig_Human,
+			@NonNull final LocalDateTime startDateMin,
+			@NonNull final LocalDateTime dueDate)
 	{
-		Duration duration = woStepResourceOrig.getDuration();
-		if (duration.toSeconds() <= 0)
+		if (woStepResourceOrig_Machine == null && woStepResourceOrig_Human == null)
 		{
-			duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
-			logger.info("Step/resource has invalid duration. Considering it {}: {}", duration, woStepResourceOrig);
+			return null;
 		}
 
-		final WOProjectResource woStepResource = simulationPlan.applyOn(woStepResourceOrig);
+		final WOProjectResource woStepResource_Machine = woStepResourceOrig_Machine != null ? simulationPlan.applyOn(woStepResourceOrig_Machine) : null;
+		final WOProjectResource woStepResource_Human = woStepResourceOrig_Human != null ? simulationPlan.applyOn(woStepResourceOrig_Human) : null;
 
-		final LocalDateTime startDate = woStepResource.getStartDate()
-				.map(this::toLocalDateTime)
-				.orElse(null);
-		final LocalDateTime endDate = woStepResource.getEndDate()
-				.map(this::toLocalDateTime)
-				.orElse(null);
+		final LocalDateTime startDate = Optional.ofNullable(woStepResource_Machine).flatMap(WOProjectResource::getStartDate).map(this::toLocalDateTime).orElse(null);
+		final LocalDateTime endDate = Optional.ofNullable(woStepResource_Machine).flatMap(WOProjectResource::getEndDate).map(this::toLocalDateTime).orElse(null);
 
 		boolean pinned = woStep.isManuallyLocked() || woStep.inTesting();
 		if (pinned && (startDate == null || endDate == null))
 		{
-			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource);
+			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource_Machine);
 			pinned = false;
 		}
 
-		final int delay = prevStep == null ? computeDelay(startDateMin, startDate) : computeDelay(prevStep.getEndDate(), startDate);
+		Duration requiredMachineCapacity = Optional.ofNullable(woStep.getWoPlannedResourceDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
+		if (requiredMachineCapacity.toSeconds() <= 0)
+		{
+			requiredMachineCapacity = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
+			logger.info("Step/machine has invalid required capacity. Considering it {}: {}", requiredMachineCapacity, woStepResourceOrig_Machine);
+		}
+		final Duration requiredHumanCapacity = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours()).map(Duration::ofHours).orElse(Duration.ZERO);
 
-		final Duration humanResourceTestGroupDuration = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
-				.map(Duration::ofHours)
-				.orElse(Duration.ZERO);
-
-		final Step step = Step.builder()
+		final StepDef stepDef = StepDef.builder()
 				.id(StepId.builder()
-						.woProjectStepId(woStepResource.getWoProjectStepId())
-						.woProjectResourceId(woStepResource.getWoProjectResourceId())
+						.woProjectStepId(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, WOProjectResource::getWoProjectStepId))
+						.machineWOProjectResourceId(woStepResource_Machine != null ? woStepResource_Machine.getWoProjectResourceId() : null)
+						.humanWOProjectResourceId(woStepResource_Human != null ? woStepResource_Human.getWoProjectResourceId() : null)
 						.build())
 				.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
-				.resource(toOptaPlannerResource(woStepResource))
-				.duration(duration)
+				.resource(toTimefoldResource(getFieldValueExpectingEquals(woStepResource_Machine, woStepResource_Human, resource -> resource.getResourceIdAndType().getResourceId())))
+				.requiredResourceCapacity(requiredMachineCapacity)
+				.requiredHumanCapacity(requiredHumanCapacity)
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
-				.delay(delay)
-				.pinned(pinned)
-				.humanResourceTestGroupDuration(humanResourceTestGroupDuration)
+				.pinnedStartDate(pinned ? startDate : null)
+				//
+				.initialStartDate(startDate)
+				.initialEndDate(endDate)
+				//
 				.build();
 
-		final BooleanWithReason valid = step.checkProblemFactsValid();
+		final BooleanWithReason valid = stepDef.checkProblemFactsValid();
 		if (valid.isFalse())
 		{
 			logger.info("Skip invalid woStep because `{}`: {}", valid.getReasonAsString(), woStep);
 			return null;
 		}
 
-		if (prevStep != null)
-		{
-			prevStep.setNextStep(step);
-			step.setPreviousStep(prevStep);
-		}
+		return stepDef;
+	}
 
-		return step;
+	private static <T> T getFieldValueExpectingEquals(
+			@Nullable final WOProjectResource resource1,
+			@Nullable final WOProjectResource resource2,
+			@NonNull final Function<WOProjectResource, T> valueGetter)
+	{
+		if (resource1 == null)
+		{
+			if (resource2 == null)
+			{
+				return null;
+			}
+			else
+			{
+				return valueGetter.apply(resource2);
+			}
+		}
+		else
+		{
+			if (resource2 == null)
+			{
+				return valueGetter.apply(resource1);
+			}
+			else
+			{
+				final T value1 = valueGetter.apply(resource1);
+				final T value2 = valueGetter.apply(resource2);
+				Check.assumeEquals(value1, value2, "Extracted values shall be the same for: {}, {} when using {}. But we got: {}, {}", resource1, resource2, valueGetter, value1, value2);
+				return value1;
+			}
+		}
 	}
 
 	@NonNull
-	private Resource toOptaPlannerResource(final WOProjectResource woStepResource)
+	private Resource toTimefoldResource(@NonNull final ResourceId resourceId)
 	{
-		return optaPlannerResources.computeIfAbsent(woStepResource.getResourceId(), this::createOptaPlannerResource);
+		return timefoldResources.computeIfAbsent(resourceId, this::createTimefoldResource);
 	}
 
-	private de.metas.calendar.plan_optimizer.domain.Resource createOptaPlannerResource(final ResourceId resourceId)
+	private de.metas.calendar.plan_optimizer.domain.Resource createTimefoldResource(final ResourceId resourceId)
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
-		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());
+		final ResourceType resourceType = resourceService.getResourceTypeById(resource.getResourceTypeId());
+		return de.metas.calendar.plan_optimizer.domain.Resource.builder()
+				.id(resource.getResourceId())
+				.name(resource.getName().getDefaultValue())
+				.availability(resourceType.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION))
+				.humanResource(getHumanResourceCapacity(resource.getHumanResourceTestGroupId()))
+				.build();
 	}
 
-	public static int computeDelay(@NonNull final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)
+	@Nullable
+	private HumanResource getHumanResourceCapacity(@Nullable final HumanResourceTestGroupId groupId)
 	{
-		return thisStepStartDate != null && thisStepStartDate.isAfter(lastStepEndDate)
-				? (int)Plan.PLANNING_TIME_PRECISION.between(lastStepEndDate, thisStepStartDate)
-				: 0;
-	}
+		if (groupId == null)
+		{
+			return null;
+		}
 
+		final HumanResourceTestGroup group = humanResourceTestGroupService.getById(groupId);
+		final ResourceWeeklyAvailability availability = group.getAvailability().timeSlotTruncatedTo(Plan.PLANNING_TIME_PRECISION);
+
+		return HumanResource.builder()
+				.id(HumanResourceId.of(group.getId()))
+				.availability(availability)
+				.build();
+	}
 }

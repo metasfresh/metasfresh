@@ -2,10 +2,10 @@ package de.metas.project.workorder.interceptor;
 
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
-import de.metas.product.ResourceId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.util.Services;
@@ -21,7 +21,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
-import java.util.Optional;
+
+import static de.metas.project.workorder.resource.WOProjectResourceRepository.extractResourceIdAndType;
 
 @Component
 @Interceptor(I_C_Project_WO_Resource.class)
@@ -100,13 +101,13 @@ public class C_Project_WO_Resource
 			return;
 		}
 
-		final HashSet<ResourceId> resourceIdsToCheck = new HashSet<>();
-		extractResourceId(record).ifPresent(resourceIdsToCheck::add);
+		final HashSet<ResourceIdAndType> resourceIdsToCheck = new HashSet<>();
+		resourceIdsToCheck.add(extractResourceIdAndType(record));
 
 		if (changeType.isChange())
 		{
 			final I_C_Project_WO_Resource recordOld = InterfaceWrapperHelper.createOld(record, I_C_Project_WO_Resource.class);
-			extractResourceId(recordOld).ifPresent(resourceIdsToCheck::add);
+			resourceIdsToCheck.add(extractResourceIdAndType(recordOld));
 		}
 
 		trxManager.accumulateAndProcessAfterCommit(
@@ -115,8 +116,4 @@ public class C_Project_WO_Resource
 				woProjectConflictService::checkAllConflicts);
 	}
 
-	private static Optional<ResourceId> extractResourceId(final I_C_Project_WO_Resource record)
-	{
-		return ResourceId.optionalOfRepoId(record.getS_Resource_ID());
-	}
 }

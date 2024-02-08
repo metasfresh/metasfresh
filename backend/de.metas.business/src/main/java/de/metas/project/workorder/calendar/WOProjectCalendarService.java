@@ -41,6 +41,7 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
@@ -52,12 +53,15 @@ import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.service.ProjectRepository;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.resource.WOResourceType;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
+import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -135,7 +139,8 @@ public class WOProjectCalendarService implements CalendarService
 		final HashSet<CalendarResourceRef> result = new HashSet<>();
 		for (final Resource resource : resourceService.getAllActiveResources())
 		{
-			result.add(toCalendarResourceRef(resource));
+			result.add(toCalendarResourceRef(resource, WOResourceType.MACHINE));
+			result.add(toCalendarResourceRef(resource, WOResourceType.HUMAN));
 		}
 
 		for (final ResourceGroup resourceGroup : resourceService.getAllActiveGroups())
@@ -146,22 +151,30 @@ public class WOProjectCalendarService implements CalendarService
 		return ImmutableSet.copyOf(result);
 	}
 
-	private static CalendarResourceRef toCalendarResourceRef(final Resource resource)
+	private static CalendarResourceRef toCalendarResourceRef(@NonNull final Resource resource, @NonNull final WOResourceType type)
 	{
+		ITranslatableString name = resource.getName();
+		if (type != WOResourceType.MACHINE)
+		{
+			name = TranslatableStrings.builder().append(name).append(" / ").append(type.name()).build();
+		}
+
 		return CalendarResourceRef.builder()
-				.calendarResourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
-				.name(resource.getName())
-				.parentId(CalendarResourceId.ofNullableRepoId(resource.getResourceGroupId()))
+				.calendarResourceId(ResourceIdAndType.of(resource.getResourceId(), type).toCalendarResourceId())
+				.name(name)
+				.parentId(resource.getResourceGroupId() != null ? toCalendarResourceId(resource.getResourceGroupId()) : null)
 				.build();
 	}
 
 	private static CalendarResourceRef toCalendarResourceRef(final ResourceGroup resourceGroup)
 	{
 		return CalendarResourceRef.builder()
-				.calendarResourceId(CalendarResourceId.ofRepoId(resourceGroup.getId()))
+				.calendarResourceId(toCalendarResourceId(resourceGroup.getId()))
 				.name(resourceGroup.getName())
 				.build();
 	}
+
+	private static CalendarResourceId toCalendarResourceId(@NonNull final ResourceGroupId resourceGroupId) {return CalendarResourceId.ofResourceGroupId(resourceGroupId);}
 
 	@Override
 	public Stream<CalendarEntry> query(final CalendarQuery calendarQuery)
