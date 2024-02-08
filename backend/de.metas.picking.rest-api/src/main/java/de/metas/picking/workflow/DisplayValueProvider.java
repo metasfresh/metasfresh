@@ -49,6 +49,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DisplayValueProvider
@@ -144,7 +145,7 @@ public class DisplayValueProvider
 
 	private static ImmutableSet<BPartnerLocationId> extractHandoverLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
-		return contexts.stream().map(Context::getHandoverLocationId).collect(ImmutableSet.toImmutableSet());
+		return contexts.stream().map(Context::getHandoverLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

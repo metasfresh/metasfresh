@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.printing.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,15 @@
  * #L%
  */
 
-package de.metas.printing.spi.impl;
+package de.metas.cucumber.stepdefs.material.dispo;
 
-import de.metas.printing.IPrintingHandler;
-import de.metas.printing.PrintingClientRequest;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 
-import java.util.List;
-
-@Service
-@AllArgsConstructor
-public class ExternalSystemsPrintingNotifier
+public class MD_Candidate_StockChange_Detail_StepDefData extends StepDefData<I_MD_Candidate_StockChange_Detail>
 {
-	private final List<IPrintingHandler> handlerList;
-
-	public void notifyExternalSystemsIfNeeded(@NonNull final PrintingClientRequest request)
+	public MD_Candidate_StockChange_Detail_StepDefData()
 	{
-		for (final IPrintingHandler handler : handlerList)
-		{
-			handler.notify(request);
-		}
+		super(I_MD_Candidate_StockChange_Detail.class);
 	}
-
 }

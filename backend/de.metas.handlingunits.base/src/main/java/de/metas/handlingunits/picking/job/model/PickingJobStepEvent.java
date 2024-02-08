@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +34,7 @@ public class PickingJobStepEvent
 	@Nullable BigDecimal catchWeight;
 	boolean isPickWholeTU;
 	@Builder.Default boolean checkIfAlreadyPacked = true;
+	@Nullable HUQRCode unpickToTargetQRCode;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)
 	{

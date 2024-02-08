@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
@@ -16,6 +16,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+import UnpickDialog from './UnpickDialog';
 
 const PickStepScreen = () => {
   const {
@@ -27,8 +28,10 @@ const PickStepScreen = () => {
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual
   );
-
   const dispatch = useDispatch();
+
+  const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
+
   useEffect(() => {
     dispatch(
       pushHeaderEntry({
@@ -53,13 +56,14 @@ const PickStepScreen = () => {
   }, []);
 
   const history = useHistory();
-  const onUnpickButtonClick = () => {
+  const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
       wfProcessId,
       activityId,
       lineId,
       stepId,
       huQRCode: toQRCodeString(pickFrom.huQRCode),
+      unpickToTargetQRCode: toQRCodeString(unpickToTargetQRCode),
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
@@ -119,6 +123,7 @@ const PickStepScreen = () => {
 
   return (
     <div className="section pt-2">
+      {showTargetHUScanner && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}
@@ -129,7 +134,7 @@ const PickStepScreen = () => {
         <ButtonWithIndicator
           caption={trl('activities.picking.unPickBtn')}
           disabled={nothingPicked}
-          onClick={onUnpickButtonClick}
+          onClick={() => setShowTargetHUScanner(true)}
         />
         {nothingPicked && (
           <ConfirmButton
