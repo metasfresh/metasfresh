@@ -25,6 +25,7 @@ package de.metas.printing.printingdata;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.DocOutboundDAO;
@@ -132,6 +133,8 @@ public class PrintingDataFactory
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
 
+		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
+		
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
 		{
 			final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
@@ -146,17 +149,30 @@ public class PrintingDataFactory
 				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
 				if (printingSegment != null)
 				{
-					printingData.segment(printingSegment);
+					addSegmentToData(printingData, printingSegment, copies);
 				}
 			}
 		}
 		else
 		{
 			final PrintingSegment printingSegment = createPrintingSegmentForQueueItem(queueItem);
-			printingData.segment(printingSegment);
+			addSegmentToData(printingData, printingSegment, copies);
 
 		}
 		return printingData.build();
+	}
+
+	private static void addSegmentToData(
+			@NonNull final PrintingData.PrintingDataBuilder printingData, 
+			@NonNull final PrintingSegment printingSegment, 
+			final int copies)
+	{
+		printingData.segment(printingSegment);
+		
+		for (int i = 1; i < copies; i++)
+		{
+			printingData.segment(printingSegment.copy());
+		}
 	}
 
 	public PrintingData createPrintingDataForPrintJobLine(
@@ -204,6 +220,7 @@ public class PrintingDataFactory
 		return data;
 	}
 
+	@NonNull
 	private PrintingSegment createPrintingSegmentForQueueItem(
 			@NonNull final I_C_Printing_Queue printingQueue)
 	{
