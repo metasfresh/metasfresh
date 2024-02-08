@@ -7,10 +7,12 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.report.PrintCopies;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -73,7 +75,8 @@ public class M_HU_Report_QRCode extends JavaProcess
 		}
 		else
 		{
-			huQRCodesService.print(pdf);
+			final int copies = getProcessInfo().getParameterAsIParams().getParameterAsInt(IMassPrintingService.PARAM_PrintCopies, 1);
+			huQRCodesService.print(pdf, PrintCopies.ofInt(copies));
 		}
 
 		return MSG_OK;
