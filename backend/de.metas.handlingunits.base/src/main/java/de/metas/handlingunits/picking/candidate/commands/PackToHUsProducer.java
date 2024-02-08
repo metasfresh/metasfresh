@@ -22,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -58,6 +59,7 @@ public class PackToHUsProducer
 
 	// Params
 	private final boolean alwaysPackEachCandidateInItsOwnHU;
+	private final PickingJobId contextPickingJobId;
 
 	// State
 	private static final int PACKAGE_NO_ZERO = 0;
@@ -72,7 +74,8 @@ public class PackToHUsProducer
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull InventoryService inventoryService,
 			//
-			final boolean alwaysPackEachCandidateInItsOwnHU)
+			final boolean alwaysPackEachCandidateInItsOwnHU,
+			@Nullable final PickingJobId contextPickingJobId)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huPIItemProductBL = huPIItemProductBL;
@@ -81,6 +84,7 @@ public class PackToHUsProducer
 		this.inventoryService = inventoryService;
 
 		this.alwaysPackEachCandidateInItsOwnHU = alwaysPackEachCandidateInItsOwnHU;
+		this.contextPickingJobId = contextPickingJobId;
 	}
 
 	public List<I_M_HU> packToHU(
@@ -133,6 +137,7 @@ public class PackToHUsProducer
 						.qty(qtyMissing)
 						.movementDate(SystemTime.asZonedDateTime())
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.pickingJobId(contextPickingJobId)
 						.build());
 
 				pickFromHUs.add(newPickFromHU()
