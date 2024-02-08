@@ -96,8 +96,10 @@ public interface IQueryBuilder<T>
 
 	//@formatter:off
 	default IQueryBuilder<T> clearOrderBys() { orderBy().clear(); return this; }
+	
 	/** order ascending, with {@code NULLS LAST} */
 	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
+	
 	/** order ascending, with {@code NULLS LAST} */
 	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
 	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
