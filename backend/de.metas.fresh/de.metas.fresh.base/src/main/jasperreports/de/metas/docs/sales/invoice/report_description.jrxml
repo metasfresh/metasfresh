@@ -206,7 +206,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="37" y="201" width="538" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
