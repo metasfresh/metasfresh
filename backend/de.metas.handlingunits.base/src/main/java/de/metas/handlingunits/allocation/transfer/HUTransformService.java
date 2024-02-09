@@ -40,11 +40,17 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -138,6 +144,7 @@ public class HUTransformService
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 
 	private final IHUContext huContext;
@@ -1403,9 +1410,12 @@ public class HUTransformService
 	}
 
 	@NonNull
-	public HuId extractToTopLevelByQRCode(@NonNull final HuId huId, @NonNull final HUQRCode huQRCode)
+	public HuId extractToTopLevel(@NonNull final HuId huId, @Nullable final HUQRCode huQRCode)
 	{
-		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, huId);
+		if (huQRCode != null)
+		{
+			huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, huId);
+		}
 
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		if (handlingUnitsBL.isTopLevel(hu))
@@ -1415,7 +1425,11 @@ public class HUTransformService
 		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			final HuId extractedTUId = splitOutTU(hu);
-			huQRCodesService.get().assign(huQRCode, extractedTUId);
+
+			if (huQRCode != null)
+			{
+				huQRCodesService.get().assign(huQRCode, extractedTUId);
+			}
 
 			return extractedTUId;
 		}
@@ -1452,7 +1466,7 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU)
 	{
-		return tusToLU(tusOrVhus, existingLU, null);
+        return trxManager.callInThreadInheritedTrx(() ->tusToLU(tusOrVhus, existingLU, null));
 	}
 
 	private HuId tusToLU(
@@ -1491,4 +1505,59 @@ public class HUTransformService
 		return HuId.ofRepoId(lu.getM_HU_ID());
 	}
 
+    @NonNull
+    public ImmutableList<I_M_HU> cusToExistingTU(
+            @NonNull final List<I_M_HU> sourceCuHUs,
+            @NonNull final I_M_HU targetTuHU)
+    {
+        final ImmutableList.Builder<I_M_HU> resultCollector = ImmutableList.builder();
+        sourceCuHUs.forEach(sourceCU -> {
+            final Quantity quantity = getSingleProductStorage(sourceCU).getQtyInStockingUOM();
+            resultCollector.addAll(cuToExistingTU(sourceCU, quantity, targetTuHU));
+        });
+
+        return resultCollector.build();
+    }
+
+    public void cusToExistingCU(@NonNull final List<I_M_HU> sourceCuHUs, @NonNull final I_M_HU targetCU)
+    {
+        final ProductId targetHUProductId = getSingleProductStorage(targetCU).getProductId();
+
+        sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU, targetHUProductId));
+    }
+
+    public void cuToExistingCU(
+            @NonNull final I_M_HU sourceCuHU,
+            @NonNull final I_M_HU targetHU,
+            @NonNull final ProductId targetHUProductId)
+    {
+        trxManager.runInThreadInheritedTrx(() -> cuToExistingCU_InTrx(sourceCuHU, targetHU, targetHUProductId));
+    }
+
+    private void cuToExistingCU_InTrx(
+            @NonNull final I_M_HU sourceCuHU,
+            @NonNull final I_M_HU targetHU,
+            @NonNull final ProductId targetHUProductId)
+    {
+        final IMutableHUContext huContextWithOrgId = huContextFactory.createMutableHUContext(InterfaceWrapperHelper.getContextAware(targetHU));
+
+        final IAllocationSource source = HUListAllocationSourceDestination
+                .of(sourceCuHU, AllocationStrategyType.UNIFORM)
+                .setDestroyEmptyHUs(true);
+        final IAllocationDestination destination = HUListAllocationSourceDestination.of(targetHU, AllocationStrategyType.UNIFORM);
+
+        final IHUProductStorage sourceProductStorage = getSingleProductStorage(sourceCuHU);
+
+        Check.assume(sourceProductStorage.getProductId().equals(targetHUProductId), "Source and Target HU productId must match!");
+
+        HULoader.of(source, destination)
+                .load(AllocationUtils.builder()
+                        .setHUContext(huContextWithOrgId)
+                        .setDateAsToday()
+                        .setProduct(sourceProductStorage.getProductId())
+                        .setQuantity(sourceProductStorage.getQtyInStockingUOM())
+                        .setFromReferencedModel(sourceCuHU)
+                        .setForceQtyAllocation(true)
+                        .create());
+    }
 }

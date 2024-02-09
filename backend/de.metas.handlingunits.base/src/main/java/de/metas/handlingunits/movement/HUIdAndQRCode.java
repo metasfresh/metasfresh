@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.printing.base
+ * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,28 @@
  * #L%
  */
 
-package de.metas.printing.spi.impl;
+package de.metas.handlingunits.movement;
 
-import de.metas.printing.IPrintingHandler;
-import de.metas.printing.PrintingClientRequest;
-import lombok.AllArgsConstructor;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import lombok.Builder;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-@Service
-@AllArgsConstructor
-public class ExternalSystemsPrintingNotifier
+@Value
+@Builder
+public class HUIdAndQRCode
 {
-	private final List<IPrintingHandler> handlerList;
-
-	public void notifyExternalSystemsIfNeeded(@NonNull final PrintingClientRequest request)
+	@NonNull
+	public static HUIdAndQRCode ofHuId(@NonNull final HuId huId)
 	{
-		for (final IPrintingHandler handler : handlerList)
-		{
-			handler.notify(request);
-		}
+		return HUIdAndQRCode.builder()
+				.huId(huId)
+				.build();
 	}
 
+	@NonNull HuId huId;
+	@Nullable HUQRCode huQRCode;
 }

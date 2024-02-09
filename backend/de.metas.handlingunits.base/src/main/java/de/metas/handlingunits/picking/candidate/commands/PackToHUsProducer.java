@@ -22,13 +22,17 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,6 +59,7 @@ public class PackToHUsProducer
 
 	// Params
 	private final boolean alwaysPackEachCandidateInItsOwnHU;
+	private final PickingJobId contextPickingJobId;
 
 	// State
 	private static final int PACKAGE_NO_ZERO = 0;
@@ -69,7 +74,8 @@ public class PackToHUsProducer
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull InventoryService inventoryService,
 			//
-			final boolean alwaysPackEachCandidateInItsOwnHU)
+			final boolean alwaysPackEachCandidateInItsOwnHU,
+			@Nullable final PickingJobId contextPickingJobId)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huPIItemProductBL = huPIItemProductBL;
@@ -78,6 +84,7 @@ public class PackToHUsProducer
 		this.inventoryService = inventoryService;
 
 		this.alwaysPackEachCandidateInItsOwnHU = alwaysPackEachCandidateInItsOwnHU;
+		this.contextPickingJobId = contextPickingJobId;
 	}
 
 	public List<I_M_HU> packToHU(
@@ -93,16 +100,18 @@ public class PackToHUsProducer
 	{
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, huContext, productId, catchWeight);
 
-		final List<I_M_HU> pickFromHUs;
+		final PickFromHUsList pickFromHUs;
 		if (createInventoryForMissingQty)
 		{
-			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU);
+			final PickFromHU pickFromHU = newPickFromHU()
+					.huContext(huContext)
+					.hu(handlingUnitsBL.getById(pickFromHUId))
+					.build();
+			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU.toM_HU());
 
-			final IHUStorage pickFromHUStorage = huContext.getHUStorageFactory().getStorage(pickFromHU);
-			final Quantity huQty = pickFromHUStorage.getQuantity(productId, qtyPicked.getUOM());
+			final Quantity huQty = pickFromHU.getQuantity(productId, qtyPicked.getUOM());
 
-			pickFromHUs = new ArrayList<>();
+			pickFromHUs = new PickFromHUsList();
 			final Quantity qtyMissing;
 			if (huQty.signum() <= 0)
 			{
@@ -121,37 +130,41 @@ public class PackToHUsProducer
 				// so we will do an inventory+ to get the missing qty
 
 				final HuId newHuId = inventoryService.createInventoryForMissingQty(CreateVirtualInventoryWithQtyReq.builder()
-						.clientId(ClientId.ofRepoId(pickFromHU.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(pickFromHU.getAD_Org_ID()))
+						.clientId(pickFromHU.getClientId())
+						.orgId(pickFromHU.getOrgId())
 						.warehouseId(packToInfo.getShipFromLocatorId().getWarehouseId())
 						.productId(productId)
 						.qty(qtyMissing)
 						.movementDate(SystemTime.asZonedDateTime())
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.pickingJobId(contextPickingJobId)
 						.build());
 
-				final I_M_HU newHU = handlingUnitsBL.getById(newHuId);
-				pickFromHUs.add(newHU);
+				pickFromHUs.add(newPickFromHU()
+						.huContext(huContext)
+						.hu(handlingUnitsBL.getById(newHuId))
+						.isGeneratedFromInventory(true)
+						.build());
 			}
 		}
 		else
 		{
-			final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU);
+			final PickFromHU pickFromHU = newPickFromHU()
+					.huContext(huContext)
+					.hu(handlingUnitsBL.getById(pickFromHUId))
+					.build();
+			weightUpdater.capturePickFromHUBeforeTransfer(pickFromHU.toM_HU());
 
-			pickFromHUs = ImmutableList.of(pickFromHU);
+			pickFromHUs = new PickFromHUsList();
+			pickFromHUs.add(pickFromHU);
 		}
 
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions
-		// NOTE in case of Packing Instructions, if the PackTo is Virtual (i.e. no packing) then we consider any packing instructions are accepted
-		if (checkIfAlreadyPacked
-				&& pickFromHUs.size() == 1
-				&& huContext.getHUStorageFactory().getStorage(pickFromHUs.get(0)).isSingleProductWithQtyEqualsTo(productId, qtyPicked)
-				&& (packToInfo.getPackingInstructionsId().isVirtual() || HuPackingInstructionsId.equals(packToInfo.getPackingInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHUs.get(0)))))
+		if (pickFromHUs.isSingleHUAlreadyPacked(checkIfAlreadyPacked, productId, qtyPicked, packToInfo.getPackingInstructionsId()))
 		{
-			final I_M_HU pickFromHU = pickFromHUs.get(0);
+			final I_M_HU pickFromHU = pickFromHUs.getSingleHU().toM_HU();
 			handlingUnitsBL.setHUStatus(pickFromHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
 
 			final List<I_M_HU> packedHUs = ImmutableList.of(pickFromHU);
@@ -165,7 +178,7 @@ public class PackToHUsProducer
 		{
 			final IHUProducerAllocationDestination packToDestination;
 			HULoader.builder()
-					.source(HUListAllocationSourceDestination.of(pickFromHUs).setDestroyEmptyHUs(true))
+					.source(HUListAllocationSourceDestination.of(pickFromHUs.toHUsList()).setDestroyEmptyHUs(true))
 					.destination(packToDestination = getPackToDestination(packToInfo))
 					.load(AllocationUtils.builder()
 							.setHUContext(huContext)
@@ -175,12 +188,18 @@ public class PackToHUsProducer
 							.setForceQtyAllocation(true)
 							.create());
 
-			weightUpdater.updatePickFromHUs(pickFromHUs);
+			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
 
 			final List<I_M_HU> packedHUs = packToDestination.getCreatedHUs();
 			weightUpdater.updatePackToHUs(packedHUs);
 			return packedHUs;
 		}
+	}
+
+	private PickFromHU.PickFromHUBuilder newPickFromHU()
+	{
+		return PickFromHU.builder()
+				.handlingUnitsBL(handlingUnitsBL);
 	}
 
 	public PackToInfo extractPackToInfo(
@@ -302,4 +321,96 @@ public class PackToHUsProducer
 		@Nullable Capacity tuCapacity;
 		int packageNo;
 	}
+
+	@EqualsAndHashCode
+	private static class PickFromHU
+	{
+		@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+		@NonNull private final IHUContext huContext;
+		@NonNull private final I_M_HU hu;
+		@Getter private final boolean isGeneratedFromInventory;
+		private IHUStorage _huStorage = null; // lazy
+
+		@Builder
+		private PickFromHU(
+				@NonNull IHandlingUnitsBL handlingUnitsBL,
+				@NonNull final IHUContext huContext,
+				@NonNull final I_M_HU hu,
+				final boolean isGeneratedFromInventory)
+		{
+			this.handlingUnitsBL = handlingUnitsBL;
+			this.huContext = huContext;
+			this.hu = hu;
+			this.isGeneratedFromInventory = isGeneratedFromInventory;
+		}
+
+		public I_M_HU toM_HU() {return hu;}
+
+		public ClientId getClientId() {return ClientId.ofRepoId(hu.getAD_Client_ID());}
+
+		public OrgId getOrgId() {return OrgId.ofRepoId(hu.getAD_Org_ID());}
+
+		public Quantity getQuantity(final ProductId productId, final I_C_UOM uom) {return getStorage().getQuantity(productId, uom);}
+
+		public IHUStorage getStorage()
+		{
+			IHUStorage huStorage = _huStorage;
+			if (huStorage == null)
+			{
+				huStorage = _huStorage = huContext.getHUStorageFactory().getStorage(hu);
+			}
+			return huStorage;
+		}
+
+		public boolean isAlreadyPacked(@NonNull final ProductId productId, @NonNull final Quantity qty, @Nullable final HuPackingInstructionsId packingInstructionsId)
+		{
+			return isSingleProductWithQtyEqualsTo(productId, qty)
+					&& HuPackingInstructionsId.equals(packingInstructionsId, getPackingInstructionsId());
+		}
+
+		public boolean isSingleProductWithQtyEqualsTo(@NonNull final ProductId productId, @NonNull final Quantity qty)
+		{
+			return getStorage().isSingleProductWithQtyEqualsTo(productId, qty);
+		}
+
+		@NonNull
+		public HuPackingInstructionsId getPackingInstructionsId() {return handlingUnitsBL.getPackingInstructionsId(hu);}
+	}
+
+	private static class PickFromHUsList
+	{
+		private final ArrayList<PickFromHU> list = new ArrayList<>();
+
+		PickFromHUsList() {}
+
+		public void add(@NonNull final PickFromHU pickFromHU) {list.add(pickFromHU);}
+
+		public List<I_M_HU> toHUsList() {return list.stream().map(PickFromHU::toM_HU).collect(ImmutableList.toImmutableList());}
+
+		public PickFromHU getSingleHU() {return CollectionUtils.singleElement(list);}
+
+		public boolean isSingleHUAlreadyPacked(
+				final boolean checkIfAlreadyPacked,
+				@NonNull final ProductId productId,
+				@NonNull final Quantity qty,
+				@Nullable final HuPackingInstructionsId packingInstructionsId)
+		{
+			if (list.size() != 1)
+			{
+				return false;
+			}
+			final PickFromHU hu = list.get(0);
+
+			// NOTE we check isGeneratedFromInventory because we want to avoid splitting an HU that we just generated it, even if checkIfAlreadyPacked=false
+			if (checkIfAlreadyPacked || hu.isGeneratedFromInventory())
+			{
+				return hu.isAlreadyPacked(productId, qty, packingInstructionsId);
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+
 }

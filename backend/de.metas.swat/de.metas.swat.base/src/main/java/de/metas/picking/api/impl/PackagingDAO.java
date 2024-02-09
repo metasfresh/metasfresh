@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
@@ -48,13 +49,24 @@ public class PackagingDAO implements IPackagingDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_stream_BufferSize = "de.metas.picking.api.impl.PackagingDAO.stream.BufferSize";
+	private static final int DEFAULT_stream_BufferSize = 500;
 
 	@Override
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return createQuery(query)
+				.setOption(IQuery.OPTION_IteratorBufferSize, getStreamBufferSize())
 				.iterateAndStream()
 				.map(this::toPackageable);
+	}
+
+	private int getStreamBufferSize()
+	{
+		final int bufferSize = sysConfigBL.getIntValue(SYSCONFIG_stream_BufferSize, -1);
+		return bufferSize > 0 ? bufferSize : DEFAULT_stream_BufferSize;
 	}
 
 	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)

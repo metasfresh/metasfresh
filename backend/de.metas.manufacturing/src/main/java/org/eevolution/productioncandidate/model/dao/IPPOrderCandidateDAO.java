@@ -70,4 +70,6 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 	void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate);
 
 	void closeCandidate(@NonNull PPOrderCandidateId ppOrderCandidateId);
+
+	void deleteLines(@NonNull PPOrderCandidateId ppOrderCandidateId);
 }

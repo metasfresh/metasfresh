@@ -258,6 +258,7 @@ public class InventoryService
 				.docTypeId(getVirtualInventoryDocTypeId(req.getClientId(), req.getOrgId()))
 				.movementDate(req.getMovementDate())
 				.warehouseId(req.getWarehouseId())
+				.pickingJobId(req.getPickingJobId())
 				.build();
 
 		final InventoryId inventoryId = createInventoryHeader(createHeaderRequest).getId();
