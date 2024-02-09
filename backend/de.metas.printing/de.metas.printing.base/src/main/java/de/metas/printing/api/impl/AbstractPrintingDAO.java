@@ -281,12 +281,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			@Nullable final UserId userToPrintId,
 			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
-		final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
-		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
-				.map(Workplace::getId)
-				.orElse(null);
-
-		final I_AD_Printer_Config printerConfigRecord = retrievePrinterConfig(hostKey, userToPrintId, workplaceId);
+		final I_AD_Printer_Config printerConfigRecord = retrievePrinterConfig(hostKey, userToPrintId);
 		if (printerConfigRecord == null)
 		{
 			return null;
