@@ -24,8 +24,7 @@
 
 **/de.metas.elasticsearch/data/
 
-
-
+docker-builds/compose/db-data/
 
 de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator_sorted_scripts.txt
 serverRoot/application.properties
@@ -57,3 +56,5 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 /misc/services/camel/de-metas-camel-externalsystems/alberta/de-metas-camel-alberta-camelroutes/src/test/java/de/metas/camel/alberta/GetAlbertaPatientsRouteBuilderTest_dont_commit.java
 
+# this is ignored to prevent accidental git check-in of developer credentials
+**/mvn/local-settings.xml
