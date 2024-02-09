@@ -759,13 +759,13 @@ public class CandidateRepositoryWriteService
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			deleteRecord(candidateRecord);
-			deleteRecord(stockCandidate);
+			deleteRelatedRecordsForCandidate(candidateRecord);
+			deleteRelatedRecordsForCandidate(stockCandidate);
 		}
 		else
 		{
-			deleteRecord(stockCandidate);
-			deleteRecord(candidateRecord);
+			deleteRelatedRecordsForCandidate(stockCandidate);
+			deleteRelatedRecordsForCandidate(candidateRecord);
 		}
 
 		return deleteResult;
