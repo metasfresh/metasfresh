@@ -25,7 +25,7 @@ containerName=$1
 echo ""
 echo ""
 echo "========================================================="
-echo " $1 health check ..."
+echo " $containerName health check ..."
 echo "---------------------------------------------------------"
 
 timeout 300s sh -c "until docker ps | grep $containerName | grep -q '(healthy)'; do echo 'Waiting for container to be healthy...'; sleep 30; done"
