@@ -1230,12 +1230,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
 			huAttributes.setSaveOnChange(true);
-			final IWeightable huWeight = Weightables.wrap(huAttributes);
 
-			if (huWeight.isWeightable())
-			{
-				huWeight.setWeightNet(BigDecimal.ZERO);
-			}
+			final IWeightable huWeight = Weightables.wrap(huAttributes);
+			huWeight.setWeightNet(BigDecimal.ZERO);
 		}
 
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
