@@ -1,0 +1,7 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare files to always have LF line endings on checkout.
+# This will let linux docker builds work under windows.
+*.sh text eol=lf
+*.conf text eol=lf
