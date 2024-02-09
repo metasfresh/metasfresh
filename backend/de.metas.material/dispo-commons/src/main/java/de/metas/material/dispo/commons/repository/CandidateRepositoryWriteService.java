@@ -78,7 +78,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -759,13 +758,21 @@ public class CandidateRepositoryWriteService
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			deleteRelatedRecordsForCandidate(candidateRecord);
-			deleteRelatedRecordsForCandidate(stockCandidate);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
 		}
 		else
 		{
-			deleteRelatedRecordsForCandidate(stockCandidate);
-			deleteRelatedRecordsForCandidate(candidateRecord);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
 		}
 
 		return deleteResult;
@@ -806,12 +813,6 @@ public class CandidateRepositoryWriteService
 		}
 
 		return deleteResult;
-	}
-
-	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
-	{
-		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
-		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 	}
 
 	@NonNull
