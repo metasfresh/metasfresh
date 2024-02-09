@@ -53,6 +53,8 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -85,9 +87,9 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -102,6 +104,7 @@ import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1210,4 +1213,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 	}
+
+	@Override
+	public void reactivateDestroyedHU(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider)
+	{
+		if (!isDestroyed(hu))
+		{
+			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu);
+			return;
+		}
+		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		final boolean allStoragesAreEmpty = getStorageFactory().getStorage(hu).isEmpty();
+
+		if (allStoragesAreEmpty)
+		{
+			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+			huAttributes.setSaveOnChange(true);
+			final IWeightable huWeight = Weightables.wrap(huAttributes);
+
+			if (huWeight.isWeightable())
+			{
+				huWeight.setWeightNet(BigDecimal.ZERO);
+			}
+		}
+
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		hu.setIsActive(true);
+		handlingUnitsRepo.saveHU(hu);
+	}
+
 }
