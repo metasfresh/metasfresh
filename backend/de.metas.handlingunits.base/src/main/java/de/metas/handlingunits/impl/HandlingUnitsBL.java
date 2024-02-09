@@ -1219,7 +1219,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		if (!isDestroyed(hu))
 		{
-			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu.getM_HU_ID());
+			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu);
 			return;
 		}
 		final IHUContext huContext = createMutableHUContext(contextProvider);
