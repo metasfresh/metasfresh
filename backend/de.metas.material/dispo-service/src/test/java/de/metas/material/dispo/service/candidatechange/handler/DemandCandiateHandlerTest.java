@@ -48,7 +48,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -92,8 +92,8 @@ public class DemandCandiateHandlerTest
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
@@ -197,7 +197,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.enqueueEventAfterNextCommit(eventCaptor.capture());
+				.postEventAfterNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 
