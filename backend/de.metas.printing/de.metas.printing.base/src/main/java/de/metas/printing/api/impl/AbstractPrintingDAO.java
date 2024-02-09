@@ -204,7 +204,12 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId)
 	{
-		return retrievePrinterConfig(hostKey, userToPrintId, null);
+		final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
+		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
+				.map(Workplace::getId)
+				.orElse(null);
+		
+		return retrievePrinterConfig(hostKey, userToPrintId, workplaceId);
 	}
 
 	@Nullable

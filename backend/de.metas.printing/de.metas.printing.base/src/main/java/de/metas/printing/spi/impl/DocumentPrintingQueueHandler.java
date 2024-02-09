@@ -89,15 +89,10 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			}
 		}
 
-		// special stuff wrt special document type
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IDocument document = docActionBL.getDocumentOrNull(archiveRefencedModel);
-		if (document != null)
-		{
-			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
-						 queueItem, archiveRefencedModel, archive, document.getDoc_User_ID());
-			queueItem.setAD_User_ID(document.getDoc_User_ID()); // in the docs i saw (C_Order, C_Invoice) this is the ID of our sales rep, which is fine AFAIS
-		}
+		// Do not set AD_User_ID to document.getDoc_User_ID() !
+		// C_Printing_Queue.AD_User_ID is the ID of the user *for which we print* and for whom the printer mapping has to be looked up.
+		// If user A wants to print a shipment, we shall use the printer mapping of user A (or her current workplace).
+		// And not the config of e.g. the shipment's customer's sales rep.
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
 		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
