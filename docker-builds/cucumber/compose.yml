@@ -3,9 +3,13 @@
 services:
 
   db:
-    image: metasfresh/metas-db:${refname:-local}-preloaded
+    image: ${mfregistry:-metasfresh}/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
+    environment:      
+      # run the database on the initial data
+      # so we can later commit it again to create postcucumber images without doubling the image size
+      - PGDATA=/var/lib/postgresql/initdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 5s
@@ -30,7 +34,7 @@ services:
       replicas: 1
 
   cucumber:
-    image: metasfresh/metas-cucumber:${refname:-local}
+    image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +43,10 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    # uncomment and adjust 'command:' below to filter cucumber test runs
+    # make sure 'command:' is using the same indentation level as 'deploy:'
+    # for a complete list of available cucumber properties see: https://cucumber.io/docs/cucumber/api/?lang=java#list-configuration-options
+    command: ${cucumberparams:-}
 
   bouncer:
     image: busybox
