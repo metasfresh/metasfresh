@@ -69,7 +69,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
@@ -81,7 +80,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -1221,17 +1219,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		if (!isDestroyed(hu))
 		{
-			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID=" + hu.getM_HU_ID());
+			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu.getM_HU_ID());
 			return;
 		}
 		final IHUContext huContext = createMutableHUContext(contextProvider);
 
-		final boolean allStoragesAreEmpty = getStorageFactory()
-				.getStorage(hu)
-				.getProductStorages()
-				.stream()
-				.map(IHUProductStorage::getQtyInStockingUOM)
-				.allMatch(Quantity::isZero);
+		final boolean allStoragesAreEmpty = getStorageFactory().getStorage(hu).isEmpty();
 
 		if (allStoragesAreEmpty)
 		{
