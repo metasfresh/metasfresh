@@ -24,6 +24,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
@@ -31,6 +32,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -38,7 +40,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 class PickingJobFacetsAccumulator
@@ -66,7 +67,7 @@ class PickingJobFacetsAccumulator
 		);
 	}
 
-	public void accumulate(@NonNull final Packageable packageable)
+	void accumulate(@NonNull final Packageable packageable)
 	{
 		final FacetAwareItem item = extractFacetAwareItem(packageable);
 		if (!item.hasFacets())
@@ -77,13 +78,13 @@ class PickingJobFacetsAccumulator
 		items.add(item);
 	}
 
-	public PickingJobFacetsAccumulator combine(@NonNull final PickingJobFacetsAccumulator other)
+	PickingJobFacetsAccumulator combine(@NonNull final PickingJobFacetsAccumulator other)
 	{
 		this.items.addAll(other.items);
 		return this;
 	}
 
-	public PickingJobFacets toPickingJobFacets()
+	PickingJobFacets toPickingJobFacets()
 	{
 		@NonNull final HashSet<PickingJobFacets.PickingJobFacet> collectedFacets = new HashSet<>();
 
@@ -100,17 +101,12 @@ class PickingJobFacetsAccumulator
 			@NonNull final HashSet<PickingJobFacets.PickingJobFacet> collectedGroupFacets = new HashSet<>();
 			for (final FacetAwareItem item : items)
 			{
-				final ImmutableSet<PickingJobFacets.PickingJobFacet> itemFacets = item.getFacets(group);
-				if (itemFacets.isEmpty())
-				{
-					continue;
-				}
-
 				if (!item.isMatching(activeFacetsOfPreviousGroups))
 				{
 					continue;
 				}
 
+				final ImmutableSet<PickingJobFacets.PickingJobFacet> itemFacets = item.getFacets(group);
 				for (final PickingJobFacets.PickingJobFacet facet : itemFacets)
 				{
 					boolean isActive = false;
@@ -191,53 +187,25 @@ class PickingJobFacetsAccumulator
 	//
 
 	@EqualsAndHashCode
+	@ToString
 	private static class FacetAwareItem
 	{
 		private static final FacetAwareItem EMPTY = new FacetAwareItem(ImmutableSet.of());
 
-		@NonNull private final ImmutableSet<PickingJobFacets.PickingJobFacet> facets;
+		private final ImmutableSetMultimap<PickingJobFacetGroup, PickingJobFacets.PickingJobFacet> facetsByGroup;
+		private final ImmutableSet<BPartnerId> customerIds;
+		private final ImmutableSet<LocalDate> deliveryDays;
+		private final ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
-		private FacetAwareItem(@NonNull final ImmutableSet<PickingJobFacets.PickingJobFacet> facets)
+		private FacetAwareItem(@NonNull final Set<PickingJobFacets.PickingJobFacet> facets)
 		{
-			this.facets = facets;
+			this.facetsByGroup = facets.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(PickingJobFacets.PickingJobFacet::getGroup, facet -> facet));
+			this.customerIds = extract(facets, PickingJobFacets.CustomerFacet.class, PickingJobFacets.CustomerFacet::getBpartnerId);
+			this.deliveryDays = extract(facets, PickingJobFacets.DeliveryDayFacet.class, PickingJobFacets.DeliveryDayFacet::getDeliveryDate);
+			this.handoverLocationIds = extract(facets, PickingJobFacets.HandoverLocationFacet.class, PickingJobFacets.HandoverLocationFacet::getBPartnerLocationId);
 		}
 
-		public static FacetAwareItem ofList(final Set<PickingJobFacets.PickingJobFacet> facets)
-		{
-			if (facets.isEmpty())
-			{
-				return EMPTY;
-			}
-			return new FacetAwareItem(ImmutableSet.copyOf(facets));
-		}
-
-		public boolean hasFacets() {return !facets.isEmpty();}
-
-		public boolean isMatching(@NonNull final PickingJobQuery.Facets query)
-		{
-			return isMatching(this::getCustomerIds, query.getCustomerIds())
-					&& isMatching(this::getDeliveryDays, query.getDeliveryDays())
-					&& isMatching(this::getHandoverLocationIds, query.getHandoverLocationIds());
-		}
-
-		private static <T> boolean isMatching(final Supplier<Set<T>> valueSupplier, final Set<T> requiredValues)
-		{
-			if (requiredValues.isEmpty())
-			{
-				return true;
-			}
-
-			final Set<T> values = valueSupplier.get();
-			return values.stream().anyMatch(requiredValues::contains);
-		}
-
-		private Set<BPartnerId> getCustomerIds() {return extract(PickingJobFacets.CustomerFacet.class, PickingJobFacets.CustomerFacet::getBpartnerId);}
-
-		private Set<LocalDate> getDeliveryDays() {return extract(PickingJobFacets.DeliveryDayFacet.class, PickingJobFacets.DeliveryDayFacet::getDeliveryDate);}
-
-		private Set<BPartnerLocationId> getHandoverLocationIds() {return extract(PickingJobFacets.HandoverLocationFacet.class, PickingJobFacets.HandoverLocationFacet::getBPartnerLocationId);}
-
-		private <T extends PickingJobFacets.PickingJobFacet, R> Set<R> extract(Class<T> type, Function<T, R> mapper)
+		private static <T extends PickingJobFacets.PickingJobFacet, R> ImmutableSet<R> extract(Set<PickingJobFacets.PickingJobFacet> facets, Class<T> type, Function<T, R> mapper)
 		{
 			if (facets.isEmpty())
 			{
@@ -251,12 +219,37 @@ class PickingJobFacetsAccumulator
 					.collect(ImmutableSet.toImmutableSet());
 		}
 
-		public ImmutableSet<PickingJobFacets.PickingJobFacet> getFacets(@NonNull final PickingJobFacetGroup group)
+		public static FacetAwareItem ofList(final Set<PickingJobFacets.PickingJobFacet> facets)
 		{
-			return facets.stream()
-					.filter(facet -> PickingJobFacetGroup.equals(facet.getGroup(), group))
-					.collect(ImmutableSet.toImmutableSet());
+			if (facets.isEmpty())
+			{
+				return EMPTY;
+			}
+			return new FacetAwareItem(facets);
 		}
 
+		public boolean hasFacets() {return !facetsByGroup.isEmpty();}
+
+		public boolean isMatching(@NonNull final PickingJobQuery.Facets query)
+		{
+			return isMatching(customerIds, query.getCustomerIds())
+					&& isMatching(deliveryDays, query.getDeliveryDays())
+					&& isMatching(handoverLocationIds, query.getHandoverLocationIds());
+		}
+
+		private static <T> boolean isMatching(final Set<T> values, final Set<T> requiredValues)
+		{
+			if (requiredValues.isEmpty())
+			{
+				return true;
+			}
+
+			return values.stream().anyMatch(requiredValues::contains);
+		}
+
+		public ImmutableSet<PickingJobFacets.PickingJobFacet> getFacets(@NonNull final PickingJobFacetGroup group)
+		{
+			return facetsByGroup.get(group);
+		}
 	}
 }
