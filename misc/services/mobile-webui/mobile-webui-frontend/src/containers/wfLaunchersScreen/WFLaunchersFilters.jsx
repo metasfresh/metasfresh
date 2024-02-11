@@ -46,7 +46,6 @@ const useResultsCount = ({ applicationId, groups }) => {
 
   useEffect(() => {
     const facetIds = computeActiveFacetIdsFromGroups(groups);
-    console.log('Counting launchers...', { facetIds, groups });
 
     setResultsCountLoading(true);
     countLaunchers({ applicationId, facetIds })
@@ -82,7 +81,6 @@ const toggleActiveFacetOfGroups = ({ groups, facetId }) => {
     }
   }
 
-  console.log('activeFacetIds', { groupsNew, groups, groupChanged });
   return groupChanged ? groupsNew : groups;
 };
 const computeActiveFacetIdsFromGroups = (groups) => {
