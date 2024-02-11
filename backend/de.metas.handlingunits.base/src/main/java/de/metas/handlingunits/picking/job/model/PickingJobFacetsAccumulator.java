@@ -129,14 +129,15 @@ class PickingJobFacetsAccumulator
 
 			//
 			// In case we found only one facet in this group, consider it active
-			if (collectedGroupFacets.size() == 1)
-			{
-				final PickingJobFacets.PickingJobFacet facet = collectedGroupFacets.iterator().next().withActive(true);
-				collectedGroupFacets.clear();
-				collectedGroupFacets.add(facet);
-
-				activeFacetsOfThisGroupEffective.add(PickingJobQuery.Facets.of(facet));
-			}
+			// NOTE: commented out because even if is nice in some cases in other cases it's annoying
+			// if (collectedGroupFacets.size() == 1)
+			// {
+			// 	final PickingJobFacets.PickingJobFacet facet = collectedGroupFacets.iterator().next().withActive(true);
+			// 	collectedGroupFacets.clear();
+			// 	collectedGroupFacets.add(facet);
+			//
+			// 	activeFacetsOfThisGroupEffective.add(PickingJobQuery.Facets.of(facet));
+			// }
 
 			//
 			// Add collected facets of this group to all collected facets
@@ -227,7 +228,7 @@ class PickingJobFacetsAccumulator
 			}
 
 			final Set<T> values = valueSupplier.get();
-			return values.containsAll(requiredValues);
+			return values.stream().anyMatch(requiredValues::contains);
 		}
 
 		private Set<BPartnerId> getCustomerIds() {return extract(PickingJobFacets.CustomerFacet.class, PickingJobFacets.CustomerFacet::getBpartnerId);}
