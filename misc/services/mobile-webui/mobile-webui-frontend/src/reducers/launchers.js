@@ -6,8 +6,12 @@ export const initialState = {};
 const NO_ACTIVE_FACETS = [];
 
 export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
+
 export const getApplicationLaunchersFacets = (state, applicationId) =>
-  state?.launchers?.[applicationId]?.activeFacets ?? NO_ACTIVE_FACETS;
+  getApplicationLaunchers(state, applicationId).activeFacets ?? NO_ACTIVE_FACETS;
+
+export const getApplicationLaunchersFacetIds = (state, applicationId) =>
+  getApplicationLaunchersFacets(state, applicationId).map((facet) => facet.facetId);
 
 export default function launchers(state = initialState, action) {
   const { payload } = action;

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.handlingunits.picking.job.model;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.Check;
 import de.metas.reflist.ReferenceId;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -32,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_AD_Reference_ID;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Customer;
@@ -40,7 +39,7 @@ import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Handover
 
 @AllArgsConstructor
 @Getter
-public enum PickingJobFilterOption implements ReferenceListAwareEnum
+public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 {
 	CUSTOMER(FILTERTYPE_Customer),
 	DELIVERY_DATE(FILTERTYPE_DeliveryDate),
@@ -48,20 +47,15 @@ public enum PickingJobFilterOption implements ReferenceListAwareEnum
 	;
 
 	public static final ReferenceId PICKING_JOB_FILTER_OPTION_REFERENCE_ID = ReferenceId.ofRepoId(FILTERTYPE_AD_Reference_ID);
-
-	@Nullable
-	public static PickingJobFilterOption ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
-	@NonNull
-	public static PickingJobFilterOption ofCode(@NonNull final String code)
-	{
-		return Check.assumeNotNull(typesByCode.get(code), "No Type found for code=" + code);
-	}
+	private static final ReferenceListAwareEnums.ValuesIndex<PickingJobFacetGroup> index = ReferenceListAwareEnums.index(values());
 
 	private final String code;
 
-	private static final ImmutableMap<String, PickingJobFilterOption> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	@NonNull
+	public static PickingJobFacetGroup ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
+
+	public static boolean equals(@Nullable PickingJobFacetGroup group1, @Nullable PickingJobFacetGroup group2) {return Objects.equals(group1, group2);}
 }

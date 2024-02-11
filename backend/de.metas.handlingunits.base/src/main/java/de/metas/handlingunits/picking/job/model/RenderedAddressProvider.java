@@ -41,7 +41,7 @@ public class RenderedAddressProvider
 	@NonNull Map<BPartnerLocationId, String> locationId2RenderedAddress;
 
 	@NonNull
-	public static RenderedAddressProvider of(@NonNull final IDocumentLocationBL locationBL)
+	public static RenderedAddressProvider newInstance(@NonNull final IDocumentLocationBL locationBL)
 	{
 		return RenderedAddressProvider.builder()
 				.documentLocationBL(locationBL)

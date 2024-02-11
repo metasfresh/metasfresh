@@ -22,13 +22,13 @@
 
 package de.metas.picking.config;
 
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value(staticConstructor = "of")
 public class PickingFilter
 {
-	@NonNull
-	PickingJobFilterOption option;
+	@NonNull PickingJobFacetGroup option;
 	int seqNo;
 }
