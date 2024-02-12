@@ -6,7 +6,7 @@ import { toastError } from '../../../../../utils/toast';
 import { updateManufacturingIssue } from '../../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';

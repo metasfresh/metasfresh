@@ -11,7 +11,7 @@ import { getTokenFromState } from '../../reducers/appHandler';
 import { getApplicationInfoById, getWorkplaceSettingsForApplicationId } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
-import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/qrCode/hu';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
 import WorkplaceScanner from '../activities/picking/WorkplaceScanner';
 import * as api from '../../api/applications';

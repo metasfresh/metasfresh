@@ -1,0 +1,15 @@
+{
+  "title": "Workplace",
+  "workplaceName": "Name",
+  "warehouseName": "Warehouse",
+  "isUserAssigned": "Assigned",
+
+  "action": {
+    "assign": {
+      "buttonCaption": "Assign"
+    },
+    "scanAgain": {
+      "buttonCaption": "Scan again"
+    }
+  }
+}

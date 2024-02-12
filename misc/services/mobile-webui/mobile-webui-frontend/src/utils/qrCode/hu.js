@@ -1,3 +1,30 @@
+/*
+ * #%L
+ * ic114
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import { QRCODE_SEPARATOR } from './common';
+
+export const QRCODE_TYPE_HU = 'HU';
+export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
+
 export const toQRCodeDisplayable = (qrCode) => {
   //
   // Case: null/empty qrCode
@@ -89,7 +116,6 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
-const SEPARATOR = '#';
 export const parseQRCodeString = (string) => {
   let remainingString = string;
 
@@ -97,7 +123,7 @@ export const parseQRCodeString = (string) => {
   // Type
   let type;
   {
-    const idx = remainingString.indexOf(SEPARATOR);
+    const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
       throw 'Invalid global QR code(1): ' + string;
     }
@@ -109,7 +135,7 @@ export const parseQRCodeString = (string) => {
   // Version
   let version;
   {
-    const idx = remainingString.indexOf(SEPARATOR);
+    const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
       throw 'Invalid global QR code(2): ' + string;
     }
@@ -118,10 +144,10 @@ export const parseQRCodeString = (string) => {
   }
 
   let payloadParsed;
-  if (type === 'HU' && version === '1') {
+  if (type === QRCODE_TYPE_HU && version === '1') {
     const jsonPayload = JSON.parse(remainingString);
     payloadParsed = parseQRCodePayload_HU_v1(jsonPayload);
-  } else if (type === 'LMQ' && version === '1') {
+  } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
     payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
     throw 'Invalid global QR code(3): ' + string;

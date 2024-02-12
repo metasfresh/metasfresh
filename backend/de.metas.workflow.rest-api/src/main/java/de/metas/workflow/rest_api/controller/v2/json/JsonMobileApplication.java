@@ -22,6 +22,8 @@ public class JsonMobileApplication
 	@NonNull String caption;
 	boolean requiresLaunchersQRCodeFilter;
 	boolean showFilters;
+	boolean showInMainMenu;
+	int sortNo;
 	@Nullable ImmutableMap<CustomApplicationParameter, Object> applicationParameters;
 
 	public static JsonMobileApplication of(final MobileApplicationInfo appInfo, final JsonOpts jsonOpts)
@@ -31,6 +33,8 @@ public class JsonMobileApplication
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
 				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
 				.showFilters(appInfo.isShowFilters())
+				.showInMainMenu(appInfo.isShowInMainMenu())
+				.sortNo(appInfo.getSortNo())
 				.applicationParameters(JsonApplicationParametersMapper.map(appInfo.getApplicationParameters()))
 				.build();
 	}

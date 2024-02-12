@@ -11,7 +11,7 @@ import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
-import { parseQRCodeString } from '../../utils/huQRCodes';
+import { parseQRCodeString } from '../../utils/qrCode/hu';
 import { toastError } from '../../utils/toast';
 
 const GetQuantityDialog = ({

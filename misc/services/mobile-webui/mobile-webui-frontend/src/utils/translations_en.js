@@ -7,6 +7,8 @@ const translations = {
     },
   },
   general: {
+    Yes: 'Yes',
+    No: 'No',
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
