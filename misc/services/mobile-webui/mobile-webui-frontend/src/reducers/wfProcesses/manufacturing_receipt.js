@@ -4,7 +4,7 @@ import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
 import { current, isDraft } from 'immer';
 import { getLineByIdFromWFProcess } from './index';
-import { toQRCodeObject } from '../../utils/huQRCodes';
+import { toQRCodeObject } from '../../utils/qrCode/hu';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
