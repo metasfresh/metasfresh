@@ -2,6 +2,7 @@ package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.JavaProcess;
@@ -10,6 +11,9 @@ import de.metas.process.Param;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
+import de.metas.report.PrintCopies;
+import de.metas.report.server.OutputType;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 /*

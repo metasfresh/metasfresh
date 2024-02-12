@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,12 +17,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
 public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 {
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	private static final SimulationPlanId SIMULATION1 = SimulationPlanId.ofRepoId(1);
 	private static final WOProjectResourceId PR1 = WOProjectResourceId.ofRepoId(1, 1);
@@ -43,7 +44,7 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 	ResourceAllocation alloc(final int startDay, final int endDay, @Nullable final SimulationPlanId simulationId, final WOProjectResourceId projectResourceId)
 	{
 		return ResourceAllocation.builder()
-				.resourceId(ResourceId.ofRepoId(1))
+				.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 				.projectResourceId(projectResourceId)
 				.appliedSimulationId(simulationId)
 				.dateRange(allDay(startDay, endDay))

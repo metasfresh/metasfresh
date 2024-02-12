@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,28 @@
  * #L%
  */
 
-package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
+package de.metas.handlingunits.movement;
 
-import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class StepItemRequiredCapacity
+public class HUIdAndQRCode
 {
-	@NonNull StepId stepId;
-	@NonNull LocalDateTime startDate;
-	@NonNull Duration humanResourceDuration;
+	@NonNull
+	public static HUIdAndQRCode ofHuId(@NonNull final HuId huId)
+	{
+		return HUIdAndQRCode.builder()
+				.huId(huId)
+				.build();
+	}
+
+	@NonNull HuId huId;
+	@Nullable HUQRCode huQRCode;
 }

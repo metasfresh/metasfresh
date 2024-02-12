@@ -829,4 +829,25 @@ public interface I_M_Inventory
 	int getUser2_ID();
 
 	String COLUMNNAME_User2_ID = "User2_ID";
+
+	/**
+	 * Set Picking Job.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_ID (int M_Picking_Job_ID);
+
+	/**
+	 * Get Picking Job.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_ID();
+
+	ModelColumn<I_M_Inventory, Object> COLUMN_M_Picking_Job_ID = new ModelColumn<>(I_M_Inventory.class, "M_Picking_Job_ID", null);
+	String COLUMNNAME_M_Picking_Job_ID = "M_Picking_Job_ID";
 }

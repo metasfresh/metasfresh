@@ -50,6 +50,8 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.HUIdAndQRCode;
+import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -57,8 +59,6 @@ import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
-import de.metas.handlingunits.rest_api.move_hu.HUIdAndQRCode;
-import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
@@ -150,8 +150,8 @@ public class HandlingUnitsService
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(
-				huContext, 
-				hu, 
+				huContext,
+				hu,
 				loadJsonHURequest.isExcludeEmptyAttributes(),
 				loadJsonHURequest.getEmptyAttributesToInclude());
 
@@ -467,7 +467,7 @@ public class HandlingUnitsService
 	{
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.huIdAndQRCodes(ImmutableList.of(HUIdAndQRCode.builder()
+				.husToMove(ImmutableList.of(HUIdAndQRCode.builder()
 						.huId(request.getHuId())
 						.huQRCode(request.getHuQRCode())
 						.build()))
@@ -490,7 +490,7 @@ public class HandlingUnitsService
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.huIdAndQRCodes(huIdAndQRCodes)
+				.husToMove(huIdAndQRCodes)
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();

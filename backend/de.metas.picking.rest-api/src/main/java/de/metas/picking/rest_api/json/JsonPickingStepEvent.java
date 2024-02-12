@@ -63,4 +63,7 @@ public class JsonPickingStepEvent
 	@Nullable BigDecimal catchWeight;
 	boolean pickWholeTU;
 	@Nullable Boolean checkIfAlreadyPacked;
+
+	// Event Type: UNPICK
+	@Nullable String unpickToTargetQRCode;
 }

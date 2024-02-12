@@ -79,6 +79,7 @@
 	import org.springframework.stereotype.Component;
 
 	import java.util.Collection;
+	import java.util.Optional;
 	import java.util.function.UnaryOperator;
 
 	import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
@@ -374,6 +375,7 @@
 					.qtyRejected(json.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 					.catchWeight(json.getCatchWeight())
+					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
 					.build();
 		}
 

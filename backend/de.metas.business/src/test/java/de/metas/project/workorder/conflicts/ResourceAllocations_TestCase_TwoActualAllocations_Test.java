@@ -5,6 +5,7 @@ import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +15,7 @@ import static de.metas.project.workorder.conflicts.ResourceAllocationsTestUtils.
 @ExtendWith(SnapshotExtension.class)
 public class ResourceAllocations_TestCase_TwoActualAllocations_Test
 {
-	private Expect expect;
+	@SuppressWarnings("unused") private Expect expect;
 
 	ResourceAllocationConflicts setup(final CalendarDateRange dateRange1, final CalendarDateRange dateRange2)
 	{
@@ -22,12 +23,12 @@ public class ResourceAllocations_TestCase_TwoActualAllocations_Test
 				null,
 				ImmutableList.of(
 						ResourceAllocation.builder()
-								.resourceId(ResourceId.ofRepoId(1))
+								.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 								.projectResourceId(WOProjectResourceId.ofRepoId(1, 1))
 								.dateRange(dateRange1)
 								.build(),
 						ResourceAllocation.builder()
-								.resourceId(ResourceId.ofRepoId(1))
+								.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 								.projectResourceId(WOProjectResourceId.ofRepoId(1, 2))
 								.dateRange(dateRange2)
 								.build()

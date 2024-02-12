@@ -8,9 +8,9 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
@@ -315,11 +315,11 @@ public class WOProjectSimulationPlanEditor
 		}
 	}
 
-	public ImmutableSet<ResourceId> getAffectedResourceIds()
+	public ImmutableSet<ResourceIdAndType> getAffectedResourceIds()
 	{
 		return changedProjectResourceIds.stream()
 				.map(_originalProjectResourcesCollection::getById)
-				.map(WOProjectResource::getResourceId)
+				.map(WOProjectResource::getResourceIdAndType)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
