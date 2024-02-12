@@ -4,8 +4,10 @@ import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -29,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Teo Sarca
- *
  */
 public class TimeUtilTest
 {
@@ -615,4 +616,64 @@ public class TimeUtilTest
 				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
+	@Nested
+	public class isOverlapping
+	{
+		@Nullable
+		Timestamp ts(@Nullable final String localDateStr)
+		{
+			return localDateStr != null
+					? Timestamp.from(LocalDate.parse(localDateStr).atStartOfDay().atZone(SystemTime.zoneId()).toInstant())
+					: null;
+		}
+
+		@Test
+		void a__a__b________b()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-02"), ts("2023-10-05"), ts("2023-10-10")))
+					.isFalse();
+		}
+
+		@Test
+		void a__ab__________b()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-02"), ts("2023-10-02"), ts("2023-10-10")))
+					.isFalse();
+		}
+
+		@Test
+		void a__b__a________b()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-02"), ts("2023-10-10")))
+					.isTrue();
+		}
+
+		@Test
+		void b__a__a________b()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-10"), ts("2023-10-02"), ts("2023-10-03")))
+					.isTrue();
+		}
+
+		@Test
+		void b_______a___b__a()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-07"), ts("2023-10-05"), ts("2023-10-10")))
+					.isTrue();
+		}
+
+		@Test
+		void b__________ba__a()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-07"), ts("2023-10-07"), ts("2023-10-10")))
+					.isFalse();
+		}
+
+		@Test
+		void b________b__a__a()
+		{
+			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-07"), ts("2023-10-10")))
+					.isFalse();
+		}
+	}
 }

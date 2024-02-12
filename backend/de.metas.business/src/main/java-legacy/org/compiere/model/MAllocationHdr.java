@@ -990,7 +990,6 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 			reversalLine.setDiscountAmt(reversalLine.getDiscountAmt().negate());
 			reversalLine.setOverUnderAmt(reversalLine.getOverUnderAmt().negate());
 			reversalLine.setWriteOffAmt(reversalLine.getWriteOffAmt().negate());
-			reversalLine.setPaymentWriteOffAmt(reversalLine.getPaymentWriteOffAmt().negate());
 			reversalLine.setReversalLine_ID(line.getC_AllocationLine_ID());
 			InterfaceWrapperHelper.save(reversalLine);
 

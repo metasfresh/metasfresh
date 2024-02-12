@@ -162,18 +162,6 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
-	@Nullable
-	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
-	{
-		return dataTableRow.get(columnName);
-	}
-
-	@Nullable
-	public String nullToken2Null(@NonNull final String value)
-	{
-		return NULL_STRING.equals(value) ? null : value;
-	}
-
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
@@ -424,20 +412,14 @@ public class DataTableUtil
 	}
 
 	@Nullable
-	public Double extractDoubleOrNullForColumnName(
-			@NonNull final Map<String, String> dataTableRow,
-			@NonNull final String columnName)
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
-		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		return dataTableRow.get(columnName);
+	}
 
-		try
-		{
-			return Check.isBlank(string) ? null : Double.parseDouble(string);
-		}
-		catch (final NumberFormatException e)
-		{
-			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
-					.setParameter("dataTableRow", dataTableRow);
-		}
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
 	}
 }

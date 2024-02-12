@@ -26,7 +26,6 @@ import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
 import de.metas.common.util.Check;
-import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -65,8 +64,6 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 		this.metasfreshAPIURL = metasfreshAPIURL;
 		this.customRouteController = customRouteController;
 		this.producerTemplate = producerTemplate;
-
-		logger.info("*** MetasfreshAuthorizationTokenNotifier initialized with metasfreshAPIURL=" + metasfreshAPIURL);
 	}
 
 	@Override
@@ -112,6 +109,11 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 	{
 		final Endpoint endpoint = sentEvent.getEndpoint();
 
+		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
+		{
+			return;
+		}
+
 		final Exception exception = sentEvent.getExchange().getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
 		if (!(exception instanceof HttpOperationFailedException))
@@ -123,18 +125,6 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 
 		if (httpOperationFailedException.getStatusCode() == 401)
 		{
-			if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
-			{
-				logger.info("Received a 401 HttpStatusCode from: " + endpoint.getEndpointUri() +"; considered a non-MF-API URL based on: " + metasfreshAPIURL);
-				return;
-			}
-
-			final String usedAuthToken = String.valueOf(sentEvent.getExchange().getIn().getHeader(CoreConstants.AUTHORIZATION));
-
-			logger.info("MF-API responded with 401, stopping all routes; "
-								+ " Request sent had the following auth token:" + StringUtils.maskString(usedAuthToken)
-								+ "; metasfreshAuthProvider has: " + StringUtils.maskString(metasfreshAuthProvider.getAuthToken()));
-
 			this.customRouteController.stopAllRoutes();
 			producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication for metasfresh!");
 		}

@@ -1,5 +1,12 @@
 package de.metas.ui.web.window.model.sql;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Map;
+
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -14,12 +21,6 @@ import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.experimental.UtilityClass;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Map;
 
 /*
  * #%L

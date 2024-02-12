@@ -13,11 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IProductBOMDAO extends ISingletonService
 {
-	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull ProductId productId, @NonNull BOMType bomType);
-
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
 	@Deprecated
@@ -58,11 +57,24 @@ public interface IProductBOMDAO extends ISingletonService
 
 	ProductId getBOMProductId(ProductBOMId bomId);
 
-	Optional<ProductBOMId> getLatestBOMByVersion(@NonNull ProductBOMVersionsId bomVersionsId);
+	boolean hasBOMs(@NonNull ProductBOMVersionsId bomVersionsId);
 
-	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(ProductBOMVersionsId bomVersionsId);
+	Optional<I_PP_Product_BOM> getPreviousVersion(@NonNull I_PP_Product_BOM bomVersion, @Nullable Set<BOMType> bomTypes, @Nullable DocStatus docStatus);
 
-	Optional<I_PP_Product_BOM> getPreviousVersion(I_PP_Product_BOM bomVersion, DocStatus docStatus);
+	List<I_PP_Product_BOM> getSiblings(@NonNull I_PP_Product_BOM bomVersion);
 
 	boolean isComponent(ProductId productId);
+
+	Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomTypes);
+
+	Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull ProductBOMVersionsId bomVersionsId, @Nullable Set<BOMType> bomTypes);
+
+	Optional<I_PP_Product_BOM> getByProductIdAndType(@NonNull ProductId productId, @NonNull Set<BOMType> bomTypes);
+
+	default Optional<ProductBOMId> getIdByProductIdAndType(@NonNull final ProductId productId, @NonNull final Set<BOMType> bomTypes)
+	{
+		return getByProductIdAndType(productId, bomTypes)
+				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
+				.map(ProductBOMId::ofRepoId);
+	}
 }

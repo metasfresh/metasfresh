@@ -22,6 +22,8 @@
 
 package org.eevolution.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -32,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMVersionsCreateRequest;
 import org.eevolution.api.IProductBOMDAO;
@@ -40,11 +43,18 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+
 import static org.eevolution.exceptions.ExceptionConstants.PP_PRODUCT_PLANNING_BOM_ATTR_ERROR;
 
 @Service
 public class ProductBOMService
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_BOM_VERSIONS_OVERLAPPING = AdMessageKey.of("PP_Product_BOMVersions_Overlapping");
+
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ProductBOMVersionsDAO bomVersionsDAO;
@@ -92,4 +102,33 @@ public class ProductBOMService
 			throw new AdempiereException(AdMessageKey.of(PP_PRODUCT_PLANNING_BOM_ATTR_ERROR));
 		}
 	}
+
+	public void assertNoOverlapping(final I_PP_Product_BOM startBOM)
+	{
+		final ArrayList<I_PP_Product_BOM> allBOMs = new ArrayList<>();
+		allBOMs.add(startBOM);
+		allBOMs.addAll(bomRepo.getSiblings(startBOM));
+
+		// Make sure they are ordered by ValidFrom (IMPORTANT)
+		allBOMs.sort(Comparator.comparing(I_PP_Product_BOM::getValidFrom));
+
+		for (int idx = 1, lastIdx = allBOMs.size() - 1; idx <= lastIdx; idx++)
+		{
+			final I_PP_Product_BOM prevBOM = allBOMs.get(idx - 1);
+			final I_PP_Product_BOM currBOM = allBOMs.get(idx);
+			final Timestamp nextBOM_start = idx + 1 <= lastIdx ? allBOMs.get(idx + 1).getValidFrom() : null;
+
+			final Timestamp prevBOM_start = prevBOM.getValidFrom();
+			final Timestamp currBOM_start = currBOM.getValidFrom();
+			final Timestamp prevBOM_end = CoalesceUtil.coalesce(prevBOM.getValidTo(), currBOM_start);
+			final Timestamp currBOM_end = CoalesceUtil.coalesce(currBOM.getValidTo(), nextBOM_start);
+
+			if (TimeUtil.isOverlapping(prevBOM_start, prevBOM_end, currBOM_start, currBOM_end))
+			{
+				throw new AdempiereException(MSG_BOM_VERSIONS_OVERLAPPING, startBOM.getName())
+						.markAsUserValidationError();
+			}
+		}
+	}
+
 }

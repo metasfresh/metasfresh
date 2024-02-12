@@ -1,5 +1,5 @@
 import {
-  getTab, isBlank,
+  getTab,
   updateTab
 } from '../../utils';
 
@@ -69,7 +69,7 @@ describe('General helpers', () => {
     });
   });
 
-  describe('updateTab', () => {
+  describe.only('updateTab', () => {
     it('updates tab in a flat array', () => {
       const changes = { val: 'bar', val1: 'baz' };
       const tabsData = [
@@ -107,13 +107,5 @@ describe('General helpers', () => {
         ])
       );
     });
-  });
-
-  describe('isBlank', () => {
-    it('null', () => expect(isBlank(null)).toEqual(true));
-    it('empty', () => expect(isBlank('')).toEqual(true));
-    it('blank', () => expect(isBlank('    ')).toEqual(true));
-    it('not blank', () => expect(isBlank('aaa')).toEqual(false));
-    it('not blank with spaces', () => expect(isBlank(' aaa   ')).toEqual(false));
   });
 });

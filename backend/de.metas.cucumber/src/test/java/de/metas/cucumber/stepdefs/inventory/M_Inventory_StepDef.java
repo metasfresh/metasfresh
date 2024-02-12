@@ -209,11 +209,10 @@ public class M_Inventory_StepDef
 
 	private void addNewInventory(@NonNull final Map<String, String> tableRow)
 	{
-		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
-
-		final Integer warehouseId = warehouseTable.getOptional(warehouseIdentifier)
+		final String warehouseIdOrIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+		final int warehouseId = warehouseTable.getOptional(warehouseIdOrIdentifier)
 				.map(I_M_Warehouse::getM_Warehouse_ID)
-				.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
+				.orElseGet(() -> Integer.parseInt(warehouseIdOrIdentifier));
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 
