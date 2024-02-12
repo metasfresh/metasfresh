@@ -10,6 +10,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -55,6 +56,7 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -62,6 +64,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -93,6 +96,12 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 
+	private final boolean isSetBestBeforeDate;
+	private final LocalDate bestBeforeDate;
+
+	private final boolean isSetLotNo;
+	private final String lotNo;
+
 	//
 	// State
 	@NonNull private PickingJob pickingJob;
@@ -116,7 +125,11 @@ public class PickingJobPickCommand
 			final @Nullable BigDecimal catchWeightBD,
 			final boolean isPickWholeTU,
 			final @Nullable Boolean checkIfAlreadyPacked,
-			final boolean createInventoryForMissingQty)
+			final boolean createInventoryForMissingQty,
+			boolean isSetBestBeforeDate,
+			final @Nullable LocalDate bestBeforeDate,
+			boolean isSetLotNo,
+			final @Nullable String lotNo)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
@@ -167,6 +180,11 @@ public class PickingJobPickCommand
 		{
 			throw new AdempiereException("Catch Weight shall be positive");
 		}
+
+		this.isSetBestBeforeDate = isSetBestBeforeDate;
+		this.bestBeforeDate = bestBeforeDate;
+		this.isSetLotNo = isSetLotNo;
+		this.lotNo = lotNo;
 	}
 
 	private static Quantity computeQtyRejected(
@@ -366,6 +384,7 @@ public class PickingJobPickCommand
 		{
 			final I_M_HU packedHU = packedHUs.get(0);
 			updateHUWeightFromCatchWeight(packedHU, huContext, productId);
+			updateOtherHUAttributes(packedHU, huContext);
 
 			final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 			final Quantity pickedQty = isPickWholeTU
@@ -391,6 +410,8 @@ public class PickingJobPickCommand
 			final ImmutableList.Builder<PickedToHU> result = ImmutableList.builder();
 			for (final I_M_HU packedHU : packedHUs)
 			{
+				updateOtherHUAttributes(packedHU, huContext);
+
 				final Quantity qtyPicked = huStorageFactory.getStorage(packedHU).getQuantity(productId, qtyToPick.getUOM());
 				result.add(PickedToHU.builder()
 						.pickedFromHU(pickFromHU)
@@ -409,6 +430,27 @@ public class PickingJobPickCommand
 	{
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, huContext, productId, catchWeight);
 		weightUpdater.updatePackToHU(hu);
+	}
+
+	private void updateOtherHUAttributes(final I_M_HU hu, final IHUContext huContext)
+	{
+		if (!isSetBestBeforeDate && !isSetLotNo)
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		huAttributes.setSaveOnChange(true);
+
+		if (isSetBestBeforeDate)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+		}
+		if (isSetLotNo)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNo);
+		}
+
 	}
 
 	private PickingJobStep updateStepFromPickingCandidate(
