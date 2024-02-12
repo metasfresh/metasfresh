@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -29,11 +31,14 @@ import lombok.Value;
 
 @Value
 @Builder
+@JsonDeserialize(builder = LogMessageRequest.LogMessageRequestBuilder.class)
 public class LogMessageRequest
 {
 	@NonNull
+	@JsonProperty("logMessage")
 	String logMessage;
 
 	@NonNull
+	@JsonProperty("pinstanceId")
 	JsonMetasfreshId pInstanceId;
 }

@@ -1,8 +1,8 @@
 package de.metas.handlingunits.material.interceptor;
 
-import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.util.Services;
@@ -82,7 +82,7 @@ public class M_Transaction_PostTransactionEvent
 		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
-			materialEventService.postEventNow(event);
+			materialEventService.postEventAsync(event);
 		}
 	}
 }

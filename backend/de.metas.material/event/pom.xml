@@ -32,6 +32,11 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125

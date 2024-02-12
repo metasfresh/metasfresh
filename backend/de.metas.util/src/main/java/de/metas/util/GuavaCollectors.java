@@ -1,12 +1,25 @@
 package de.metas.util;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimaps;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -16,18 +29,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -52,7 +53,6 @@ import lombok.experimental.UtilityClass;
  */
 
 /**
- *
  * @author based on https://gist.github.com/JakeWharton/9734167
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -69,7 +69,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
-	 *
+	 * <p>
 	 * This method is excluding duplicates.
 	 */
 	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates()
@@ -88,7 +88,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
-	 *
+	 * <p>
 	 * Duplicates will be automatically discarded.
 	 *
 	 * @param keyFunction key function for identifying duplicates
@@ -104,7 +104,7 @@ public final class GuavaCollectors
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 *
 	 * @param keyFunction key function for identifying duplicates
-	 * @param duplicates consumer; it takes the duplicate key and item as parameters
+	 * @param duplicatesConsumer consumer that takes the duplicate key and item as parameters
 	 */
 	public static <T, K> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates(final Function<T, K> keyFunction, final BiConsumer<K, T> duplicatesConsumer)
 	{
@@ -210,12 +210,12 @@ public final class GuavaCollectors
 
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
 	{
-		return ImmutableMap.<Map.Entry<K, V>, K, V> toImmutableMap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableMap.<Map.Entry<K, V>, K, V>toImmutableMap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	/**
 	 * Collects to {@link ImmutableMap}.
-	 *
+	 * <p>
 	 * If duplicate key was found, the last provided item will be used.
 	 *
 	 * @param keyMapper
@@ -230,7 +230,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collects to {@link HashMap}.
-	 *
+	 * <p>
 	 * If duplicate key was found, the last provided item will be used.
 	 *
 	 * @param keyMapper
@@ -261,7 +261,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collects to {@link ImmutableMap}.
-	 *
+	 * <p>
 	 * If duplicate key was found, the first provided item will be used.
 	 *
 	 * @param keyMapper
@@ -316,12 +316,12 @@ public final class GuavaCollectors
 
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
 	{
-		return ImmutableListMultimap.<Map.Entry<K, V>, K, V> toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableListMultimap.<Map.Entry<K, V>, K, V>toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableSetMultimap<K, V>> toImmutableSetMultimap()
 	{
-		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V> toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V>toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	public static <K, V> Collector<V, ?, ArrayListMultimap<K, V>> toArrayListMultimapByKey(@NonNull final Function<V, K> keyFunction)
@@ -350,7 +350,7 @@ public final class GuavaCollectors
 	public static <T> Collector<T, ?, T> singleElementOrThrow(@NonNull final Supplier<? extends RuntimeException> exceptionSupplier)
 	{
 		final Supplier<List<T>> supplier = ArrayList::new;
-		final BiConsumer<List<T>, T> accumulator = (list, value) -> list.add(value);
+		final BiConsumer<List<T>, T> accumulator = List::add;
 		final BinaryOperator<List<T>> combiner = (l, r) -> {
 			l.addAll(r);
 			return l;
@@ -392,6 +392,18 @@ public final class GuavaCollectors
 		final Supplier<List<T>> supplier = ArrayList::new;
 		final BiConsumer<List<T>, T> accumulator = List::add;
 		final BinaryOperator<List<T>> combiner = (acc1, acc2) -> {
+			acc1.addAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <T, R> Collector<T, ?, R> collectUsingHashSetAccumulator(@NonNull final Function<HashSet<T>, R> finisher)
+	{
+		final Supplier<HashSet<T>> supplier = HashSet::new;
+		final BiConsumer<HashSet<T>, T> accumulator = HashSet::add;
+		final BinaryOperator<HashSet<T>> combiner = (acc1, acc2) -> {
 			acc1.addAll(acc2);
 			return acc1;
 		};

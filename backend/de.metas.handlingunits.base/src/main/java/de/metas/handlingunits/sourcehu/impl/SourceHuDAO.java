@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -25,6 +26,8 @@ import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -63,6 +66,7 @@ public class SourceHuDAO implements ISourceHuDAO
 	}
 
 	@Override
+	@Nullable
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
 	public I_M_Source_HU retrieveSourceHuMarkerOrNull(@NonNull @CacheModel final I_M_HU hu)
 	{
@@ -95,15 +99,15 @@ public class SourceHuDAO implements ISourceHuDAO
 			return ImmutableSet.of();
 		}
 
-		final Set<HuId> huIds = queryBuilder
+		return queryBuilder
 				.create()
 				.listIds()
 				.stream()
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		return huIds;
 	}
 
+	@Nullable
 	private IQueryBuilder<I_M_HU> retrieveActiveSourceHusQuery(@NonNull final MatchingSourceHusQuery query)
 	{
 		if (query.getProductIds().isEmpty())
@@ -153,9 +157,11 @@ public class SourceHuDAO implements ISourceHuDAO
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
 				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()));
-		if (query.getWarehouseId() != null)
+
+		final ImmutableSet<WarehouseId> warehouseIds = query.getWarehouseIds();
+		if (warehouseIds != null && !warehouseIds.isEmpty())
 		{
-			huQueryBuilder.addOnlyInWarehouseId(query.getWarehouseId());
+			huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		}
 
 		final IQueryFilter<I_M_HU> huFilter = huQueryBuilder.createQueryFilter();

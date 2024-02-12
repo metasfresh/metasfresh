@@ -30,7 +30,6 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -47,6 +46,7 @@ import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.v2.order.JsonSalesOrderLine;
+import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -229,7 +229,7 @@ public class SalesOrderRestController
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
-				.type(JsonAttachmentType.valueOf(entry.getType().toString()))
+				.type(JsonConverters.toJsonAttachmentSourceType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

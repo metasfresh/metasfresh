@@ -2,7 +2,7 @@
 
 if [[ ! -z $WEBAPI_URL ]]; then
     sed -i 's,http\:\/\/MYDOCKERHOST\:PORT,'$WEBAPI_URL',g' /opt/metasfresh-webui-frontend/dist/config.js
-#    sed -i 's,http\:\/\/MYDOCKERHOST\:PORT,'$WEBAPI_URL',g' /opt/metasfresh-webui-frontend/dist/mobile/config.js
+    sed -i 's,http\:\/\/MYDOCKERHOST\:PORT,'$WEBAPI_URL',g' /opt/metasfresh-webui-frontend/dist/mobile/config.js
 fi
 
 if [[ -f "/etc/apache2/certs/fullchain.pem" ]] && [[ -f "/etc/apache2/certs/privkey.pem" ]]; then

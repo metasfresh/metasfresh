@@ -64,9 +64,6 @@ public final class ProcessPreconditionsResolution
 
 	/**
 	 * Convenience method to flag a process as not available in a particular context, giving the user a short reason about why the process is unavailable.
-	 * 
-	 * @param reason
-	 * @return
 	 */
 	public static ProcessPreconditionsResolution reject(@NonNull final ITranslatableString reason)
 	{
@@ -80,8 +77,6 @@ public final class ProcessPreconditionsResolution
 	 * Like {@link #reject(ITranslatableString)}, but with a constant string.
 	 * 
 	 * @param reasonStr this string will be used as-is (not translated)
-	 * @return
-	 * 
 	 * @deprecated please use {@link #reject(ITranslatableString)} instead; see issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/510">metasfresh-webui-api#510</a>.
 	 */
 	@Deprecated
@@ -102,7 +97,6 @@ public final class ProcessPreconditionsResolution
 	 * The given {@code reasonStr} is intended only for logging, debugging etc.
 	 * 
 	 * @param reasonStr this string will be used as-is (not translated)
-	 * @return
 	 */
 	public static ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
 	{
@@ -144,7 +138,6 @@ public final class ProcessPreconditionsResolution
 	/**
 	 * NOTE: please avoid using this method. It was introduced just to migrate the old processes.
 	 *
-	 * @param accept
 	 * @return if <code>accept</code> is true then returns {@link #accepted} else {@link #reject()}.
 	 */
 	public static ProcessPreconditionsResolution acceptIf(final boolean accept)
@@ -252,7 +245,6 @@ public final class ProcessPreconditionsResolution
 	 * Derive this resolution, overriding the caption.
 	 * 
 	 * @param captionOverride caption override; null value will be considered as no override
-	 * @return
 	 */
 	public ProcessPreconditionsResolution deriveWithCaptionOverride(@NonNull final String captionOverride)
 	{
@@ -267,7 +259,7 @@ public final class ProcessPreconditionsResolution
 	@Value
 	private static class ProcessCaptionOverrideMapper implements ProcessCaptionMapper
 	{
-		private final ITranslatableString captionOverride;
+		ITranslatableString captionOverride;
 
 		public ProcessCaptionOverrideMapper(@NonNull final ITranslatableString captionOverride)
 		{

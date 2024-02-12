@@ -27,9 +27,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -66,6 +66,9 @@ public class MediatedOrder
 	Instant updated;
 
 	@NonNull
+	CurrencyId currencyId;
+
+	@NonNull
 	ImmutableList<MediatedOrderLine> mediatedOrderLines;
 
 	@NonNull
@@ -76,6 +79,7 @@ public class MediatedOrder
 				.orgId(orgId)
 				.salesRepBPartnerId(orgBPartnerId)
 				.customerBPartnerId(vendorBPartnerId)
+				.documentCurrencyId(currencyId)
 				.commissionDate(orderDateAcct);
 
 		final ImmutableList.Builder<CommissionTriggerDocument> result = ImmutableList.builder();
@@ -83,12 +87,12 @@ public class MediatedOrder
 		mediatedOrderLines.forEach(mediatedLine -> {
 			document.id(MediatedOrderLineDocId.of(mediatedLine.getId()))
 
-					.tradedCommissionPercent(Percent.ZERO)
 					.forecastCommissionPoints(CommissionPoints.ZERO)
 					.commissionPointsToInvoice(CommissionPoints.ZERO)
 					.invoicedCommissionPoints(mediatedLine.getInvoicedCommissionPoints())
 
 					.productId(mediatedLine.getProductId())
+					.totalQtyInvolved(mediatedLine.getOrderedQty())
 					.updated(TimeUtil.maxNotNull(updated, mediatedLine.getUpdated()));
 
 			result.add(document.build());

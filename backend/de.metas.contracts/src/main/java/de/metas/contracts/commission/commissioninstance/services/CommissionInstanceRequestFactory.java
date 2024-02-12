@@ -8,6 +8,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -67,7 +68,7 @@ public class CommissionInstanceRequestFactory
 
 		// note: we include the end-customer in the hierarchy because they might be a salesrep 
 		// and their contract might indicate that metasfresh shall create a 0% commission share for them
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
+		final Hierarchy hierarchy = commissionHierarchyFactory.createForCustomer(customerBPartnerId, salesRepBPartnerId);
 
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(commissionTriggerDocument.getOrgId())

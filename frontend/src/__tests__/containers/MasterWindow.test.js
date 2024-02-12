@@ -169,7 +169,7 @@ describe.skip('MasterWindowContainer', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
+      .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine,%2BC_OrderLine_ID`)
       .reply(200, { result: rowFixtures.row_data1 });
 
     nock(config.API_URL)

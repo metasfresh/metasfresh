@@ -212,10 +212,11 @@ RawChart.propTypes = {
   fields: PropTypes.arrayOf(PropTypes.object),
   groupBy: PropTypes.object,
   height: PropTypes.number,
-  handleChartOptions: PropTypes.func,
   editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
   zoomToDetailsAvailable: PropTypes.bool,
+  //
+  handleChartOptions: PropTypes.func,
 };
 
 export default connect()(RawChart);

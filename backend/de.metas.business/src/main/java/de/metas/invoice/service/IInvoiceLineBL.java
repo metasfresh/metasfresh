@@ -22,20 +22,18 @@ package de.metas.invoice.service;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import org.compiere.model.MInvoiceLine;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  *
@@ -94,4 +92,8 @@ public interface IInvoiceLineBL extends ISingletonService
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
 	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
+
+	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
+
+	Quantity getQtyInvoicedStockUOM(I_C_InvoiceLine invoiceLine);
 }

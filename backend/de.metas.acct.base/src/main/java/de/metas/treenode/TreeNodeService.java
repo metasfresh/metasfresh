@@ -22,37 +22,64 @@
 
 package de.metas.treenode;
 
-import org.compiere.model.I_C_ElementValue;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.elementvalue.ChartOfAccountsService;
+import de.metas.elementvalue.ElementValue;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.model.tree.AdTreeId;
 import org.springframework.stereotype.Service;
 
-import de.metas.elementvalue.ElementValue;
-import de.metas.acct.api.impl.ElementValueId;
-import de.metas.elementvalue.ElementValueRepository;
-import lombok.NonNull;
+import java.util.List;
 
 @Service
 public class TreeNodeService
 {
-	private final ElementValueRepository elementValueRepo;
 	private final TreeNodeRepository treeNodeRepo;
+	private final ChartOfAccountsService chartOfAccountsService;
 
 	public TreeNodeService(
-			@NonNull final ElementValueRepository elementValueRepo,
-			@NonNull final TreeNodeRepository treeNodeRepo)
+			@NonNull final TreeNodeRepository treeNodeRepo,
+			@NonNull final ChartOfAccountsService chartOfAccountsService)
 	{
-		this.elementValueRepo = elementValueRepo;
 		this.treeNodeRepo = treeNodeRepo;
+		this.chartOfAccountsService = chartOfAccountsService;
 	}
 
-	public void updateTreeNode(@NonNull final I_C_ElementValue elementValueRecord)
+	public void updateTreeNode(@NonNull final ElementValue elementValue)
 	{
-		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_ElementValue_ID());
-		final ElementValue elementValue = elementValueRepo.getById(evId);
-
 		// treeNode base on all the data from element value
-		final TreeNode treeNode = treeNodeRepo.toTreeNode(elementValue);
+		final TreeNode treeNode = toTreeNode(elementValue);
 
 		// save entire info from treenode to treenode record
 		treeNodeRepo.save(treeNode);
+	}
+
+	@NonNull
+	public TreeNode toTreeNode(@NonNull final ElementValue elementValue)
+	{
+		final AdTreeId chartOfAccountsTreeId = chartOfAccountsService.getById(elementValue.getChartOfAccountsId()).getTreeId();
+		return TreeNode.builder()
+				.chartOfAccountsTreeId(chartOfAccountsTreeId)
+				.nodeId(elementValue.getId())
+				.parentId(elementValue.getParentId())
+				.seqNo(elementValue.getSeqNo())
+				.build();
+	}
+
+	private ImmutableList<TreeNode> toTreeNodes(final @NonNull List<ElementValue> elementValues)
+	{
+		return elementValues.stream()
+				.map(this::toTreeNode)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void recreateTree(@NonNull final List<ElementValue> elementValues)
+	{
+		final ImmutableList<TreeNode> nodes = toTreeNodes(elementValues);
+		treeNodeRepo.recreateTree(nodes);
 	}
 }

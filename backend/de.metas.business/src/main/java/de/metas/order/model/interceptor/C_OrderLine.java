@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -15,6 +16,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -35,6 +37,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -110,22 +113,19 @@ public class C_OrderLine
 	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
 	 * Task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	private void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
+	private void unlinkReferencedOrderLines(final I_C_OrderLine purchaseOrderLine)
 	{
 		// 09557
 		queryBL
-				.createQueryBuilder(I_C_OrderLine.class, orderLine)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
+				.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID())
 				.create()
-				.update(ol -> {
-					ol.setLink_OrderLine(null);
-					return IQueryUpdater.MODEL_UPDATED;
-				});
+				.delete();
 
 		// FRESH-386
 		queryBL
-				.createQueryBuilder(I_C_OrderLine.class, orderLine)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
+				.createQueryBuilder(I_C_OrderLine.class, purchaseOrderLine)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
 				.create()
 				.update(ol -> {
 					ol.setRef_OrderLine(null);
@@ -351,7 +351,11 @@ public class C_OrderLine
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
-		partnerProductBL.assertNotExcludedFromSaleToCustomer(productId, partnerId);
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(order.isSOTrx());
+
+		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -403,5 +407,17 @@ public class C_OrderLine
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
 		orderLineBL.updateProductDocumentNote(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
+	public void renumberLinesIfCompensationGroupChanged(@NonNull final I_C_OrderLine orderLine)
+	{
+		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
+		{
+			return;
+		}
+
+		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
 }

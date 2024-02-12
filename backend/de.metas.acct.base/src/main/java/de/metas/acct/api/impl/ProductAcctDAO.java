@@ -118,20 +118,6 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return Optional.of(AccountId.ofRepoId(validCombinationId));
 	}
 
-	@Override
-	public ActivityId getProductActivityId(@NonNull final ProductId productId)
-	{
-		final Properties ctx = Env.getCtx();
-		final AcctSchema schema = acctSchemaDAO.getByClientAndOrg(ctx);
-		final I_M_Product_Acct productAcct = getProductAcctRecord(schema.getId(), productId).orElse(null);
-		if (productAcct == null)
-		{
-			return null;
-		}
-
-		return ActivityId.ofRepoIdOrNull(productAcct.getC_Activity_ID());
-	}
-
 	private ProductCategoryAccountsCollection getProductCategoryAccountsCollection()
 	{
 		return this.productCategoryAcctCollectionCache.getOrLoad(0, this::retrieveProductCategoryAccountsCollection);

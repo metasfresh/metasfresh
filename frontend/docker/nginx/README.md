@@ -19,10 +19,5 @@ Set the base URL for the webui-api server as seen from the frontend http server:
 * `WEBUI_API_PROXYPASS_HOST`
 * `WEBUI_API_PROXYPASS_PORT`
 
-Set the base URL for the msv3-server as seen from the frontend http server.
-* `MSV3_API_PROXYPASS_PROTOCOL`
-* `MSV3_API_PROXYPASS_HOST`
-* `MSV3_API_PROXYPASS_PORT`
-
 The default, is 'n'; everything besides 'n' makes the startup script cat the nginx config file that will be used
 * `DEBUG_CAT_NGINX_CONF_FILE`

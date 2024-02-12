@@ -92,10 +92,12 @@ public class C_Order_AutoProcess_Async
 
 	private boolean isEligibleForAutoProcessing(@NonNull final I_C_Order orderRecord)
 	{
-		final boolean isAutoShipAndInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
-		final boolean isDeliveryRuleAvailability = orderRecord.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode());
+		final boolean featureEnabled = sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
 
-		if (!isAutoShipAndInvoice || !isDeliveryRuleAvailability)
+		final DeliveryRule deliveryRule = DeliveryRule.ofCode(orderRecord.getDeliveryRule());
+
+		final boolean canDoAutoShipAndInvoice = featureEnabled && deliveryRule.isBasedOnDelivery();
+		if (!canDoAutoShipAndInvoice)
 		{
 			return false;
 		}

@@ -170,9 +170,10 @@ public class RemittanceAdvice
 
 	public void validateCompleteAction()
 	{
-		final ImmutableList<RemittanceAdviceLineId> lineIdsWithProblems = lines.stream()
+		final ImmutableList<Integer> lineIdsWithProblems = lines.stream()
 				.filter(line -> !line.isReadyForCompletion())
 				.map(RemittanceAdviceLine::getRemittanceAdviceLineId)
+				.map(RemittanceAdviceLineId::getRepoId)
 				.collect(ImmutableList.toImmutableList());
 
 		if (lineIdsWithProblems.size() > 0)

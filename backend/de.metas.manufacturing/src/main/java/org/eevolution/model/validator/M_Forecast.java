@@ -23,18 +23,23 @@ package org.eevolution.model.validator;
  */
 
 
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IDDOrderBL;
 
 import de.metas.util.Services;
 
-@Validator(I_M_Forecast.class)
+@Interceptor(I_M_Forecast.class)
 public class M_Forecast
 {
+	private final DDOrderLowLevelService ddOrderLowLevelService;
+
+	public M_Forecast(final DDOrderLowLevelService ddOrderLowLevelService) {this.ddOrderLowLevelService = ddOrderLowLevelService;}
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Forecast.COLUMNNAME_Processing)
 	public void completeBackwardDDOrders(final I_M_Forecast forecast)
 	{
@@ -49,6 +54,6 @@ public class M_Forecast
 			return;
 		}
 
-		Services.get(IDDOrderBL.class).completeBackwardDDOrders(forecast);
+		ddOrderLowLevelService.completeBackwardDDOrders(forecast);
 	}
 }

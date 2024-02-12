@@ -31,7 +31,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.contracts.impl.FlatrateBL;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -49,6 +48,7 @@ import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -78,6 +78,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -89,6 +90,8 @@ import java.util.Set;
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
+	private final static Logger logger = LogManager.getLogger(C_Flatrate_Term.class);
+
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
@@ -122,6 +125,7 @@ public class C_Flatrate_Term
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
+			ensureDocTypesExist(I_C_DocType.DocSubType_CallOrder);
 		}
 	}
 
@@ -476,7 +480,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
-	 *
+	 * <p>
 	 * task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -537,7 +541,7 @@ public class C_Flatrate_Term
 		{
 			final I_C_BPartner billBPartnerRecord = bparnterDAO.getById(term.getBill_BPartner_ID());
 
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
+			throw new AdempiereException(de.metas.contracts.impl.FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
 					.markAsUserValidationError();
 		}
 	}
@@ -666,15 +670,31 @@ public class C_Flatrate_Term
 					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
 					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
 			})
-	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContract(@NonNull final I_C_Flatrate_Term term)
 	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+		ensureOneContractOfGivenType(term);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+		ensureOneContractOfGivenType(term);
+	}
+
+	private void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+		final TypeConditions contractType = TypeConditions.ofCode(term.getType_Conditions());
+
+		switch (contractType)
+		{
+			case MEDIATED_COMMISSION:
+			case MARGIN_COMMISSION:
+			case LICENSE_FEE:
+				flatrateBL.ensureOneContractOfGivenType(term, contractType);
+			default:
+				logger.debug("Skipping ensureOneContractOfGivenType check for 'Type_Conditions' =" + contractType);
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

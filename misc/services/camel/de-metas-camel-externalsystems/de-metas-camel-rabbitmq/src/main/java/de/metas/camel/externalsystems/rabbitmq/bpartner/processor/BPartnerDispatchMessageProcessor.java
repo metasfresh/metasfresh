@@ -24,22 +24,25 @@ package de.metas.camel.externalsystems.rabbitmq.bpartner.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.rabbitmq.api.DispatchMessageRequest;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpMessage;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQProperties;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.ExportBPartnerRouteContext;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.camel.externalsystems.rabbitmq.api.ApiConstants.PERSISTENT_DELIVERY_MODE;
+import static de.metas.camel.externalsystems.rabbitmq.api.ApiConstants.RABBITMQ_HEADERS_METASFRESH_BUSINESS_PARTNER_SYNC;
+import static de.metas.camel.externalsystems.rabbitmq.api.ApiConstants.RABBITMQ_HEADERS_SUBJECT;
+import static de.metas.camel.externalsystems.rabbitmq.api.ApiConstants.RABBITMQ_PROPS_PERSISTENT_DELIVERY_MODE;
 import static de.metas.camel.externalsystems.rabbitmq.api.ApiConstants.RABBIT_MQ_PAYLOAD_ENCODING;
 import static de.metas.camel.externalsystems.rabbitmq.common.CamelConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT;
 
 public class BPartnerDispatchMessageProcessor implements Processor
 {
+
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
@@ -71,7 +74,8 @@ public class BPartnerDispatchMessageProcessor implements Processor
 	private JsonRabbitMQProperties getDefaultRabbitMQProperties()
 	{
 		return JsonRabbitMQProperties.builder()
-				.delivery_mode(PERSISTENT_DELIVERY_MODE)
+				.delivery_mode(RABBITMQ_PROPS_PERSISTENT_DELIVERY_MODE)
+				.header(RABBITMQ_HEADERS_SUBJECT, RABBITMQ_HEADERS_METASFRESH_BUSINESS_PARTNER_SYNC)
 				.build();
 	}
 }
