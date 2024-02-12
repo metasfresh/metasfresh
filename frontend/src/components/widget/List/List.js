@@ -360,7 +360,6 @@ ListWidget.propTypes = {
   field: PropTypes.string,
   mandatory: PropTypes.bool,
   lastProperty: PropTypes.string,
-  compositeWidgetData: PropTypes.array,
 };
 
 const mapStateToProps = (state) => ({

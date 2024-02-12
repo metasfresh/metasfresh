@@ -1,15 +1,16 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.time.LocalDate;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import lombok.Builder;
 import lombok.Value;
-
-import java.time.LocalDate;
-import java.util.Map;
 
 /*
  * #%L

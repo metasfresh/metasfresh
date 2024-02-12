@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Physical Inventory and disposal - Production dispo scenarios
 
   Background:
@@ -17,6 +18,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
+    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM

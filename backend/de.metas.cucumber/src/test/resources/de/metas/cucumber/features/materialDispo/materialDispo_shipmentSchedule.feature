@@ -1,12 +1,13 @@
 @from:cucumber
 @topic:materialdispo
+@ghActions:run_on_executor6
 Feature: material-dispo updates on shipment-schedule events
   As a user
   I want material dispo to be updated properly if shipment-schedules are created
   So that the ATP is always correct
 
   Background: Initial Data
-    And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
+    Given metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value              | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
@@ -23,12 +24,6 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with no quantity in stock
-    And metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_1        | p_No_Qty_160922 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     Given metasfresh contains M_Products:
       | Identifier | Name            |
       | p_1        | p_No_Qty_160922 |
@@ -53,12 +48,6 @@ Feature: material-dispo updates on shipment-schedule events
   @from:cucumber
   @topic:materialdispo
   Scenario: shipment-schedule with quantity in stock
-    And metasfresh contains M_Products:
-      | Identifier | Name              |
-      | p_1        | p_With_Qty_160922 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_1        | p_With_Qty_160922 |

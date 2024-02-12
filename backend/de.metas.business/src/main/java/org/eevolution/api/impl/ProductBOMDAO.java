@@ -2,6 +2,7 @@ package org.eevolution.api.impl;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocTypeId;
@@ -26,6 +27,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -48,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -127,15 +130,15 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		return getProductBOMVersionsDAO()
 				.retrieveBOMVersionsId(productId)
-				.flatMap(this::getDefaultBOM);
+				.flatMap(this::getDefaultBOMRecordByVersionId);
 	}
 
 	@Override
-	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final ProductId productId, @NonNull final BOMType bomType)
+	public Optional<I_PP_Product_BOM> getByProductIdAndType(@NonNull final ProductId productId, @NonNull final Set<BOMType> bomTypes)
 	{
 		return getProductBOMVersionsDAO()
 				.retrieveBOMVersionsId(productId)
-				.flatMap(bomVersionsId -> getLatestBOMRecordByVersion(bomVersionsId, bomType));
+				.flatMap(bomVersionsId -> getLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes));
 	}
 
 	@Override
@@ -378,19 +381,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	@NonNull
-	public Optional<ProductBOMId> getLatestBOMByVersion(final @NonNull ProductBOMVersionsId bomVersionsId)
+	public boolean hasBOMs(final @NonNull ProductBOMVersionsId bomVersionsId)
 	{
-		return getLatestBOMRecordByVersion(bomVersionsId, null)
-				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
-				.map(ProductBOMId::ofRepoId);
-	}
-
-	@Override
-	@NonNull
-	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(final @NonNull ProductBOMVersionsId bomVersionsId)
-	{
-		return getLatestBOMRecordByVersion(bomVersionsId, null);
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId)
+				.create()
+				.anyMatch();
 	}
 
 	/**
@@ -398,7 +394,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	 */
 	@Override
 	@NonNull
-	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
+	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable Set<BOMType> bomTypes, final @Nullable DocStatus docStatus)
 	{
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = queryBL
 				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
@@ -412,10 +408,29 @@ public class ProductBOMDAO implements IProductBOMDAO
 			queryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, docStatus.getCode());
 		}
 
+		if (bomTypes != null)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomTypes);
+		}
+
 		return queryBuilder
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
 				.create()
 				.firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_PP_Product_BOM> getSiblings(final @NonNull I_PP_Product_BOM productBom)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, productBom.getPP_Product_BOM_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, productBom.getPP_Product_BOMVersions_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, productBom.getBOMType())
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.create()
+				.list();
 	}
 
 	@Override
@@ -432,10 +447,27 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.anyMatch();
 	}
 
+	@Override
+	public Optional<ProductBOMId> getLatestBOMIdByVersionAndType(@NonNull final ProductBOMVersionsId bomVersionsId, final @Nullable Set<BOMType> bomTypes)
+	{
+		return Optional.ofNullable(
+				queryLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes).firstId(ProductBOMId::ofRepoIdOrNull)
+		);
+	}
+
+	@Override
 	@NonNull
-	private Optional<I_PP_Product_BOM> getLatestBOMRecordByVersion(
+	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionAndType(
 			final @NonNull ProductBOMVersionsId bomVersionsId,
-			final @Nullable BOMType bomType)
+			final @Nullable Set<BOMType> bomTypes)
+	{
+		return queryLatestBOMRecordByVersionAndType(bomVersionsId, bomTypes).firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@NonNull
+	private IQuery<I_PP_Product_BOM> queryLatestBOMRecordByVersionAndType(
+			final @NonNull ProductBOMVersionsId bomVersionsId,
+			final @Nullable Set<BOMType> bomTypes)
 	{
 		final I_PP_Product_BOMVersions bomVersions = getProductBOMVersionsDAO().getBOMVersions(bomVersionsId);
 
@@ -445,25 +477,25 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (bomType != null)
+		if (!Check.isEmpty(bomTypes))
 		{
-			productBOMQueryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType.getCode());
+			productBOMQueryBuilder.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomTypes);
 		}
 
 		return productBOMQueryBuilder
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersionsId.getRepoId())
 				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(ZonedDateTime.now(zoneId)))
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
-				.create()
-				.firstOptional(I_PP_Product_BOM.class);
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
+				.create();
 	}
 
 	@NonNull
-	private Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final ProductBOMVersionsId bomVersionsId)
+	private Optional<I_PP_Product_BOM> getDefaultBOMRecordByVersionId(@NonNull final ProductBOMVersionsId bomVersionsId)
 	{
 		return Optionals.firstPresentOfSuppliers(
-				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.CurrentActive),
-				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.MakeToOrder));
+				() -> getLatestBOMRecordByVersionAndType(bomVersionsId, ImmutableSet.of(BOMType.CurrentActive)),
+				() -> getLatestBOMRecordByVersionAndType(bomVersionsId, ImmutableSet.of(BOMType.MakeToOrder)));
 	}
 
 	@NonNull

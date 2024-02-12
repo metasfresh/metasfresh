@@ -1,6 +1,5 @@
 package de.metas.distribution.workflows_api;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
@@ -32,8 +31,7 @@ import java.util.function.UnaryOperator;
 @Component
 public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
-	@VisibleForTesting
-	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
+	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()

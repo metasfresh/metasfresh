@@ -48,6 +48,7 @@ import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -2223,6 +2224,19 @@ public class MInOut extends X_M_InOut implements IDocument
 			sLine.setReversalLine_ID(rLine.getM_InOutLine_ID());
 			InterfaceWrapperHelper.save(sLine);
 
+			// We need to copy MA
+			if (rLine.getM_AttributeSetInstance_ID() <= 0)
+			{
+				final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
+						sLine.getM_InOutLine_ID(), get_TrxName());
+				for (final MInOutLineMA ma2 : mas)
+				{
+					final MInOutLineMA ma = new MInOutLineMA(rLine,
+							ma2.getM_AttributeSetInstance_ID(),
+							ma2.getMovementQty().negate());
+					ma.saveEx();
+				}
+			}
 			// De-Activate Asset
 			final MAsset asset = MAsset.getFromShipment(getCtx(), sLine.getM_InOutLine_ID(), get_TrxName());
 			if (asset != null)
@@ -2373,6 +2387,12 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// TODO: check if there are more places where to look and check if the inout line was already invoiced
+
+			// Delete material allocations
+			for (final MInOutLineMA ma : MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName()))
+			{
+				InterfaceWrapperHelper.delete(ma);
+			}
 
 			// Delete M_Transactions
 			for (final I_M_Transaction mtrx : transactionDAO.retrieveReferenced(inoutLine))

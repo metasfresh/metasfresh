@@ -37,7 +37,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -178,9 +177,7 @@ public class PP_Order_StepDef
 
 			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
 
-			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
+			final PPOrderCreateRequest ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
 					.plantId(resourceId)
@@ -190,15 +187,10 @@ public class PP_Order_StepDef
 					.dateOrdered(dateOrdered)
 					.datePromised(datePromised)
 					.dateStartSchedule(dateStartSchedule)
-					.completeDocument(completeDocument);
+					.completeDocument(completeDocument)
+					.build();
 
-			if (Check.isNotBlank(productPlanningIdentifier))
-			{
-				final I_PP_Product_Planning productPlanning = productPlanningTable.get(productPlanningIdentifier);
-				ppOrderCreateRequest.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()));
-			}
-
-			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
+			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest);
 			assertThat(ppOrder).isNotNull();
 
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);

@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor1
+@ghActions:run_on_executor4
 Feature: create production order
   As a user
   I want to create a Production order record
@@ -20,6 +20,7 @@ Feature: create production order
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
+    And metasfresh initially has no MD_Candidate data
 
   @Id:S0196_400
   @from:cucumber

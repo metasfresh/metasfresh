@@ -58,10 +58,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -477,16 +479,16 @@ public class MD_Candidate_StepDef
 		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
 															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
 															   + "**query result candidates:**\n{}\n"
-															   + "**all product related candidates:**\n{}",
-													   tableRow,
-													   candidatesQuery,
+															   + "**all candidates:**\n{}",
+													   tableRow, candidatesQuery,
 													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+													   materialDispoRecordRepository.getAllAsString());
 
-		return StepDefUtil
+		final MaterialDispoDataItem materialDispoRecord = StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
 								   logContext);
+		return materialDispoRecord;
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

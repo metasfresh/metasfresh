@@ -51,8 +51,7 @@ public final class POInfoColumn implements Serializable
 			final String valueMax,
 			final boolean isTranslated,
 			final boolean isEncrypted,
-			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn)
+			final boolean isAllowLogging)
 	{
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
@@ -110,7 +109,6 @@ public final class POInfoColumn implements Serializable
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
-		IsRestAPICustomColumn = isRestAPICustomColumn;
 	}   // Column
 
 	private static boolean isString(
@@ -258,8 +256,6 @@ public final class POInfoColumn implements Serializable
 	 */
 	final BigDecimal ValueMax_BD;
 
-	final boolean IsRestAPICustomColumn;
-
 	/* package */ boolean IsCalculated = false;
 	// metas: us215
 	/* package */ boolean IsUseDocumentSequence = false;
@@ -388,11 +384,6 @@ public final class POInfoColumn implements Serializable
 	public boolean isLookup()
 	{
 		return org.compiere.util.DisplayType.isLookup(DisplayType);
-	}
-
-	public boolean isRestAPICustomColumn()
-	{
-		return IsRestAPICustomColumn;
 	}
 
 	@Nullable

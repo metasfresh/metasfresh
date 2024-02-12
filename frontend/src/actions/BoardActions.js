@@ -34,3 +34,14 @@ export function filterCards(boardId, viewId) {
     config.API_URL + '/board/' + boardId + '/newVardsView/' + viewId + '/filter'
   );
 }
+
+export function addDashboardWidget(entity, id, pos) {
+  return axios.post(config.API_URL + '/dashboard/' + entity + '/new', {
+    kpiId: id,
+    position: pos,
+  });
+}
+
+export function removeDashboardWidget(entity, id) {
+  return axios.delete(config.API_URL + '/dashboard/' + entity + '/' + id);
+}

@@ -22,16 +22,21 @@
 
 package de.metas.handlingunits.rest_api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
+import java.util.Set;
+
 @Value
 @Builder
 public class LoadJsonHURequest
 {
+	public static final Set<String> INCLUDE_EMPTY_ATTRIBUTES_NONE = ImmutableSet.of();
+
 	@With
 	@NonNull
 	I_M_HU hu;
@@ -41,6 +46,18 @@ public class LoadJsonHURequest
 
 	@With
 	boolean getAllowedClearanceStatuses;
+
+	/**
+	 * If {@code true}, then generally exclude all HU-attributes with an empty value, unless their {@code  M_Attribute.Value} is explicitly included in {@link #getEmptyAttributesToInclude()}.
+	 */
+	@Builder.Default
+	boolean excludeEmptyAttributes = true;
+
+	/**
+	 * Represents a set of {@code  M_Attribute.Value}s to include the result even if they have an empty value.
+	 */
+	@Builder.Default
+	Set<String> emptyAttributesToInclude = INCLUDE_EMPTY_ATTRIBUTES_NONE;
 
 	@NonNull
 	public static LoadJsonHURequest ofHUAndLanguage(@NonNull final I_M_HU hu, @NonNull final String adLanguage)

@@ -24,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
@@ -41,7 +42,16 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
-		setQty(movementQty, false);
+
+		final CostCollectorType costCollectorType = doc.getCostCollectorType();
+		if (CostCollectorType.ComponentIssue.equals(costCollectorType))
+		{
+			setQty(movementQty, true); // we can see it as a sales transactions
+		}
+		else
+		{
+			setQty(movementQty, false);
+		}
 
 		setReversalLine_ID(cc.getReversal_ID());
 	}
