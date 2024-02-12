@@ -14,6 +14,10 @@ export const postStepPicked = ({
   catchWeight,
   pickWholeTU,
   checkIfAlreadyPacked,
+  setBestBeforeDate,
+  bestBeforeDate,
+  setLotNo,
+  lotNo,
 }) => {
   return postEvent({
     wfProcessId,
@@ -28,6 +32,10 @@ export const postStepPicked = ({
     catchWeight,
     pickWholeTU,
     checkIfAlreadyPacked,
+    setBestBeforeDate,
+    bestBeforeDate,
+    setLotNo,
+    lotNo,
   });
 };
 

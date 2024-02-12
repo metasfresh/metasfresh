@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { map } from 'lodash';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
@@ -31,6 +30,7 @@ const WFLaunchersScreen = () => {
   } = useRouteMatch();
 
   const [currentPanel, setCurrentPanel] = useState('default');
+  const [loading, setLoading] = useState(false);
 
   const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
     getApplicationInfoById({ state, applicationId })
@@ -81,9 +81,12 @@ const WFLaunchersScreen = () => {
       return;
     }
 
-    getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
-      onNewLaunchers({ applicationId, applicationLaunchers });
-    });
+    setLoading(true);
+    getLaunchers({ applicationId, filterByQRCode, facets })
+      .then((applicationLaunchers) => {
+        onNewLaunchers({ applicationId, applicationLaunchers });
+      })
+      .finally(() => setLoading(false));
   }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
 
   //
@@ -147,7 +150,7 @@ const WFLaunchersScreen = () => {
       )}
       {currentPanel === 'default' &&
         launchers &&
-        map(launchers, (launcher, index) => {
+        launchers.map((launcher, index) => {
           const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
           return (
             <WFLauncherButton
@@ -160,6 +163,11 @@ const WFLaunchersScreen = () => {
             />
           );
         })}
+      {loading && (
+        <div className="loading">
+          <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
+        </div>
+      )}
     </div>
   );
 };

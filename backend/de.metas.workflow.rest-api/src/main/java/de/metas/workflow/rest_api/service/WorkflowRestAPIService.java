@@ -43,6 +43,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
@@ -91,11 +92,9 @@ public class WorkflowRestAPIService
 				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
 	}
 
-	public WorkflowLaunchersFacetGroupList getFacets(
-			@NonNull final MobileApplicationId applicationId,
-			@NonNull final UserId userId)
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
 	{
-		return getWorkflowBasedMobileApplication(applicationId).getFacets(userId);
+		return getWorkflowBasedMobileApplication(query.getApplicationId()).getFacets(query);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)

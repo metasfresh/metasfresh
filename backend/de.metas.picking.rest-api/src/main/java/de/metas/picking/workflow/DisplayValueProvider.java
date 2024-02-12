@@ -72,7 +72,7 @@ public class DisplayValueProvider
 	{
 		this.partnerDAO = partnerDAO;
 		this.orgDAO = orgDAO;
-		this.renderedAddressProvider = RenderedAddressProvider.of(documentLocationBL);
+		this.renderedAddressProvider = RenderedAddressProvider.newInstance(documentLocationBL);
 
 		this.profile = profile;
 	}
