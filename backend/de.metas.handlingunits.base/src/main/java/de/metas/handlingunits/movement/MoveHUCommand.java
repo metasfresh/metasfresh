@@ -7,7 +7,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -88,7 +87,7 @@ public class MoveHUCommand
 		final I_M_HU targetHU = handlingUnitsBL.getById(huQRCodesService.getHuIdByQRCode(huqrCode));
 		if (handlingUnitsBL.isDestroyed(targetHU))
 		{
-			handlingUnitsBL.setHUStatus(targetHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Active);
+			handlingUnitsBL.reactivateDestroyedHU(targetHU, PlainContextAware.newWithThreadInheritedTrx());
 		}
 
 		if (handlingUnitsBL.isLoadingUnit(targetHU))

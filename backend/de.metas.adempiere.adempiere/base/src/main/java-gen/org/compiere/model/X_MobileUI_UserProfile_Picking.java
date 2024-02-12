@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 608652765L;
+	private static final long serialVersionUID = -2054600983L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -45,6 +45,8 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public static final String CREATESHIPMENTPOLICY_CREATE_DRAFT = "DR";
 	/** CREATE_AND_COMPLETE = CO */
 	public static final String CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE = "CO";
+	/** CREATE_COMPLETE_CLOSE = CL */
+	public static final String CREATESHIPMENTPOLICY_CREATE_COMPLETE_CLOSE = "CL";
 	@Override
 	public void setCreateShipmentPolicy (final java.lang.String CreateShipmentPolicy)
 	{

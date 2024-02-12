@@ -134,7 +134,7 @@ public class PrintingDataFactory
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
-
+		
 		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
 
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
@@ -148,10 +148,10 @@ public class PrintingDataFactory
 			for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 			{
 
-				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
+				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey, copies);
 				if (printingSegment != null)
 				{
-					addSegmentToData(printingData, printingSegment, copies);
+					printingData.segment(printingSegment);
 					break; // there might be multiple matching printerRoutings, but the first one is the best match
 				}
 			}
@@ -159,23 +159,10 @@ public class PrintingDataFactory
 		else
 		{
 			final PrintingSegment printingSegment = createPrintingSegmentForQueueItem(queueItem);
-			addSegmentToData(printingData, printingSegment, copies);
+		printingData.segment(printingSegment);
 
 		}
 		return printingData.build();
-	}
-
-	private static void addSegmentToData(
-			@NonNull final PrintingData.PrintingDataBuilder printingData,
-			@NonNull final PrintingSegment printingSegment,
-			final int copies)
-	{
-		printingData.segment(printingSegment);
-
-		for (int i = 1; i < copies; i++)
-		{
-			printingData.segment(printingSegment.copy());
-		}
 	}
 
 	public PrintingData createPrintingDataForPrintJobLine(
@@ -184,7 +171,8 @@ public class PrintingDataFactory
 			@Nullable final String hostKey)
 	{
 		final I_AD_Archive archiveRecord = jobLine.getC_Printing_Queue().getAD_Archive();
-
+		final int copies = jobLine.getC_Printing_Queue().getCopies();
+		
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
 				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
@@ -197,7 +185,7 @@ public class PrintingDataFactory
 		for (final I_C_Print_Job_Detail detail : printJobDetails)
 		{
 			final I_AD_PrinterRouting routing = loadOutOfTrx(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
-			final PrintingSegment printingSegment = createPrintingSegment(routing, userToPrintId, hostKey);
+			final PrintingSegment printingSegment = createPrintingSegment(routing, userToPrintId, hostKey, copies);
 			if (printingSegment != null)
 			{
 				printingData.segment(printingSegment);
@@ -241,6 +229,7 @@ public class PrintingDataFactory
 				.printer(hardwarePrinter)
 				.trayId(trayId)
 				.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+				.copies(printingQueue.getCopies())
 				.build();
 	}
 
@@ -248,7 +237,8 @@ public class PrintingDataFactory
 	private PrintingSegment createPrintingSegment(
 			@NonNull final I_AD_PrinterRouting printerRouting,
 			@Nullable final UserId userToPrintId,
-			@Nullable final String hostKey)
+			@Nullable final String hostKey,
+			final int copies)
 	{
 		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey, userToPrintId, printerRouting.getAD_Printer());
 		if (printerMatchingRecord == null)
@@ -274,6 +264,7 @@ public class PrintingDataFactory
 				.routingType(printerRouting.getRoutingType())
 				.printer(hardwarePrinter)
 				.trayId(trayId)
+				.copies(CoalesceUtil.firstGreaterThanZero(copies, 1))
 				.build();
 	}
 }

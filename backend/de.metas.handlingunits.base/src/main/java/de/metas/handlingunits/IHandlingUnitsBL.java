@@ -288,6 +288,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable String huUnitType,
 			@Nullable BPartnerId bpartnerId);
 
+	void reactivateDestroyedHU(@NonNull I_M_HU hu,@NonNull IContextAware contextProvider);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
