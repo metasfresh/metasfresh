@@ -32,13 +32,16 @@ import { postStepPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 
+const isShowBestBeforeDate = true; // TODO make it configurable
+const isShowLotNo = true; // TODO make it configurable
+
 const PickLineScanScreen = () => {
   const {
     url,
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { productId, qtyToPick, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
+  const { productId, qtyToPickRemaining, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
@@ -83,9 +86,24 @@ const PickLineScanScreen = () => {
     catchWeight = null,
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
+    bestBeforeDate = null,
+    lotNo = null,
+    gotoPickingLineScreen = true,
     ...others
   }) => {
-    console.log('onResult', { qty, reason, scannedBarcode, catchWeight, catchWeightUom, ...others });
+    console.log('onResult', {
+      qty,
+      reason,
+      scannedBarcode,
+      catchWeight,
+      catchWeightUom,
+      isShowBestBeforeDate,
+      bestBeforeDate,
+      isShowLotNo,
+      lotNo,
+      gotoPickingLineScreen,
+      ...others,
+    });
 
     postStepPicked({
       wfProcessId,
@@ -98,10 +116,17 @@ const PickLineScanScreen = () => {
       qtyRejected,
       catchWeight,
       pickWholeTU: isTUToBePickedAsWhole,
+      checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
+      setBestBeforeDate: isShowBestBeforeDate,
+      bestBeforeDate,
+      setLotNo: isShowLotNo,
+      lotNo,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.go(-1); // go to picking line screen
+        if (gotoPickingLineScreen) {
+          history.go(-1);
+        }
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -109,12 +134,14 @@ const PickLineScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       qtyCaption={trl('general.QtyToPick')}
-      qtyMax={qtyToPick}
-      qtyTarget={qtyToPick}
+      qtyMax={qtyToPickRemaining}
+      qtyTarget={qtyToPickRemaining}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
       catchWeightUom={catchWeightUom}
+      isShowBestBeforeDate={isShowBestBeforeDate}
+      isShowLotNo={isShowLotNo}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -128,9 +155,13 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
+  const qtyPickedOrRejectedTotal = Object.values(line.steps)
+    .map((step) => step.mainPickFrom.qtyPicked + step.mainPickFrom.qtyRejected)
+    .reduce((acc, qtyPickedOrRejected) => acc + qtyPickedOrRejected, 0);
+
   return {
     productId: line.productId,
-    qtyToPick: line.qtyToPick,
+    qtyToPickRemaining: line.qtyToPick - qtyPickedOrRejectedTotal,
     uom: line.uom,
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,

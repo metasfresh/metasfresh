@@ -9,6 +9,10 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     },
     "deliveryDate" : "2021-11-02T07:39:16Z",
     "deliveryRenderedAddress" : "deliveryRenderedAddress",
+    "handoverLocationId" : {
+      "bpartnerId" : 3,
+      "repoId" : 4
+    },
     "isAllowPickingAnyHU" : false,
     "lockedBy" : 5,
     "preparationDate" : "2021-11-02T07:39:16Z",

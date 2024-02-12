@@ -3,7 +3,15 @@ import { toQRCodeObject } from '../utils/huQRCodes';
 
 export const initialState = {};
 
+const NO_ACTIVE_FACETS = [];
+
 export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
+
+export const getApplicationLaunchersFacets = (state, applicationId) =>
+  getApplicationLaunchers(state, applicationId).activeFacets ?? NO_ACTIVE_FACETS;
+
+export const getApplicationLaunchersFacetIds = (state, applicationId) =>
+  getApplicationLaunchersFacets(state, applicationId).map((facet) => facet.facetId);
 
 export default function launchers(state = initialState, action) {
   const { payload } = action;
@@ -23,6 +31,12 @@ export default function launchers(state = initialState, action) {
         isLoading: false,
         filterByQRCode: applicationLaunchers.filterByQRCode,
         list: applicationLaunchers.launchers,
+      });
+    }
+    case types.SET_ACTIVE_FACETS: {
+      const { applicationId, facets } = payload;
+      return copyAndMergeToState(state, applicationId, {
+        activeFacets: facets,
       });
     }
     default: {

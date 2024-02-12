@@ -47,6 +47,7 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IOrderBL extends ISingletonService
@@ -278,7 +279,9 @@ public interface IOrderBL extends ISingletonService
 
 	@NonNull
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
-	
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 	
 	@NonNull

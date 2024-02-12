@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -29,6 +30,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternative;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
+import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
@@ -383,8 +385,19 @@ class PickingJobLoaderAndSaver
 				.create()
 				.stream()
 				.forEach(pickedHU -> pickedHUs.put(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID()), pickedHU));
+
+		final PickingJobLoaderSupportingServices loadingSupportingServices = loadingSupportingServicesOrNull();
+		if (loadingSupportingServices != null)
+		{
+			final ImmutableSet<OrderId> salesOrderIds = records.stream().map(PickingJobLoaderAndSaver::extractSalesOrderId).collect(ImmutableSet.toImmutableSet());
+			loadingSupportingServices.warmUpSalesOrderDocumentNosCache(salesOrderIds);
+
+			final ImmutableSet<BPartnerId> customerIds = records.stream().map(record -> extractDeliveryBPLocationId(record).getBpartnerId()).collect(ImmutableSet.toImmutableSet());
+			loadingSupportingServices.warmUpBPartnerNamesCache(customerIds);
+		}
 	}
 
+	@NonNull
 	private PickingJobLoaderSupportingServices loadingSupportingServices()
 	{
 		if (_loadingSupportingServices == null)
@@ -394,29 +407,21 @@ class PickingJobLoaderAndSaver
 		return _loadingSupportingServices;
 	}
 
+	private PickingJobLoaderSupportingServices loadingSupportingServicesOrNull()
+	{
+		return _loadingSupportingServices;
+	}
+
 	private PickingJob loadJob(final I_M_Picking_Job record)
 	{
-		final OrderId salesOrderId = OrderId.ofRepoId(record.getC_Order_ID());
-		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
-		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
-		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID());
-		final Optional<PickingSlotIdAndCaption> pickingSlot = Optional.ofNullable(pickingSlotId)
+		final Optional<PickingSlotIdAndCaption> pickingSlot = Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
 				.map(loadingSupportingServices()::getPickingSlotIdAndCaption);
 
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
 
 		return PickingJob.builder()
 				.id(pickingJobId)
-				.header(PickingJobHeader.builder()
-						.salesOrderDocumentNo(loadingSupportingServices().getSalesOrderDocumentNo(salesOrderId))
-						.preparationDate(loadingSupportingServices().toZonedDateTime(record.getPreparationDate(), orgId))
-						.deliveryDate(loadingSupportingServices().toZonedDateTime(record.getDeliveryDate(), orgId))
-						.customerName(loadingSupportingServices().getBPartnerName(deliveryBPLocationId.getBpartnerId()))
-						.deliveryBPLocationId(deliveryBPLocationId)
-						.deliveryRenderedAddress(record.getDeliveryToAddress())
-						.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
-						.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
-						.build())
+				.header(toPickingJobHeader(record))
 				.pickingSlot(pickingSlot)
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
@@ -428,6 +433,38 @@ class PickingJobLoaderAndSaver
 						.map(this::loadPickFromAlternative)
 						.collect(ImmutableSet.toImmutableSet()))
 				.build();
+	}
+
+	private PickingJobHeader toPickingJobHeader(final I_M_Picking_Job record)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = loadingSupportingServices();
+
+		final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+
+		return PickingJobHeader.builder()
+				.salesOrderDocumentNo(loadingSupportingServices.getSalesOrderDocumentNo(extractSalesOrderId(record)))
+				.preparationDate(loadingSupportingServices.toZonedDateTime(record.getPreparationDate(), orgId))
+				.deliveryDate(loadingSupportingServices.toZonedDateTime(record.getDeliveryDate(), orgId))
+				.customerName(loadingSupportingServices.getBPartnerName(deliveryBPLocationId.getBpartnerId()))
+				.deliveryBPLocationId(deliveryBPLocationId)
+				.deliveryRenderedAddress(record.getDeliveryToAddress())
+				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
+				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
+				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandover_Partner_ID(), record.getHandover_Location_ID()))
+				.build();
+	}
+
+	@NonNull
+	private static BPartnerLocationId extractDeliveryBPLocationId(final I_M_Picking_Job record)
+	{
+		return BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
+	}
+
+	@NonNull
+	private static OrderId extractSalesOrderId(final I_M_Picking_Job record)
+	{
+		return OrderId.ofRepoId(record.getC_Order_ID());
 	}
 
 	private static void updateRecord(final I_M_Picking_Job record, final PickingJob from)
@@ -738,4 +775,66 @@ class PickingJobLoaderAndSaver
 				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
 	}
+
+	public List<PickingJobReference> loadPickingJobReferences(@NonNull final Set<PickingJobId> pickingJobIds)
+	{
+		if (pickingJobIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		// IMPORTANT to take a snapshot of Sets.difference because that's a live view ...and we are going to add data TO pickingJobS map...
+		final ImmutableSet<PickingJobId> pickingJobIdsToLoad = ImmutableSet.copyOf(Sets.difference(pickingJobIds, pickingJobs.keySet()));
+		if (!pickingJobIdsToLoad.isEmpty())
+		{
+			loadRecordsFromDB(pickingJobIdsToLoad);
+		}
+
+		return pickingJobIds.stream()
+				.map(pickingJobs::get)
+				.map(this::loadPickingJobReference)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private PickingJobReference loadPickingJobReference(final I_M_Picking_Job record)
+	{
+		final PickingJobHeader header = toPickingJobHeader(record);
+		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
+
+		return PickingJobReference.builder()
+				.pickingJobId(pickingJobId)
+				.salesOrderDocumentNo(header.getSalesOrderDocumentNo())
+				.customerId(header.getCustomerId())
+				.customerName(header.getCustomerName())
+				.deliveryDate(header.getDeliveryDate())
+				.preparationDate(header.getPreparationDate())
+				.shipmentScheduleIds(getShipmentScheduleIds(pickingJobId))
+				.deliveryLocationId(header.getDeliveryBPLocationId())
+				.handoverLocationId(header.getHandoverLocationId())
+				.build();
+	}
+
+	private ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(final PickingJobId pickingJobId)
+	{
+		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.builder();
+
+		for (final I_M_Picking_Job_Line line : this.pickingJobLines.get(pickingJobId))
+		{
+			final ShipmentScheduleId lineShipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(line.getM_ShipmentSchedule_ID());
+			if (lineShipmentScheduleId != null)
+			{
+				shipmentScheduleIds.add(lineShipmentScheduleId);
+			}
+
+			final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(line.getM_Picking_Job_Line_ID());
+			for (final I_M_Picking_Job_Step step : this.pickingJobSteps.get(pickingJobLineId))
+			{
+				final ShipmentScheduleId stepShipmentScheduleId = ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID());
+				shipmentScheduleIds.add(stepShipmentScheduleId);
+			}
+		}
+
+		return shipmentScheduleIds.build();
+	}
+
 }

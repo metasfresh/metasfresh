@@ -164,15 +164,24 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 
 // NOTE to dev: keep in sync with:
 // de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeParser
+const LMQ_BEST_BEFORE_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
 
   const parts = payload.split('#');
-  if (parts.length >= 2 && parts[1] != null) {
+  if (parts.length >= 1 && parts[0] != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * parts[1];
-    result['displayable'] = '' + parts[1];
-    result['isTUToBePickedAsWhole'] = true;
+    result['weightNet'] = 1 * parts[0];
+    result['displayable'] = '' + parts[0];
+    result['isTUToBePickedAsWhole'] = true; // todo clean up needed!!!
+    result['weightNetUOM'] = 'kg'; // for LeichMehl it will always be kg
+  }
+  if (parts.length >= 2) {
+    const [, day, month, year] = LMQ_BEST_BEFORE_DATE_FORMAT.exec(parts[1]);
+    result['bestBeforeDate'] = `${year}-${month}-${day}`;
+  }
+  if (parts.length >= 3) {
+    result['lotNo'] = parts[2];
   }
 
   return result;

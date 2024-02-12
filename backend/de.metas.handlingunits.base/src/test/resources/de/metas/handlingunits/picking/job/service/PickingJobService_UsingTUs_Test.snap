@@ -11,6 +11,10 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -210,6 +214,10 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -415,6 +423,10 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -660,6 +672,10 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -890,6 +906,10 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
         },
         "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "handoverLocationId" : {
+          "bpartnerId" : 1000000,
+          "repoId" : 1000000
+        },
         "isAllowPickingAnyHU" : false,
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",

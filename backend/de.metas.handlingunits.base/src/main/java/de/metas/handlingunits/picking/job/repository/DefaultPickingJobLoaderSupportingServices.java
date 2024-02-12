@@ -18,6 +18,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -25,7 +26,9 @@ import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * A bunch of services needed to support the loading of a given PickingJob.
@@ -48,10 +51,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<ProductId, ITranslatableString> productNamesCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
-	public DefaultPickingJobLoaderSupportingServices(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
+	public DefaultPickingJobLoaderSupportingServices(@NonNull final IBPartnerBL bpartnerBL, @NonNull final PickingJobSlotService pickingSlotService, @NonNull final HUQRCodesService huQRCodeService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
@@ -73,9 +73,21 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds)
+	{
+		CollectionUtils.getAllOrLoad(salesOrderDocumentNosCache, orderIds, orderBL::getDocumentNosByIds);
+	}
+
+	@Override
 	public String getSalesOrderDocumentNo(@NonNull final OrderId salesOrderId)
 	{
 		return salesOrderDocumentNosCache.computeIfAbsent(salesOrderId, orderBL::getDocumentNoById);
+	}
+
+	@Override
+	public void warmUpBPartnerNamesCache(@NonNull Set<BPartnerId> bpartnerIds)
+	{
+		CollectionUtils.getAllOrLoad(bpartnerNamesCache, bpartnerIds, bpartnerBL::getBPartnerNames);
 	}
 
 	@Override

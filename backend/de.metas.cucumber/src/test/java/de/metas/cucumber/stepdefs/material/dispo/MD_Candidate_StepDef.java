@@ -76,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -118,6 +119,7 @@ public class MD_Candidate_StepDef
 	private final SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
+	private final MD_Candidate_StockChange_Detail_StepDefData stockChangeDetailStepDefData;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
@@ -127,13 +129,15 @@ public class MD_Candidate_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final MD_Candidate_StepDefData stockCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final MD_Candidate_StockChange_Detail_StepDefData stockChangeDetailStepDefData)
 	{
 		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.stockChangeDetailStepDefData = stockChangeDetailStepDefData;
 
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
@@ -295,7 +299,8 @@ public class MD_Candidate_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final String candidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "MD_Candidate_ID.Identifier");
+			final String stockChangeDetailIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID + ".Identifier");
+			final String candidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_MD_Candidate_ID + ".Identifier");
 			final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
 			final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
 			final boolean isReverted = DataTableUtil.extractBooleanForColumnName(row, "IsReverted");
@@ -314,6 +319,10 @@ public class MD_Candidate_StepDef
 			{
 				final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(candidateIdentifier);
 				assertThat(materialDispoDataItem.getCandidateId().getRepoId()).isEqualTo(stockChangeDetail.getMD_Candidate_ID());
+			}
+			if (stockChangeDetailIdentifier != null)
+			{
+				stockChangeDetailStepDefData.putOrReplace(stockChangeDetailIdentifier, stockChangeDetail);
 			}
 		}
 	}
@@ -358,6 +367,21 @@ public class MD_Candidate_StepDef
 		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
 		assertThat(candidateRecord).isNull();
+	}
+
+	@And("metasfresh has no MD_Candidate_StockChange_Detail data for identifier {string}")
+	public void metasfresh_has_no_md_cand_stockChange_detail_for_identifier(@NonNull final String identifier)
+	{
+		final TableRecordReference stockChangeDetail = stockChangeDetailStepDefData.getRecordDataItem(identifier)
+				.getTableRecordReference();
+		assertThat(stockChangeDetail).isNotNull();
+		final I_MD_Candidate_StockChange_Detail stockChangeDetailFromDB = queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID, stockChangeDetail.getRecord_ID())
+				.orderBy(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID)
+				.create()
+				.firstOnly(I_MD_Candidate_StockChange_Detail.class);
+
+		assertThat(stockChangeDetailFromDB).isNull();
 	}
 
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")

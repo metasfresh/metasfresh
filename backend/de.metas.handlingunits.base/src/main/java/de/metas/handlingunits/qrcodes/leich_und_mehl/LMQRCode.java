@@ -23,17 +23,20 @@
 package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
-
-import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 /**
  * Leich und Mehl generated QR Code
@@ -43,8 +46,9 @@ import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotN
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
 public class LMQRCode implements IHUQRCode
 {
-	@NonNull String lotNumber;
-	@NonNull BigDecimal weight;
+	@NonNull BigDecimal weightInKg;
+	@Nullable LocalDate bestBeforeDate;
+	@Nullable String lotNumber;
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -65,11 +69,21 @@ public class LMQRCode implements IHUQRCode
 	@Override
 	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
 	{
-		if (HU_ExternalLotNumber.equals(attributeCode))
+		if (AttributeCode.equals(attributeCode, Weightables.ATTR_WeightNet))
 		{
-			return Optional.of(lotNumber);
+			return Optional.of(weightInKg.toString());
 		}
-
-		return Optional.empty();
+		else if (AttributeCode.equals(attributeCode, AttributeConstants.ATTR_BestBeforeDate))
+		{
+			return bestBeforeDate != null ? Optional.of(bestBeforeDate.toString()) : Optional.empty();
+		}
+		else if (AttributeCode.equals(attributeCode, AttributeConstants.ATTR_LotNumber))
+		{
+			return StringUtils.trimBlankToOptional(lotNumber);
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 }

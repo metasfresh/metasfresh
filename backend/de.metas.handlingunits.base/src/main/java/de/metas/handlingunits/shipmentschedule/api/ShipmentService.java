@@ -60,7 +60,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -152,15 +151,19 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
 
-					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(
-							asyncBatchId,
-							shipmentScheduleIds,
-							request.getQuantityTypeToUse(), 
-							request.isOnTheFlyPickToPackingInstructions(), 
-							request.getIsCompleteShipment(), 
-							request.getIsShipDateToday());
-
-					generateShipments(generateShipmentsRequest);
+					generateShipments(
+							GenerateShipmentsRequest.builder()
+									.asyncBatchId(asyncBatchId)
+									.scheduleIds(shipmentScheduleIds)
+									.scheduleToExternalInfo(ImmutableMap.of())
+									.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
+									.quantityTypeToUse(request.getQuantityTypeToUse())
+									.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
+									.isShipDateToday(request.getIsShipDateToday())
+									.isCompleteShipment(request.getIsCompleteShipment())
+									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+									.build()
+					);
 
 					return retrieveInOutIdsByScheduleIds(shipmentScheduleIds);
 				})
@@ -284,6 +287,7 @@ public class ShipmentService implements IShipmentService
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
+				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
@@ -292,27 +296,6 @@ public class ShipmentService implements IShipmentService
 		return new ShipmentScheduleEnqueuer()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.createWorkpackages(workPackageParameters);
-	}
-
-	@NonNull
-	private static GenerateShipmentsRequest toGenerateShipmentsRequest(
-			@NonNull final AsyncBatchId asyncBatchId,
-			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
-			final boolean onTheFlyPickToPackingInstructions,
-			@NonNull final Boolean isCompleteShipment,
-			@Nullable final Boolean isShipDateToday)
-	{
-		return GenerateShipmentsRequest.builder()
-				.asyncBatchId(asyncBatchId)
-				.scheduleIds(scheduleIds)
-				.scheduleToExternalInfo(ImmutableMap.of())
-				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
-				.quantityTypeToUse(quantityTypeToUse)
-				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
-				.isShipDateToday(isShipDateToday)
-				.isCompleteShipment(isCompleteShipment)
-				.build();
 	}
 
 	@NonNull
@@ -437,11 +420,11 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+			if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
 				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,
-										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+						shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
 				continue;
 			}
 			else if (olCand.getQtyShipped().signum() <= 0)

@@ -25,6 +25,7 @@ package de.metas.workplace;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -56,6 +57,11 @@ public class WorkplaceService
 	{
 		return workplaceUserAssignRepository.getWorkplaceIdByUserId(userId)
 				.map(workplaceRepository::getById);
+	}
+
+	public Optional<WarehouseId> getWarehouseIdByUserId(@NonNull final UserId userId)
+	{
+		return getWorkplaceByUserId(userId).map(Workplace::getWarehouseId);
 	}
 
 	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)

@@ -1,5 +1,6 @@
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for LeichMehl_PluFile_ConfigGroup
@@ -73,6 +74,27 @@ public interface I_LeichMehl_PluFile_ConfigGroup
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_LeichMehl_PluFile_ConfigGroup, Object> COLUMN_Description = new ModelColumn<>(I_LeichMehl_PluFile_ConfigGroup.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.

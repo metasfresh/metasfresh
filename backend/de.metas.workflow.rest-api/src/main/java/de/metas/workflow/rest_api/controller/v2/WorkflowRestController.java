@@ -37,8 +37,8 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeReques
 import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetsQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -47,7 +47,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -130,32 +130,27 @@ public class WorkflowRestController
 		return JsonWorkflowLaunchersList.of(launchers, query, newJsonOpts());
 	}
 
-	private WorkflowLaunchersQuery toWorkflowLaunchersQuery(final @NonNull JsonLaunchersQuery query)
+	private static WorkflowLaunchersQuery toWorkflowLaunchersQuery(final @NonNull JsonLaunchersQuery query)
 	{
-
-		ImmutableSet<WorkflowLaunchersFacetId> facetIds = null;
-		if (query.getFacets() != null && !query.getFacets().isEmpty())
-		{
-			facetIds = query.getFacets().stream()
-					.map(JsonWorkflowLaunchersFacet::getFacetId)
-					.collect(ImmutableSet.toImmutableSet());
-		}
-
 		return WorkflowLaunchersQuery.builder()
 				.applicationId(query.getApplicationId())
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
-				.facetIds(facetIds)
+				.facetIds(query.getFacetIds() != null ? ImmutableSet.copyOf(query.getFacetIds()) : null)
 				.build();
 	}
 
-	@GetMapping("/facets")
-	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestParam("applicationId") final String applicationIdStr)
+	@PostMapping("/facets")
+	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestBody @NonNull final JsonWorkflowLaunchersFacetsQuery query)
 	{
-		final UserId loggedUserId = Env.getLoggedUserId();
-		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
-		final WorkflowLaunchersFacetGroupList facets = workflowRestAPIService.getFacets(applicationId, loggedUserId);
-		return JsonWorkflowLaunchersFacetGroupList.of(facets, newJsonOpts());
+		final WorkflowLaunchersFacetGroupList result = workflowRestAPIService.getFacets(
+				WorkflowLaunchersFacetQuery.builder()
+						.applicationId(query.getApplicationId())
+						.userId(Env.getLoggedUserId())
+						.activeFacetIds(query.getActiveFacetIds() != null ? ImmutableSet.copyOf(query.getActiveFacetIds()) : ImmutableSet.of())
+						.build()
+		);
+		return JsonWorkflowLaunchersFacetGroupList.of(result, newJsonOpts());
 	}
 
 	@GetMapping("/wfProcess/{wfProcessId}")

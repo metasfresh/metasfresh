@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { map } from 'lodash';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
-import { getApplicationLaunchers } from '../../reducers/launchers';
+import { getApplicationLaunchers, getApplicationLaunchersFacets } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
@@ -13,7 +12,6 @@ import { getApplicationInfoById, getWorkplaceSettingsForApplicationId } from '..
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
-import WFLaunchersFilters from './WFLaunchersFilters';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
 import WorkplaceScanner from '../activities/picking/WorkplaceScanner';
 import * as api from '../../api/applications';
@@ -21,15 +19,18 @@ import { populateApplications } from '../../actions/ApplicationsActions';
 import { toastError } from '../../utils/toast';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
+import { appLaunchersFilterLocation } from '../../routes/launchers';
 
 const WFLaunchersScreen = () => {
+  const history = useHistory();
+
   const {
     url,
     params: { applicationId },
   } = useRouteMatch();
 
   const [currentPanel, setCurrentPanel] = useState('default');
-  const [facets, setFacets] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
     getApplicationInfoById({ state, applicationId })
@@ -63,6 +64,8 @@ const WFLaunchersScreen = () => {
     list: launchers,
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
+  const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
+
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
   const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode || !showWorkplaceScanner;
 
@@ -78,9 +81,12 @@ const WFLaunchersScreen = () => {
       return;
     }
 
-    getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
-      onNewLaunchers({ applicationId, applicationLaunchers });
-    });
+    setLoading(true);
+    getLaunchers({ applicationId, filterByQRCode, facets })
+      .then((applicationLaunchers) => {
+        onNewLaunchers({ applicationId, applicationLaunchers });
+      })
+      .finally(() => setLoading(false));
   }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
 
   //
@@ -133,23 +139,18 @@ const WFLaunchersScreen = () => {
       )}
       {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
         <>
-          <WFLaunchersFilterButton facets={facets} onClick={() => setCurrentPanel('filters')} />
+          <WFLaunchersFilterButton
+            facets={facets}
+            onClick={() => {
+              history.push(appLaunchersFilterLocation({ applicationId }));
+            }}
+          />
           <br />
         </>
       )}
-      {currentPanel === 'filters' && (
-        <WFLaunchersFilters
-          applicationId={applicationId}
-          facets={facets}
-          onDone={(facets) => {
-            setFacets(facets);
-            setCurrentPanel('default');
-          }}
-        />
-      )}
       {currentPanel === 'default' &&
         launchers &&
-        map(launchers, (launcher, index) => {
+        launchers.map((launcher, index) => {
           const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
           return (
             <WFLauncherButton
@@ -162,6 +163,11 @@ const WFLaunchersScreen = () => {
             />
           );
         })}
+      {loading && (
+        <div className="loading">
+          <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
+        </div>
+      )}
     </div>
   );
 };

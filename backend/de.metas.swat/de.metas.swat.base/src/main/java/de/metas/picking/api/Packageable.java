@@ -91,6 +91,8 @@ public class Packageable
 	BPartnerLocationId customerLocationId;
 	String customerBPLocationName;
 	String customerAddress;
+	@NonNull
+	BPartnerLocationId handoverLocationId;
 
 	@NonNull
 	WarehouseId warehouseId;

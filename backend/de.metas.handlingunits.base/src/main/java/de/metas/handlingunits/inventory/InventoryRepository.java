@@ -17,6 +17,7 @@ import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
@@ -659,6 +660,7 @@ public class InventoryRepository
 		inventoryRecord.setDocAction(IDocument.ACTION_Complete);
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
 		inventoryRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		inventoryRecord.setM_Picking_Job_ID(PickingJobId.toRepoId(request.getPickingJobId()));
 
 		inventoryRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 		inventoryRecord.setDescription(StringUtils.trimBlankToNull(request.getDescription()));

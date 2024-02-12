@@ -13,6 +13,11 @@ export const postStepPicked = ({
   qtyRejectedReasonCode,
   catchWeight,
   pickWholeTU,
+  checkIfAlreadyPacked,
+  setBestBeforeDate,
+  bestBeforeDate,
+  setLotNo,
+  lotNo,
 }) => {
   return postEvent({
     wfProcessId,
@@ -26,10 +31,15 @@ export const postStepPicked = ({
     qtyRejected,
     catchWeight,
     pickWholeTU,
+    checkIfAlreadyPacked,
+    setBestBeforeDate,
+    bestBeforeDate,
+    setLotNo,
+    lotNo,
   });
 };
 
-export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQRCode }) => {
+export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQRCode, unpickToTargetQRCode }) => {
   return postEvent({
     wfProcessId,
     wfActivityId: activityId,
@@ -37,6 +47,7 @@ export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQR
     pickingStepId: stepId,
     type: 'UNPICK',
     huQRCode,
+    unpickToTargetQRCode,
   });
 };
 

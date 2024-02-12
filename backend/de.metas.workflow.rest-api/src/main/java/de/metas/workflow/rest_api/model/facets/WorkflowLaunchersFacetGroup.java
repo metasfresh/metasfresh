@@ -35,4 +35,6 @@ public class WorkflowLaunchersFacetGroup
 	@NonNull WorkflowLaunchersFacetGroupId id;
 	@NonNull ITranslatableString caption;
 	@NonNull ImmutableList<WorkflowLaunchersFacet> facets;
+
+	public boolean isEmpty() {return facets.isEmpty();}
 }

@@ -34,6 +34,8 @@ const ScanHUAndGetQtyComponent = ({
   scaleTolerance,
   catchWeight,
   catchWeightUom,
+  isShowBestBeforeDate = false,
+  isShowLotNo = false,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -59,7 +61,7 @@ const ScanHUAndGetQtyComponent = ({
   });
 
   useEffect(() => {
-    setResolvedBarcodeData({
+    setResolvedBarcodeData((prevState) => ({
       userInfo,
       qtyCaption,
       qtyTarget,
@@ -74,7 +76,9 @@ const ScanHUAndGetQtyComponent = ({
       scaleTolerance,
       catchWeight,
       catchWeightUom,
-    });
+      // remember the scanned barcode as no new scan has been performed
+      scannedBarcode: prevState?.scannedBarcode,
+    }));
   }, [
     userInfo,
     qtyCaption,
@@ -118,11 +122,7 @@ const ScanHUAndGetQtyComponent = ({
     setResolvedBarcodeData(resolvedBarcodeDataNew);
     const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
 
-    // console.log('onBarcodeScanned', {
-    //   resolvedBarcodeDataNew,
-    //   resolvedBarcodeData,
-    //   askForQty,
-    // });
+    // console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
 
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
@@ -156,7 +156,16 @@ const ScanHUAndGetQtyComponent = ({
     return null;
   };
 
-  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason, catchWeight, catchWeightUom }) => {
+  const onQtyEntered = ({
+    qtyEnteredAndValidated,
+    qtyRejected,
+    qtyRejectedReason,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+    gotoPickingLineScreen = true,
+  }) => {
     onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
@@ -166,6 +175,9 @@ const ScanHUAndGetQtyComponent = ({
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
+      bestBeforeDate,
+      lotNo,
+      gotoPickingLineScreen,
     });
   };
 
@@ -208,6 +220,10 @@ const ScanHUAndGetQtyComponent = ({
           catchWeightUom={resolvedBarcodeData.catchWeightUom}
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
+          isShowBestBeforeDate={isShowBestBeforeDate}
+          bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
+          isShowLotNo={isShowLotNo}
+          lotNo={resolvedBarcodeData.lotNo}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
@@ -242,6 +258,8 @@ ScanHUAndGetQtyComponent.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
+  isShowBestBeforeDate: PropTypes.bool,
+  isShowLotNo: PropTypes.bool,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

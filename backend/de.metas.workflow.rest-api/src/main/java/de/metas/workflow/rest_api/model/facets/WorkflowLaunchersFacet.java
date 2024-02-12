@@ -33,4 +33,6 @@ public class WorkflowLaunchersFacet
 {
 	@NonNull WorkflowLaunchersFacetId facetId;
 	@NonNull ITranslatableString caption;
+	@Builder.Default long sortNo = 0;
+	boolean isActive;
 }
