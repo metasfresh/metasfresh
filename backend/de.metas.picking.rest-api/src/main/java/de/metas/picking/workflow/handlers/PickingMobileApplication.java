@@ -368,6 +368,10 @@
 					.qtyRejected(json.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 					.catchWeight(json.getCatchWeight())
+					.isSetBestBeforeDate(json.isSetBestBeforeDate())
+					.bestBeforeDate(json.getBestBeforeDate())
+					.isSetLotNo(json.isSetLotNo())
+					.lotNo(json.getLotNo())
 					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
 					.build();
 		}

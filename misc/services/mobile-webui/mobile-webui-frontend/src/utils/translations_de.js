@@ -18,6 +18,7 @@ const translations = {
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
     CatchWeight: 'Gewicht',
+    BestBeforeDate: 'MHD',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',

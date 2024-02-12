@@ -31,6 +31,9 @@ const GetQuantityDialog = ({
   catchWeight: catchWeightParam,
   catchWeightUom,
   //
+  isShowBestBeforeDate = false,
+  bestBeforeDate: bestBeforeDateParam = '',
+  //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
@@ -49,6 +52,13 @@ const GetQuantityDialog = ({
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
   const onReasonSelected = (reason) => setRejectedReason(reason);
   const onCatchWeightEntered = (qtyInfo) => setCatchWeight(qtyInfo);
+
+  const [bestBeforeDate, setBestBeforeDate] = useState(bestBeforeDateParam);
+  const onBestBeforeDateEntered = (e) => {
+    const bestBeforeDateNew = e.target.value ? e.target.value : '';
+    //console.log('onBestBeforeDateEntered', { bestBeforeDateNew, e });
+    setBestBeforeDate(bestBeforeDateNew);
+  };
 
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
@@ -78,6 +88,7 @@ const GetQuantityDialog = ({
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
         catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
+        bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
       });
     }
   };
@@ -93,10 +104,14 @@ const GetQuantityDialog = ({
         toastError({ messageKey: 'activities.picking.qrCode.differentUOM' });
         return;
       }
+
+      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
       onQtyChange({
         qtyEnteredAndValidated: 1,
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
+        bestBeforeDate: qrCode.bestBeforeDate,
+        lotNo: qrCode.lotNo,
         gotoPickingLineScreen: false,
       });
     },
@@ -253,6 +268,24 @@ const GetQuantityDialog = ({
                         </td>
                       </tr>
                     )}
+                    {isShowBestBeforeDate && (
+                      <tr>
+                        <th>{trl('general.BestBeforeDate')}</th>
+                        <td>
+                          <div className="field">
+                            <div className="control">
+                              <input
+                                className="input"
+                                type="date"
+                                value={bestBeforeDate}
+                                disabled={readOnly}
+                                onChange={onBestBeforeDateEntered}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {useCatchWeight && (
                       <tr>
                         <th>{trl('general.CatchWeight')}</th>
@@ -338,6 +371,8 @@ GetQuantityDialog.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
+  isShowBestBeforeDate: PropTypes.bool,
+  bestBeforeDate: PropTypes.string,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

@@ -32,6 +32,9 @@ import { postStepPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 
+const isShowBestBeforeDate = true; // TODO make it configurable
+const isShowLotNo = true; // TODO make it configurable
+
 const PickLineScanScreen = () => {
   const {
     url,
@@ -83,6 +86,8 @@ const PickLineScanScreen = () => {
     catchWeight = null,
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
+    bestBeforeDate = null,
+    lotNo = null,
     gotoPickingLineScreen = true,
     ...others
   }) => {
@@ -92,6 +97,10 @@ const PickLineScanScreen = () => {
       scannedBarcode,
       catchWeight,
       catchWeightUom,
+      isShowBestBeforeDate,
+      bestBeforeDate,
+      isShowLotNo,
+      lotNo,
       gotoPickingLineScreen,
       ...others,
     });
@@ -108,6 +117,10 @@ const PickLineScanScreen = () => {
       catchWeight,
       pickWholeTU: isTUToBePickedAsWhole,
       checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
+      setBestBeforeDate: isShowBestBeforeDate,
+      bestBeforeDate,
+      setLotNo: isShowLotNo,
+      lotNo,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
@@ -127,6 +140,8 @@ const PickLineScanScreen = () => {
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
       catchWeightUom={catchWeightUom}
+      isShowBestBeforeDate={isShowBestBeforeDate}
+      isShowLotNo={isShowLotNo}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
