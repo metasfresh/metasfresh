@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor1
 Feature: create production order
   As a user
   I want to create a Production order record
