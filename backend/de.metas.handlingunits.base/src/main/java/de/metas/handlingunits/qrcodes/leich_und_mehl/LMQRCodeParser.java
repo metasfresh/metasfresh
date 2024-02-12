@@ -26,11 +26,14 @@ import com.google.common.base.Splitter;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -44,6 +47,8 @@ class LMQRCodeParser
 	private static final GlobalQRCodeVersion VERSION_1 = GlobalQRCodeVersion.ofInt(1);
 
 	private static final Splitter SPLITTER = Splitter.on("#");
+
+	private static final DateTimeFormatter BEST_BEFORE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -81,7 +86,8 @@ class LMQRCodeParser
 			final List<String> parts = SPLITTER.splitToList(globalQRCode.getPayloadAsJson());
 			return LMQRCode.builder()
 					.weightInKg(new BigDecimal(parts.get(0)))
-					//.lotNumber(parts.get()) // not available in current agreed format
+					.bestBeforeDate(parts.size() >= 2 ? LocalDate.parse(parts.get(1), BEST_BEFORE_DATE_FORMAT) : null)
+					.lotNumber(parts.size() >= 3 ? StringUtils.trimBlankToNull(parts.get(2)) : null)
 					.build();
 		}
 		catch (Exception ex)

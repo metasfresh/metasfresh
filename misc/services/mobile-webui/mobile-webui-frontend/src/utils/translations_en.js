@@ -19,6 +19,7 @@ const translations = {
     QtyRejected: 'Qty Rejected',
     CatchWeight: 'Weight',
     Qty: 'Qty',
+    BestBeforeDate: 'Best Before',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     okText: 'OK',

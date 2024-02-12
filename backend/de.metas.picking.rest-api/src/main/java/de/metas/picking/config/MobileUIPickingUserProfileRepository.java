@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
@@ -74,8 +75,8 @@ public class MobileUIPickingUserProfileRepository
 				.onlyBPartnerIds(onlyBPartnerIds)
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
-				.availablePickingFilters(getPickingProfileFilters(profileRecord))
-				.pickingJobConfigs(getPickingJobConfigs(profileRecord))
+				.filters(retrieveFilters(profileRecord))
+				.pickingJobConfigs(retrievePickingJobConfigs(profileRecord))
 				.build();
 	}
 
@@ -138,19 +139,19 @@ public class MobileUIPickingUserProfileRepository
 	}
 
 	@NonNull
-	private ImmutableList<PickingFilter> getPickingProfileFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	private PickingFiltersList retrieveFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
 	{
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
 				.create()
 				.stream()
-				.map(record -> PickingFilter.of(PickingJobFilterOption.ofCode(record.getFilterType()), record.getSeqNo()))
-				.collect(ImmutableList.toImmutableList());
+				.map(record -> PickingFilter.of(PickingJobFacetGroup.ofCode(record.getFilterType()), record.getSeqNo()))
+				.collect(PickingFiltersList.collect());
 	}
 
 	@NonNull
-	private ImmutableList<PickingJobUIConfig> getPickingJobConfigs(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	private ImmutableList<PickingJobUIConfig> retrievePickingJobConfigs(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
 	{
 		final ImmutableList<PickingJobUIConfig> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
 				.addOnlyActiveRecordsFilter()

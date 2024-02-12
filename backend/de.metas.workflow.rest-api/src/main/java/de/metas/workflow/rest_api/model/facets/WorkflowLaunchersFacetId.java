@@ -29,6 +29,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -38,7 +39,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public final class WorkflowLaunchersFacetId
 {
-	@NonNull private final WorkflowLaunchersFacetGroupId groupId;
+	@NonNull @Getter private final WorkflowLaunchersFacetGroupId groupId;
 	@NonNull private final String value;
 
 	static final String SEPARATOR = "_";

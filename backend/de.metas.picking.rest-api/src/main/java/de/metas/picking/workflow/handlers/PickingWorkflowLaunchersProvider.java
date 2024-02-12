@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
+import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.config.MobileUIPickingUserProfile;
@@ -24,39 +26,29 @@ import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workplace.Workplace;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
+@RequiredArgsConstructor
 class PickingWorkflowLaunchersProvider
 {
-	private final PickingJobRestService pickingJobRestService;
-	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
-	private final WorkplaceService workplaceService;
-	private final DisplayValueProviderService displayValueProviderService;
+	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final DisplayValueProviderService displayValueProviderService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
-
-	PickingWorkflowLaunchersProvider(
-			@NonNull final PickingJobRestService pickingJobRestService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
-			@NonNull final WorkplaceService workplaceService,
-			@NonNull final DisplayValueProviderService displayValueProviderService)
-	{
-		this.pickingJobRestService = pickingJobRestService;
-		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
-		this.workplaceService = workplaceService;
-		this.displayValueProviderService = displayValueProviderService;
-	}
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
@@ -82,21 +74,18 @@ class PickingWorkflowLaunchersProvider
 	{
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
-		final PickingJobFacetsQuery facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
+		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
-		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
-				.map(Workplace::getWarehouseId)
-				.orElse(null);
 		//
 		// Already started launchers
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
 						PickingJobReferenceQuery.builder()
 								.pickerId(userId)
 								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
-								.warehouseId(workplaceWarehouseId)
+								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 								.build())
 				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
@@ -121,7 +110,7 @@ class PickingWorkflowLaunchersProvider
 							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
 							.facets(facets)
 							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
-							.warehouseId(workplaceWarehouseId)
+							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.collect(ImmutableList.toImmutableList());
@@ -167,19 +156,30 @@ class PickingWorkflowLaunchersProvider
 				.build();
 	}
 
-	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
-		final WarehouseId workplaceWarehouseId = workplaceService.getWorkplaceByUserId(userId)
-				.map(Workplace::getWarehouseId)
-				.orElse(null);
+		final UserId userId = query.getUserId();
+		final PickingJobQuery.Facets activeFacets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getActiveFacetIds());
 
-		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.builder()
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final ImmutableList<PickingJobFacetGroup> groups = profile.getFilterGroupsInOrder();
+		if (groups.isEmpty())
+		{
+			return WorkflowLaunchersFacetGroupList.EMPTY;
+		}
+
+		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(
+				PickingJobQuery.builder()
 						.userId(userId)
 						.onlyBPartnerIds(profile.getOnlyBPartnerIds())
-						.warehouseId(workplaceWarehouseId)
+						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
-				profile);
+				PickingJobFacets.CollectingParameters.builder()
+						.addressProvider(RenderedAddressProvider.newInstance(documentLocationBL))
+						.groupsInOrder(groups)
+						.activeFacets(activeFacets)
+						.build());
 
 		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
 	}

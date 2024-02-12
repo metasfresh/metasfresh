@@ -318,6 +318,10 @@ public class PickingJobService
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						.catchWeightBD(event.getCatchWeight())
+						.isSetBestBeforeDate(event.isSetBestBeforeDate())
+						.bestBeforeDate(event.getBestBeforeDate())
+						.isSetLotNo(event.isSetLotNo())
+						.lotNo(event.getLotNo())
 						//
 						.build().execute();
 				return getById(pickingJob.getId());
