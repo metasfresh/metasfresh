@@ -104,4 +104,6 @@ public interface IPPOrderBL extends ISingletonService
 	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
 
 	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
+
+	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
 }

@@ -1,20 +1,18 @@
 package org.eevolution.api;
 
-import java.time.Instant;
-
 import de.metas.dao.ValueRestriction;
-import de.metas.user.UserId;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -50,6 +48,8 @@ public class ManufacturingOrderQuery
 
 	@Nullable APIExportStatus exportStatus;
 	@Nullable Instant canBeExportedFrom;
+	@Nullable ProductBOMVersionsId bomVersionsId;
+	boolean onlyDrafted;
 
 	@Default
 	@NonNull QueryLimit limit = QueryLimit.NO_LIMIT;
