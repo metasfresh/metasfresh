@@ -93,7 +93,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -1011,5 +1013,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			hu.setIsReserved(reserved);
 			saveHU(hu);
 		}
+	}
+
+	@Override
+	public <T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper)
+	{
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(mapper);
 	}
 }
