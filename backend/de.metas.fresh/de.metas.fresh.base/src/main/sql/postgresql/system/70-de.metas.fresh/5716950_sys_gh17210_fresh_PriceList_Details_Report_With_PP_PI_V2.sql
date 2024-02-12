@@ -20,18 +20,18 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_V2(numeric,
-                                                                 numeric,
-                                                                 numeric,
-                                                                 character varying,
-                                                                 text)
+DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_With_PP_PI_V2(numeric,
+                                                                            numeric,
+                                                                            numeric,
+                                                                            character varying,
+                                                                            text)
 ;
 
-CREATE FUNCTION report.fresh_pricelist_details_report_V2(p_c_bpartner_id              numeric,
-                                                         p_m_pricelist_version_id     numeric,
-                                                         p_alt_pricelist_version_id   numeric,
-                                                         p_ad_language                character varying,
-                                                         p_show_product_price_pi_flag text)
+CREATE FUNCTION report.fresh_PriceList_Details_Report_With_PP_PI_V2(p_c_bpartner_id              numeric,
+                                                                    p_m_pricelist_version_id     numeric,
+                                                                    p_alt_pricelist_version_id   numeric,
+                                                                    p_ad_language                character varying,
+                                                                    p_show_product_price_pi_flag text)
     RETURNS TABLE
             (
                 bp_value                   text,
@@ -65,7 +65,7 @@ CREATE FUNCTION report.fresh_pricelist_details_report_V2(p_c_bpartner_id        
 AS
 $$
     /**
-      IMPORTANT: keep in sync with report.fresh_PriceList_Details_Report_With_PP_PI
+      IMPORTANT: keep in sync with report.fresh_PriceList_Details_Report
      */
 SELECT --
        bp.value                                                                                             AS BP_Value,
@@ -94,7 +94,7 @@ SELECT --
        plc.currency2                                                                                        AS currency2,
        p_show_product_price_pi_flag                                                                         AS show_product_price_pi_flag
 
-FROM report.reportPriceListComparation_V2(
+FROM report.reportPriceListComparation_With_PP_PI_V2(
              C_BPartner_ID := p_c_bpartner_id,
              M_PriceList_Version_ID := p_m_pricelist_version_id,
              Alt_PriceList_Version_ID := p_alt_pricelist_version_id
@@ -110,4 +110,3 @@ ORDER BY plc.ProductCategoryValue,
     --
 $$
 ;
-
