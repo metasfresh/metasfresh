@@ -29,6 +29,7 @@
 	import com.google.common.collect.ImmutableSet;
 	import de.metas.common.util.time.SystemTime;
 	import de.metas.document.engine.IDocument;
+	import de.metas.document.location.IDocumentLocationBL;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
 	import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -70,6 +71,7 @@
 	import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 	import de.metas.workflow.rest_api.model.WorkplaceSettings;
 	import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+	import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 	import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 	import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 	import de.metas.workplace.WorkplaceService;
@@ -101,10 +103,17 @@
 				@NonNull final PickingJobRestService pickingJobRestService,
 				@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 				@NonNull final WorkplaceService workplaceService,
-				@NonNull final DisplayValueProviderService displayValueProviderService)
+				@NonNull final DisplayValueProviderService displayValueProviderService,
+				@NonNull final IDocumentLocationBL documentLocationBL)
 		{
 			this.pickingJobRestService = pickingJobRestService;
-			this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService, displayValueProviderService);
+			this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(
+					pickingJobRestService,
+					mobileUIPickingUserProfileRepository,
+					workplaceService,
+					displayValueProviderService,
+					documentLocationBL
+			);
 			this.workplaceService = workplaceService;
 			this.displayValueProviderService = displayValueProviderService;
 			this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
@@ -144,9 +153,9 @@
 		}
 
 		@Override
-		public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+		public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 		{
-			return wfLaunchersProvider.getFacets(userId);
+			return wfLaunchersProvider.getFacets(query);
 		}
 
 		@NonNull

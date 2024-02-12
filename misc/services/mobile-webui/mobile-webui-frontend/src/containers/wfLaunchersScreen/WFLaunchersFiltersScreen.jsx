@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
-import { useDispatch, useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
 import { setActiveFacets } from '../../actions/LauncherActions';
-import { getApplicationLaunchersFacets } from '../../reducers/launchers';
+import { getApplicationLaunchersFacetIds } from '../../reducers/launchers';
 
 const WFLaunchersFiltersScreen = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const WFLaunchersFiltersScreen = () => {
     params: { applicationId },
   } = useRouteMatch();
 
-  const activeFacets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
+  const activeFacetIds = useSelector((state) => getApplicationLaunchersFacetIds(state, applicationId), shallowEqual);
 
   useEffect(() => {
     dispatch(
@@ -29,7 +29,7 @@ const WFLaunchersFiltersScreen = () => {
     <div className="container filters-container">
       <WFLaunchersFilters
         applicationId={applicationId}
-        facets={activeFacets}
+        activeFacetIds={activeFacetIds}
         onDone={(facets) => {
           dispatch(setActiveFacets({ applicationId, facets }));
           history.go(-1);

@@ -6,6 +6,7 @@ import de.metas.currency.Amount;
 import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -401,6 +402,11 @@ public class TranslatableStrings
 	public static ITranslatableString adRefList(final int adReferenceId, @NonNull final String value)
 	{
 		return adRefList(ReferenceId.ofRepoId(adReferenceId), value);
+	}
+
+	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final ReferenceListAwareEnum value)
+	{
+		return adRefList(adReferenceId, value.getCode());
 	}
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)

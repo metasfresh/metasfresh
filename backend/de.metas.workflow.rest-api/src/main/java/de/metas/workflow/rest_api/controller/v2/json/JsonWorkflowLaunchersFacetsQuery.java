@@ -2,7 +2,7 @@
  * #%L
  * de.metas.workflow.rest-api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +22,8 @@
 
 package de.metas.workflow.rest_api.controller.v2.json;
 
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,16 +31,13 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.List;
 
 @Value
 @Builder
 @Jacksonized
-public class JsonLaunchersQuery
+public class JsonWorkflowLaunchersFacetsQuery
 {
 	@NonNull MobileApplicationId applicationId;
-	@Nullable GlobalQRCode filterByQRCode;
-	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
-
-	boolean countOnly;
+	@Nullable List<WorkflowLaunchersFacetId> activeFacetIds;
 }

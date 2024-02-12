@@ -106,10 +106,15 @@ class PickingMobileApplicationTest
 
 		final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(partnerBL);
-		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository(), documentLocationBL);
+		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService, new MobileUIPickingUserProfileRepository());
 		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
 		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
-		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService, mobileUIPickingUserProfileRepository, workplaceService, new DisplayValueProviderService(documentLocationBL));
+		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(
+				pickingJobRestService,
+				mobileUIPickingUserProfileRepository,
+				workplaceService,
+				new DisplayValueProviderService(documentLocationBL),
+				documentLocationBL);
 
 		final WorkflowRestAPIService workflowRestAPIService = new WorkflowRestAPIService(
 				Optional.of(ImmutableList.of(pickingMobileApplication)),

@@ -25,6 +25,7 @@ package de.metas.picking.config;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,16 +35,16 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.Optional;
 
 @Value
 public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
-			.availablePickingFilters(ImmutableList.of(
-					PickingFilter.of(PickingJobFilterOption.CUSTOMER, 10),
-					PickingFilter.of(PickingJobFilterOption.DELIVERY_DATE, 20)))
+			.filters(PickingFiltersList.ofList(ImmutableList.of(
+					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
+					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
+			)
 			.pickingJobConfigs(ImmutableList.of(
 					PickingJobUIConfig.builder()
 							.seqNo(10)
@@ -56,14 +57,15 @@ public class MobileUIPickingUserProfile
 							.field(PickingJobField.CUSTOMER)
 							.isShowInDetailed(true)
 							.isShowInSummary(true)
-							.build()))
+							.build())
+			)
 			.build();
 
 	@NonNull String name;
 	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
-	@NonNull ImmutableList<PickingFilter> availablePickingFilters;
+	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobUIConfig> pickingJobConfigs;
 
 	@NonNull ImmutableList<PickingJobField> launcherFieldsInOrder;
@@ -75,14 +77,14 @@ public class MobileUIPickingUserProfile
 			@Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
 			boolean isAllowPickingAnyHU,
 			@Nullable CreateShipmentPolicy createShipmentPolicy,
-			@Nullable ImmutableList<PickingFilter> availablePickingFilters,
+			@Nullable PickingFiltersList filters,
 			@Nullable ImmutableList<PickingJobUIConfig> pickingJobConfigs)
 	{
 		this.name = name;
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
-		this.availablePickingFilters = availablePickingFilters != null ? availablePickingFilters : ImmutableList.of();
+		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.pickingJobConfigs = pickingJobConfigs != null ? pickingJobConfigs : ImmutableList.of();
 
 		this.launcherFieldsInOrder = this.pickingJobConfigs.stream()
@@ -99,49 +101,10 @@ public class MobileUIPickingUserProfile
 
 	}
 
-	public boolean isFilterByCustomerEnabled()
-	{
-		return hasFilterOption(PickingJobFilterOption.CUSTOMER);
-	}
+	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}
 
-	public boolean isFilterByHandoverAddressEnabled()
-	{
-		return hasFilterOption(PickingJobFilterOption.HANDOVER_LOCATION);
-	}
-
-	public boolean isFilterByDeliveryDateEnabled()
-	{
-		return hasFilterOption(PickingJobFilterOption.DELIVERY_DATE);
-	}
-
-	public boolean isAnyFilterEnabled()
-	{
-		return !availablePickingFilters.isEmpty();
-	}
-
-	public boolean hasFilterOption(@NonNull final PickingJobFilterOption option)
-	{
-		return getFilterByOptionCode(option.getCode()).isPresent();
-	}
-
-	@NonNull
-	public Comparator<String> getFilterDisplayOrderComparator()
-	{
-		return (filterOption1, filterOption2) -> {
-			final int option1SeqNo = getFilterByOptionCode(filterOption1).map(PickingFilter::getSeqNo).orElse(-1);
-			final int option2SeqNo = getFilterByOptionCode(filterOption2).map(PickingFilter::getSeqNo).orElse(-1);
-
-			return Integer.compare(option1SeqNo, option2SeqNo);
-		};
-	}
-
-	@NonNull
-	private Optional<PickingFilter> getFilterByOptionCode(@NonNull final String optionCode)
-	{
-		return availablePickingFilters.stream()
-				.filter(pickingFilter -> pickingFilter.getOption().getCode().equals(optionCode))
-				.findFirst();
-	}
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean isAnyFilterEnabled() {return !filters.isEmpty();}
 
 	public boolean isLauncherField(@NonNull final PickingJobField field)
 	{
