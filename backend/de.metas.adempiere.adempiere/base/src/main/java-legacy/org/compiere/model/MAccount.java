@@ -16,15 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -35,6 +26,15 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
@@ -151,6 +151,8 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUserElementString5(dimension.getUserElementString5());
 		newAccount.setUserElementString6(dimension.getUserElementString6());
 		newAccount.setUserElementString7(dimension.getUserElementString7());
+		newAccount.setUserElementDate1(TimeUtil.asTimestamp(dimension.getUserElementDate1()));
+		newAccount.setUserElementDate2(TimeUtil.asTimestamp(dimension.getUserElementDate2()));
 		InterfaceWrapperHelper.save(newAccount);
 		logger.debug("New: {}", newAccount);
 		return newAccount;
@@ -193,6 +195,8 @@ public class MAccount extends X_C_ValidCombination
 		vc.setUserElementString5(dimension.getUserElementString5());
 		vc.setUserElementString6(dimension.getUserElementString6());
 		vc.setUserElementString7(dimension.getUserElementString7());
+		vc.setUserElementDate1(TimeUtil.asTimestamp(dimension.getUserElementDate1()));
+		vc.setUserElementDate2(TimeUtil.asTimestamp(dimension.getUserElementDate2()));
 		InterfaceWrapperHelper.save(vc);
 		
 		return vc;

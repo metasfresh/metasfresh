@@ -26,7 +26,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -55,6 +55,8 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
+				.userElementDate1(TimeUtil.asInstant(record.getUserElementDate1()))
+				.userElementDate2(TimeUtil.asInstant(record.getUserElementDate2()))
 				.build();
 	}
 
@@ -73,6 +75,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
-
+		record.setUserElementDate1(TimeUtil.asTimestamp(from.getUserElementDate1()));
+		record.setUserElementDate2(TimeUtil.asTimestamp(from.getUserElementDate2()));
 	}
 }

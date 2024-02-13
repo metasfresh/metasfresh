@@ -59,6 +59,8 @@ public enum AcctSchemaElementType
 	UserElementString5(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString5, I_C_ValidCombination.COLUMNNAME_UserElementString5),//
 	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
 	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
+	UserElementDate1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate1, I_C_ValidCombination.COLUMNNAME_UserElementDate1),//
+	UserElementDate2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate2, I_C_ValidCombination.COLUMNNAME_UserElementDate2)//
 
 	;
 
