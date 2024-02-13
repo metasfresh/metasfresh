@@ -72,8 +72,6 @@ import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
-import static de.metas.handlingunits.rest_api.constants.ErrorMessages.ExternalLotNumber_MISSING;
-import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
@@ -291,21 +289,6 @@ public class HandlingUnitsRestController
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
-	}
-
-	@PutMapping("/byId/{M_HU_ID}/externalLotNumber")
-	public ResponseEntity<JsonGetSingleHUResponse> assignExternalLotNumber(
-			@PathVariable("M_HU_ID") final int huRepoId,
-			@RequestBody @NonNull final JsonQRCode qrCode)
-	{
-		final String externalLotNumber = HUQRCodesService.toHUQRCode(qrCode.getQrCode())
-				.getAttributeValueAsString(HU_ExternalLotNumber)
-				.orElseThrow(() -> new AdempiereException(ExternalLotNumber_MISSING));
-		final HuId huId = HuId.ofRepoId(huRepoId);
-
-		handlingUnitsService.assignExternalLotNumber(huId, externalLotNumber);
-
-		return getByIdSupplier(() -> huId);
 	}
 
 	@NonNull
