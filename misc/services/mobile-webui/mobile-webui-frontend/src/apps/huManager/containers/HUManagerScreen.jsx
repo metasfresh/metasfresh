@@ -8,11 +8,11 @@ import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
-    huManagerAssignExternalLotNo,
-    huManagerBulkActionsLocation,
-    huManagerDisposeLocation,
-    huManagerHuLabelsLocation,
-    huManagerMoveLocation,
+  huManagerAssignExternalLotNo,
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
@@ -23,7 +23,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
-import { isKnownQRCodeFormat } from '../../../utils/huQRCodes';
+import { isKnownQRCodeFormat } from '../../../utils/qrCode/hu';
 import SelectHUIntermediateList from './SelectHUIntermediateList';
 import { push } from 'connected-react-router';
 import { scanAnythingLocation } from '../../scanAnything/routes';
