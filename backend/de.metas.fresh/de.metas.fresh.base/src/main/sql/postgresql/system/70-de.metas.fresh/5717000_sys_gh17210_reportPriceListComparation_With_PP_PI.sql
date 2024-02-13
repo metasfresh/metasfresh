@@ -27,38 +27,45 @@ DROP FUNCTION IF EXISTS report.reportPriceListComparation_With_PP_PI(
 )
 ;
 
-CREATE FUNCTION report.reportPriceListComparation_With_PP_PI(c_bpartner_id            numeric,
-                                                             m_pricelist_version_id   numeric,
-                                                             alt_pricelist_version_id numeric)
+CREATE OR REPLACE FUNCTION report.reportPriceListComparation_With_PP_PI(
+    C_BPartner_ID            numeric, -- 1
+    M_PriceList_Version_ID   numeric, -- 2
+    Alt_PriceList_Version_ID numeric -- 3
+)
     RETURNS TABLE
             (
-                productcategory           character varying,
-                productcategoryvalue      character varying,
-                m_product_id              numeric,
-                value                     character varying,
-                productname               character varying,
-                isseasonfixedprice        character,
-                itemproductname           character varying,
-                packingmaterialname       character varying,
-                pricestd                  numeric,
-                pricepattern1             character varying,
-                altpricestd               numeric,
-                pricepattern2             character varying,
-                hasaltprice               integer,
-                uomsymbol                 character varying,
+                -- Displayed pricelist data
+                ProductCategory           varchar,
+                ProductCategoryValue      varchar,
+                M_Product_ID              numeric,
+                Value                     varchar,
+                ProductName               varchar,
+                IsSeasonFixedPrice        char(1),
+                ItemProductName           varchar,
+                PackingMaterialName       varchar,
+                PriceStd                  numeric,
+                PricePattern1             varchar,
+                AltPriceStd               numeric,
+                PricePattern2             varchar,
+                HasAltPrice               integer,
+                UOMSymbol                 varchar,
                 attributes                text,
-                seqno                     numeric,
-                c_bpartner_id             numeric,
-                m_pricelist_version_id    numeric,
-                alt_pricelist_version_id  numeric,
-                m_productprice_id         numeric,
-                m_attributesetinstance_id numeric,
-                m_hu_pi_item_product_id   numeric,
-                uom_x12de355              character varying,
-                qtycuspertu               numeric,
+                SeqNo                     numeric,
+
+                -- Filter Columns
+                C_BPartner_ID             numeric,
+                M_PriceList_Version_ID    numeric,
+                Alt_PriceList_Version_ID  numeric,
+
+                -- Additional internal infos to be used
+                M_ProductPrice_ID         numeric,
+                M_AttributeSetInstance_ID numeric,
+                M_HU_PI_Item_Product_ID   numeric,
+                UOM_X12DE355              varchar,
+                QtyCUsPerTU               numeric,
                 m_hu_pi_version_id        numeric,
-                currency                  character,
-                currency2                 character
+                currency                  char(3),
+                currency2                 char(3)
             )
     STABLE
     LANGUAGE sql
@@ -208,5 +215,3 @@ GROUP BY pp.M_ProductPrice_ID,
          c2.iso_code
 $$
 ;
-
-
