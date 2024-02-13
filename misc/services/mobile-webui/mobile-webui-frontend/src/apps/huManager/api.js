@@ -54,12 +54,3 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
     clearanceNote,
   });
 }
-
-export async function assignExternalLotNumber({ huId, qrCode }) {
-  return axios
-    .put(`${huAPIBasePath}/byId/${huId}/externalLotNumber`, {
-      qrCode,
-    })
-    .then(unboxAxiosResponse)
-    .then((response) => response.result);
-}
