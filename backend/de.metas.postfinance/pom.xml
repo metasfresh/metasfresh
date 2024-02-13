@@ -47,6 +47,7 @@
         <dependency>
             <groupId>com.sun.xml.messaging.saaj</groupId>
             <artifactId>saaj-impl</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
@@ -89,6 +90,13 @@
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
             <version>2.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.metro</groupId>
+            <artifactId>wssx-impl</artifactId>
+            <version>4.0.3</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

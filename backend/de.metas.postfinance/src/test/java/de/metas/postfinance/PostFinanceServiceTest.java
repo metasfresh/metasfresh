@@ -41,11 +41,11 @@ public class PostFinanceServiceTest
 		// reqContext.put(BindingProvider.USERNAME_PROPERTY, "dragos.moca@pevesoft.ro");
 		// reqContext.put(BindingProvider.PASSWORD_PROPERTY, "userpassword");
 
-		// TODO: find out why we get 502 Bad Gateway
+		// TODO: com.sun.xml.ws.fault.ServerSOAPFaultException: Client received SOAP Fault from server: An error occurred when verifying security for the message. Please see the server log to find more detail regarding exact cause of the failure.
 		// final String result = port.executePing("41101000001205994", null, false, false);
 		
 		// Assertions.assertNotNull(result);
 		//
-		// Assertions.assertEquals("41101000011707505", result);
+		// Assertions.assertEquals("41101000001205994", result);
 	}
 }
