@@ -5,6 +5,7 @@ import { workplaceManagerLocation, workplaceManagerRoutes } from './routes';
 import { workplaceManagerReducer } from './reducers';
 import * as api from './api';
 import { setWorkplace } from './actions';
+import { toastError } from '../../utils/toast';
 
 export const applicationDescriptor = {
   applicationId: 'workplaceManager',
@@ -20,10 +21,13 @@ export const applicationDescriptor = {
   },
   startApplicationByQRCode: ({ qrCode }) => {
     return (dispatch) => {
-      api.getWorkplaceByQRCode(qrCode).then((workplaceInfo) => {
-        dispatch(setWorkplace({ workplaceInfo }));
-        dispatch(push(workplaceManagerLocation()));
-      });
+      api
+        .getWorkplaceByQRCode(qrCode)
+        .then((workplaceInfo) => {
+          dispatch(setWorkplace({ workplaceInfo }));
+          dispatch(push(workplaceManagerLocation()));
+        })
+        .catch((axiosError) => toastError({ axiosError }));
     };
   },
   reduxReducer: workplaceManagerReducer,
