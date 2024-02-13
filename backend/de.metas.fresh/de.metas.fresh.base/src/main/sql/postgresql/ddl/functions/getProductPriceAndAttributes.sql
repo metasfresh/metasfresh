@@ -61,10 +61,10 @@ $$
     STABLE
 ;
 
-DROP FUNCTION IF EXISTS report.getProductPriceAndAttributes_V2(M_ProductPrice_ID numeric)
+DROP FUNCTION IF EXISTS report.getProductPriceAndAttributes(M_ProductPrice_ID numeric)
 ;
 
-CREATE OR REPLACE FUNCTION report.getProductPriceAndAttributes_V2(M_ProductPrice_ID numeric)
+CREATE OR REPLACE FUNCTION report.getProductPriceAndAttributes(M_ProductPrice_ID numeric)
     RETURNS TABLE
             (
                 M_ProductPrice_ID         numeric,
