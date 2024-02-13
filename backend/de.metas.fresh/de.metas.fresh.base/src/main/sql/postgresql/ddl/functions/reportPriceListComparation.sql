@@ -119,7 +119,7 @@ FROM M_ProductPrice pp
     (
     SELECT vip.M_HU_PI_Item_Product_ID, vip.M_Product_ID
     FROM report.Valid_PI_Item_Product_V vip
-         -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
+    -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
       AND CASE
               WHEN
@@ -129,7 +129,7 @@ FROM M_ProductPrice pp
           END
     ) bpProductPackingMaterial ON TRUE
 
-         LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa ON TRUE
+         LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID) ppa ON TRUE
 
          INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID AND plv.IsActive = 'Y'
 
@@ -143,17 +143,17 @@ FROM M_ProductPrice pp
          LEFT OUTER JOIN LATERAL (
     SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature,pp2.m_hu_pi_item_product_id
     FROM M_ProductPrice pp2
-             INNER JOIN report.getProductPriceAndAttributes(M_ProductPrice_ID := pp2.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa2 ON TRUE
+             INNER JOIN report.getProductPriceAndAttributes(M_ProductPrice_ID := pp2.M_ProductPrice_ID) ppa2 ON TRUE
 
     WHERE pp2.M_Product_ID = pp.M_Product_ID
       AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
       AND pp2.IsActive = 'Y'
-      AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
-           (pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
+      --AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
+      --(pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
       AND pp2.isAttributeDependant = pp.isAttributeDependant
       --avoid comparing different product prices in same pricelist
       AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
-        /* we have to make sure that only prices with the same attributes and packing instructions are compared. Note:
+        /* we have to make sure that only prices with the same attributes are compared. Note:
         * - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
         * - If there are no Attribute Prices the signature will be null
         * This is important, because otherwise an empty attribute price will be compared to the regular price AND the alternate attribute price */
@@ -186,3 +186,5 @@ $$
     LANGUAGE sql
     STABLE
 ;
+
+
