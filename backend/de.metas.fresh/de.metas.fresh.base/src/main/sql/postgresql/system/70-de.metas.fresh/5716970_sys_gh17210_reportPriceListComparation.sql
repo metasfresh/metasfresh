@@ -121,12 +121,7 @@ FROM M_ProductPrice pp
     FROM report.Valid_PI_Item_Product_V vip
     -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
-      AND CASE
-              WHEN
-                  EXISTS(SELECT 1 FROM report.Valid_PI_Item_Product_V v WHERE v.M_Product_ID = pp.M_Product_ID AND v.hasPartner IS TRUE AND v.C_BPartner_ID = $1)
-                  THEN vip.C_BPartner_ID = $1
-                  ELSE vip.C_BPartner_ID IS NULL
-          END
+      AND EXISTS(SELECT 1 FROM report.Valid_PI_Item_Product_V v WHERE v.M_Product_ID = pp.M_Product_ID)
     ) bpProductPackingMaterial ON TRUE
 
          LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID) ppa ON TRUE
