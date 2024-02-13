@@ -83,8 +83,6 @@ import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
-import static de.metas.handlingunits.rest_api.constants.ErrorMessages.ExternalLotNumber_MISSING;
-import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
@@ -112,7 +110,7 @@ public class HandlingUnitsRestController
 			description = "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
 					+ "  But custom HU statuses can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`"
 					+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
-					+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`" 
+					+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`"
 					+ "- **HU-Attribute-Ordering**: the HU's attributes are ordered according to the `SeqNo` of the PI-Attributes in the HU's packing-instruction `M_HU_PI_Version`."
 	)
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
@@ -211,13 +209,13 @@ public class HandlingUnitsRestController
 			final ImmutableSet<String> attributesToInclude = extractStringSet(SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE, "", clientAndOrgId);
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
-																						 .hu(hu)
-																						 .adLanguage(adLanguage)
-																						 .excludeEmptyAttributes(true)
-																						 .emptyAttributesToInclude(attributesToInclude)
-																						 .build()))
-											 .build());
+					.result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
+							.hu(hu)
+							.adLanguage(adLanguage)
+							.excludeEmptyAttributes(true)
+							.emptyAttributesToInclude(attributesToInclude)
+							.build()))
+					.build());
 		}
 		catch (final Exception ex)
 		{
@@ -233,11 +231,11 @@ public class HandlingUnitsRestController
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return Arrays.stream(sysConfigBL
-									 .getValue(
-											 sysConfigValue,
-											 defaultValue,
-											 clientAndOrgId)
-									 .split(","))
+						.getValue(
+								sysConfigValue,
+								defaultValue,
+								clientAndOrgId)
+						.split(","))
 				.map(String::trim)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -352,23 +350,6 @@ public class HandlingUnitsRestController
 		return getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(huQRCodesService.getHuIdByQRCode(huQRCode))
 				.expectedQRCode(huQRCode)
-				.build());
-	}
-
-	@PutMapping("/byId/{M_HU_ID}/externalLotNumber")
-	public ResponseEntity<JsonGetSingleHUResponse> assignExternalLotNumber(
-			@PathVariable("M_HU_ID") final int huRepoId,
-			@RequestBody @NonNull final JsonQRCode qrCode)
-	{
-		final String externalLotNumber = HUQRCodesService.toHUQRCode(qrCode.getQrCode())
-				.getAttributeValueAsString(HU_ExternalLotNumber)
-				.orElseThrow(() -> new AdempiereException(ExternalLotNumber_MISSING));
-		final HuId huId = HuId.ofRepoId(huRepoId);
-
-		handlingUnitsService.assignExternalLotNumber(huId, externalLotNumber);
-
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huId)
 				.build());
 	}
 
