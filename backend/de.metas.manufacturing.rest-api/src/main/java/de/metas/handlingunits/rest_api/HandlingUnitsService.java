@@ -93,7 +93,6 @@ import java.util.Set;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
-import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 @Service
 @RequiredArgsConstructor
@@ -494,11 +493,6 @@ public class HandlingUnitsService
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
-	}
-
-	public void assignExternalLotNumber(@NonNull final HuId huId, @NonNull final String externalLotNumber)
-	{
-		huAttributesBL.updateHUAttributeRecursive(huId, HU_ExternalLotNumber, externalLotNumber, null);
 	}
 
 	@NonNull

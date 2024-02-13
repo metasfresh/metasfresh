@@ -8,7 +8,6 @@ import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
-  huManagerAssignExternalLotNo,
   huManagerBulkActionsLocation,
   huManagerDisposeLocation,
   huManagerHuLabelsLocation,
@@ -109,9 +108,6 @@ const HUManagerScreen = () => {
       toggleClearanceModal(false);
     });
   };
-  const onAssignExternalLotNoClicked = () => {
-    history.push(huManagerAssignExternalLotNo());
-  };
   const onChangeQtySubmit = ({ qty, description }) => {
     api
       .changeQty({
@@ -175,10 +171,6 @@ const HUManagerScreen = () => {
           <ButtonWithIndicator
             caption={trl('huManager.action.setClearance.buttonCaption')}
             onClick={onSetClearanceClick}
-          />
-          <ButtonWithIndicator
-            caption={trl('components.huManager.action.assignExternalLotNumber.buttonCaption')}
-            onClick={onAssignExternalLotNoClicked}
           />
           <ButtonWithIndicator
             caption={trl('huManager.action.bulkActions.buttonCaption')}
