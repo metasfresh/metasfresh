@@ -1,15 +1,15 @@
 {
-  "caption": "Arbeitsplatz",
+  "title": "Arbeitsplatz",
   "workplaceName": "Name",
-  "warehouseName": "Warehouse",
-  "isUserAssigned": "Assigned",
-
+  "warehouseName": "Lager",
+  "isUserAssigned": "Zugewiesen",
   "action": {
     "assign": {
-      "buttonCaption": "Assign",
-      "scanAgain": {
-        "buttonCaption": "Erneut scannen"
-      }
+      "buttonCaption": "Zuweisen"
+    },
+    "scanAgain": {
+      "buttonCaption": "Erneut scannen"
     }
   }
 }
+

@@ -3,7 +3,6 @@
   "workplaceName": "Name",
   "warehouseName": "Warehouse",
   "isUserAssigned": "Assigned",
-
   "action": {
     "assign": {
       "buttonCaption": "Assign"
