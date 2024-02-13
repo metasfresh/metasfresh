@@ -14,7 +14,7 @@ import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
-import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
 

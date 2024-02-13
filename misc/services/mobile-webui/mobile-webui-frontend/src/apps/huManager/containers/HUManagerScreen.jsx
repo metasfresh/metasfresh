@@ -23,8 +23,10 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
-import { isKnownQRCodeFormat } from '../../../utils/huQRCodes';
+import { isKnownQRCodeFormat } from '../../../utils/qrCode/hu';
 import SelectHUIntermediateList from './SelectHUIntermediateList';
+import { push } from 'connected-react-router';
+import { scanAnythingLocation } from '../../scanAnything/routes';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -94,6 +96,7 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+    dispatch(push(scanAnythingLocation()));
   };
   const onPrintLabelsClicked = () => {
     history.push(huManagerHuLabelsLocation());

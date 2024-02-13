@@ -17,6 +17,7 @@ public class HUManagerMobileApplication implements MobileApplication
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.showInMainMenu(false)
 			.build();
 
 	@Override

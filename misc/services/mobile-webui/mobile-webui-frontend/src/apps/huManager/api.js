@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
-import { toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeString } from '../../utils/qrCode/hu';
 
 const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 

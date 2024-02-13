@@ -28,6 +28,7 @@ export default function applications(state = initialState, action) {
           iconClassNames: getIconClassNames(application.id),
           requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
           showFilters: application.showFilters,
+          showInMainMenu: application.showInMainMenu,
           applicationParameters: application.applicationParameters,
         };
         return acc;
@@ -56,6 +57,8 @@ const getIconClassNames = (applicationId) => {
       return 'fas fa-industry';
     case 'huManager':
       return 'fas fa-boxes';
+    case 'scanAnything':
+      return 'fas fa-qrcode';
     default:
       return '';
   }
