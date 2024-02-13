@@ -29,15 +29,18 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.title.TitleRepository;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class JsonServiceFactory
 {
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -50,29 +53,7 @@ public class JsonServiceFactory
 	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
-
-	public JsonServiceFactory(
-			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
-			@NonNull final BPartnerQueryService bpartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPGroupRepository bpGroupRepository,
-			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final TitleRepository titleRepository,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final JobRepository jobRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
-	{
-		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
-		this.bpartnerQueryService = bpartnerQueryService;
-		this.greetingRepository = greetingRepository;
-		this.titleRepository = titleRepository;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.bpGroupRepository = bpGroupRepository;
-		this.currencyRepository = currencyRepository;
-		this.jobRepository = jobRepository;
-		this.externalReferenceService = externalReferenceService;
-		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
-	}
+	private final JsonGreetingService greetingService;
 
 	public JsonPersisterService createPersister()
 	{
@@ -86,7 +67,9 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				greetingService,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()

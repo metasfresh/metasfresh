@@ -1,18 +1,8 @@
-package de.metas.greeting;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,23 +20,23 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+package de.metas.greeting;
+
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @Value
-@Builder
-public class Greeting
+@Builder(toBuilder = true)
+public class UpsertGreetingRequest
 {
-	@NonNull GreetingId id;
-	@NonNull OrgId orgId;
+	@Nullable GreetingId greetingId;
 	@NonNull String name;
-	@NonNull ITranslatableString greeting;
-
-	@Nullable String letterSalutation;
-
+	@NonNull String greeting;
 	@Nullable GreetingStandardType standardType;
-
-	boolean active;
-
-	public String getGreeting(@NonNull final String adLanguage)
-	{
-		return getGreeting().translate(adLanguage);
-	}
+	@NonNull OrgId orgId;
+	@Nullable String letterSalutation;
 }

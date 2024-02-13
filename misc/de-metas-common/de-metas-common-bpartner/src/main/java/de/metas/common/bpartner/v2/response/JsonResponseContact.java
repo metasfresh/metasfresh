@@ -89,7 +89,7 @@ public class JsonResponseContact
 	String name;
 
 	@JsonInclude(Include.NON_EMPTY)
-	String greeting;
+	JsonResponseGreeting greeting;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String lastName;
@@ -179,7 +179,7 @@ public class JsonResponseContact
 			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(CODE) @Nullable final String code,
 			@JsonProperty(NAME) final String name,
-			@JsonProperty(GREETING) final String greeting,
+			@JsonProperty(GREETING) final JsonResponseGreeting greeting,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
 			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,

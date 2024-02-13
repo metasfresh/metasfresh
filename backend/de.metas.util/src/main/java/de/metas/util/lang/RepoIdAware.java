@@ -22,6 +22,10 @@ package de.metas.util.lang;
  * #L%
  */
 
+import lombok.NonNull;
+
+import java.util.function.Function;
+
 /**
  * @implNote Following static methods shall be implemented
  * <ul>
@@ -37,5 +41,9 @@ public interface RepoIdAware extends Comparable<RepoIdAware>
 	default int compareTo(final RepoIdAware other)
 	{
 		return getRepoId() - other.getRepoId();
+	}
+
+	default <T> T map(@NonNull final Function<Integer, T> mappingFunction) {
+		return mappingFunction.apply(getRepoId());
 	}
 }

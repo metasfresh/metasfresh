@@ -195,7 +195,14 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean birthdaySet;
 
-	@ApiModelProperty(position = 230, // shall be last
+	@ApiModelProperty(position = 240,  //
+			value = "This translates to `AD_User.C_Greeting`.")
+	private JsonRequestGreetingUpsertItem greeting;
+
+	@ApiModelProperty(hidden = true)
+	private boolean greetingSet;
+
+	@ApiModelProperty(position = 250, // shall be last
 			value = "Sync advise about this contact's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -351,6 +358,12 @@ public class JsonRequestContact
 	{
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		invoiceEmailEnabledSet = true;
+	}
+
+	public void setGreeting(@Nullable final JsonRequestGreetingUpsertItem greeting)
+	{
+		this.greeting = greeting;
+		greetingSet = true;
 	}
 
 	public void setTitle(final String title)

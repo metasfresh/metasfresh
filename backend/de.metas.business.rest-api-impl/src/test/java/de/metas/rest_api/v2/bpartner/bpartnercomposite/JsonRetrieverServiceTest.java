@@ -38,6 +38,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
@@ -103,7 +104,8 @@ class JsonRetrieverServiceTest
 				new CurrencyRepository(),
 				new JobRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 
