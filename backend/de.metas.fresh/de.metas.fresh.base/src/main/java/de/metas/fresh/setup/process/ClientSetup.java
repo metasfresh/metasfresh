@@ -10,6 +10,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.dunning.api.IDunningDAO;
 import de.metas.location.ILocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -96,6 +97,7 @@ class ClientSetup
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
+	private final transient IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 	// Parameters
 	private final Properties _ctx;
@@ -268,6 +270,11 @@ class ClientSetup
 		acctSchema.setName(acctSchema.getGAAP() + " / " + acctCurrencyCode.toThreeLetterCode());
 
 		priceList_None.setC_Currency_ID(currencyId.getRepoId());
+
+		dunningDAO.retrieveDunnings().forEach(dunning -> {
+			dunning.setC_Currency_ID(currencyId.getRepoId());
+			dunningDAO.save(dunning);
+		});
 
 		return this;
 	}
