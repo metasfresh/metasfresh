@@ -1,4 +1,4 @@
-import { parseQRCodeString, toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
+import { parseQRCodeString, toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../../utils/qrCode/hu';
 
 describe('huQRCodes tests', () => {
   describe('toQRCodeDisplayable', () => {

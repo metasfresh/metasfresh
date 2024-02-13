@@ -3,7 +3,7 @@ import { toQueryString, unboxAxiosResponse } from '../utils';
 import { apiBasePath } from '../constants';
 import { useEffect } from 'react';
 import * as ws from '../utils/websocket';
-import { toQRCodeString } from '../utils/huQRCodes';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 /**
  * @summary Get the list of available launchers

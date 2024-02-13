@@ -7,6 +7,8 @@ const translations = {
     },
   },
   general: {
+    Yes: 'Yes',
+    No: 'No',
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
@@ -54,14 +56,6 @@ const translations = {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
-    },
-    huManager: {
-      action: {
-        assignExternalLotNumber: {
-          buttonCaption: 'Associate external LotNo',
-          scanTarget: 'Associate external LotNo',
-        },
-      },
     },
   },
   activities: {

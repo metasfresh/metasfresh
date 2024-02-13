@@ -7,6 +7,7 @@ import { toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { appLaunchersLocation } from '../../../routes/launchers';
+import { setActivityProcessing } from '../../../actions/WorkflowActions';
 
 const ConfirmActivity = ({
   applicationId,
@@ -16,12 +17,14 @@ const ConfirmActivity = ({
   promptQuestion,
   userInstructions,
   isUserEditable,
+  isProcessing,
   completeStatus,
   isLastActivity,
 }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const onUserConfirmed = () => {
+    dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
     postUserConfirmation({ wfProcessId, activityId })
       .then(() => dispatch(setActivityUserConfirmed({ wfProcessId, activityId })))
       .then(() => {
@@ -29,7 +32,8 @@ const ConfirmActivity = ({
           history.push(appLaunchersLocation({ applicationId }));
         }
       })
-      .catch((axiosError) => toastError({ axiosError }));
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false })));
   };
 
   return (
@@ -39,6 +43,7 @@ const ConfirmActivity = ({
         promptQuestion={promptQuestion}
         userInstructions={userInstructions}
         isUserEditable={isUserEditable}
+        isProcessing={isProcessing}
         completeStatus={completeStatus}
         onUserConfirmed={onUserConfirmed}
       />
@@ -54,6 +59,7 @@ ConfirmActivity.propTypes = {
   userInstructions: PropTypes.string,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool.isRequired,
+  isProcessing: PropTypes.bool,
   completeStatus: PropTypes.string.isRequired,
   isLastActivity: PropTypes.bool.isRequired,
 };

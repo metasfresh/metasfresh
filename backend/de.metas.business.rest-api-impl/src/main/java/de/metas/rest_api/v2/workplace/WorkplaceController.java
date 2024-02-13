@@ -23,16 +23,20 @@
 package de.metas.rest_api.v2.workplace;
 
 import de.metas.Profiles;
+import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceAssignmentCreateRequest;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.qrcode.WorkplaceQRCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,15 +46,38 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class WorkplaceController
 {
-	@NonNull
-	private final WorkplaceService workplaceService;
+	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final WarehouseService warehouseService;
 
 	@PostMapping("/{workplaceId}/assign")
-	public void assignWorkplace(@PathVariable("workplaceId") @NonNull final Integer workplaceId)
+	public JsonWorkplace assignWorkplace(@PathVariable("workplaceId") @NonNull final Integer workplaceIdInt)
 	{
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(workplaceIdInt);
+
 		workplaceService.assignWorkplace(WorkplaceAssignmentCreateRequest.builder()
-												 .workplaceId(WorkplaceId.ofRepoId(workplaceId))
-												 .userId(Env.getLoggedUserId())
-												 .build());
+				.workplaceId(workplaceId)
+				.userId(Env.getLoggedUserId())
+				.build());
+
+		return getWorkplaceById(workplaceId);
+	}
+
+	@PostMapping("/byQRCode")
+	public JsonWorkplace getWorkplaceByQRCode(@RequestBody @NonNull final JsonGetWorkplaceByQRCodeRequest request)
+	{
+		final WorkplaceQRCode qrCode = WorkplaceQRCode.ofGlobalQRCodeJsonString(request.getQrCode());
+		return getWorkplaceById(qrCode.getWorkplaceId());
+	}
+
+	private JsonWorkplace getWorkplaceById(@NonNull final WorkplaceId workplaceId)
+	{
+		final Workplace workplace = workplaceService.getById(workplaceId);
+
+		return JsonWorkplace.builder()
+				.id(workplace.getId())
+				.name(workplace.getName())
+				.warehouseName(workplace.getWarehouseId() != null ? warehouseService.getWarehouseName(workplace.getWarehouseId()) : null)
+				.isUserAssigned(workplaceService.isUserAssigned(Env.getLoggedUserId(), workplace.getId()))
+				.build();
 	}
 }

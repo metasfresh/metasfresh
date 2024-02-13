@@ -105,7 +105,7 @@ public class WorkflowRestController
 				.applications(
 						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
 								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
-								.sorted(Comparator.comparing(JsonMobileApplication::getCaption))
+								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

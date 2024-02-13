@@ -69,6 +69,12 @@ public class WorkplaceService
 		workplaceUserAssignRepository.create(request);
 	}
 
+	public boolean isUserAssigned(@NonNull final UserId userId, @NonNull final WorkplaceId expectedWorkplaceId)
+	{
+		final WorkplaceId workplaceId = workplaceUserAssignRepository.getWorkplaceIdByUserId(userId).orElse(null);
+		return WorkplaceId.equals(workplaceId, expectedWorkplaceId);
+	}
+
 	public boolean isAnyWorkplaceActive()
 	{
 		return workplaceRepository.isAnyWorkplaceActive();
