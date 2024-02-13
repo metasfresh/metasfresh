@@ -9,6 +9,7 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
@@ -132,4 +133,7 @@ public interface IADProcessDAO extends ISingletonService
 	ProcessType retrieveProcessType(@NonNull AdProcessId processId);
 
 	ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds();
+
+	@NonNull
+	List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull AdValRuleId valRuleId);
 }

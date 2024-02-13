@@ -50,3 +50,42 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
 export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
   return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { clearanceStatus, clearanceNote });
 }
+
+export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
+  return axios
+    .post(`${huAPIBasePath}/bulk/move`, {
+      huQRCodes: huQRCodes,
+      targetQRCode: toQRCodeString(targetQRCode),
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
+
+export const changeQty = ({ huQRCode, description, qty }) => {
+  return axios
+    .put(`${huAPIBasePath}/qty`, {
+      huQRCode: toQRCodeString(huQRCode),
+      qty: qty,
+      description: description,
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
+
+export const printHULabels = ({ huQRCode, huLabelProcessId, nrOfCopies }) => {
+  return axios
+    .post(`${huAPIBasePath}/huLabels/print`, {
+      huQRCode: toQRCodeString(huQRCode),
+      huLabelProcessId: huLabelProcessId,
+      nrOfCopies: nrOfCopies,
+    })
+    .then(unboxAxiosResponse);
+};
+
+export const getPrintingOptions = () => {
+  return axios.get(`${huAPIBasePath}/huLabels/printingOptions`).then(unboxAxiosResponse);
+};
+
+export const getHUsByDisplayableQRCode = (displayableQRCode) => {
+  return axios.get(`${huAPIBasePath}/byDisplayableQrCode/${displayableQRCode}`).then(unboxAxiosResponse);
+};

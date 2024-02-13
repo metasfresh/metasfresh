@@ -1,3 +1,4 @@
+import React from 'react';
 import toast from 'react-hot-toast';
 import { unboxAxiosResponse } from './index';
 import { trl } from './translations';
@@ -31,7 +32,39 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   }
 
   console.trace('toast error: ', { message, axiosError });
-  toast(message, { type: 'error', style: { color: 'white' } });
+  toast.custom(
+    (t) => (
+      <div className="toastContainer" onClick={() => toast.dismiss(t.id)}>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
+};
+
+export const toastNotification = ({ messageKey, plainMessage }) => {
+  let message;
+  if (messageKey) {
+    message = trl(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
+  } else {
+    console.error('toastNotification called without any message');
+    return;
+  }
+
+  toast.custom(
+    (t) => (
+      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {

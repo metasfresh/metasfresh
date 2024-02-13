@@ -41,6 +41,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
@@ -305,6 +306,48 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
+	@PostMapping("/bulk/move")
+	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
+	{
+		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
+				.map(HUQRCode::fromGlobalQRCodeJsonString)
+				.collect(ImmutableList.toImmutableList());
+
+		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
+				.huQrCodes(huQrCodes)
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
+	}
+
+	@PutMapping("/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HuId huId = handlingUnitsService.updateQty(request);
+		return getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.build());
+	}
+
+	@PostMapping("/huLabels/print")
+	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		handlingUnitsService.printHULabels(request);
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
+	}
+
+	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")
+	public List<JsonHU> getHUsByDisplayableQrCode(@PathVariable("displayableQrCode") final String displayableQrCode)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode, adLanguage);
+	}
+
 	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
@@ -345,7 +388,8 @@ public class HandlingUnitsRestController
 	private static class GetByIdRequest
 	{
 		@NonNull HuId huId;
-		@Nullable HUQRCode expectedQRCode;
+		@Nullable
+		HUQRCode expectedQRCode;
 
 		boolean includeAllowedClearanceStatuses;
 	}

@@ -18,7 +18,7 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
+const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult, scannerPlaceholder }) => {
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -140,7 +140,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
           ref={inputTextRef}
           className="input-text"
           type="text"
-          placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          placeholder={trl(scannerPlaceholder ?? 'components.BarcodeScannerComponent.scanTextPlaceholder')}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
@@ -154,6 +154,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
 BarcodeScannerComponent.propTypes = {
   //
   // Props:
+  scannerPlaceholder: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
   onResolvedResult: PropTypes.func.isRequired,
 };

@@ -21,6 +21,29 @@
     },
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"
+    },
+    "bulkActions": {
+      "buttonCaption": "Massenaktionen",
+      "windowName": "Massenaktionen",
+      "scan": "Scannen",
+      "move": "Bewegen",
+      "closeScanner": "Scanner schließen",
+      "scanHUPlaceholder": "Scannen HU",
+      "scanTargetPlaceholder": "Scan-Ziel",
+      "moveSuccess": "Erfolgreich verschoben"
+    },
+    "changeQty": {
+      "buttonCaption": "Menge verändern",
+      "qtyLabel": "Menge",
+      "descriptionLabel": "Beschreibung"
+    },
+    "printLabels": {
+      "buttonCaption": "Etiketten drucken",
+      "nrOfCopies": "Zahl der Kopien",
+      "label": "Etikett",
+      "windowName": "Etiketten drucken",
+      "print": "Drucken",
+      "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
     }
   }
 }

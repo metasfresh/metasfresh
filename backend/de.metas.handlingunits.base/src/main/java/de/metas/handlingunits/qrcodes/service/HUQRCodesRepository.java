@@ -1,5 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -12,6 +14,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +22,8 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Repository
 public class HUQRCodesRepository
@@ -119,6 +124,18 @@ public class HUQRCodesRepository
 				: Optional.empty();
 	}
 
+	@NonNull
+	public Stream<HUQRCodeAssignment> streamAssignmentsForDisplayableQrCode(@NonNull final String displayableQrCode)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_DisplayableQRCode, displayableQrCode)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCodeAssignment)
+				.filter(Optional::isPresent)
+				.map(Optional::get);
+	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
@@ -143,6 +160,39 @@ public class HUQRCodesRepository
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> HuId.ofRepoId(record.getM_HU_ID()),
 						HUQRCodesRepository::toHUQRCode));
+	}
+
+	@NonNull
+	public List<HUQRCodeAssignment> getHUAssignmentsByQRCode(@NonNull final Collection<HUQRCode> huQRCodes)
+	{
+		if (huQRCodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Set<String> qrCodeIds = huQRCodes.stream()
+				.map(HUQRCode::getId)
+				.map(HUQRCodeUniqueId::getAsString)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<HUQRCodeAssignment> huQrCodeAssignments = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, qrCodeIds)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCodeAssignment)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+
+		if (qrCodeIds.size() != huQrCodeAssignments.size())
+		{
+			throw new AdempiereException("HuQRCodeAssignment not found for some of the QRCodes!")
+					.appendParametersToMessage()
+					.setParameter("huQrCodeAssignments", huQrCodeAssignments)
+					.setParameter("qrCodeIds", qrCodeIds);
+		}
+		return huQrCodeAssignments;
 	}
 
 	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)

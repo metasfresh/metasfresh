@@ -115,10 +115,9 @@ public final class AttributesKeys
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
-			return attributeValueId != null
-					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
-					: null;
+			return Optional.ofNullable(attributeSet.getAttributeValueIdOrNull(attributeCode))
+					.map(AttributesKeyPart::ofAttributeValueId)
+					.orElse(null);
 		}
 		else
 		{

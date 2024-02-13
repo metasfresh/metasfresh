@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Product',
+    ProductValue: 'Product Value',
     Locator: 'Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
@@ -16,11 +17,14 @@ const translations = {
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
+    Qty: 'Qty',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
+    okText: 'OK',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
+    noHUFound: 'No HU found!',
   },
   login: {
     submitButton: 'Login',
@@ -95,6 +99,9 @@ const translations = {
         qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
+        addToFunnel: 'Add to funnel',
+        noQtyEnteredCannotAddToStorage: 'No qty entered! There is nothing to be added to temporary storage!',
+        cannotAddToStorageDueTo: 'Cannot add to temporary storage due to: ',
         step: {
           name: 'Issue HU',
         },

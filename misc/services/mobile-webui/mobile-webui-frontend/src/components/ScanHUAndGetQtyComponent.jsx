@@ -6,8 +6,9 @@ import { trl } from '../utils/translations';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadableStr, formatQtyToHumanReadable } from '../utils/qtys';
+import { formatQtyToHumanReadableStr, formatQtyToHumanReadable, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
+import { toastError } from '../utils/toast';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -129,12 +130,18 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
+    const adjustedQtyMax = roundQtyMaxToScalePrecision(
+      resolvedBarcodeData.qtyMax,
+      resolvedBarcodeData.uom,
+      resolvedBarcodeData.scaleDevice
+    );
+
     // Qty shall be less than or equal to qtyMax
     const { qtyEffective: diff, uomEffective: diffUom } =
-      resolvedBarcodeData.qtyMax &&
-      resolvedBarcodeData.qtyMax > 0 &&
+      adjustedQtyMax &&
+      adjustedQtyMax > 0 &&
       formatQtyToHumanReadable({
-        qty: qtyEntered - resolvedBarcodeData.qtyMax,
+        qty: qtyEntered - adjustedQtyMax,
         uom,
       });
 
@@ -146,6 +153,21 @@ const ScanHUAndGetQtyComponent = ({
 
     // OK
     return null;
+  };
+
+  const roundQtyMaxToScalePrecision = (qtyMax, qtyMaxUOM, scaleDevice) => {
+    if (!scaleDevice || !scaleDevice.roundingToScale) {
+      return qtyMax;
+    }
+
+    try {
+      return roundToQtyPrecision(
+        { qty: qtyMax, uom: qtyMaxUOM },
+        { qty: scaleDevice.roundingToScale.qty, uom: scaleDevice.roundingToScale.uomSymbol }
+      );
+    } catch (e) {
+      toastError({ plainMessage: e.message });
+    }
   };
 
   const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason }) => {

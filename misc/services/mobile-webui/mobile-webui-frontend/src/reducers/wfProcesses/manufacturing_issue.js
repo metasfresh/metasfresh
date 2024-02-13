@@ -163,6 +163,7 @@ const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
       productName: line.productName,
+      productValue: line.productValue,
       uom: line.uom,
       hazardSymbols: line.hazardSymbols ?? [],
       allergens: line.allergens ?? [],

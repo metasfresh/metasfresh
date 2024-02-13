@@ -23,6 +23,7 @@ public class RawMaterialsIssueLine
 {
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@NonNull String productValue;
 	boolean isWeightable;
 	@NonNull Quantity qtyToIssue;
 	@Nullable IssuingToleranceSpec issuingToleranceSpec;
@@ -36,6 +37,7 @@ public class RawMaterialsIssueLine
 	private RawMaterialsIssueLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			@NonNull final String productValue,
 			final boolean isWeightable,
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
@@ -44,6 +46,7 @@ public class RawMaterialsIssueLine
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.productValue = productValue;
 		this.isWeightable = isWeightable;
 		this.qtyToIssue = qtyToIssue;
 		this.issuingToleranceSpec = issuingToleranceSpec;

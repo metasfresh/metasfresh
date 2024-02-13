@@ -18,6 +18,7 @@ import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ProductInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
@@ -28,7 +29,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -105,9 +105,8 @@ public class ManufacturingJobLoaderAndSaver
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
 	}
 
-	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final List<PPOrderIssueSchedule> schedules)
 	{
-		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}
@@ -196,10 +195,12 @@ public class ManufacturingJobLoaderAndSaver
 		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
 		final Quantity qtyToIssue = quantities.getQtyRequired();
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
+		final ProductInfo productInfo = supportingServices.getProductInfo(productId);
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
-				.productName(supportingServices.getProductName(productId))
+				.productName(productInfo.getName())
+				.productValue(productInfo.getValue())
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
