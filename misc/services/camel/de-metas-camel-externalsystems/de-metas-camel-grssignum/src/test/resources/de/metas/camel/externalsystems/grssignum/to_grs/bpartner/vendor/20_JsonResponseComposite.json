@@ -56,7 +56,7 @@
       "metasfreshId": 2205180,
       "lastName": "contact lastname",
       "firstName": "contact firstname",
-      "greeting": "greeting",
+      "greeting": null,
       "title": "title",
       "email": "email",
       "phone": "phone",
