@@ -34,7 +34,7 @@ const ScanAnythingScreen = () => {
     }
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} />;
+  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />;
 };
 
 export default ScanAnythingScreen;
