@@ -2,7 +2,6 @@ package de.metas.common.util.time;
 
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,12 +40,11 @@ public class SystemTime
 {
 	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
-	@Nullable
-	private static TimeSource timeSource;
+	private static final ThreadLocal<TimeSource> timeSource = ThreadLocal.withInitial(() -> defaultTimeSource);
 
 	private static TimeSource getTimeSource()
 	{
-		return timeSource == null ? defaultTimeSource : timeSource;
+		return timeSource.get();
 	}
 
 	/**
@@ -54,30 +52,34 @@ public class SystemTime
 	 */
 	public static void resetTimeSource()
 	{
-		timeSource = null;
+		timeSource.remove();
 	}
 
 	/**
-	 * @param newTimeSource the given TimeSource will be used for the time returned by the
-	 *                      methods of this class (unless it is null).
+	 * @param newThreadLocalTimeSource the given TimeSource will be used thread-locally for the time returned by the methods of this class.
+	 * @see #resetTimeSource()
 	 */
-	public static void setTimeSource(@NonNull final TimeSource newTimeSource)
+	public static void setTimeSource(@NonNull final TimeSource newThreadLocalTimeSource)
 	{
-		timeSource = newTimeSource;
-	}
-
-	public static void setFixedTimeSource(@NonNull final ZonedDateTime date)
-	{
-		setTimeSource(FixedTimeSource.ofZonedDateTime(date));
+		timeSource.set(newThreadLocalTimeSource);
 	}
 
 	/**
-	 * @param zonedDateTime ISO 8601 date time format (see {@link ZonedDateTime#parse(CharSequence)}).
-	 *                      e.g. 2018-02-28T13:13:13+01:00[Europe/Berlin]
+	 * @see #setTimeSource(TimeSource)
 	 */
-	public static void setFixedTimeSource(@NonNull final String zonedDateTime)
+	public static void setFixedTimeSource(@NonNull final ZonedDateTime threadLocalDate)
 	{
-		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(zonedDateTime)));
+		setTimeSource(FixedTimeSource.ofZonedDateTime(threadLocalDate));
+	}
+
+	/**
+	 * @param threadLocalZonedDateTime ISO 8601 date time format (see {@link ZonedDateTime#parse(CharSequence)}).
+	 *                                 e.g. 2018-02-28T13:13:13+01:00[Europe/Berlin]
+	 * @see #setTimeSource(TimeSource)
+	 */
+	public static void setFixedTimeSource(@NonNull final String threadLocalZonedDateTime)
+	{
+		setTimeSource(FixedTimeSource.ofZonedDateTime(ZonedDateTime.parse(threadLocalZonedDateTime)));
 	}
 
 	public static long millis()
