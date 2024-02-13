@@ -25,6 +25,14 @@ import { QRCODE_SEPARATOR } from './common';
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
 
+const ATTR_productId = 'productId';
+const ATTR_weightNet = 'weightNet';
+const ATTR_weightNetUOM = 'weightNetUOM';
+const ATTR_bestBeforeDate = 'bestBeforeDate';
+const ATTR_lotNo = 'lotNo';
+const ATTR_displayable = 'displayable';
+const ATTR_isTUToBePickedAsWhole = 'isTUToBePickedAsWhole';
+
 export const toQRCodeDisplayable = (qrCode) => {
   //
   // Case: null/empty qrCode
@@ -177,12 +185,23 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
-    result['productId'] = payload?.product?.id.toString();
+    result[ATTR_productId] = payload?.product?.id.toString();
   }
+
   const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === 'WeightNet');
   if (weightNetAttribute?.value != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * weightNetAttribute?.value;
+    result[ATTR_weightNet] = 1 * weightNetAttribute?.value;
+  }
+
+  const bestBeforeAttribute = payload?.attributes?.find((attribute) => attribute.code === 'HU_BestBeforeDate');
+  if (bestBeforeAttribute?.value != null) {
+    result[ATTR_bestBeforeDate] = bestBeforeAttribute.value;
+  }
+
+  const lotNumberAttribute = payload?.attributes?.find((attribute) => attribute.code === 'Lot-Nummer');
+  if (lotNumberAttribute?.value != null) {
+    result[ATTR_lotNo] = lotNumberAttribute.value;
   }
 
   return result;
@@ -197,17 +216,17 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * parts[0];
-    result['displayable'] = '' + parts[0];
-    result['isTUToBePickedAsWhole'] = true; // todo clean up needed!!!
-    result['weightNetUOM'] = 'kg'; // for LeichMehl it will always be kg
+    result[ATTR_weightNet] = 1 * parts[0];
+    result[ATTR_weightNetUOM] = 'kg'; // for LeichMehl it will always be kg
+    result[ATTR_displayable] = '' + parts[0];
+    result[ATTR_isTUToBePickedAsWhole] = true; // todo clean up needed!!!
   }
   if (parts.length >= 2) {
     const [, day, month, year] = LMQ_BEST_BEFORE_DATE_FORMAT.exec(parts[1]);
-    result['bestBeforeDate'] = `${year}-${month}-${day}`;
+    result[ATTR_bestBeforeDate] = `${year}-${month}-${day}`;
   }
   if (parts.length >= 3) {
-    result['lotNo'] = parts[2];
+    result[ATTR_lotNo] = parts[2];
   }
 
   return result;

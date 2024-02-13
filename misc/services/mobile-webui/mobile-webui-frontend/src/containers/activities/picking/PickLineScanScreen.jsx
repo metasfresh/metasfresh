@@ -75,6 +75,9 @@ const PickLineScanScreen = () => {
       result['isTUToBePickedAsWhole'] = true;
     }
 
+    result['bestBeforeDate'] = parsedHUQRCode.bestBeforeDate;
+    result['lotNo'] = parsedHUQRCode.lotNo;
+
     //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
     return result;
   };
