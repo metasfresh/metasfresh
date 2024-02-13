@@ -1,20 +1,8 @@
-package de.metas.ui.web.view;
-
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
-import java.util.List;
-import java.util.Objects;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +20,20 @@ import java.util.Objects;
  * #L%
  */
 
+package de.metas.ui.web.view;
+
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * {@link IView}s repository.
  *
@@ -43,7 +45,11 @@ public interface IViewsRepository
 
 	List<ViewProfile> getAvailableProfiles(WindowId windowId, JSONViewDataType viewDataType);
 
-	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);
+	ViewLayout getViewLayout(
+			@NonNull WindowId windowId,
+			@NonNull JSONViewDataType viewDataType,
+			@Nullable ViewProfileId profileId,
+			@Nullable UserRolePermissionsKey permissionsKey);
 
 	/**
 	 * @return view or <code>null</code>

@@ -12,7 +12,9 @@ FROM db as init
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
 RUN /usr/local/bin/docker-entrypoint.sh postgres
 
-FROM db as final
+FROM postgres:15.4 as final
+
+RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
 
 # changing pgdata location to avoid existing volume so we are able to commit post cucumber data later on
 ENV PGDATA /var/lib/postgresql/customdata
