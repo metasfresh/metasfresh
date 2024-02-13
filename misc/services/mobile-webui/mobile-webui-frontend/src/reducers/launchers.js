@@ -1,5 +1,5 @@
 import * as types from '../constants/LaunchersActionTypes';
-import { toQRCodeObject } from '../utils/huQRCodes';
+import { toQRCodeObject } from '../utils/qrCode/hu';
 
 export const initialState = {};
 

@@ -1,3 +1,38 @@
+/*
+ * #%L
+ * ic114
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import { QRCODE_SEPARATOR } from './common';
+
+export const QRCODE_TYPE_HU = 'HU';
+export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
+
+const ATTR_productId = 'productId';
+const ATTR_weightNet = 'weightNet';
+const ATTR_weightNetUOM = 'weightNetUOM';
+const ATTR_bestBeforeDate = 'bestBeforeDate';
+const ATTR_lotNo = 'lotNo';
+const ATTR_displayable = 'displayable';
+const ATTR_isTUToBePickedAsWhole = 'isTUToBePickedAsWhole';
+
 export const toQRCodeDisplayable = (qrCode) => {
   //
   // Case: null/empty qrCode
@@ -89,7 +124,6 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
-const SEPARATOR = '#';
 export const parseQRCodeString = (string, returnFalseOnError) => {
   let remainingString = string;
 
@@ -97,7 +131,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   // Type
   let type;
   {
-    const idx = remainingString.indexOf(SEPARATOR);
+    const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
       if (returnFalseOnError) {
         return false;
@@ -112,7 +146,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   // Version
   let version;
   {
-    const idx = remainingString.indexOf(SEPARATOR);
+    const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
       if (returnFalseOnError) {
         return false;
@@ -124,10 +158,10 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   }
 
   let payloadParsed;
-  if (type === 'HU' && version === '1') {
+  if (type === QRCODE_TYPE_HU && version === '1') {
     const jsonPayload = JSON.parse(remainingString);
     payloadParsed = parseQRCodePayload_HU_v1(jsonPayload);
-  } else if (type === 'LMQ' && version === '1') {
+  } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
     payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
     throw 'Invalid global QR code(3): ' + string;
@@ -157,12 +191,23 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
-    result['productId'] = payload?.product?.id.toString();
+    result[ATTR_productId] = payload?.product?.id.toString();
   }
+
   const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === 'WeightNet');
   if (weightNetAttribute?.value != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * weightNetAttribute?.value;
+    result[ATTR_weightNet] = 1 * weightNetAttribute?.value;
+  }
+
+  const bestBeforeAttribute = payload?.attributes?.find((attribute) => attribute.code === 'HU_BestBeforeDate');
+  if (bestBeforeAttribute?.value != null) {
+    result[ATTR_bestBeforeDate] = bestBeforeAttribute.value;
+  }
+
+  const lotNumberAttribute = payload?.attributes?.find((attribute) => attribute.code === 'Lot-Nummer');
+  if (lotNumberAttribute?.value != null) {
+    result[ATTR_lotNo] = lotNumberAttribute.value;
   }
 
   return result;
@@ -177,17 +222,17 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
-    result['weightNet'] = 1 * parts[0];
-    result['displayable'] = '' + parts[0];
-    result['isTUToBePickedAsWhole'] = true; // todo clean up needed!!!
-    result['weightNetUOM'] = 'kg'; // for LeichMehl it will always be kg
+    result[ATTR_weightNet] = 1 * parts[0];
+    result[ATTR_weightNetUOM] = 'kg'; // for LeichMehl it will always be kg
+    result[ATTR_displayable] = '' + parts[0];
+    result[ATTR_isTUToBePickedAsWhole] = true; // todo clean up needed!!!
   }
   if (parts.length >= 2) {
     const [, day, month, year] = LMQ_BEST_BEFORE_DATE_FORMAT.exec(parts[1]);
-    result['bestBeforeDate'] = `${year}-${month}-${day}`;
+    result[ATTR_bestBeforeDate] = `${year}-${month}-${day}`;
   }
   if (parts.length >= 3) {
-    result['lotNo'] = parts[2];
+    result[ATTR_lotNo] = parts[2];
   }
 
   return result;

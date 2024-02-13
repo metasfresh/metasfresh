@@ -7,6 +7,8 @@ const translations = {
     },
   },
   general: {
+    Yes: 'Ja',
+    No: 'Nein',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',

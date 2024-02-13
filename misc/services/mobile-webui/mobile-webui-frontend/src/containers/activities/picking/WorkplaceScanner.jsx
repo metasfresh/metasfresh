@@ -1,30 +1,28 @@
 import React from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { parseWorkplaceQRCodeString } from '../../../utils/workplaceQRCodes';
+import { parseWorkplaceQRCodeString } from '../../../utils/qrCode/workplace';
 import PropTypes from 'prop-types';
-import { postWorkplaceAssignment } from '../../../api/workplace';
 import { trl } from '../../../utils/translations';
+import { assignWorkplace } from '../../../apps/workplaceManager/api';
 
 const WorkplaceScanner = ({ onComplete }) => {
-  const assignWorkplace = async ({ workplaceId }) => {
-    await postWorkplaceAssignment(workplaceId);
+  const resolveScannedBarcode = ({ scannedBarcode }) => parseWorkplaceQRCodeString(scannedBarcode);
 
-    onComplete && onComplete();
+  const onResolvedResult = ({ workplaceId }) => {
+    assignWorkplace(workplaceId).then(() => onComplete());
   };
 
   return (
     <BarcodeScannerComponent
-      resolveScannedBarcode={({ scannedBarcode }) => parseWorkplaceQRCodeString(scannedBarcode)}
-      onResolvedResult={assignWorkplace}
+      resolveScannedBarcode={resolveScannedBarcode}
+      onResolvedResult={onResolvedResult}
       inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
     />
   );
 };
 
 WorkplaceScanner.propTypes = {
-  //
-  // Props:
-  onComplete: PropTypes.func,
+  onComplete: PropTypes.func.isRequired,
 };
 
 export default WorkplaceScanner;
