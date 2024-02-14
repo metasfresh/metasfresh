@@ -11,6 +11,8 @@
     color: $white;
     background: $base-mf-green;
 
+    font-size: 2rem;
+
     .app-icon {
       text-align: right;
 
@@ -25,6 +27,11 @@
       text-overflow: ellipsis;
     }
   }
+  @media only screen and (max-width: $small-screen-width) {
+    .app-header {
+      font-size: 1.5rem;
+    }
+  }
 
   .app-content {
     padding-top: 4rem;
@@ -36,16 +43,28 @@
     width: 100%;
     position: fixed;
     z-index: 1000;
-
     box-shadow: rgba(0, 0, 0, 0.133) 0 -0.15em 0.35em 0;
-
     background: $white;
+    font-size: 1.5rem;
 
     .columns {
       margin: 0;
 
       .column {
         padding: 0;
+      }
+    }
+
+    .button {
+      font-size: 1.5rem !important;
+    }
+  }
+  @media only screen and (max-width: $small-screen-width) {
+    .app-footer {
+      font-size: 1rem;
+
+      .button {
+        font-size: 1rem !important;
       }
     }
   }

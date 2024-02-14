@@ -18,4 +18,10 @@
     opacity: 0.8;
     text-align: center;
   }
+
+  @media only screen and (max-width: $small-screen-width) {
+    .input-text {
+      font-size: 1em;
+    }
+  }
 }
