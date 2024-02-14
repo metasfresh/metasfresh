@@ -96,6 +96,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -234,8 +235,18 @@ public class BankStatementCamt53Service
 		if (isImportAsSummaryLine)
 		{
 
-		}
+			final BankStatementLineSummaryRequest summaryRequest = BankStatementLineSummaryRequest.builder()
+					.accountStatementWrapper(accountStatementWrapper)
+					.bankStatementId(bankStatementId)
+					.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
+					.orgId(bankStatementCreateRequest.getOrgId())
+					.currencyId(bankAccountService.getById(bankStatementCreateRequest.getOrgBankAccountId()).getCurrencyId())
+					.statementDate(bankStatementCreateRequest.getStatementDate())
+					.build();
 
+			buildBankStatementLineCreateRequestForSummaryLine(summaryRequest)
+					.forEach(bankStatementDAO::createBankStatementLine);
+		}
 		else
 		{
 			final Function<IStatementLineWrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry -> ImportBankStatementLineRequest.builder()
@@ -358,6 +369,112 @@ public class BankStatementCamt53Service
 		return Optional.of(bankStatementLineCreateRequestBuilder.build());
 	}
 
+	@Value
+	@Builder
+	private class BankStatementLineSummaryRequest
+	{
+		@NonNull
+		BankStatementId bankStatementId;
+
+		@NonNull
+		OrgId orgId;
+
+		@NonNull
+		CurrencyId currencyId;
+
+		@NonNull
+		IAccountStatementWrapper accountStatementWrapper;
+
+		boolean isMatchAmounts;
+
+		@NonNull
+		LocalDate statementDate;
+	}
+
+	@NonNull
+	private List<BankStatementLineCreateRequest> buildBankStatementLineCreateRequestForSummaryLine(@NonNull final BankStatementLineSummaryRequest request)
+	{
+		final List<BankStatementLineCreateRequest> lineRequests = new ArrayList<>();
+
+		final CurrencyId acctCurrencyId = request.getCurrencyId();
+		final OrgId orgId = request.getOrgId();
+		final IAccountStatementWrapper accountStatementWrapper = request.getAccountStatementWrapper();
+		final BankStatementId bankStatementId = request.getBankStatementId();
+
+		final Money summaryAmt = Money.zero(acctCurrencyId);
+		final StringBuilder summaryDescription = new StringBuilder();
+
+		accountStatementWrapper.getStatementLines()
+				.forEach(entry ->
+						 {
+							 // compute totat amount
+							 final Money stmtAmount = entry.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
+							 summaryAmt.add(stmtAmount);
+
+							 // build the description
+							 summaryDescription.append(entry.getLineDescription());
+							 summaryDescription.append(" ");
+
+							 // create line requests for the detail lines of the summary line
+							 final ImportBankStatementLineRequest importBankStatementLineRequest = ImportBankStatementLineRequest.builder()
+									 .entryWrapper(entry)
+									 .bankStatementId(bankStatementId)
+									 .orgId(orgId)
+									 .isMatchAmounts(request.isMatchAmounts())
+									 .build();
+
+							 final CurrencyCode currencyCode = entry.getStatementAmount().getCurrencyCode();
+							 final CurrencyId currencyId = moneyService.getCurrencyIdByCurrencyCode(currencyCode);
+							 final Money zero = Money.zero(currencyId);
+							 final ZonedDateTime statementLineDate = entry.getStatementLineDate(orgDAO.getTimeZone(orgId))
+									 .orElse(null);
+
+							 final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
+									 .orgId(orgId)
+									 .bankStatementId(importBankStatementLineRequest.getBankStatementId())
+									 .lineDescription(entry.getLineDescription())
+									 .memo(entry.getUnstructuredRemittanceInfo())
+									 .referenceNo(entry.getAcctSvcrRef())
+									 .updateAmountsFromInvoice(false)
+									 .multiPayment(false)
+									 .statementAmt(zero)
+									 .statementLineDate(statementLineDate.toLocalDate());
+
+							 if (entry.isCRDT())
+							 { // if this is CREDIT (i.e. we get money), then we are interested in the name of the debitor from whom we the money is coming
+								 bankStatementLineCreateRequestBuilder.importedBillPartnerName(entry.getDbtrNames());
+							 }
+							 else
+							 {
+								 bankStatementLineCreateRequestBuilder.importedBillPartnerName(entry.getCdtrNames());
+							 }
+
+							 getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
+									 .ifPresent(invoice -> bankStatementLineCreateRequestBuilder
+											 .invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+											 .bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+
+							 lineRequests.add(bankStatementLineCreateRequestBuilder.build());
+
+						 }
+				);
+
+		// create line request for the summary line
+		final BankStatementLineCreateRequest summaryRequest = BankStatementLineCreateRequest.builder()
+				.orgId(orgId)
+				.bankStatementId(bankStatementId)
+				.lineDescription(summaryDescription.toString())
+				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
+				.multiPayment(false)
+				.statementAmt(summaryAmt)
+				.statementLineDate(request.getStatementDate())
+				.build();
+
+		lineRequests.add(0, summaryRequest);
+
+		return lineRequests;
+	}
+
 	@NonNull
 	private List<BankStatementLineCreateRequest> buildBankStatementLineCreateRequestForMultiBatch(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
@@ -419,79 +536,6 @@ public class BankStatementCamt53Service
 
 		return lineRequests;
 	}
-
-	@NonNull
-	private List<BankStatementLineCreateRequest> buildBankStatementLineCreateRequestForSummaryLine(@NonNull final IAccountStatementWrapper accountStatementWrapper,
-			@NonNull final OrgId orgId )
-	{
-
-
-		accountStatementWrapper.getStatementLines()
-				.forEach(entryWrapper -> {
-
-					// computes
-					final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate(orgDAO.getTimeZone(orgId))
-							.orElse(null);
-
-
-				});
-
-
-
-		final List<BankStatementLineCreateRequest> lineRequests = new ArrayList<>();
-
-		// final Money stmtAmount = entryWrapper.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
-		// create request for summary line
-		// buildBankStatementLineCreateRequest(importBankStatementLineRequest);
-
-
-		if (statementLineDate == null)
-		{
-			final String msg = TranslatableStrings.adMessage(MSG_MISSING_REPORT_ENTRY_DATE,
-															 entryWrapper.getLineReference(),
-															 importBankStatementLineRequest.getBankStatementId())
-					.getDefaultValue();
-			Loggables.withLogger(logger, Level.INFO).addLog(msg);
-			return Collections.emptyList();
-		}
-
-		for (final ITransactionDtlsWrapper detailWrapper : entryWrapper.getTransactionDtlsWrapper())
-		{
-			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(detailWrapper.getCcy());
-			final CurrencyId currencyId = moneyService.getCurrencyIdByCurrencyCode(currencyCode);
-			final Money zero = Money.zero(currencyId);
-
-			final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
-					.orgId(orgId)
-					.bankStatementId(importBankStatementLineRequest.getBankStatementId())
-					.lineDescription(detailWrapper.getLineDescription())
-					.memo(detailWrapper.getUnstructuredRemittanceInfo())
-					.referenceNo(detailWrapper.getAcctSvcrRef())
-					.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
-					.multiPayment(false)
-					.statementAmt(zero)
-					.statementLineDate(statementLineDate.toLocalDate());
-
-			if (detailWrapper.isCRDT())
-			{ // if this is CREDIT (i.e. we get money), then we are interested in the name of the debitor from whom we the money is coming
-				bankStatementLineCreateRequestBuilder.importedBillPartnerName(detailWrapper.getDbtrNames());
-			}
-			else
-			{
-				bankStatementLineCreateRequestBuilder.importedBillPartnerName(detailWrapper.getCdtrNames());
-			}
-
-			getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
-					.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
-							.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-							.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
-
-			lineRequests.add(bankStatementLineCreateRequestBuilder.build());
-		}
-
-		return lineRequests;
-	}
-
 
 	@NonNull
 	private Optional<I_C_Invoice> getReferencedInvoiceRecord(
