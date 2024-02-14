@@ -18,6 +18,18 @@
 
     .group {
       padding-bottom: 1.5rem;
+
+      .button {
+        height: auto;
+        .full-size-btn {
+          height: auto;
+          .row {
+            span {
+              white-space: pre;
+            }
+          }
+        }
+      }
     }
   }
 }
