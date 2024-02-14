@@ -1120,8 +1120,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier | IsImportAsSingleSummaryLine |
       | di_1_S0337_500       | bank_S0337_500 | 2234567   | AAAAAAAA82A | di_1_S0337_500             | Y                           |
     And load C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID |
-      | bp_bank_account_metasfresh_S0337_500 | 2000257                 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID | OPT.C_Bank_ID  |
+      | bp_bank_account_metasfresh_S0337_500 | 2000257                 | di_1_S0337_500 |
 
     And update C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
@@ -1324,7 +1324,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
       | bsl_1_S0337_500                   | bs_1_S0337_500                | 10   |
       | bsl_2_S0337_500                   | bs_1_S0337_500                | 20   |
-      | bsl_3_S0337_500                  | bs_1_S0337_500                | 30   |
+      | bsl_3_S0337_500                   | bs_1_S0337_500                | 30   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
       | bsl_1_S0337_500                   | 2023-10-27     | 2023-10-27   | CHF                        | 226.1      |                              |                             |
