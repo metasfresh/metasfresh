@@ -5,6 +5,7 @@ import { QRCODE_TYPE_HU } from '../../../utils/qrCode/hu';
 import { QRCODE_TYPE_WORKPLACE } from '../../../utils/qrCode/workplace';
 import { getApplicationStartByQRCodeFunction } from '../../index';
 import { useDispatch } from 'react-redux';
+import { trl } from '../../../utils/translations';
 
 const ScanAnythingScreen = () => {
   const dispatch = useDispatch();
@@ -23,7 +24,8 @@ const ScanAnythingScreen = () => {
         break;
       }
       default: {
-        throw 'Invalid global QR code: ' + scannedBarcode;
+        console.log('onResolvedResult: Invalid QR Code type', { type, scannedBarcode });
+        throw trl('error.qrCode.invalid');
       }
     }
 
