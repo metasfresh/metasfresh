@@ -134,6 +134,9 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       console.log('parseQRCodeString: Cannot extract type from QRCode', { remainingString, string });
       throw trl('error.qrCode.invalid');
     }
@@ -147,6 +150,9 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   {
     const idx = remainingString.indexOf(QRCODE_SEPARATOR);
     if (idx <= 0) {
+      if (returnFalseOnError) {
+        return false;
+      }
       console.log('parseQRCodeString: Cannot extract version from QRCode', { remainingString, string });
       throw trl('error.qrCode.invalid');
     }
