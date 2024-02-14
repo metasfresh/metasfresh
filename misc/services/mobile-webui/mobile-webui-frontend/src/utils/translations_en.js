@@ -5,6 +5,9 @@ const translations = {
     network: {
       noResponse: 'Connection error',
     },
+    qrCode: {
+      invalid: 'Invalid QR Code',
+    },
   },
   general: {
     Yes: 'Yes',
