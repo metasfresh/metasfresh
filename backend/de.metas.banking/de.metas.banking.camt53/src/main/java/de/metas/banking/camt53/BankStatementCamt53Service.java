@@ -96,7 +96,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -367,28 +366,6 @@ public class BankStatementCamt53Service
 						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
 
 		return Optional.of(bankStatementLineCreateRequestBuilder.build());
-	}
-
-	@Value
-	@Builder
-	private class BankStatementLineSummaryRequest
-	{
-		@NonNull
-		BankStatementId bankStatementId;
-
-		@NonNull
-		OrgId orgId;
-
-		@NonNull
-		CurrencyId currencyId;
-
-		@NonNull
-		IAccountStatementWrapper accountStatementWrapper;
-
-		boolean isMatchAmounts;
-
-		@NonNull
-		LocalDate statementDate;
 	}
 
 	@NonNull
