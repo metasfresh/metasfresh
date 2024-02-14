@@ -21,6 +21,7 @@
  */
 
 import { QRCODE_SEPARATOR } from './common';
+import { trl } from '../translations';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
@@ -136,7 +137,8 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
       if (returnFalseOnError) {
         return false;
       }
-      throw 'Invalid global QR code(1): ' + string;
+      console.log('parseQRCodeString: Cannot extract type from QRCode', { remainingString, string });
+      throw trl('error.qrCode.invalid');
     }
     type = remainingString.substring(0, idx);
     remainingString = remainingString.substring(idx + 1);
@@ -151,7 +153,8 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
       if (returnFalseOnError) {
         return false;
       }
-      throw 'Invalid global QR code(2): ' + string;
+      console.log('parseQRCodeString: Cannot extract version from QRCode', { remainingString, string });
+      throw trl('error.qrCode.invalid');
     }
     version = remainingString.substring(0, idx);
     remainingString = remainingString.substring(idx + 1);
@@ -164,7 +167,8 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
     payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
-    throw 'Invalid global QR code(3): ' + string;
+    console.log('parseQRCodeString: Unknown QR Code type', { type, version, string });
+    throw trl('error.qrCode.invalid');
   }
   //console.log('parseQRCodeString', { payloadParsed });
 

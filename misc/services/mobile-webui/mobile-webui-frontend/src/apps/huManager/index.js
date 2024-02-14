@@ -7,6 +7,7 @@ import messages_de from './i18n/de.json';
 import { huManagerReducer } from './reducers';
 import { huManagerLocation, huManagerRoutes } from './routes';
 import * as api from './api';
+import { toastError } from '../../utils/toast';
 
 export const applicationDescriptor = {
   applicationId: 'huManager',
@@ -23,10 +24,13 @@ export const applicationDescriptor = {
   },
   startApplicationByQRCode: ({ qrCode }) => {
     return (dispatch) => {
-      api.getHUByQRCode(qrCode).then((handlingUnitInfo) => {
-        dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-        dispatch(push(huManagerLocation()));
-      });
+      api
+        .getHUByQRCode(qrCode)
+        .then((handlingUnitInfo) => {
+          dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+          dispatch(push(huManagerLocation()));
+        })
+        .catch((axiosError) => toastError({ axiosError }));
     };
   },
   reduxReducer: huManagerReducer,
