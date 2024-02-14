@@ -3,7 +3,6 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
-import de.metas.workflow.rest_api.model.CustomApplicationParameter;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,6 +10,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -24,7 +24,7 @@ public class JsonMobileApplication
 	boolean showFilters;
 	boolean showInMainMenu;
 	int sortNo;
-	@Nullable ImmutableMap<CustomApplicationParameter, Object> applicationParameters;
+	@Nullable ImmutableMap<String, Object> applicationParameters;
 
 	public static JsonMobileApplication of(final MobileApplicationInfo appInfo, final JsonOpts jsonOpts)
 	{
@@ -35,7 +35,21 @@ public class JsonMobileApplication
 				.showFilters(appInfo.isShowFilters())
 				.showInMainMenu(appInfo.isShowInMainMenu())
 				.sortNo(appInfo.getSortNo())
-				.applicationParameters(JsonApplicationParametersMapper.map(appInfo.getApplicationParameters()))
+				.applicationParameters(toJsonApplicationParameters(appInfo.getApplicationParameters()))
 				.build();
+	}
+
+	@Nullable
+	private static ImmutableMap<String, Object> toJsonApplicationParameters(@Nullable final Map<String, Object> applicationParameters)
+	{
+		if (applicationParameters == null || applicationParameters.isEmpty())
+		{
+			return null;
+		}
+
+		return applicationParameters.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue() != null) // filter out null values
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 }

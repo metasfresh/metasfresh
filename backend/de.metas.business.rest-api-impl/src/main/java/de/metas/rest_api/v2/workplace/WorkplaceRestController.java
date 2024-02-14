@@ -34,6 +34,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,10 +45,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/workplace" })
 @RestController
 @Profile(Profiles.PROFILE_App)
-public class WorkplaceController
+public class WorkplaceRestController
 {
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final WarehouseService warehouseService;
+
+	@GetMapping
+	public JsonWorkplaceSettings getStatus()
+	{
+		return JsonWorkplaceSettings.builder()
+				.workplaceRequired(workplaceService.isAnyWorkplaceActive())
+				.assignedWorkplace(workplaceService.getWorkplaceByUserId(Env.getLoggedUserId())
+						.map(this::toJson)
+						.orElse(null))
+				.build();
+	}
 
 	@PostMapping("/{workplaceId}/assign")
 	public JsonWorkplace assignWorkplace(@PathVariable("workplaceId") @NonNull final Integer workplaceIdInt)
@@ -72,7 +84,11 @@ public class WorkplaceController
 	private JsonWorkplace getWorkplaceById(@NonNull final WorkplaceId workplaceId)
 	{
 		final Workplace workplace = workplaceService.getById(workplaceId);
+		return toJson(workplace);
+	}
 
+	private JsonWorkplace toJson(final Workplace workplace)
+	{
 		return JsonWorkplace.builder()
 				.id(workplace.getId())
 				.name(workplace.getName())

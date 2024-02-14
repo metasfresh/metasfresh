@@ -15,8 +15,6 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
-import { push } from 'connected-react-router';
-import { scanAnythingLocation } from '../../scanAnything/routes';
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
@@ -60,7 +58,6 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
-    dispatch(push(scanAnythingLocation()));
   };
   const onSetClearanceClick = () => {
     toggleClearanceModal(true);

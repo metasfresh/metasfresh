@@ -25,7 +25,6 @@
 	import com.google.common.annotations.VisibleForTesting;
 	import com.google.common.collect.ImmutableList;
 	import com.google.common.collect.ImmutableListMultimap;
-	import com.google.common.collect.ImmutableMap;
 	import com.google.common.collect.ImmutableSet;
 	import de.metas.common.util.time.SystemTime;
 	import de.metas.document.engine.IDocument;
@@ -58,7 +57,6 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
-	import de.metas.workflow.rest_api.model.CustomApplicationParameter;
 	import de.metas.workflow.rest_api.model.MobileApplicationId;
 	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
@@ -69,7 +67,6 @@
 	import de.metas.workflow.rest_api.model.WFProcessId;
 	import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 	import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-	import de.metas.workflow.rest_api.model.WorkplaceSettings;
 	import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 	import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 	import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
@@ -92,10 +89,14 @@
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.showFilters(true)
+				.build();
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
-		private final WorkplaceService workplaceService;
 		private final DisplayValueProviderService displayValueProviderService;
 		private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
@@ -114,32 +115,15 @@
 					displayValueProviderService,
 					documentLocationBL
 			);
-			this.workplaceService = workplaceService;
 			this.displayValueProviderService = displayValueProviderService;
 			this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 		}
 
 		@Override
-		public MobileApplicationId getApplicationId()
-		{
-			return APPLICATION_ID;
-		}
+		public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 		@Override
-		public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
-		{
-			final WorkplaceSettings workplaceSettings = WorkplaceSettings.builder()
-					.assignedWorkplace(workplaceService.getWorkplaceByUserId(loggedUserId).orElse(null))
-					.isWorkplaceAssignmentRequired(workplaceService.isAnyWorkplaceActive())
-					.build();
-
-			return MobileApplicationInfo.builder()
-					.id(APPLICATION_ID)
-					.caption(TranslatableStrings.adMessage(MSG_Caption))
-					.showFilters(true)
-					.applicationParameters(ImmutableMap.of(CustomApplicationParameter.WORKPLACE_SETTINGS, workplaceSettings))
-					.build();
-		}
+		public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId) {return APPLICATION_INFO;}
 
 		@Override
 		public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
