@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -15,6 +37,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.report.server.OutputType;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -53,6 +76,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -76,7 +100,7 @@ import java.util.Set;
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
  * @author metas-dev <dev@metasfresh.com>
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
 public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
@@ -111,7 +135,7 @@ public final class ProcessInfo implements Serializable
 		sqlStatement = builder.getSQLStatement();
 		spreadsheetExportOptions = builder.getSpreadsheetExportOptions();
 		adWorkflowId = builder.getWorkflowId();
-		invokedByScheduler = builder.isInvokedByScheduler();
+		invokedBySchedulerId = builder.getInvokedBySchedulerId();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
 
 		adTableId = builder.getAD_Table_ID();
@@ -200,7 +224,7 @@ public final class ProcessInfo implements Serializable
 	private final WorkflowId adWorkflowId;
 
 	@Getter
-	private final boolean invokedByScheduler;
+	private final AdSchedulerId invokedBySchedulerId;
 
 	/**
 	 * IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID
@@ -308,7 +332,6 @@ public final class ProcessInfo implements Serializable
 	}
 
 	@NonNull
-	@Nullable
 	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
@@ -317,16 +340,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -335,6 +351,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
@@ -524,6 +553,8 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
+	public boolean isInvokedByScheduler() { return invokedBySchedulerId != null; }
+
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
@@ -651,7 +682,7 @@ public final class ProcessInfo implements Serializable
 		{
 			whereFilter = defaultQueryFilter;
 
-			// In case te default filter is null, return null
+			// In case the default filter is null, return null
 			if (whereFilter == null)
 			{
 				return null;
@@ -726,6 +757,7 @@ public final class ProcessInfo implements Serializable
 		return _processClassInfo;
 	}
 
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
 	{
 		private Properties ctx;
@@ -770,8 +802,7 @@ public final class ProcessInfo implements Serializable
 		private ArrayList<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
 
-		@Getter
-		private boolean invokedByScheduler = false;
+		private AdSchedulerId invokedBySchedulerId;
 
 		private Boolean notifyUserAfterExecution;
 
@@ -1160,14 +1191,7 @@ public final class ProcessInfo implements Serializable
 				// Try to load it from underlying process definition (if available)
 				final I_AD_Process process = getAD_ProcessOrNull();
 				final String classname = process == null ? null : process.getClassname();
-				if (Check.isEmpty(classname, true))
-				{
-					this.classname = Optional.empty();
-				}
-				else
-				{
-					this.classname = Optional.of(classname.trim());
-				}
+				this.classname = StringUtils.trimBlankToOptional(classname);
 			}
 
 			return classname;
@@ -1177,28 +1201,14 @@ public final class ProcessInfo implements Serializable
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
 			final String dbProcedureName = process == null ? null : process.getProcedureName();
-			if (Check.isEmpty(dbProcedureName, true))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				return Optional.of(dbProcedureName.trim());
-			}
+			return StringUtils.trimBlankToOptional(dbProcedureName);
 		}
 
 		private Optional<String> getSQLStatement()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
 			final String sqlStatement = process == null ? null : process.getSQLStatement();
-			if (Check.isEmpty(sqlStatement, true))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				return Optional.of(sqlStatement.trim());
-			}
+			return StringUtils.trimBlankToOptional(sqlStatement);
 		}
 
 		private SpreadsheetExportOptions getSpreadsheetExportOptions()
@@ -1261,8 +1271,6 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-		 *
-		 * @return
 		 */
 		public ProcessInfoBuilder setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
 		{
@@ -1437,14 +1445,7 @@ public final class ProcessInfo implements Serializable
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
 			final String JSONPath = process == null ? null : process.getJSONPath();
-			if (Check.isEmpty(JSONPath, true))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				return Optional.of(JSONPath.trim());
-			}
+			return StringUtils.trimBlankToOptional(JSONPath);
 		}
 
 		private Language getReportLanguage()
@@ -1529,7 +1530,7 @@ public final class ProcessInfo implements Serializable
 
 		private boolean isArchiveReportData()
 		{
-			return CoalesceUtil.coalesce(archiveReportData, Boolean.TRUE);
+			return CoalesceUtil.coalesceNotNull(archiveReportData, Boolean.TRUE);
 		}
 
 		public ProcessInfoBuilder setWindowNo(int windowNo)
@@ -1560,10 +1561,10 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setInvokedByScheduler(final boolean invokedByScheduler)
+		public ProcessInfoBuilder setInvokedBySchedulerId(final AdSchedulerId invokedBySchedulerId)
 		{
-			this.invokedByScheduler = invokedByScheduler;
-			if (invokedByScheduler && notifyUserAfterExecution)
+			this.invokedBySchedulerId = invokedBySchedulerId;
+			if (invokedBySchedulerId != null && notifyUserAfterExecution)
 			{
 				logger.debug("invokedByScheduler is set to true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
 				this.notifyUserAfterExecution = false;
@@ -1571,15 +1572,34 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public AdSchedulerId getInvokedBySchedulerId()
+		{
+			if(invokedBySchedulerId != null)
+			{
+				return invokedBySchedulerId;
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null && adPInstance.getAD_Scheduler_ID() > 0)
+			{
+				return AdSchedulerId.ofRepoId(adPInstance.getAD_Scheduler_ID());
+			}
+
+			return null;
+		}
+
 		public ProcessInfoBuilder setNotifyUserAfterExecution(final boolean notifyUserAfterExecution)
 		{
-			if (invokedByScheduler && notifyUserAfterExecution)
+			if (invokedBySchedulerId != null && notifyUserAfterExecution)
 			{
 				logger.debug("invokedByScheduler is set to true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
 				this.notifyUserAfterExecution = false;
-				return this;
 			}
-			this.notifyUserAfterExecution = notifyUserAfterExecution;
+			else
+			{
+				this.notifyUserAfterExecution = notifyUserAfterExecution;
+			}
+
 			return this;
 		}
 
@@ -1587,7 +1607,7 @@ public final class ProcessInfo implements Serializable
 		{
 			if (notifyUserAfterExecution == null)
 			{
-				if (invokedByScheduler)
+				if (invokedBySchedulerId != null)
 				{
 					logger.debug("invokedByScheduler=true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
 					this.notifyUserAfterExecution = false;
@@ -1634,7 +1654,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			return adProcess != null ? adProcess.isReport() : false;
+			return adProcess != null && adProcess.isReport();
 		}
 
 		/**
@@ -1692,15 +1712,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private ProcessInfoBuilder addParameter(ProcessInfoParameter param)
+		private void addParameter(ProcessInfoParameter param)
 		{
 			if (parameters == null)
 			{
 				parameters = new ArrayList<>();
 			}
 			parameters.add(param);
-
-			return this;
 		}
 
 		public ProcessInfoBuilder addParameters(final List<ProcessInfoParameter> params)
@@ -1874,7 +1892,7 @@ public final class ProcessInfo implements Serializable
 		 * TODO: extract some sort of language-provider-SPI
 		 *
 		 * @return the login language if conditions fulfilled, null otherwise.
-		 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
+		 * @implSpec task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
 		private static Language extractLanguageFromDraftInOut(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{

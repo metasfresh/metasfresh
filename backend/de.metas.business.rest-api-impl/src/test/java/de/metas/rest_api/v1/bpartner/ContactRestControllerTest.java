@@ -41,12 +41,13 @@ import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.lang.UIDStringUtil;
@@ -103,7 +104,7 @@ class ContactRestControllerTest
 	@BeforeAll
 	static void initStatic()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll

@@ -1,32 +1,3 @@
-.pick-products-container {
-  padding: 0rem;
-}
-
-.pick-products-activity-container {
-    margin-top: 2rem;
-}
-
-.pick-product {
-    cursor: pointer;
-    margin-top: 0.4rem;
-    border: 1px solid $base-mf-green;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px 0px $grey-light;
-    transition: ".2s transform linear, .2s box-shadow linear !important";
-    .no-p {
-      padding: 0px;
-    }
-    .green-check {
-      color: $base-elements;
-    }
-  }
-  .pick-product:hover {
-    background: $base-elements;
-    box-shadow: 0 4px 8px 0px $base-elements;
-  }
-
-.picking-step-container {}
-
 .picking-row-info {
   width: 100%;
 }
@@ -56,32 +27,3 @@
   width: 25%;
   font-size: 1.5em;
 }
-
-
-.pickgoback-btn-green {
-  width: 8em;
-  color: white;
-  background-color: $base-mf-green;
-  font-weight: 400;
-  border: 0px;
-  padding: 5px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.pickgoback-btn-green:hover {
-  color: white;
-  background-color: $base-mf-green;
-}
-.pickgoback-btn-green:focus {
-  color: white;
-  border-color: $base-mf-green;
-}
-
-.pick-higher-btn {
-  height: 5rem;
-}
-
-.lines-screen-container {
-}
-.wf-process-container {}
-

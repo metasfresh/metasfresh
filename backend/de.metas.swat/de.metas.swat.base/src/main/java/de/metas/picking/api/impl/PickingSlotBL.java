@@ -1,18 +1,25 @@
 package de.metas.picking.api.impl;
 
-import java.util.Objects;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 public class PickingSlotBL implements IPickingSlotBL
 {
@@ -127,6 +134,26 @@ public class PickingSlotBL implements IPickingSlotBL
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return pickingSlotDAO.getPickingSlotIdAndCaption(pickingSlotId);
+	}
+
+	@Override
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final PickingSlotQuery query)
+	{
+		return pickingSlotDAO.retrievePickingSlotIdAndCaptions(query);
+	}
+
+	@Override
+	public QRCodePDFResource createQRCodesPDF(@NonNull final Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions)
+	{
+		Check.assumeNotEmpty(pickingSlotIdAndCaptions, "pickingSlotIdAndCaptions is not empty");
+
+		final ImmutableList<PrintableQRCode> qrCodes = pickingSlotIdAndCaptions.stream()
+				.map(PickingSlotQRCode::ofPickingSlotIdAndCaption)
+				.map(PickingSlotQRCode::toPrintableQRCode)
+				.collect(ImmutableList.toImmutableList());
+
+		final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
+		return globalQRCodeService.createPDF(qrCodes);
 	}
 
 }

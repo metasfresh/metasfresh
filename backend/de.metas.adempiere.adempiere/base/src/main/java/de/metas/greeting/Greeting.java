@@ -43,6 +43,8 @@ public class Greeting
 
 	@Nullable GreetingStandardType standardType;
 
+	boolean active;
+
 	public String getGreeting(@NonNull final String adLanguage)
 	{
 		return getGreeting().translate(adLanguage);

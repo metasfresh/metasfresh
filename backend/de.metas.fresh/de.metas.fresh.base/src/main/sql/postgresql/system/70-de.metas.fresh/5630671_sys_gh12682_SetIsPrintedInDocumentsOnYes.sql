@@ -1,0 +1,1 @@
+update m_attribute set IsPrintedInDocument='Y' where value in ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', '1000021', 'M_Material_Tracking_ID', 'Lot-Nummer');

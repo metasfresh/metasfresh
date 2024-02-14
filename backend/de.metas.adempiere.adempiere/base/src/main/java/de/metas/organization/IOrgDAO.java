@@ -125,4 +125,6 @@ public interface IOrgDAO extends ISingletonService
 	UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(OrgId orgId);
 
 	String getOrgName(@NonNull OrgId orgId);
+
+	boolean isAutoInvoiceFlatrateTerm(OrgId orgId);
 }

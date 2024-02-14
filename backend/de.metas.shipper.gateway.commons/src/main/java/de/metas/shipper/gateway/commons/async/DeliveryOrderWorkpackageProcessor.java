@@ -1,9 +1,6 @@
 package de.metas.shipper.gateway.commons.async;
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -64,26 +61,18 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
 
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-		final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-		final IWorkPackageBuilder wpBuilder = workPackageQueueFactory
+		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
-				.newBlock()
-				.newWorkpackage();
-
-		if (asyncBatchId != null)
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-			wpBuilder.setC_Async_Batch(asyncBatch);
-		}
-
-		wpBuilder.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+				.newWorkPackage()
+				.setC_Async_Batch_ID(asyncBatchId)
+				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
 				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
 				.end()
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
@@ -148,18 +137,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<PackageLabels> packageLabels,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		packageLabels.stream()
-				.map(PackageLabels::getDefaultPackageLabel)
-				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel, deliveryOrderRepo, asyncBatchId));
+		for (final PackageLabels packageLabel : packageLabels)
+		{
+			final PackageLabel defaultPackageLabel = packageLabel.getDefaultPackageLabel();
+			printLabel(deliveryOrder, defaultPackageLabel, deliveryOrderRepo, asyncBatchId);
+		}
 	}
 
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
 			final PackageLabel packageLabel,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);

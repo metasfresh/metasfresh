@@ -73,9 +73,9 @@ public class ReportRestController
 			@RequestParam(name = "AD_Language", required = false) final String adLanguage,
 			@RequestParam(name = "output", required = false) final String outputStr)
 	{
-		try (final MDCCloseable c1 = MDC.putCloseable("AD_Process_ID", String.valueOf(processId));
-				final MDCCloseable c2 = MDC.putCloseable("AD_PInstance_ID", String.valueOf(pinstanceId));
-				final MDCCloseable c3 = MDC.putCloseable("output", String.valueOf(outputStr)))
+		try (final MDCCloseable ignored = MDC.putCloseable("AD_Process_ID", String.valueOf(processId));
+				final MDCCloseable ignored1 = MDC.putCloseable("AD_PInstance_ID", String.valueOf(pinstanceId));
+				final MDCCloseable ignored2 = MDC.putCloseable("output", String.valueOf(outputStr)))
 		{
 			final OutputType outputType = outputStr == null ? IReportServer.DEFAULT_OutputType : OutputType.valueOf(outputStr);
 

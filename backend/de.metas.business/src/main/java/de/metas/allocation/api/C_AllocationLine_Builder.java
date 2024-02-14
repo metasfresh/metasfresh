@@ -23,14 +23,13 @@ package de.metas.allocation.api;
  */
 
 import java.math.BigDecimal;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-
-import com.google.common.base.Supplier;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
@@ -138,7 +137,7 @@ public class C_AllocationLine_Builder
 		return this;
 	}
 
-	private final boolean isSkipBecauseAllAmountsAreZero()
+	private boolean isSkipBecauseAllAmountsAreZero()
 	{
 		if (!skipIfAllAmountsAreZero)
 		{
@@ -147,12 +146,11 @@ public class C_AllocationLine_Builder
 
 		// NOTE: don't check the OverUnderAmt because that amount is not affecting allocation,
 		// so an allocation is Zero with our without the over/under amount.
-		final boolean allAmountsAreZero = allocLine.getAmount().signum() == 0
+		return allocLine.getAmount().signum() == 0
 				&& allocLine.getDiscountAmt().signum() == 0
 				&& allocLine.getWriteOffAmt().signum() == 0
 				//
 				&& allocLine.getPaymentWriteOffAmt().signum() == 0;
-		return allAmountsAreZero;
 	}
 
 	public final C_AllocationHdr_Builder lineDone()

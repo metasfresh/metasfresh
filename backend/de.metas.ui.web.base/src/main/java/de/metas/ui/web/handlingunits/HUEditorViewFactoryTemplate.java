@@ -27,14 +27,17 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
 import de.metas.process.IADProcessDAO;
@@ -73,15 +76,19 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,11 +238,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View field: BestBeforeDate
 		{
-			final String sqlBestBeforeDate = HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID);
+			final ColumnSql sqlBestBeforeDate = ColumnSql.ofSql(
+					HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID),
+					sqlViewBinding.getTableAlias());
+
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.LocalDate)
-					// .columnSql(sqlBestBeforeDate)
 					.sqlSelectValue(SqlSelectValue.builder()
 							.virtualColumnSql(sqlBestBeforeDate)
 							.columnNameAlias(HUEditorRow.FIELDNAME_BestBeforeDate)
@@ -317,6 +326,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
+	protected boolean isMaterialReceipt() { return false; }
+
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
 	{
@@ -340,6 +351,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 							.readonly(attributesAlwaysReadonly)
+							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);
@@ -454,7 +466,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 		public static DocumentFilterDescriptor createDocumentFilterDescriptor()
 		{
-			final ITranslatableString barcodeCaption = Services.get(IMsgBL.class).translatable("Barcode");
+			final ITranslatableString barcodeCaption = TranslatableStrings.adElementOrMessage("Barcode");
 			return DocumentFilterDescriptor.builder()
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
@@ -486,36 +498,46 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				final SqlOptions sqlOpts_NOTUSED,
 				@NonNull final SqlDocumentFilterConverterContext context)
 		{
-			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
-			if (barcodeObj == null)
+			final String barcodeString = StringUtils.trimBlankToNull(filter.getParameterValueAsString(PARAM_Barcode, null));
+			if (barcodeString == null)
 			{
-				throw new IllegalArgumentException("Barcode parameter is null: " + filter);
+				// shall not happen
+				throw new AdempiereException("Barcode parameter is not set: " + filter);
 			}
 
-			final String barcode = barcodeObj.toString().trim();
-			if (barcode.isEmpty())
+			//
+			// Get M_HU_IDs by barcode
+			final ImmutableSet<HuId> huIds;
+			final GlobalQRCode globalQRCode = GlobalQRCode.parse(barcodeString).orNullIfError();
+			if(globalQRCode != null)
 			{
-				throw new IllegalArgumentException("Barcode parameter is empty: " + filter);
+				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
+				final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+				final HuId huId = huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
+				huIds = huId != null ? ImmutableSet.of(huId) : ImmutableSet.of();
+			}
+			else
+			{
+				final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+				huIds = handlingUnitsDAO.createHUQueryBuilder()
+						.setContext(PlainContextAware.newOutOfTrx())
+						.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
+						.setOnlyWithBarcode(barcodeString)
+						.setOnlyTopLevelHUs(false)
+						.createQueryBuilder()
+						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+						.create()
+						.listIds(HuId::ofRepoId);
 			}
 
-			final ImmutableSet<HuId> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
-					.setContext(PlainContextAware.newOutOfTrx())
-					.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
-					.setOnlyWithBarcode(barcode)
-					.setOnlyTopLevelHUs(false)
-					.createQueryBuilder()
-					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-					.create()
-					.listIds(HuId::ofRepoId);
 			if (huIds.isEmpty())
 			{
 				return FilterSql.ALLOW_NONE;
 			}
 
-			final ImmutableSet<HuId> topLevelHuIds = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(huIds);
-
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			final ImmutableSet<HuId> topLevelHuIds = handlingUnitsBL.getTopLevelHUs(huIds);
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, topLevelHuIds);
-
 			return FilterSql.ofWhereClause(SqlAndParams.of(sqlQueryFilter.getSql(), sqlQueryFilter.getSqlParams(Env.getCtx())));
 		}
 	}

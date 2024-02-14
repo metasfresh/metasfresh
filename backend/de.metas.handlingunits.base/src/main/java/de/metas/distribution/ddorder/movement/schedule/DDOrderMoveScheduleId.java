@@ -42,7 +42,7 @@ public class DDOrderMoveScheduleId implements RepoIdAware
 
 	private DDOrderMoveScheduleId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "DD_OrderLine_HU_Candidate_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "DD_Order_MoveSchedule_ID");
 	}
 
 	@JsonValue

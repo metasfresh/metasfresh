@@ -40,7 +40,9 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
+import org.eevolution.api.impl.ProductBOMService;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -50,6 +52,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final Optional<AdWindowId> orderWindowId = RecordWindowFinder.findAdWindowId(I_C_Order.Table_Name);
+	private final ProductBOMService bomService = SpringContextHolder.instance.getBean(ProductBOMService.class);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int salesOrderDocTypeRepoId;
@@ -119,6 +122,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 				.dateOrdered(salesOrderDateOrdered)
 				.poReference(poReference)
 				.completeIt(completeIt)
+				.bomService(bomService)
 				.build()
 				.execute();
 

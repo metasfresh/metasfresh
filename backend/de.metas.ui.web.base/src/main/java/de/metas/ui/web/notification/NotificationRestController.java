@@ -2,6 +2,7 @@ package de.metas.ui.web.notification;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -74,7 +75,7 @@ public class NotificationRestController
 		userSession.assertLoggedIn();
 
 		final UserId adUserId = userSession.getLoggedUserId();
-		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, limit);
+		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, QueryLimit.ofInt(limit));
 
 		final JSONOptions jsonOpts = JSONOptions.of(userSession);
 		return JSONNotificationsList.of(notifications, jsonOpts);

@@ -11,7 +11,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.IParams;
 
 import java.util.List;
@@ -41,7 +40,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	}
 
 	@Override
-	public final void setC_Queue_WorkPackage(I_C_Queue_WorkPackage workpackage)
+	public final void setC_Queue_WorkPackage(final I_C_Queue_WorkPackage workpackage)
 	{
 		this.workpackage = workpackage;
 	}
@@ -72,7 +71,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	public final Optional<ILock> getElementsLock()
 	{
 		final String elementsLockOwnerName = getParameters().getParameterAsString(PARAMETERNAME_ElementsLockOwner);
-		if (Check.isEmpty(elementsLockOwnerName, true))
+		if (Check.isBlank(elementsLockOwnerName))
 		{
 			return Optional.empty(); // no lock was created for this workpackage
 		}
@@ -85,7 +84,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		}
 		catch (final LockFailedException e)
 		{
-			// this can happen, if e.g. there was a restart, or if the WP was flaged as error once
+			// this can happen, if e.g. there was a restart, or if the WP was flagged as error once
 			Loggables.addLog("Missing lock for ownerName={}; was probably cleaned up meanwhile", elementsLockOwnerName);
 			return Optional.empty();
 		}
@@ -103,14 +102,11 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	public final <T> List<T> retrieveItems(final Class<T> modelType)
 	{
-		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
+		return Services.get(IQueueDAO.class).retrieveAllItemsSkipMissing(getC_Queue_WorkPackage(), modelType);
 	}
 
 	/**
-	 * retrieves all active POs, even the ones that are caught in other packages
-	 *
-	 * @param modelType
-	 * @return
+	 * Retrieves all active POs, even the ones that are caught in other packages
 	 */
 	public final <T> List<T> retrieveAllItems(final Class<T> modelType)
 	{
@@ -124,8 +120,6 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	/**
 	 * retrieves all active PO's IDs, even the ones that are caught in other packages
-	 *
-	 * @return
 	 */
 	public final Set<Integer> retrieveAllItemIds()
 	{

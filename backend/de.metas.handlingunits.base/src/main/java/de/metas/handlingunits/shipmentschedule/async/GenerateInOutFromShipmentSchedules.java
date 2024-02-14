@@ -14,7 +14,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -172,7 +172,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
+		final boolean onTheFlyPickToPackingInstructions = getParameters()
+				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
+
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
+				shipmentSchedules,
+				quantityTypeToUse,
+				onTheFlyPickToPackingInstructions,
+				scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

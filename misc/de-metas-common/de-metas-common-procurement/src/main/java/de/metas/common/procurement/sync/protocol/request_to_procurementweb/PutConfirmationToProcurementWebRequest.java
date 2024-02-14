@@ -33,12 +33,15 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@Builder
+@Jacksonized
 public class PutConfirmationToProcurementWebRequest extends RequestToProcurementWeb
 {
 	public static PutConfirmationToProcurementWebRequest of(@NonNull final List<SyncConfirmation> syncConfirmations)
@@ -46,13 +49,10 @@ public class PutConfirmationToProcurementWebRequest extends RequestToProcurement
 		return PutConfirmationToProcurementWebRequest.builder().syncConfirmations(syncConfirmations).build();
 	}
 
-	List<SyncConfirmation> syncConfirmations;
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
+	String relatedEventId;
 
-	@Builder
-	@JsonCreator
-	private PutConfirmationToProcurementWebRequest(
-			@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
-	{
-		this.syncConfirmations = ImmutableList.copyOf(syncConfirmations);
-	}
+	@Singular
+	List<SyncConfirmation> syncConfirmations;
 }

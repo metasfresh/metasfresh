@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "willNotBeImportedDueToStateMachineState",
+      "billingAddressId": "willNotBeImportedDueToStateMachineState",
+      "orderCustomer": {
+        "id": "willNotBeImportedDueToStateMachineState",
+        "orderId": "willNotBeImportedDueToStateMachineState",
+        "company": "willNotBeImportedDueToStateMachineState",
+        "customerId": "willNotBeImportedDueToStateMachineState",
+        "firstName": "willNotBeImportedDueToStateMachineState",
+        "lastName": "willNotBeImportedDueToStateMachineState",
+        "customerNumber": "willNotBeImportedDueToStateMachineState",
+        "email": "orderCustomerEmail@example.com",
+        "vatIds": [
+          "vatId12"
+        ],
+        "customFields": {
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
+      },
+      "currencyId": "willNotBeImportedDueToStateMachineState",
+      "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
+      "orderDate": "2021-01-12T00:00:00.000+00:00",
+      "createdAt": "2021-01-06T15:05:08.921+00:00",
+      "stateMachineState": {
+        "technicalName": "anything_but_open"
+      }
+    }
+  ]
+}

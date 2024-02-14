@@ -1,20 +1,19 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.compiere.util.Evaluatee;
-
 import de.metas.printing.esb.base.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -26,12 +25,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,11 +41,11 @@ import lombok.ToString;
 @ToString
 public class SqlSelectDisplayValue
 {
-	private final String joinOnTableNameOrAlias;
-	private final String joinOnColumnName;
-	private final SqlForFetchingLookupById sqlExpression;
+	@Nullable private final String joinOnTableNameOrAlias;
+	@NonNull private final String joinOnColumnName;
+	@Nullable private final SqlForFetchingLookupById sqlExpression;
 	@Getter
-	private final String columnNameAlias;
+	@NonNull private final String columnNameAlias;
 
 	@Builder(toBuilder = true)
 	private SqlSelectDisplayValue(
@@ -55,17 +54,23 @@ public class SqlSelectDisplayValue
 			@Nullable final SqlForFetchingLookupById sqlExpression,
 			@NonNull final String columnNameAlias)
 	{
-		this.joinOnTableNameOrAlias = joinOnTableNameOrAlias;
+		this.joinOnTableNameOrAlias = StringUtils.trimBlankToNull(joinOnTableNameOrAlias);
 		this.joinOnColumnName = joinOnColumnName;
 		this.sqlExpression = sqlExpression;
 		this.columnNameAlias = columnNameAlias;
 	}
 
+	/**
+	 * @return (sql expression) AS columnNameAlias
+	 */
 	public String toSqlStringWithColumnNameAlias(@NonNull final Evaluatee ctx)
 	{
 		return toStringExpressionWithColumnNameAlias().evaluate(ctx, OnVariableNotFound.Fail);
 	}
 
+	/**
+	 * @return (sql expression) AS columnNameAlias
+	 */
 	public IStringExpression toStringExpressionWithColumnNameAlias()
 	{
 		return IStringExpression.composer()
@@ -89,10 +94,40 @@ public class SqlSelectDisplayValue
 		}
 	}
 
-	public SqlSelectDisplayValue withJoinOnTableNameOrAlias(final String joinOnTableNameOrAlias)
+	public IStringExpression toOrderByStringExpression()
+	{
+		final String joinOnColumnNameFQ = !Check.isEmpty(joinOnTableNameOrAlias)
+				? joinOnTableNameOrAlias + "." + joinOnColumnName
+				: joinOnColumnName;
+
+		if (sqlExpression == null)
+		{
+			return ConstantStringExpression.of(joinOnColumnNameFQ);
+		}
+		else
+		{
+			return sqlExpression.toOrderByStringExpression(joinOnColumnNameFQ);
+		}
+	}
+
+	public SqlSelectDisplayValue withJoinOnTableNameOrAlias(@Nullable final String joinOnTableNameOrAlias)
 	{
 		return !Objects.equals(this.joinOnTableNameOrAlias, joinOnTableNameOrAlias)
 				? toBuilder().joinOnTableNameOrAlias(joinOnTableNameOrAlias).build()
 				: this;
+	}
+
+	public String toSqlOrderByUsingColumnNameAlias()
+	{
+		final String columnNameAliasFQ = joinOnTableNameOrAlias != null ? joinOnTableNameOrAlias + "." + columnNameAlias : columnNameAlias;
+
+		if (sqlExpression != null)
+		{
+			return columnNameAliasFQ + "[" + sqlExpression.getNameSqlArrayIndex() + "]";
+		}
+		else
+		{
+			return columnNameAliasFQ;
+		}
 	}
 }

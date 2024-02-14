@@ -104,6 +104,7 @@ public class ProductUpsertRequestProducer
 		return Optional.of(JsonRequestProductUpsertItem.builder()
 								   .productIdentifier(productIdentifier)
 								   .requestProduct(jsonRequestProduct)
+								   .externalSystemConfigId(routeContext.getExternalSystemRequest().getExternalSystemConfigId())
 								   .build());
 	}
 

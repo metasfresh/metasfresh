@@ -1,7 +1,13 @@
 package de.metas.marketing.base.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -26,17 +32,37 @@ import lombok.Value;
  */
 
 @Value
-public class PlatformId
+public class PlatformId implements RepoIdAware
 {
 	int repoId;
+
+	private PlatformId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Platform_ID");
+	}
 
 	public static PlatformId ofRepoId(final int repoId)
 	{
 		return new PlatformId(repoId);
 	}
 
-	private PlatformId(final int repoId)
+	@Nullable
+	public static PlatformId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+
+	@JsonCreator
+	public static PlatformId ofString(final String string)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return ofRepoId(Integer.parseInt(string));
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
+
+	public static boolean equals(@Nullable final PlatformId id1, @Nullable final PlatformId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

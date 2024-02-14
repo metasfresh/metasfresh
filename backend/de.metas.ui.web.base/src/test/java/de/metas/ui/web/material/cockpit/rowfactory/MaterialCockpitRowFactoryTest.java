@@ -210,16 +210,16 @@ public class MaterialCockpitRowFactoryTest
 		final I_M_Warehouse warehouseWithPlant = createWarehousewithPlant("plantName");
 
 		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);
-		stockRecordWithAttributes.setM_Product(product);
+		stockRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		stockRecordWithAttributes.setM_Warehouse(warehouseWithPlant);
+		stockRecordWithAttributes.setM_Warehouse_ID(warehouseWithPlant.getM_Warehouse_ID());
 		stockRecordWithAttributes.setQtyOnHand(ELEVEN);
 		save(stockRecordWithAttributes);
 
 		final I_MD_Stock stockRecordWithEmptyAttributesKey = newInstance(I_MD_Stock.class);
-		stockRecordWithEmptyAttributesKey.setM_Product(product);
+		stockRecordWithEmptyAttributesKey.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
-		stockRecordWithEmptyAttributesKey.setM_Warehouse(warehouseWithPlant);
+		stockRecordWithEmptyAttributesKey.setM_Warehouse_ID(warehouseWithPlant.getM_Warehouse_ID());
 		stockRecordWithEmptyAttributesKey.setQtyOnHand(TWELVE);
 		save(stockRecordWithEmptyAttributesKey);
 
@@ -409,9 +409,9 @@ public class MaterialCockpitRowFactoryTest
 		save(warehouseWithoutPlant);
 
 		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);
-		stockRecordWithAttributes.setM_Product(product);
+		stockRecordWithAttributes.setM_Product_ID(product.getM_Product_ID());
 		stockRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		stockRecordWithAttributes.setM_Warehouse(warehouseWithoutPlant);
+		stockRecordWithAttributes.setM_Warehouse_ID(warehouseWithoutPlant.getM_Warehouse_ID());
 		stockRecordWithAttributes.setQtyOnHand(ELEVEN);
 		save(stockRecordWithAttributes);
 

@@ -1,6 +1,6 @@
-import { post, get, patch, delete as del } from 'axios';
+import { delete as del, get, patch, post } from 'axios';
 
-import { getQueryString, createPatchRequestPayload } from '../utils';
+import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
 
 export function getData({
@@ -360,11 +360,10 @@ export function getViewAttributeTypeahead(
   attribute,
   query
 ) {
-  return get(
-    `${
+  return get(`
+    ${
       config.API_URL
     }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/typeahead?query=${encodeURIComponent(
-      query
-    )}`
-  );
+    query
+  )}`);
 }

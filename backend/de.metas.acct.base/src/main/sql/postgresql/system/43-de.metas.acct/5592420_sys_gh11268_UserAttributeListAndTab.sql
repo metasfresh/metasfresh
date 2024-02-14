@@ -107,6 +107,32 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Benutzerattribut', PrintName='
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579332,'nl_NL')
 ;
 
+--
+-- Delete previously added AD_User_Attribute tab, table, element, sequence
+drop table if exists tmp_to_delete;
+create temporary table tmp_to_delete as
+SELECT tt.ad_tab_id, uis.ad_ui_section_id, uic.ad_ui_column_id, uig.ad_ui_elementgroup_id, uie.ad_ui_element_id
+from ad_tab tt
+left outer join ad_ui_section uis on tt.ad_tab_id = uis.ad_tab_id
+left outer join ad_ui_column uic on uic.ad_ui_section_id = uis.ad_ui_section_id
+left outer join ad_ui_elementgroup uig on uig.ad_ui_column_id = uic.ad_ui_column_id
+left outer join ad_ui_element uie on uie.ad_ui_elementgroup_id = uig.ad_ui_elementgroup_id
+where tt.ad_table_id=(select ad_table_id from ad_table where tablename='AD_User_Attribute');
+--
+delete from ad_ui_element where ad_ui_element_id in (select ad_ui_element_id from tmp_to_delete);
+delete from ad_ui_element where ad_ui_elementtype='L' and labels_tab_id in (select ad_tab_id from tmp_to_delete);
+delete from ad_ui_elementgroup where ad_ui_elementgroup_id in (select ad_ui_elementgroup_id from tmp_to_delete);
+delete from ad_ui_column where ad_ui_column_id=(select ad_ui_column_id from tmp_to_delete);
+delete from ad_ui_section_trl where ad_ui_section_id=(select ad_ui_section_id from tmp_to_delete);
+delete from ad_ui_section where ad_ui_section_id=(select ad_ui_section_id from tmp_to_delete);
+delete from ad_tab where ad_tab_id in (select ad_tab_id from tmp_to_delete);
+--
+delete from ad_column c where c.ad_table_id=(select t.ad_table_id from ad_table t where t.tablename='AD_User_Attribute');
+delete from ad_table where tablename='AD_User_Attribute';
+delete from ad_element where columnname='AD_User_Attribute_ID';
+delete from ad_sequence where name='AD_User_Attribute' and istableid='Y';
+drop sequence if exists ad_user_attribute_seq;
+
 
 -- Create Table
 

@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -93,6 +94,9 @@ import java.util.stream.Collectors;
 	 * Default: {@link X_M_HU#HUSTATUS_Planning}.
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
+
+	@Nullable
+	private ClearanceStatusInfo _huClearanceStatusInfo;
 
 	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
@@ -219,6 +223,18 @@ import java.util.stream.Collectors;
 	public boolean isHUPlanningReceiptOwnerPM()
 	{
 		return _huPlanningReceiptOwnerPM;
+	}
+
+	@Override
+	public IHUBuilder setHUClearanceStatusInfo(@Nullable final ClearanceStatusInfo huClearanceStatusInfo)
+	{
+		_huClearanceStatusInfo = huClearanceStatusInfo;
+		return this;
+	}
+
+	public ClearanceStatusInfo getHUClearanceStatusInfo()
+	{
+		return _huClearanceStatusInfo;
 	}
 
 	@Nullable
@@ -422,6 +438,8 @@ import java.util.stream.Collectors;
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
 
+		setClearanceStatus(hu, parentHU, getHUClearanceStatusInfo());
+
 		//
 		// Notify Storage and Attributes DAO that a new HU was created
 		// NOTE: depends on their implementation, but they have a chance to do some optimizations
@@ -463,6 +481,24 @@ import java.util.stream.Collectors;
 			piip = IHandlingUnitsBL.extractPIItemProductOrNull(parentHU);
 		}
 		return piip;
+	}
+
+	private static void setClearanceStatus(
+			@NonNull final I_M_HU hu,
+			@Nullable final I_M_HU parentHU,
+			@Nullable final ClearanceStatusInfo configuredStatusInfo)
+	{
+		// Copy HUClearanceStatus and HUClearanceNote from parent or use the configured one if no parent
+		if (parentHU != null)
+		{
+			hu.setClearanceStatus(parentHU.getClearanceStatus());
+			hu.setClearanceNote(parentHU.getClearanceNote());
+		}
+		else
+		{
+			hu.setClearanceStatus(configuredStatusInfo != null ? configuredStatusInfo.getClearanceStatus().getCode() : null);
+			hu.setClearanceNote(configuredStatusInfo != null ? configuredStatusInfo.getClearanceNote() : null);
+		}
 	}
 
 	/**

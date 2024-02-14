@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.alberta.product.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.product.PurchaseRatingEnum;
 import de.metas.camel.externalsystems.alberta.product.UpsertArticleRequest;
 import de.metas.common.product.v2.response.JsonProduct;
@@ -39,6 +40,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.fromJavaLocalDate;
 
 public class PrepareAlbertaArticlesProcessor implements Processor
 {
@@ -68,19 +71,19 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 		}
 
 		final Article article = new Article();
-		
+
 		final String productNo = product.getProductNo();
 		final String pcn = productNo.startsWith(ARTICLE_PCN_PREFIX) ? productNo.substring(ARTICLE_PCN_PREFIX.length()) : null;
-		
+
 		article.customerNumber(productNo)
 				.name(product.getName())
 				.description(product.getDescription())
 				.manufacturer(product.getManufacturerName())
-				.manufacturerNumber(product.getManufacturerNumber());
+				.manufacturerNumber(product.getManufacturerNumber())
+				.unavailableFrom(fromJavaLocalDate(product.getDiscontinuedFrom()));
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();
-	
-		
+
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
 				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
@@ -91,8 +94,8 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.assortmentType(albertaProductInfo.getAssortmentType() != null ? new BigDecimal(albertaProductInfo.getAssortmentType()) : null)
 				.pharmacyPrice(albertaProductInfo.getPharmacyPrice() != null ? String.valueOf(albertaProductInfo.getPharmacyPrice()) : null)
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
-				.therapyIds(albertaProductInfo.getTherapyIds())
-				.billableTherapies(albertaProductInfo.getBillableTherapies())
+				.therapyIds(AlbertaUtil.asBigDecimalIds(albertaProductInfo.getTherapyIds()))
+				.billableTherapies(AlbertaUtil.asBigDecimalIds(albertaProductInfo.getBillableTherapies()))
 				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits(), pcn))
 				.productGroupId(albertaProductInfo.getProductGroupId());
 

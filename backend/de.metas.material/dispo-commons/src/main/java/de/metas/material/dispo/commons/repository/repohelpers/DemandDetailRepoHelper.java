@@ -43,6 +43,8 @@ public class DemandDetailRepoHelper
 				.orderId(demandRecord.getC_OrderSO_ID())
 				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
 				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
-				.qty(demandDetailRecord.getPlannedQty()).build();
+				.inOutLineId(demandDetailRecord.getM_InOutLine_ID())
+				.qty(demandDetailRecord.getPlannedQty())
+				.build();
 	}
 }

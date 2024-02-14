@@ -1,5 +1,7 @@
 package de.metas.rest_api.v2.invoice.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
@@ -18,12 +20,16 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.product.IProductBL;
@@ -51,6 +57,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -58,6 +67,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -93,19 +103,23 @@ public class JsonInvoiceService
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	private final CurrencyService currencyService;
 	private final PaymentService paymentService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final InvoiceService invoiceService;
 
 	public JsonInvoiceService(
 			@NonNull final CurrencyService currencyService,
 			@NonNull final PaymentService paymentService,
-			@NonNull final JsonServiceFactory jsonServiceFactory)
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final InvoiceService invoiceService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.invoiceService = invoiceService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -220,6 +234,23 @@ public class JsonInvoiceService
 
 			createAllocationsForPayment(payment, lines);
 		});
+	}
+
+	@NonNull
+	public List<JSONInvoiceInfoResponse> buildInvoiceInfoResponseFromOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
+
+		final Set<InvoiceId> createdInvoiceIds = invoiceService.retrieveInvoiceCandsByInOutLines(shipmentLines).stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return createdInvoiceIds.stream()
+				.map(invoiceId -> getInvoiceInfo(invoiceId, Env.getAD_Language()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
