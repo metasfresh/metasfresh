@@ -271,7 +271,7 @@ class ClientSetup
 
 		priceList_None.setC_Currency_ID(currencyId.getRepoId());
 
-		dunningDAO.retrieveDunnings().forEach(dunning -> {
+		dunningDAO.retrieveDunnings().stream().filter(dunning -> dunning.getAD_Org_ID() == adOrg.getAD_Org_ID()).forEach(dunning -> {
 			dunning.setC_Currency_ID(currencyId.getRepoId());
 			dunningDAO.save(dunning);
 		});
