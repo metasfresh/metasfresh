@@ -446,6 +446,7 @@ public class BankStatementCamt53Service
 				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
 				.multiPayment(false)
 				.statementAmt(summaryAmt)
+				.trxAmt(summaryAmt)
 				.statementLineDate(request.getStatementDate())
 				.build();
 
