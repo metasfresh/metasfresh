@@ -1,5 +1,39 @@
 package de.metas.contracts.refund;
 
+<<<<<<< HEAD
+=======
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_END_DATE;
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_START_DATE;
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static de.metas.util.collections.CollectionUtils.singleElement;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+>>>>>>> 94b872b1cd9 (Fix the test by removing a diverting timesource for the contract (#17370))
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.aggregation.api.IAggregationFactory;
