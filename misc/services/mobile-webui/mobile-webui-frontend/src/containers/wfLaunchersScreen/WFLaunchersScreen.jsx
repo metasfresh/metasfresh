@@ -8,18 +8,15 @@ import { getApplicationLaunchers, getApplicationLaunchersFacets } from '../../re
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
-import { getApplicationInfoById, getWorkplaceSettingsForApplicationId } from '../../reducers/applications';
+import { getApplicationInfoById } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/qrCode/hu';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
-import WorkplaceScanner from '../activities/picking/WorkplaceScanner';
-import * as api from '../../api/applications';
-import { populateApplications } from '../../actions/ApplicationsActions';
-import { toastError } from '../../utils/toast';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
+import { useCurrentWorkplace } from '../../api/workplace';
 
 const WFLaunchersScreen = () => {
   const history = useHistory();
@@ -36,26 +33,24 @@ const WFLaunchersScreen = () => {
     getApplicationInfoById({ state, applicationId })
   );
 
-  const workplaceSettings = useSelector((state) => getWorkplaceSettingsForApplicationId({ state, applicationId }));
-  const workplaceName = workplaceSettings?.assignedWorkplace?.name;
-  const showWorkplaceScanner = workplaceSettings?.workplaceRequired && !workplaceName;
+  const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace();
+  const workplaceName = workplace?.name;
+  const showWorkplaceScanner = isWorkplaceRequired && !workplace;
 
   useEffect(() => {
-    if (!workplaceName) {
-      return;
+    if (workplaceName) {
+      dispatch(
+        pushHeaderEntry({
+          location: url,
+          values: [
+            {
+              caption: trl('activities.picking.Workplace'),
+              value: workplaceName,
+            },
+          ],
+        })
+      );
     }
-
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        values: [
-          {
-            caption: trl('activities.picking.Workplace'),
-            value: workplaceName,
-          },
-        ],
-      })
-    );
   }, [url, workplaceName]);
 
   const {
@@ -67,7 +62,7 @@ const WFLaunchersScreen = () => {
   const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
 
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
-  const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode || !showWorkplaceScanner;
+  const isAllowQueryingLaunchers = (!requiresLaunchersQRCodeFilter || !!filterByQRCode) && !showWorkplaceScanner;
 
   //
   // Load application launchers
@@ -102,19 +97,24 @@ const WFLaunchersScreen = () => {
       onNewLaunchers({ applicationId, applicationLaunchers }),
   });
 
-  const refreshApplicationData = () => {
-    api
-      .getApplications()
-      .then(({ applications }) => {
-        dispatch(populateApplications({ applications }));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+  const onWorkplaceQRCodeScanned = (qrCode) => {
+    setWorkplaceByQRCode(qrCode);
   };
 
-  if (showWorkplaceScanner) {
+  if (isWorkplaceLoading) {
     return (
       <div className="container launchers-container">
-        <WorkplaceScanner onComplete={refreshApplicationData} />
+        <Spinner />
+      </div>
+    );
+  } else if (showWorkplaceScanner) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => onWorkplaceQRCodeScanned(scannedBarcode)}
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
+          continuousRunning={true}
+        />
       </div>
     );
   }
@@ -163,11 +163,15 @@ const WFLaunchersScreen = () => {
             />
           );
         })}
-      {loading && (
-        <div className="loading">
-          <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
+    </div>
+  );
+};
+
+const Spinner = () => {
+  return (
+    <div className="loading">
+      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
     </div>
   );
 };

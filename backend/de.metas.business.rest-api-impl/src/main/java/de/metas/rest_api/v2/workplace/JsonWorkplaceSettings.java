@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.controller.v2.json;
+package de.metas.rest_api.v2.workplace;
 
 import lombok.Builder;
 import lombok.Value;
@@ -29,10 +29,10 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 
 @Value
-@Jacksonized
 @Builder
+@Jacksonized
 public class JsonWorkplaceSettings
 {
-	boolean isWorkplaceRequired;
+	boolean workplaceRequired;
 	@Nullable JsonWorkplace assignedWorkplace;
 }
