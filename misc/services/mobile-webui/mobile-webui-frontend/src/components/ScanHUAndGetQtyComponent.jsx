@@ -6,7 +6,7 @@ import { trl } from '../utils/translations';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadableStr, formatQtyToHumanReadable } from '../utils/qtys';
+import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -166,7 +166,7 @@ const ScanHUAndGetQtyComponent = ({
     lotNo,
     gotoPickingLineScreen = true,
   }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,

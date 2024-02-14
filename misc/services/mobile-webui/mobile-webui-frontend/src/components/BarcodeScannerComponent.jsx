@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError, toastErrorFromObj } from '../utils/toast';
@@ -27,6 +27,7 @@ const BarcodeScannerComponent = ({
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
+  const [isProcessing, setProcessing] = useState(false);
 
   const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
     inputTextRef?.current?.select();
@@ -37,6 +38,7 @@ const BarcodeScannerComponent = ({
       return;
     }
     scanningStatus.running = true;
+    setProcessing(true);
 
     // console.log('Resolving scanned barcode', {
     //   scannedBarcode,
@@ -69,6 +71,8 @@ const BarcodeScannerComponent = ({
       toastErrorFromObj(error);
     } finally {
       scanningStatus.running = false;
+      setProcessing(false);
+
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
@@ -91,7 +95,7 @@ const BarcodeScannerComponent = ({
     return function cleanup() {
       mountedRef.current = false;
     };
-  });
+  }, []);
 
   const triggerOnChangeIfLengthGreaterThan = usePositiveNumberSetting(
     'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
@@ -143,8 +147,9 @@ const BarcodeScannerComponent = ({
   const isShowInputText = useBooleanSetting('barcodeScanner.showInputText');
   return (
     <div className="barcode-scanner">
+      {isProcessing && <Spinner />}
       <video key="video" ref={videoRef} width="100%" height="100%" />
-      {isShowInputText && (
+      {isShowInputText && !isProcessing && (
         <input
           key="input-text"
           ref={inputTextRef}
@@ -157,6 +162,14 @@ const BarcodeScannerComponent = ({
           onKeyUp={handleInputTextKeyPress}
         />
       )}
+    </div>
+  );
+};
+
+const Spinner = () => {
+  return (
+    <div className="loading">
+      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
     </div>
   );
 };
