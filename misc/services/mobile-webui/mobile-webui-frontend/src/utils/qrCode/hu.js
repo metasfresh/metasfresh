@@ -161,7 +161,7 @@ export const parseQRCodeString = (string) => {
   } else if (type === QRCODE_TYPE_LEICH_UND_MEHL && version === '1') {
     payloadParsed = parseQRCodePayload_LeichMehl_v1(remainingString);
   } else {
-    console.log('parseQRCodeString: Unknown QR Code type', { type, version, string });
+    console.trace('parseQRCodeString: Unknown QR Code type', { type, version, string });
     throw trl('error.qrCode.invalid');
   }
   //console.log('parseQRCodeString', { payloadParsed });
