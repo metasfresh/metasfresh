@@ -12,6 +12,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -36,7 +37,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -268,20 +268,9 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	@NonNull
 	private ImmutableList<ImmutableList<HUItemToGroup>> groupHUsForSharingQRCodes()
 	{
-		final GroupsCollector groupsCollector = GroupsCollector.newInstance();
-
-		final Map<HuId, I_M_HU> id2Hu = getId2HU();
-
-		List<HUItemToGroup> husToGroup = getHUsToGroup(id2Hu);
-
-		applyHUTypeGrouping(husToGroup, groupsCollector);
-		husToGroup = groupsCollector.filterAlreadyCollectedItems(husToGroup);
-
-		applyMissingQrConfigurationGrouping(husToGroup, groupsCollector);
-		husToGroup = groupsCollector.filterAlreadyCollectedItems(husToGroup);
-		applyQRConfigurationGrouping(husToGroup, groupsCollector);
-
-		return groupsCollector.build();
+		final GroupBuilder groupBuilder = GroupBuilder.ofKeyFunction(this::buildGroupKey);
+		getHUsToGroup(getId2HU()).forEach(groupBuilder::addToGroup);
+		return groupBuilder.buildGroups();
 	}
 
 	@NonNull
@@ -323,41 +312,26 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private void applyHUTypeGrouping(@NonNull final List<HUItemToGroup> hus, @NonNull final GroupsCollector groupsCollector)
-	{
-		hus.stream()
-				.filter(hu -> !handlingUnitsBL.isTransportUnitOrAggregate(hu.getHu()))
-				.map(ImmutableList::of)
-				.forEach(groupsCollector::collect);
-	}
-
-	private void applyMissingQrConfigurationGrouping(@NonNull final List<HUItemToGroup> hus, @NonNull final GroupsCollector groupsCollector)
-	{
-		hus.stream()
-				.filter(hu -> hu.getQrCodeConfiguration() == null || !hu.getQrCodeConfiguration().isGroupingByAttributesRequired())
-				.map(ImmutableList::of)
-				.forEach(groupsCollector::collect);
-	}
-
-	private void applyQRConfigurationGrouping(@NonNull final List<HUItemToGroup> hus, @NonNull final GroupsCollector groupsCollector)
-	{
-		final GroupBuilder groupBuilder = GroupBuilder.ofKeyFunction(this::buildGroupKey);
-		hus.forEach(groupBuilder::addToGroup);
-		groupBuilder.buildGroups().forEach(groupsCollector::collect);
-	}
-
 	@NonNull
 	private GroupKey buildGroupKey(@NonNull final HUItemToGroup huItemToGroup)
 	{
+		if (!huItemToGroup.isGroupingByMatchingAttributesRequired())
+		{
+			return SingleGroupKey.ofHuId(huItemToGroup.getHuId());
+		}
+
 		final I_M_HU_PI_Version piVersion = handlingUnitsBL.getEffectivePIVersion(huItemToGroup.getHu());
 		if (piVersion == null)
 		{
-			throw new AdempiereException("Expecting only TUs at this point, so piVersion must be present!")
-					.appendParametersToMessage()
-					.setParameter("M_HU_ID", huItemToGroup.getHuId());
+			return SingleGroupKey.ofHuId(huItemToGroup.getHuId());
 		}
 
-		return GroupKey.builder()
+		if (HUType.TransportUnit != HUType.ofCodeOrNull(piVersion.getHU_UnitType()))
+		{
+			return SingleGroupKey.ofHuId(huItemToGroup.getHuId());
+		}
+
+		return TUGroupKey.builder()
 				.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
 				.productId(huItemToGroup.getProductId())
 				.attributesKey(getAttributesKey(huItemToGroup))
@@ -396,33 +370,6 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Value(staticConstructor = "newInstance")
-	private static class GroupsCollector
-	{
-		ImmutableList.Builder<ImmutableList<HUItemToGroup>> groupsCollector = ImmutableList.builder();
-		Set<HuId> collectedHuIds = new HashSet<>();
-
-		public void collect(@NonNull final ImmutableList<HUItemToGroup> huGroup)
-		{
-			groupsCollector.add(huGroup);
-			collectedHuIds.addAll(getHuIds(huGroup));
-		}
-
-		@NonNull
-		public List<HUItemToGroup> filterAlreadyCollectedItems(@NonNull final List<HUItemToGroup> huItemToGroupList)
-		{
-			return huItemToGroupList.stream()
-					.filter(hu -> !collectedHuIds.contains(hu.getHuId()))
-					.collect(ImmutableList.toImmutableList());
-		}
-
-		@NonNull
-		public ImmutableList<ImmutableList<HUItemToGroup>> build()
-		{
-			return groupsCollector.build();
-		}
-	}
-
 	@Value(staticConstructor = "ofKeyFunction")
 	private static class GroupBuilder
 	{
@@ -449,15 +396,6 @@ public class HUQRCodeGenerateForExistingHUsCommand
 
 	@Value
 	@Builder
-	private static class GroupKey
-	{
-		@NonNull ProductId productId;
-		@NonNull HuPackingInstructionsId packingInstructionsId;
-		@NonNull AttributesKey attributesKey;
-	}
-
-	@Value
-	@Builder
 	private static class HUItemToGroup
 	{
 		@NonNull I_M_HU hu;
@@ -476,5 +414,27 @@ public class HUQRCodeGenerateForExistingHUsCommand
 			Check.assume(qrCodeConfiguration != null && qrCodeConfiguration.isGroupingByAttributesRequired(), "Assuming grouping by attributes is required!");
 			return qrCodeConfiguration.getAttributeIds();
 		}
+
+		public boolean isGroupingByMatchingAttributesRequired()
+		{
+			return qrCodeConfiguration != null && qrCodeConfiguration.isGroupingByAttributesRequired();
+		}
+	}
+
+	private interface GroupKey {}
+
+	@Value
+	@Builder
+	private static class TUGroupKey implements GroupKey
+	{
+		@NonNull ProductId productId;
+		@NonNull HuPackingInstructionsId packingInstructionsId;
+		@NonNull AttributesKey attributesKey;
+	}
+
+	@Value(staticConstructor = "ofHuId")
+	private static class SingleGroupKey implements GroupKey
+	{
+		@NonNull HuId huId;
 	}
 }
