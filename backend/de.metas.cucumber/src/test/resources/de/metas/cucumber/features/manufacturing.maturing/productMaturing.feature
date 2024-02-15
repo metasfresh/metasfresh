@@ -8,13 +8,13 @@ Feature: Maturing scenarios
     And metasfresh has date and time 2024-01-01T16:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh contains M_Products:
-      | Identifier   | Value        | Name         |
-      | finishedGood | productValue | finishedGood |
-      | rawGood      | rawGood      | rawGood      |
+      | Identifier  | Value       | Name        |
+      | maturedGood | maturedGood | maturedGood |
+      | rawGood     | rawGood     | rawGood     |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_1      | finishedGood            | 2022-05-09 | bomVersions_1                        |
+      | bom_1      | maturedGood             | 2022-05-09 | bomVersions_1                        |
     And metasfresh contains PP_Product_BOMLines
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | boml_1     | bom_1                        | rawGood                 | 2022-05-09 | 1        |
@@ -33,10 +33,10 @@ Feature: Maturing scenarios
       | maturingConfig                         | maturingConfig |
     And metasfresh contains M_Maturing_Configuration_Lines
       | M_Maturing_Configuration_Line_ID.Identifier | M_Maturing_Configuration_ID.Identifier | From_Product_ID.Identifier | Matured_Product_ID.Identifier | MaturityAge |
-      | maturingConfigLine                          | maturingConfig                         | rawGood                    | finishedGood                  | 5           |
+      | maturingConfigLine                          | maturingConfig                         | rawGood                    | maturedGood                   | 5           |
     And metasfresh contains PP_Product_Plannings
       | Identifier   | M_Product_ID.Identifier | IsCreatePlan | OPT.M_Warehouse_ID.Identifier | OPT.IsMatured | OPT.M_Maturing_Configuration_ID.Identifier | OPT.M_Maturing_Configuration_Line_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier |
-      | prodPlanning | finishedGood            | false        | maturingWarehouse             | true          | maturingConfig                             | maturingConfigLine                              | bomVersions_1                            |
+      | prodPlanning | maturedGood             | false        | maturingWarehouse             | true          | maturingConfig                             | maturingConfigLine                              | bomVersions_1                            |
 
   @from:cucumber
   Scenario: Happy flow, raw good product HU exists, maturing candidate created and processed
@@ -63,19 +63,19 @@ Feature: Maturing scenarios
 
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | maturing_inv_10               | maturing_hu_10     |
+      | maturing_inv_10               | rawgood_hu_10      |
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.isMatured | OPT.M_Maturing_Configuration_ID.Identifier | OPT.M_Maturing_Configuration_Line_ID.Identifier | OPT.Issue_HU_ID.Identifier |
-      | oc_1       | false     | finishedGood            | bom_1                        | prodPlanning                      | 540006        | 10         | 10           | 0            | PCE               | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true          | maturingConfig                             | maturingConfigLine                              | maturing_hu_10             |
+      | oc_1       | false     | maturedGood             | bom_1                        | prodPlanning                      | 540006        | 10         | 10           | 0            | PCE               | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true          | maturingConfig                             | maturingConfigLine                              | rawgood_hu_10              |
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.isMatured | OPT.M_Maturing_Configuration_ID.Identifier | OPT.M_Maturing_Configuration_Line_ID.Identifier | OPT.Issue_HU_ID.Identifier |
-      | oc_1       | true      | finishedGood            | bom_1                        | prodPlanning                      | 540006        | 10         | 0            | 10           | PCE               | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | true     | true          | maturingConfig                             | maturingConfigLine                              | maturing_hu_10             |
+      | oc_1       | true      | maturedGood             | bom_1                        | prodPlanning                      | 540006        | 10         | 0            | 10           | PCE               | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | true     | true          | maturingConfig                             | maturingConfigLine                              | rawgood_hu_10              |
 
     And after not more than 60s, load PP_Order by candidate id: oc_1
       | PP_Order_ID.Identifier | QtyEntered |
@@ -83,18 +83,18 @@ Feature: Maturing scenarios
 
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | DatePromised         | OPT.DocStatus |
-      | ppOrder_1  | finishedGood            | bom_1                        | prodPlanning                      | 540006        | 10         | 10         | PCE               | 2023-05-31T22:00:00Z | CL            |
+      | ppOrder_1  | maturedGood             | bom_1                        | prodPlanning                      | 540006        | 10         | 10         | PCE               | 2023-05-31T22:00:00Z | CL            |
 
     And load manufactured HU for PP_Order:
       | PP_Order_ID.Identifier | M_HU_ID.Identifier |
-      | ppOrder_1              | finishedGood_hu_10 |
+      | ppOrder_1              | maturedGood_hu_10  |
 
     And validate M_HUs:
       | M_HU_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier |
-      | finishedGood_hu_10 | A        | locatorHauptlager           |
-      | maturing_hu_10     | D        | locatorHauptlager           |
+      | maturedGood_hu_10  | A        | locatorHauptlager           |
+      | rawgood_hu_10      | D        | locatorHauptlager           |
 
     And validate M_HU_Storage:
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
-      | finishedGood_hus_10        | finishedGood_hu_10 | finishedGood            | 10  |
-      | maturing_hus_10            | maturing_hu_10     | rawGood                 | 0   |
+      | maturedGood_hus_10         | maturedGood_hu_10  | maturedGood             | 10  |
+      | maturing_hus_10            | rawgood_hu_10      | rawGood                 | 0   |
