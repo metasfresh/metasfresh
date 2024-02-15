@@ -17,14 +17,21 @@
 
   .button {
     height: auto;
+
     .full-size-btn {
       height: auto;
+
       .row {
         span {
           white-space: break-spaces !important;
         }
       }
     }
+  }
+
+  .filter-button {
+    color: white;
+    background-color: $base-mf-green;
   }
 }
 
