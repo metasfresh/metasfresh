@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -700,5 +701,18 @@ public class PP_Order_Candidate_StepDef
 								.append("\n"));
 
 		return "Current PP_Order_Candidates available for M_Product_ID:\n\n" + messageBuilder;
+	}
+
+	@And("after not more than {int}s, no PP_Order_Candidates are found for Issue_HU_ID: {string}")
+	public void validatePP_Order_Candidate(
+			final int timeoutSec,
+			final String issueHuIdIdentifier) throws InterruptedException
+	{
+		final I_M_HU hu = huTable.get(issueHuIdIdentifier);
+
+		final IQuery<I_PP_Order_Candidate> query = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID())
+				.create();
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> !query.anyMatch());
 	}
 }

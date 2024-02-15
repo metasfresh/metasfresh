@@ -25,11 +25,13 @@ package de.metas.cucumber.stepdefs.pporder.maturing;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Maturing_Configuration;
 import org.compiere.model.I_M_Maturing_Configuration_Line;
@@ -43,6 +45,7 @@ public class M_Maturing_Configuration_StepDef
 	M_Maturing_Configuration_StepDefData maturingConfigurationTable;
 	M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 	M_Product_StepDefData productStepDefData;
+	IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Maturing_Configuration_StepDef(@NonNull final M_Maturing_Configuration_StepDefData maturingConfigurationTable,
 			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable,
@@ -58,15 +61,16 @@ public class M_Maturing_Configuration_StepDef
 	{
 		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
 		{
-			createMaturingConfigurationRow(tableRow);
+			createUpdateMaturingConfigurationRow(tableRow);
 		}
 
 	}
 
-	private void createMaturingConfigurationRow(final DataTableRow tableRow)
+	private void createUpdateMaturingConfigurationRow(final DataTableRow tableRow)
 	{
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(I_M_Maturing_Configuration.COLUMNNAME_M_Maturing_Configuration_ID);
-		final I_M_Maturing_Configuration maturingConfiguration = InterfaceWrapperHelper.newInstance(I_M_Maturing_Configuration.class);
+		final I_M_Maturing_Configuration maturingConfiguration = maturingConfigurationTable.getOptional(identifier)
+				.orElse(InterfaceWrapperHelper.newInstance(I_M_Maturing_Configuration.class));
 
 		maturingConfiguration.setName(tableRow.getAsString(I_M_Maturing_Configuration.COLUMNNAME_Name));
 
@@ -79,12 +83,12 @@ public class M_Maturing_Configuration_StepDef
 	{
 		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
 		{
-			createMaturingConfigurationLineRow(tableRow);
+			createUpdateMaturingConfigurationLineRow(tableRow);
 		}
 
 	}
 
-	private void createMaturingConfigurationLineRow(final DataTableRow tableRow)
+	private void createUpdateMaturingConfigurationLineRow(final DataTableRow tableRow)
 	{
 		final I_M_Maturing_Configuration maturingConfiguration = tableRow.getAsIdentifier(I_M_Maturing_Configuration.COLUMNNAME_M_Maturing_Configuration_ID).lookupIn(maturingConfigurationTable);
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(I_M_Maturing_Configuration_Line.COLUMNNAME_M_Maturing_Configuration_Line_ID);
@@ -92,7 +96,8 @@ public class M_Maturing_Configuration_StepDef
 		final I_M_Product maturedProduct = tableRow.getAsIdentifier(I_M_Maturing_Configuration_Line.COLUMNNAME_Matured_Product_ID).lookupIn(productStepDefData);
 		final int maturityAge = tableRow.getAsInt(I_M_Maturing_Configuration_Line.COLUMNNAME_MaturityAge);
 
-		final I_M_Maturing_Configuration_Line maturingConfigurationLine = InterfaceWrapperHelper.newInstance(I_M_Maturing_Configuration_Line.class);
+		final I_M_Maturing_Configuration_Line maturingConfigurationLine = maturingConfigurationLineTable.getOptional(identifier)
+				.orElse(loadMaturingConfigurationLine(fromProduct, maturedProduct));
 		maturingConfigurationLine.setM_Maturing_Configuration_ID(maturingConfiguration.getM_Maturing_Configuration_ID());
 		maturingConfigurationLine.setFrom_Product_ID(fromProduct.getM_Product_ID());
 		maturingConfigurationLine.setMatured_Product_ID(maturedProduct.getM_Product_ID());
@@ -101,5 +106,17 @@ public class M_Maturing_Configuration_StepDef
 		saveRecord(maturingConfigurationLine);
 
 		maturingConfigurationLineTable.putOrReplace(identifier, maturingConfigurationLine);
+	}
+
+	private I_M_Maturing_Configuration_Line loadMaturingConfigurationLine(@NonNull final I_M_Product fromProduct,
+			@NonNull final I_M_Product maturedProduct)
+	{
+		return queryBL.createQueryBuilder(I_M_Maturing_Configuration_Line.class)
+				.addEqualsFilter(I_M_Maturing_Configuration_Line.COLUMNNAME_From_Product_ID, fromProduct.getM_Product_ID())
+				.addEqualsFilter(I_M_Maturing_Configuration_Line.COLUMNNAME_Matured_Product_ID, maturedProduct.getM_Product_ID())
+				.orderBy(I_M_Maturing_Configuration_Line.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.create()
+				.firstOnlyOptional(I_M_Maturing_Configuration_Line.class)
+				.orElse(InterfaceWrapperHelper.newInstance(I_M_Maturing_Configuration_Line.class));
 	}
 }
