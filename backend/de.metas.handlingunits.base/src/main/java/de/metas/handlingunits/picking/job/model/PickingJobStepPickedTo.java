@@ -1,12 +1,12 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
-import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,17 +14,15 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
 
 @Value
 public class PickingJobStepPickedTo
 {
+	@NonNull ProductId productId;
 	@Nullable QtyRejectedWithReason qtyRejected;
 	@NonNull ImmutableList<PickingJobStepPickedToHU> actualPickedHUs;
 
 	@NonNull Quantity qtyPicked;
-	@Nullable Quantity catchWeight;
 
 	@Builder
 	@Jacksonized
@@ -38,6 +36,7 @@ public class PickingJobStepPickedTo
 
 		Maps.uniqueIndex(actualPickedHUs, PickingJobStepPickedToHU::getActualPickedHUId); // make sure there are no duplicates
 
+		this.productId = productId;
 		this.qtyRejected = qtyRejected;
 		this.actualPickedHUs = actualPickedHUs;
 
@@ -58,16 +57,11 @@ public class PickingJobStepPickedTo
 			this.qtyPicked = qtyPicked;
 		}
 
-		this.catchWeight = actualPickedHUs.stream()
-				.map(PickingJobStepPickedToHU::getActualPickedHUId)
-				.map(pickedHuId -> CatchWeightHelper.extractQtysOrNull(productId, pickedHuId))
-				.filter(Objects::nonNull)
-				.map(StockQtyAndUOMQty::getUOMQtyOpt)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.reduce(Quantity::add)
-				.orElse(null);
-
 		Quantity.assertSameUOM(this.qtyPicked, this.qtyRejected != null ? this.qtyRejected.toQuantity() : null);
+	}
+
+	public ImmutableSet<HuId> getActualPickedHUIds()
+	{
+		return actualPickedHUs.stream().map(PickingJobStepPickedToHU::getActualPickedHUId).collect(ImmutableSet.toImmutableSet());
 	}
 }

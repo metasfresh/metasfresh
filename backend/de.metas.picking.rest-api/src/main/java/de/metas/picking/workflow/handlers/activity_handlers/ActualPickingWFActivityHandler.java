@@ -24,6 +24,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
+import de.metas.handlingunits.util.CatchWeightLoader;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingJob;
@@ -76,7 +77,12 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts);
 
-		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, this::getUOMSymbolById, jsonOpts);
+		final JsonPickingJobFactory jsonPickingJobFactory = JsonPickingJobFactory.builder()
+				.uomDAO(uomDAO)
+				.catchWeightLoader(new CatchWeightLoader())
+				.jsonOpts(jsonOpts)
+				.build();
+		final JsonPickingJob jsonPickingJob = jsonPickingJobFactory.toJsonPickingJob(pickingJob);
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
