@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { map } from 'lodash';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
@@ -9,21 +8,19 @@ import { getApplicationLaunchers, getApplicationLaunchersFacets } from '../../re
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
-import { getApplicationInfoById, getWorkplaceSettingsForApplicationId } from '../../reducers/applications';
+import { getApplicationInfoById } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
-import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeDisplayable, toQRCodeString } from '../../utils/qrCode/hu';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
-import WorkplaceScanner from '../activities/picking/WorkplaceScanner';
-import * as api from '../../api/applications';
-import { populateApplications } from '../../actions/ApplicationsActions';
-import { toastError } from '../../utils/toast';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
+import { useCurrentWorkplace } from '../../api/workplace';
 
 const WFLaunchersScreen = () => {
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const {
     url,
@@ -31,32 +28,114 @@ const WFLaunchersScreen = () => {
   } = useRouteMatch();
 
   const [currentPanel, setCurrentPanel] = useState('default');
+  const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
+  const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace();
+  const { facets } = useFacets({ applicationId });
+  const { isLaunchersLoading, launchers, filterByQRCode, setFilterByQRCode } = useLaunchers({
+    applicationId,
+    requiresLaunchersQRCodeFilter,
+    facets,
+    isEnabled: !isWorkplaceLoading,
+  });
 
-  const { requiresLaunchersQRCodeFilter, showFilters } = useSelector((state) =>
-    getApplicationInfoById({ state, applicationId })
-  );
-
-  const workplaceSettings = useSelector((state) => getWorkplaceSettingsForApplicationId({ state, applicationId }));
-  const workplaceName = workplaceSettings?.assignedWorkplace?.name;
-  const showWorkplaceScanner = workplaceSettings?.workplaceRequired && !workplaceName;
-
+  const workplaceName = workplace?.name;
   useEffect(() => {
-    if (!workplaceName) {
-      return;
+    if (workplaceName) {
+      dispatch(
+        pushHeaderEntry({
+          location: url,
+          values: [
+            {
+              caption: trl('activities.picking.Workplace'),
+              value: workplaceName,
+            },
+          ],
+        })
+      );
     }
-
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        values: [
-          {
-            caption: trl('activities.picking.Workplace'),
-            value: workplaceName,
-          },
-        ],
-      })
-    );
   }, [url, workplaceName]);
+
+  if (isWorkplaceLoading) {
+    return (
+      <div className="container launchers-container">
+        <Spinner />
+      </div>
+    );
+  } else if (isWorkplaceRequired && !workplace) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => setWorkplaceByQRCode(scannedBarcode)}
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
+          continuousRunning={true}
+        />
+      </div>
+    );
+  } else {
+    return (
+      <div className="container launchers-container">
+        {currentPanel === 'scanQRCode' && (
+          <BarcodeScannerComponent
+            onResolvedResult={({ scannedBarcode }) => {
+              setFilterByQRCode(scannedBarcode);
+              setCurrentPanel('default');
+            }}
+          />
+        )}
+        {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
+          <div className="mb-5">
+            <ButtonWithIndicator
+              caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
+              onClick={() => setCurrentPanel('scanQRCode')}
+            />
+          </div>
+        )}
+        {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
+          <>
+            <WFLaunchersFilterButton
+              facets={facets}
+              onClick={() => {
+                history.push(appLaunchersFilterLocation({ applicationId }));
+              }}
+            />
+            <br />
+          </>
+        )}
+        {currentPanel === 'default' &&
+          launchers &&
+          launchers.map((launcher, index) => {
+            const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+            return (
+              <WFLauncherButton
+                key={key}
+                applicationId={launcher.applicationId}
+                caption={launcher.caption}
+                startedWFProcessId={launcher.startedWFProcessId}
+                wfParameters={launcher.wfParameters}
+                showWarningSign={launcher.showWarningSign}
+              />
+            );
+          })}
+        {isLaunchersLoading && <Spinner />}
+      </div>
+    );
+  }
+};
+
+const Spinner = () => {
+  return (
+    <div className="loading">
+      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
+    </div>
+  );
+};
+
+const useApplicationInfo = ({ applicationId }) => {
+  return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
+};
+const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, isEnabled }) => {
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const {
     filterByQRCode: currentFilterByQRCode,
@@ -64,26 +143,26 @@ const WFLaunchersScreen = () => {
     list: launchers,
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
-  const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
-
   const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
-  const isAllowQueryingLaunchers = !requiresLaunchersQRCodeFilter || !!filterByQRCode || !showWorkplaceScanner;
+  const isAllowQueryingLaunchers = isEnabled && (!requiresLaunchersQRCodeFilter || !!filterByQRCode);
 
   //
   // Load application launchers
   const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
     dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
   };
-  const dispatch = useDispatch();
   useEffect(() => {
     if (!isAllowQueryingLaunchers) {
       console.log('Skip fetching querying launchers is prohibited');
       return;
     }
 
-    getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
-      onNewLaunchers({ applicationId, applicationLaunchers });
-    });
+    setLoading(true);
+    getLaunchers({ applicationId, filterByQRCode, facets })
+      .then((applicationLaunchers) => {
+        onNewLaunchers({ applicationId, applicationLaunchers });
+      })
+      .finally(() => setLoading(false));
   }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
 
   //
@@ -99,69 +178,20 @@ const WFLaunchersScreen = () => {
       onNewLaunchers({ applicationId, applicationLaunchers }),
   });
 
-  const refreshApplicationData = () => {
-    api
-      .getApplications()
-      .then(({ applications }) => {
-        dispatch(populateApplications({ applications }));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+  const setFilterByQRCode = (qrCode) => {
+    dispatch(populateLaunchersStart({ applicationId, filterByQRCode: { code: qrCode, displayable: qrCode } }));
   };
 
-  if (showWorkplaceScanner) {
-    return (
-      <div className="container launchers-container">
-        <WorkplaceScanner onComplete={refreshApplicationData} />
-      </div>
-    );
-  }
-
-  //const showQRCodeScannerEffective = currentPanel === 'scanQRCode' || !isAllowQueryingLaunchers;
-  return (
-    <div className="container launchers-container">
-      {currentPanel === 'scanQRCode' && (
-        <BarcodeScannerComponent
-          onResolvedResult={({ scannedBarcode }) => {
-            dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(scannedBarcode) }));
-          }}
-        />
-      )}
-      {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
-        <div className="mb-5">
-          <ButtonWithIndicator
-            caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
-            onClick={() => setCurrentPanel('scanQRCode')}
-          />
-        </div>
-      )}
-      {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
-        <>
-          <WFLaunchersFilterButton
-            facets={facets}
-            onClick={() => {
-              history.push(appLaunchersFilterLocation({ applicationId }));
-            }}
-          />
-          <br />
-        </>
-      )}
-      {currentPanel === 'default' &&
-        launchers &&
-        map(launchers, (launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-          return (
-            <WFLauncherButton
-              key={key}
-              applicationId={launcher.applicationId}
-              caption={launcher.caption}
-              startedWFProcessId={launcher.startedWFProcessId}
-              wfParameters={launcher.wfParameters}
-              showWarningSign={launcher.showWarningSign}
-            />
-          );
-        })}
-    </div>
-  );
+  return {
+    isLaunchersLoading: loading,
+    launchers,
+    filterByQRCode,
+    setFilterByQRCode,
+  };
 };
 
+const useFacets = ({ applicationId }) => {
+  const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
+  return { facets };
+};
 export default WFLaunchersScreen;

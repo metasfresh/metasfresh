@@ -20,17 +20,20 @@
  * #L%
  */
 
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
-import { parseQRCodeString } from '../../../utils/huQRCodes';
+import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+
+const isShowBestBeforeDate = true; // TODO make it configurable
+const isShowLotNo = true; // TODO make it configurable
 
 const PickLineScanScreen = () => {
   const {
@@ -54,27 +57,12 @@ const PickLineScanScreen = () => {
     );
   }, []);
 
-  const resolveScannedBarcode = (scannedBarcode) => {
-    const result = {};
+  const resolveScannedBarcode = useCallback(
+    (scannedBarcode) => convertScannedBarcodeToResolvedResult({ scannedBarcode, expectedProductId: productId }),
+    [productId]
+  );
 
-    const parsedHUQRCode = parseQRCodeString(scannedBarcode);
-    //console.log('resolveScannedBarcode', { parsedHUQRCode });
-
-    if (parsedHUQRCode.productId != null && parsedHUQRCode.productId !== productId) {
-      throw trl('activities.picking.notEligibleHUBarcode');
-    }
-
-    if (parsedHUQRCode.weightNet != null) {
-      result['catchWeight'] = parsedHUQRCode.weightNet;
-    }
-
-    if (parsedHUQRCode.isTUToBePickedAsWhole === true) {
-      result['isTUToBePickedAsWhole'] = true;
-    }
-
-    //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
-    return result;
-  };
+  const history = useHistory();
   const onResult = ({
     qty = 0,
     qtyRejected,
@@ -83,6 +71,8 @@ const PickLineScanScreen = () => {
     catchWeight = null,
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
+    bestBeforeDate = null,
+    lotNo = null,
     gotoPickingLineScreen = true,
     ...others
   }) => {
@@ -92,11 +82,15 @@ const PickLineScanScreen = () => {
       scannedBarcode,
       catchWeight,
       catchWeightUom,
+      isShowBestBeforeDate,
+      bestBeforeDate,
+      isShowLotNo,
+      lotNo,
       gotoPickingLineScreen,
       ...others,
     });
 
-    postStepPicked({
+    return postStepPicked({
       wfProcessId,
       activityId,
       lineId,
@@ -107,6 +101,11 @@ const PickLineScanScreen = () => {
       qtyRejected,
       catchWeight,
       pickWholeTU: isTUToBePickedAsWhole,
+      checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
+      setBestBeforeDate: isShowBestBeforeDate,
+      bestBeforeDate,
+      setLotNo: isShowLotNo,
+      lotNo,
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
@@ -126,6 +125,8 @@ const PickLineScanScreen = () => {
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
       catchWeightUom={catchWeightUom}
+      isShowBestBeforeDate={isShowBestBeforeDate}
+      isShowLotNo={isShowLotNo}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -150,6 +151,31 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,
   };
+};
+
+const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
+  const result = {};
+
+  const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+  //console.log('resolveScannedBarcode', { parsedHUQRCode });
+
+  if (parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
+    throw trl('activities.picking.notEligibleHUBarcode');
+  }
+
+  if (parsedHUQRCode.weightNet != null) {
+    result['catchWeight'] = parsedHUQRCode.weightNet;
+  }
+
+  if (parsedHUQRCode.isTUToBePickedAsWhole === true) {
+    result['isTUToBePickedAsWhole'] = true;
+  }
+
+  result['bestBeforeDate'] = parsedHUQRCode.bestBeforeDate;
+  result['lotNo'] = parsedHUQRCode.lotNo;
+
+  //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
+  return result;
 };
 
 export default PickLineScanScreen;

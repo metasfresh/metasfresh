@@ -1,11 +1,12 @@
 .get-qty-dialog {
+
   table {
     width: 100%;
 
     tbody {
       tr {
         th {
-          min-width: 50vw !important;
+          min-width: 38vw !important;
 
           text-align: left !important;
           white-space: nowrap;
@@ -18,7 +19,7 @@
           white-space: pre-wrap;
 
           input {
-            text-align:right
+            text-align: right
           }
         }
       }

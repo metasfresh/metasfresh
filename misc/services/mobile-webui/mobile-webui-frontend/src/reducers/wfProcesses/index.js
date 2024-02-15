@@ -10,7 +10,7 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
-import { toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeString } from '../../utils/qrCode/hu';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {

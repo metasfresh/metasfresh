@@ -34,6 +34,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
@@ -47,7 +48,9 @@ public class PPMaturingCandidateV
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
 	@NonNull MaturingConfigId maturingConfigId;
 	@NonNull MaturingConfigLineId maturingConfigLineId;
+	@NonNull ProductBOMVersionsId productBOMVersionsId;
 	@NonNull ProductId productId;
+	@NonNull ProductId issueProductId;
 	@NonNull WarehouseId warehouseId;
 	@NonNull ProductPlanningId productPlanningId;
 	@NonNull Quantity qtyRequired;

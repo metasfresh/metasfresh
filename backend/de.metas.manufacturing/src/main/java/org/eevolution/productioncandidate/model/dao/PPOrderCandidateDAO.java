@@ -64,7 +64,7 @@ public class PPOrderCandidateDAO
 		{
 			return ImmutableList.of();
 		}
-		
+
 		return queryBL
 				.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateIds)
@@ -166,7 +166,7 @@ public class PPOrderCandidateDAO
 
 		if (deletePPOrderCandidatesQuery.isOnlySimulated())
 		{
-			deleteQuery.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsSimulated, deletePPOrderCandidatesQuery.isOnlySimulated());
+			deleteQuery.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsSimulated, true);
 		}
 
 		if (deletePPOrderCandidatesQuery.getSalesOrderLineId() != null)
@@ -210,11 +210,16 @@ public class PPOrderCandidateDAO
 
 		save(ppOrderCandidate);
 	}
-	
+
 	private void deleteLines(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
+		deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
+	}
+
+	public void deleteLines(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
 		queryBL.createQueryBuilder(I_PP_OrderLine_Candidate.class)
-				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
 				.create()
 				.deleteDirectly();
 	}

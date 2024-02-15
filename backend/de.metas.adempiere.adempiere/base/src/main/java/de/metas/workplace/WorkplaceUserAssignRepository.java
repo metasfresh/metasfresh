@@ -47,16 +47,6 @@ public class WorkplaceUserAssignRepository
 		return byUserId.getOrLoad(userId, this::retrieveWorkplaceIdByUserId);
 	}
 
-	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
-	{
-		final I_C_Workplace_User_Assign record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
-
-		record.setAD_User_ID(request.getUserId().getRepoId());
-		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
-
-		InterfaceWrapperHelper.save(record);
-	}
-
 	@NonNull
 	private Optional<WorkplaceId> retrieveWorkplaceIdByUserId(@NonNull final UserId userId)
 	{
@@ -67,5 +57,26 @@ public class WorkplaceUserAssignRepository
 				.firstOnlyOptional(I_C_Workplace_User_Assign.class)
 				.map(I_C_Workplace_User_Assign::getC_Workplace_ID)
 				.map(WorkplaceId::ofRepoId);
+	}
+
+	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		deleteByUserId(request.getUserId());
+
+		final I_C_Workplace_User_Assign record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
+
+		record.setIsActive(true);
+		record.setAD_User_ID(request.getUserId().getRepoId());
+		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
+
+		InterfaceWrapperHelper.save(record);
+	}
+
+	private void deleteByUserId(final @NonNull UserId userId)
+	{
+		queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
+				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
 	}
 }

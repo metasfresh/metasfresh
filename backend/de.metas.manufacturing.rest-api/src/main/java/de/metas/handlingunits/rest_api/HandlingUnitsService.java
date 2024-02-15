@@ -46,9 +46,10 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.HUIdAndQRCode;
+import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
@@ -76,7 +77,6 @@ import java.util.Map;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
-import static org.adempiere.mm.attributes.api.AttributeConstants.HU_ExternalLotNumber;
 
 @Service
 public class HandlingUnitsService
@@ -379,14 +379,13 @@ public class HandlingUnitsService
 	{
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.request(request)
+				.husToMove(ImmutableList.of(HUIdAndQRCode.builder()
+													.huQRCode(request.getHuQRCode())
+													.huId(request.getHuId())
+													.build()))
+				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
-	}
-
-	public void assignExternalLotNumber(@NonNull final HuId huId, @NonNull final String externalLotNumber)
-	{
-		huAttributesBL.updateHUAttributeRecursive(huId, HU_ExternalLotNumber, externalLotNumber, null);
 	}
 
 	@NonNull

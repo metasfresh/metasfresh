@@ -31,6 +31,7 @@ import lombok.Value;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Value
 @Builder
@@ -40,12 +41,17 @@ public class RenderedAddressProvider
 	@NonNull Map<BPartnerLocationId, String> locationId2RenderedAddress;
 
 	@NonNull
-	public static RenderedAddressProvider of(@NonNull final IDocumentLocationBL locationBL)
+	public static RenderedAddressProvider newInstance(@NonNull final IDocumentLocationBL locationBL)
 	{
 		return RenderedAddressProvider.builder()
 				.documentLocationBL(locationBL)
 				.locationId2RenderedAddress(new HashMap<>())
 				.build();
+	}
+
+	public void warmUpForBPartnerLocationIds(@NonNull final Set<BPartnerLocationId> locationIds)
+	{
+		// TODO
 	}
 
 	@NonNull

@@ -65,4 +65,9 @@ public class HUQRCodeJsonConverter
 				.displayable(huQRCode.toDisplayableQRCode())
 				.build();
 	}
+
+	public static boolean isTypeMatching(final @NonNull GlobalQRCode globalQRCode)
+	{
+		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
+	}
 }

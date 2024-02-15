@@ -37,7 +37,9 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 {
 	DO_NOT_CREATE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_DO_NOT_CREATE),
 	CREATE_DRAFT(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_DRAFT),
-	CREATE_AND_COMPLETE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE);
+	CREATE_AND_COMPLETE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_AND_COMPLETE),
+	CREATE_COMPLETE_CLOSE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_CREATE_COMPLETE_CLOSE),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CreateShipmentPolicy> index = ReferenceListAwareEnums.index(values());
 
@@ -52,7 +54,9 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 	@Nullable
 	public static CreateShipmentPolicy ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
-	public boolean isCreateShipment() {return CREATE_DRAFT.equals(this) || CREATE_AND_COMPLETE.equals(this);}
+	public boolean isCreateShipment() {return CREATE_DRAFT.equals(this) || CREATE_AND_COMPLETE.equals(this) || CREATE_COMPLETE_CLOSE.equals(this);}
 
-	public boolean isCreateAndCompleteShipment() {return CREATE_AND_COMPLETE.equals(this);}
+	public boolean isCreateAndCompleteShipment() {return CREATE_AND_COMPLETE.equals(this) || CREATE_COMPLETE_CLOSE.equals(this);}
+
+	public boolean isCloseShipmentSchedules() {return CREATE_COMPLETE_CLOSE.equals(this);}
 }
