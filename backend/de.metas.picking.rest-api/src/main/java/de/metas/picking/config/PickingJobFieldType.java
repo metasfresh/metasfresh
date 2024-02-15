@@ -60,12 +60,6 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 
 	private final String code;
 
-	@Nullable
-	public static PickingJobFieldType ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
 	@NonNull
 	public static PickingJobFieldType ofCode(@NonNull final String code)
 	{
