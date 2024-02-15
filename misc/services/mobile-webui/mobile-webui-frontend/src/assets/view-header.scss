@@ -2,18 +2,23 @@
   width: 100%;
 
   tbody {
+    font-size: 1.5rem;
+    white-space: normal;
+
     tr {
       th {
-        white-space: normal;
         max-width: 40vw !important;
-        font-size: 1.5rem;
       }
 
       td {
         text-align: right;
-        white-space: normal;
-        font-size: 1.5rem;
       }
+    }
+  }
+
+  @media only screen and (max-width: $small-screen-width) {
+    tbody {
+      font-size: 1rem;
     }
   }
 }
