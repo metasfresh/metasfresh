@@ -59,8 +59,8 @@ public class GenerateShipmentsRequest
 	@Builder.Default
 	boolean onTheFlyPickToPackingInstructions = false;
 	
-	@NonNull
-	AsyncBatchId asyncBatchId;
+	@NonNull AsyncBatchId asyncBatchId;
+	@Builder.Default boolean waitToProcess = true;
 
 	@NonNull Boolean isCompleteShipment;
 	boolean isCloseShipmentSchedules;

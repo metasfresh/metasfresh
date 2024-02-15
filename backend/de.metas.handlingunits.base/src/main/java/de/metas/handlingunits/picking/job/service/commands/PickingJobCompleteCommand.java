@@ -100,6 +100,7 @@ public class PickingJobCompleteCommand
 					.onTheFlyPickToPackingInstructions(true)
 					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
+					.isWaitToProcess(false)
 					.build());
 		}
 	}

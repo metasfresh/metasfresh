@@ -130,10 +130,18 @@ public class ShipmentService implements IShipmentService
 			return enqueueShipmentSchedules(request);
 		};
 
-		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
-		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
-		// See ShipmentScheduleEnqueuer.acquireLock(...)
-		return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+		if (request.isWaitToProcess())
+		{
+			// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
+			// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
+			// See ShipmentScheduleEnqueuer.acquireLock(...)
+			return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+		}
+		else
+		{
+			asyncBatchService.waitToComplete(request.getAsyncBatchId());
+			return generateShipmentsSupplier.get();
+		}
 	}
 
 	@NonNull
@@ -162,6 +170,7 @@ public class ShipmentService implements IShipmentService
 									.isShipDateToday(request.getIsShipDateToday())
 									.isCompleteShipment(request.getIsCompleteShipment())
 									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+									.waitToProcess(request.isWaitToProcess())
 									.build()
 					);
 

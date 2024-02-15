@@ -51,4 +51,6 @@ public class GenerateShipmentsForSchedulesRequest
 
 	@Nullable
 	Boolean isShipDateToday;
+
+	@Builder.Default boolean isWaitToProcess = true;
 }
