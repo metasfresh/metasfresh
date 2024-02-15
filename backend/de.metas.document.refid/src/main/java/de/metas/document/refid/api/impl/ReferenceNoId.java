@@ -22,6 +22,7 @@
 
 package de.metas.document.refid.api.impl;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -39,12 +40,19 @@ public class ReferenceNoId implements RepoIdAware
 		return new ReferenceNoId(repoId);
 	}
 
+	@Nullable
+	public static ReferenceNoId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ReferenceNoId(repoId) : null;
+	}
+
 	private ReferenceNoId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_ReferenceNo");
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
@@ -60,5 +68,8 @@ public class ReferenceNoId implements RepoIdAware
 		return referenceNoId != null ? referenceNoId.getRepoId() : defaultValue;
 	}
 
-	public static boolean equals(@Nullable final ReferenceNoId id1, @Nullable final ReferenceNoId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final ReferenceNoId id1, @Nullable final ReferenceNoId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

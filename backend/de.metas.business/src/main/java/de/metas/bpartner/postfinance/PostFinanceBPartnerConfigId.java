@@ -22,6 +22,8 @@
 
 package de.metas.bpartner.postfinance;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,6 +36,7 @@ public class PostFinanceBPartnerConfigId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static PostFinanceBPartnerConfigId ofRepoId(final int repoId)
 	{
 		return new PostFinanceBPartnerConfigId(repoId);
@@ -51,6 +54,7 @@ public class PostFinanceBPartnerConfigId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
@@ -66,5 +70,8 @@ public class PostFinanceBPartnerConfigId implements RepoIdAware
 		return postFinanceBPartnerConfigId != null ? postFinanceBPartnerConfigId.getRepoId() : defaultValue;
 	}
 
-	public static boolean equals(@Nullable final PostFinanceBPartnerConfigId id1, @Nullable final PostFinanceBPartnerConfigId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final PostFinanceBPartnerConfigId id1, @Nullable final PostFinanceBPartnerConfigId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }
