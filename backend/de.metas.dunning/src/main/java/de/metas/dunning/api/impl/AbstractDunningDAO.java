@@ -22,6 +22,7 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
@@ -74,7 +75,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		return dunning;
 	}
 
-	private final transient CCache<OrgId, I_C_Dunning> orgId2dunning = CCache.<OrgId, I_C_Dunning> builder().tableName(I_C_Dunning.Table_Name).cacheMapType(CacheMapType.LRU).initialCapacity(100).build();
+	private final transient CCache<OrgId, I_C_Dunning> orgId2dunning = CCache.<OrgId, I_C_Dunning>builder().tableName(I_C_Dunning.Table_Name).cacheMapType(CacheMapType.LRU).initialCapacity(100).build();
 
 	@Override
 	public final I_C_Dunning retrieveDunningByOrg(@NonNull final OrgId orgId)
@@ -208,8 +209,18 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 				.list();
 	}
 
+	@NonNull
+	public ImmutableList<I_C_Dunning> retrieveDunningsByOrg(@NonNull final OrgId orgId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_Dunning.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.listImmutable();
+	}
+
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
-	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
+		/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
 				.addEqualsFilter(I_C_DunningLevel.COLUMNNAME_C_Dunning_ID, dunningId)
@@ -228,7 +239,6 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	protected abstract I_C_Dunning_Candidate retrieveDunningCandidate(IDunningContext context, IDunningCandidateQuery query);
 
 	protected abstract Iterator<I_C_Dunning_Candidate> retrieveDunningCandidatesIterator(IDunningContext context, IDunningCandidateQuery query);
-
 
 	@Override
 	public I_C_DunningDoc getByIdInTrx(@NonNull final DunningDocId dunningDocId)
