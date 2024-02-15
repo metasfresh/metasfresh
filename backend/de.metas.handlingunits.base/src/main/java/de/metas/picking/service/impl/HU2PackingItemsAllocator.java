@@ -21,11 +21,10 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.handlingunits.util.CatchWeightHelper;
+import de.metas.handlingunits.util.CatchWeightLoader;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
@@ -50,7 +49,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -85,8 +83,9 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
+	private final CatchWeightLoader catchWeightLoader = new CatchWeightLoader();
 	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
+
 	/**
 	 * Cannot fully load:
 	 */
@@ -547,7 +546,7 @@ public class HU2PackingItemsAllocator
 	private void pickFromVHU_pickDirectly(final @NonNull I_M_HU pickFromVHU, final @NonNull PackingItemPart packedPart, final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final Quantity qtyPacked = packedPart.getQty();
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
+		final StockQtyAndUOMQty stockQtyAndUomQty = catchWeightLoader.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
 		final boolean anonymousHuPickedOnTheFly = false;
@@ -584,7 +583,7 @@ public class HU2PackingItemsAllocator
 																							 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 																							 .build()));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);
+		final StockQtyAndUOMQty stockQtyAndUomQty = catchWeightLoader.extractQtys(_huContext, getProductId(), qtyCU, huReceived);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId());
