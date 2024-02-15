@@ -1,15 +1,14 @@
 package de.metas.workflow.rest_api.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class MobileApplicationInfo
 {
 	@NonNull MobileApplicationId id;
@@ -18,5 +17,5 @@ public class MobileApplicationInfo
 	boolean showFilters;
 	@Builder.Default boolean showInMainMenu = true;
 	@Builder.Default int sortNo = 100;
-	@Nullable Map<CustomApplicationParameter, Object> applicationParameters;
+	@NonNull @Singular ImmutableMap<String, Object> applicationParameters;
 }

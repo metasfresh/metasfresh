@@ -143,7 +143,7 @@ const GetQuantityDialog = ({
       }
 
       // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
-      onQtyChange({
+      return onQtyChange({
         qtyEnteredAndValidated: 1,
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
@@ -152,7 +152,7 @@ const GetQuantityDialog = ({
         gotoPickingLineScreen: false,
       });
     },
-    [parseQRCodeString, toastError, onQtyChange]
+    [catchWeightUom, onQtyChange]
   );
 
   const wsClientRef = useRef(null);

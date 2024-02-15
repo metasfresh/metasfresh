@@ -9,7 +9,15 @@ const computeCaption = (facets) => {
 
 const WFLaunchersFilterButton = ({ facets, onClick }) => {
   const caption = useMemo(() => computeCaption(facets), facets);
-  return <ButtonWithIndicator caption={caption} typeFASIconName="fa-filter" disabled={false} onClick={onClick} />;
+  return (
+    <ButtonWithIndicator
+      additionalCssClass="filter-button"
+      caption={caption}
+      typeFASIconName="fa-filter"
+      disabled={false}
+      onClick={onClick}
+    />
+  );
 };
 
 WFLaunchersFilterButton.propTypes = {

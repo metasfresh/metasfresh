@@ -14,4 +14,31 @@
       font-size: 3rem;
     }
   }
+
+  .button {
+    height: auto;
+
+    .full-size-btn {
+      height: auto;
+
+      .row {
+        span {
+          white-space: break-spaces !important;
+        }
+      }
+    }
+  }
+
+  .filter-button {
+    color: white;
+    background-color: $base-mf-green;
+  }
 }
+
+@media only screen and (max-width: $small-screen-width) {
+  .launchers-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+

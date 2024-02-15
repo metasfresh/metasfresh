@@ -32,23 +32,18 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ScanAnythingMobileApplication implements MobileApplication
+public class WorkplaceManager implements MobileApplication
 {
-	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("scanAnything");
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.scanAnything.appName");
+	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("workplaceManager");
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.workplaceManager.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.sortNo(-100) // make it first
-			.showInMainMenu(false)
 			.build();
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
-	{
-		return APPLICATION_INFO;
-	}
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId) {return APPLICATION_INFO;}
 }
