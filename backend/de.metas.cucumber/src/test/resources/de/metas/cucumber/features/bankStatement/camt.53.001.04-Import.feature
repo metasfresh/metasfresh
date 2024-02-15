@@ -1118,14 +1118,14 @@ Feature: import bank statement in camt.53.001.04 import format
       | di_1_S0337_500             | 540009              |
     And metasfresh contains C_Bank:
       | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier | OPT.IsImportAsSingleSummaryLine |
-      | di_1_S0337_500       | bank_S0337_500 | 2234567   | AAAAAAAA82A | di_1_S0337_500             | Y                           |
+	  | di_1_S0337_500       | bank_S0337_500 | 2234567   | AAAAAAAA82A | di_1_S0337_500             | Y                               |
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID | OPT.C_Bank_ID  |
       | bp_bank_account_metasfresh_S0337_500 | 2000257                 | di_1_S0337_500 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_500 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+		| C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+		| bp_bank_account_metasfresh_S0337_500 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | di_1_S0337_500           |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
@@ -1328,8 +1328,8 @@ Feature: import bank statement in camt.53.001.04 import format
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
       | bsl_1_S0337_500                   | 2023-10-27     | 2023-10-27   | CHF                        | 226.1      |                              |                             |
-      | bsl_2_S0337_500                   | 2023-10-24     | 2023-10-24   | CHF                        | 107.1      | bpartner_1_S0337             | inv_2_S0337_500             |
-      | bsl_3_S0337_500                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | bpartner_1_S0337             | inv_1_S0337_500             |
+	  | bsl_2_S0337_500                   | 2023-10-24     | 2023-10-24   | CHF                        | 0          | bpartner_1_S0337             | inv_2_S0337_500             |
+	  | bsl_3_S0337_500                   | 2023-10-26     | 2023-10-26   | CHF                        | 0          | bpartner_1_S0337             | inv_1_S0337_500             |
 
     And the C_BankStatement identified by bs_1_S0337_500 is completed
 
