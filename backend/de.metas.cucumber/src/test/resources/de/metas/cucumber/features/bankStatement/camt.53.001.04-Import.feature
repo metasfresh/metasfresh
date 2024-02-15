@@ -1117,7 +1117,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
       | di_1_S0337_500             | 540009              |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier | IsImportAsSingleSummaryLine |
+      | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier | OPT.IsImportAsSingleSummaryLine |
       | di_1_S0337_500       | bank_S0337_500 | 2234567   | AAAAAAAA82A | di_1_S0337_500             | Y                           |
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID | OPT.C_Bank_ID  |
