@@ -1,5 +1,6 @@
 package de.metas.uom.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -7,6 +8,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -104,6 +106,7 @@ class UOMConversionBLTest
 		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.345000000000", uomPrecision, "-12.345", 3);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void adjustToUOMPrecisionWithoutRoundingIfPossible(
 			final String qtyStr,
 			final int uomPrecision,
@@ -553,7 +556,7 @@ class UOMConversionBLTest
 		}
 
 		/**
-		 * @task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
+		 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29">task</a>
 		 */
 		@Test
 		public void checkProductUOMPrecisionIsUsed()
@@ -725,5 +728,39 @@ class UOMConversionBLTest
 		System.out.println("Price/Sheet: " + pricePerSheet);
 		assertThat(pricePerSheet.toBigDecimal()).isEqualTo("303.562");
 		assertThat(pricePerSheet.getUomId()).isEqualTo(uomSheet);
+	}
+
+	@Test
+	void sumAndConvertQuantitiesTo()
+	{
+		final UomId uom1 = uomConversionHelper.createUOMId("UOM1", 2, 0);
+		final UomId uom2 = uomConversionHelper.createUOMId("UOM2", 2, 0);
+		final UomId uom3 = uomConversionHelper.createUOMId("UOM3", 2, 0);
+		final ProductId productId = createProduct("Product", uom1);
+
+		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(uom1)
+				.toUomId(uom3)
+				.fromToMultiplier(new BigDecimal("3"))
+				.build());
+		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(uom2)
+				.toUomId(uom3)
+				.fromToMultiplier(new BigDecimal("2"))
+				.build());
+
+		final ImmutableList<Quantity> qtys = ImmutableList.of(
+				Quantitys.create("1", uom1),
+				Quantitys.create("10", uom2),
+				Quantitys.create("100", uom3),
+				Quantitys.create("4", uom1),
+				Quantitys.create("40", uom2),
+				Quantitys.create("400", uom3)
+		);
+
+		final Quantity sum = conversionBL.sumAndConvertQuantitiesTo(qtys, productId, uom3).orElse(null);
+		assertThat(sum).isEqualTo(Quantitys.create((1 + 4) * 3 + (10 + 40) * 2 + (100 + 400), uom3));
 	}
 }

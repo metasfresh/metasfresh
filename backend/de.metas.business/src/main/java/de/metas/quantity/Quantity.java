@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
@@ -22,8 +23,15 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
@@ -822,5 +830,17 @@ public final class Quantity implements Comparable<Quantity>
 	public boolean isWeightable()
 	{
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
+	}
+
+	public static Collector<Quantity, ?, ImmutableMap<UomId, Quantity>> sumByUomId()
+	{
+		final Supplier<Map<UomId, Quantity>> supplier = HashMap::new;
+		final BiConsumer<Map<UomId, Quantity>, Quantity> accumulator = (map, qty) -> map.merge(qty.getUomId(), qty, Quantity::add);
+		final BinaryOperator<Map<UomId, Quantity>> combiner = (acc1, acc2) -> {
+			acc2.values().forEach(qty -> accumulator.accept(acc1, qty));
+			return acc1;
+		};
+		@NonNull final Function<Map<UomId, Quantity>, ImmutableMap<UomId, Quantity>> finisher = ImmutableMap::copyOf;
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 }

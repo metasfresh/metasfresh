@@ -22,6 +22,7 @@ package de.metas.quantity;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.JSONObjectMapper;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -546,6 +548,41 @@ public class QuantityTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("at least two quantity instances have different UOMs");
 		}
+	}
 
+	@Nested
+	class sumByUomId
+	{
+		private I_C_UOM uom1;
+		private I_C_UOM uom2;
+		private I_C_UOM uom3;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			uom1 = uomHelper.createUOM("UOM1", 2);
+			uom2 = uomHelper.createUOM("UOM2", 2);
+			uom3 = uomHelper.createUOM("UOM3", 2);
+		}
+
+		@Test
+		void standardTest()
+		{
+			final ImmutableMap<UomId, Quantity> qtysByUom = Stream.of(
+							Quantity.of("1", uom1),
+							Quantity.of("10", uom2),
+							Quantity.of("100", uom3),
+							Quantity.of("4", uom1),
+							Quantity.of("40", uom2),
+							Quantity.of("400", uom3)
+					)
+					.collect(Quantity.sumByUomId());
+
+			assertThat(qtysByUom.values()).contains(
+					Quantity.of("5", uom1),
+					Quantity.of("50", uom2),
+					Quantity.of("500", uom3)
+			);
+		}
 	}
 }

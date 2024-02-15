@@ -22,6 +22,7 @@ package de.metas.uom;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -124,6 +125,25 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	{
 		final UOMConversionContext uomConversionContext = UOMConversionContext.of(productId);
 		return convertQuantityTo(quantity, uomConversionContext, uomToId);
+	}
+
+	default Optional<Quantity> sumAndConvertQuantitiesTo(
+			@NonNull final Collection<Quantity> quantities,
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomToId)
+	{
+		if (quantities.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final UOMConversionContext uomConversionContext = UOMConversionContext.of(productId);
+
+		final ImmutableMap<UomId, Quantity> qtysByUOM = quantities.stream().collect(Quantity.sumByUomId());
+
+		return qtysByUOM.values().stream()
+				.map(qty -> convertQuantityTo(qty, uomConversionContext, uomToId))
+				.reduce(Quantity::add);
 	}
 
 	/**
