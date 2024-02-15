@@ -22,51 +22,21 @@
 
 package de.metas.async.eventbus;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.async.AsyncBatchId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.service.ClientId;
 
 @Value
-@JsonDeserialize(builder = AsyncBatchNotifyRequest.AsyncBatchNotifyRequestBuilder.class)
+@Builder
+@Jacksonized
 public class AsyncBatchNotifyRequest
 {
-	@JsonProperty("clientId")
-	@NonNull
-	ClientId clientId;
-
-	@JsonProperty("asyncBatchId")
-	@NonNull
-	Integer asyncBatchId;
-
-	@JsonProperty("noOfProcessedWPs")
-	@NonNull
-	Integer noOfProcessedWPs;
-
-	@JsonProperty("noOfErrorWPs")
-	@NonNull
-	Integer noOfErrorWPs;
-
-	@JsonProperty("noOfEnqueuedWPs")
-	@NonNull
-	Integer noOfEnqueuedWPs;
-
-	@JsonCreator
-	@Builder
-	public AsyncBatchNotifyRequest(
-			@JsonProperty("clientId") @NonNull final ClientId clientId,
-			@JsonProperty("asyncBatchId") @NonNull final Integer asyncBatchId,
-			@JsonProperty("noOfProcessedWPs") @NonNull final Integer noOfProcessedWPs,
-			@JsonProperty("noOfErrorWPs") @NonNull final Integer noOfErrorWPs,
-			@JsonProperty("noOfEnqueuedWPs") @NonNull final Integer noOfEnqueuedWPs)
-	{
-		this.clientId = clientId;
-		this.asyncBatchId = asyncBatchId;
-		this.noOfProcessedWPs = noOfProcessedWPs;
-		this.noOfErrorWPs = noOfErrorWPs;
-		this.noOfEnqueuedWPs = noOfEnqueuedWPs;
-	}
+	@NonNull ClientId clientId;
+	@NonNull AsyncBatchId asyncBatchId;
+	@NonNull Integer noOfEnqueuedWPs;
+	@NonNull Integer noOfProcessedWPs;
+	@NonNull Integer noOfErrorWPs;
 }

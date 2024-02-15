@@ -14,9 +14,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -49,7 +52,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class AsyncBatchDAO implements IAsyncBatchDAO
 {
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -74,32 +76,50 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 			@Nullable final String trxNameCandidate,
 			@Nullable final Boolean processed)
 	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = Check.isBlank(trxNameCandidate)
 				? InterfaceWrapperHelper.getTrxName(asyncBatch)
 				: trxNameCandidate;
 
-		String whereClause = I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID + " = ? ";
-		final List<Object> params = new ArrayList<Object>();
-		params.add(asyncBatch.getC_Async_Batch_ID());
+		return queryWorkPackages(asyncBatchId, ctx, trxName, processed).list();
+	}
+
+	private IQuery<I_C_Queue_WorkPackage> queryWorkPackages(
+			@NonNull final AsyncBatchId asyncBatchId,
+			@NonNull final Properties ctx,
+			@Nullable final String trxName,
+			@Nullable final Boolean processed)
+	{
+		final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Updated);
 
 		if (processed != null)
 		{
-			whereClause += " AND " + I_C_Queue_WorkPackage.COLUMNNAME_Processed + " = ? ";
-			params.add(processed);
+			queryBuilder.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, processed);
 		}
 
-		return new Query(ctx, I_C_Queue_WorkPackage.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(params)
-				.setOrderBy(I_C_Queue_WorkPackage.COLUMNNAME_Updated + " DESC ")
-				.list(I_C_Queue_WorkPackage.class);
+		return queryBuilder.create();
 	}
 
 	@Override
 	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
 	{
 		return retrieveWorkPackages(asyncBatch, trxName, null);
+	}
+
+	@Override
+	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return queryWorkPackages(asyncBatchId, Env.getCtx(), ITrx.TRXNAME_ThreadInherited, null).list();
+	}
+
+	@Override
+	public boolean hasWorkPackages(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return queryWorkPackages(asyncBatchId, Env.getCtx(), ITrx.TRXNAME_ThreadInherited, null).anyMatch();
 	}
 
 	@Override
@@ -110,10 +130,9 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 
 		final List<Object> params = new ArrayList<Object>();
 
-		final StringBuffer whereClause = new StringBuffer();
+		final StringBuilder whereClause = new StringBuilder();
 		whereClause.append(I_C_Queue_WorkPackage_Notified.COLUMNNAME_C_Async_Batch_ID + " = ? ");
 		params.add(asyncBatch.getC_Async_Batch_ID());
-
 
 		whereClause.append(" AND " + I_C_Queue_WorkPackage_Notified.COLUMNNAME_IsNotified + " = ? ");
 		params.add(notified);

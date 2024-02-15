@@ -30,6 +30,7 @@ import de.metas.async.service.AsyncBatchObserver;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.stereotype.Service;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_Default;
@@ -74,8 +75,10 @@ public class QueueProcessorService
 			asyncProcessorPlanner.addQueueProcessor(queueProcessor);
 			asyncProcessorPlanner.start();
 
-			asyncBatchObserver.observeOn(asyncBatchId);
-			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			try (final IAutoCloseable ignored = asyncBatchObserver.observeOn(asyncBatchId))
+			{
+				asyncBatchObserver.markEnqueueingIsDoneAndWaitToComplete(asyncBatchId);
+			}
 		}
 		finally
 		{

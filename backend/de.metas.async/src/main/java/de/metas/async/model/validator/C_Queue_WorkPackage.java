@@ -13,9 +13,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -71,21 +70,19 @@ public class C_Queue_WorkPackage
 	})
 	public void processBatchFromWP(@NonNull final I_C_Queue_WorkPackage wp)
 	{
-		if (wp.getC_Async_Batch_ID() <= 0)
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(wp.getC_Async_Batch_ID());
+		if (asyncBatchId == null)
 		{
 			return;
 		}
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(wp);
+		final ClientId clientId = ClientId.ofRepoId(wp.getAD_Client_ID());
 
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID());
-		trxManager
-				.getTrxListenerManager(trxName)
-				.runAfterCommit(() -> processBatchInOwnTrx(asyncBatchId));
+		trxManager.runAfterCommit(() -> processBatchInOwnTrx(asyncBatchId, clientId));
 	}
 
-	private void processBatchInOwnTrx(@NonNull final AsyncBatchId asyncBatchId)
+	private void processBatchInOwnTrx(@NonNull final AsyncBatchId asyncBatchId, @NonNull ClientId clientId)
 	{
-		trxManager.runInNewTrx(() -> asyncBatchService.checkProcessed(asyncBatchId, ITrx.TRXNAME_ThreadInherited));
+		trxManager.runInNewTrx(() -> asyncBatchService.checkProcessed(asyncBatchId, clientId));
 	}
 }

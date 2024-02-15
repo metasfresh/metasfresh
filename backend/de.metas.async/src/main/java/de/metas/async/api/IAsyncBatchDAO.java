@@ -63,6 +63,10 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 */
 	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, @Nullable String trxName, Boolean processed);
 
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(@NonNull AsyncBatchId asyncBatchId);
+
+	boolean hasWorkPackages(@NonNull AsyncBatchId asyncBatchId);
+
 	/**
 	 * retrieve notified workpackages fro an async batch
 	 */

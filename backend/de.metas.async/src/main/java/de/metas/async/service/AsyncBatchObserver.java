@@ -28,7 +28,6 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.eventbus.AsyncBatchNotifyRequestHandler;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.lock.api.ILock;
@@ -41,11 +40,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.NonFinal;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -53,8 +50,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,89 +68,68 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 
-	private final Map<AsyncBatchId, BatchProgress> asyncBatch2Completion = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AsyncBatchId, BatchProgress> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@NonNull
-	public static LockOwner getLockOwnerForAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
+	private static LockOwner toLockOwner(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final String lockOwnerName = AsyncBatchObserver.class.getName() + "_" + I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID + "=" + asyncBatchId.getRepoId();
-
 		return LockOwner.forOwnerName(lockOwnerName);
 	}
 
 	@Override
-	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
+	public void handleRequest(@NonNull final AsyncBatchNotifyRequest notification)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("AsyncBatch identified by: {} notified with status: {}", request.getAsyncBatchId(), request);
+		final AsyncBatchId asyncBatchId = notification.getAsyncBatchId();
+		Loggables.withLogger(logger, Level.DEBUG).addLog("AsyncBatch identified by: {} notified with status: {}", asyncBatchId, notification);
 
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(request.getAsyncBatchId());
+		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
+		if (asyncBatchProgress == null)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+			return;
+		}
 
-		this.notifyBatchFor(asyncBatchId, request);
+		asyncBatchProgress.updateWorkPackagesProgress(notification);
 	}
 
-	public void observeOn(@NonNull final AsyncBatchId id)
+	public IAutoCloseable observeOn(@NonNull final AsyncBatchId id)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
 
-		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
+		final Duration timeout = getWaitTimeOut();
 
 		//dev-note: make sure to wait for any work already enqueued with this async batch to finalize
-		Optional.ofNullable(asyncBatch2Completion.get(id))
-				.ifPresent(batchProgress -> {
-					try
-					{
-						batchProgress.getCompletableFuture().get(timeoutMS, TimeUnit.MILLISECONDS);
-					}
-					catch (final Throwable t)
-					{
-						throw AdempiereException.wrapIfNeeded(t)
-								.appendParametersToMessage()
-								.setParameter("AsyncBatchId", id);
-					}
-				});
+		final BatchProgress existingBatchProgress = asyncBatch2Completion.get(id);
+		if (existingBatchProgress != null)
+		{
+			existingBatchProgress.waitToComplete(timeout);
+		}
 
 		//dev-note: acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
-		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
+		final ILock lock = lockBatch(id, timeout);
+		asyncBatch2Completion.put(id, new BatchProgress(asyncBatchDAO, lock, id));
 
-		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
+		return () -> removeObserver(id);
 	}
 
 	/**
 	 * Waits max. the timeout specified in {@code AD_SysConfig de.metas.async.AsyncBatchObserver.WaitTimeOutMS}
 	 * for the given AsyncBatchId to be completed.
 	 */
-	public void waitToBeProcessed(@NonNull final AsyncBatchId id)
+	public void markEnqueueingIsDoneAndWaitToComplete(@NonNull final AsyncBatchId id)
 	{
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(id);
 		if (asyncBatchProgress == null)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id.getRepoId());
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id);
 			return;
 		}
 
 		try
 		{
 			asyncBatchProgress.markEnqueueingIsDone();
-
-			final CompletableFuture<Void> completableFuture = asyncBatchProgress.getCompletableFuture();
-
-			final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
-
-			completableFuture.get(timeoutMS, TimeUnit.MILLISECONDS);
-		}
-		catch (final TimeoutException timeoutException)
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(id);
-
-			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, ITrx.TRXNAME_None);
-
-			if (workPackages.isEmpty())
-			{
-				Loggables.withLogger(logger, Level.INFO).addLog("No workpackages retrieved for asyncBatchId: {}", id.getRepoId());
-				return;
-			}
-
-			throw AdempiereException.wrapIfNeeded(timeoutException);
+			asyncBatchProgress.waitToComplete(getWaitTimeOut());
 		}
 		catch (final Exception e)
 		{
@@ -163,10 +137,21 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					.appendParametersToMessage()
 					.setParameter("AsyncBatchId", id);
 		}
-		finally
+	}
+
+	public void waitToComplete(@NonNull final AsyncBatchId id)
+	{
+		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(id);
+		if (asyncBatchProgress != null)
 		{
-			removeObserver(id);
+			asyncBatchProgress.waitToComplete(getWaitTimeOut());
 		}
+	}
+
+	private Duration getWaitTimeOut()
+	{
+		final int durationMillis = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
+		return Duration.ofMillis(durationMillis > 0 ? durationMillis : SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 	}
 
 	public boolean isAsyncBatchObserved(@NonNull final AsyncBatchId id)
@@ -177,51 +162,34 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	@NonNull
 	public Optional<Instant> getStartMonitoringTimestamp(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Async_Batch.Table_Name, asyncBatchId.getRepoId());
-
-		final ExistingLockInfo existingLockInfo = lockManager.getLockInfo(tableRecordReference, getLockOwnerForAsyncBatch(asyncBatchId));
-
-		return Optional.ofNullable(existingLockInfo)
-				.map(ExistingLockInfo::getCreated);
-	}
-
-	public void removeObserver(@NonNull final AsyncBatchId id)
-	{
-		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
-
-		if (batchProgress == null)
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id.getRepoId());
-			return;
-		}
-
-		batchProgress.getLock().unlockAll();
-		batchProgress.forceCompletionIfNotAlreadyCompleted();
-
-		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id.getRepoId());
-	}
-
-	private void notifyBatchFor(@NonNull final AsyncBatchId asyncBatchId, @NonNull final AsyncBatchNotifyRequest notifyRequest)
-	{
-		if (!isAsyncBatchObserved(asyncBatchId))
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
-			return;
-		}
-
-		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
-		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
+		final ExistingLockInfo existingLockInfo = lockManager.getLockInfo(toTableRecordReference(asyncBatchId), toLockOwner(asyncBatchId));
+		return Optional.ofNullable(existingLockInfo).map(ExistingLockInfo::getCreated);
 	}
 
 	@NonNull
-	public ILock lockBatch(@NonNull final AsyncBatchId asyncBatchId, @NonNull final Duration timeout)
+	private static TableRecordReference toTableRecordReference(final @NonNull AsyncBatchId asyncBatchId) {return TableRecordReference.of(I_C_Async_Batch.Table_Name, asyncBatchId);}
+
+	private void removeObserver(@NonNull final AsyncBatchId id)
+	{
+		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
+		if (batchProgress == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No observer registered that can be removed for asyncBatchId: {}", id);
+			return;
+		}
+
+		batchProgress.unlock();
+		batchProgress.forceCompletionIfNotAlreadyCompleted();
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id);
+	}
+
+	@NonNull
+	private ILock lockBatch(@NonNull final AsyncBatchId asyncBatchId, @NonNull final Duration timeout)
 	{
 		final Instant startTime = Instant.now();
-
-		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-
-		final LockOwner lockOwner = getLockOwnerForAsyncBatch(asyncBatchId);
-
+		final LockOwner lockOwner = toLockOwner(asyncBatchId);
+		final TableRecordReference asyncBatchRef = toTableRecordReference(asyncBatchId);
 		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
 
 		while (!timeoutReached.get())
@@ -230,7 +198,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					.setOwner(lockOwner)
 					.setAllowAdditionalLocks(ILockCommand.AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)
 					.setFailIfAlreadyLocked(false)
-					.addRecordByModel(asyncBatch)
+					.addRecord(asyncBatchRef)
 					.acquire();
 
 			if (lock.getCountLocked() > 0)
@@ -241,6 +209,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			try
 			{
 				//dev-note: sleep one sec and retry
+				//noinspection BusyWait
 				Thread.sleep(1000);
 			}
 			catch (final InterruptedException e)
@@ -254,32 +223,53 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				.setParameter("C_Async_Batch_ID", asyncBatchId);
 	}
 
-	@Value
 	private static class BatchProgress
 	{
 		private static final Logger logger = LogManager.getLogger(BatchProgress.class);
+		private final IAsyncBatchDAO asyncBatchDAO;
 
-		public BatchProgress(@NonNull final ILock lock, @NonNull final AsyncBatchId batchId)
+		@NonNull private final ILock lock;
+		@NonNull private final AsyncBatchId batchId;
+
+		@NonNull private final CompletableFuture<Void> completableFuture;
+		private volatile boolean isEnqueueingDone;
+		private volatile WorkPackagesProgress wpProgress = null;
+
+		private BatchProgress(
+				@NonNull final IAsyncBatchDAO asyncBatchDAO,
+				@NonNull final ILock lock,
+				@NonNull final AsyncBatchId batchId)
 		{
-			this.completableFuture = new CompletableFuture<>();
+			this.asyncBatchDAO = asyncBatchDAO;
 			this.lock = lock;
 			this.batchId = batchId;
+
+			this.completableFuture = new CompletableFuture<>();
 		}
 
-		@NonNull
-		AsyncBatchId batchId;
+		public void waitToComplete(@NonNull final Duration timeout)
+		{
+			try
+			{
+				completableFuture.get(timeout.toNanos(), TimeUnit.NANOSECONDS);
+			}
+			catch (final TimeoutException timeoutException)
+			{
+				if (!asyncBatchDAO.hasWorkPackages(batchId))
+				{
+					Loggables.withLogger(logger, Level.INFO).addLog("No workpackages retrieved for asyncBatchId: {}", batchId);
+					return;
+				}
 
-		@NonNull
-		CompletableFuture<Void> completableFuture;
-
-		@NonNull
-		ILock lock;
-
-		@NonFinal
-		volatile boolean isEnqueueingDone;
-
-		@NonFinal
-		volatile WorkPackagesProgress wpProgress = null;
+				throw AdempiereException.wrapIfNeeded(timeoutException);
+			}
+			catch (final Exception e)
+			{
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("AsyncBatchId", batchId);
+			}
+		}
 
 		private void markEnqueueingIsDone()
 		{
@@ -289,8 +279,13 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		public void updateWorkPackagesProgress(@NonNull final AsyncBatchNotifyRequest notifyRequest)
 		{
-			this.wpProgress = getWPsProgress(notifyRequest);
+			this.wpProgress = WorkPackagesProgress.of(notifyRequest);
 			checkIfBatchIsDone();
+		}
+
+		public void unlock()
+		{
+			lock.unlockAll();
 		}
 
 		private void forceCompletionIfNotAlreadyCompleted()
@@ -301,12 +296,15 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			}
 
 			this.completableFuture.completeExceptionally(new AdempiereException("Forced exceptionally complete!")
-																 .appendParametersToMessage()
-																 .setParameter("AsyncBatchId", batchId.getRepoId()));
+					.appendParametersToMessage()
+					.setParameter("AsyncBatchId", batchId.getRepoId()));
 		}
 
 		private synchronized boolean checkIfBatchIsDone()
 		{
+			final WorkPackagesProgress wpProgress = this.wpProgress;
+			final boolean isEnqueueingDone = this.isEnqueueingDone;
+
 			if (wpProgress == null || !isEnqueueingDone)
 			{
 				return false;
@@ -321,37 +319,22 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			else if (wpProgress.isProcessedWithError())
 			{
 				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
-																.appendParametersToMessage()
-																.setParameter("AsyncBatchId", batchId.getRepoId()));
+						.appendParametersToMessage()
+						.setParameter("AsyncBatchId", batchId.getRepoId()));
 				return true;
 			}
 
 			return false;
 		}
 
-		@NonNull
-		private static WorkPackagesProgress getWPsProgress(@NonNull final AsyncBatchNotifyRequest request)
-		{
-			return WorkPackagesProgress.builder()
-					.noOfProcessedWPs(request.getNoOfProcessedWPs())
-					.noOfEnqueuedWPs(request.getNoOfEnqueuedWPs())
-					.noOfErrorWPs(request.getNoOfErrorWPs())
-					.build();
-		}
-
 		private static class WorkPackagesProgress
 		{
-			@NonNull
-			Integer noOfEnqueuedWPs;
-
-			@NonNull
-			Integer noOfProcessedWPs;
-
-			@NonNull
-			Integer noOfErrorWPs;
+			@NonNull Integer noOfEnqueuedWPs;
+			@NonNull Integer noOfProcessedWPs;
+			@NonNull Integer noOfErrorWPs;
 
 			@Builder
-			public WorkPackagesProgress(
+			private WorkPackagesProgress(
 					@NonNull final Integer noOfEnqueuedWPs,
 					@Nullable final Integer noOfProcessedWPs,
 					@Nullable final Integer noOfErrorWPs)
@@ -362,6 +345,16 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 				Check.assumeGreaterThanZero(noOfEnqueuedWPs, "noOfEnqueuedWPs");
 				Check.assumeGreaterOrEqualToZero(this.noOfProcessedWPs, this.noOfErrorWPs);
+			}
+
+			@NonNull
+			private static WorkPackagesProgress of(@NonNull final AsyncBatchNotifyRequest request)
+			{
+				return builder()
+						.noOfProcessedWPs(request.getNoOfProcessedWPs())
+						.noOfEnqueuedWPs(request.getNoOfEnqueuedWPs())
+						.noOfErrorWPs(request.getNoOfErrorWPs())
+						.build();
 			}
 
 			public boolean isProcessedSuccessfully()
