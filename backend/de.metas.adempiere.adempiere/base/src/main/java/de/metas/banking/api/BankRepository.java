@@ -39,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -99,6 +100,7 @@ public class BankRepository
 				// ESR:
 				.esrPostBank(record.isESR_PostBank())
 				//
+				.importAsSingleSummaryLine(record.isImportAsSingleSummaryLine())
 				.build();
 	}
 
@@ -160,4 +162,15 @@ public class BankRepository
 				this::retrieveDefaultBankDataImportConfigId);
 	}
 
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankId bankId)	{ return getById(bankId).isImportAsSingleSummaryLine(); 	}
+
+	@NonNull
+	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)
+	{
+		return queryBL.createQueryBuilder(I_C_Bank.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, true)
+				.create()
+				.listIds(BankId::ofRepoId);
+	}
 }
