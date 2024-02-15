@@ -36,7 +36,7 @@ const ApplicationsListScreen = () => {
   };
 
   return (
-    <div>
+    <div className="applications-list">
       <LogoHeader />
       <div className="section">
         {applications
