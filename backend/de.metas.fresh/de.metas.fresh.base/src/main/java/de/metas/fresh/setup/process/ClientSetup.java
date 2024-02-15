@@ -75,11 +75,10 @@ import java.util.Properties;
  * <li>save everything: {@link #save()}
  * <li>when a getter is called, it will fetch the value directly from the loaded database record
  * </ul>
- *
+ * <p>
  * This shall be a short living object.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class ClientSetup
 {
@@ -111,6 +110,7 @@ class ClientSetup
 	private final I_C_BP_BankAccount orgBankAccount;
 	private final I_C_AcctSchema acctSchema;
 	private final I_M_PriceList priceList_None;
+	private Runnable updateDunningsOnSaveAction;
 
 	private ClientSetup(@NonNull final Properties ctx)
 	{
@@ -138,15 +138,15 @@ class ClientSetup
 			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
-			
+
 			final BPartnerId orgBPartnerId = BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID());
 			orgBankAccount = bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBPartnerId).orElse(null);
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
-			
+
 			//
 			final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoId(adClientInfo.getC_AcctSchema1_ID());
 			acctSchema = Services.get(IAcctSchemaDAO.class).getRecordById(primaryAcctSchemaId);
-			
+
 			priceList_None = InterfaceWrapperHelper.create(getCtx(), IPriceListDAO.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
@@ -180,6 +180,11 @@ class ClientSetup
 		InterfaceWrapperHelper.save(acctSchema, ITrx.TRXNAME_ThreadInherited);
 
 		InterfaceWrapperHelper.save(priceList_None, ITrx.TRXNAME_ThreadInherited);
+
+		if (updateDunningsOnSaveAction != null)
+		{
+			updateDunningsOnSaveAction.run();
+		}
 	}
 
 	private void setOtherDefaults()
@@ -261,7 +266,7 @@ class ClientSetup
 		{
 			return this;
 		}
-		
+
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchema.getC_Currency_ID());
 		final CurrencyCode acctCurrencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(acctCurrencyId);
 
@@ -271,10 +276,13 @@ class ClientSetup
 
 		priceList_None.setC_Currency_ID(currencyId.getRepoId());
 
-		dunningDAO.retrieveDunnings().stream().filter(dunning -> dunning.getAD_Org_ID() == adOrg.getAD_Org_ID()).forEach(dunning -> {
-			dunning.setC_Currency_ID(currencyId.getRepoId());
-			dunningDAO.save(dunning);
-		});
+		updateDunningsOnSaveAction = () ->
+		{
+			dunningDAO.retrieveDunningsByOrg(OrgId.ofRepoId(adOrg.getAD_Org_ID())).forEach(dunning -> {
+				dunning.setC_Currency_ID(currencyId.getRepoId());
+				dunningDAO.save(dunning);
+			});
+		};
 
 		return this;
 	}

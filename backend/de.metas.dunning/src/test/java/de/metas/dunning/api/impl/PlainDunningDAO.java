@@ -29,6 +29,7 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -38,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class PlainDunningDAO extends AbstractDunningDAO
 {
@@ -64,6 +66,15 @@ public class PlainDunningDAO extends AbstractDunningDAO
 	public List<I_C_Dunning> retrieveDunnings()
 	{
 		return lookupMap.getRecords(I_C_Dunning.class);
+	}
+
+	@Override
+	public List<I_C_Dunning> retrieveDunningsByOrg(final OrgId orgID)
+	{
+		return lookupMap.getRecords(I_C_Dunning.class)
+				.stream()
+				.filter(dunning -> OrgId.ofRepoId(dunning.getAD_Org_ID()) == orgID)
+				.collect(Collectors.toList());
 	}
 
 	@Override

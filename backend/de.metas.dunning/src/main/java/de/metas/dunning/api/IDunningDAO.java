@@ -78,6 +78,8 @@ public interface IDunningDAO extends ISingletonService
 	 */
 	I_C_Dunning retrieveDunningByOrg(OrgId orgId);
 
+	List<I_C_Dunning> retrieveDunningsByOrg(OrgId orgID);
+
 	/**
 	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.
 	 *
