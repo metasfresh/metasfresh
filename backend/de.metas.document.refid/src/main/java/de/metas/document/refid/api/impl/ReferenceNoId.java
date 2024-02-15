@@ -26,6 +26,9 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value
 public class ReferenceNoId implements RepoIdAware
 {
@@ -40,4 +43,22 @@ public class ReferenceNoId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_ReferenceNo");
 	}
+
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final ReferenceNoId referenceNoId)
+	{
+		return toRepoIdOr(referenceNoId, -1);
+	}
+
+	public static int toRepoIdOr(@Nullable final ReferenceNoId referenceNoId, final int defaultValue)
+	{
+		return referenceNoId != null ? referenceNoId.getRepoId() : defaultValue;
+	}
+
+	public static boolean equals(@Nullable final ReferenceNoId id1, @Nullable final ReferenceNoId id2) {return Objects.equals(id1, id2);}
 }

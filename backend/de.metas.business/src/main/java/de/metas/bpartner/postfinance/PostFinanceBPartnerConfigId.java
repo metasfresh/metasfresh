@@ -27,6 +27,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class PostFinanceBPartnerConfigId implements RepoIdAware
@@ -49,8 +50,21 @@ public class PostFinanceBPartnerConfigId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "PostFinance_BPartner_Config");
 	}
 
-	public static int toRepoId(@Nullable final PostFinanceBPartnerConfigId id)
+	@Override
+	public int getRepoId()
 	{
-		return id != null ? id.getRepoId() : -1;
+		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final PostFinanceBPartnerConfigId postFinanceBPartnerConfigId)
+	{
+		return toRepoIdOr(postFinanceBPartnerConfigId, -1);
+	}
+
+	public static int toRepoIdOr(@Nullable final PostFinanceBPartnerConfigId postFinanceBPartnerConfigId, final int defaultValue)
+	{
+		return postFinanceBPartnerConfigId != null ? postFinanceBPartnerConfigId.getRepoId() : defaultValue;
+	}
+
+	public static boolean equals(@Nullable final PostFinanceBPartnerConfigId id1, @Nullable final PostFinanceBPartnerConfigId id2) {return Objects.equals(id1, id2);}
 }
