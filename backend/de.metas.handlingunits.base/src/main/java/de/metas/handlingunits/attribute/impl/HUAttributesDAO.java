@@ -1,7 +1,10 @@
 package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -9,6 +12,7 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,7 +22,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
@@ -50,7 +56,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
 	{
-		if(huIds.isEmpty())
+		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -67,26 +73,59 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
+		final Map<HuId, HUAndPIAttributes> result = retrieveAttributesOrdered(ImmutableList.of(hu));
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		return Check.assumeNotNull(result.get(huId), "huId={} not found in {}", huId, result);
+	}
+
+	@Override
+	public Map<HuId, HUAndPIAttributes> retrieveAttributesOrdered(final Collection<I_M_HU> hus)
+	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
-		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.create()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		// Optimization: set M_HU link
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		if (hus.isEmpty())
 		{
-			huAttribute.setM_HU(hu);
+			return ImmutableMap.of();
 		}
 
-		final PIAttributes piAttributes = createPIAttributes(huAttributes);
+		final ImmutableMap<HuId, I_M_HU> husById = Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
+		final ImmutableSet<HuId> huIds = husById.keySet();
 
-		final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
-		return HUAndPIAttributes.of(huAttributesSorted, piAttributes);
+		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
+		final ImmutableListMultimap<HuId, I_M_HU_Attribute> huAttributesByHuId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						huAttribute -> HuId.ofRepoId(huAttribute.getM_HU_ID()),
+						huAttribute -> huAttribute
+				));
+
+		// Optimization: set M_HU link
+		for (final HuId huId : huAttributesByHuId.keySet())
+		{
+			final I_M_HU hu = husById.get(huId);
+			final ImmutableList<I_M_HU_Attribute> huAttributes = huAttributesByHuId.get(huId);
+			for (final I_M_HU_Attribute huAttribute : huAttributes)
+			{
+				huAttribute.setM_HU(hu);
+			}
+		}
+
+		final HashMap<HuId, HUAndPIAttributes> result = new HashMap<>();
+		for (final HuId huId : husById.keySet())
+		{
+			final ImmutableList<I_M_HU_Attribute> huAttributes = huAttributesByHuId.get(huId);
+
+			final PIAttributes piAttributes = createPIAttributes(huAttributes);
+
+			final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributes);
+			result.put(huId, HUAndPIAttributes.of(huAttributesSorted, piAttributes));
+		}
+
+		return result;
 	}
 
 	private PIAttributes createPIAttributes(final List<I_M_HU_Attribute> huAttributes)

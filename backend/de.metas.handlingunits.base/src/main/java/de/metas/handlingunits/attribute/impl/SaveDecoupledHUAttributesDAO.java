@@ -14,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -58,7 +60,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	public static final String SYSCONFIG_AutoFlushEnabledInitial = SaveDecoupledHUAttributesDAO.class.getName() + ".AutoflushEnabledInitial";
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(SaveDecoupledHUAttributesDAO.class);
+	private static final Logger logger = LogManager.getLogger(SaveDecoupledHUAttributesDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
@@ -91,16 +93,18 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	protected void finalize() throws Throwable
+	protected void finalize()
 	{
 		if (!idsToSaveFromLastFlush.isEmpty())
 		{
+			//noinspection ThrowableNotThrown
 			new AdempiereException("WARNING: It could be that following M_HU_Attribute_IDs have changes which will never be saved to database: " + idsToSaveFromLastFlush)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 
 		if (!_huAttributesToRemove.isEmpty())
 		{
+			//noinspection ThrowableNotThrown
 			new AdempiereException("WARNING: It could be that following M_HU_Attributes to be removed are skipped: " + _huAttributesToRemove)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
@@ -224,6 +228,19 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		final PIAttributes piAttributes = createPIAttributes(huAttributesList);
 		final ImmutableList<I_M_HU_Attribute> huAttributesSorted = HUAttributesBySeqNoComparator.of(piAttributes).sortAndCopy(huAttributesList);
 		return HUAndPIAttributes.of(huAttributesSorted, piAttributes);
+	}
+
+	@Override
+	public Map<HuId, HUAndPIAttributes> retrieveAttributesOrdered(final Collection<I_M_HU> hus)
+	{
+		final HashMap<HuId, HUAndPIAttributes> result = new HashMap<>();
+		for (final I_M_HU hu : hus)
+		{
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			final HUAndPIAttributes huAndPIAttributes = retrieveAttributesOrdered(hu);
+			result.put(huId, huAndPIAttributes);
+		}
+		return result;
 	}
 
 	private PIAttributes createPIAttributes(final Collection<I_M_HU_Attribute> huAttributesList)
@@ -364,8 +381,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		final I_M_HU_Attribute modelOld = InterfaceWrapperHelper.createOld(huAttribute, I_M_HU_Attribute.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
-		final String modelChangeInfo = ""
-				+ Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
+		final String modelChangeInfo = Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
 				+ " - "
 				+ attribute.getValue() + "/" + attribute.getName()
 				+ ": "
@@ -376,7 +392,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		final String daoStatus = "IncrementalFlush=" + isIncrementalFlush() + ", IdsToSaveFromLastFlush=" + idsToSaveFromLastFlush;
 
-		logger.trace("" + message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
+		logger.trace("{}: {} -- {} -- {}", message, modelChangeInfo, huAttribute, daoStatus);
 	}
 
 	private static class HUAttributesMap implements Iterable<I_M_HU_Attribute>
@@ -415,6 +431,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			return huAttributes.isEmpty();
 		}
 
+		@NonNull
 		@Override
 		public Iterator<I_M_HU_Attribute> iterator()
 		{

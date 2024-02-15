@@ -10,6 +10,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Note: there are multiple implementations of this API. One (the "default" one) of them is returned by {@link de.metas.util.Services#get(Class)}, the others are only instantiated and returned by
@@ -34,6 +35,8 @@ public interface IHUAttributesDAO extends ISingletonService
 	 * @return sorted HU attributes
 	 */
 	HUAndPIAttributes retrieveAttributesOrdered(I_M_HU hu);
+
+	Map<HuId, HUAndPIAttributes> retrieveAttributesOrdered(Collection<I_M_HU> hus);
 
 	/**
 	 * @return the attribute or <code>null</code>

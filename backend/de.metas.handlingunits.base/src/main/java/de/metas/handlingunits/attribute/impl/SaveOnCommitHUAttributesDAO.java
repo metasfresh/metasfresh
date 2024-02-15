@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {
@@ -109,6 +110,13 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAttributesOrdered(hu);
+	}
+
+	@Override
+	public Map<HuId, HUAndPIAttributes> retrieveAttributesOrdered(final Collection<I_M_HU> hus)
+	{
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
+		return delegate.retrieveAttributesOrdered(hus);
 	}
 
 	@Override
