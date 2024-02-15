@@ -277,12 +277,10 @@ class ClientSetup
 		priceList_None.setC_Currency_ID(currencyId.getRepoId());
 
 		updateDunningsOnSaveAction = () ->
-		{
-			dunningDAO.retrieveDunningsByOrg(OrgId.ofRepoId(adOrg.getAD_Org_ID())).forEach(dunning -> {
-				dunning.setC_Currency_ID(currencyId.getRepoId());
-				dunningDAO.save(dunning);
-			});
-		};
+				dunningDAO.retrieveDunningsByOrg(OrgId.ofRepoId(adOrg.getAD_Org_ID())).forEach(dunning -> {
+					dunning.setC_Currency_ID(currencyId.getRepoId());
+					dunningDAO.save(dunning);
+				});
 
 		return this;
 	}

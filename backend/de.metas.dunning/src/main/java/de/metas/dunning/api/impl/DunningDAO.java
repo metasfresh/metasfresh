@@ -88,16 +88,6 @@ public class DunningDAO extends AbstractDunningDAO
 				.list();
 	}
 
-	public List<I_C_Dunning> retrieveDunningsByOrg(@NonNull final OrgId orgID)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID,orgID)
-				.create()
-				.list();
-	}
-
 	@Override
 	protected List<I_C_Dunning_Candidate> retrieveDunningCandidates(final IDunningContext context, final IDunningCandidateQuery query)
 	{
