@@ -706,9 +706,9 @@ public class PP_Order_Candidate_StepDef
 	@And("after not more than {int}s, no PP_Order_Candidates are found for Issue_HU_ID: {string}")
 	public void validatePP_Order_Candidate(
 			final int timeoutSec,
-			final String issueHuIdIdentifier) throws InterruptedException
+			final String issueHuIdentifier) throws InterruptedException
 	{
-		final I_M_HU hu = huTable.get(issueHuIdIdentifier);
+		final I_M_HU hu = huTable.get(issueHuIdentifier);
 
 		final IQuery<I_PP_Order_Candidate> query = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID())

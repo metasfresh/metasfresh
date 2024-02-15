@@ -543,10 +543,10 @@ public class PP_Order_StepDef
 	public void loadManufacturedHUs(@NonNull final DataTable dataTable)
 	{
 		DataTableRow.toRows(dataTable)
-				.forEach(this::loadMAnufacturedHu);
+				.forEach(this::loadManufacturedHu);
 	}
 
-	private void loadMAnufacturedHu(@NonNull final DataTableRow tableRow)
+	private void loadManufacturedHu(@NonNull final DataTableRow tableRow)
 	{
 		final IQueryBuilder<I_PP_Order_Qty> builder = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
 				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_BOMLine_ID, null);
