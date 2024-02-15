@@ -566,4 +566,9 @@ public final class ProductBL implements IProductBL
 				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
 	}
 
+	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
+	}
 }

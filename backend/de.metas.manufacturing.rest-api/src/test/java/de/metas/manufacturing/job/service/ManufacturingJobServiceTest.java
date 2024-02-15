@@ -13,6 +13,7 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -52,7 +53,8 @@ class ManufacturingJobServiceTest
 				new DeviceWebsocketNamingStrategy("/test/"),
 				new HUQRCodesService(
 						new HUQRCodesRepository(),
-						new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationRepository())
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

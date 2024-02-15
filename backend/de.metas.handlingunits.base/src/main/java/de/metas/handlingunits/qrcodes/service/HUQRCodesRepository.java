@@ -6,9 +6,11 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -21,8 +23,11 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Repository
@@ -35,7 +40,7 @@ public class HUQRCodesRepository
 		return queryByQRCode(huQRCode.getId())
 				.create()
 				.firstOnlyOptional(I_M_HU_QRCode.class)
-				.flatMap(HUQRCodesRepository::toHUQRCodeAssignment);
+				.flatMap(this::toHUQRCodeAssignment);
 	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByQRCode(final @NonNull HUQRCodeUniqueId uniqueId)
@@ -45,20 +50,33 @@ public class HUQRCodesRepository
 				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, uniqueId.getAsString());
 	}
 
-	private static Optional<HUQRCodeAssignment> toHUQRCodeAssignment(final I_M_HU_QRCode record)
+	private Optional<HUQRCodeAssignment> toHUQRCodeAssignment(final I_M_HU_QRCode record)
 	{
-		final HuId huId = HuId.ofRepoIdOrNull(record.getM_HU_ID());
-		if (huId == null)
+		return toHUQRCodeAssignment(record, getAssignedHuIds(ImmutableSet.of(record.getM_HU_QRCode_ID())));
+	}
+
+	private Optional<HUQRCodeAssignment> toHUQRCodeAssignment(
+			@NonNull final I_M_HU_QRCode record,
+			@NonNull final Map<Integer, Set<HuId>> qrCodeId2HuIds)
+	{
+		final Set<HuId> huIds = qrCodeId2HuIds.get(record.getM_HU_QRCode_ID());
+		if (Check.isEmpty(huIds))
 		{
 			return Optional.empty();
 		}
 
 		final HUQRCodeUniqueId id = HUQRCodeUniqueId.ofJson(record.getUniqueId());
-		return Optional.of(HUQRCodeAssignment.of(id, huId));
+		return Optional.of(HUQRCodeAssignment.of(id, huIds));
 	}
 
 	@NonNull
 	public I_M_HU_QRCode createNew(@NonNull final HUQRCode qrCode, @Nullable final HuId huId)
+	{
+		return createNew(qrCode, Optional.ofNullable(huId).map(ImmutableSet::of).orElse(null));
+	}
+
+	@NonNull
+	public I_M_HU_QRCode createNew(@NonNull final HUQRCode qrCode, @Nullable final Set<HuId> huIds)
 	{
 		final GlobalQRCode globalQRCode = qrCode.toGlobalQRCode();
 
@@ -69,15 +87,22 @@ public class HUQRCodesRepository
 		// NOTE: this field is never used in our application. It's there mainly for reporting (if needed):
 		record.setattributes(globalQRCode.getPayloadAsJson());
 
-		// Assignment:
-		record.setM_HU_ID(HuId.toRepoId(huId));
-
 		InterfaceWrapperHelper.save(record);
+
+		if (huIds != null)
+		{
+			createAssignments(record, huIds);
+		}
 
 		return record;
 	}
 
 	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
+	{
+		assign(qrCode, ImmutableSet.of(huId));
+	}
+
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final Set<HuId> huIds)
 	{
 		final I_M_HU_QRCode existingRecord = queryByQRCode(qrCode.getId())
 				.create()
@@ -87,21 +112,19 @@ public class HUQRCodesRepository
 			// NOTE: we assume the attributes and the other fields are correct.
 			// we cannot update them anyways.
 
-			existingRecord.setM_HU_ID(huId.getRepoId());
-			InterfaceWrapperHelper.save(existingRecord);
+			createAssignments(existingRecord, huIds);
 		}
 		else
 		{
-			createNew(qrCode, huId);
+			createNew(qrCode, huIds);
 		}
 	}
 
 	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
-		return queryByQRCode(qrCode.getId())
-				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.anyMatch();
+		return getHUAssignmentByQRCode(qrCode)
+				.map(huQrCodeAssignment -> huQrCodeAssignment.isAssignedToHuId(huId))
+				.orElse(false);
 	}
 
 	public Optional<HUQRCode> getFirstQRCodeByHuId(@NonNull final HuId huId)
@@ -127,21 +150,21 @@ public class HUQRCodesRepository
 	@NonNull
 	public Stream<HUQRCodeAssignment> streamAssignmentsForDisplayableQrCode(@NonNull final String displayableQrCode)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+		final List<I_M_HU_QRCode> qrCodes = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_DisplayableQRCode, displayableQrCode)
 				.create()
-				.stream()
-				.map(HUQRCodesRepository::toHUQRCodeAssignment)
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+				.listImmutable(I_M_HU_QRCode.class);
+
+		return toHUQRCodeAssignment(qrCodes);
 	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, sourceHuId)
+				.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_ID, sourceHuId)
+				.andCollect(I_M_HU_QRCode_Assignment.COLUMN_M_HU_QRCode_ID)
 				.orderBy(I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID);
 	}
 
@@ -152,14 +175,13 @@ public class HUQRCodesRepository
 			return ImmutableSetMultimap.of();
 		}
 
-		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huIds)
-				.create()
-				.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						record -> HuId.ofRepoId(record.getM_HU_ID()),
-						HUQRCodesRepository::toHUQRCode));
+		final List<I_M_HU_QRCode_Assignment> assignments = getAssignmentsByHuIds(ImmutableSet.copyOf(huIds));
+		final Set<Integer> qrCodeIds = assignments.stream().map(I_M_HU_QRCode_Assignment::getM_HU_QRCode_ID).collect(ImmutableSet.toImmutableSet());
+		final Map<Integer, I_M_HU_QRCode> id2QrCode = getByIds(qrCodeIds);
+
+		return assignments.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(record -> HuId.ofRepoId(record.getM_HU_ID()),
+																	 record -> toHUQRCode(id2QrCode.get(record.getM_HU_QRCode_ID()))));
 	}
 
 	@NonNull
@@ -175,15 +197,13 @@ public class HUQRCodesRepository
 				.map(HUQRCodeUniqueId::getAsString)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final List<HUQRCodeAssignment> huQrCodeAssignments = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+		final List<I_M_HU_QRCode> huQrCodes = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, qrCodeIds)
 				.create()
-				.stream()
-				.map(HUQRCodesRepository::toHUQRCodeAssignment)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(ImmutableList.toImmutableList());
+				.listImmutable(I_M_HU_QRCode.class);
+
+		final List<HUQRCodeAssignment> huQrCodeAssignments = toHUQRCodeAssignment(huQrCodes).collect(ImmutableList.toImmutableList());
 
 		if (qrCodeIds.size() != huQrCodeAssignments.size())
 		{
@@ -193,6 +213,67 @@ public class HUQRCodesRepository
 					.setParameter("qrCodeIds", qrCodeIds);
 		}
 		return huQrCodeAssignments;
+	}
+
+	@NonNull
+	private Stream<HUQRCodeAssignment> toHUQRCodeAssignment(@NonNull final List<I_M_HU_QRCode> qrCodes)
+	{
+		final ImmutableSet<Integer> qrCodeIds = qrCodes.stream().map(I_M_HU_QRCode::getM_HU_QRCode_ID).collect(ImmutableSet.toImmutableSet());
+		final Map<Integer, Set<HuId>> qrCodeId2AssignedHUIds = getAssignedHuIds(qrCodeIds);
+		return qrCodes.stream()
+				.map(qrCode -> toHUQRCodeAssignment(qrCode, qrCodeId2AssignedHUIds))
+				.filter(Optional::isPresent)
+				.map(Optional::get);
+	}
+
+	@NonNull
+	private Map<Integer, Set<HuId>> getAssignedHuIds(@NonNull final Set<Integer> huQrCodeIds)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMN_M_HU_QRCode_ID, huQrCodeIds)
+				.create()
+				.stream()
+				.collect(Collectors.groupingBy(I_M_HU_QRCode_Assignment::getM_HU_QRCode_ID,
+											   Collectors.mapping(huAssignment -> HuId.ofRepoId(huAssignment.getM_HU_ID()),
+																  Collectors.toSet())));
+	}
+
+	private void createAssignments(@NonNull final I_M_HU_QRCode qrCode, @NonNull final Set<HuId> huIds)
+	{
+		final Set<HuId> newHuIds = toHUQRCodeAssignment(qrCode)
+				.map(existingAssignment -> existingAssignment.returnNotAssignedHUs(huIds))
+				.orElse(huIds);
+
+		newHuIds.forEach(huId -> {
+			final I_M_HU_QRCode_Assignment assignment = InterfaceWrapperHelper.newInstance(I_M_HU_QRCode_Assignment.class);
+			assignment.setAD_Org_ID(qrCode.getAD_Org_ID());
+			assignment.setM_HU_QRCode_ID(qrCode.getM_HU_QRCode_ID());
+			assignment.setM_HU_ID(huId.getRepoId());
+
+			InterfaceWrapperHelper.save(assignment);
+		});
+	}
+
+	@NonNull
+	private List<I_M_HU_QRCode_Assignment> getAssignmentsByHuIds(@NonNull final Set<HuId> huIds)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMN_M_HU_ID, huIds)
+				.create()
+				.listImmutable(I_M_HU_QRCode_Assignment.class);
+	}
+
+	@NonNull
+	private Map<Integer, I_M_HU_QRCode> getByIds(@NonNull final Set<Integer> huQrCodeId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID, huQrCodeId)
+				.create()
+				.stream()
+				.collect(Collectors.toMap(I_M_HU_QRCode::getM_HU_QRCode_ID, Function.identity()));
 	}
 
 	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)

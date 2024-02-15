@@ -45,6 +45,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -156,7 +157,8 @@ public class PickingJobTestHelper
 						bpartnerBL,
 						new HUQRCodesService(
 								huQRCodesRepository,
-								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+								new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+								new QRCodeConfigurationRepository())
 				)
 		);
 

@@ -1,8 +1,12 @@
 package de.metas.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
@@ -19,6 +23,12 @@ import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static de.metas.handlingunits.HuUnitType.LU;
+import static de.metas.handlingunits.HuUnitType.VHU;
 
 /*
  * #%L
@@ -44,6 +54,7 @@ import org.compiere.SpringContextHolder;
 public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess implements IProcessPrecondition
 {
 	private final HULabelService labelService = SpringContextHolder.instance.getBean(HULabelService.class);
+	private final HUQRCodesService huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Param(mandatory = true, parameterName = "AD_Process_ID")
@@ -67,7 +78,22 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	protected String doIt() throws Exception
 	{
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
+				.filter(hu -> hu.getHUUnitType() != VHU)
+				.flatMap(hu -> {
+					if (hu.getHUUnitType() == LU)
+					{
+						return Stream.concat(Stream.of(hu), hu.getIncludedHUs().stream());
+					}
+					else
+					{
+						return Stream.of(hu);
+					}
+				})
+				.filter(hu -> hu.getHUUnitType() != VHU)
 				.collect(ImmutableList.toImmutableList());
+
+		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+		huqrCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIdSet));
 
 		labelService.printNow(HULabelDirectPrintRequest.builder()
 									  .onlyOneHUPerPrint(true)

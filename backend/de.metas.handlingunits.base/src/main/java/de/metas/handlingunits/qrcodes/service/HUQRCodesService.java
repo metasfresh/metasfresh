@@ -7,6 +7,7 @@ import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -34,17 +35,21 @@ public class HUQRCodesService
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
+	@NonNull private final QRCodeConfigurationRepository qrCodeConfigurationRepository;
 
 	private static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
 	public HUQRCodesService(
 			final @NonNull HUQRCodesRepository huQRCodesRepository,
-			final @NonNull GlobalQRCodeService globalQRCodeService)
+			final @NonNull GlobalQRCodeService globalQRCodeService,
+			final @NonNull QRCodeConfigurationRepository qrCodeConfigurationRepository)
 	{
 		this.huQRCodesRepository = huQRCodesRepository;
 		this.globalQRCodeService = globalQRCodeService;
+		this.qrCodeConfigurationRepository = qrCodeConfigurationRepository;
 	}
 
 	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
@@ -70,6 +75,8 @@ public class HUQRCodesService
 				.productBL(productBL)
 				.attributeDAO(attributeDAO)
 				.huQRCodesRepository(huQRCodesRepository)
+				.qrCodeConfigurationRepository(qrCodeConfigurationRepository)
+				.attributeStorageFactoryService(attributeStorageFactoryService)
 				.request(request)
 				.build()
 				.execute();
@@ -117,7 +124,7 @@ public class HUQRCodesService
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
 	{
 		return getHUAssignmentByQRCode(qrCode)
-				.map(HUQRCodeAssignment::getHuId);
+				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
@@ -174,13 +181,13 @@ public class HUQRCodesService
 	{
 		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getHuId));
+				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getSingleHUId));
 	}
 
 	@NonNull
 	public Stream<HuId> streamHUIdsByDisplayableQrCode(@NonNull final String displayableQrCodePart)
 	{
 		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
-				.map(HUQRCodeAssignment::getHuId);
+				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 }
