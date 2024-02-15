@@ -45,17 +45,6 @@ const WorkplaceManagerScreen = () => {
     dispatch(pushHeaderEntry({ caption: trl('workplaceManager.title'), location: url }));
   }, []);
 
-  const onBarcodeScanned = ({ scannedBarcode }) => {
-    console.log('onBarcodeScanned', { scannedBarcode });
-    api
-      .getWorkplaceByQRCode(scannedBarcode)
-      .then((workplaceInfo) => {
-        console.log('got', { workplaceInfo });
-        setWorkplace(workplaceInfo);
-      })
-      .catch((axiosError) => toastError({ axiosError }));
-  };
-
   const onAssignClick = () => {
     api.assignWorkplace(workplaceInfo.id).then((workplaceInfo) => dispatch(setWorkplace({ workplaceInfo })));
   };
