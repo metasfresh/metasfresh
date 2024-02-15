@@ -8,6 +8,8 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
@@ -34,6 +36,7 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
@@ -49,6 +52,7 @@ import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -142,7 +146,7 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter by Locked By
+		// Filter by Locked By - this are not the T_Lock records, but a decidated shipment-schedule-to-user-lock 
 		if (query.getLockedBy() != null)
 		{
 			if (query.isIncludeNotLocked())
@@ -168,7 +172,10 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
 		}
 
-		//
+		// exclude shipment-schedules that are currently locked for shipment-creation
+		final IQueryBuilder<I_M_ShipmentSchedule> lockedRecordsQueryBuilder = lockManager.getLockedRecordsQueryBuilder(I_M_ShipmentSchedule.class, PlainContextAware.newWithThreadInheritedTrx());
+		queryBuilder.addNotInSubQueryFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, lockedRecordsQueryBuilder.create());
+
 		return queryBuilder.create();
 	}
 
