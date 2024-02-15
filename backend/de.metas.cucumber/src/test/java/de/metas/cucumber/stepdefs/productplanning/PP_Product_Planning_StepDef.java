@@ -27,9 +27,13 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
@@ -46,6 +50,8 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Maturing_Configuration;
+import org.compiere.model.I_M_Maturing_Configuration_Line;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -64,27 +70,36 @@ public class PP_Product_Planning_StepDef
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
+	private final PP_Product_BOMVersions_StepDefData bomVersionsTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Workflow_StepDefData workflowTable;
+	private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
+	private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
+			@NonNull final PP_Product_BOMVersions_StepDefData bomVersionsTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Workflow_StepDefData workflowTable)
+			@NonNull final AD_Workflow_StepDefData workflowTable,
+			@NonNull final M_Maturing_Configuration_StepDefData maturingConfigurationTable,
+			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productPlanningTable = productPlanningTable;
+		this.bomVersionsTable = bomVersionsTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ddNetworkTable = ddNetworkTable;
 		this.warehouseTable = warehouseTable;
 		this.workflowTable = workflowTable;
+		this.maturingConfigurationTable = maturingConfigurationTable;
+		this.maturingConfigurationLineTable = maturingConfigurationLineTable;
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
@@ -113,7 +128,7 @@ public class PP_Product_Planning_StepDef
 		builder.orgId(orgId);
 		builder.plantId(TEST_PLANT_ID);
 		builder.workflowId(tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).orElse(WORKFLOW_ID));
-		builder.isCreatePlan(tableRow.getAsBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan));
+		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
 		builder.isAttributeDependant(tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).orElse(false));
 		builder.isManufactured(true);
 		builder.isLotForLot(isLotForLot);
@@ -149,6 +164,9 @@ public class PP_Product_Planning_StepDef
 			builder.warehouseId(warehouseId);
 		}
 
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.map(bomVersionsTable::getId)
+				.ifPresent(builder::bomVersionsId);
 		tableRow.getAsOptionalQuantity(
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo,
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID,
@@ -158,6 +176,18 @@ public class PP_Product_Planning_StepDef
 
 		tableRow.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_SeqNo)
 				.ifPresent(builder::seqNo);
+		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsMatured)
+				.ifPresent(builder::isMatured);
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID)
+				.map(maturingConfigurationTable::get)
+				.map(I_M_Maturing_Configuration::getM_Maturing_Configuration_ID)
+				.map(MaturingConfigId::ofRepoId)
+				.ifPresent(builder::maturingConfigId);
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.map(maturingConfigurationLineTable::get)
+				.map(I_M_Maturing_Configuration_Line::getM_Maturing_Configuration_Line_ID)
+				.map(MaturingConfigLineId::ofRepoId)
+				.ifPresent(builder::maturingConfigLineId);
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 
