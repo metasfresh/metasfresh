@@ -48,7 +48,6 @@ import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -89,7 +88,7 @@ public class DunningDAO extends AbstractDunningDAO
 				.list();
 	}
 
-	public List<I_C_Dunning> retrieveDunningsByOrg(@NotNull final OrgId orgID)
+	public List<I_C_Dunning> retrieveDunningsByOrg(@NonNull final OrgId orgID)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
