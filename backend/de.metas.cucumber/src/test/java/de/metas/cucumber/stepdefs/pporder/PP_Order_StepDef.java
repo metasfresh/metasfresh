@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.pporder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -33,11 +34,13 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -59,6 +62,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -87,6 +91,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -113,6 +118,7 @@ public class PP_Order_StepDef
 	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 
 	public PP_Order_StepDef(
@@ -126,6 +132,7 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
+			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable)
 	{
 		this.productTable = productTable;
@@ -138,6 +145,7 @@ public class PP_Order_StepDef
 		this.ppOrderBomLineTable = ppOrderBomLineTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
+		this.huTable = huTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;
 	}
 
@@ -396,34 +404,37 @@ public class PP_Order_StepDef
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
+		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
 
 		final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_DocStatus);
 
 		final String orderRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order.Table_Name);
+		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanning.getIdNotNull())
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyOrdered, qtyOrdered)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
+
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised);
+
+		Optional.ofNullable(bPartnerIdentifier)
+				.map(bPartnerTable::get)
+				.ifPresent(bPartnerRecord -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID()));
+
+		if (Check.isNotBlank(docStatus))
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus);
+		}
+
+		ppOrderTable.getOptional(orderRecordIdentifier)
+				.ifPresent(ppOrder -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID()));
+
 		final Supplier<Boolean> ppOrderQueryExecutor = () -> {
-
-			final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanning.getIdNotNull())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_S_Resource_ID, resourceId)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyOrdered, qtyOrdered)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised);
-
-			if (Check.isNotBlank(docStatus))
-			{
-				queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus);
-			}
-
-			ppOrderTable.getOptional(orderRecordIdentifier)
-					.ifPresent(ppOrder -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID()));
 
 			final I_PP_Order orderRecord = queryBuilder
 					.create()
@@ -526,5 +537,29 @@ public class PP_Order_StepDef
 		}
 
 		return ppOrderCandidate2PPOrderIdsOrdered;
+	}
+
+	@And("load manufactured HU for PP_Order:")
+	public void loadManufacturedHUs(@NonNull final DataTable dataTable)
+	{
+		DataTableRow.toRows(dataTable)
+				.forEach(this::loadManufacturedHu);
+	}
+
+	private void loadManufacturedHu(@NonNull final DataTableRow tableRow)
+	{
+		final IQueryBuilder<I_PP_Order_Qty> builder = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_BOMLine_ID, null);
+		final I_PP_Order ppOrder = tableRow.getAsOptionalIdentifier(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID)
+				.map(ppOrderTable::get)
+				.orElseThrow(() -> new AdempiereException("No PP_Order found for identifier " + tableRow.getAsString(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID)));
+		builder.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, ppOrder.getM_Product_ID());
+
+		final I_M_HU manufacturedHu = builder.andCollect(I_PP_Order_Qty.COLUMN_M_HU_ID)
+				.create()
+				.firstOnly(I_M_HU.class);
+		assertThat(manufacturedHu).isNotNull();
+		huTable.putOrReplace(tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID), manufacturedHu);
 	}
 }
