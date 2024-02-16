@@ -54,3 +54,31 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
+update  ad_element_trl
+set name ='Als Zusammenfassungszeile importieren', printname='Als Zusammenfassungszeile importieren'
+where ad_element_id=582959
+and ad_language in ('de_DE', 'de_CH');
+
+
+update  ad_element
+set name ='Als Zusammenfassungszeile importieren', printname='Als Zusammenfassungszeile importieren'
+where ad_element_id=582959;
+
+ select update_Column_Translation_From_AD_Element(582959)
+;
+
+select update_FieldTranslation_From_AD_Name_Element(582959)
+;
+
+update AD_UI_Element set name='Als Zusammenfassungszeile importieren'
+where AD_Field_ID=725162;
+
+select update_FieldTranslation_From_AD_Name_Element(582959);
+
+update AD_UI_Element set name='Als Zusammenfassungszeile importieren'
+where AD_Field_ID=725163;
+
+update  ad_field_trl
+set name ='Als Zusammenfassungszeile importieren'
+where ad_field_id in (725162,725163)
+  and ad_language in ('de_DE', 'de_CH');
