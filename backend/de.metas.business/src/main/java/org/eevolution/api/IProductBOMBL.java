@@ -47,14 +47,15 @@ public interface IProductBOMBL extends ISingletonService
 	void updateIsBOMFlag(ProductId productId);
 
 	/**
-	 * Calculates low level code (LLC) for given product.
-	 * It also checks for BOM cycles.
-	 *
-	 * @return low level code (LLC)
+	 * Creating a parent node in a tree representation of a bill of materials (BOM) for a given BOM line,
+	 * while also checking BOM cycles.
 	 */
-	int calculateProductLowestLevel(ProductId productId);
+	void createParentProductNodeForBOMLine(I_PP_Product_BOMLine bomLine);
 
-	IProductLowLevelUpdater updateProductLowLevels();
+	/**
+	 * get an implosion of the product
+	 */
+	void createParentProductNode(final ProductId productId);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>

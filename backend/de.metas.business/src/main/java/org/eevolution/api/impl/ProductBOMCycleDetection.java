@@ -12,44 +12,33 @@ import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Calculates product's low level code (LLC) and also checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
+ * Checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
-/* package */class ProductLowLevelCalculator
+class ProductBOMCycleDetection
 {
-	public static ProductLowLevelCalculator newInstance()
+	public static ProductBOMCycleDetection newInstance()
 	{
-		return new ProductLowLevelCalculator();
+		return new ProductBOMCycleDetection();
 	}
 
 	private final Set<ProductId> seenProductIds = new LinkedHashSet<>();
 
-	private ProductLowLevelCalculator()
+	private ProductBOMCycleDetection()
 	{
 	}
 
 	/**
-	 * Calculate the low level of given product
-	 */
-	public int getLowLevel(final ProductId productId)
-	{
-		clearSeenProducts();
-		markProductAsSeen(productId);
-
-		final DefaultMutableTreeNode ibom = createParentProductNode(productId); // start traversing tree
-		return ibom.getDepth();
-	}
-
-	/**
-	 * get an implotion the product
+	 * get an implosion of the product
 	 * 
 	 * @return DefaultMutableTreeNode Tree with all parent product
 	 */
-	private DefaultMutableTreeNode createParentProductNode(final ProductId productId)
+	public DefaultMutableTreeNode createParentProductNode(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
@@ -85,12 +74,11 @@ import java.util.Set;
 
 	private static boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
 	{
-		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		final BOMComponentType componentType = BOMComponentType.ofCode(Objects.requireNonNull(bomLine.getComponentType()));
 		return componentType.isByOrCoProduct();
 	}
-
 	@Nullable
-	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
+	public DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
 		if (!bom.isActive())
@@ -114,6 +102,7 @@ import java.util.Set;
 
 		return createParentProductNode(parentProductId);
 	}
+
 
 	private void clearSeenProducts()
 	{

@@ -2,6 +2,7 @@ package org.eevolution.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -22,6 +23,7 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -166,9 +168,15 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 
 	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
 	{
-		// NOTE: when LLC is calculated, the BOM cycles are also checked
-		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
+		// Checking BOM cycles
+		try
+		{
+			productBOMBL.createParentProductNode(ProductId.ofRepoId(product.getM_Product_ID()));
+		}
+		catch (final BOMCycleException e)
+		{
+			throw new LiberoException("Cycle detected in BOM for product: " + product.getValue());
+		}
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}
