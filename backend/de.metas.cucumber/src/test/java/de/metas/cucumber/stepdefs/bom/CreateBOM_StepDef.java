@@ -260,7 +260,7 @@ public class CreateBOM_StepDef
 			final I_M_Product product = productTable.get(productIdentifier);
 			assertThat(product).isNotNull();
 
-			updateProductLLCAndMarkAsVerified(product);
+			checkProductBOMCyclesAndMarkAsVerified(product);
 
 			final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 					.orElse(null);
@@ -271,7 +271,7 @@ public class CreateBOM_StepDef
 			{
 				final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 				final I_M_Product bomLineProduct = productBL.getById(productId);
-				updateProductLLCAndMarkAsVerified(bomLineProduct);
+				checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
 			}
 		}
 	}
