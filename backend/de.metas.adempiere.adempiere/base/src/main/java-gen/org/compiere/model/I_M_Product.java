@@ -1023,27 +1023,6 @@ public interface I_M_Product
 	String COLUMNNAME_IsWebStoreFeatured = "IsWebStoreFeatured";
 
 	/**
-	 * Set Low Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLowLevel (int LowLevel);
-
-	/**
-	 * Get Low Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLowLevel();
-
-	ModelColumn<I_M_Product, Object> COLUMN_LowLevel = new ModelColumn<>(I_M_Product.class, "LowLevel", null);
-	String COLUMNNAME_LowLevel = "LowLevel";
-
-	/**
 	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
