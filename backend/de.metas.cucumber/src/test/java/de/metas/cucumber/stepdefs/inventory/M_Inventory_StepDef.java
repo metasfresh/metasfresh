@@ -31,7 +31,6 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
-import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -65,7 +64,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -102,7 +100,6 @@ public class M_Inventory_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 	private final C_DocType_StepDefData docTypeTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
@@ -113,9 +110,7 @@ public class M_Inventory_StepDef
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
-			@NonNull final C_DocType_StepDefData docTypeTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final C_DocType_StepDefData docTypeTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
@@ -126,7 +121,6 @@ public class M_Inventory_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateTermTable = flatrateTermTable;
 		this.docTypeTable = docTypeTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")
