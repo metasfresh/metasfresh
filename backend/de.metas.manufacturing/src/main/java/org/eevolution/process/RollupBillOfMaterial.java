@@ -122,19 +122,21 @@ public class RollupBillOfMaterial extends JavaProcess
 				.repository(bomCostCalculatorRepo)
 				.build();
 
-		final int maxLowLevel = getMaxLowLevel();
+		//@TODO the process is not used in WEB UI, need to be updated in necessary
+/*		final int maxLowLevel = getMaxLowLevel();
 		for (int lowLevel = maxLowLevel; lowLevel >= 0; lowLevel--)
 		{
 			for (final ProductId productId : getProductIdsByLowLevel(lowLevel))
 			{
 				calculator.rollup(productId);
 			}
-		}
+		}*/
 
 		return MSG_OK;
 	}
 
-	private int getMaxLowLevel()
+	//@TODO the process is not used in WEB UI, need to be updated in necessary
+/*	private int getMaxLowLevel()
 	{
 		return createProductsQuery()
 				.addNotNull(I_M_Product.COLUMNNAME_LowLevel)
@@ -148,7 +150,7 @@ public class RollupBillOfMaterial extends JavaProcess
 				.addEqualsFilter(I_M_Product.COLUMN_LowLevel, lowLevel)
 				.create()
 				.listIds(ProductId::ofRepoId);
-	}
+	}*/
 
 	private IQueryBuilder<I_M_Product> createProductsQuery()
 	{
