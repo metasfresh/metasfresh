@@ -24,6 +24,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -77,8 +80,10 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		final List<HUToReport> topLevelHus = new ArrayList<>();
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
+				.peek(topLevelHus::add)
 				.flatMap(hu -> {
 					if (hu.getHUUnitType() == LU)
 					{
@@ -95,12 +100,31 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
 		huqrCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIdSet));
 
-		labelService.printNow(HULabelDirectPrintRequest.builder()
-									  .onlyOneHUPerPrint(true)
-									  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
-									  .printFormatProcessId(p_AD_Process_ID)
-									  .hus(hus)
-									  .build());
+		topLevelHus.stream()
+				.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
+				.forEach(topLevelHu -> {
+					labelService.printNow(HULabelDirectPrintRequest.builder()
+												  .onlyOneHUPerPrint(true)
+												  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
+												  .printFormatProcessId(p_AD_Process_ID)
+												  .hu(topLevelHu)
+												  .build());
+
+					if (!topLevelHu.getIncludedHUs().isEmpty())
+					{
+						final List<HUToReport> sortedIncludedHUs = topLevelHu.getIncludedHUs()
+								.stream()
+								.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
+								.collect(ImmutableList.toImmutableList());
+
+						labelService.printNow(HULabelDirectPrintRequest.builder()
+													  .onlyOneHUPerPrint(true)
+													  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
+													  .printFormatProcessId(p_AD_Process_ID)
+													  .hus(sortedIncludedHUs)
+													  .build());
+					}
+				});
 		return MSG_OK;
 	}
 }
