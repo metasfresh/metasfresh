@@ -29,7 +29,6 @@ import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyCompone
 import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
-import { toastError } from '../../../utils/toast';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const isShowBestBeforeDate = true; // TODO make it configurable
@@ -106,14 +105,13 @@ const PickLineScanScreen = () => {
       bestBeforeDate,
       setLotNo: isShowLotNo,
       lotNo,
-    })
-      .then((wfProcess) => {
-        dispatch(updateWFProcess({ wfProcess }));
-        if (gotoPickingLineScreen) {
-          history.go(-1);
-        }
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+    }).then((wfProcess) => {
+      dispatch(updateWFProcess({ wfProcess }));
+      if (gotoPickingLineScreen) {
+        history.go(-1);
+      }
+    });
+    //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 
   return (

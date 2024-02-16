@@ -12,7 +12,6 @@ import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
-import { toastError } from '../../utils/toast';
 
 const GetQuantityDialog = ({
   readOnly = false,
@@ -97,12 +96,10 @@ const GetQuantityDialog = ({
     (result) => {
       const qrCode = parseQRCodeString(result.scannedBarcode);
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
-        toastError({ messageKey: 'activities.picking.qrcode.missingQty' });
-        return;
+        throw { messageKey: 'activities.picking.qrcode.missingQty' };
       }
       if (qrCode.weightNetUOM !== catchWeightUom) {
-        toastError({ messageKey: 'activities.picking.qrCode.differentUOM' });
-        return;
+        throw { messageKey: 'activities.picking.qrCode.differentUOM' };
       }
 
       // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });

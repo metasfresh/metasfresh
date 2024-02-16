@@ -19,6 +19,11 @@ export const usePositiveNumberSetting = (name, defaultValue) => {
   return value && value > 0 ? Number(value) : defaultValue;
 };
 
+export const useNumber = (name, defaultValue) => {
+  const value = useSetting(name);
+  return value != null ? Number(value) : defaultValue;
+};
+
 export const useSetting = (name) => {
   return useSelector((state) => getSettingFromState(state, name));
 };
