@@ -44,13 +44,11 @@ const WorkplaceManagerScreen = () => {
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
     console.log('onBarcodeScanned', { scannedBarcode });
-    api
-      .getWorkplaceByQRCode(scannedBarcode)
-      .then((workplaceInfo) => {
-        console.log('got', { workplaceInfo });
-        setWorkplace(workplaceInfo);
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+    return api.getWorkplaceByQRCode(scannedBarcode).then((workplaceInfo) => {
+      console.log('got', { workplaceInfo });
+      setWorkplace(workplaceInfo);
+    });
+    //.catch((axiosError) => toastError({ axiosError })); // no need to catch it here
   };
 
   const onAssignClick = () => {
