@@ -146,7 +146,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		}
 
 		// Check this level
-		updateProductLLCAndMarkAsVerified(product);
+		checkProductBOMCyclesAndMarkAsVerified(product);
 
 		// Get Default BOM from this product
 		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
@@ -162,11 +162,11 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		{
 			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 			final I_M_Product bomLineProduct = productBL.getById(productId);
-			updateProductLLCAndMarkAsVerified(bomLineProduct);
+			checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
 		}
 	}
 
-	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
 		// Checking BOM cycles
 		try

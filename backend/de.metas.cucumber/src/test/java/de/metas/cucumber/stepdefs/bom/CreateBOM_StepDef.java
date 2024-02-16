@@ -275,10 +275,16 @@ public class CreateBOM_StepDef
 		}
 	}
 
-	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
-		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
+		try
+		{
+			productBOMBL.createParentProductNode(ProductId.ofRepoId(product.getM_Product_ID()));
+		}
+		catch (final BOMCycleException e)
+		{
+			throw new LiberoException("Cycle detected in BOM for product: " + product.getValue());
+		}
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}
