@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -65,6 +66,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Inventory;
@@ -77,11 +79,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_Inventory_StepDef
 {
@@ -99,6 +102,7 @@ public class M_Inventory_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
@@ -109,7 +113,9 @@ public class M_Inventory_StepDef
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
-			@NonNull final C_DocType_StepDefData docTypeTable)
+			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
@@ -120,6 +126,7 @@ public class M_Inventory_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateTermTable = flatrateTermTable;
 		this.docTypeTable = docTypeTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")
@@ -171,12 +178,12 @@ public class M_Inventory_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
 		assertThat(productRecord).isNotNull();
@@ -265,7 +272,7 @@ public class M_Inventory_StepDef
 			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
 			inventoryRecord.setC_DocType_ID(docTypeRecord.getC_DocType_ID());
 		}
-		
+
 		saveRecord(inventoryRecord);
 
 		final String inventoryIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory");
@@ -356,6 +363,7 @@ public class M_Inventory_StepDef
 		final BigDecimal qtyCount = DataTableUtil.extractBigDecimalForColumnName(row, "QtyCount");
 		final Integer productId = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.M_Product_ID");
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InventoryLine.COLUMNNAME_M_AttributeSetInstance_ID + ".Identifier");
 
 		final I_M_Inventory mInventory = inventoryTable.get(inventoryIdentifier);
 
@@ -363,7 +371,10 @@ public class M_Inventory_StepDef
 		inventoryLineRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryLineRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
 		inventoryLineRecord.setM_Locator_ID(StepDefConstants.LOCATOR_ID.getRepoId());
-		inventoryLineRecord.setM_AttributeSetInstance(null);
+		Optional.ofNullable(asiIdentifier)
+				.map(attributeSetInstanceTable::get)
+				.ifPresent(asi -> inventoryLineRecord.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID()));
+
 		inventoryLineRecord.setHUAggregationType(HUAggregationType.SINGLE_HU.getCode());
 		inventoryLineRecord.setIsCounted(true);
 

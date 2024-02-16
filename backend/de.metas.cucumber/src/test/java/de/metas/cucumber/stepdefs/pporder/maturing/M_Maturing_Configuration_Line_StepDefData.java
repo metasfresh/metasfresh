@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,19 +20,15 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.cucumber.stepdefs.pporder.maturing;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_M_Maturing_Configuration_Line;
 
-@Value
-@Builder
-public class PickingJobUIConfig
+public class M_Maturing_Configuration_Line_StepDefData extends StepDefData<I_M_Maturing_Configuration_Line>
 {
-	@NonNull
-	PickingJobField field;
-	int seqNo;
-	boolean isShowInSummary;
-	boolean isShowInDetailed;
+	public M_Maturing_Configuration_Line_StepDefData()
+	{
+		super(I_M_Maturing_Configuration_Line.class);
+	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,43 +20,15 @@
  * #L%
  */
 
-package de.metas.location;
+package de.metas.cucumber.stepdefs.pporder.maturing;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_M_Maturing_Configuration;
 
-@RequiredArgsConstructor
-@Getter
-public enum Addressvars
+public class M_Maturing_Configuration_StepDefData extends StepDefData<I_M_Maturing_Configuration>
 {
-	BPartner("BP"),
-
-	Contact("CON"),
-
-	BPartnerName("BP_Name"),
-
-	BPartnerGreeting("BP_GR"),
-
-	City("C"),
-
-	Region("R"),
-
-	Country("CO"),
-
-	Postal_Add("A"),
-
-	Postal("P"),
-
-	POBox("PB"),
-
-	Address1("A1"),
-
-	Address2("A2"),
-
-	Address3("A3"),
-
-	Address4("A4");
-
-	@NonNull private final String name;
+	public M_Maturing_Configuration_StepDefData()
+	{
+		super(I_M_Maturing_Configuration.class);
+	}
 }

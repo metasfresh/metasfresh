@@ -35,9 +35,11 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.PickingJobField;
+import de.metas.picking.config.PickingJobFieldType;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,8 +50,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 
 public class DisplayValueProvider
@@ -106,22 +106,10 @@ public class DisplayValueProvider
 			return;
 		}
 
-		if (profile.isLauncherField(PickingJobField.RUESTPLATZ_NR))
+		if (profile.isLauncherField(PickingJobFieldType.RUESTPLATZ_NR))
 		{
 			loadRuestplatz(contexts);
 		}
-
-		final HashSet<BPartnerLocationId> locationIds = new HashSet<>();
-		if (profile.isLauncherField(PickingJobField.DELIVERY_ADDRESS))
-		{
-			locationIds.addAll(extractDeliveryLocationIds(contexts));
-		}
-		if (profile.isLauncherField(PickingJobField.HANDOVER_LOCATION))
-		{
-			locationIds.addAll(extractHandoverLocationIds(contexts));
-		}
-
-		renderedAddressProvider.warmUpForBPartnerLocationIds(locationIds);
 	}
 
 	private void loadRuestplatz(@NonNull final ImmutableList<Context> contexts)
@@ -133,19 +121,12 @@ public class DisplayValueProvider
 				location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID())
 		);
 
-		deliveryLocationIds.forEach(locationId -> {
-			ruestplatzCache.put(locationId, extractRuestplatz(locationsById.get(locationId)));
-		});
+		deliveryLocationIds.forEach(locationId -> ruestplatzCache.put(locationId, extractRuestplatz(locationsById.get(locationId))));
 	}
 
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
 		return contexts.stream().map(Context::getDeliveryLocationId).collect(ImmutableSet.toImmutableSet());
-	}
-
-	private static ImmutableSet<BPartnerLocationId> extractHandoverLocationIds(final @NonNull ImmutableList<Context> contexts)
-	{
-		return contexts.stream().map(Context::getHandoverLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -215,31 +196,59 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	public ITranslatableString getDisplayValue(@NonNull final PickingJobField uiField, @NonNull final PickingJob pickingJob)
+	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJob pickingJob)
 	{
-		return getDisplayValue(uiField, toContext(pickingJob));
+		return getDisplayValue(field, toContext(pickingJob));
 	}
 
 	@NonNull
-	private ITranslatableString getDisplayValue(@NonNull final PickingJobField uiField, @NonNull final Context pickingJob)
+	private ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final Context pickingJob)
 	{
-		switch (uiField)
+		switch (field.getField())
 		{
 			case CUSTOMER:
+			{
 				return TranslatableStrings.anyLanguage(pickingJob.getCustomerName());
+			}
 			case DATE_READY:
+			{
 				return TranslatableStrings.dateAndTime(pickingJob.getPreparationDate());
+			}
 			case DOCUMENT_NO:
+			{
 				return TranslatableStrings.anyLanguage(pickingJob.getSalesOrderDocumentNo());
+			}
 			case RUESTPLATZ_NR:
+			{
 				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob).orElse(null));
+			}
 			case DELIVERY_ADDRESS:
-				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob));
+			{
+				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
+				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob, displaySequence));
+			}
 			case HANDOVER_LOCATION:
-				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob));
+			{
+				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
+				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, displaySequence));
+			}
 			default:
-				throw new AdempiereException("Unknown filed: " + uiField);
+			{
+				throw new AdempiereException("Unknown field: " + field.getField());
+			}
 		}
+	}
+
+	@Nullable
+	private static AddressDisplaySequence getAddressDisplaySequence(final PickingJobField field)
+	{
+		final String pattern = StringUtils.trimBlankToNull(field.getPattern());
+		if (pattern == null)
+		{
+			return null;
+		}
+
+		return AddressDisplaySequence.ofNullable(pattern);
 	}
 
 	private Optional<String> getRuestplatz(@NonNull final Context pickingJob)
@@ -261,15 +270,15 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	private String getHandoverAddress(@NonNull final Context pickingJob)
+	private String getHandoverAddress(@NonNull final Context pickingJob, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback());
+		return renderedAddressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback(), displaySequence);
 	}
 
 	@NonNull
-	private String getDeliveryAddress(@NonNull final Context context)
+	private String getDeliveryAddress(@NonNull final Context context, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(context.getDeliveryLocationId());
+		return renderedAddressProvider.getAddress(context.getDeliveryLocationId(), displaySequence);
 	}
 
 	@Value

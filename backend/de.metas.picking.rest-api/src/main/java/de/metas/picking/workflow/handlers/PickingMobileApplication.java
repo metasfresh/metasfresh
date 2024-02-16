@@ -46,7 +46,6 @@
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.picking.config.MobileUIPickingUserProfile;
 	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
-	import de.metas.picking.config.PickingJobField;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
 	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 	import de.metas.picking.workflow.DisplayValueProvider;
@@ -177,7 +176,7 @@
 			final ImmutableList<WFProcessHeaderProperty> entries = profile.getDetailFieldsInOrder()
 					.stream()
 					.map(field -> WFProcessHeaderProperty.builder()
-							.caption(TranslatableStrings.adRefList(PickingJobField.PICKING_JOB_FIELD_REFERENCE_ID, field.getCode()))
+							.caption(field.getCaption())
 							.value(displayValueProvider.getDisplayValue(field, pickingJob))
 							.build())
 					.collect(ImmutableList.toImmutableList());

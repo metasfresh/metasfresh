@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,39 +23,67 @@
 package de.metas.location;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Scanner;
 
-@UtilityClass
-public class CountryDisplaySequenceHelper
+@EqualsAndHashCode
+@Getter
+public class AddressDisplaySequence
 {
+	public static final AddressDisplaySequence EMPTY = new AddressDisplaySequence("");
 	private static final AdMessageKey MSG_AddressBuilder_WrongDisplaySequence = AdMessageKey.of("MSG_AddressBuilder_WrongDisplaySequence");
 
-	public static void assertValidDisplaySequence(@NonNull final String displaySequence)
-	{
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+	@NonNull private final String pattern;
 
-		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
+	private AddressDisplaySequence(@NonNull final String pattern)
+	{
+		this.pattern = pattern;
+	}
+
+	@NonNull
+	public static AddressDisplaySequence ofNullable(@Nullable final String pattern)
+	{
+		return pattern != null && !Check.isBlank(pattern)
+				? new AddressDisplaySequence(pattern)
+				: EMPTY;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return pattern;
+	}
+
+	public void assertValid()
+	{
+		final boolean existsBPName = hasToken(Addressvars.BPartnerName);
+		final boolean existsBP = hasToken(Addressvars.BPartner);
+		final boolean existsBPGreeting = hasToken(Addressvars.BPartnerGreeting);
+
+		if ((existsBP && existsBPName) || (existsBP && existsBPGreeting))
 		{
 			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
 					//.appendParametersToMessage()
-					.setParameter("displaySequence", displaySequence);
+					.setParameter("displaySequence", this);
 		}
 	}
 
-
-	public static boolean isTokenFound(final @NonNull String sequenceToScan, final @NonNull String token)
+	public boolean hasToken(@NonNull final Addressvars token)
 	{
-		final Scanner scan = new Scanner(sequenceToScan);
+		// TODO: optimize it! this is just some crap refactored code
+
+		final Scanner scan = new Scanner(pattern);
 		scan.useDelimiter("@");
 		while (scan.hasNext())
 		{
-			if (scan.next().equals(token))
+			if (scan.next().equals(token.getName()))
 			{
 				scan.close();
 				return true;
@@ -65,4 +93,5 @@ public class CountryDisplaySequenceHelper
 		scan.close();
 		return false;
 	}
+
 }
