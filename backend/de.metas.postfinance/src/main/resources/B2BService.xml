@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+        name="B2BService"
+        targetNamespace="http://ch.swisspost.ebill.b2bservice"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+        xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+        xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+        xmlns:tns="http://ch.swisspost.ebill.b2bservice"
+        xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+        xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+        xmlns:sc1="http://schemas.sun.com/2006/03/wss/client"
+        xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy">
+    <wsp:Policy wsu:Id="UserNamePassword_policy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken RequireClientCertificate="false"/>
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Strict/>
+                            </wsp:Policy>
+                        </sp:Layout>
+                        <sp:IncludeTimestamp/>
+                    </wsp:Policy>
+                </sp:TransportBinding>
+                <sp:SignedSupportingTokens xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:UsernameToken
+                                sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SignedSupportingTokens>
+                <sp:Wss11 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy/>
+                </sp:Wss11>
+                <sp:Trust10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:MustSupportIssuedTokens/>
+                        <sp:RequireClientEntropy/>
+                        <sp:RequireServerEntropy/>
+                    </wsp:Policy>
+                </sp:Trust10>
+                <wsaw:UsingAddressing/>
+                <sc1:CallbackHandlerConfiguration wspp:visibility="private">
+                    <sc1:CallbackHandler name="usernameHandler" default="userid"/>
+                    <sc1:CallbackHandler name="passwordHandler" default="password"/>
+                </sc1:CallbackHandlerConfiguration>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsdl:types>
+        <xs:schema elementFormDefault="qualified" targetNamespace="http://ch.swisspost.ebill.b2bservice"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:import namespace="http://swisspost_ch.ebs.ebill.b2bservice"/>
+            <xs:element name="%List according to xs:element elements in wsdl%">
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="%List according to wsdl:message elements in wsdl%">
+    </wsdl:message>
+    <wsdl:portType name="B2BService">
+        <wsdl:operation name="%List according to wsdl:operation elements in wsdl%">
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="UserNamePassword" type="tns:B2BService">
+        <wsp:PolicyReference URI="#UserNamePassword_policy"/>
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="%List according to wsdl:operation elements in wsdl%">
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="B2BService">
+        <wsdl:port name="UserNamePassword" binding="tns:UserNamePassword">
+            <soap12:address location="https://ebill-ki.postfinance.ch/B2BService/B2BService.svc"/>
+            <wsa10:EndpointReference>
+                <wsa10:Address>https://ebill-ki.postfinance.ch/B2BService/B2BService.svc</wsa10:Address>
+            </wsa10:EndpointReference>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

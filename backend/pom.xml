@@ -211,6 +211,7 @@
         <!-- <module>extensionsupport</module> -->
 
         <module>de-metas-salesorder</module>
+        <module>de.metas.postfinance</module>
     </modules>
 
     <dependencyManagement>
