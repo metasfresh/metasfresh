@@ -52,7 +52,7 @@ public class HUQRCodesService
 		this.qrCodeConfigurationRepository = qrCodeConfigurationRepository;
 	}
 
-	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
+	public List<HUQRCode> generate(final HUQRCodeGenerateRequest request)
 	{
 		return HUQRCodeGenerateCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
@@ -163,12 +163,22 @@ public class HUQRCodesService
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
 	}
 
-	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		huQRCodesRepository.assign(qrCode, huId);
 	}
 
-	public void assertQRCodeAssignedToHU(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final ImmutableSet<HuId> huIds)
+	{
+		huQRCodesRepository.assign(qrCode, huIds);
+	}
+
+	public void removeAssignment(@NonNull final HUQRCode qrCode, @NonNull final ImmutableSet<HuId> huIds)
+	{
+		huQRCodesRepository.removeAssignment(qrCode, huIds);
+	}
+
+	public void assertQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
 		{

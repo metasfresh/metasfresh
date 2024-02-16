@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_QRCode_Attribute_Config;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.qrcodes.model.QRCodeConfigurationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
@@ -47,6 +49,16 @@ import java.util.stream.Stream;
 public class QRCodeConfigurationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	public QRCodeConfiguration getById(@NonNull final QRCodeConfigurationId id)
+	{
+		return toQRCodeConfiguration(ImmutableList.of(InterfaceWrapperHelper.load(id, I_QRCode_Configuration.class)))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No QRCodeConfiguration found for id!")
+						.appendParametersToMessage()
+						.setParameter("id", id));
+	}
 
 	@NonNull
 	public Map<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final Set<QRCodeConfigurationId> qrCodeConfigurationIds)

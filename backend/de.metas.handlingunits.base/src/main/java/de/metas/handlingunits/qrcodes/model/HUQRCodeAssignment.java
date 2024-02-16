@@ -5,6 +5,7 @@ import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Set;
 
@@ -13,6 +14,19 @@ public class HUQRCodeAssignment
 {
 	@NonNull HUQRCodeUniqueId id;
 	@NonNull Set<HuId> huIds;
+
+	public HUQRCodeAssignment(@NonNull final HUQRCodeUniqueId id, @NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			throw new AdempiereException("huIds cannot be empty!")
+					.appendParametersToMessage()
+					.setParameter("HUQRCodeUniqueId", id);
+		}
+
+		this.id = id;
+		this.huIds = huIds;
+	}
 
 	@NonNull
 	public HuId getSingleHUId()
@@ -32,5 +46,10 @@ public class HUQRCodeAssignment
 		return huIdsToCheck.stream()
 				.filter(huId -> !isAssignedToHuId(huId))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public boolean isSingleHUAssigned()
+	{
+		return huIds.size() == 1;
 	}
 }

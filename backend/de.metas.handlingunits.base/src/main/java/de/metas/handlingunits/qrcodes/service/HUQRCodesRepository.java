@@ -37,9 +37,7 @@ public class HUQRCodesRepository
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
 	{
-		return queryByQRCode(huQRCode.getId())
-				.create()
-				.firstOnlyOptional(I_M_HU_QRCode.class)
+		return getByUniqueId(huQRCode.getId())
 				.flatMap(this::toHUQRCodeAssignment);
 	}
 
@@ -118,6 +116,18 @@ public class HUQRCodesRepository
 		{
 			createNew(qrCode, huIds);
 		}
+	}
+
+	public void removeAssignment(@NonNull final HUQRCode qrCode, @NonNull final Set<HuId> huIdsToRemove)
+	{
+		final I_M_HU_QRCode existingRecord = getByUniqueId(qrCode.getId()).orElse(null);
+		if (existingRecord == null)
+		{
+			//nothing to be done
+			return;
+		}
+
+		removeAssignment(existingRecord, huIdsToRemove);
 	}
 
 	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
@@ -229,11 +239,7 @@ public class HUQRCodesRepository
 	@NonNull
 	private Map<Integer, Set<HuId>> getAssignedHuIds(@NonNull final Set<Integer> huQrCodeIds)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMN_M_HU_QRCode_ID, huQrCodeIds)
-				.create()
-				.stream()
+		return streamAssignmentForQrIds(huQrCodeIds)
 				.collect(Collectors.groupingBy(I_M_HU_QRCode_Assignment::getM_HU_QRCode_ID,
 											   Collectors.mapping(huAssignment -> HuId.ofRepoId(huAssignment.getM_HU_ID()),
 																  Collectors.toSet())));
@@ -275,6 +281,44 @@ public class HUQRCodesRepository
 				.stream()
 				.collect(Collectors.toMap(I_M_HU_QRCode::getM_HU_QRCode_ID, Function.identity()));
 	}
+
+	@NonNull
+	private Optional<I_M_HU_QRCode> getByUniqueId(final @NonNull HUQRCodeUniqueId uniqueId)
+	{
+		return queryByQRCode(uniqueId)
+				.create()
+				.firstOnlyOptional(I_M_HU_QRCode.class);
+	}
+
+	private void removeAssignment(@NonNull final I_M_HU_QRCode qrCode, @NonNull final Set<HuId> huIdsToRemove)
+	{
+		streamAssignmentForQrAndHuIds(ImmutableSet.of(qrCode.getM_HU_QRCode_ID()), huIdsToRemove)
+				.forEach(InterfaceWrapperHelper::delete);
+	}
+
+	@NonNull
+	private Stream<I_M_HU_QRCode_Assignment> streamAssignmentForQrIds(@NonNull final Set<Integer> huQrCodeIds)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMN_M_HU_QRCode_ID, huQrCodeIds)
+				.create()
+				.stream();
+	}
+
+	@NonNull
+	private Stream<I_M_HU_QRCode_Assignment> streamAssignmentForQrAndHuIds(
+			@NonNull final Set<Integer> huQrCodeIds,
+			@NonNull final Set<HuId> huIds)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, huQrCodeIds)
+				.addInArrayFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.stream();
+	}
+
 
 	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)
 	{

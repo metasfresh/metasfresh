@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.manufacturing.rest-api
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,37 +20,27 @@
  * #L%
  */
 
-package de.metas.handlingunits.qrcodes.model;
+package de.metas.handlingunits.rest_api.move_hu;
 
-import de.metas.util.Check;
-import lombok.AccessLevel;
+import de.metas.handlingunits.QtyTU;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeId;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 
 @Value
 @Builder
-public class QRCodeConfiguration
+public class MoveHURequestItem
 {
-	@NonNull QRCodeConfigurationId id;
-	@NonNull String name;
-	@Getter(AccessLevel.NONE) boolean isOneQrCodeForAggregatedHUs;
-	@Getter(AccessLevel.NONE) boolean isOneQrCodeForMatchingAttributes;
+	@NonNull HUIdAndQRCode huIdAndQRCode;
+	@Nullable QtyTU numberOfTUs;
 
-	@Nullable Set<AttributeId> attributeIds;
-
-	public boolean isGroupingByAttributesRequired()
+	@NonNull
+	public static MoveHURequestItem ofHUIdAndQRCode(@NonNull final HUIdAndQRCode huIdAndQRCode)
 	{
-		return isOneQrCodeForMatchingAttributes && !Check.isEmpty(attributeIds);
-	}
-
-	public boolean isOneQRCodeForAggregatedTUsRequired()
-	{
-		return isOneQrCodeForAggregatedHUs || isGroupingByAttributesRequired();
+		return MoveHURequestItem.builder()
+				.huIdAndQRCode(huIdAndQRCode)
+				.build();
 	}
 }

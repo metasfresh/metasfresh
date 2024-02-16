@@ -293,6 +293,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return result;
 	}
 
+	@NonNull
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return retrieveIncludedHUs(getById(huId));
+	}
+
 	@Override
 	public I_M_HU_Item createHUItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{

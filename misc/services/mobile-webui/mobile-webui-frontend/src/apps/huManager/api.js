@@ -26,12 +26,13 @@ export const getDisposalReasonsArray = () => {
 /**
  * @returns {Promise<T>} handling unit info
  */
-export const moveHU = ({ huId, huQRCode, targetQRCode }) => {
+export const moveHU = ({ huId, huQRCode, targetQRCode, numberOfTUs }) => {
   return axios
     .post(`${huAPIBasePath}/move`, {
       huId,
       huQRCode: toQRCodeString(huQRCode),
       targetQRCode: toQRCodeString(targetQRCode),
+      numberOfTUs: numberOfTUs,
     })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
@@ -88,4 +89,8 @@ export const getPrintingOptions = () => {
 
 export const getHUsByDisplayableQRCode = (displayableQRCode) => {
   return axios.get(`${huAPIBasePath}/byDisplayableQrCode/${displayableQRCode}`).then(unboxAxiosResponse);
+};
+
+export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
+  return axios.post(`${huAPIBasePath}/list/byQRCode`, { qrCode, upperLevelLocatingQrCode }).then(unboxAxiosResponse);
 };

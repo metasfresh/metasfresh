@@ -15,7 +15,7 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
       return '';
     }
 
-    return `${handlingUnitInfo.products[0].productValue} - ${handlingUnitInfo.products[0].productName}`;
+    return `${handlingUnitInfo.products[0].productValue} - ${handlingUnitInfo.displayName}`;
   };
   const getAttributes = () => {
     if (
