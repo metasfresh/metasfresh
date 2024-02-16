@@ -76,7 +76,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
-				.pickingJobConfigs(retrievePickingJobConfigs(profileRecord))
+				.fields(retrieveFields(profileRecord))
 				.build();
 	}
 
@@ -151,21 +151,27 @@ public class MobileUIPickingUserProfileRepository
 	}
 
 	@NonNull
-	private ImmutableList<PickingJobUIConfig> retrievePickingJobConfigs(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	private ImmutableList<PickingJobField> retrieveFields(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
 	{
-		final ImmutableList<PickingJobUIConfig> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+		final ImmutableList<PickingJobField> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
 				.create()
 				.stream()
-				.map(config -> PickingJobUIConfig.builder()
-						.field(PickingJobField.ofCode(config.getPickingJobField()))
-						.seqNo(config.getSeqNo())
-						.isShowInDetailed(config.isDisplayInDetailed())
-						.isShowInSummary(config.isDisplayInSummary())
-						.build())
+				.map(MobileUIPickingUserProfileRepository::toPickingJobField)
 				.collect(ImmutableList.toImmutableList());
 
-		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getPickingJobConfigs();
+		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getFields();
+	}
+
+	private static PickingJobField toPickingJobField(final I_PickingProfile_PickingJobConfig config)
+	{
+		return PickingJobField.builder()
+				.field(PickingJobFieldType.ofCode(config.getPickingJobField()))
+				.seqNo(config.getSeqNo())
+				.isShowInDetailed(config.isDisplayInDetailed())
+				.isShowInSummary(config.isDisplayInSummary())
+				.pattern(config.getFormatPattern())
+				.build();
 	}
 }
