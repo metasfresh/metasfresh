@@ -110,7 +110,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 												  .hu(topLevelHu)
 												  .build());
 
-					if (!topLevelHu.getIncludedHUs().isEmpty())
+					if (topLevelHu.getHUUnitType() == LU && !topLevelHu.getIncludedHUs().isEmpty())
 					{
 						final List<HUToReport> sortedIncludedHUs = topLevelHu.getIncludedHUs()
 								.stream()

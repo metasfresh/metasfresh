@@ -94,6 +94,9 @@ public class JsonHU
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isDisposalPending;
 
+	@Nullable
+	String packingInstructionName;
+
 	public JsonHU(
 			@NonNull final String id,
 			@NonNull final String huStatus,
@@ -111,7 +114,8 @@ public class JsonHU
 			@Nullable final JsonHUType jsonHUType,
 			@Nullable final List<JsonHU> includedHUs,
 			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
-			final Boolean isDisposalPending)
+			final Boolean isDisposalPending,
+			@Nullable final String packingInstructionName)
 	{
 		this.id = id;
 		this.huStatus = huStatus;
@@ -128,6 +132,7 @@ public class JsonHU
 		this.includedHUs = includedHUs;
 		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
 		this.isDisposalPending = isDisposalPending;
+		this.packingInstructionName = packingInstructionName;
 
 		if(attributes2 == null)
 		{

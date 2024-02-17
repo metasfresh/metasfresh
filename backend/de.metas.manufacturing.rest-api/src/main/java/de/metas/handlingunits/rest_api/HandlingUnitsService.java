@@ -50,6 +50,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
@@ -93,6 +94,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -165,7 +167,8 @@ public class HandlingUnitsService
 				.products(getProductStorage(huContext, hu))
 				.attributes2(jsonHUAttributes)
 				.clearanceNote(hu.getClearanceNote())
-				.clearanceStatus(getClearanceStatusInfo(hu));
+				.clearanceStatus(getClearanceStatusInfo(hu))
+				.packingInstructionName(getEffectivePIName(hu));
 
 		if (isAggregatedTU)
 		{
@@ -637,5 +640,13 @@ public class HandlingUnitsService
 				.map(HuId::ofRepoId)
 				.filter(targetQrCodeAssignment::isAssignedToHuId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private String getEffectivePIName(@NonNull final I_M_HU hu)
+	{
+		return Optional.ofNullable(handlingUnitsBL.getEffectivePI(hu))
+				.map(I_M_HU_PI::getName)
+				.orElse(null);
 	}
 }

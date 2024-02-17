@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { isNullOrUndefined } from '../../../utils';
 
 const ATTRIBUTE_CODES_TO_DISPLAY = ['HU_BestBeforeDate', 'Lot-Nummer'];
@@ -11,12 +9,14 @@ const ATTRIBUTE_CODES_TO_MAX_LENGTH = {
 
 const HUButton = ({ handlingUnitInfo, onClick }) => {
   const getProductCaption = () => {
-    if (!handlingUnitInfo.products || !handlingUnitInfo.products.length) {
+    const product = getSingleProduct();
+
+    if (!product) {
       return '';
     }
-
-    return `${handlingUnitInfo.products[0].productValue} - ${handlingUnitInfo.displayName}`;
+    return `${product.productValue} - ${product.productName}`;
   };
+
   const getAttributes = () => {
     if (
       !handlingUnitInfo.attributes2 ||
@@ -37,19 +37,67 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
     return stringValue.substring(0, maxLength);
   };
 
+  const getSingleProduct = () => {
+    if (!handlingUnitInfo.products || !handlingUnitInfo.products.length || handlingUnitInfo.products.length !== 1) {
+      return undefined;
+    }
+
+    return handlingUnitInfo.products[0];
+  };
+
+  const getQtyDisplayValue = () => {
+    const productInfo = getSingleProduct();
+
+    if (!productInfo) {
+      return '';
+    }
+    const qtyCUs = productInfo.qty;
+
+    if (isNullOrUndefined(qtyCUs)) {
+      return '';
+    }
+
+    const packagingItemPart = handlingUnitInfo.packingInstructionName
+      ? `${handlingUnitInfo.packingInstructionName} x `
+      : '';
+
+    if (!handlingUnitInfo.numberOfAggregatedHUs || handlingUnitInfo.numberOfAggregatedHUs === 1) {
+      return `${packagingItemPart}${qtyCUs} ${productInfo.uom}`;
+    }
+
+    const nrOfCUsPerTUs = qtyCUs / handlingUnitInfo.numberOfAggregatedHUs;
+    return `${handlingUnitInfo.numberOfAggregatedHUs} ${handlingUnitInfo.packingInstructionName} x ${nrOfCUsPerTUs} ${productInfo.uom}`;
+  };
+
   return (
-    <ButtonWithIndicator caption={getProductCaption()} onClick={onClick} size={'large'}>
-      {getAttributes().map((attribute, index) => (
-        <div key={index} className="hu-row-info">
-          <div className="hu-row-label">
-            <span>{attribute.caption}:</span>
-          </div>
-          <div className="hu-row-value">
-            <span>{getAttributeDisplayValue(attribute)}</span>
-          </div>
+    <button className="hu-button is-outlined is-fullwidth complete-btn" onClick={onClick}>
+      <div className="attribute-container">
+        <div className="hu-row-value" style={{ flex: '30%' }}>
+          <span>{handlingUnitInfo.id}</span>
         </div>
-      ))}
-    </ButtonWithIndicator>
+        <div className="hu-row-value" style={{ flex: '20%' }}>
+          <span>{handlingUnitInfo.jsonHUType}</span>
+        </div>
+        <div className="hu-row-value" style={{ flex: '50%', justifyContent: 'flex-end' }}>
+          <span>{getQtyDisplayValue()}</span>
+        </div>
+      </div>
+      <div className={'hu-button-title'}>
+        <span>{getProductCaption()}</span>
+      </div>
+      <div className="attribute-container">
+        {getAttributes().map((attribute, index) => (
+          <div key={index} className="hu-row-info">
+            <div className="hu-row-label">
+              <span>{attribute.caption}:</span>
+            </div>
+            <div className="hu-row-value">
+              <span>{getAttributeDisplayValue(attribute)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </button>
   );
 };
 
