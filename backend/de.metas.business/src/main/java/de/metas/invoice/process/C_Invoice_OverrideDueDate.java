@@ -23,7 +23,12 @@
 package de.metas.invoice.process;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -45,12 +50,15 @@ import java.util.Collection;
 public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final static String PARAM_OVERRIDE_DUE_DATE = "OverrideDueDate";
-	public static final AdMessageKey PAID_INVOICE_MESSAGE = AdMessageKey.of("Invoice_already_paid");
+	private static final AdMessageKey PAID_INVOICE_MESSAGE = AdMessageKey.of("Invoice_already_paid");
+	private static final AdMessageKey MSG_CAN_NOT_OVERRIDE_DUE_DATE = AdMessageKey.of("de.metas.invoice.process.OverrideDueDate");
 	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
 	private Timestamp p_OverrideDueDate;
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -69,6 +77,13 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICE_MESSAGE, paidInvoiceDocNos));
 		}
+
+		final PaymentTerm paymentTerm = getPaymentTerm(context.getSingleSelectedRecordId(InvoiceId.class));
+		if (!paymentTerm.isAllowOverrideDueDate())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_CAN_NOT_OVERRIDE_DUE_DATE));
+		}
+		
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -100,5 +115,12 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+	
+	@NonNull
+	private PaymentTerm getPaymentTerm(@NonNull final InvoiceId invoiceId)
+	{
+		final PaymentTermId paymentTermId = invoiceBL.getPaymentTermId(invoiceId);
+		return paymentTermRepository.getById(paymentTermId);
 	}
 }
