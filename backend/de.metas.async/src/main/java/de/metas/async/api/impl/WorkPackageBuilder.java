@@ -240,12 +240,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public Future<ILock> getElementsLock()
-	{
-		return _futureElementsLock;
-	}
-
-	@Override
 	public void discard()
 	{
 		assertNotBuilt();
