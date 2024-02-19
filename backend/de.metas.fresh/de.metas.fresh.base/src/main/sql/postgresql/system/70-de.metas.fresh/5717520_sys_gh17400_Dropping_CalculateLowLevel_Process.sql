@@ -1,7 +1,3 @@
--- 2024-02-16T14:28:10.898Z
-INSERT INTO t_alter_column values('m_product','AD_Client_ID','NUMERIC(10)',null,null)
-;
-
 -- 2024-02-16T14:41:13.475Z
 DELETE FROM  AD_Menu_Trl WHERE AD_Menu_ID=53036
 ;
