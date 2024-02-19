@@ -108,7 +108,7 @@ public class ProductBOMBL implements IProductBOMBL
 	@Override
 	public void checkCycles(final ProductId productId)
 	{
-		ProductBOMCycleDetection.newInstance().checkCycles(productId);
+		ProductBOMCycleDetection.newInstance().assertNoCycles(productId);
 	}
 
 	@Override

@@ -39,7 +39,7 @@ class ProductBOMCycleDetection
 	{
 	}
 
-	public void checkCycles(final ProductId productId)
+	public void assertNoCycles(final ProductId productId)
 	{
 		try
 		{
