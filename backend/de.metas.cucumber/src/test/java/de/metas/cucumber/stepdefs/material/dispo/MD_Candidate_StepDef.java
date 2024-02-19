@@ -103,14 +103,13 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class MD_Candidate_StepDef
 {
-	private final static transient Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
+	private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private CandidateRepositoryWriteService candidateWriteService;
 	private MaterialEventObserver materialEventObserver;
 	private SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
@@ -135,6 +134,8 @@ public class MD_Candidate_StepDef
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
+		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
+		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
