@@ -408,11 +408,6 @@ import java.util.Set;
 		return -1;
 	}
 
-	public int getLowLevelCode()
-	{
-		return -1;
-	}
-
 	@Override
 	public MRPQueryBuilder setTypeMRP(final String typeMRP)
 	{
