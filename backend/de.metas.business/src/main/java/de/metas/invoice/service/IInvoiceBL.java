@@ -19,6 +19,7 @@ import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -392,4 +393,9 @@ public interface IInvoiceBL extends ISingletonService
 	Instant getDateAcct(InvoiceId invoiceId);
 
 	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
+
+	boolean hasInvoicesWithForexContracts(OrderId orderId, Set<ForexContractId> contractIds);
+
+	@NonNull
+	PaymentTermId getPaymentTermId(@NonNull InvoiceId invoiceId);
 }
