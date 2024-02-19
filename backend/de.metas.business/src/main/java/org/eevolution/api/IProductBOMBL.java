@@ -47,15 +47,9 @@ public interface IProductBOMBL extends ISingletonService
 	void updateIsBOMFlag(ProductId productId);
 
 	/**
-	 * Creating a parent node in a tree representation of a bill of materials (BOM) for a given BOM line,
-	 * while also checking BOM cycles.
+	 * checking BOM cycles.
 	 */
-	void createParentProductNodeForBOMLine(I_PP_Product_BOMLine bomLine);
-
-	/**
-	 * get an implosion of the product
-	 */
-	void createParentProductNode(final ProductId productId);
+	void checkCycles(final ProductId productId);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>

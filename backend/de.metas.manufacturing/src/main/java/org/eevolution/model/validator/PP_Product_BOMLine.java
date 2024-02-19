@@ -23,7 +23,6 @@ package org.eevolution.model.validator;
  */
 
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -31,17 +30,13 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.List;
 
 @Validator(I_PP_Product_BOMLine.class)
@@ -133,15 +128,6 @@ public class PP_Product_BOMLine
 	public void checkingBOMCycle(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		final I_M_Product product = Services.get(IProductBL.class).getById(productId);
-		try
-		{
-			Services.get(IProductBOMBL.class).createParentProductNodeForBOMLine(bomLine);
-		}
-		catch (final BOMCycleException e)
-		{
-			throw new LiberoException("Cycle detected in BOM for product: " + product.getValue());
-		}
-
+		Services.get(IProductBOMBL.class).checkCycles(productId);
 	}
 }

@@ -106,15 +106,9 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public void createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
+	public void checkCycles(final ProductId productId)
 	{
-		ProductBOMCycleDetection.newInstance().createParentProductNodeForBOMLine(bomLine);
-	}
-
-	@Override
-	public void createParentProductNode(final ProductId productId)
-	{
-		ProductBOMCycleDetection.newInstance().createParentProductNode(productId);
+		ProductBOMCycleDetection.newInstance().checkCycles(productId);
 	}
 
 	@Override

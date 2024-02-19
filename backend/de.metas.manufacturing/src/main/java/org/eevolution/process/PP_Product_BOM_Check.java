@@ -171,7 +171,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		// Checking BOM cycles
 		try
 		{
-			productBOMBL.createParentProductNode(ProductId.ofRepoId(product.getM_Product_ID()));
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			productBOMBL.checkCycles(productId);
 		}
 		catch (final BOMCycleException e)
 		{
