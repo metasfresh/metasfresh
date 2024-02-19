@@ -63,6 +63,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
 import de.metas.material.planning.pporder.LiberoException;
 import org.eevolution.exceptions.BOMCycleException;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -278,14 +279,7 @@ public class CreateBOM_StepDef
 
 	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
-		try
-		{
-			productBOMBL.createParentProductNode(ProductId.ofRepoId(product.getM_Product_ID()));
-		}
-		catch (final BOMCycleException e)
-		{
-			throw new LiberoException("Cycle detected in BOM for product: " + product.getValue());
-		}
+		productBOMBL.checkCycles(ProductId.ofRepoId(product.getM_Product_ID()));
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}
