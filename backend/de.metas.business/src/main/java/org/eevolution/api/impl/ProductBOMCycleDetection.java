@@ -39,11 +39,11 @@ class ProductBOMCycleDetection
 	{
 	}
 
-	public void assertNoCycles(final ProductId productId)
+	public void checkCycles(final ProductId productId)
 	{
 		try
 		{
-			createParentProductNode(productId);
+			assertNoCycles(productId);
 		}
 		catch (final BOMCycleException e)
 		{
@@ -57,7 +57,7 @@ class ProductBOMCycleDetection
 	 *
 	 * @return DefaultMutableTreeNode Tree with all parent product
 	 */
-	private DefaultMutableTreeNode createParentProductNode(final ProductId productId)
+	private DefaultMutableTreeNode assertNoCycles(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
@@ -81,7 +81,7 @@ class ProductBOMCycleDetection
 			}
 			first = false;
 
-			final DefaultMutableTreeNode bomNode = createParentProductNodeForBOMLine(productBOMLine);
+			final DefaultMutableTreeNode bomNode = assertNoCycles(productBOMLine);
 			if (bomNode != null)
 			{
 				productNode.add(bomNode);
@@ -98,7 +98,7 @@ class ProductBOMCycleDetection
 	}
 
 	@Nullable
-	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
+	private DefaultMutableTreeNode assertNoCycles(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
 		if (!bom.isActive())
@@ -120,7 +120,7 @@ class ProductBOMCycleDetection
 			throw new BOMCycleException(bom, parentProductId);
 		}
 
-		return createParentProductNode(parentProductId);
+		return assertNoCycles(parentProductId);
 	}
 
 	private void clearSeenProducts()
