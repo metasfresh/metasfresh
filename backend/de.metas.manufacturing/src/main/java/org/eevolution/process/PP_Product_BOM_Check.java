@@ -168,16 +168,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 
 	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
-		// Checking BOM cycles
-		try
-		{
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-			productBOMBL.checkCycles(productId);
-		}
-		catch (final BOMCycleException e)
-		{
-			throw new LiberoException("Cycle detected in BOM for product: " + product.getValue());
-		}
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		productBOMBL.checkCycles(productId);
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}
