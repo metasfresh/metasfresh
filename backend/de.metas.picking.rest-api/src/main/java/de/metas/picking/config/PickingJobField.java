@@ -22,52 +22,22 @@
 
 package de.metas.picking.config;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.common.util.Check;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_AD_Reference_ID;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_Customer;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DateReady;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DeliveryAddress;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DocumentNo;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_HandoverLocation;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_RuestplatzNr;
-
-@AllArgsConstructor
-@Getter
-public enum PickingJobField implements ReferenceListAwareEnum
+@Value
+@Builder
+public class PickingJobField
 {
-	DOCUMENT_NO(PICKINGJOBFIELD_DocumentNo),
-	CUSTOMER(PICKINGJOBFIELD_Customer),
-	DELIVERY_ADDRESS(PICKINGJOBFIELD_DeliveryAddress),
-	DATE_READY(PICKINGJOBFIELD_DateReady),
-	HANDOVER_LOCATION(PICKINGJOBFIELD_HandoverLocation),
-	RUESTPLATZ_NR(PICKINGJOBFIELD_RuestplatzNr),
-	;
+	@NonNull PickingJobFieldType field;
+	int seqNo;
+	boolean isShowInSummary;
+	boolean isShowInDetailed;
+	@Nullable String pattern;
 
-	public static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
-
-	private final String code;
-
-	@Nullable
-	public static PickingJobField ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
-	@NonNull
-	public static PickingJobField ofCode(@NonNull final String code)
-	{
-		return Check.assumeNotNull(typesByCode.get(code), "No Type found for code=" + code);
-	}
-
-	private static final ImmutableMap<String, PickingJobField> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	public ITranslatableString getCaption() {return field.getCaption();}
 }

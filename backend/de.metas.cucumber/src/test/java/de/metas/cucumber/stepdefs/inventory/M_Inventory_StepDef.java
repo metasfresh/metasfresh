@@ -118,9 +118,9 @@ public class M_Inventory_StepDef
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.warehouseTable = warehouseTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateTermTable = flatrateTermTable;
 		this.docTypeTable = docTypeTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")

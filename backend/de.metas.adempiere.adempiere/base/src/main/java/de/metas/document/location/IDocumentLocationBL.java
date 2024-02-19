@@ -26,8 +26,10 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.location.AddressDisplaySequence;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -39,6 +41,8 @@ public interface IDocumentLocationBL
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
 
 	String computeRenderedAddressString(@NonNull DocumentLocation location);
+
+	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location, @Nullable AddressDisplaySequence displaySequence);
 
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter locationAdapter);
 

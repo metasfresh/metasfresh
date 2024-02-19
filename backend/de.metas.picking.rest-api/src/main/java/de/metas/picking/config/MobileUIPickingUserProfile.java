@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,16 +46,16 @@ public class MobileUIPickingUserProfile
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
 			)
-			.pickingJobConfigs(ImmutableList.of(
-					PickingJobUIConfig.builder()
+			.fields(ImmutableList.of(
+					PickingJobField.builder()
 							.seqNo(10)
-							.field(PickingJobField.DOCUMENT_NO)
+							.field(PickingJobFieldType.DOCUMENT_NO)
 							.isShowInDetailed(true)
 							.isShowInSummary(true)
 							.build(),
-					PickingJobUIConfig.builder()
+					PickingJobField.builder()
 							.seqNo(20)
-							.field(PickingJobField.CUSTOMER)
+							.field(PickingJobFieldType.CUSTOMER)
 							.isShowInDetailed(true)
 							.isShowInSummary(true)
 							.build())
@@ -66,7 +67,7 @@ public class MobileUIPickingUserProfile
 	boolean isAllowPickingAnyHU;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
-	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobUIConfig> pickingJobConfigs;
+	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
 
 	@NonNull ImmutableList<PickingJobField> launcherFieldsInOrder;
 	@NonNull ImmutableList<PickingJobField> detailFieldsInOrder;
@@ -78,36 +79,33 @@ public class MobileUIPickingUserProfile
 			boolean isAllowPickingAnyHU,
 			@Nullable CreateShipmentPolicy createShipmentPolicy,
 			@Nullable PickingFiltersList filters,
-			@Nullable ImmutableList<PickingJobUIConfig> pickingJobConfigs)
+			@NonNull ImmutableList<PickingJobField> fields)
 	{
+		Check.assumeNotEmpty(fields, "fields shall not be empty");
+
 		this.name = name;
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
-		this.pickingJobConfigs = pickingJobConfigs != null ? pickingJobConfigs : ImmutableList.of();
+		this.fields = fields;
 
-		this.launcherFieldsInOrder = this.pickingJobConfigs.stream()
-				.filter(PickingJobUIConfig::isShowInSummary)
-				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
-				.map(PickingJobUIConfig::getField)
+		this.launcherFieldsInOrder = this.fields.stream()
+				.filter(PickingJobField::isShowInSummary)
+				.sorted(Comparator.comparing(PickingJobField::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 
-		this.detailFieldsInOrder = this.pickingJobConfigs.stream()
-				.filter(PickingJobUIConfig::isShowInDetailed)
-				.sorted(Comparator.comparing(PickingJobUIConfig::getSeqNo))
-				.map(PickingJobUIConfig::getField)
+		this.detailFieldsInOrder = this.fields.stream()
+				.filter(PickingJobField::isShowInDetailed)
+				.sorted(Comparator.comparing(PickingJobField::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 
 	}
 
 	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean isAnyFilterEnabled() {return !filters.isEmpty();}
-
-	public boolean isLauncherField(@NonNull final PickingJobField field)
+	public boolean isLauncherField(@NonNull final PickingJobFieldType fieldType)
 	{
-		return launcherFieldsInOrder.contains(field);
+		return launcherFieldsInOrder.stream().anyMatch(field -> PickingJobFieldType.equals(field.getField(), fieldType));
 	}
 }
