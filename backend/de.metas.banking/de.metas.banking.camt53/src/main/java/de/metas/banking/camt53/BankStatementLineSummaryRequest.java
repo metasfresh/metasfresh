@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.banking.camt53
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,42 +20,36 @@
  * #L%
  */
 
-package de.metas.banking;
+package de.metas.banking.camt53;
 
-import de.metas.impexp.config.DataImportConfigId;
-import de.metas.location.LocationId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
-public class Bank
+class BankStatementLineSummaryRequest
 {
 	@NonNull
-	BankId bankId;
+	BankStatementId bankStatementId;
 
 	@NonNull
-	String bankName;
+	OrgId orgId;
 
-	@Nullable
-	String swiftCode;
-	@Nullable
-	String routingNo;
+	@NonNull
+	CurrencyId currencyId;
 
-	@Nullable
-	DataImportConfigId dataImportConfigId;
+	@NonNull
+	IAccountStatementWrapper accountStatementWrapper;
 
-	boolean cashBank;
+	boolean isMatchAmounts;
 
-	@Nullable
-	LocationId locationId;
-
-	//
-	// ESR specific settings:
-	boolean esrPostBank;
-
-	boolean importAsSingleSummaryLine;
+	@NonNull
+	LocalDate statementDate;
 }

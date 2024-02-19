@@ -69,7 +69,15 @@ public class CreateUpdateOrderCandidateCommand
 	public I_PP_Order_Candidate execute()
 	{
 		// Create PP Order Candidate
-		final I_PP_Order_Candidate ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
+		final I_PP_Order_Candidate ppOrderCandidateRecord;
+		if (request.getPpOrderCandidateId() == null)
+		{
+			ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
+		}
+		else
+		{
+			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
+		}
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());

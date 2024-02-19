@@ -303,7 +303,7 @@ public class M_Inventory_StepDef
 		inventoryLine.setC_UOM_ID(eachUomRecord.getC_UOM_ID());
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.common.util.Check.isNotBlank(attributeSetInstanceIdentifier))
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
 			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
 			assertThat(attributeSetInstance).isNotNull();
