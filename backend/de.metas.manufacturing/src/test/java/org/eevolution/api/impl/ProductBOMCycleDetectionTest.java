@@ -22,11 +22,10 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
-import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Before;
@@ -58,7 +57,7 @@ public class ProductBOMCycleDetectionTest
 	 *          F  (A)
 	 * </pre>
 	 */
-	@Test(expected = LiberoException.class)
+	@Test(expected = AdempiereException.class)
 	public void testBOMCycles()
 	{
 		final I_M_Product pA = helper.createProduct("A");
