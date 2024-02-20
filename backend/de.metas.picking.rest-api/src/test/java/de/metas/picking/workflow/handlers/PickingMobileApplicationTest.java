@@ -2,6 +2,7 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -11,6 +12,10 @@ import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.i18n.Language;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -23,6 +28,7 @@ import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -40,6 +46,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,6 +90,10 @@ class PickingMobileApplicationTest
 	{
 		helper = new PickingJobTestHelper();
 		recorder = helper.newTestRecorder();
+
+		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationRepository()));
+
 
 		// Needed because we take snapshots of date/time translatable strings,
 		// and it seems the date/time formats differs from OS to OS or from JVM impl to JVM impl
