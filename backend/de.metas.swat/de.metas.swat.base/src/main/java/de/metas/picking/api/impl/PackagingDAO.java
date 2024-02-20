@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
@@ -146,7 +145,7 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter by Locked By - this are not the T_Lock records, but a decidated shipment-schedule-to-user-lock 
+		// Filter by Locked By User (via M_ShipmentSchedule_Lock table)
 		if (query.getLockedBy() != null)
 		{
 			if (query.isIncludeNotLocked())
@@ -157,6 +156,15 @@ public class PackagingDAO implements IPackagingDAO
 			{
 				queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID, query.getLockedBy());
 			}
+		}
+
+		//
+		// Exclude shipment-schedules that are currently locked for processing/shipment-creation (via T_Lock table)
+		if (query.isExcludeLockedForProcessing())
+		{
+			queryBuilder.filter(lockManager.getNotLockedFilter(
+					I_M_ShipmentSchedule.Table_Name,
+					I_M_Packageable_V.Table_Name + "." + I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID));
 		}
 
 		//
@@ -171,10 +179,6 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
 		}
-
-		// exclude shipment-schedules that are currently locked for shipment-creation
-		final IQueryBuilder<I_M_ShipmentSchedule> lockedRecordsQueryBuilder = lockManager.getLockedRecordsQueryBuilder(I_M_ShipmentSchedule.class, PlainContextAware.newWithThreadInheritedTrx());
-		queryBuilder.addNotInSubQueryFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, lockedRecordsQueryBuilder.create());
 
 		return queryBuilder.create();
 	}
