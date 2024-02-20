@@ -6,12 +6,12 @@ import { toastError } from '../../../../../utils/toast';
 import { updateManufacturingIssue } from '../../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../../../utils/huQRCodes';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
   getActivityById,
+  getLineByIdFromActivity,
   getStepByHuIdFromActivity,
   getStepByIdFromActivity,
   getStepByQRCodeFromActivity,
@@ -28,15 +28,29 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
 
-  const eligibleBarcode =
-    stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
+  let targetQrCode;
+  let eligibleBarcode;
+  if (!stepId) {
+    eligibleBarcode = undefined;
+    const line = getLineByIdFromActivity(activity, lineId);
+    const locatorQrCodeSet = new Set();
+    Object.values(line.steps).forEach((step) => locatorQrCodeSet.add(step.locatorQrCode));
+    const locatorQrCodeArray = Array.from(locatorQrCodeSet);
+    if (locatorQrCodeArray.length === 1) {
+      targetQrCode = locatorQrCodeArray[0];
+    }
+  } else {
+    const step = getStepByIdFromActivity(activity, lineId, stepId);
+    eligibleBarcode = step.huQRCode;
+    targetQrCode = step.locatorQrCode;
+  }
 
   const resolveScannedBarcode = (scannedBarcode, handlingUnitInfo) => {
     let step;
     if (handlingUnitInfo) {
       const actualHuId =
-        handlingUnitInfo.numberOfAggregatedHUs > 1 && handlingUnitInfo.parentHuId
-          ? handlingUnitInfo.parentHuId
+        handlingUnitInfo.numberOfAggregatedHUs > 1 && handlingUnitInfo.topLevelParentId
+          ? handlingUnitInfo.topLevelParentId
           : handlingUnitInfo.id;
 
       step = getStepByHuIdFromActivity(activity, lineId, actualHuId);
@@ -119,6 +133,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
       resolveScannedBarcode={resolveScannedBarcode}
+      onlyFromLocatorQrCode={targetQrCode}
       //
       // userInfo={userInfo}
       // qtyTarget={qtyToIssueTarget}

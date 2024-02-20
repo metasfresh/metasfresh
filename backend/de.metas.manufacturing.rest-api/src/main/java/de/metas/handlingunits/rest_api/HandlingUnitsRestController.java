@@ -23,7 +23,6 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
@@ -299,19 +298,17 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/move")
-	public List<JsonHU> moveHU(
+	public void moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
-		final ImmutableSet<HuId> movedHuIds = handlingUnitsService.move(MoveHURequest.builder()
+		handlingUnitsService.move(MoveHURequest.builder()
 										  .huId(request.getHuId())
 										  .huQRCode(huQRCode)
 										  .numberOfTUs(request.getNumberOfTUs())
 										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
 										  .build());
-
-		return handlingUnitsService.getByIds(movedHuIds, Env.getADLanguageOrBaseLanguage(), huQRCode);
 	}
 
 	@PostMapping("/bulk/move")

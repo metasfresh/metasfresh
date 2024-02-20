@@ -20,6 +20,7 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 const ScanHUAndGetQtyComponent = ({
   eligibleBarcode,
   resolveScannedBarcode,
+  onlyFromLocatorQrCode,
   //
   userInfo,
   qtyCaption,
@@ -207,7 +208,7 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_BARCODE: {
       return (
         <>
-          <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} />
+          <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} locatorQrCode={onlyFromLocatorQrCode} />
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: ${eligibleBarcode}`}
@@ -251,6 +252,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Props: Qty related
   userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
+  onlyFromLocatorQrCode: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
   lineQtyToIssue: PropTypes.number,

@@ -22,6 +22,7 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String locatorName;
+	@NonNull String locatorQrCode;
 	@NonNull String huId;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyHUCapacity;
@@ -39,6 +40,7 @@ public class JsonRawMaterialsIssueLineStep
 				.productId(String.valueOf(step.getProductId().getRepoId()))
 				.productName(step.getProductName().translate(jsonOpts.getAdLanguage()))
 				.locatorName(step.getIssueFromLocator().getCaption())
+				.locatorQrCode(step.getIssueFromLocator().getQrCode().toGlobalQRCodeJsonString())
 				.huId(step.getIssueFromHU().getId().toHUValue())
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())

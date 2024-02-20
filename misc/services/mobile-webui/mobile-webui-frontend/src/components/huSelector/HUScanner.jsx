@@ -7,7 +7,7 @@ import { extractErrorResponseFromAxiosError, toastError } from '../../utils/toas
 import * as api from '../../apps/huManager/api';
 import { isKnownQRCodeFormat } from '../../utils/huQRCodes';
 
-const HUScanner = ({ onResolvedBarcode }) => {
+const HUScanner = ({ onResolvedBarcode, locatorQrCode }) => {
   const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
   const [locatingQrCodeScannerInfo, setLocatingQrCodeScannerInfo] = useState(undefined);
 
@@ -19,7 +19,14 @@ const HUScanner = ({ onResolvedBarcode }) => {
       } catch (axiosError) {
         const errorResponse = extractErrorResponseFromAxiosError(axiosError);
         if (errorResponse && errorResponse.multipleHUsFound) {
-          return { targetQrCode: scannedBarcode };
+          if (!locatorQrCode) {
+            return { targetQrCode: scannedBarcode };
+          } else {
+            return getListByLocatingAndHuQR({
+              qrCode: scannedBarcode,
+              upperLevelLocatingQrCode: locatorQrCode,
+            });
+          }
         } else {
           throw axiosError;
         }
@@ -32,10 +39,17 @@ const HUScanner = ({ onResolvedBarcode }) => {
     if (!locatingQrCodeScannerInfo || !locatingQrCodeScannerInfo.targetQrCode) {
       return toastError({ messageKey: 'activities.huManager.missingTargetQrCode' });
     }
+    return getListByLocatingAndHuQR({
+      qrCode: locatingQrCodeScannerInfo.targetQrCode,
+      upperLevelLocatingQrCode: scannedBarcode,
+    });
+  };
+
+  const getListByLocatingAndHuQR = ({ qrCode, upperLevelLocatingQrCode }) => {
     return api
       .listHUsByQRCode({
-        qrCode: locatingQrCodeScannerInfo.targetQrCode,
-        upperLevelLocatingQrCode: scannedBarcode,
+        qrCode: qrCode,
+        upperLevelLocatingQrCode: upperLevelLocatingQrCode,
       })
       .then((huList) => {
         setLocatingQrCodeScannerInfo(undefined);
@@ -99,6 +113,7 @@ const HUScanner = ({ onResolvedBarcode }) => {
 
 HUScanner.propTypes = {
   onResolvedBarcode: PropTypes.func.isRequired,
+  locatorQrCode: PropTypes.string,
 };
 
 export default HUScanner;
