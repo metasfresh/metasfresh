@@ -23,6 +23,7 @@ public class PickingJobReference
 	@NonNull ZonedDateTime preparationDate;
 	@NonNull BPartnerLocationId deliveryLocationId;
 	@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+	boolean isShipmentSchedulesLocked;
 
 	@Nullable BPartnerLocationId handoverLocationId;
 }

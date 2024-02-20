@@ -44,7 +44,7 @@ import java.util.List;
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary">task</a>
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {
@@ -155,7 +155,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29">task</a>
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()

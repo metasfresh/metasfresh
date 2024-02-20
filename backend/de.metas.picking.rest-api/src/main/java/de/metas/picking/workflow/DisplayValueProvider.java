@@ -32,6 +32,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -77,7 +78,7 @@ public class DisplayValueProvider
 		this.profile = profile;
 	}
 
-	public void cacheWarmUpForPickingJobReferences(final ImmutableList<PickingJobReference> pickingJobReferences)
+	public void cacheWarmUpForPickingJobReferences(final PickingJobReferenceList pickingJobReferences)
 	{
 		if (pickingJobReferences.isEmpty())
 		{

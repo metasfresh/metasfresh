@@ -4,7 +4,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -40,6 +42,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -51,6 +54,7 @@ import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -63,10 +67,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 class PickingJobLoaderAndSaver
 {
@@ -79,6 +86,7 @@ class PickingJobLoaderAndSaver
 	private final ArrayListMultimap<PickingJobLineId, I_M_Picking_Job_Step> pickingJobSteps = ArrayListMultimap.create();
 	private final ArrayListMultimap<PickingJobStepId, I_M_Picking_Job_Step_HUAlternative> pickingJobStepAlternatives = ArrayListMultimap.create();
 	private final ArrayListMultimap<PickingJobStepId, I_M_Picking_Job_Step_PickedHU> pickedHUs = ArrayListMultimap.create();
+	private final HashMap<PickingJobId, Boolean> hasLocks = new HashMap<>();
 
 	private PickingJobLoaderAndSaver(@Nullable final PickingJobLoaderSupportingServices loadingSupportingServices)
 	{
@@ -113,7 +121,7 @@ class PickingJobLoaderAndSaver
 		}
 
 		// IMPORTANT to take a snapshot of Sets.difference because that's a live view ...and we are going to add data TO pickingJobS map...
-		final ImmutableSet<PickingJobId> pickingJobIdsToLoad = ImmutableSet.copyOf(Sets.difference(pickingJobIds, pickingJobs.keySet()));
+		final HashSet<PickingJobId> pickingJobIdsToLoad = new HashSet<>(Sets.difference(pickingJobIds, pickingJobs.keySet()));
 		if (!pickingJobIdsToLoad.isEmpty())
 		{
 			loadRecordsFromDB(pickingJobIdsToLoad);
@@ -123,7 +131,6 @@ class PickingJobLoaderAndSaver
 				.map(pickingJobs::get)
 				.map(this::loadJob)
 				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	public void save(@NonNull final PickingJob pickingJob)
@@ -340,7 +347,7 @@ class PickingJobLoaderAndSaver
 						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
-	private void loadRecordsFromDB(final ImmutableSet<PickingJobId> pickingJobIds)
+	private void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
 	{
 		if (pickingJobIds.isEmpty())
 		{
@@ -394,6 +401,8 @@ class PickingJobLoaderAndSaver
 
 			final ImmutableSet<BPartnerId> customerIds = records.stream().map(record -> extractDeliveryBPLocationId(record).getBpartnerId()).collect(ImmutableSet.toImmutableSet());
 			loadingSupportingServices.warmUpBPartnerNamesCache(customerIds);
+
+			hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
 		}
 	}
 
@@ -776,11 +785,11 @@ class PickingJobLoaderAndSaver
 				.build();
 	}
 
-	public List<PickingJobReference> loadPickingJobReferences(@NonNull final Set<PickingJobId> pickingJobIds)
+	public Stream<PickingJobReference> streamPickingJobReferences(@NonNull final Set<PickingJobId> pickingJobIds)
 	{
 		if (pickingJobIds.isEmpty())
 		{
-			return ImmutableList.of();
+			return Stream.of();
 		}
 
 		// IMPORTANT to take a snapshot of Sets.difference because that's a live view ...and we are going to add data TO pickingJobS map...
@@ -792,14 +801,13 @@ class PickingJobLoaderAndSaver
 
 		return pickingJobIds.stream()
 				.map(pickingJobs::get)
-				.map(this::loadPickingJobReference)
-				.collect(ImmutableList.toImmutableList());
+				.map(this::loadPickingJobReference);
 	}
 
 	private PickingJobReference loadPickingJobReference(final I_M_Picking_Job record)
 	{
-		final PickingJobHeader header = toPickingJobHeader(record);
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
+		final PickingJobHeader header = toPickingJobHeader(record);
 
 		return PickingJobReference.builder()
 				.pickingJobId(pickingJobId)
@@ -809,6 +817,7 @@ class PickingJobLoaderAndSaver
 				.deliveryDate(header.getDeliveryDate())
 				.preparationDate(header.getPreparationDate())
 				.shipmentScheduleIds(getShipmentScheduleIds(pickingJobId))
+				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
 				.deliveryLocationId(header.getDeliveryBPLocationId())
 				.handoverLocationId(header.getHandoverLocationId())
 				.build();
@@ -837,4 +846,49 @@ class PickingJobLoaderAndSaver
 		return shipmentScheduleIds.build();
 	}
 
+	private ImmutableSetMultimap<PickingJobId, ShipmentScheduleId> getShipmentScheduleIds(final Set<PickingJobId> pickingJobIds)
+	{
+		final ImmutableSetMultimap.Builder<PickingJobId, ShipmentScheduleId> result = ImmutableSetMultimap.builder();
+		for (final PickingJobId pickingJobId : pickingJobIds)
+		{
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds(pickingJobId);
+			result.putAll(pickingJobId, shipmentScheduleIds);
+		}
+		return result.build();
+	}
+
+	private Map<PickingJobId, Boolean> computePickingJobHasLocks(@NonNull final Set<PickingJobId> pickingJobIds)
+	{
+		if (pickingJobIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSetMultimap<PickingJobId, ShipmentScheduleId> shipmentScheduleIdsByPickingJobId = getShipmentScheduleIds(pickingJobIds);
+
+		final SetMultimap<ShipmentScheduleId, ExistingLockInfo> existingLocks = loadingSupportingServices().getLocks(shipmentScheduleIdsByPickingJobId.values());
+
+		final ImmutableMap.Builder<PickingJobId, Boolean> result = ImmutableMap.builder();
+		for (final PickingJobId pickingJobId : pickingJobIds)
+		{
+			boolean hasLocks = false;
+			for (ShipmentScheduleId shipmentScheduleId : shipmentScheduleIdsByPickingJobId.get(pickingJobId))
+			{
+				if (existingLocks.containsKey(shipmentScheduleId))
+				{
+					hasLocks = true;
+					break;
+				}
+			}
+
+			result.put(pickingJobId, hasLocks);
+		}
+
+		return result.build();
+	}
+
+	private OptionalBoolean getShipmentSchedulesIsLocked(@NonNull final PickingJobId pickingJobId)
+	{
+		return OptionalBoolean.ofNullableBoolean(hasLocks.get(pickingJobId));
+	}
 }

@@ -99,7 +99,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			try (final CloseableReentrantLock ignored = parentLock.mutex)
+			try (final CloseableReentrantLock ignored = parentLock.mutex.open())
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);

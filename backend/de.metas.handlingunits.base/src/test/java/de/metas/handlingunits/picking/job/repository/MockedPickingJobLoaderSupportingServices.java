@@ -1,10 +1,14 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
@@ -91,6 +95,9 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 		}
 		return qrCode;
 	}
+
+	@Override
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)
 	{

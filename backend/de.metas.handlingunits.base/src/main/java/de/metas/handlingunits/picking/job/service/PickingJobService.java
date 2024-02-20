@@ -169,6 +169,7 @@ public class PickingJobService
 				.onlyFromSalesOrder(true)
 				.lockedBy(query.getUserId())
 				.includeNotLocked(true)
+				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(query.getExcludeShipmentScheduleIds())
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,

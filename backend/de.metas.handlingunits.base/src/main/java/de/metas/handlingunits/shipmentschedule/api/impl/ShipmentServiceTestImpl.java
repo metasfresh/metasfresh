@@ -58,6 +58,10 @@ public class ShipmentServiceTestImpl implements IShipmentService
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 	}
 
+	/**
+	 * Always creates shipments synchronously and directly.
+	 * Ignores {@link GenerateShipmentsForSchedulesRequest#isWaitForShipments()}.
+	 */
 	@NonNull
 	@VisibleForTesting
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)

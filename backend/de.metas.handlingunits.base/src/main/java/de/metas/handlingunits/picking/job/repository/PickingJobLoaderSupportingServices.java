@@ -1,9 +1,12 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
@@ -41,4 +44,6 @@ public interface PickingJobLoaderSupportingServices
 	String getLocatorName(@NonNull LocatorId locatorId);
 
 	HUQRCode getQRCodeByHUId(HuId huId);
+
+	SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(Collection<ShipmentScheduleId> shipmentScheduleIds);
 }
