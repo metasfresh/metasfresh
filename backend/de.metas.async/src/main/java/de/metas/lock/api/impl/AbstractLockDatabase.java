@@ -322,7 +322,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// note: don't specify a particular ordering; leave that freedom to the caller if this method
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, contextProvider)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
+				// .addOnlyContextClientOrSystem() // avoid applying context client because in some cases context is not available
 				.filter(TypedSqlQueryFilter.of(lockedRecordsSQL));
 	}
 
