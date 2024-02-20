@@ -83,7 +83,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
@@ -139,6 +138,10 @@ public class ShipmentService implements IShipmentService
 		this.asyncBatchService = asyncBatchService;
 	}
 
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsRequest#isWaitForShipments()} {@code false},<br/>
+	 * and there is already an unprocessed workpackage with the same shipment-schedules, the method will fail.<br/>
+	 */
 	@NonNull
 	public ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
@@ -149,18 +152,25 @@ public class ShipmentService implements IShipmentService
 					.setParameter("GenerateShipmentsRequest", request);
 		}
 
-		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> {
-			validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-
+		if (request.isWaitForShipments())
+		{
+			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
+			return asyncBatchService.executeBatch(() -> {
+				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+				return enqueueShipmentSchedules(request);
+			}, request.getAsyncBatchId());
+		}
+		else
+		{
+			// Just enqueue the workpackages and move on
 			return enqueueShipmentSchedules(request);
-		};
-
-		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
-		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
-		// See ShipmentScheduleEnqueuer.acquireLock(...)
-		return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+		}
 	}
 
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsForSchedulesRequest#isWaitForShipments()} {@code false},<br/>
+	 * the warning from {@link #generateShipments(GenerateShipmentsRequest)} applies.
+	 */
 	@NonNull
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
@@ -187,6 +197,7 @@ public class ShipmentService implements IShipmentService
 									.isShipDateToday(request.getIsShipDateToday())
 									.isCompleteShipment(request.getIsCompleteShipment())
 									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+									.waitForShipments(request.isWaitForShipments())
 									.build()
 					);
 

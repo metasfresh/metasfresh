@@ -21,8 +21,8 @@
  */
 
 const audioCtx = new AudioContext();
-export const beep = ({ beepFrequency, beepDurationMillis, vibrateMillis, beepVolume, ...others }) => {
-  console.trace('beep', { beepFrequency, beepDurationMillis, beepVolume, vibrateMillis, ...others });
+export const beep = ({ beepFrequency, beepDurationMillis, vibrateMillis, beepVolume }) => {
+  // console.trace('beep', { beepFrequency, beepDurationMillis, beepVolume, vibrateMillis, ...others });
 
   try {
     //

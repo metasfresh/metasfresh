@@ -118,6 +118,8 @@ public class PickingJobCompleteCommand
 					.onTheFlyPickToPackingInstructions(true)
 					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
+					// since we are not going to immediately create invoices, we want to move on and to wait for shipments
+					.waitForShipments(false) 
 					.build());
 		}
 	}
