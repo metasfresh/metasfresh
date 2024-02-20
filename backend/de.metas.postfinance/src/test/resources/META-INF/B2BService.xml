@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+        name="B2BService"
+        targetNamespace="http://ch.swisspost.ebill.b2bservice"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+        xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+        xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+        xmlns:tns="http://ch.swisspost.ebill.b2bservice"
+        xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+        xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+        xmlns:sc1="http://schemas.sun.com/2006/03/wss/client"
+        xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy">
+    <wsp:Policy wsu:Id="UserNamePassword_policy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken RequireClientCertificate="false"/>
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Strict/>
+                            </wsp:Policy>
+                        </sp:Layout>
+                        <sp:IncludeTimestamp/>
+                    </wsp:Policy>
+                </sp:TransportBinding>
+                <sp:SignedSupportingTokens xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:UsernameToken
+                                sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SignedSupportingTokens>
+                <sp:Wss11 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy/>
+                </sp:Wss11>
+                <sp:Trust10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:MustSupportIssuedTokens/>
+                        <sp:RequireClientEntropy/>
+                        <sp:RequireServerEntropy/>
+                    </wsp:Policy>
+                </sp:Trust10>
+                <wsaw:UsingAddressing/>
+                <sc1:CallbackHandlerConfiguration wspp:visibility="private">
+                    <sc1:CallbackHandler name="usernameHandler" default="userid" />
+                    <sc1:CallbackHandler name="passwordHandler" default="password"/>
+                </sc1:CallbackHandlerConfiguration>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsdl:types>
+        <xs:schema elementFormDefault="qualified" targetNamespace="http://ch.swisspost.ebill.b2bservice"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:import namespace="http://swisspost_ch.ebs.ebill.b2bservice"/>
+            <xs:element name="GetInvoiceListBiller">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoiceListBillerResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q1="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetInvoiceListBillerResult" nillable="true" type="q1:ArrayOfInvoiceReport"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoiceBiller">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="TransactionID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="BillDetail" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoiceBillerResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q2="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetInvoiceBillerResult" nillable="true" type="q2:ArrayOfDownloadFile"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetProcessProtocolList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetProcessProtocolListResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q3="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetProcessProtocolListResult" nillable="true" type="q3:ArrayOfProtocolReport"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetProcessProtocol">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="CreateDate" type="xs:dateTime"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetProcessProtocolResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q4="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetProcessProtocolResult" nillable="true" type="q4:ArrayOfDownloadFile"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetRegistrationProtocolList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetRegistrationProtocolListResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q5="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetRegistrationProtocolListResult" nillable="true" type="q5:ArrayOfProtocolReport"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetRegistrationProtocol">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="CreateDate" type="xs:dateTime"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetRegistrationProtocolResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q6="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetRegistrationProtocolResult" nillable="true" type="q6:ArrayOfDownloadFile"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UploadFilesReport">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q7="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="1" name="invoices" nillable="true" type="q7:ArrayOfInvoice"/>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UploadFilesReportResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q8="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="UploadFilesReportResult" nillable="true" type="q8:ArrayOfProcessedInvoice"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SearchInvoices">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q9="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="1" name="Parameter" nillable="true" type="q9:SearchInvoiceParameter"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SearchInvoicesResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q10="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="SearchInvoicesResult" nillable="true" type="q10:SearchInvoicesResponse"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetEBillRecipientSubscriptionStatus">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="RecipientID" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetEBillRecipientSubscriptionStatusResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q11="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetEBillRecipientSubscriptionStatusResult" nillable="true" type="q11:ArrayOfEBillRecipientSubscriptionStatus"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetEBillRecipientSubscriptionStatusBulk">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element xmlns:q12="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="1" name="RecipientID" nillable="true" type="q12:ArrayOfstring"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetEBillRecipientSubscriptionStatusBulkResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q13="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetEBillRecipientSubscriptionStatusBulkResult" nillable="true" type="q13:EBillRecipientSubscriptionStatusBulk"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="InitiateEBillRecipientSubscription">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="SubscriptionInitiationEmailAddress" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="InitiateEBillRecipientSubscriptionResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q14="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="InitiateEBillRecipientSubscriptionResult" nillable="true" type="q14:EBillRecipientSubscriptionInitiation"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ConfirmEBillRecipientSubscription">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="SubscriptionInitiationToken" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="SubscriptionInitiationActivationCode" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ConfirmEBillRecipientSubscriptionResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q15="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="ConfirmEBillRecipientSubscriptionResult" nillable="true" type="q15:EBillRecipientSubscriptionConfirmation"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetBillerReportList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetBillerReportListResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q16="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetBillerReportListResult" nillable="true" type="q16:ArrayOfBillerReport"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetBillerReport">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="CreateDate" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="FileType" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetBillerReportResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q17="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetBillerReportResult" nillable="true" type="q17:DownloadFile"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoicePayer">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="eBillAccountID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="TransactionID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="FileType" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoicePayerResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q18="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetInvoicePayerResult" nillable="true" type="q18:DownloadFile"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoiceListPayer">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="eBillAccountID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="ArchiveData" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetInvoiceListPayerResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element xmlns:q19="http://swisspost_ch.ebs.ebill.b2bservice" minOccurs="0" name="GetInvoiceListPayerResult" nillable="true" type="q19:ArrayOfInvoiceReport"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ExecutePing">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="1" name="BillerID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="1" name="eBillAccountID" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="ErrorTest" nillable="true" type="xs:boolean"/>
+                        <xs:element minOccurs="0" name="ExceptionTest" nillable="true" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ExecutePingResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ExecutePingResult" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="B2BService_GetInvoiceListBiller_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceListBiller"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoiceListBiller_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceListBillerResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoiceBiller_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceBiller"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoiceBiller_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceBillerResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetProcessProtocolList_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetProcessProtocolList"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetProcessProtocolList_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetProcessProtocolListResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetProcessProtocol_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetProcessProtocol"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetProcessProtocol_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetProcessProtocolResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetRegistrationProtocolList_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetRegistrationProtocolList"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetRegistrationProtocolList_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetRegistrationProtocolListResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetRegistrationProtocol_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetRegistrationProtocol"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetRegistrationProtocol_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetRegistrationProtocolResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_UploadFilesReport_InputMessage">
+        <wsdl:part name="parameters" element="tns:UploadFilesReport"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_UploadFilesReport_OutputMessage">
+        <wsdl:part name="parameters" element="tns:UploadFilesReportResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_SearchInvoices_InputMessage">
+        <wsdl:part name="parameters" element="tns:SearchInvoices"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_SearchInvoices_OutputMessage">
+        <wsdl:part name="parameters" element="tns:SearchInvoicesResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetEBillRecipientSubscriptionStatus_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetEBillRecipientSubscriptionStatus"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetEBillRecipientSubscriptionStatus_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetEBillRecipientSubscriptionStatusResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetEBillRecipientSubscriptionStatusBulk_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetEBillRecipientSubscriptionStatusBulk"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetEBillRecipientSubscriptionStatusBulk_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetEBillRecipientSubscriptionStatusBulkResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_InitiateEBillRecipientSubscription_InputMessage">
+        <wsdl:part name="parameters" element="tns:InitiateEBillRecipientSubscription"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_InitiateEBillRecipientSubscription_OutputMessage">
+        <wsdl:part name="parameters" element="tns:InitiateEBillRecipientSubscriptionResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_ConfirmEBillRecipientSubscription_InputMessage">
+        <wsdl:part name="parameters" element="tns:ConfirmEBillRecipientSubscription"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_ConfirmEBillRecipientSubscription_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ConfirmEBillRecipientSubscriptionResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetBillerReportList_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetBillerReportList"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetBillerReportList_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetBillerReportListResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetBillerReport_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetBillerReport"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetBillerReport_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetBillerReportResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoicePayer_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoicePayer"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoicePayer_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoicePayerResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoiceListPayer_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceListPayer"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_GetInvoiceListPayer_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetInvoiceListPayerResponse"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_ExecutePing_InputMessage">
+        <wsdl:part name="parameters" element="tns:ExecutePing"/>
+    </wsdl:message>
+    <wsdl:message name="B2BService_ExecutePing_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ExecutePingResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="B2BService">
+        <wsdl:operation name="GetInvoiceListBiller">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListBiller" message="tns:B2BService_GetInvoiceListBiller_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListBillerResponse" message="tns:B2BService_GetInvoiceListBiller_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoiceBiller">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceBiller" message="tns:B2BService_GetInvoiceBiller_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceBillerResponse" message="tns:B2BService_GetInvoiceBiller_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetProcessProtocolList">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocolList" message="tns:B2BService_GetProcessProtocolList_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocolListResponse" message="tns:B2BService_GetProcessProtocolList_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetProcessProtocol">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocol" message="tns:B2BService_GetProcessProtocol_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocolResponse" message="tns:B2BService_GetProcessProtocol_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetRegistrationProtocolList">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocolList" message="tns:B2BService_GetRegistrationProtocolList_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocolListResponse" message="tns:B2BService_GetRegistrationProtocolList_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetRegistrationProtocol">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocol" message="tns:B2BService_GetRegistrationProtocol_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocolResponse" message="tns:B2BService_GetRegistrationProtocol_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="UploadFilesReport">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/UploadFilesReport" message="tns:B2BService_UploadFilesReport_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/UploadFilesReportResponse" message="tns:B2BService_UploadFilesReport_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="SearchInvoices">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/SearchInvoices" message="tns:B2BService_SearchInvoices_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/SearchInvoicesResponse" message="tns:B2BService_SearchInvoices_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetEBillRecipientSubscriptionStatus">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatus" message="tns:B2BService_GetEBillRecipientSubscriptionStatus_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatusResponse" message="tns:B2BService_GetEBillRecipientSubscriptionStatus_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetEBillRecipientSubscriptionStatusBulk">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatusBulk" message="tns:B2BService_GetEBillRecipientSubscriptionStatusBulk_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatusBulkResponse" message="tns:B2BService_GetEBillRecipientSubscriptionStatusBulk_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="InitiateEBillRecipientSubscription">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/InitiateEBillRecipientSubscription" message="tns:B2BService_InitiateEBillRecipientSubscription_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/InitiateEBillRecipientSubscriptionResponse" message="tns:B2BService_InitiateEBillRecipientSubscription_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ConfirmEBillRecipientSubscription">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/ConfirmEBillRecipientSubscription" message="tns:B2BService_ConfirmEBillRecipientSubscription_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/ConfirmEBillRecipientSubscriptionResponse" message="tns:B2BService_ConfirmEBillRecipientSubscription_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetBillerReportList">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReportList" message="tns:B2BService_GetBillerReportList_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReportListResponse" message="tns:B2BService_GetBillerReportList_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetBillerReport">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReport" message="tns:B2BService_GetBillerReport_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReportResponse" message="tns:B2BService_GetBillerReport_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoicePayer">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoicePayer" message="tns:B2BService_GetInvoicePayer_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoicePayerResponse" message="tns:B2BService_GetInvoicePayer_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoiceListPayer">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListPayer" message="tns:B2BService_GetInvoiceListPayer_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListPayerResponse" message="tns:B2BService_GetInvoiceListPayer_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ExecutePing">
+            <wsdl:input wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/ExecutePing" message="tns:B2BService_ExecutePing_InputMessage"/>
+            <wsdl:output wsaw:Action="http://ch.swisspost.ebill.b2bservice/B2BService/ExecutePingResponse" message="tns:B2BService_ExecutePing_OutputMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="UserNamePassword" type="tns:B2BService">
+        <wsp:PolicyReference URI="#UserNamePassword_policy"/>
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="GetInvoiceListBiller">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListBiller" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoiceBiller">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceBiller" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetProcessProtocolList">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocolList" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetProcessProtocol">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetProcessProtocol" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetRegistrationProtocolList">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocolList" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetRegistrationProtocol">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetRegistrationProtocol" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="UploadFilesReport">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/UploadFilesReport" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="SearchInvoices">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/SearchInvoices" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetEBillRecipientSubscriptionStatus">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatus" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetEBillRecipientSubscriptionStatusBulk">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetEBillRecipientSubscriptionStatusBulk" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="InitiateEBillRecipientSubscription">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/InitiateEBillRecipientSubscription" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ConfirmEBillRecipientSubscription">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/ConfirmEBillRecipientSubscription" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetBillerReportList">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReportList" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetBillerReport">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetBillerReport" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoicePayer">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoicePayer" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetInvoiceListPayer">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/GetInvoiceListPayer" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ExecutePing">
+            <soap12:operation soapAction="http://ch.swisspost.ebill.b2bservice/B2BService/ExecutePing" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="B2BService">
+        <wsdl:port name="UserNamePassword" binding="tns:UserNamePassword">
+            <soap12:address location="https://ebill-ki.postfinance.ch/B2BService/B2BService.svc"/>
+            <wsa10:EndpointReference>
+                <wsa10:Address>https://ebill-ki.postfinance.ch/B2BService/B2BService.svc</wsa10:Address>
+            </wsa10:EndpointReference>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
