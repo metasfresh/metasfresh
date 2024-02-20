@@ -1,6 +1,6 @@
 package org.eevolution.api.impl;
 
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.compiere.util.Env.getCtx;
-
 /**
  * Checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
  *
@@ -32,7 +30,8 @@ class ProductBOMCycleDetection
 	{
 		return new ProductBOMCycleDetection();
 	}
-	private static final String ERR_PRODUCT_BOM_CYCLE = "Product_BOM_Cycle_Error";
+
+	private static final AdMessageKey ERR_PRODUCT_BOM_CYCLE = AdMessageKey.of("Product_BOM_Cycle_Error");
 	private final Set<ProductId> seenProductIds = new LinkedHashSet<>();
 
 	private ProductBOMCycleDetection()
@@ -48,15 +47,10 @@ class ProductBOMCycleDetection
 		catch (final BOMCycleException e)
 		{
 			final I_M_Product product = Services.get(IProductBL.class).getById(productId);
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(), ERR_PRODUCT_BOM_CYCLE, new Object[] { product.getValue() }));
+			throw new AdempiereException(ERR_PRODUCT_BOM_CYCLE, product.getValue());
 		}
 	}
 
-	/**
-	 * get an implosion of the product
-	 *
-	 * @return DefaultMutableTreeNode Tree with all parent product
-	 */
 	private DefaultMutableTreeNode assertNoCycles(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
@@ -128,9 +122,6 @@ class ProductBOMCycleDetection
 		seenProductIds.clear();
 	}
 
-	/**
-	 * @return true if not already seen
-	 */
 	private boolean markProductAsSeen(final ProductId productId)
 	{
 		return seenProductIds.add(productId);
