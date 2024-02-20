@@ -49,7 +49,7 @@ public class QRCodeConfiguration
 		return isOneQrCodeForMatchingAttributes && !Check.isEmpty(attributeIds);
 	}
 
-	public boolean isOneQRCodeForAggregatedTUsRequired()
+	public boolean isOneQRCodeForAggregatedTUsEnabled()
 	{
 		return isOneQrCodeForAggregatedHUs || isGroupingByAttributesRequired();
 	}

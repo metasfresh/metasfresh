@@ -62,7 +62,7 @@ public class MoveHUCommand
 		this.huQRCodesService = huQRCodesService;
 		this.requestItems = requestItems;
 		this.targetQRCode = targetQRCode;
-		this.placeAggHusOnNewLUsWhenMoving = shouldPlaceAggTUsOnNewLUsAfterMove(targetQRCode, warehouseDAO);
+		this.placeAggHusOnNewLUsWhenMoving = shouldPlaceAggTUsOnNewLUAfterMove(targetQRCode, warehouseDAO);
 	}
 
 	public ImmutableSet<HuId> execute()
@@ -188,7 +188,7 @@ public class MoveHUCommand
 				.map(HuPackingInstructionsItemId::ofRepoId);
 	}
 
-	private static boolean shouldPlaceAggTUsOnNewLUsAfterMove(
+	private static boolean shouldPlaceAggTUsOnNewLUAfterMove(
 			@NonNull final GlobalQRCode target,
 			@NonNull final IWarehouseDAO warehouseDAO)
 	{

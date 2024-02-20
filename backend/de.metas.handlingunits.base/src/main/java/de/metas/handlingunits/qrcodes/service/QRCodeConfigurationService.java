@@ -22,7 +22,10 @@
 
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.QRCodeConfiguration;
 import de.metas.handlingunits.qrcodes.model.QRCodeConfigurationId;
@@ -34,20 +37,60 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class QRCodeConfigurationService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull
 	private final QRCodeConfigurationRepository repository;
 
+	public boolean isOneQrCodeForMultipleHUsEnabledFor(@NonNull final I_M_HU hu)
+	{
+		if (!handlingUnitsBL.isTransportUnitOrAggregate(hu))
+		{
+			return false;
+		}
+
+		return getConfigurationForHuId(hu)
+				.map(QRCodeConfiguration::isOneQRCodeForAggregatedTUsEnabled)
+				.orElse(false);
+	}
+
 	@NonNull
-	public Optional<QRCodeConfiguration> getConfigurationForHuId(@NonNull final I_M_HU hu)
+	public ImmutableSet<HuId> getEligibleHusForSharingQr(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> newHUs)
+	{
+		if (!isOneQrCodeForMultipleHUsEnabledFor(sourceHU))
+		{
+			return ImmutableSet.of();
+		}
+
+		return newHUs.stream()
+				.flatMap(newHU -> {
+					if (handlingUnitsBL.isLoadingUnit(newHU))
+					{
+						return handlingUnitsDAO.retrieveIncludedHUs(newHU).stream();
+					}
+					else
+					{
+						return Stream.of(newHU);
+					}
+				})
+				.filter(handlingUnitsBL::isTransportUnitOrAggregate)
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private Optional<QRCodeConfiguration> getConfigurationForHuId(@NonNull final I_M_HU hu)
 	{
 		final ProductId productId = handlingUnitsBL.getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
 		return Optional.ofNullable(productId)

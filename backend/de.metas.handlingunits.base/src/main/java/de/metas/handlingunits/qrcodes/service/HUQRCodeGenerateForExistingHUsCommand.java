@@ -130,7 +130,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 			piVersion = handlingUnitsBL.getEffectivePIVersion(hu);
 
 			if (qrCodeConfiguration != null
-					&& qrCodeConfiguration.isOneQRCodeForAggregatedTUsRequired()
+					&& qrCodeConfiguration.isOneQRCodeForAggregatedTUsEnabled()
 					&& alreadyGeneratedQRCodesCount <= 1)
 			{
 				requiredQRCodesCount = 1 - alreadyGeneratedQRCodesCount;

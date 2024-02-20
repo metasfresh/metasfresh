@@ -67,7 +67,6 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.QRCodeConfiguration;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.storage.EmptyHUListener;
@@ -1423,12 +1422,7 @@ public class HUTransformService
 			final HuId extractedTUId = splitOutTUFromAggregated(hu);
 			huQRCodesService.get().assign(huQRCode, extractedTUId);
 
-			final boolean isOneQrCodeForMultipleHUsEnabled = qrCodeConfigurationService.get()
-					.getConfigurationForHuId(hu)
-					.map(QRCodeConfiguration::isOneQRCodeForAggregatedTUsRequired)
-					.orElse(false);
-
-			if (!isOneQrCodeForMultipleHUsEnabled)
+			if (!qrCodeConfigurationService.get().isOneQrCodeForMultipleHUsEnabledFor(hu))
 			{
 				huQRCodesService.get().removeAssignment(huQRCode, ImmutableSet.of(huId));
 			}
@@ -1458,12 +1452,7 @@ public class HUTransformService
 					.setParameter("huId", aggregatedHuId);
 		}
 
-		final boolean oneQrCodeForMultipleHUsIsEnabled = qrCodeConfigurationService.get()
-				.getConfigurationForHuId(hu)
-				.map(QRCodeConfiguration::isOneQRCodeForAggregatedTUsRequired)
-				.orElse(false);
-
-		if (!oneQrCodeForMultipleHUsIsEnabled)
+		if (!qrCodeConfigurationService.get().isOneQrCodeForMultipleHUsEnabledFor(hu))
 		{
 			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as oneQrCodeForMultipleHUs is not enabled!")
 					.appendParametersToMessage()
