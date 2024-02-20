@@ -68,6 +68,8 @@ public interface ILock
 	 */
 	void unlockAll() throws LockAlreadyClosedException;
 
+	void unlockAllAfterTrxRollback();
+
 	/**
 	 * @return true if lock is closed
 	 */

@@ -22,6 +22,7 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -36,10 +37,12 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ToString
@@ -144,6 +147,41 @@ import java.util.concurrent.atomic.AtomicBoolean;
 					.release();
 
 			subtractCountLocked(countUnlocked);
+		}
+	}
+
+	@Override
+	public void unlockAllAfterTrxRollback()
+	{
+		Services.get(ITrxManager.class)
+				.accumulateAndProcessAfterRollback(
+						"LocksToReleaseOnRollback",
+						ImmutableList.of(this),
+						Lock::unlockAllNoFail);
+	}
+
+	private static void unlockAllNoFail(final List<Lock> locks)
+	{
+		if (locks.isEmpty())
+		{
+			return;
+		}
+
+		for (final Lock lock : locks)
+		{
+			if (lock.isClosed())
+			{
+				continue;
+			}
+
+			try
+			{
+				lock.unlockAll();
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Failed to unlock {}. Ignored", lock, ex);
+			}
 		}
 	}
 

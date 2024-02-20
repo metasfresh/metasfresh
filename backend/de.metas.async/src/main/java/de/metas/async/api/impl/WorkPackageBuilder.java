@@ -75,8 +75,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	 * Locker used to lock enqueued elements
 	 */
 	private ILockCommand _elementsLocker = null;
-	/** Lock aquired when enqueued elements were locked */
-	private Future<ILock> _futureElementsLock;
 
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
@@ -295,7 +293,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@NonNull
-	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
+	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final ILockCommand elementsLocker)
 	{
 		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
 
@@ -342,7 +340,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 				// Lock enqueued workpackage elements
 				if (elementsLocker != null)
 				{
-					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
+					final ILock lock = elementsLocker.acquire();
+					lock.unlockAllAfterTrxRollback();
 				}
 
 				//

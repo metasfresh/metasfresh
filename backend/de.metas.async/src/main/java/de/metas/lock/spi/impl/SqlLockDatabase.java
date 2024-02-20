@@ -1,6 +1,9 @@
 package de.metas.lock.spi.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.IUnlockCommand;
@@ -28,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -132,10 +136,10 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder(" SELECT count(1)"
-															+ " FROM " + I_T_Lock.Table_Name
-															+ " WHERE "
-															+ I_T_Lock.COLUMNNAME_AD_Table_ID + "=" + toSqlParam(adTableId, sqlParams)
-															+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + "=" + toSqlParam(recordId, sqlParams));
+				+ " FROM " + I_T_Lock.Table_Name
+				+ " WHERE "
+				+ I_T_Lock.COLUMNNAME_AD_Table_ID + "=" + toSqlParam(adTableId, sqlParams)
+				+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + "=" + toSqlParam(recordId, sqlParams));
 
 		if (lockOwner != null)
 		{
@@ -559,7 +563,13 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String joinColumnNameFQ = tableName + "." + keyColumnName;
 		final String sqlWhereClause = getNotLockedWhereClause(tableName, joinColumnNameFQ);
+		return TypedSqlQueryFilter.of(sqlWhereClause);
+	}
 
+	@Override
+	public <T> IQueryFilter<T> getNotLockedFilter(@NonNull String modelTableName, @NonNull final String joinColumnNameFQ)
+	{
+		final String sqlWhereClause = getNotLockedWhereClause(modelTableName, joinColumnNameFQ);
 		return TypedSqlQueryFilter.of(sqlWhereClause);
 	}
 
@@ -668,6 +678,57 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		final LockOwner lockOwnerToUse = lockOwner == null ? LockOwner.NONE : lockOwner;
 
+		final ImmutableList<ExistingLockInfo> result = retrieveLockInfos(
+				I_T_Lock.COLUMNNAME_AD_Table_ID + " = ? AND " + I_T_Lock.COLUMNNAME_Record_ID + " = ? AND " + I_T_Lock.COLUMNNAME_Owner + " = ?",
+				tableRecordReference.getAdTableId(),
+				tableRecordReference.getRecord_ID(),
+				lockOwnerToUse.getOwnerName());
+
+		Check.assume(result.size() <= 1, "There can be only one lock for the same owner");
+
+		return result.isEmpty() ? null : result.get(0);
+	}
+
+	@Override
+	public SetMultimap<TableRecordReference, ExistingLockInfo> getLockInfosByRecordIds(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final ImmutableSetMultimap<AdTableId, Integer> recordIdsByTableId = recordRefs.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(TableRecordReference::getAdTableId, TableRecordReference::getRecord_ID));
+
+		final StringBuilder sqlWhereClause = new StringBuilder();
+		final ArrayList<Object> sqlWhereClauseParams = new ArrayList<>();
+		for (final AdTableId adTableId : recordIdsByTableId.keySet())
+		{
+			final ImmutableSet<Integer> recordIds = recordIdsByTableId.get(adTableId);
+
+			if (sqlWhereClause.length() > 0)
+			{
+				sqlWhereClause.append(" OR ");
+			}
+
+			sqlWhereClause.append("(");
+			sqlWhereClause.append(I_T_Lock.COLUMNNAME_AD_Table_ID + "=?");
+			sqlWhereClauseParams.add(adTableId);
+
+			sqlWhereClause.append(" AND ").append(DB.buildSqlList(I_T_Lock.COLUMNNAME_Record_ID, recordIds, sqlWhereClauseParams));
+			sqlWhereClause.append(")");
+		}
+
+		return retrieveLockInfos(sqlWhereClause, sqlWhereClauseParams.toArray())
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						ExistingLockInfo::getLockedRecord,
+						lockInfo -> lockInfo
+				));
+	}
+
+	private ImmutableList<ExistingLockInfo> retrieveLockInfos(@NonNull final CharSequence sqlWhereClause, final Object... sqlWhereClauseParams)
+	{
 		final String sql =
 				"SELECT " + I_T_Lock.COLUMNNAME_AD_Table_ID + ", "
 						+ I_T_Lock.COLUMNNAME_T_Lock_ID + ", "
@@ -677,19 +738,9 @@ public class SqlLockDatabase extends AbstractLockDatabase
 						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners + ", "
 						+ I_T_Lock.COLUMNNAME_Created
 						+ " FROM " + I_T_Lock.Table_Name
-						+ " WHERE " + I_T_Lock.COLUMNNAME_AD_Table_ID + " = ?"
-						+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + " = ?"
-						+ " AND " + I_T_Lock.COLUMNNAME_Owner + " = ?";
+						+ " WHERE " + sqlWhereClause;
 
-		final List<Object> sqlParams = ImmutableList.of(tableRecordReference.getAD_Table_ID(),
-														tableRecordReference.getRecord_ID(),
-														lockOwnerToUse.getOwnerName());
-
-		final List<ExistingLockInfo> result = trxManager
-				.callInNewTrx(() -> DB.retrieveRows(sql, sqlParams, SqlLockDatabase::extractExistingLockInfo));
-
-		Check.assume(result.size() <= 1, "There can be only one lock for the same owner");
-
-		return result.isEmpty() ? null : result.get(0);
+		return trxManager.callInNewTrx(() -> DB.retrieveRows(sql, sqlWhereClauseParams, SqlLockDatabase::extractExistingLockInfo));
 	}
+
 }

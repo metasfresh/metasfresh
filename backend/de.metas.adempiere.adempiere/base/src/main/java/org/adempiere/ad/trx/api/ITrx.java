@@ -18,7 +18,6 @@ import java.util.function.Supplier;
  * Transaction interface
  *
  * @author tsa
- *
  */
 public interface ITrx
 {
@@ -134,7 +133,7 @@ public interface ITrx
 	 * Gets the {@link ITrxListenerManager} associated with this transaction
 	 *
 	 * @return {@link ITrxListenerManager}; never returns null
-	 *
+	 * <p>
 	 * Task 04265
 	 */
 	ITrxListenerManager getTrxListenerManager();
@@ -182,8 +181,8 @@ public interface ITrx
 	 * Gets custom transaction property.
 	 * If the property does not exist it will call <code>valueInitializer</code>.
 	 * After transaction is committed the <code>afterCommitValueProcessor</code> will be called.
-	 * 
-	 * @param valueInitializer used to create the new value in case it does not already exist.
+	 *
+	 * @param valueInitializer          used to create the new value in case it does not already exist.
 	 * @param afterCommitValueProcessor called after transaction is committed
 	 * @return property's value or null
 	 */
@@ -212,11 +211,24 @@ public interface ITrx
 				.addAll(itemsToAccumulate);
 	}
 
+	default <T> void accumulateAndProcessAfterRollback(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> processor)
+	{
+		getProperty(propertyName, () -> {
+			final ListAccumulator<T> accum = new ListAccumulator<>();
+			runAfterRollback(() -> accum.flush(processor));
+			return accum;
+		})
+				.addAll(itemsToAccumulate);
+	}
+
 	/**
 	 * Change property using the value remapping function and then returns it.
 	 * If the remapping function returns null then the property will be removed.
-	 * 
-	 * @param name property name
+	 *
+	 * @param name                   property name
 	 * @param valueRemappingFunction function which takes as input the old value and returns the new value
 	 * @return new value or null in case the remapping function returned null
 	 */
@@ -225,5 +237,10 @@ public interface ITrx
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		getTrxListenerManager().runAfterCommit(runnable);
+	}
+
+	default void runAfterRollback(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager().runAfterRollback(runnable);
 	}
 }
