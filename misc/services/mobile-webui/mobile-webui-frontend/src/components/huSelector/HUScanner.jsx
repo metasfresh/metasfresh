@@ -13,20 +13,20 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode }) => {
 
   const resolveHUScannedBarcode = async ({ scannedBarcode }) => {
     if (isKnownQRCodeFormat(scannedBarcode)) {
+      if (locatorQrCode) {
+        return getListByLocatingAndHuQR({
+          qrCode: scannedBarcode,
+          upperLevelLocatingQrCode: locatorQrCode,
+        });
+      }
+
       try {
         const handlingUnitInfo = await api.getHUByQRCode(scannedBarcode);
         return { handlingUnitInfo };
       } catch (axiosError) {
         const errorResponse = extractErrorResponseFromAxiosError(axiosError);
         if (errorResponse && errorResponse.multipleHUsFound) {
-          if (!locatorQrCode) {
-            return { targetQrCode: scannedBarcode };
-          } else {
-            return getListByLocatingAndHuQR({
-              qrCode: scannedBarcode,
-              upperLevelLocatingQrCode: locatorQrCode,
-            });
-          }
+          return { targetQrCode: scannedBarcode };
         } else {
           throw axiosError;
         }
