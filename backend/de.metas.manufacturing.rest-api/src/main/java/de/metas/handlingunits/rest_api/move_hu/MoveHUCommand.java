@@ -24,10 +24,9 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,28 +72,16 @@ public class MoveHUCommand
 
 	private ImmutableSet<HuId> executeInTrx()
 	{
-		final HashSet<HuId> huIds = new HashSet<>();
-		huIds.addAll(moveNonAggregatedHus());
-		huIds.addAll(moveAggregatedTUs());
-		return ImmutableSet.copyOf(huIds);
-	}
-
-	private Set<HuId> moveNonAggregatedHus()
-	{
-		final List<MoveHURequestItem> nonAggregatedHUs = requestItems.stream()
-				.filter(request -> request.getNumberOfTUs() == null)
-				.collect(Collectors.toList());
-
 		if (LocatorQRCode.isTypeMatching(targetQRCode))
 		{
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
-			return moveHUIdsToLocator(extractHUIdsToMove(nonAggregatedHUs), locatorQRCode.getLocatorId());
+			return moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
 			return getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
-					.apply(extractHUIdsToMove(nonAggregatedHUs));
+					.apply(extractHUIdsToMove());
 		}
 		else
 		{
@@ -126,7 +113,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private List<HuId> extractHUIdsToMove(final List<MoveHURequestItem> requestItems)
+	private List<HuId> extractHUIdsToMove()
 	{
 		return requestItems.stream()
 				.flatMap(requestItem -> {
@@ -139,7 +126,7 @@ public class MoveHUCommand
 					return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
 																			requestItem.getHuIdAndQRCode().getHuQRCode(),
 																			requestItem.getNumberOfTUs(),
-																			null)
+																			getNewLUPackingInstructionsForAggregateSplit().orElse(null))
 							.stream();
 				})
 				.collect(ImmutableList.toImmutableList());
@@ -174,35 +161,16 @@ public class MoveHUCommand
 																					.build()));
 	}
 
-	private Set<HuId> moveAggregatedTUs()
+	@NonNull
+	private Optional<HuPackingInstructionsItemId> getNewLUPackingInstructionsForAggregateSplit()
 	{
-		final HashSet<HuId> huIds = new HashSet<>();
-		requestItems.stream()
-				.filter(tu -> tu.getNumberOfTUs() != null)
-				.forEach(aggregatedTUReq -> {
-					if (LocatorQRCode.isTypeMatching(targetQRCode))
-					{
-						final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
-						final I_M_Locator locator = warehouseDAO.getLocatorById(locatorQRCode.getLocatorId(), I_M_Locator.class);
-						final HuPackingInstructionsItemId instructionsItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(locator.getPlace_AggHU_On_M_HU_PI_Item_ID());
-						final Set<HuId> huIdsToMove = huTransformService.extractFromAggregatedByQrCode(aggregatedTUReq.getHuIdAndQRCode().getHuId(),
-																									   aggregatedTUReq.getHuIdAndQRCode().getHuQRCode(),
-																									   aggregatedTUReq.getNumberOfTUs(),
-																									   instructionsItemId);
-						huIds.addAll(moveHUIdsToLocator(huIdsToMove, locatorQRCode.getLocatorId()));
-
-					}
-					else if (HUQRCode.isTypeMatching(targetQRCode))
-					{
-						huIds.addAll(getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
-											 .apply(ImmutableList.of(aggregatedTUReq.getHuIdAndQRCode().getHuId())));
-					}
-					else
-					{
-						throw new AdempiereException("Move target not handled: " + targetQRCode);
-					}
-				});
-
-		return huIds;
+		if (!LocatorQRCode.isTypeMatching(targetQRCode))
+		{
+			return Optional.empty();
+		}
+		final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
+		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorQRCode.getLocatorId(), I_M_Locator.class);
+		final HuPackingInstructionsItemId instructionsItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(locator.getPlace_AggHU_On_M_HU_PI_Item_ID());
+		return Optional.ofNullable(instructionsItemId);
 	}
 }
