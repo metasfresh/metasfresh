@@ -75,7 +75,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
@@ -129,16 +128,13 @@ public class ShipmentService implements IShipmentService
 					.setParameter("GenerateShipmentsRequest", request);
 		}
 
-		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> {
-			validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-
-			return enqueueShipmentSchedules(request);
-		};
-
 		if (request.isWaitForShipments())
 		{
 			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
-			return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+			return asyncBatchService.executeBatch(() -> {
+				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+				return enqueueShipmentSchedules(request);
+			}, request.getAsyncBatchId());
 		}
 		else
 		{
