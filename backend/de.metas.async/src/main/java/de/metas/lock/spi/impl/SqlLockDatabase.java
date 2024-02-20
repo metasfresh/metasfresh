@@ -530,7 +530,6 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	@Override
 	public final String getNotLockedWhereClause(final String tableName, final String joinColumnNameFQ)
 	{
-		final List<Object> sqlParams = null; // no params
 		final StringBuilder whereClause = new StringBuilder();
 
 		// For AD_Table_ID/Record_ID
@@ -541,7 +540,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 			Check.assumeNotEmpty(joinColumnNameFQ, "joinColumnNameFQ not empty");
 
-			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_AD_Table_ID + "=").append(toSqlParam(adTableId, sqlParams));
+			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_AD_Table_ID + "=").append(toSqlParam(adTableId, null));
 			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_Record_ID + "=").append(joinColumnNameFQ);
 		}
 
@@ -551,7 +550,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	public <T> IQueryFilter<T> getNotLockedFilter(final Class<T> modelClass)
+	public <T> IQueryFilter<T> getNotLockedFilter(@NonNull final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
@@ -573,9 +572,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	protected String getLockedWhereClauseAllowNullLock(final @NonNull Class<?> modelClass, final @NonNull String joinColumnNameFQ, @Nullable final LockOwner lockOwner)
 	{
-		final List<Object> sqlParams = null; // no params
 		final StringBuilder whereClause = new StringBuilder();
 
 		// For AD_Table_ID/Record_ID
@@ -586,14 +584,14 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 			Check.assumeNotEmpty(joinColumnNameFQ, "joinColumnNameFQ not empty");
 
-			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_AD_Table_ID + "=").append(toSqlParam(adTableId, sqlParams));
+			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_AD_Table_ID + "=").append(toSqlParam(adTableId, null));
 			whereClause.append(" AND zz." + I_T_Lock.COLUMNNAME_Record_ID + "=").append(joinColumnNameFQ);
 		}
 
 		// For given lock owner
 		if (lockOwner != null)
 		{
-			appendLockOwnerWhereClause(lockOwner, whereClause, sqlParams);
+			appendLockOwnerWhereClause(lockOwner, whereClause, null);
 		}
 
 		return whereClause
@@ -626,7 +624,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup), false);
+				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup));
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 

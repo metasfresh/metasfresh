@@ -66,7 +66,6 @@ import java.util.function.ToIntFunction;
  * In-memory locks database
  *
  * @author tsa
- *
  */
 public class PlainLockDatabase extends AbstractLockDatabase
 {
@@ -410,8 +409,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	//
 	private static class RecordLocks
 	{
+		@Getter private final LockKey key;
 		private final Map<LockOwner, LockInfo> locksByLockOwner = new HashMap<>();
-		private final LockKey key;
 
 		private RecordLocks(final LockKey key)
 		{
@@ -424,11 +423,6 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			return MoreObjects.toStringHelper(this)
 					.addValue(Joiner.on("\n").join(locksByLockOwner.values()))
 					.toString();
-		}
-
-		public LockKey getKey()
-		{
-			return key;
 		}
 
 		public synchronized boolean isLockedBy(final LockOwner lockOwner)
@@ -452,7 +446,9 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			return Objects.equals(lockOwner, lockInfo.getLockOwner());
 		}
 
-		/** @return true if lock was added; false if already exists */
+		/**
+		 * @return true if lock was added; false if already exists
+		 */
 		public synchronized boolean addLock(final LockInfo lockInfo)
 		{
 			final LockOwner lockOwner = lockInfo.getLockOwner();
@@ -475,7 +471,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		}
 
 		// not sync
-		private final boolean isAllowMultipleOwners()
+		private boolean isAllowMultipleOwners()
 		{
 			return locksByLockOwner.values().stream().anyMatch(LockInfo::isAllowMultipleOwners);
 		}
@@ -520,6 +516,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			}
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public synchronized boolean hasLocks()
 		{
 			return !locksByLockOwner.isEmpty();
@@ -635,7 +632,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	protected String getLockedWhereClauseAllowNullLock(final @NonNull Class<?> modelClass, final @NonNull String joinColumnNameFQ, final LockOwner lockOwner)
 	{
 		logger.warn("getLockedWhereClauseAllowNullLock() not supported; returning '1=1'");
 		return "1=1";
@@ -676,11 +673,11 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	@Override
 	@Nullable
-	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference,@Nullable final LockOwner lockOwner)
+	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference, @Nullable final LockOwner lockOwner)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
-			final LockKey lockKey = LockKey.of(tableRecordReference.getAD_Table_ID(), tableRecordReference.getRecord_ID());
+			final LockKey lockKey = LockKey.ofTableRecordReference(tableRecordReference);
 
 			final RecordLocks recordLocks = locks.get(lockKey);
 			if (recordLocks == null)
