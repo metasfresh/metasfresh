@@ -111,7 +111,7 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Get/Create actual transaction.
 	 *
-	 * @param trxName transaction name; it is assumed that trxName is not null
+	 * @param trxName            transaction name; it is assumed that trxName is not null
 	 * @param onTrxMissingPolicy what to do if transaction was not found
 	 * @return Transaction or null
 	 */
@@ -120,7 +120,7 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Get/Create actual transaction.
 	 *
-	 * @param trxName transaction name; it is assumed that trxName is not null
+	 * @param trxName   transaction name; it is assumed that trxName is not null
 	 * @param createNew if false, null is returned if not found
 	 * @return Transaction or null
 	 */
@@ -154,7 +154,7 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Create unique Transaction Name
 	 *
-	 * @param prefix optional prefix
+	 * @param prefix    optional prefix
 	 * @param createTrx if true, the transaction will also be created
 	 *
 	 * @return unique name
@@ -186,7 +186,7 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @param trxName transaction name
 	 *
-	 * @param r runnable object
+	 * @param r       runnable object
 	 * @see #run(String, boolean, TrxRunnable)
 	 */
 	void run(String trxName, TrxRunnable r);
@@ -249,10 +249,10 @@ public interface ITrxManager extends ISingletonService
 	 * </ul>
 	 * *
 	 *
-	 * @param trxName transaction name (if {@link ITrx#TRXNAME_None}, or <code>mangeTrx</code> is true a new transaction will be created)
+	 * @param trxName   transaction name (if {@link ITrx#TRXNAME_None}, or <code>mangeTrx</code> is true a new transaction will be created)
 	 * @param manageTrx if <code>true</code>, or <code>trxName</code> is {@link #isNull(String)}, the transaction will be managed by this method. Also, in case transaction is managed, a trxName will
-	 *            be created using given "trxName" as name prefix. If trxName is null a new transaction name will be created with prefix "TrxRun". If trxName is null, the transaction will be
-	 *            automatically managed, even if the manageTrx parameter is false.
+	 *                  be created using given "trxName" as name prefix. If trxName is null a new transaction name will be created with prefix "TrxRun". If trxName is null, the transaction will be
+	 *                  automatically managed, even if the manageTrx parameter is false.
      *
 	 * @return callable's return value
 	 */
@@ -518,6 +518,22 @@ public interface ITrxManager extends ISingletonService
 		else
 		{
 			afterCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+	}
+
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
+	{
+		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (isActive(trx))
+		{
+			trx.accumulateAndProcessBeforeCommit(propertyName, itemsToAccumulate, beforeCommitListProcessor);
+		}
+		else
+		{
+			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
 		}
 	}
 

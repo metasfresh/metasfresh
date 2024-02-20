@@ -211,6 +211,19 @@ public interface ITrx
 				.addAll(itemsToAccumulate);
 	}
 
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
+	{
+		getProperty(propertyName, () -> {
+			final ListAccumulator<T> accum = new ListAccumulator<>();
+			runBeforeCommit(() -> accum.flush(afterCommitListProcessor));
+			return accum;
+		})
+				.addAll(itemsToAccumulate);
+	}
+
 	/**
 	 * Change property using the value remapping function and then returns it.
 	 * If the remapping function returns null then the property will be removed.
@@ -224,5 +237,10 @@ public interface ITrx
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		getTrxListenerManager().runAfterCommit(runnable);
+	}
+
+	default void runBeforeCommit(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager().runBeforeCommit(runnable);
 	}
 }
