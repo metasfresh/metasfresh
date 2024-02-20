@@ -1,0 +1,58 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+	</parent>
+
+	<groupId>de.metas.postfinance</groupId>
+	<artifactId>de.metas.postfinance.schema.v2</artifactId>
+	<version>10.0.0</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<src.dir>src/main/java-xjc_ybInvoice_V2_0_5</src.dir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>v2</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<generatePackage>de.metas.postfinance.schema.v2</generatePackage>
+							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/postfinance/schema/v2/</schemaDirectory>
+							<generateDirectory>${project.basedir}/src/main/java-xjc_ybInvoice_V2_0_5</generateDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

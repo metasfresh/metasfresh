@@ -20,28 +20,18 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.async;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ConfiguredXmlMapper
+public class PostFinanceUploadInvoiceWorkpackageProcessor implements IWorkpackageProcessor
 {
-	private final static ConfiguredXmlMapper INSTANCE = new ConfiguredXmlMapper();
-
-	private final XmlMapper xmlMapper;
-
-	private ConfiguredXmlMapper()
+	@Override
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
 	{
-		xmlMapper = new XmlMapper();
-		xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
-		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-		//xmlMapper.getFactory().getXMLOutputFactory().setProperty(com.ctc.wstx.api.WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
-	}
-
-	public static XmlMapper get()
-	{
-		return INSTANCE.xmlMapper;
+		return null;
 	}
 }
