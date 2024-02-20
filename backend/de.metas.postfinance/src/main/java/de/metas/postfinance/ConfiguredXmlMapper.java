@@ -37,7 +37,7 @@ public class ConfiguredXmlMapper
 		xmlMapper = new XmlMapper();
 		xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
 		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-		//xmlMapper.getFactory().getXMLOutputFactory().setProperty(com.ctc.wstx.api.WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
+		xmlMapper.getFactory().getXMLOutputFactory().setProperty(com.ctc.wstx.api.WstxOutputProperties.P_USE_DOUBLE_QUOTES_IN_XML_DECL, true);
 	}
 
 	public static XmlMapper get()
