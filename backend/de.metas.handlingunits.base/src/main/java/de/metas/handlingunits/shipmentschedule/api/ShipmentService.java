@@ -116,7 +116,6 @@ public class ShipmentService implements IShipmentService
 	/**
 	 * <b>Important:</b> if called with {@link GenerateShipmentsRequest#isWaitForShipments()} {@code false},<br/>
 	 * and there is already an unprocessed workpackage with the same shipment-schedules, the method will fail.<br/>
-	 * Also see {@link ShipmentScheduleEnqueuer#acquireLock(de.metas.process.PInstanceId, org.adempiere.ad.dao.IQueryFilter)}.
 	 */
 	@NonNull
 	public ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)

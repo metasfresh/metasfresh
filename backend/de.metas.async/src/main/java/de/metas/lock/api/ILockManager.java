@@ -94,7 +94,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Builds a SQL where clause to be used in other queries to filter the results.
-	 *
+	 * <p>
 	 * For example, for table name 'MyTable' and join column 'MyTable.MyTable_ID', this method could return:
 	 *
 	 * <pre>

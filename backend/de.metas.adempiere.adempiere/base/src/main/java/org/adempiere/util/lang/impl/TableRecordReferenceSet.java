@@ -106,6 +106,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	}
 
 	@Override
+	@NonNull
 	public Iterator<TableRecordReference> iterator()
 	{
 		return recordRefs.iterator();
