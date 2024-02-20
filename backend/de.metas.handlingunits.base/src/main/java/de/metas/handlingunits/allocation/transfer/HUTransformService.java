@@ -1123,6 +1123,7 @@ public class HUTransformService
 		 * instead, keep them as separate VHU under the same parent that the respective source CU had.
 		 */
 		boolean keepNewCUsUnderSameParent;
+		boolean keepSplitTUsUnderSameParent;
 
 		/**
 		 * only the VHUs allowed by this policy are split in order to get our new CUs
@@ -1135,6 +1136,7 @@ public class HUTransformService
 				@NonNull final ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
+				@Nullable final Boolean keepSplitTUsUnderSameParent,
 				@Nullable final ReservedHUsPolicy reservedVHUsPolicy)
 		{
 			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
@@ -1144,6 +1146,7 @@ public class HUTransformService
 			this.productId = productId;
 			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesceNotNull(keepNewCUsUnderSameParent, false);
 			this.reservedVHUsPolicy = CoalesceUtil.coalesceNotNull(reservedVHUsPolicy, ReservedHUsPolicy.CONSIDER_ALL);
+			this.keepSplitTUsUnderSameParent = CoalesceUtil.coalesceNotNull(keepSplitTUsUnderSameParent, true);
 
 			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}
@@ -1257,7 +1260,10 @@ public class HUTransformService
 			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
 
-			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds);
+			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU,
+														   numberOfTUsToExtract,
+														   singleSourceLuRequest.isKeepSplitTUsUnderSameParent(),
+														   alreadyExtractedTUIds);
 
 			// There are no real TUs in the LU. Extract the virtual HUs (CUs) directly, if found
 			if (extractedTUs.isEmpty())
