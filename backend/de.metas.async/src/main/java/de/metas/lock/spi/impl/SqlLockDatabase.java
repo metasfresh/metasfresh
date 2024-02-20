@@ -149,7 +149,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	/**
 	 * Implements the method for ISqlQueryFilters. Throws an error for other IQueryFilters
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29">task</a>
 	 */
 	@Override
 	protected int lockByFilters(final ILockCommand lockCommand)
@@ -367,7 +368,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 			if (lockCommand.isFailIfAlreadyLocked())
 			{
-				final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyways
+				final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyway
 
 				throw new LockFailedException("Record was already locked: " + record, e)
 						.setLockCommand(lockCommand)
@@ -455,6 +456,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+			//noinspection UnnecessaryLocalVariable
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countUnlocked;
 		}
@@ -504,6 +506,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		try
 		{
+			//noinspection UnnecessaryLocalVariable
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
 			return countUnlocked;
 		}
