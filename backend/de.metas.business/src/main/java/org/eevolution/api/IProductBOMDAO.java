@@ -27,6 +27,8 @@ public interface IProductBOMDAO extends ISingletonService
 		return productBomId > 0 ? getById(ProductBOMId.ofRepoId(productBomId)) : null;
 	}
 
+	I_PP_Product_BOM getByIdInTrx(@NonNull ProductBOMId bomId);
+
 	List<I_PP_Product_BOM> getByIds(Collection<ProductBOMId> bomIds);
 
 	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);

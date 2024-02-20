@@ -42,6 +42,8 @@ import java.util.List;
 @Validator(I_PP_Product_BOMLine.class)
 public class PP_Product_BOMLine
 {
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+
 	@Init
 	public void init()
 	{
@@ -128,6 +130,6 @@ public class PP_Product_BOMLine
 	public void checkingBOMCycle(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		Services.get(IProductBOMBL.class).checkCycles(productId);
+		productBOMBL.checkCyclesBeforeCommit(productId);
 	}
 }

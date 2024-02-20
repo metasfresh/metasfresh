@@ -51,6 +51,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -142,6 +143,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public I_PP_Product_BOM getById(@NonNull final ProductBOMId bomId)
 	{
 		return retrieveById(Env.getCtx(), bomId);
+	}
+
+	@Override
+	public I_PP_Product_BOM getByIdInTrx(@NonNull final ProductBOMId bomId)
+	{
+		return load(bomId, I_PP_Product_BOM.class);
 	}
 
 	@Override

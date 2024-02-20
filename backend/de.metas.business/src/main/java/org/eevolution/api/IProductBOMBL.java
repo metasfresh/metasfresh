@@ -51,6 +51,8 @@ public interface IProductBOMBL extends ISingletonService
 	 */
 	void checkCycles(final ProductId productId);
 
+	void checkCyclesBeforeCommit(ProductId productId);
+
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
 	 *

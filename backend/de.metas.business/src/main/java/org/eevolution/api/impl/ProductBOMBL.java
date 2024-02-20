@@ -24,6 +24,7 @@ package org.eevolution.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -38,6 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -55,6 +57,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +70,7 @@ public class ProductBOMBL implements IProductBOMBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
@@ -108,7 +112,32 @@ public class ProductBOMBL implements IProductBOMBL
 	@Override
 	public void checkCycles(final ProductId productId)
 	{
-		ProductBOMCycleDetection.newInstance().checkCycles(productId);
+		newProductBOMCycleDetection().assertNoCycles(ImmutableSet.of(productId));
+	}
+
+	private void checkCycles(final Collection<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return;
+		}
+
+		newProductBOMCycleDetection().assertNoCycles(productIds);
+	}
+
+	@Override
+	public void checkCyclesBeforeCommit(final ProductId productId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"ProductBOMBL.checkCyclesBeforeCommit",
+				ImmutableList.of(productId),
+				this::checkCycles
+		);
+	}
+
+	private ProductBOMCycleDetection newProductBOMCycleDetection()
+	{
+		return new ProductBOMCycleDetection(productBL, bomDAO);
 	}
 
 	@Override

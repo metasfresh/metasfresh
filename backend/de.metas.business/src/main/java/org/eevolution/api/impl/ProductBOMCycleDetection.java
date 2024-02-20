@@ -1,64 +1,51 @@
 package org.eevolution.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.BOMCycleException;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import javax.annotation.Nullable;
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.LinkedHashSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-/**
- * Checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
- *
- * @author metas-dev <dev@metasfresh.com>
- */
+@RequiredArgsConstructor
 class ProductBOMCycleDetection
 {
-	public static ProductBOMCycleDetection newInstance()
-	{
-		return new ProductBOMCycleDetection();
-	}
+	private final IProductBL productBL;
+	private final IProductBOMDAO productBOMDAO;
 
 	private static final AdMessageKey ERR_PRODUCT_BOM_CYCLE = AdMessageKey.of("Product_BOM_Cycle_Error");
-	private final Set<ProductId> seenProductIds = new LinkedHashSet<>();
 
-	private ProductBOMCycleDetection()
-	{
-	}
+	private final HashMap<ProductBOMId, I_PP_Product_BOM> boms = new HashMap<>();
+	private final HashMap<ProductId, List<I_PP_Product_BOMLine>> bomsLinesByComponentId = new HashMap<>();
 
-	public void checkCycles(final ProductId productId)
+	public void assertNoCycles(@NonNull final Collection<ProductId> productIds)
 	{
-		try
+		if (productIds.isEmpty())
 		{
-			assertNoCycles(productId);
+			return;
 		}
-		catch (final BOMCycleException e)
+
+		for (final ProductId productId : ImmutableSet.copyOf(productIds))
 		{
-			final I_M_Product product = Services.get(IProductBL.class).getById(productId);
-			throw new AdempiereException(ERR_PRODUCT_BOM_CYCLE, product.getValue());
+			assertNoCycles(productId, ImmutableSet.of());
 		}
 	}
 
-	private DefaultMutableTreeNode assertNoCycles(final ProductId productId)
+	private void assertNoCycles(@NonNull final ProductId productId, @NonNull final ImmutableSet<ProductId> trace)
 	{
-		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
-
-		final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-		final List<I_PP_Product_BOMLine> productBOMLines = productBOMDAO.retrieveBOMLinesByComponentIdInTrx(productId);
-
-		boolean first = true;
+		final List<I_PP_Product_BOMLine> productBOMLines = getBOMLinesByComponentId(productId);
 		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
 		{
 			// Don't navigate the Co/ByProduct lines (gh480)
@@ -67,22 +54,39 @@ class ProductBOMCycleDetection
 				continue;
 			}
 
-			// If not the first bom line at this level
-			if (!first)
-			{
-				clearSeenProducts();
-				markProductAsSeen(productId);
-			}
-			first = false;
+			assertNoCycles(productBOMLine, trace);
+		}
+	}
 
-			final DefaultMutableTreeNode bomNode = assertNoCycles(productBOMLine);
-			if (bomNode != null)
-			{
-				productNode.add(bomNode);
-			}
+	private void assertNoCycles(final I_PP_Product_BOMLine bomLine, @NonNull final ImmutableSet<ProductId> trace)
+	{
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM bom = getBOM(bomId);
+		if (!bom.isActive())
+		{
+			return;
 		}
 
-		return productNode;
+		// Check Child = Parent error
+		final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final ProductId bomProductId = ProductId.ofRepoId(bom.getM_Product_ID());
+		if (ProductId.equals(bomLineProductId, bomProductId))
+		{
+			throw newBOMCycleException(bomLineProductId);
+		}
+
+		// Check BOM Loop Error
+		if (trace.contains(bomProductId))
+		{
+			throw newBOMCycleException(bomProductId);
+		}
+
+		final ImmutableSet<ProductId> newTrace = ImmutableSet.<ProductId>builder()
+				.addAll(trace)
+				.add(bomProductId)
+				.build();
+
+		assertNoCycles(bomProductId, newTrace);
 	}
 
 	private static boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
@@ -91,39 +95,19 @@ class ProductBOMCycleDetection
 		return componentType.isByOrCoProduct();
 	}
 
-	@Nullable
-	private DefaultMutableTreeNode assertNoCycles(final I_PP_Product_BOMLine bomLine)
+	private I_PP_Product_BOM getBOM(final ProductBOMId bomId)
 	{
-		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
-		if (!bom.isActive())
-		{
-			return null;
-		}
-
-		// Check Child = Parent error
-		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		final ProductId parentProductId = ProductId.ofRepoId(bom.getM_Product_ID());
-		if (productId.equals(parentProductId))
-		{
-			throw new BOMCycleException(bom, productId);
-		}
-
-		// Check BOM Loop Error
-		if (!markProductAsSeen(parentProductId))
-		{
-			throw new BOMCycleException(bom, parentProductId);
-		}
-
-		return assertNoCycles(parentProductId);
+		return boms.computeIfAbsent(bomId, productBOMDAO::getByIdInTrx);
 	}
 
-	private void clearSeenProducts()
+	private List<I_PP_Product_BOMLine> getBOMLinesByComponentId(final ProductId productId)
 	{
-		seenProductIds.clear();
+		return bomsLinesByComponentId.computeIfAbsent(productId, productBOMDAO::retrieveBOMLinesByComponentIdInTrx);
 	}
 
-	private boolean markProductAsSeen(final ProductId productId)
+	private AdempiereException newBOMCycleException(final ProductId productId)
 	{
-		return seenProductIds.add(productId);
+		final I_M_Product product = productBL.getById(productId);
+		return new AdempiereException(ERR_PRODUCT_BOM_CYCLE, product.getValue());
 	}
 }
