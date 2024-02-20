@@ -22,30 +22,22 @@
 
 package de.metas.postfinance;
 
-import org.junit.jupiter.api.Test;
-
-import java.net.MalformedURLException;
-
 public class PostFinanceServiceTest
 {
 
-	@Test
-	public void testExecutePing() throws MalformedURLException
-	{
-		// final URL wsdlURL = new URL("https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?singleWsdl");
-
-		// final B2BService_Service service = new B2BService_Service(wsdlURL);
-		// final B2BService port = service.getUserNamePassword();
-
-		// final Map<String, Object> reqContext = ((BindingProvider) port).getRequestContext();
-		// reqContext.put(BindingProvider.USERNAME_PROPERTY, "dragos.moca@pevesoft.ro");
-		// reqContext.put(BindingProvider.PASSWORD_PROPERTY, "userpassword");
-
-		// TODO: com.sun.xml.ws.fault.ServerSOAPFaultException: Client received SOAP Fault from server: An error occurred when verifying security for the message. Please see the server log to find more detail regarding exact cause of the failure.
-		// final String result = port.executePing("41101000001205994", null, false, false);
-		
-		// Assertions.assertNotNull(result);
-		//
-		// Assertions.assertEquals("41101000001205994", result);
-	}
+	// @Test
+	// public void testExecutePing() throws MalformedURLException
+	// {
+	// 	// for testing replace billerID and set "userid" / "password" in src/test/resources/META-INF/B2BService.xml
+	// 	final URL wsdlURL = new URL("https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?singleWsdl");
+	//
+	// 	final B2BService_Service service = new B2BService_Service(wsdlURL);
+	// 	final B2BService port = service.getUserNamePassword();
+	//
+	// 	final String result = port.executePing("41101000011707505", null, false, false);
+	//
+	// 	Assertions.assertNotNull(result);
+	//
+	// 	Assertions.assertEquals("41101000011707505", result);
+	// }
 }
