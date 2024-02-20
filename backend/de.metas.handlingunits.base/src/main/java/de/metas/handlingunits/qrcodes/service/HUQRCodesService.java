@@ -21,6 +21,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +151,28 @@ public class HUQRCodesService
 		else
 		{
 			throw new AdempiereException("No QR Code attached to HU " + huId.getRepoId());
+		}
+	}
+
+	@Nullable
+	public HUQRCode getQRCodeByHuIdIfExists(@NonNull final HuId huId)
+	{
+		final HUQRCode existingQRCode = getFirstQRCodeByHuIdIfExists(huId).orElse(null);
+		if (existingQRCode != null)
+		{
+			return existingQRCode;
+		}
+		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
+		{
+			return generateForExistingHUs(
+					HUQRCodeGenerateForExistingHUsRequest.builder()
+							.huIds(ImmutableSet.of(huId))
+							.build())
+					.getSingleQRCode(huId);
+		}
+		else
+		{
+			return null;
 		}
 	}
 
