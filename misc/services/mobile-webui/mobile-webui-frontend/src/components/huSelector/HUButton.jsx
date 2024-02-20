@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isNullOrUndefined } from '../../../utils';
+import { isNullOrUndefined } from '../../utils';
 
 const ATTRIBUTE_CODES_TO_DISPLAY = ['HU_BestBeforeDate', 'Lot-Nummer'];
 const ATTRIBUTE_CODES_TO_MAX_LENGTH = {
@@ -75,7 +75,7 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
         <div className="hu-row-value" style={{ flex: '30%' }}>
           <span>{handlingUnitInfo.id}</span>
         </div>
-        <div className="hu-row-value" style={{ flex: '20%' }}>
+        <div className="hu-row-value" style={{ flex: '10%' }}>
           <span>{handlingUnitInfo.jsonHUType}</span>
         </div>
         <div className="hu-row-value" style={{ flex: '50%', justifyContent: 'flex-end' }}>

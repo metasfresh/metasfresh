@@ -98,6 +98,12 @@ export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
   return steps.find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
 };
 
+export const getStepByHuIdFromActivity = (activity, lineId, huId) => {
+  const line = getLineByIdFromActivity(activity, lineId);
+  const steps = getStepsArrayFromLine(line);
+  return steps.find((step) => step.huId === huId);
+};
+
 export const getQtyRejectedReasonsFromActivity = (activity) => {
   return activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
 };

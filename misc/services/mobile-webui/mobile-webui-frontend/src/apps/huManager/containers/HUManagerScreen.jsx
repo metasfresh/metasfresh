@@ -15,15 +15,13 @@ import {
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
-import { extractErrorResponseFromAxiosError, toastError } from '../../../utils/toast';
+import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
-import { isKnownQRCodeFormat } from '../../../utils/huQRCodes';
-import SelectHUIntermediateList from './SelectHUIntermediateList';
+import HUScanner from '../../../components/huSelector/HUScanner';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -36,8 +34,6 @@ const HUManagerScreen = () => {
   const [clearanceStatuses, setClearanceStatuses] = useState([]);
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [changeQtyAllowed, setChangeQtyAllowed] = useState(false);
-  const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
-  const [locatingQrCodeScannerInfo, setLocatingQrCodeScannerInfo] = useState(false);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -52,67 +48,6 @@ const HUManagerScreen = () => {
       mergedStatuses.push(handlingUnitInfo.clearanceStatus);
     }
     setClearanceStatuses(mergedStatuses);
-  };
-
-  const resolveHUScannedBarcode = async ({ scannedBarcode }) => {
-    if (isKnownQRCodeFormat(scannedBarcode)) {
-      try {
-        const handlingUnitInfo = await api.getHUByQRCode(scannedBarcode);
-        return { handlingUnitInfo };
-      } catch (axiosError) {
-        const errorResponse = extractErrorResponseFromAxiosError(axiosError);
-        if (errorResponse && errorResponse.multipleHUsFound) {
-          return { targetQrCode: scannedBarcode };
-        } else {
-          throw axiosError;
-        }
-      }
-    }
-
-    return api.getHUsByDisplayableQRCode(scannedBarcode).then((huList) => ({ huListByQRCode: huList }));
-  };
-
-  const resolveLocatingScannedBarcode = async ({ scannedBarcode }) => {
-    if (!locatingQrCodeScannerInfo || !locatingQrCodeScannerInfo.targetQrCode) {
-      return toastError({ messageKey: 'activities.huManager.missingTargetQrCode' });
-    }
-    return api
-      .listHUsByQRCode({
-        qrCode: locatingQrCodeScannerInfo.targetQrCode,
-        upperLevelLocatingQrCode: scannedBarcode,
-      })
-      .then((huList) => {
-        setLocatingQrCodeScannerInfo(undefined);
-        return { huListByQRCode: huList };
-      });
-  };
-
-  const onResolvedHUScannedResult = (result) => {
-    console.log('onResolvedResult', { result });
-
-    if (result.huListByQRCode) {
-      if (!result.huListByQRCode.length) {
-        toastError({ messageKey: 'general.noHUFound' });
-      } else if (result.huListByQRCode.length === 1) {
-        handleHandlingUnitLoaded(result.huListByQRCode[0]);
-      } else {
-        setHuListByDisplayableQrCode(result.huListByQRCode);
-      }
-      return;
-    }
-    if (result.targetQrCode) {
-      setLocatingQrCodeScannerInfo({ targetQrCode: result.targetQrCode });
-      return;
-    }
-
-    const { handlingUnitInfo } = result;
-    handleHandlingUnitLoaded(handlingUnitInfo);
-  };
-
-  const handleHandlingUnitLoaded = (handlingUnitInfo) => {
-    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-    setHuListByDisplayableQrCode([]);
-    setLocatingQrCodeScannerInfo(undefined);
   };
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
@@ -219,29 +154,8 @@ const HUManagerScreen = () => {
         </div>
       </>
     );
-  } else if (locatingQrCodeScannerInfo && locatingQrCodeScannerInfo.targetQrCode) {
-    return (
-      <BarcodeScannerComponent
-        scannerPlaceholder={trl('activities.huManager.scanLuOrLocator')}
-        resolveScannedBarcode={resolveLocatingScannedBarcode}
-        onResolvedResult={onResolvedHUScannedResult}
-        key={'locatingQrCodeScanner'}
-      />
-    );
-  } else if (huListByDisplayableQrCode && huListByDisplayableQrCode.length) {
-    return (
-      <SelectHUIntermediateList
-        huList={huListByDisplayableQrCode}
-        onHuSelected={(hu) => handleHandlingUnitLoaded(hu)}
-      />
-    );
   } else {
-    return (
-      <BarcodeScannerComponent
-        resolveScannedBarcode={resolveHUScannedBarcode}
-        onResolvedResult={onResolvedHUScannedResult}
-      />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => dispatch(handlingUnitLoaded({ handlingUnitInfo }))} />;
   }
 };
 

@@ -1,6 +1,5 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
@@ -23,7 +22,7 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String locatorName;
-	@NonNull JsonDisplayableQRCode huQRCode;
+	@NonNull String huId;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyHUCapacity;
 	@NonNull BigDecimal qtyToIssue;
@@ -40,7 +39,7 @@ public class JsonRawMaterialsIssueLineStep
 				.productId(String.valueOf(step.getProductId().getRepoId()))
 				.productName(step.getProductName().translate(jsonOpts.getAdLanguage()))
 				.locatorName(step.getIssueFromLocator().getCaption())
-				.huQRCode(step.getIssueFromHU().getBarcode().toRenderedJson())
+				.huId(step.getIssueFromHU().getId().toHUValue())
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
 				.qtyToIssue(step.getQtyToIssue().toBigDecimal());

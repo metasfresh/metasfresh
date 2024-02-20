@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import HUButton from '../components/HUButton';
+import HUButton from '../../../components/huSelector/HUButton';
 
 const SelectHUIntermediateList = ({ huList, onHuSelected }) => {
   return (

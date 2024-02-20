@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
-
-import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadableStr, formatQtyToHumanReadable, roundToQtyPrecision } from '../utils/qtys';
+import { formatQtyToHumanReadable, formatQtyToHumanReadableStr, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 import { toastError } from '../utils/toast';
+import { toQRCodeString } from '../utils/huQRCodes';
+import HUScanner from './huSelector/HUScanner';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -85,7 +85,7 @@ const ScanHUAndGetQtyComponent = ({
     scaleTolerance,
   ]);
 
-  const handleResolveScannedBarcode = ({ scannedBarcode }) => {
+  const handleResolveScannedBarcode = ({ scannedBarcode, handlingUnitInfo }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
     // If an eligible barcode was provided, make sure scanned barcode is matching it
@@ -98,13 +98,30 @@ const ScanHUAndGetQtyComponent = ({
     // noinspection UnnecessaryLocalVariableJS
     const resolvedBarcodeDataNew = {
       ...resolvedBarcodeData,
-      ...resolveScannedBarcode?.(scannedBarcode),
+      ...resolveScannedBarcode?.(scannedBarcode, handlingUnitInfo),
       scannedBarcode,
     };
 
     // console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
+  };
+
+  const handleEligibleBarcodeClicked = ({ scannedBarcode }) => {
+    return handleResolveScannedBarcode({ scannedBarcode });
+  };
+
+  const handleHandlingUnitInfoScanned = (handlingUnitInfo) => {
+    try {
+      onBarcodeScanned(
+        handleResolveScannedBarcode({
+          scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
+          handlingUnitInfo: handlingUnitInfo,
+        })
+      );
+    } catch (e) {
+      toastError({ plainMessage: e });
+    }
   };
 
   const onBarcodeScanned = (resolvedBarcodeDataNew) => {
@@ -190,14 +207,11 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_BARCODE: {
       return (
         <>
-          <BarcodeScannerComponent
-            resolveScannedBarcode={handleResolveScannedBarcode}
-            onResolvedResult={onBarcodeScanned}
-          />
+          <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} />
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: ${eligibleBarcode}`}
-              onClick={() => onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: eligibleBarcode }))}
+              onClick={() => onBarcodeScanned(handleEligibleBarcodeClicked({ scannedBarcode: eligibleBarcode }))}
             />
           )}
         </>

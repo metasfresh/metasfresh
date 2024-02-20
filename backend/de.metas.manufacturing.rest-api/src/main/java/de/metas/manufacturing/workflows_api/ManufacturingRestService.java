@@ -77,9 +77,9 @@ public class ManufacturingRestService
 		return manufacturingJobService.getJobById(ppOrderId);
 	}
 
-	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId userId)
+	public void assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId userId)
 	{
-		return manufacturingJobService.assignJob(ppOrderId, userId);
+		manufacturingJobService.assignJob(ppOrderId, userId);
 	}
 
 	private static WFActivity toWFActivity(final ManufacturingJobActivity jobActivity)

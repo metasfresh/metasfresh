@@ -229,7 +229,6 @@ public class ManufacturingJobLoaderAndSaver
 						.build())
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
 						.huCapacity(getHUCapacity(schedule))
 						.build())
 				.issued(schedule.getIssued())

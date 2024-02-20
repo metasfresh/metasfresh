@@ -5,9 +5,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -21,8 +23,11 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,16 +73,28 @@ public class MoveHUCommand
 
 	private ImmutableSet<HuId> executeInTrx()
 	{
+		final HashSet<HuId> huIds = new HashSet<>();
+		huIds.addAll(moveNonAggregatedHus());
+		huIds.addAll(moveAggregatedTUs());
+		return ImmutableSet.copyOf(huIds);
+	}
+
+	private Set<HuId> moveNonAggregatedHus()
+	{
+		final List<MoveHURequestItem> nonAggregatedHUs = requestItems.stream()
+				.filter(request -> request.getNumberOfTUs() == null)
+				.collect(Collectors.toList());
+
 		if (LocatorQRCode.isTypeMatching(targetQRCode))
 		{
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
-			return moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
+			return moveHUIdsToLocator(extractHUIdsToMove(nonAggregatedHUs), locatorQRCode.getLocatorId());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
 			return getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
-					.apply(extractHUIdsToMove());
+					.apply(extractHUIdsToMove(nonAggregatedHUs));
 		}
 		else
 		{
@@ -109,7 +126,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private List<HuId> extractHUIdsToMove()
+	private List<HuId> extractHUIdsToMove(final List<MoveHURequestItem> requestItems)
 	{
 		return requestItems.stream()
 				.flatMap(requestItem -> {
@@ -121,14 +138,15 @@ public class MoveHUCommand
 					}
 					return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
 																			requestItem.getHuIdAndQRCode().getHuQRCode(),
-																			requestItem.getNumberOfTUs())
+																			requestItem.getNumberOfTUs(),
+																			null)
 							.stream();
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private ImmutableSet<HuId> moveHUIdsToLocator(@NonNull final List<HuId> huIds, @NonNull final LocatorId locatorId)
+	private ImmutableSet<HuId> moveHUIdsToLocator(@NonNull final Collection<HuId> huIds, @NonNull final LocatorId locatorId)
 	{
 		final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIds);
 		moveHUsToLocator(husToMove, locatorId);
@@ -154,5 +172,37 @@ public class MoveHUCommand
 																					.huIdsToMove(huIdsSharingTheSameLocator)
 																					.movementDate(SystemTime.asInstant())
 																					.build()));
+	}
+
+	private Set<HuId> moveAggregatedTUs()
+	{
+		final HashSet<HuId> huIds = new HashSet<>();
+		requestItems.stream()
+				.filter(tu -> tu.getNumberOfTUs() != null)
+				.forEach(aggregatedTUReq -> {
+					if (LocatorQRCode.isTypeMatching(targetQRCode))
+					{
+						final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
+						final I_M_Locator locator = warehouseDAO.getLocatorById(locatorQRCode.getLocatorId(), I_M_Locator.class);
+						final HuPackingInstructionsItemId instructionsItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(locator.getPlace_AggHU_On_M_HU_PI_Item_ID());
+						final Set<HuId> huIdsToMove = huTransformService.extractFromAggregatedByQrCode(aggregatedTUReq.getHuIdAndQRCode().getHuId(),
+																									   aggregatedTUReq.getHuIdAndQRCode().getHuQRCode(),
+																									   aggregatedTUReq.getNumberOfTUs(),
+																									   instructionsItemId);
+						huIds.addAll(moveHUIdsToLocator(huIdsToMove, locatorQRCode.getLocatorId()));
+
+					}
+					else if (HUQRCode.isTypeMatching(targetQRCode))
+					{
+						huIds.addAll(getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
+											 .apply(ImmutableList.of(aggregatedTUReq.getHuIdAndQRCode().getHuId())));
+					}
+					else
+					{
+						throw new AdempiereException("Move target not handled: " + targetQRCode);
+					}
+				});
+
+		return huIds;
 	}
 }

@@ -103,6 +103,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -1445,7 +1446,8 @@ public class HUTransformService
 	public Set<HuId> extractFromAggregatedByQrCode(
 			@NonNull final HuId aggregatedHuId,
 			@NonNull final HUQRCode huQRCode,
-			@NonNull final QtyTU qtyTU)
+			@NonNull final QtyTU qtyTU,
+			@Nullable final HuPackingInstructionsItemId newLUPackingItem)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(aggregatedHuId);
 
@@ -1470,10 +1472,28 @@ public class HUTransformService
 
 		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, aggregatedHuId);
 
-		final ImmutableSet<HuId> splitHuIds = splitOutTUsFromAggregated(hu, qtyTU);
-		huQRCodesService.get().assign(huQRCode, splitHuIds);
-
-		return splitHuIds;
+		if (newLUPackingItem != null)
+		{
+			final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUPackingItem);
+			final List<I_M_HU> newLUs = tuToNewLUs(hu, qtyTU.toBigDecimal(), newLUPIItem, false);
+			final ImmutableSet<HuId> newAggreagtedHUIds = newLUs.stream()
+					.map(handlingUnitsDAO::retrieveIncludedHUs)
+					.flatMap(Collection::stream)
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+			huQRCodesService.get().assign(huQRCode, newAggreagtedHUIds);
+			return newLUs.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			final ImmutableSet<HuId> splitHuIds = splitOutTUsFromAggregated(hu, qtyTU);
+			huQRCodesService.get().assign(huQRCode, splitHuIds);
+			return splitHuIds;
+		}
 	}
 
 	@NonNull

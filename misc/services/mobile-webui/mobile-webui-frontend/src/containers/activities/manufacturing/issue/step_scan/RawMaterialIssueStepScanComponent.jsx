@@ -12,6 +12,7 @@ import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
   getActivityById,
+  getStepByHuIdFromActivity,
   getStepByIdFromActivity,
   getStepByQRCodeFromActivity,
 } from '../../../../../reducers/wfProcesses';
@@ -30,8 +31,19 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
-  const resolveScannedBarcode = (scannedBarcode) => {
-    const step = getStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+  const resolveScannedBarcode = (scannedBarcode, handlingUnitInfo) => {
+    let step;
+    if (handlingUnitInfo) {
+      const actualHuId =
+        handlingUnitInfo.numberOfAggregatedHUs > 1 && handlingUnitInfo.parentHuId
+          ? handlingUnitInfo.parentHuId
+          : handlingUnitInfo.id;
+
+      step = getStepByHuIdFromActivity(activity, lineId, actualHuId);
+    } else {
+      step = getStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+    }
+
     if (!step) {
       throw trl('activities.picking.notEligibleHUBarcode');
     }

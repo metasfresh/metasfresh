@@ -59,6 +59,9 @@ public class JsonHU
 
 	int numberOfAggregatedHUs;
 
+	@Nullable
+	String topLevelParentId;
+
 	@NonNull
 	@Singular
 	List<JsonHUProduct> products;
@@ -106,6 +109,7 @@ public class JsonHU
 			@Nullable final String warehouseValue,
 			@Nullable final String locatorValue,
 			final int numberOfAggregatedHUs,
+			@Nullable final String topLevelParentId,
 			@NonNull final List<JsonHUProduct> products,
 			@Nullable final JsonHUAttributeCodeAndValues attributes,
 			@Nullable final JsonHUAttributes attributes2,
@@ -125,6 +129,7 @@ public class JsonHU
 		this.warehouseValue = warehouseValue;
 		this.locatorValue = locatorValue;
 		this.numberOfAggregatedHUs = numberOfAggregatedHUs;
+		this.topLevelParentId = topLevelParentId;
 		this.products = products;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;

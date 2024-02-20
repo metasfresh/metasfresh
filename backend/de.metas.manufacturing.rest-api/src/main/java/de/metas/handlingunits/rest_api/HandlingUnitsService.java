@@ -156,7 +156,7 @@ public class HandlingUnitsService
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu);
-
+		final JsonHUType huType = toJsonHUType(hu);
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
 				.huStatus(hu.getHUStatus())
@@ -173,6 +173,14 @@ public class HandlingUnitsService
 		if (isAggregatedTU)
 		{
 			jsonHUBuilder.numberOfAggregatedHUs(handlingUnitsBL.getTUsCount(hu).toInt());
+		}
+		if (huType != JsonHUType.LU)
+		{
+			jsonHUBuilder.topLevelParentId(Optional.ofNullable(handlingUnitsBL.getTopLevelParent(hu))
+												   .map(I_M_HU::getM_HU_ID)
+												   .filter(parentHUId -> parentHUId != hu.getM_HU_ID())
+												   .map(String::valueOf)
+												   .orElse(null));
 		}
 
 		final WarehouseAndLocatorValue warehouseAndLocatorValue = getWarehouseAndLocatorValue(hu);
