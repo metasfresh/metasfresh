@@ -45,7 +45,6 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductLowLevelUpdater;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMQtys;
 import org.eevolution.api.QtyCalculationsBOM;
@@ -107,15 +106,9 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public int calculateProductLowestLevel(final ProductId productId)
+	public void checkCycles(final ProductId productId)
 	{
-		return ProductLowLevelCalculator.newInstance().getLowLevel(productId);
-	}
-
-	@Override
-	public IProductLowLevelUpdater updateProductLowLevels()
-	{
-		return new ProductLowLevelUpdater();
+		ProductBOMCycleDetection.newInstance().checkCycles(productId);
 	}
 
 	@Override
