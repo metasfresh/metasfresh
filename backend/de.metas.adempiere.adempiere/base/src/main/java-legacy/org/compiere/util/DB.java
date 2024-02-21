@@ -2801,7 +2801,7 @@ public class DB
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
 		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
-		return retrieveRows(sql, sqlParamsList, ITrx.TRXNAME_ThreadInherited, loader);
+		return retrieveRows(sql, sqlParamsList, loader);
 	}
 
 
