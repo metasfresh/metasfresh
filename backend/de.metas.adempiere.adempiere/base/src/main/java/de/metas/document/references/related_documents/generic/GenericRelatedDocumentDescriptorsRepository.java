@@ -184,7 +184,7 @@ class GenericRelatedDocumentDescriptorsRepository
 	{
 		final ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> map = DB.retrieveRows(
 						"SELECT * FROM dynamic_target_window_v",
-						null,
+						ImmutableList.of(),
 						this::retrieveRowFrom_Dynamic_Target_Window_V)
 				.stream()
 				.filter(Objects::nonNull)
