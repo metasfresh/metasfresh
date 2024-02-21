@@ -221,22 +221,21 @@ public class PPOrderIssuePlanCreateCommand
 					allocableHU.addQtyAllocated(huQtyAvailable);
 					allocatedQty = allocatedQty.add(huQtyAvailable);
 				}
-
-				if (createStepsForIncludedTUs)
-				{
-					streamIncludedTUs(allocableHU)
-							.map(tu -> PPOrderIssuePlanStep.builder()
-									.orderBOMLineId(orderBOMLineId)
-									.productId(productId)
-									.qtyToIssue(targetQty.toZero())
-									.pickFromLocatorId(allocableHU.getLocatorId())
-									.pickFromTopLevelHU(tu)
-									.isAlternative(true)
-									.build())
-							.forEach(planSteps::add);
-				}
-
 				planSteps.add(planStep);
+			}
+
+			if (createStepsForIncludedTUs)
+			{
+				streamIncludedTUs(allocableHU)
+						.map(tu -> PPOrderIssuePlanStep.builder()
+								.orderBOMLineId(orderBOMLineId)
+								.productId(productId)
+								.qtyToIssue(targetQty.toZero())
+								.pickFromLocatorId(allocableHU.getLocatorId())
+								.pickFromTopLevelHU(tu)
+								.isAlternative(true)
+								.build())
+						.forEach(planSteps::add);
 			}
 		}
 
