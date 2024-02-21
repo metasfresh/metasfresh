@@ -1,12 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
@@ -14,6 +7,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -21,10 +15,15 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -36,18 +35,19 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 @ToString(exclude = "fact")
 public final class FactLineBuilder
 {
@@ -183,7 +183,7 @@ public final class FactLineBuilder
 
 		//
 		// Optionally overwrite Acct Amount
-		if(amtAcctDr != null || amtAcctCr != null)
+		if (amtAcctDr != null || amtAcctCr != null)
 		{
 			line.setAmtAcct(amtAcctDr, amtAcctCr);
 		}
@@ -345,6 +345,38 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.amtSourceDr = amtSourceDr;
 		this.amtSourceCr = amtSourceCr;
+		return this;
+	}
+
+	public FactLineBuilder setAmtSource(@Nullable final Money amtSourceDr, @Nullable final Money amtSourceCr)
+	{
+		setAmtSource(
+				Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr),
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : null,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : null);
+		return this;
+	}
+
+	public FactLineBuilder setAmtAcct(@Nullable final Money amtAcctDr, @Nullable final Money amtAcctCr)
+	{
+		assertNotBuild();
+		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amtAcctDr, amtAcctCr);
+		Check.assumeEquals(currencyId, fact.getAcctCurrencyId(), "accounting currency");
+		this.amtAcctDr = amtAcctDr != null ? amtAcctDr.toBigDecimal() : null;
+		this.amtAcctCr = amtAcctCr != null ? amtAcctCr.toBigDecimal() : null;
+		return this;
+	}
+
+	public FactLineBuilder setAmt(@Nullable final MoneySourceAndAcct debit, @Nullable final MoneySourceAndAcct credit)
+	{
+		final Money amtSourceDr = debit != null ? debit.getSource() : null;
+		final Money amtSourceCr = credit != null ? credit.getSource() : null;
+		final Money amtAcctDr = debit != null ? debit.getAcct() : null;
+		final Money amtAcctCr = credit != null ? credit.getAcct() : null;
+
+		setAmtSource(amtSourceDr, amtSourceCr);
+		setAmtAcct(amtAcctDr, amtAcctCr);
+
 		return this;
 	}
 

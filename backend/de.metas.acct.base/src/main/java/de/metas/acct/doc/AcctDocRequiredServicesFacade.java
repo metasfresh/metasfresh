@@ -50,11 +50,13 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.PO;
@@ -100,6 +102,7 @@ public class AcctDocRequiredServicesFacade
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -174,6 +177,11 @@ public class AcctDocRequiredServicesFacade
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
+	}
+
+	public MAccount getAccount(@NonNull final I_Fact_Acct factAcct)
+	{
+		return factAcctBL.getAccount(factAcct);
 	}
 
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
