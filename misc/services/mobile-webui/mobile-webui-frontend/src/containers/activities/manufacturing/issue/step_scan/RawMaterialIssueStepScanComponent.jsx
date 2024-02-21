@@ -49,7 +49,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     let step;
     if (handlingUnitInfo) {
       const actualHuId =
-        handlingUnitInfo.numberOfAggregatedHUs > 1 && handlingUnitInfo.topLevelParentId
+        handlingUnitInfo.jsonHUType === 'TU' && handlingUnitInfo.topLevelParentId
           ? handlingUnitInfo.topLevelParentId
           : handlingUnitInfo.id;
 
