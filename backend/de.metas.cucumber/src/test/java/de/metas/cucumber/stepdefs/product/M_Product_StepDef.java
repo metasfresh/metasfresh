@@ -57,6 +57,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -308,6 +310,12 @@ public class M_Product_StepDef
 		if (Check.isNotBlank(description))
 		{
 			productRecord.setDescription(description);
+		}
+
+		final BigDecimal weight = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Weight);
+		if (weight != null)
+		{
+			productRecord.setWeight(weight);
 		}
 
 		final boolean isSold = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsSold, true);
