@@ -91,17 +91,19 @@ export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
 };
 
-export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
+export const getNonIssuedStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
   const qrCodeNorm = toQRCodeString(qrCode);
   const line = getLineByIdFromActivity(activity, lineId);
   const steps = getStepsArrayFromLine(line);
-  return steps.find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
+  return steps
+    .filter((step) => !(step.qtyIssued > 0 || step.qtyRejected > 0))
+    .find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
 };
 
-export const getStepByHuIdFromActivity = (activity, lineId, huId) => {
+export const getNonIssuedStepByHuIdFromActivity = (activity, lineId, huId) => {
   const line = getLineByIdFromActivity(activity, lineId);
   const steps = getStepsArrayFromLine(line);
-  return steps.find((step) => step.huId === huId);
+  return steps.filter((step) => !(step.qtyIssued > 0 || step.qtyRejected > 0)).find((step) => step.huId === huId);
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {

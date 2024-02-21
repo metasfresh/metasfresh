@@ -11,13 +11,13 @@ import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
   getActivityById,
-  getLineByIdFromActivity,
-  getStepByHuIdFromActivity,
+  getNonIssuedStepByHuIdFromActivity,
   getStepByIdFromActivity,
-  getStepByQRCodeFromActivity,
+  getNonIssuedStepByQRCodeFromActivity,
 } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
+import { toQRCodeString } from '../../../../../utils/huQRCodes';
 
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });
@@ -28,34 +28,15 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
 
-  let targetQrCode;
-  let eligibleBarcode;
-  if (!stepId) {
-    eligibleBarcode = undefined;
-    const line = getLineByIdFromActivity(activity, lineId);
-    const locatorQrCodeSet = new Set();
-    Object.values(line.steps).forEach((step) => locatorQrCodeSet.add(step.locatorQrCode));
-    const locatorQrCodeArray = Array.from(locatorQrCodeSet);
-    if (locatorQrCodeArray.length === 1) {
-      targetQrCode = locatorQrCodeArray[0];
-    }
-  } else {
-    const step = getStepByIdFromActivity(activity, lineId, stepId);
-    eligibleBarcode = step.huQRCode;
-    targetQrCode = step.locatorQrCode;
-  }
+  const eligibleBarcode =
+    stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
   const resolveScannedBarcode = (scannedBarcode, handlingUnitInfo) => {
     let step;
     if (handlingUnitInfo) {
-      const actualHuId =
-        handlingUnitInfo.jsonHUType === 'TU' && handlingUnitInfo.topLevelParentId
-          ? handlingUnitInfo.topLevelParentId
-          : handlingUnitInfo.id;
-
-      step = getStepByHuIdFromActivity(activity, lineId, actualHuId);
+      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, handlingUnitInfo.id);
     } else {
-      step = getStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+      step = getNonIssuedStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
     }
 
     if (!step) {
@@ -133,7 +114,6 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
       resolveScannedBarcode={resolveScannedBarcode}
-      onlyFromLocatorQrCode={targetQrCode}
       //
       // userInfo={userInfo}
       // qtyTarget={qtyToIssueTarget}

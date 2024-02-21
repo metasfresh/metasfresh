@@ -91,7 +91,6 @@ public class PPOrderIssueScheduleService
 											.productId(productId)
 											.qtyCU(qtyIssued)
 											.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-											.keepSplitTUsUnderSameParent(false)
 											.build()
 							)
 					);

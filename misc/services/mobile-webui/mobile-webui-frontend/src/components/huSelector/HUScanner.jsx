@@ -7,11 +7,15 @@ import { extractErrorResponseFromAxiosError, toastError } from '../../utils/toas
 import * as api from '../../apps/huManager/api';
 import { isKnownQRCodeFormat } from '../../utils/huQRCodes';
 
-const HUScanner = ({ onResolvedBarcode, locatorQrCode }) => {
+const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
   const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
   const [locatingQrCodeScannerInfo, setLocatingQrCodeScannerInfo] = useState(undefined);
 
   const resolveHUScannedBarcode = async ({ scannedBarcode }) => {
+    if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
+      throw trl('activities.picking.notEligibleHUBarcode');
+    }
+
     if (isKnownQRCodeFormat(scannedBarcode)) {
       if (locatorQrCode) {
         return getListByLocatingAndHuQR({
@@ -114,6 +118,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode }) => {
 HUScanner.propTypes = {
   onResolvedBarcode: PropTypes.func.isRequired,
   locatorQrCode: PropTypes.string,
+  eligibleBarcode: PropTypes.string,
 };
 
 export default HUScanner;
