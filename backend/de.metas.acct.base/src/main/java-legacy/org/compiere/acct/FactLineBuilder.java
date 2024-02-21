@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
+import de.metas.util.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
@@ -62,6 +63,8 @@ public final class FactLineBuilder
 	@Nullable private CurrencyConversionContext currencyConversionCtx;
 	@Nullable private BigDecimal amtSourceDr;
 	@Nullable private BigDecimal amtSourceCr;
+	@Nullable private BigDecimal amtAcctDr;
+	@Nullable private BigDecimal amtAcctCr;
 
 	private BigDecimal qty = null;
 	private UomId uomId;
@@ -74,6 +77,8 @@ public final class FactLineBuilder
 	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
 	private ActivityId activityId;
+
+	private String additionalDescription = null;
 
 	FactLineBuilder(@NonNull final Fact fact)
 	{
@@ -178,7 +183,11 @@ public final class FactLineBuilder
 
 		//
 		// Optionally overwrite Acct Amount
-		if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
+		if(amtAcctDr != null || amtAcctCr != null)
+		{
+			line.setAmtAcct(amtAcctDr, amtAcctCr);
+		}
+		else if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
 		{
 			line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
 		}
@@ -218,6 +227,11 @@ public final class FactLineBuilder
 		if (activityId != null)
 		{
 			line.setC_Activity_ID(activityId.getRepoId());
+		}
+
+		if (additionalDescription != null)
+		{
+			line.addDescription(additionalDescription);
 		}
 
 		//
@@ -485,5 +499,12 @@ public final class FactLineBuilder
 	private ActivityId getActivityId()
 	{
 		return activityId;
+	}
+
+	public FactLineBuilder additionalDescription(@Nullable final String additionalDescription)
+	{
+		assertNotBuild();
+		this.additionalDescription = StringUtils.trimBlankToNull(additionalDescription);
+		return this;
 	}
 }
