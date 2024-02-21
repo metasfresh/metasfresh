@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements I_M_HU_LUTU_Configuration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2018209887L;
+	private static final long serialVersionUID = -270391989L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (final Properties ctx, final int M_HU_LUTU_Configuration_ID, @Nullable final String trxName)
@@ -287,15 +287,15 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setQtyCUsPerTU (final BigDecimal QtyCUsPerTU)
+	public void setQtyCU (final BigDecimal QtyCU)
 	{
-		set_Value (COLUMNNAME_QtyCUsPerTU, QtyCUsPerTU);
+		set_Value (COLUMNNAME_QtyCU, QtyCU);
 	}
 
 	@Override
-	public BigDecimal getQtyCUsPerTU() 
+	public BigDecimal getQtyCU() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerTU);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -65,9 +65,9 @@ public class WEBUI_Picking_PickQtyToExistingHU
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal qtyCUsPerTU;
+	private static final String PARAM_QTY_CU = "QtyCU";
+	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -95,7 +95,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	protected Quantity getQtyToPack()
 	{
 		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
-		return Quantity.of(qtyCUsPerTU, uom);
+		return Quantity.of(qtyCU, uom);
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (Objects.equals(PARAM_QtyCUsPerTU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
 			return retrieveQtyToPick().toBigDecimal();
 		}

@@ -20,10 +20,8 @@
         <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
         <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCUsPerTU>1</QtyCUsPerTU>
-            <QtyCUsPerTU_InInvoiceUOM>0.25</QtyCUsPerTU_InInvoiceUOM>
+            <QtyCU>1</QtyCU>
             <QtyCUsPerLU>1</QtyCUsPerLU>
-            <QtyCUsPerLU_InInvoiceUOM>0.25</QtyCUsPerLU_InInvoiceUOM>
             <QtyTU>1</QtyTU>
             <LotNumber>19</LotNumber>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>

@@ -79,10 +79,10 @@ public class EDIDesadvPack
 	}
 
 	@NonNull
-	public BigDecimal getQtyCUsPerTU()
+	public BigDecimal getQtyCU()
 	{
 		return ediDesadvPackItems.stream()
-				.map(EDIDesadvPackItem::getQtyCUsPerTU)
+				.map(EDIDesadvPackItem::getQtyCu)
 				.filter(Objects::nonNull)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
@@ -125,16 +125,10 @@ public class EDIDesadvPack
 		Integer qtyTu;
 
 		@Nullable
-		BigDecimal qtyCUsPerTU;
-
-		@Nullable
-		BigDecimal qtyCUPerTUinInvoiceUOM;
+		BigDecimal qtyCu;
 
 		@Nullable
 		BigDecimal qtyCUsPerLU;
-
-		@Nullable
-		BigDecimal qtyCUsPerLUinInvoiceUOM;
 
 		@Nullable
 		Timestamp bestBeforeDate;

@@ -38,16 +38,15 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -145,10 +144,8 @@ public class EDI_Desadv_Pack_Item_StepDef
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID).append(" : ").append(itemRecord.getM_InOut_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID).append(" : ").append(itemRecord.getM_InOutLine_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty).append(" : ").append(itemRecord.getMovementQty()).append(" ; ")
-						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU).append(" : ").append(itemRecord.getQtyCUsPerTU()).append(" ; ")
-						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerTU_InInvoiceUOM()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU).append(" : ").append(itemRecord.getQtyCU()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU).append(" : ").append(itemRecord.getQtyCUsPerLU()).append(" ; ")
-						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerLU_InInvoiceUOM()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity).append(" : ").append(itemRecord.getQtyItemCapacity()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU).append(" : ").append(itemRecord.getQtyTU()).append(" ; ")
 						.append("\n"));
@@ -166,62 +163,31 @@ public class EDI_Desadv_Pack_Item_StepDef
 				.map(I_EDI_Desadv_Pack::getEDI_Desadv_Pack_ID)
 				.orElseGet(() -> Integer.parseInt(packIdentifier));
 
-		final IQueryBuilder<I_EDI_Desadv_Pack_Item> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
+		final IQuery<I_EDI_Desadv_Pack_Item> query = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packID);
+				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packID)
+				.create();
 
-		final BigDecimal movementQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
-		if (movementQty != null)
-		{
-			queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty, movementQty);
-		}
-
-		final Supplier<Boolean> packItemFound = () -> queryBuilder
-				.create()
+		final Supplier<Boolean> packItemFound = () -> query
 				.firstOnly(I_EDI_Desadv_Pack_Item.class) != null;
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, packItemFound, () -> logCurrentContext(packID, movementQty));
+		StepDefUtil.tryAndWait(timeoutSec, 500, packItemFound, () -> logCurrentContext(packID));
 
-		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU);
-		final BigDecimal qtyCUsPerTU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM);
+		final BigDecimal movementQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
+		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU);
 		final BigDecimal qtyCUsPerLU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU);
-		final BigDecimal qtyCUsPerLU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM);
 		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity);
 		final Integer qtyTu = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU);
 
-		final I_EDI_Desadv_Pack_Item desadvPackItemRecord = queryBuilder.create().firstOnlyNotNull(I_EDI_Desadv_Pack_Item.class);
+		final I_EDI_Desadv_Pack_Item desadvPackItemRecord = query.firstOnly(I_EDI_Desadv_Pack_Item.class);
 		final int packItemId = desadvPackItemRecord.getEDI_Desadv_Pack_Item_ID();
 
 		final SoftAssertions softly = new SoftAssertions();
-		if (qtyCUsPerTU != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU);
-		}
-
-		if (qtyCUsPerTU_InInvoiceUOM != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU_InInvoiceUOM);
-		}
-
-		if (qtyCUsPerLU != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU);
-		}
-
-		if (qtyCUsPerLU_InInvoiceUOM != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU_InInvoiceUOM);
-		}
-
-		if (qtyItemCapacity != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyItemCapacity()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyItemCapacity", packIdentifier, packItemId).isEqualByComparingTo(qtyItemCapacity);
-		}
-
-		if (qtyTu != null)
-		{
-			softly.assertThat(desadvPackItemRecord.getQtyTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyTU", packIdentifier, packItemId).isEqualByComparingTo(qtyTu);
-		}
+		softly.assertThat(desadvPackItemRecord.getMovementQty()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - MovementQty", packIdentifier, packItemId).isEqualByComparingTo(movementQty);
+		softly.assertThat(desadvPackItemRecord.getQtyCU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCU", packIdentifier, packItemId).isEqualByComparingTo(qtyCU);
+		softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU);
+		softly.assertThat(desadvPackItemRecord.getQtyItemCapacity()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyItemCapacity", packIdentifier, packItemId).isEqualByComparingTo(qtyItemCapacity);
+		softly.assertThat(desadvPackItemRecord.getQtyTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyTU", packIdentifier, packItemId).isEqualByComparingTo(qtyTu);
 
 		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(shipmentIdentifier))
@@ -280,19 +246,12 @@ public class EDI_Desadv_Pack_Item_StepDef
 		packItemTable.put(packItemIdentifier, desadvPackItemRecord);
 	}
 
-	private void logCurrentContext(
-			@NonNull final Integer packID,
-			@Nullable final BigDecimal movementQty)
+	private void logCurrentContext(@NonNull final Integer packID)
 	{
 		final StringBuilder message = new StringBuilder();
 
 		message.append("Looking for instance with:").append("\n")
 				.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID).append(" : ").append(packID).append("\n");
-
-		if (movementQty != null)
-		{
-			message.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty).append(" : ").append(movementQty).append("\n");
-		}
 
 		logItemRecords(message);
 	}

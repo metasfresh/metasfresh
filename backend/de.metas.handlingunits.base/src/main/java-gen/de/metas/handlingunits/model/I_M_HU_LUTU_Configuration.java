@@ -92,6 +92,28 @@ public interface I_M_HU_LUTU_Configuration
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -117,29 +139,7 @@ public interface I_M_HU_LUTU_Configuration
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Packing Status.
+	 * Set Gebinde Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -148,7 +148,7 @@ public interface I_M_HU_LUTU_Configuration
 	void setHUStatus (@Nullable java.lang.String HUStatus);
 
 	/**
-	 * Get Packing Status.
+	 * Get Gebinde Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -381,7 +381,7 @@ public interface I_M_HU_LUTU_Configuration
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Packing Instruction (TU).
+	 * Set Packvorschrift (TU).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -390,7 +390,7 @@ public interface I_M_HU_LUTU_Configuration
 	void setM_TU_HU_PI_ID (int M_TU_HU_PI_ID);
 
 	/**
-	 * Get Packing Instruction (TU).
+	 * Get Packvorschrift (TU).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -413,7 +413,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQtyCUsPerTU (BigDecimal QtyCUsPerTU);
+	void setQtyCU (BigDecimal QtyCU);
 
 	/**
 	 * Get Qty CU per TU.
@@ -423,10 +423,10 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyCUsPerTU();
+	BigDecimal getQtyCU();
 
-	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyCUsPerTU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "QtyCUsPerTU", null);
-	String COLUMNNAME_QtyCUsPerTU = "QtyCUsPerTU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyCU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "QtyCU", null);
+	String COLUMNNAME_QtyCU = "QtyCU";
 
 	/**
 	 * Set Number of LUs.

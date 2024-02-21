@@ -255,7 +255,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			}
 			else
 			{
-				builder.setStandardQtyCUsPerTU(lutuConfiguration.getQtyCUsPerTU());
+				builder.setStandardQtyCUsPerTU(lutuConfiguration.getQtyCU());
 				builder.setStandardQtyTUsPerLU(lutuConfiguration.getQtyTU());
 			}
 

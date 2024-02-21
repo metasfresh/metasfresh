@@ -202,7 +202,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 		BigDecimal qtyTU;
 
 		@NonNull
-		BigDecimal qtyCUsPerTU;
+		BigDecimal qtyCU;
 
 		@NonNull
 		Integer tuHUPIItemProductID;
