@@ -1,16 +1,14 @@
 package de.metas.money;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -54,7 +52,7 @@ public class CurrencyConversionTypeId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final CurrencyConversionTypeId CurrencyConversionTypeId)
+	public static int toRepoId(@Nullable final CurrencyConversionTypeId CurrencyConversionTypeId)
 	{
 		return CurrencyConversionTypeId != null ? CurrencyConversionTypeId.getRepoId() : -1;
 	}

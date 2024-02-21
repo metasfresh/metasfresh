@@ -16,23 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.MAccount;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -46,8 +30,21 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.MAccount;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Accounting Fact
@@ -144,9 +141,9 @@ public final class Fact
 	}
 
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
-			final int C_Currency_ID,
-			final BigDecimal debitAmt, final BigDecimal creditAmt)
+							   final MAccount account,
+							   final int C_Currency_ID,
+							   final BigDecimal debitAmt, final BigDecimal creditAmt)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(C_Currency_ID);
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
@@ -169,10 +166,10 @@ public final class Fact
 	 * @return Fact Line or null
 	 */
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
-			final CurrencyId currencyId,
-			final BigDecimal debitAmt, final BigDecimal creditAmt,
-			final BigDecimal qty)
+							   final MAccount account,
+							   final CurrencyId currencyId,
+							   final BigDecimal debitAmt, final BigDecimal creditAmt,
+							   final BigDecimal qty)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -183,10 +180,10 @@ public final class Fact
 	}    // createLine
 
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
-			final int C_Currency_ID,
-			final BigDecimal debitAmt, final BigDecimal creditAmt,
-			final BigDecimal qty)
+							   final MAccount account,
+							   final int C_Currency_ID,
+							   final BigDecimal debitAmt, final BigDecimal creditAmt,
+							   final BigDecimal qty)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(C_Currency_ID);
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt, qty);
@@ -256,6 +253,8 @@ public final class Fact
 	{
 		return getAcctSchema().getId();
 	}
+
+	public CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
 
 	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
