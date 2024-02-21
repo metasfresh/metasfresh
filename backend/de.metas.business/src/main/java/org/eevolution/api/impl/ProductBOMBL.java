@@ -82,6 +82,7 @@ public class ProductBOMBL implements IProductBOMBL
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
@@ -396,8 +397,7 @@ public class ProductBOMBL implements IProductBOMBL
 	private void updateProductLLCAndMarkAsVerified(@NonNull final I_M_Product product)
 	{
 		// NOTE: when LLC is calculated, the BOM cycles are also checked
-		final int lowLevelCode = calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
+		productBOMBL.checkCycles(ProductId.ofRepoId(product.getM_Product_ID()));
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}

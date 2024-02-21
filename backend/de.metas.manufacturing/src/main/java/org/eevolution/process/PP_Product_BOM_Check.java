@@ -8,6 +8,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -35,6 +36,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
 	private int p_M_Product_Category_ID;
