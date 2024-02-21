@@ -38,6 +38,8 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,6 +50,8 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -67,6 +71,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 	protected static final int DAYS_NotAvailable = Integer.MIN_VALUE;
 
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean isHandled(final IDunnableDoc sourceDoc)
@@ -144,8 +149,8 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		candidate.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(sourceDoc.getC_BPartner_ID()))
 												  .map(UserId::getRepoId)
 												  .orElse(sourceDoc.getContact_ID()));
-		candidate.setDueDate(TimeUtil.asTimestamp(sourceDoc.getDueDate()));
-		candidate.setDunningGrace(TimeUtil.asTimestamp(sourceDoc.getGraceDate()));
+		candidate.setDueDate(sourceDoc.getDueDate().toTimestamp(orgDAO::getTimeZone));
+		candidate.setDunningGrace(sourceDoc.getGraceDate().toTimestamp(orgDAO::getTimeZone));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
 		candidate.setIsWriteOff(dunningLevel.isWriteOff());
 
@@ -213,7 +218,15 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 		//
 		// Validate DunningGrace
-		if (sourceDoc.getGraceDate() != null && sourceDoc.getGraceDate().compareTo(context.getDunningDate()) >= 0)
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(dunningLevel.getAD_Org_ID()));
+		final LocalDate dunningDate = TimeUtil.asLocalDate(context.getDunningDate(), zoneId);
+		if (dunningDate == null)
+		{
+			logger.info("Skip because context DunningDate is null");
+			return false;
+		}
+
+		if (sourceDoc.getGraceDate() != null && sourceDoc.getGraceDate().toLocalDate().compareTo(dunningDate) >= 0)
 		{
 			logger.info("Skip because DunnableDoc's grace date is >= context DunningDate");
 			return false;

@@ -29,10 +29,13 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -337,9 +340,9 @@ public class TestDunning extends DunningTestBase
 		writeOffListener.assertTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate2_2);
 	}
 
-	private IDunnableDoc createDunningDoc(final I_C_Invoice invoice, final Date dueDate, final int daysDue, final Date graceDate)
+	private IDunnableDoc createDunningDoc(final I_C_Invoice invoice, final LocalDateAndOrgId dueDate, final int daysDue, final LocalDateAndOrgId graceDate)
 	{
-		final IDunnableDoc dunnableDoc = new DunnableDocBuilder()
+		return new DunnableDocBuilder()
 				.setRecord(invoice)
 				.setDocumentNo(invoice.getDocumentNo())
 				.setC_BPartner_ID(invoice.getC_BPartner_ID())
@@ -353,7 +356,6 @@ public class TestDunning extends DunningTestBase
 				.setDaysDue(daysDue) // daysDue,
 				.setInDispute(false) // isInDispute
 				.create();
-		return dunnableDoc;
 	}
 
 	/**
@@ -453,13 +455,13 @@ public class TestDunning extends DunningTestBase
 		// Setup dunnable documents
 		final List<IDunnableDoc> documents = getLiveDunnableDocList(dunningContext);
 
-		documents.add(createDunningDoc(invoice1, TimeUtil.getDay(2012, 01, 01), 15, null));
+		documents.add(createDunningDoc(invoice1, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, null));
 
-		documents.add(createDunningDoc(invoice2, TimeUtil.getDay(2012, 01, 01), 25, null));
+		documents.add(createDunningDoc(invoice2, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 25, null));
 
-		documents.add(createDunningDoc(invoice3, TimeUtil.getDay(2012, 01, 01), 15, TimeUtil.getDay(2014, 01, 01)));
+		documents.add(createDunningDoc(invoice3, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2014, 01, 01), OrgId.ANY)));
 
-		documents.add(createDunningDoc(invoice4, TimeUtil.getDay(2012, 01, 01), 15, null));
+		documents.add(createDunningDoc(invoice4, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, null));
 
 		//
 		// Create candidates without processing them.

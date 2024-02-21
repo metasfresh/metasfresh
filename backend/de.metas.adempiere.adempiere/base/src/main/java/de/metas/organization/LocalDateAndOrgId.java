@@ -43,6 +43,12 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 		return timestamp != null ? ofTimestamp(timestamp, orgId, orgMapper) : null;
 	}
 
+	@NonNull
+	public static LocalDateAndOrgId now(@NonNull final OrgId orgId)
+	{
+		return ofLocalDate(LocalDate.now(), orgId);
+	}
+	
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
 		return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();

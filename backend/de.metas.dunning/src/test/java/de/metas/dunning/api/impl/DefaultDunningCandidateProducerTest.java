@@ -32,6 +32,8 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,6 +45,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -357,7 +360,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate before context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(TimeUtil.addDays(dunningDate, -1))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, -1), OrgId.ANY, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNotNull("GraceDate before context DunningDate - candidate shall be generated", candidate);
@@ -365,7 +368,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate equals context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(dunningDate)
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(dunningDate, OrgId.ANY, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNull("GraceDate equals with context DunningDate - candidate shall NOT be generated", candidate);
@@ -373,7 +376,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate after context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(TimeUtil.addDays(dunningDate, 1))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, 1), OrgId.ANY, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNull("GraceDate after context DunningDate - candidate shall NOT be generated", candidate);
@@ -615,7 +618,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
 				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 01, 01), OrgId.ANY)) // dueDate,
 				.setGraceDate(null);
 	}
 
@@ -637,7 +640,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Invalid candidate - C_BPartner_ID: " + candidate, fromDoc.getC_BPartner_ID(), candidate.getC_BPartner_ID());
 		Assert.assertEquals("Invalid candidate - C_BPartner_Location_ID: " + candidate, fromDoc.getC_BPartner_Location_ID(), candidate.getC_BPartner_Location_ID());
 		Assert.assertEquals("Invalid candidate - C_Dunning_Contact_ID: " + candidate, fromDoc.getContact_ID(), candidate.getC_Dunning_Contact_ID());
-		Assert.assertEquals("Invalid candidate - DueDate: " + candidate, fromDoc.getDueDate(), candidate.getDueDate());
+		Assert.assertEquals("Invalid candidate - DueDate: " + candidate, fromDoc.getDueDate(), LocalDateAndOrgId.ofTimestamp(candidate.getDueDate(), OrgId.ANY, orgDAO::getTimeZone));
 		Assert.assertEquals("Invalid candidate - DunningGrace: " + candidate, fromDoc.getGraceDate(), candidate.getDunningGrace());
 		Assert.assertEquals("Invalid candidate - DaysDue: " + candidate, fromDoc.getDaysDue(), candidate.getDaysDue());
 		Assert.assertEquals("Invalid candidate - IsWriteOff: " + candidate, candidateDunningLevel.isWriteOff(), candidate.isWriteOff());
