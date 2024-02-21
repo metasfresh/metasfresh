@@ -1,16 +1,18 @@
 package de.metas.money;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -76,4 +78,81 @@ public class CurrencyId implements RepoIdAware
 	{
 		return Objects.equals(currencyId1, currencyId2);
 	}
+
+	@NonNull
+	@SafeVarargs
+	public static <T> CurrencyId getCommonCurrencyIdOfAll(
+			@NonNull final Function<T, CurrencyId> getCurrencyId,
+			@NonNull final String name,
+			@Nullable final T... objects)
+	{
+		if (objects == null || objects.length == 0)
+		{
+			throw new AdempiereException("No " + name + " provided");
+		}
+		else if (objects.length == 1 && objects[0] != null)
+		{
+			return getCurrencyId.apply(objects[0]);
+		}
+		else
+		{
+			CurrencyId commonCurrencyId = null;
+			for (final T object : objects)
+			{
+				if (object == null)
+				{
+					continue;
+				}
+
+				final CurrencyId currencyId = getCurrencyId.apply(object);
+				if (commonCurrencyId == null)
+				{
+					commonCurrencyId = currencyId;
+				}
+				else if (!CurrencyId.equals(commonCurrencyId, currencyId))
+				{
+					throw new AdempiereException("All given " + name + "(s) shall have the same currency: " + Arrays.asList(objects));
+				}
+			}
+
+			if (commonCurrencyId == null)
+			{
+				throw new AdempiereException("At least one non null " + name + " instance was expected: " + Arrays.asList(objects));
+			}
+
+			return commonCurrencyId;
+		}
+	}
+
+	@SafeVarargs
+	public static <T> void assertCurrencyMatching(
+			@NonNull final Function<T, CurrencyId> getCurrencyId,
+			@NonNull final String name,
+			@Nullable final T... objects)
+	{
+		if (objects == null || objects.length <= 1)
+		{
+			return;
+		}
+
+		CurrencyId expectedCurrencyId = null;
+		for (final T object : objects)
+		{
+			if (object == null)
+			{
+				continue;
+			}
+
+			final CurrencyId currencyId = getCurrencyId.apply(object);
+			if (expectedCurrencyId == null)
+			{
+				expectedCurrencyId = currencyId;
+			}
+			else if (!CurrencyId.equals(currencyId, expectedCurrencyId))
+			{
+				throw new AdempiereException("" + name + " has invalid currency: " + object + ". Expected: " + expectedCurrencyId);
+			}
+		}
+	}
+
 }
