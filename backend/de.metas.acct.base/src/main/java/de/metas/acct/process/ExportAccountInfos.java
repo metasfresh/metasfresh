@@ -5,10 +5,8 @@ package de.metas.acct.process;
 
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.util.FileUtil;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -48,7 +46,6 @@ import java.util.List;
 public class ExportAccountInfos extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-	final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
 	protected String doIt()
