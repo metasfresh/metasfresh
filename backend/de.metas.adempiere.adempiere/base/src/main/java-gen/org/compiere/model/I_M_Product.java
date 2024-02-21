@@ -1429,26 +1429,6 @@ public interface I_M_Product
 	ModelColumn<I_M_Product, Object> COLUMN_LongTextDescription = new ModelColumn<>(I_M_Product.class, "LongTextDescription", null);
 	String COLUMNNAME_LongTextDescription = "LongTextDescription";
 
-	/**
-	 * Set Low Level.
-	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLowLevel (int LowLevel);
-
-	/**
-	 * Get Low Level.
-	 * The Low Level is used to calculate the material plan and determines if a net requirement should be exploited
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLowLevel();
-
 	ModelColumn<I_M_Product, Object> COLUMN_LowLevel = new ModelColumn<>(I_M_Product.class, "LowLevel", null);
 	String COLUMNNAME_LowLevel = "LowLevel";
 
