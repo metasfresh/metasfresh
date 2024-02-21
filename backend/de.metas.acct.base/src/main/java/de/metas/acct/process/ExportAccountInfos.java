@@ -3,44 +3,22 @@
  */
 package de.metas.acct.process;
 
-import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
-import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.SpreadsheetExportOptions;
-import de.metas.process.SpreadsheetFormat;
-import de.metas.product.IProductDAO;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.poi.ss.usermodel.Font;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_DatevAcctExport;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.Ini;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipOutputStream;
 
 /*
  * #%L
@@ -88,7 +66,7 @@ public class ExportAccountInfos extends JavaProcess
 
 		final File resultFile = jdbcExcelExporter.getResultFile();
 
-		final List<File> files = new ArrayList<>();
+		final List<File> files = new ArrayList<>(); // this is the list with file for all needed accounts
 		files.add(resultFile);
 
 		try
@@ -101,15 +79,11 @@ public class ExportAccountInfos extends JavaProcess
 			throw new RuntimeException(e);
 		}
 
-
-
 		return MSG_OK;
 	}
 
 	private String getSql(@NonNull final String account)
 	{
-
-		final I_M_Product product = Services.get(IProductDAO.class).getById(getRecord_ID());
 
 		final StringBuffer sb = new StringBuffer();
 		sb.append("SELECT * FROM report.AccountSheet_Report")
