@@ -85,6 +85,8 @@ public interface ILockManager extends ISingletonService
 	/** @return true if given model is locked by any lock */
 	boolean isLocked(Object model);
 
+	boolean isLocked(Object model, LockOwner lockOwner);
+
 	/**
 	 * Retrieves next model from query and locks it (using {@link LockOwner#NONE}.
 	 *

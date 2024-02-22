@@ -128,6 +128,12 @@ public class LockManager implements ILockManager
 	}
 
 	@Override
+	public boolean isLocked(final Object model, LockOwner lockOwner)
+	{
+		return getLockDatabase().isLocked(model, lockOwner);
+	}
+
+	@Override
 	public final <T> T retrieveAndLock(final IQuery<T> query, final Class<T> clazz)
 	{
 		return getLockDatabase().retrieveAndLock(query, clazz);

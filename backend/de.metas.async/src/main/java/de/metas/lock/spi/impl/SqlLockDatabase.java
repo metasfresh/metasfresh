@@ -639,7 +639,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			{
 				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup));
 				final int countLocked = rs.getInt("CountLocked");
-				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
+				final ILock lock = newLock(lockOwner, autoCleanup, countLocked, 0);
 
 				Check.assume(!rs.next(), "More than one lock found for owner");
 

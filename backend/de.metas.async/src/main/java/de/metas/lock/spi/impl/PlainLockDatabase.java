@@ -690,7 +690,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 				throw new LockFailedException("No lock found for " + lockOwner + " in " + recordLocks);
 			}
 
-			return newLock(lockOwner, lockInfo.isAutoCleanup(), 1);
+			return newLock(lockOwner, lockInfo.isAutoCleanup(), 1, 0);
 		}
 	}
 

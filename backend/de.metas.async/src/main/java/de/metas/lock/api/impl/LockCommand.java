@@ -103,7 +103,7 @@ import lombok.NonNull;
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);
-				parentLock.subtractCountLocked(lock.getCountLocked());
+				parentLock.subtractCountLocked(lock.getCountTransferredFromParent());
 				return lock;
 			}
 		}

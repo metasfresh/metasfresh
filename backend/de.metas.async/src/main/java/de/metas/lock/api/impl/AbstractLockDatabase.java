@@ -34,10 +34,12 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -87,10 +89,17 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	public final ILock lock(final ILockCommand lockCommand)
 	{
 		final int countLocked;
+		final int countTransferredFromParent;
 
 		if (lockCommand.getSelectionToLock_Filters() != null)
 		{
+			if (lockCommand.getParentLock() != null)
+			{
+				throw new LockFailedException("Changing the lock for a given query filter is not supported)")
+						.setLockCommand(lockCommand);
+			}
 			countLocked = lockByFilters(lockCommand);
+			countTransferredFromParent = 0;
 		}
 		//
 		// Lock by selection
@@ -102,12 +111,15 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 						.setLockCommand(lockCommand);
 			}
 			countLocked = lockBySelection(lockCommand);
+			countTransferredFromParent = 0;
 		}
 		//
 		// Lock by iterator
 		else if (lockCommand.getRecordsToLockIterator() != null)
 		{
-			countLocked = lockByIterator(lockCommand);
+			final LockCounters counters = lockByIterator(lockCommand);
+			countLocked = counters.countLocked();
+			countTransferredFromParent = counters.countTransferredFromParent();
 		}
 		//
 		// No lock records were specified
@@ -117,12 +129,12 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 					.setLockCommand(lockCommand);
 		}
 
-		return newLock(lockCommand.getOwner(), lockCommand.isAutoCleanup(), countLocked);
+		return newLock(lockCommand.getOwner(), lockCommand.isAutoCleanup(), countLocked, countTransferredFromParent);
 	}
 
-	protected final ILock newLock(final LockOwner lockOwner, final boolean autoCleanup, final int countLocked)
+	protected final ILock newLock(final LockOwner lockOwner, final boolean autoCleanup, final int countLocked, final int countTransferredFromParent)
 	{
-		return new Lock(this, lockOwner, autoCleanup, countLocked);
+		return new Lock(this, lockOwner, autoCleanup, countLocked, countTransferredFromParent);
 	}
 
 	/**
@@ -134,12 +146,15 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	protected abstract int lockByFilters(ILockCommand lockCommand);
 
+	@Builder
+	private record LockCounters(int countLocked, int countTransferredFromParent) {}
+
 	/**
 	 * Lock all records specified by {@link LockCommand#getRecordsToLockIterator()}.
 	 *
 	 * @return how many records were locked
 	 */
-	private int lockByIterator(@NonNull final ILockCommand lockCommand)
+	private LockCounters lockByIterator(@NonNull final ILockCommand lockCommand)
 	{
 		final Iterator<TableRecordReference> records = lockCommand.getRecordsToLockIterator();
 		Check.assumeNotNull(records, "records not null");
@@ -147,16 +162,29 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		final boolean failIfAlreadyLocked = lockCommand.isFailIfAlreadyLocked();
 		final boolean changeLock = lockCommand.getParentLock() != null;
 		int countLocked = 0;
+		int countTransferredFromParent = 0;
 		while (records.hasNext())
 		{
 			final TableRecordReference record = records.next();
 
 			//
 			// Acquire/Change the lock
-			final boolean locked;
+			boolean locked;
 			if (changeLock)
 			{
 				locked = changeLockRecord(lockCommand, record);
+				if (locked)
+				{
+					countTransferredFromParent++;
+				}
+				else
+				{
+					//noinspection ThrowableNotThrown
+					new AdempiereException("Could not transfer locked record from parent -- lockCommand=" + lockCommand)
+							.throwIfDeveloperModeOrLogWarningElse(logger);
+
+					locked = lockRecord(lockCommand, record);
+				}
 			}
 			else
 			{
@@ -170,7 +198,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			//
-			// If lock could not be acquired/changed and we were asked to fail, do so
+			// If lock could not be acquired/changed, and we were asked to fail, do so
 			if (failIfAlreadyLocked && !locked)
 			{
 				// NOTE: we are checking this just to me sure, but basically, the "lockRecord" method is already throwing an exception in this case
@@ -180,7 +208,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 		}
 
-		return countLocked;
+		return LockCounters.builder().countLocked(countLocked).countTransferredFromParent(countTransferredFromParent).build();
 	}
 
 	/**

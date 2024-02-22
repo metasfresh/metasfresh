@@ -56,6 +56,8 @@ public interface ILock
 	 */
 	int getCountLocked();
 
+	int getCountTransferredFromParent();
+
 	/**
 	 * Start splitting some records off this lock and move them to another lock.
 	 * <p>

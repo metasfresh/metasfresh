@@ -38,6 +38,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.slf4j.Logger;
@@ -60,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	@Getter
 	private final boolean isAutoCleanup;
 	private int _countLocked;
+	@Getter private final int countTransferredFromParent;
 
 	// Status
 	private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -68,7 +70,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			@NonNull final ILockDatabase lockDatabase,
 			@NonNull final LockOwner owner,
 			final boolean isAutoCleanup,
-			final int countLocked)
+			final int countLocked,
+			final int countTransferredFromParent)
 	{
 		this.lockDatabase = lockDatabase;
 
@@ -76,7 +79,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		this.owner = owner;
 
 		this.isAutoCleanup = isAutoCleanup;
-		_countLocked = countLocked;
+		this._countLocked = countLocked;
+		this.countTransferredFromParent = countTransferredFromParent;
 	}
 
 	/**
@@ -97,6 +101,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	/* package */
 	final void subtractCountLocked(final int countLockedToSubtract)
 	{
+		if (countLockedToSubtract < 0)
+		{
+			throw new AdempiereException("Invalid countLockedToSubtract < 0: " + countLockedToSubtract);
+		}
+		else if (countLockedToSubtract == 0)
+		{
+			// nothing to do
+			return;
+		}
+
 		try (final CloseableReentrantLock ignore = mutex.open())
 		{
 			if (_countLocked < countLockedToSubtract)
