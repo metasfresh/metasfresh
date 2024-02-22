@@ -18,6 +18,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 
@@ -144,7 +145,7 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Timestamp dateAcctFrom, @NonNull final Timestamp dateAcctTo)
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Instant dateAcctFrom, @NonNull final Instant dateAcctTo)
 	{
 		return queryBL
 				.createQueryBuilder(I_Fact_Acct.class)

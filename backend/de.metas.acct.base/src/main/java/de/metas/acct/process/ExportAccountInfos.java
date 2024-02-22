@@ -14,15 +14,14 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Evaluatee;
+import org.compiere.util.DB;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,24 +57,23 @@ public class ExportAccountInfos extends JavaProcess
 	final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
 	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
-	private int p_C_AcctSchema_ID;
+	private AcctSchemaId p_C_AcctSchema_ID;
 
 	@Param(parameterName = "DateAcctFrom", mandatory = true)
-	private Timestamp p_DateAcctFrom;
+	private Instant p_DateAcctFrom;
 
 	@Param(parameterName = "DateAcctTo", mandatory = true)
-	private Timestamp p_DateAcctTo;
+	private Instant p_DateAcctTo;
 
 	@Param(parameterName = "Function", mandatory = true)
 	private String p_Function;
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws IOException
 	{
-		final Evaluatee evalCtx = getEvalContext();
-		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
+		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom) + "_" + TimeUtil.asLocalDate(p_DateAcctTo);
 
-		final List<ElementValueId> accountIds = factAcctDAO.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
+		final List<ElementValueId> accountIds = factAcctDAO.retrieveAccountsForTimeFrame(p_C_AcctSchema_ID, p_DateAcctFrom, p_DateAcctTo);
 		final List<File> files = new ArrayList<>();
 
 		for (final ElementValueId accountId : accountIds)
@@ -89,74 +87,35 @@ public class ExportAccountInfos extends JavaProcess
 					.ctx(getCtx())
 					.translateHeaders(true)
 					.applyFormatting(true)
-					.fileName(fileName)
+					.fileNamePrefix(fileName)
 					.build();
 
-			spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
+			spreadsheetExporterService.processDataFromSQL(sql, Evaluatees.empty(), jdbcExcelExporter);
 
 			final File resultFile = jdbcExcelExporter.getResultFile();
 
 			files.add(resultFile);
 		}
 
-		try
-		{
-			final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString() + "_";
-			final File zipFile = FileUtil.zip(files, zipFileName);
-			getResult().setReportData(zipFile);
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom) + "_" + TimeUtil.asLocalDate(p_DateAcctTo) + ".zip";
+		final File zipFile = FileUtil.zip(files);
+		getResult().setReportData(zipFile, zipFileName);
 
 		return MSG_OK;
 	}
 
 	private String getSql(final ElementValueId accountId)
 	{
-
-		final StringBuffer sb = new StringBuffer();
-		sb.append("SELECT * FROM ")
-				.append(p_Function)
-				.append("(")
-				.append("p_Account_ID := ")
-				.append(accountId.getRepoId())
-				.append(", ")
-				.append("p_C_AcctSchema_ID := @C_AcctSchema_ID@, ")
-				.append("p_DateAcctFrom := '@DateAcctFrom@', ")
-				.append("p_DateAcctTo := '@DateAcctTo@')");
-
-		return sb.toString();
+		return "SELECT * FROM "
+				+ p_Function
+				+ "("
+				+ "p_Account_ID := " + accountId.getRepoId()
+				+ ", "
+				+ "p_C_AcctSchema_ID := " + p_C_AcctSchema_ID.getRepoId()
+				+ ", "
+				+ "p_DateAcctFrom := " + DB.TO_DATE(p_DateAcctFrom)
+				+ ", "
+				+ "p_DateAcctTo := " + DB.TO_DATE(p_DateAcctTo)
+				+ ")";
 	}
-
-	private Evaluatee getEvalContext()
-	{
-		final ArrayList<Evaluatee> contexts = new ArrayList<>();
-
-		//
-		// 1: Add process parameters
-		contexts.add(Evaluatees.ofRangeAwareParams(getParameterAsIParams()));
-
-		//
-		// 2: underlying record
-		final String recordTableName = getTableName();
-		final int recordId = getRecord_ID();
-		if (recordTableName != null && recordId > 0)
-		{
-			final TableRecordReference recordRef = TableRecordReference.of(recordTableName, recordId);
-			final Evaluatee evalCtx = Evaluatees.ofTableRecordReference(recordRef);
-			if (evalCtx != null)
-			{
-				contexts.add(evalCtx);
-			}
-		}
-
-		//
-		// 3: global context
-		contexts.add(Evaluatees.ofCtx(getCtx()));
-
-		return Evaluatees.compose(contexts);
-	}
-
 }
