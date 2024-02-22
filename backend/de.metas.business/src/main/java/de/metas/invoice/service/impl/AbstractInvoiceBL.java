@@ -2072,4 +2072,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.map(ForexContractRef::getForexContractId)
 				.anyMatch(contractIds::contains);
 	}
+
+	@Override
+	@NonNull
+	public PaymentTermId getPaymentTermId(@NonNull final InvoiceId invoiceId)
+	{
+		return PaymentTermId.ofRepoId(getById(invoiceId)
+				.getC_PaymentTerm_ID());
+	}
 }

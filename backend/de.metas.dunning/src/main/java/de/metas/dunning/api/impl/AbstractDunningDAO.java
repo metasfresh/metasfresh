@@ -22,6 +22,7 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
@@ -215,6 +216,16 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 				.list();
 	}
 
+	@NonNull
+	public ImmutableList<I_C_Dunning> retrieveDunningsByOrg(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.listImmutable();
+	}
+	
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
 		/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
