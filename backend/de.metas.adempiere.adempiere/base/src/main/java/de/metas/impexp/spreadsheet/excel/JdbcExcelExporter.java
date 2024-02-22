@@ -25,6 +25,7 @@ package de.metas.impexp.spreadsheet.excel;
 import de.metas.impexp.spreadsheet.service.DataConsumer;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,7 +57,7 @@ public class JdbcExcelExporter
 	private ResultSet m_resultSet;
 	private List<String> m_columnHeaders;
 	private final boolean translateHeaders;
-	private String fileName;
+	private String fileNamePrefix;
 
 	@Getter
 	private File resultFile;
@@ -73,7 +74,7 @@ public class JdbcExcelExporter
 			@Nullable final List<String> columnHeaders,
 			@Nullable final Boolean translateHeaders,
 			@Nullable final Boolean applyFormatting,
-			@Nullable String fileName)
+			@Nullable String fileNamePrefix)
 	{
 		super(excelFormat, constants);
 		m_columnHeaders = columnHeaders;
@@ -83,7 +84,7 @@ public class JdbcExcelExporter
 		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 		this.resultFile = resultFile;
 		this.noDataAddedYet = true;
-		this.fileName = fileName;
+		this.fileNamePrefix = StringUtils.trimBlankToOptional(fileNamePrefix).orElse("Report")+"_";
 
 		setApplyFormatting(applyFormatting != null ? applyFormatting : true);
 		if (!isApplyFormatting())
@@ -113,7 +114,7 @@ public class JdbcExcelExporter
 		}
 		else
 		{
-			resultFile = exportToTempFile(fileName);
+			resultFile = exportToTempFile(fileNamePrefix);
 		}
 	}
 
