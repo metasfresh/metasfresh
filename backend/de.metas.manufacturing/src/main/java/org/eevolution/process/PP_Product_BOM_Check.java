@@ -2,25 +2,28 @@ package org.eevolution.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,6 +37,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
 	private int p_M_Product_Category_ID;
