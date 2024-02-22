@@ -4,15 +4,16 @@
 package de.metas.acct.process;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.elementvalue.ElementValue;
-import de.metas.elementvalue.ElementValueRepository;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.FileUtil;
+import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
@@ -54,7 +55,7 @@ public class ExportAccountInfos extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 	final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
-	final ElementValueRepository elementValueRepository = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+	final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
 	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
 	private int p_C_AcctSchema_ID;
@@ -74,7 +75,7 @@ public class ExportAccountInfos extends JavaProcess
 		final Evaluatee evalCtx = getEvalContext();
 		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
 
-		final List<ElementValueId> accountIds = elementValueRepository.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
+		final List<ElementValueId> accountIds = factAcctDAO.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
 		final List<File> files = new ArrayList<>();
 
 		for (final ElementValueId accountId : accountIds)

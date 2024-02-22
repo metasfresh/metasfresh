@@ -22,9 +22,11 @@ package de.metas.acct.api;
  * #L%
  */
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.acct.api.impl.ElementValueId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -84,4 +86,6 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @return how many {@link I_Fact_Acct} records were updated
 	 */
 	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+
+	List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull AcctSchemaId acctSchemaId, @NonNull Timestamp dateAcctFrom, @NonNull Timestamp dateAcctTo);
 }

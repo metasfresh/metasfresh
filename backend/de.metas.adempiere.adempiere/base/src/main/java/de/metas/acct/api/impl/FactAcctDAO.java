@@ -1,5 +1,6 @@
 package de.metas.acct.api.impl;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.document.engine.IDocument;
@@ -16,7 +17,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -139,5 +143,29 @@ public class FactAcctDAO implements IFactAcctDAO
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.execute();
+	}
+
+	@Override
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Timestamp dateAcctFrom, @NonNull final Timestamp dateAcctTo)
+	{
+
+		final List<Map<String, Object>> listDistinct = queryBL
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateAcctFrom, dateAcctTo)
+				.create()
+				.listDistinct(I_Fact_Acct.COLUMNNAME_Account_ID);
+
+		final List<ElementValueId> result = new ArrayList<>();
+		for (final Map<String, Object> distinct : listDistinct)
+		{
+			final ElementValueId accountId = ElementValueId.ofRepoIdOrNull((Integer)distinct.get(I_Fact_Acct.COLUMNNAME_Account_ID));
+			if (accountId != null)
+			{
+				result.add(accountId);
+			}
+		}
+
+		return result;
 	}
 }
