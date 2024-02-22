@@ -99,6 +99,7 @@ import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -156,6 +157,7 @@ public class AcctDocRequiredServicesFacade
 	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService;
@@ -247,6 +249,11 @@ public class AcctDocRequiredServicesFacade
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
+	}
+
+	public MAccount getAccount(@NonNull final I_Fact_Acct factAcct)
+	{
+		return factAcctBL.getAccount(factAcct);
 	}
 
 	public ElementValue getElementValueById(@NonNull final ElementValueId elementValueId)
