@@ -1,5 +1,8 @@
 package org.eevolution.process;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -16,6 +19,7 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -109,5 +113,57 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			throw new AdempiereException(StringUtils.formatMessage("Table {} has not yet been implemented to support BOM validation.", tableName));
 		}
 
+	}
+
+	private void validateProduct(@NonNull final I_M_Product product)
+	{
+		try
+		{
+			trxManager.runInNewTrx(() -> checkProductById(product));
+		}
+		catch (final Exception ex)
+		{
+			product.setIsVerified(false);
+			InterfaceWrapperHelper.save(product);
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private void checkProductById(@NonNull final I_M_Product product)
+	{
+		if (!product.isBOM())
+		{
+			log.info("Product is not a BOM");
+			// No BOM - should not happen, but no problem
+			return;
+		}
+
+		// Check this level
+		checkProductBOMCyclesAndMarkAsVerified(product);
+
+		// Get Default BOM from this product
+		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.orElseThrow(() -> {
+					final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product"),
+																					  product.getValue() + "_" + product.getName());
+
+					return new AdempiereException(errorMsg);
+				});
+
+		// Check All BOM Lines
+		for (final I_PP_Product_BOMLine tbomline : productBOMDAO.retrieveLines(bom))
+		{
+			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
+			final I_M_Product bomLineProduct = productBL.getById(productId);
+			checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
+		}
+	}
+
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		productBOMBL.checkCycles(productId);
+		product.setIsVerified(true);
+		InterfaceWrapperHelper.save(product);
 	}
 }

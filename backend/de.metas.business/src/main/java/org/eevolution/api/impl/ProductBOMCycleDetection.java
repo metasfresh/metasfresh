@@ -1,7 +1,11 @@
 package org.eevolution.api.impl;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.exceptions.BOMCycleException;
@@ -12,44 +16,42 @@ import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Calculates product's low level code (LLC) and also checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
- * 
+ * Checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
-/* package */class ProductLowLevelCalculator
+class ProductBOMCycleDetection
 {
-	public static ProductLowLevelCalculator newInstance()
+	public static ProductBOMCycleDetection newInstance()
 	{
-		return new ProductLowLevelCalculator();
+		return new ProductBOMCycleDetection();
 	}
 
+	private static final AdMessageKey ERR_PRODUCT_BOM_CYCLE = AdMessageKey.of("Product_BOM_Cycle_Error");
 	private final Set<ProductId> seenProductIds = new LinkedHashSet<>();
 
-	private ProductLowLevelCalculator()
+	private ProductBOMCycleDetection()
 	{
 	}
 
-	/**
-	 * Calculate the low level of given product
-	 */
-	public int getLowLevel(final ProductId productId)
+	public void checkCycles(final ProductId productId)
 	{
-		clearSeenProducts();
-		markProductAsSeen(productId);
-
-		final DefaultMutableTreeNode ibom = createParentProductNode(productId); // start traversing tree
-		return ibom.getDepth();
+		try
+		{
+			assertNoCycles(productId);
+		}
+		catch (final BOMCycleException e)
+		{
+			final I_M_Product product = Services.get(IProductBL.class).getById(productId);
+			throw new AdempiereException(ERR_PRODUCT_BOM_CYCLE, product.getValue());
+		}
 	}
 
-	/**
-	 * get an implotion the product
-	 * 
-	 * @return DefaultMutableTreeNode Tree with all parent product
-	 */
-	private DefaultMutableTreeNode createParentProductNode(final ProductId productId)
+	private DefaultMutableTreeNode assertNoCycles(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
@@ -60,7 +62,7 @@ import java.util.Set;
 		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
 		{
 			// Don't navigate the Co/ByProduct lines (gh480)
-			if(isByOrCoProduct(productBOMLine))
+			if (isByOrCoProduct(productBOMLine))
 			{
 				continue;
 			}
@@ -73,7 +75,7 @@ import java.util.Set;
 			}
 			first = false;
 
-			final DefaultMutableTreeNode bomNode = createParentProductNodeForBOMLine(productBOMLine);
+			final DefaultMutableTreeNode bomNode = assertNoCycles(productBOMLine);
 			if (bomNode != null)
 			{
 				productNode.add(bomNode);
@@ -85,12 +87,12 @@ import java.util.Set;
 
 	private static boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
 	{
-		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		final BOMComponentType componentType = BOMComponentType.ofCode(Objects.requireNonNull(bomLine.getComponentType()));
 		return componentType.isByOrCoProduct();
 	}
 
 	@Nullable
-	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
+	private DefaultMutableTreeNode assertNoCycles(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
 		if (!bom.isActive())
@@ -112,7 +114,7 @@ import java.util.Set;
 			throw new BOMCycleException(bom, parentProductId);
 		}
 
-		return createParentProductNode(parentProductId);
+		return assertNoCycles(parentProductId);
 	}
 
 	private void clearSeenProducts()
@@ -120,7 +122,6 @@ import java.util.Set;
 		seenProductIds.clear();
 	}
 
-	/** @return true if not already seen */
 	private boolean markProductAsSeen(final ProductId productId)
 	{
 		return seenProductIds.add(productId);
