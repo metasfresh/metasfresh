@@ -1,5 +1,6 @@
 package de.metas.acct.doc;
 
+import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.acct.accounts.AccountProvider;
@@ -251,7 +252,7 @@ public class AcctDocRequiredServicesFacade
 		return accountDAO.getById(accountId);
 	}
 
-	public MAccount getAccount(@NonNull final I_Fact_Acct factAcct)
+	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
 	{
 		return factAcctBL.getAccount(factAcct);
 	}
@@ -570,8 +571,8 @@ public class AcctDocRequiredServicesFacade
 		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
 
 		final YearAndCalendarId calendarAndYearId = factLine.getYearAndCalendarId();
-		record.setC_Harvesting_Calendar_ID(calendarAndYearId !=null ? CalendarId.toRepoId(calendarAndYearId.calendarId()) : -1);
-		record.setHarvesting_Year_ID(calendarAndYearId !=null ? YearId.toRepoId(calendarAndYearId.yearId()) : -1);
+		record.setC_Harvesting_Calendar_ID(calendarAndYearId != null ? CalendarId.toRepoId(calendarAndYearId.calendarId()) : -1);
+		record.setHarvesting_Year_ID(calendarAndYearId != null ? YearId.toRepoId(calendarAndYearId.yearId()) : -1);
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

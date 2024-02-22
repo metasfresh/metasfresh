@@ -741,7 +741,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			if (line.isCreditMemoInvoice())
 			{
-				factLineBuilder.setAmtSource(null, writeOffAmt.negate());
+				factLineBuilder.setAmtSource((Money)null, writeOffAmt.negate());
 			}
 			else
 			{
@@ -756,7 +756,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 			else
 			{
-				factLineBuilder.setAmtSource(null, writeOffAmt.negate());
+				factLineBuilder.setAmtSource((Money)null, writeOffAmt.negate());
 			}
 		}
 
