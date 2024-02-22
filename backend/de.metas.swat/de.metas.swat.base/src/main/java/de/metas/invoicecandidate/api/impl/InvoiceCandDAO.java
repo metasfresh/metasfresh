@@ -72,6 +72,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -1212,8 +1213,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class);
+		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
+		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
 
+		// apply the invoiceCandidateIdsSelection to our queryBuilder
 		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
 		{
 			@Override
