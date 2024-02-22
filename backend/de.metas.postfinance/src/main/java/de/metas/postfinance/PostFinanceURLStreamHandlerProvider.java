@@ -1,6 +1,6 @@
 /*
  * #%L
- * postfinance
+ * de.metas.postfinance
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -22,13 +22,19 @@
 
 package de.metas.postfinance;
 
-import de.metas.process.JavaProcess;
+import org.jetbrains.annotations.Nullable;
 
-public class DownloadPostFinanceCustomerRegistrationMessage extends JavaProcess
+import java.net.URLStreamHandler;
+import java.net.spi.URLStreamHandlerProvider;
+public class PostFinanceURLStreamHandlerProvider extends URLStreamHandlerProvider
 {
+	@Nullable
 	@Override
-	protected String doIt() throws Exception
-	{
-		return MSG_OK;
+	public URLStreamHandler createURLStreamHandler(final String protocol) {
+		if ("postfinance".equals(protocol))
+		{
+			return new PostFinanceURLStreamHandler();
+		}
+		return null;
 	}
 }

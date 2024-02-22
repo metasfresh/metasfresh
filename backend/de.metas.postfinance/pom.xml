@@ -26,6 +26,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb.api.version}</version>

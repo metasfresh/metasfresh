@@ -22,22 +22,36 @@
 
 package de.metas.postfinance;
 
+import de.metas.postfinance.generated.B2BService;
+import de.metas.postfinance.generated.B2BService_Service;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class PostFinanceServiceTest
 {
+	@BeforeEach
+	public void before()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
-	// @Test
-	// public void testExecutePing() throws MalformedURLException
-	// {
-	// 	// for testing replace billerID and set "userid" / "password" in src/test/resources/META-INF/B2BService.xml
-	// 	final URL wsdlURL = new URL("https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?singleWsdl");
-	//
-	// 	final B2BService_Service service = new B2BService_Service(wsdlURL);
-	// 	final B2BService port = service.getUserNamePassword();
-	//
-	// 	final String result = port.executePing("41101000011707505", null, false, false);
-	//
-	// 	Assertions.assertNotNull(result);
-	//
-	// 	Assertions.assertEquals("41101000011707505", result);
-	// }
+	@Test
+	public void testExecutePing() throws MalformedURLException
+	{
+		// for testing replace billerID and set "userid" / "password" in src/test/resources/META-INF/B2BService.xml
+		final URL wsdlURL = new URL("https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?singleWsdl");
+
+		final B2BService_Service service = new B2BService_Service(wsdlURL);
+		final B2BService port = service.getUserNamePassword();
+
+		//final String result = port.executePing("41101000001205994", null, false, false);
+
+		//Assertions.assertNotNull(result);
+
+		//Assertions.assertEquals("41101000001205994", result);
+	}
 }
