@@ -732,12 +732,12 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	public File exportToTempFile()
+	public File exportToTempFile(@Nullable String fileName)
 	{
 		final File file;
 		try
 		{
-			file = File.createTempFile("Report_", "." + excelFormat.getFileExtension());
+			file = File.createTempFile(fileName != null ? fileName + "_" : "Report_", "." + excelFormat.getFileExtension());
 		}
 		catch (final IOException ex)
 		{

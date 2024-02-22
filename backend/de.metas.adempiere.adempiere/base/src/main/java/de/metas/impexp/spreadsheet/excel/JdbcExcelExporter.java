@@ -56,6 +56,7 @@ public class JdbcExcelExporter
 	private ResultSet m_resultSet;
 	private List<String> m_columnHeaders;
 	private final boolean translateHeaders;
+	private String fileName;
 
 	@Getter
 	private File resultFile;
@@ -71,7 +72,8 @@ public class JdbcExcelExporter
 			@Nullable final File resultFile,
 			@Nullable final List<String> columnHeaders,
 			@Nullable final Boolean translateHeaders,
-			@Nullable final Boolean applyFormatting)
+			@Nullable final Boolean applyFormatting,
+			@Nullable String fileName)
 	{
 		super(excelFormat, constants);
 		m_columnHeaders = columnHeaders;
@@ -81,6 +83,7 @@ public class JdbcExcelExporter
 		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 		this.resultFile = resultFile;
 		this.noDataAddedYet = true;
+		this.fileName = fileName;
 
 		setApplyFormatting(applyFormatting != null ? applyFormatting : true);
 		if (!isApplyFormatting())
@@ -110,7 +113,7 @@ public class JdbcExcelExporter
 		}
 		else
 		{
-			resultFile = exportToTempFile();
+			resultFile = exportToTempFile(fileName);
 		}
 	}
 

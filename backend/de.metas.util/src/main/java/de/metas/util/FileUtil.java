@@ -259,9 +259,9 @@ public final class FileUtil
 		return sb.toString();
 	}
 
-	public static File zip(@NonNull List<File> files) throws IOException
+	public static File zip(@NonNull List<File> files, @NonNull String fileName) throws IOException
 	{
-		final File zipFile = File.createTempFile("ZIP_" + Instant.now().toString().replace(":", "."), ".zip");
+		final File zipFile = File.createTempFile("ZIP_" + fileName, ".zip");
 		zipFile.deleteOnExit();
 
 		final FileOutputStream fileOutputStream = new FileOutputStream(zipFile);

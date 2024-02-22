@@ -6,15 +6,19 @@ package de.metas.acct.process;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.util.FileUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,19 +51,34 @@ public class ExportAccountInfos extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
+	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
+	private int p_C_AcctSchema_ID;
+
+	@Param(parameterName = "DateAcctFrom", mandatory = true)
+	private Timestamp p_DateAcctFrom;
+
+	@Param(parameterName = "DateAcctTo", mandatory = true)
+	private Timestamp p_DateAcctTo;
+
+	@Param(parameterName = "Function", mandatory = true)
+	private String p_Function;
+
 	@Override
 	protected String doIt()
 	{
 		final String sql = getSql("1100");
 		final Evaluatee evalCtx = getEvalContext();
+		final String fileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
 
 		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 				.ctx(getCtx())
 				.translateHeaders(true)
 				.applyFormatting(true)
+				.fileName(fileName)
 				.build();
 
 		spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
+
 
 		final File resultFile = jdbcExcelExporter.getResultFile();
 
@@ -68,7 +87,8 @@ public class ExportAccountInfos extends JavaProcess
 
 		try
 		{
-			final File zipFile = FileUtil.zip(files);
+			final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString()+"_";
+			final File zipFile = FileUtil.zip(files,zipFileName);
 			getResult().setReportData(zipFile);
 		}
 		catch (IOException e)
@@ -83,7 +103,8 @@ public class ExportAccountInfos extends JavaProcess
 	{
 
 		final StringBuffer sb = new StringBuffer();
-		sb.append("SELECT * FROM report.AccountSheet_Report")
+		sb.append("SELECT * FROM ")
+				.append(p_Function)
 				.append("(")
 				.append("p_Account_ID := ")
 				.append(account)
