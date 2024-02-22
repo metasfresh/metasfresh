@@ -372,9 +372,6 @@ public class ProductBOMBL implements IProductBOMBL
 			return;
 		}
 
-		// Check this level
-		updateProductLLCAndMarkAsVerified(product);
-
 		// Get Default BOM from this product
 		final I_PP_Product_BOM bom = bomDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.orElseThrow(() -> {
@@ -389,17 +386,7 @@ public class ProductBOMBL implements IProductBOMBL
 		{
 			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 			final I_M_Product bomLineProduct = productBL.getById(productId);
-			updateProductLLCAndMarkAsVerified(bomLineProduct);
 		}
-	}
-
-	private void updateProductLLCAndMarkAsVerified(@NonNull final I_M_Product product)
-	{
-		// NOTE: when LLC is calculated, the BOM cycles are also checked
-		final int lowLevelCode = calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
-		product.setIsVerified(true);
-		InterfaceWrapperHelper.save(product);
 	}
 
 	@Override
