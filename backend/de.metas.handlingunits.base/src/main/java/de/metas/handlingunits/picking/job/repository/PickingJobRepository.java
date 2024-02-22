@@ -125,8 +125,7 @@ public class PickingJobRepository
 		}
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
-				.loadPickingJobReferences(pickingJobIds)
-				.stream();
+				.streamPickingJobReferences(pickingJobIds);
 	}
 
 	public boolean hasDraftJobsUsingPickingSlot(

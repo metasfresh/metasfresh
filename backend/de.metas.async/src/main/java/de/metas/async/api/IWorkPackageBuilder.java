@@ -6,7 +6,6 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
@@ -18,7 +17,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -59,12 +57,10 @@ public interface IWorkPackageBuilder
 	}
 
 	/**
-	 * This is the sibling of {@link #buildAndEnqueue()}, but it doesn't build/enqueue the work package. Instead it discards it.
+	 * This is the sibling of {@link #buildAndEnqueue()}, but it doesn't build/enqueue the work package. Instead, it discards it.
 	 * Note that this method also marks the package builder as "build", so no more elements can be added after this method was called.
-	 *
-	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
 	 */
 	void discard();
 
@@ -97,18 +93,18 @@ public interface IWorkPackageBuilder
 	 * Set a work-package parameter to the value of the given UUID.
 	 * When a work-package with a correlation-id is processed, a {@link de.metas.async.event.WorkpackageProcessedEvent} is posted.
 	 * <p>
-	 * Works in conjuction with {@link de.metas.async.event.WorkpackagesProcessedWaiter}.
+	 * Works in conjunction with {@link de.metas.async.event.WorkpackagesProcessedWaiter}.
 	 */
 	default IWorkPackageBuilder setCorrelationId(@Nullable final UUID correlationId)
 	{
 		final String uuidStr = correlationId != null ? correlationId.toString() : null;
-		
+
 		parameter(Async_Constants.ASYNC_PARAM_CORRELATION_UUID, uuidStr);
 		return this;
 	}
 
 	/**
-	 * Sets the workpackage's queue priority. If no particular priority is set, the system will use {@link IWorkPackageQueue#PRIORITY_AUTO}.
+	 * Sets the workpackage queue priority. If no particular priority is set, the system will use {@link IWorkPackageQueue#PRIORITY_AUTO}.
 	 */
 	IWorkPackageBuilder setPriority(IWorkpackagePrioStrategy priority);
 
@@ -120,7 +116,7 @@ public interface IWorkPackageBuilder
 	IWorkPackageBuilder setC_Async_Batch(@Nullable I_C_Async_Batch asyncBatch);
 
 	/**
-	 * Sets workpackage's user in charge.
+	 * Sets workpackage user in charge.
 	 * This will be the user which will be notified in case the workpackage processing fails.
 	 */
 	IWorkPackageBuilder setUserInChargeId(@Nullable UserId userInChargeId);
@@ -142,15 +138,15 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
-	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
+	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is committed.
 	 * <p>
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 */
 	IWorkPackageBuilder bindToTrxName(@Nullable String trxName);
 
 	/**
-	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
-	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
+	 * Ask the builder to "bind" the new workpackage to current thread inherited transaction.
+	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is committed.
 	 * <p>
 	 * If there is no thread inherited transaction, the workpackage will be marked as ready immediately, on build.
 	 */
@@ -164,12 +160,6 @@ public interface IWorkPackageBuilder
 	 * The elements are unlocked right after the WP was processed.
 	 */
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
-
-	/**
-	 * @return Lock acquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
-	 * Could be null if no lock was acquired.
-	 */
-	Future<ILock> getElementsLock();
 
 	/**
 	 * Overloading set async batch, to enable setting async batch also by id (optional).

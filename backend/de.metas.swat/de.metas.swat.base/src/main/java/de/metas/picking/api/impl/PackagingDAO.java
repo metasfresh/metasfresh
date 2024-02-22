@@ -7,6 +7,8 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
@@ -47,6 +49,7 @@ import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -140,7 +143,7 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter by Locked By
+		// Filter by Locked By User (via M_ShipmentSchedule_Lock table)
 		if (query.getLockedBy() != null)
 		{
 			if (query.isIncludeNotLocked())
@@ -151,6 +154,15 @@ public class PackagingDAO implements IPackagingDAO
 			{
 				queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID, query.getLockedBy());
 			}
+		}
+
+		//
+		// Exclude shipment-schedules that are currently locked for processing/shipment-creation (via T_Lock table)
+		if (query.isExcludeLockedForProcessing())
+		{
+			queryBuilder.filter(lockManager.getNotLockedFilter(
+					I_M_ShipmentSchedule.Table_Name,
+					I_M_Packageable_V.Table_Name + "." + I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID));
 		}
 
 		//
@@ -166,7 +178,6 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
 		}
 
-		//
 		return queryBuilder.create();
 	}
 

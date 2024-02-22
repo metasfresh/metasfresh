@@ -1,7 +1,6 @@
 package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
@@ -10,10 +9,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.DisplayValueProvider;
@@ -81,33 +80,29 @@ class PickingWorkflowLaunchersProvider
 		//
 		// Already started launchers
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
+		final PickingJobReferenceList existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
 						PickingJobReferenceQuery.builder()
 								.pickerId(userId)
 								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 								.build())
 				.filter(facets::isMatching)
-				.collect(ImmutableList.toImmutableList());
+				.collect(PickingJobReferenceList.collect());
 
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
 		displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
 
-		existingPickingJobs.stream()
+		existingPickingJobs.streamNotInProcessing()
 				.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
 				.forEach(currentResult::add);
 
 		//
 		// New launchers
-		if (!limit.isLimitHitOrExceeded(existingPickingJobs))
+		if (!limit.isLimitHitOrExceeded(currentResult))
 		{
-			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
-					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
-					.collect(ImmutableSet.toImmutableSet());
-
 			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
 							.userId(userId)
-							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+							.excludeShipmentScheduleIds(existingPickingJobs.getShipmentScheduleIds())
 							.facets(facets)
 							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))

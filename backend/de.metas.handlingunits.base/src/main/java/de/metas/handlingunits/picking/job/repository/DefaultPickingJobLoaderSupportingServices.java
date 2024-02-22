@@ -1,12 +1,17 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -43,6 +48,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final PickingJobSlotService pickingSlotService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
@@ -51,7 +57,10 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<ProductId, ITranslatableString> productNamesCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
-	public DefaultPickingJobLoaderSupportingServices(@NonNull final IBPartnerBL bpartnerBL, @NonNull final PickingJobSlotService pickingSlotService, @NonNull final HUQRCodesService huQRCodeService)
+	public DefaultPickingJobLoaderSupportingServices(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final PickingJobSlotService pickingSlotService,
+			@NonNull final HUQRCodesService huQRCodeService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
@@ -126,4 +135,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		return huQRCodeService.getQRCodeByHuId(huId);
 	}
+
+	@Override
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return CollectionUtils.mapKeys(
+				lockManager.getLockInfosByRecordIds(ShipmentScheduleId.toTableRecordReferenceSet(shipmentScheduleIds)),
+				recordRef -> recordRef.getIdAssumingTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
+		);
+	}
+
 }
