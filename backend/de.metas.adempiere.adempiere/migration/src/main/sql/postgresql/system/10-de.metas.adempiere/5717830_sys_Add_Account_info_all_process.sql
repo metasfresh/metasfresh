@@ -303,3 +303,10 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET DefaultValue='report.AccountSheet_Report',Updated=TO_TIMESTAMP('2024-02-22 16:25:47.923','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542784
 ;
 
+
+-- Process: ExportAccountInfos(de.metas.acct.process.ExportAccountInfos)
+-- ParameterName: C_AcctSchema_ID
+-- 2024-02-22T14:25:47.924039100Z
+UPDATE AD_Process_Para SET DefaultValue='@$C_AcctSchema_ID@',Updated=TO_TIMESTAMP('2023-11-28 15:54:57.639','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542781
+;
+

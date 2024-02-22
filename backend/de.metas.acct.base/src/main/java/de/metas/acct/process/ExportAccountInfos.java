@@ -3,18 +3,18 @@
  */
 package de.metas.acct.process;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueRepository;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.FileUtil;
-import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.MAccount;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
@@ -53,7 +53,8 @@ import java.util.List;
 public class ExportAccountInfos extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-	final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
+	final ElementValueRepository elementValueRepository = SpringContextHolder.instance.getBean(ElementValueRepository.class);
 
 	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
 	private int p_C_AcctSchema_ID;
@@ -73,14 +74,15 @@ public class ExportAccountInfos extends JavaProcess
 		final Evaluatee evalCtx = getEvalContext();
 		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
 
-		final List<AccountId> accountIds = accountDAO.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
+		final List<ElementValueId> accountIds = elementValueRepository.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
 		final List<File> files = new ArrayList<>();
 
-		for (final AccountId accountId : accountIds)
+		for (final ElementValueId accountId : accountIds)
 		{
 			final String sql = getSql(accountId);
-			final MAccount account = accountDAO.getById(accountId);
-			final String fileName = account.getAlias() + "_" + fileNameSuffix;
+
+			final ElementValue ev = elementValueService.getById(accountId);
+			final String fileName = ev.getValue() + "_" + fileNameSuffix;
 
 			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 					.ctx(getCtx())
@@ -110,7 +112,7 @@ public class ExportAccountInfos extends JavaProcess
 		return MSG_OK;
 	}
 
-	private String getSql(final AccountId accountId)
+	private String getSql(final ElementValueId accountId)
 	{
 
 		final StringBuffer sb = new StringBuffer();

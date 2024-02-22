@@ -24,6 +24,7 @@ package de.metas.elementvalue;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
@@ -37,9 +38,13 @@ import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -74,7 +79,6 @@ public class ElementValueRepository
 				.firstOnlyOptional(I_C_ElementValue.class)
 				.map(ElementValueRepository::toElementValue);
 	}
-
 
 	void save(@NonNull final I_C_ElementValue record)
 	{
@@ -116,7 +120,7 @@ public class ElementValueRepository
 	{
 		//
 		// Validate
-		if(request.getParentId() != null)
+		if (request.getParentId() != null)
 		{
 			final ElementValue parent = getById(request.getParentId());
 			if (!parent.isSummary())
@@ -190,5 +194,28 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.list();
+	}
+
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Timestamp dateAcctFrom, @NonNull final Timestamp dateAcctTo)
+	{
+
+		final List<Map<String, Object>> listDistinct = queryBL
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateAcctFrom, dateAcctTo)
+				.create()
+				.listDistinct(I_Fact_Acct.COLUMNNAME_Account_ID);
+
+		final List<ElementValueId> result = new ArrayList<>();
+		for (final Map<String, Object> distinct : listDistinct)
+		{
+			final ElementValueId accountId = ElementValueId.ofRepoIdOrNull((Integer)distinct.get(I_Fact_Acct.COLUMNNAME_Account_ID));
+			if (accountId != null)
+			{
+				result.add(accountId);
+			}
+		}
+
+		return result;
 	}
 }
