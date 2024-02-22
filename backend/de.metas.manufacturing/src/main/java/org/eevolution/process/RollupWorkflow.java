@@ -202,7 +202,6 @@ public class RollupWorkflow extends JavaProcess
 		}
 
 		return queryBuilder
-				.orderBy(I_M_Product.COLUMNNAME_LowLevel)
 				.create()
 				.list();
 	}

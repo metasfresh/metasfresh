@@ -152,18 +152,6 @@ import java.util.Set;
 		}
 
 		//
-		// Filter by Product's Low Level Code (LLC)
-		final int productLLC = getLowLevelCode();
-		if (productLLC >= 0)
-		{
-			final IQuery<I_M_Product> productQuery = queryBL
-					.createQueryBuilder(I_M_Product.class, contextProvider)
-					.filter(new EqualsQueryFilter<>(I_M_Product.COLUMNNAME_LowLevel, productLLC))
-					.create();
-			filters.addInSubQueryFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
-		}
-
-		//
 		// Filter by TypeMRP
 		final String typeMRP = getTypeMRP();
 		if (!Check.isEmpty(typeMRP, true))
@@ -417,11 +405,6 @@ import java.util.Set;
 			return _productId;
 		}
 
-		return -1;
-	}
-
-	public int getLowLevelCode()
-	{
 		return -1;
 	}
 

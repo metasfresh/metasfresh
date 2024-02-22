@@ -899,18 +899,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setLowLevel (final int LowLevel)
-	{
-		set_Value (COLUMNNAME_LowLevel, LowLevel);
-	}
-
-	@Override
-	public int getLowLevel() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LowLevel);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
