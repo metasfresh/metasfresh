@@ -113,9 +113,9 @@ public class ExportAccountInfos extends JavaProcess
 				+ ", "
 				+ "p_C_AcctSchema_ID := " + p_C_AcctSchema_ID.getRepoId()
 				+ ", "
-				+ "p_DateAcctFrom := " + DB.TO_DATE(p_DateAcctFrom)
-				+ ", "
-				+ "p_DateAcctTo := " + DB.TO_DATE(p_DateAcctTo)
-				+ ")";
+				+ "p_DateAcctFrom := '" + p_DateAcctFrom
+				+ "', "
+				+ "p_DateAcctTo := '" + p_DateAcctTo
+				+ "')";
 	}
 }
