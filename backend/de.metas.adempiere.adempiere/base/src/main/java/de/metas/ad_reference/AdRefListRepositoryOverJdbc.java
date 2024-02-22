@@ -30,7 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class AdRefListRepositoryOverJdbc implements AdRefListRepository
+public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 {
 	private static final Logger logger = LogManager.getLogger(AdRefListRepositoryOverJdbc.class);
 
