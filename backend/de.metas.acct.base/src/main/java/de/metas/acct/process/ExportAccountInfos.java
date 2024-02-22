@@ -3,14 +3,18 @@
  */
 package de.metas.acct.process;
 
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.FileUtil;
-import lombok.NonNull;
+import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.MAccount;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
@@ -18,7 +22,6 @@ import org.compiere.util.TimeUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +53,7 @@ import java.util.List;
 public class ExportAccountInfos extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
+	final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
 	private int p_C_AcctSchema_ID;
@@ -66,29 +70,36 @@ public class ExportAccountInfos extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final String sql = getSql("1100");
 		final Evaluatee evalCtx = getEvalContext();
-		final String fileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
+		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString();
 
-		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
-				.ctx(getCtx())
-				.translateHeaders(true)
-				.applyFormatting(true)
-				.fileName(fileName)
-				.build();
+		final List<AccountId> accountIds = accountDAO.retrieveAccountsForTimeFrame(AcctSchemaId.ofRepoId(p_C_AcctSchema_ID), p_DateAcctFrom, p_DateAcctTo);
+		final List<File> files = new ArrayList<>();
 
-		spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
+		for (final AccountId accountId : accountIds)
+		{
+			final String sql = getSql(accountId);
+			final MAccount account = accountDAO.getById(accountId);
+			final String fileName = account.getAlias() + "_" + fileNameSuffix;
 
+			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
+					.ctx(getCtx())
+					.translateHeaders(true)
+					.applyFormatting(true)
+					.fileName(fileName)
+					.build();
 
-		final File resultFile = jdbcExcelExporter.getResultFile();
+			spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
 
-		final List<File> files = new ArrayList<>(); // this is the list with file for all needed accounts
-		files.add(resultFile);
+			final File resultFile = jdbcExcelExporter.getResultFile();
+
+			files.add(resultFile);
+		}
 
 		try
 		{
-			final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString()+"_";
-			final File zipFile = FileUtil.zip(files,zipFileName);
+			final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom).toString() + "_" + TimeUtil.asLocalDate(p_DateAcctTo).toString() + "_";
+			final File zipFile = FileUtil.zip(files, zipFileName);
 			getResult().setReportData(zipFile);
 		}
 		catch (IOException e)
@@ -99,7 +110,7 @@ public class ExportAccountInfos extends JavaProcess
 		return MSG_OK;
 	}
 
-	private String getSql(@NonNull final String account)
+	private String getSql(final AccountId accountId)
 	{
 
 		final StringBuffer sb = new StringBuffer();
@@ -107,7 +118,7 @@ public class ExportAccountInfos extends JavaProcess
 				.append(p_Function)
 				.append("(")
 				.append("p_Account_ID := ")
-				.append(account)
+				.append(accountId.getRepoId())
 				.append(", ")
 				.append("p_C_AcctSchema_ID := @C_AcctSchema_ID@, ")
 				.append("p_DateAcctFrom := '@DateAcctFrom@', ")

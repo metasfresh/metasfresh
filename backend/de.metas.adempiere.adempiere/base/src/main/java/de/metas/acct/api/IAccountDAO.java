@@ -6,6 +6,8 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 /*
@@ -55,4 +57,6 @@ public interface IAccountDAO extends ISingletonService
 
 	@NonNull
 	AccountId getOrCreate(@NonNull AccountDimension dimension);
+
+	List<AccountId> retrieveAccountsForTimeFrame(@NonNull AcctSchemaId acctSchemaId, @NonNull Timestamp dateAcctFrom, @NonNull Timestamp dateAcctTo);
 }

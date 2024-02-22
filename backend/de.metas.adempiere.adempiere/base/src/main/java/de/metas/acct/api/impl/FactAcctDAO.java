@@ -23,6 +23,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class FactAcctDAO implements IFactAcctDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+
 	@Override
 	public I_Fact_Acct getById(final int factAcctId)
 	{
@@ -36,7 +39,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(document);
+		factAcctListenersService.fireAfterUnpost(document);
 
 		return countDeleted;
 	}
@@ -50,7 +53,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(documentObj);
+		factAcctListenersService.fireAfterUnpost(documentObj);
 
 		return countDeleted;
 	}
@@ -64,7 +67,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(recordRef);
+		factAcctListenersService.fireAfterUnpost(recordRef);
 
 		return countDeleted;
 	}
@@ -81,7 +84,7 @@ public class FactAcctDAO implements IFactAcctDAO
 
 	private IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
@@ -97,7 +100,7 @@ public class FactAcctDAO implements IFactAcctDAO
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int lineId = InterfaceWrapperHelper.getId(documentLine);
 
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL
 				.createQueryBuilder(I_Fact_Acct.class, documentLine)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
@@ -126,7 +129,6 @@ public class FactAcctDAO implements IFactAcctDAO
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
