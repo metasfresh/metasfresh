@@ -10,20 +10,25 @@ import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
+import de.metas.organization.IOrgDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.compiere.util.TimeUtil.asLocalDate;
 
 /*
  * #%L
@@ -55,6 +60,7 @@ public class ExportAccountInfos extends JavaProcess
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 	final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 	final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
 	private AcctSchemaId p_C_AcctSchema_ID;
@@ -71,7 +77,8 @@ public class ExportAccountInfos extends JavaProcess
 	@Override
 	protected String doIt() throws IOException
 	{
-		final String fileNameSuffix = TimeUtil.asLocalDate(p_DateAcctFrom) + "_" + TimeUtil.asLocalDate(p_DateAcctTo);
+
+		final String fileNameSuffix = getDateAcctFrom() + "_" + getDateAcctTo();
 
 		final List<ElementValueId> accountIds = factAcctDAO.retrieveAccountsForTimeFrame(p_C_AcctSchema_ID, p_DateAcctFrom, p_DateAcctTo);
 		final List<File> files = new ArrayList<>();
@@ -97,7 +104,7 @@ public class ExportAccountInfos extends JavaProcess
 			files.add(resultFile);
 		}
 
-		final String zipFileName = TimeUtil.asLocalDate(p_DateAcctFrom) + "_" + TimeUtil.asLocalDate(p_DateAcctTo) + ".zip";
+		final String zipFileName = getDateAcctFrom() + "_" + getDateAcctTo() + ".zip";
 		final File zipFile = FileUtil.zip(files);
 		getResult().setReportData(zipFile, zipFileName);
 
@@ -113,9 +120,23 @@ public class ExportAccountInfos extends JavaProcess
 				+ ", "
 				+ "p_C_AcctSchema_ID := " + p_C_AcctSchema_ID.getRepoId()
 				+ ", "
-				+ "p_DateAcctFrom := '" + p_DateAcctFrom
+				+ "p_DateAcctFrom := '" + getDateAcctFrom()
 				+ "', "
-				+ "p_DateAcctTo := '" + p_DateAcctTo
+				+ "p_DateAcctTo := '" + getDateAcctTo()
 				+ "')";
+	}
+
+	@Nullable
+	private LocalDate getDateAcctFrom()
+	{
+		final ZoneId zoneId = orgDAO.getTimeZone(Env.getOrgId());
+		return asLocalDate(p_DateAcctFrom, zoneId);
+	}
+
+	@Nullable
+	private LocalDate getDateAcctTo()
+	{
+		final ZoneId zoneId = orgDAO.getTimeZone(Env.getOrgId());
+		return asLocalDate(p_DateAcctTo, zoneId);
 	}
 }
