@@ -64,10 +64,8 @@ public class InvoiceSource extends AbstractDunnableSource
 		final int currencyId = candidate.getC_Currency_ID();
 		final BigDecimal grandTotal = candidate.getGrandTotal();
 		final BigDecimal openAmt = candidate.getOpenAmt();
-		final Date dateInvoiced = candidate.getDateInvoiced();
-		final Date dueDate = candidate.getDueDate();
-		final Date dunningGrace = candidate.getDunningGrace();
-		final int paymentTermId = candidate.getC_PaymentTerm_ID();
+		final Date dueDate = TimeUtil.asDate(candidate.getDueDate());
+		final Date dunningGrace = TimeUtil.asDate(candidate.getDunningGrace());
 		final boolean isInDispute = candidate.isInDispute();
 		final int sectionCodeId = candidate.getM_SectionCode_ID();
 

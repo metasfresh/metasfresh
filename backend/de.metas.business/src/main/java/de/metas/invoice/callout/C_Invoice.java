@@ -12,6 +12,9 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Services;
@@ -38,6 +41,7 @@ public class C_Invoice
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IDocumentLocationBL documentLocationBL;
 
@@ -181,5 +185,18 @@ public class C_Invoice
 	{
 		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 
+	}
+
+	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, I_C_Invoice.COLUMNNAME_DateInvoiced }, skipIfCopying = true)
+	public void setDueDateFromPaymentTerm(@NonNull final I_C_Invoice invoice, @NonNull final ICalloutField field)
+	{
+		if (field.getValue() == null)
+		{
+			return;
+		}
+
+		final PaymentTerm paymentTerm = paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID()));
+
+		invoice.setDueDate(paymentTerm.computeDueDate(invoice.getDateInvoiced()));
 	}
 }
