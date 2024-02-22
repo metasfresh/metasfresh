@@ -7,6 +7,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.AbstractBooleanAssert;
 import org.compiere.model.I_Test;
@@ -15,17 +16,18 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LockManagerTest
 {
-	private LockManager lockManager;
+	private PlainLockManager lockManager;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		this.lockManager = (LockManager)Services.get(ILockManager.class);
+		this.lockManager = (PlainLockManager)Services.get(ILockManager.class);
 	}
 
 	TableRecordReference newRecord()
@@ -78,9 +80,7 @@ class LockManagerTest
 		void recordWasNotLockedByParent()
 		{
 			final TableRecordReference recordRef1 = newRecord();
-			final TableRecordReference recordRef2 = newRecord();
 			assertLocked(recordRef1, LockOwner.ANY).isFalse();
-			assertLocked(recordRef2, LockOwner.ANY).isFalse();
 
 			final ILock mainLock = lockManager.lock()
 					.setOwner(LockOwner.forOwnerName("MAIN"))
@@ -89,20 +89,40 @@ class LockManagerTest
 					.setRecordByRecordReference(recordRef1)
 					.acquire();
 			assertLocked(recordRef1, mainLock.getOwner()).isTrue();
-			assertLocked(recordRef2, LockOwner.ANY).isFalse();
 			assertThat(mainLock.getCountLocked()).isEqualTo(1);
 
 			//
 			// Expect recordRef2 to be locked even if it was not locked by parent
 			// nevertheless, a warning will be logged
-			final ILock childLock = mainLock.split()
-					.setOwner(LockOwner.forOwnerName("CHILD_LOCK"))
-					.setRecordByRecordReference(recordRef2)
-					.acquire();
-			assertLocked(recordRef2, childLock.getOwner()).isTrue();
-			assertLocked(recordRef2, mainLock.getOwner()).isFalse();
+			try (IAutoCloseable ignored = lockManager.withFailOnWarnings(false))
+			{
+				final TableRecordReference recordRef2 = newRecord();
 
-			assertLocked(recordRef1, mainLock.getOwner()).isTrue(); // still locked, nothing changed
+				final ILock childLock = mainLock.split()
+						.setOwner(LockOwner.forOwnerName("CHILD_LOCK"))
+						.setRecordByRecordReference(recordRef2)
+						.acquire();
+				assertLocked(recordRef2, childLock.getOwner()).isTrue();
+				assertLocked(recordRef2, mainLock.getOwner()).isFalse();
+
+				assertLocked(recordRef1, mainLock.getOwner()).isTrue(); // still locked, nothing changed
+			}
+
+			//
+			// Expect recordRef3 will fail to be locked because it's not locked by parent
+			// (happens in testing, when developer mode is enabled)
+			try (IAutoCloseable ignored = lockManager.withFailOnWarnings(true))
+			{
+				final TableRecordReference recordRef3 = newRecord();
+
+				assertThatThrownBy(() -> {
+					mainLock.split()
+							.setOwner(LockOwner.forOwnerName("CHILD_LOCK_2"))
+							.setRecordByRecordReference(recordRef3)
+							.acquire();
+				})
+						.hasMessageStartingWith("Could not transfer locked record from parent");
+			}
 		}
 
 	}

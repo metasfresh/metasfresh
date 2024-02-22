@@ -51,6 +51,7 @@ import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -80,6 +81,26 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	private final CloseableReentrantLock mainLock = new CloseableReentrantLock();
 	private final Map<LockKey, RecordLocks> locks = new LinkedHashMap<>();
+
+	private Boolean failOnWarnings = null;
+
+	@Override
+	protected boolean isFailOnWarnings()
+	{
+		if (failOnWarnings != null)
+		{
+			return failOnWarnings;
+		}
+		
+		return super.isFailOnWarnings();
+	}
+
+	public IAutoCloseable withFailOnWarnings(final boolean fail)
+	{
+		final Boolean failOnWarningsBackup = this.failOnWarnings;
+		this.failOnWarnings = fail;
+		return () -> this.failOnWarnings = failOnWarningsBackup;
+	}
 
 	public void dump()
 	{

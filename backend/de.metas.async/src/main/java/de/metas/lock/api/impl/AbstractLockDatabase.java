@@ -39,6 +39,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -57,6 +58,12 @@ import java.util.List;
 public abstract class AbstractLockDatabase implements ILockDatabase
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
+	protected boolean isFailOnWarnings()
+	{
+		return developerModeBL.isEnabled();
+	}
 
 	/**
 	 * Asserts given lock owner is a valid owner to be used on for Locks
@@ -181,7 +188,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 				{
 					//noinspection ThrowableNotThrown
 					new AdempiereException("Could not transfer locked record from parent -- lockCommand=" + lockCommand)
-							.throwIfDeveloperModeOrLogWarningElse(logger);
+							.throwOrLogWarning(isFailOnWarnings(), logger);
 
 					locked = lockRecord(lockCommand, record);
 				}
