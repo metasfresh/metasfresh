@@ -375,12 +375,12 @@ public class PickingCandidateRepository
 
 	}
 
-	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
+	public boolean hasDraftCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Draft)
 				.create()
 				.anyMatch();
 	}
