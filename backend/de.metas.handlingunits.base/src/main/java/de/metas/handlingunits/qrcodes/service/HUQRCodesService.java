@@ -239,7 +239,7 @@ public class HUQRCodesService
 
 		if (!huIdsToShareQr.isEmpty())
 		{
-			getFirstQRCodeByHuIdIfExists(HuId.ofRepoId(sourceHU.getM_HU_ID()))
+			getSingleQRCodeByHuIdOrEmpty(HuId.ofRepoId(sourceHU.getM_HU_ID()))
 					.ifPresent(qrCode -> assign(qrCode, huIdsToShareQr));
 		}
 	}

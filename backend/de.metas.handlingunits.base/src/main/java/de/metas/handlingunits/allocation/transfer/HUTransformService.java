@@ -1454,7 +1454,7 @@ public class HUTransformService
 
 		if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
 		{
-			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as oneQrCodeForMultipleHUs is not enabled!")
+			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as OneQrCodeForAggregatedHUs is not enabled!")
 					.appendParametersToMessage()
 					.setParameter("huId", aggregatedHuId);
 		}

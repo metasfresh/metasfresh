@@ -32,8 +32,6 @@ import lombok.Value;
 @Builder
 public class HUIdAndQRCode
 {
-	@NonNull
-	HuId huId;
-	@NonNull
-	HUQRCode huQRCode;
+	@NonNull HuId huId;
+	@NonNull HUQRCode huQRCode;
 }
