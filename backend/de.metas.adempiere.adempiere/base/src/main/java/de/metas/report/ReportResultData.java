@@ -14,6 +14,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.MimeType;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
@@ -93,6 +94,11 @@ public class ReportResultData
 	{
 		final String reportFilename = file.getName();
 
+		return ofFile(file, reportFilename);
+	}
+
+	public static ReportResultData ofFile(final @NotNull File file, @NotNull final String reportFilename)
+	{
 		return ReportResultData.builder()
 				.reportData(new FileSystemResource(file))
 				.reportFilename(reportFilename)
