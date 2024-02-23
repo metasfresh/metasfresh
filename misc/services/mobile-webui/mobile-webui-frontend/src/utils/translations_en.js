@@ -24,6 +24,7 @@ const translations = {
     QtyRejected: 'Qty Rejected',
     CatchWeight: 'Weight',
     BestBeforeDate: 'Best Before',
+    LotNo: 'Lot',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     closeText: 'Close',
