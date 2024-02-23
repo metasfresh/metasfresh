@@ -27,6 +27,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
 import java.time.Instant;
@@ -54,6 +55,8 @@ public interface IFactAcctDAO extends ISingletonService
 	int deleteForDocument(IDocument document);
 
 	int deleteForDocumentModel(final Object documentObj);
+
+	int deleteForRecordRef(@NonNull TableRecordReference recordRef);
 
 	/**
 	 * Retries all accounting records for given document.
