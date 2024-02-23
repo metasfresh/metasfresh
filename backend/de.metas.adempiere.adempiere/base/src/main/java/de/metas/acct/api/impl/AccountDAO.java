@@ -3,11 +3,13 @@ package de.metas.acct.api.impl;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.NumberUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
@@ -26,6 +28,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.Env;
 
 /*
  * #%L
