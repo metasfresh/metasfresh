@@ -24,6 +24,7 @@ const translations = {
     QtyRejected: 'Menge verworfen',
     CatchWeight: 'Gewicht',
     BestBeforeDate: 'MHD',
+    LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',

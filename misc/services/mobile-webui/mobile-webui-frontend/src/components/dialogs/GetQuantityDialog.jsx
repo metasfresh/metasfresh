@@ -32,6 +32,8 @@ const GetQuantityDialog = ({
   //
   isShowBestBeforeDate = false,
   bestBeforeDate: bestBeforeDateParam = '',
+  isShowLotNo = false,
+  lotNo: lotNoParam = '',
   //
   validateQtyEntered,
   onQtyChange,
@@ -57,6 +59,13 @@ const GetQuantityDialog = ({
     const bestBeforeDateNew = e.target.value ? e.target.value : '';
     //console.log('onBestBeforeDateEntered', { bestBeforeDateNew, e });
     setBestBeforeDate(bestBeforeDateNew);
+  };
+
+  const [lotNo, setLotNo] = useState(lotNoParam);
+  const onLotNoEntered = (e) => {
+    const lotNoNew = e.target.value ? e.target.value : '';
+    //console.log('onLotNoEntered', { lotNoNew, e });
+    setLotNo(lotNoNew);
   };
 
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
@@ -88,6 +97,7 @@ const GetQuantityDialog = ({
         catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
+        lotNo: isShowLotNo ? lotNo : null,
       });
     }
   };
@@ -283,6 +293,24 @@ const GetQuantityDialog = ({
                         </td>
                       </tr>
                     )}
+                    {isShowLotNo && (
+                      <tr>
+                        <th>{trl('general.LotNo')}</th>
+                        <td>
+                          <div className="field">
+                            <div className="control">
+                              <input
+                                className="input"
+                                type="text"
+                                value={lotNo}
+                                disabled={readOnly}
+                                onChange={onLotNoEntered}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {useCatchWeight && (
                       <tr>
                         <th>{trl('general.CatchWeight')}</th>
@@ -370,6 +398,8 @@ GetQuantityDialog.propTypes = {
   catchWeightUom: PropTypes.string,
   isShowBestBeforeDate: PropTypes.bool,
   bestBeforeDate: PropTypes.string,
+  isShowLotNo: PropTypes.bool,
+  lotNo: PropTypes.string,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,
