@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 @Repository
-class AdRefTableRepositoryOverJdbc implements AdRefTableRepository
+public class AdRefTableRepositoryOverJdbc implements AdRefTableRepository
 {
 	private static final Logger logger = LogManager.getLogger(AdRefTableRepositoryOverJdbc.class);
 
