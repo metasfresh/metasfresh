@@ -1,32 +1,4 @@
--- 2024-02-22T14:24:31.582917700Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582976,0,'Function',TO_TIMESTAMP('2024-02-22 16:24:28.065','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Function','Function',TO_TIMESTAMP('2024-02-22 16:24:28.065','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2024-02-22T14:24:31.861061300Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582976 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Process: ExportAccountInfos(de.metas.acct.process.ExportAccountInfos)
--- ParameterName: Function
--- 2024-02-22T14:25:15.795045200Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,ReadOnlyLogic,SeqNo,Updated,UpdatedBy) VALUES (0,582976,0,585357,542784,10,'Function',TO_TIMESTAMP('2024-02-22 16:25:15.671','YYYY-MM-DD HH24:MI:SS.US'),100,'1=2','D',0,'Y','N','Y','N','Y','N','Function','1=1',40,TO_TIMESTAMP('2024-02-22 16:25:15.671','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2024-02-22T14:25:15.797126500Z
-INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=542784 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
-;
-
--- 2024-02-22T14:25:15.830196900Z
-/* DDL */  select update_Process_Para_Translation_From_AD_Element(582976) 
-;
-
--- Process: ExportAccountInfos(de.metas.acct.process.ExportAccountInfos)
--- ParameterName: Function
--- 2024-02-22T14:25:47.924039100Z
-UPDATE AD_Process_Para SET DefaultValue='report.AccountSheet_Report',Updated=TO_TIMESTAMP('2024-02-22 16:25:47.923','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542784
-;
-
--------------- 2024-02-23T08:10:34.591888600Z
+-- 2024-02-23T08:10:34.591888600Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582977,0,'CounterAccount',TO_TIMESTAMP('2024-02-23 10:10:34.367','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Gegenkonto','Gegenkonto',TO_TIMESTAMP('2024-02-23 10:10:34.367','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
