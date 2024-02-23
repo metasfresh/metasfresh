@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.distribution;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
 import org.eevolution.model.I_DD_NetworkDistribution;
 
 public class DD_NetworkDistribution_StepDefData extends StepDefData<I_DD_NetworkDistribution>
@@ -31,4 +33,11 @@ public class DD_NetworkDistribution_StepDefData extends StepDefData<I_DD_Network
 	{
 		super(I_DD_NetworkDistribution.class);
 	}
+
+	public DistributionNetworkId getId(final StepDefDataIdentifier identifier)
+	{
+		final I_DD_NetworkDistribution model = get(identifier);
+		return DistributionNetworkId.ofRepoId(model.getDD_NetworkDistribution_ID());
+	}
+
 }

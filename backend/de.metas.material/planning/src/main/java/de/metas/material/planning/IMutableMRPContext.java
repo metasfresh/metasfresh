@@ -1,11 +1,11 @@
 package de.metas.material.planning;
 
+import de.metas.product.ResourceId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
 import java.sql.Timestamp;
@@ -31,7 +31,7 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	void setM_AttributeSetInstance_ID(int attributeSetInstanceId);
 
-	void setProductPlanning(I_PP_Product_Planning productPlanning);
+	void setProductPlanning(ProductPlanning productPlanning);
 
 	/**
 	 * @see #getPP_MRP()
@@ -40,7 +40,7 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	void setMRPDemands(List<I_PP_MRP> mrpDemands);
 
-	void setPlant(I_S_Resource resource);
+	void setPlantId(ResourceId plantId);
 
 	void setM_Warehouse(I_M_Warehouse warehouse);
 

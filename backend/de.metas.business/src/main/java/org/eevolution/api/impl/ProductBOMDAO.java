@@ -42,6 +42,7 @@ import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMLineId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -122,6 +123,17 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.create()
 				.list();
 
+	}
+
+	@Override
+	public Optional<ProductBOMLineId> getBomLineByProductId(@NonNull final  ProductBOMId productBOMId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.firstIdOnlyOptional(ProductBOMLineId::ofRepoId);
 	}
 
 	@Override
@@ -452,6 +464,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 		final IQueryBuilder<I_PP_Product_BOM> productBOMQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, X_PP_Product_BOM.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter();
 
 		if (bomType != null)

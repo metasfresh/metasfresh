@@ -53,6 +53,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -656,8 +657,6 @@ public class CandidateRepositoryWriteService
 		{
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
 					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
@@ -721,14 +720,21 @@ public class CandidateRepositoryWriteService
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo.builder()
-																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-																   .seqNo(candidateRecord.getSeqNo())
-																   .build(),
-														   candidateRecord.getQty());
+				DateAndSeqNo.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
+		deleteRelatedRecordsForCandidate(candidateRecord);
 
 		deleteRecord(candidateRecord);
 		return deleteResult;
+	}
+
+	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
+	{
+		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
+		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 	}
 
 	@NonNull
@@ -758,12 +764,12 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo
-																   .builder()
-																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-																   .seqNo(candidateRecord.getSeqNo())
-																   .build(),
-														   candidateRecord.getQty());
+				DateAndSeqNo
+						.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
 
 		deleteRecord(candidateRecord);
 

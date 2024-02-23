@@ -51,28 +51,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
-  {
-    "id" : 100001,
-    "type" : "RabbitMQ",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -146,23 +124,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testRabbitMQValue",
-    "routingKey" : "routingKey",
-    "remoteUrl" : "remoteURL",
-    "authToken" : "authToken",
-    "isSyncBPartnerToRabbitMQ" : true,
-    "isAutoSendWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
   [
@@ -179,10 +140,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "productBaseFolderName" : "productBaseFolderName",
         "tcpPort" : 8080,
         "tcpHost" : "tcpHost",
-        "pluFileExportAuditEnabled" : false,
-        "productMappings" : [ ],
-        "pluFileConfigs" : [ ],
-        "productMappingEmpty" : true
+        "pluFileExportAuditEnabled" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -199,10 +157,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "productBaseFolderName" : "productBaseFolderName",
     "tcpPort" : 8080,
     "tcpHost" : "tcpHost",
-    "pluFileExportAuditEnabled" : false,
-    "productMappings" : [ ],
-    "pluFileConfigs" : [ ],
-    "productMappingEmpty" : true
+    "pluFileExportAuditEnabled" : false
   }
 ]
 
@@ -221,10 +176,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "productBaseFolderName" : "productBaseFolderName",
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
-      "pluFileExportAuditEnabled" : false,
-      "productMappings" : [ ],
-      "pluFileConfigs" : [ ],
-      "productMappingEmpty" : true
+      "pluFileExportAuditEnabled" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -249,8 +201,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "syncExternalReferencesToRabbitMQ" : false,
       "syncBPartnerToRabbitMQ" : true,
+      "syncExternalReferencesToRabbitMQ" : false,
       "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
@@ -270,8 +222,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
-    "syncExternalReferencesToRabbitMQ" : false,
     "syncBPartnerToRabbitMQ" : true,
+    "syncExternalReferencesToRabbitMQ" : false,
     "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
@@ -291,13 +243,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-	  "isSyncBPartnerToRabbitMQ" : true,
-	  "isAutoSendWhenCreatedByUserGroup" : true,
-	  "userGroupId" : 1,
+      "isSyncBPartnerToRabbitMQ" : true,
+      "isAutoSendWhenCreatedByUserGroup" : true,
+      "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
       "syncExternalReferencesToRabbitMQ" : false,
-	  "syncBPartnerToRabbitMQ" : true,
-	  "autoSendSubjectWhenCreatedByUserGroup" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -329,8 +281,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
-      "productLookup" : "ProductNumber",
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -362,8 +314,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
-      "productLookup" : "ProductNumber",
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -507,31 +459,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
-  {
-    "id" : 100001,
-    "type" : "LeichUndMehl",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "LeichMehl",
-      "productBaseFolderName" : "productBaseFolderName",
-      "tcpPort" : 8080,
-      "tcpHost" : "tcpHost",
-      "pluFileExportAuditEnabled" : false,
-      "productMappings" : [ ],
-      "pluFileConfigs" : [ ],
-      "productMappingEmpty" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
-
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
@@ -550,14 +477,36 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
-        "syncExternalReferencesToRabbitMQ" : false,
         "syncBPartnerToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
         "autoSendSubjectWhenCreatedByUserGroup" : false
       },
-	  "writeAudit" : true,
-	  "auditFileFolder" : "auditFileFolder"
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
     }
   ]
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
 ]
 
 
@@ -590,46 +539,3 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
   }
 ]
 
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
-  {
-    "id" : 100001,
-    "type" : "LeichUndMehl",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "LeichMehl",
-      "productBaseFolderName" : "productBaseFolderName",
-      "tcpPort" : 8080,
-      "tcpHost" : "tcpHost",
-      "pluFileExportAuditEnabled" : false,
-      "productMappings" : [
-        {
-          "id" : 100003,
-          "seqNo" : 10,
-          "pluFile" : "plufile",
-          "productCategoryId" : 2,
-          "productId" : 1,
-          "bPartnerId" : 3
-        }
-      ],
-      "pluFileConfigs" : [
-        {
-          "id" : 100004,
-          "leichMehlConfigId" : 100002,
-          "targetFieldName" : "targetFileName",
-          "targetFieldType" : "Date",
-          "replaceRegExp" : "replacePattern",
-          "replacement" : "replacement",
-          "replacementSource" : "PPOrder"
-        }
-      ],
-      "productMappingEmpty" : false
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
-import { toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeString } from '../../utils/qrCode/hu';
 
 const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
@@ -53,13 +53,4 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
     clearanceStatus,
     clearanceNote,
   });
-}
-
-export async function assignExternalLotNumber({ huId, qrCode }) {
-  return axios
-    .put(`${huAPIBasePath}/byId/${huId}/externalLotNumber`, {
-      qrCode,
-    })
-    .then(unboxAxiosResponse)
-    .then((response) => response.result);
 }

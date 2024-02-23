@@ -74,6 +74,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -721,6 +722,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void closeShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+	}
+
+	@Override
+	public void closeShipmentSchedules(final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds);
 	}
 
 	@Override

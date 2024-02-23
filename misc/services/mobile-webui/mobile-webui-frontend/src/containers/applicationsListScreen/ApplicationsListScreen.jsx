@@ -36,17 +36,19 @@ const ApplicationsListScreen = () => {
   };
 
   return (
-    <div>
+    <div className="applications-list">
       <LogoHeader />
       <div className="section">
-        {applications.map((app) => (
-          <ApplicationButton
-            key={app.id}
-            caption={app.caption}
-            iconClassNames={app.iconClassNames}
-            onClick={() => handleAppClick(app.id)}
-          />
-        ))}
+        {applications
+          .filter((app) => !!app.showInMainMenu)
+          .map((app) => (
+            <ApplicationButton
+              key={app.id}
+              caption={app.caption}
+              iconClassNames={app.iconClassNames}
+              onClick={() => handleAppClick(app.id)}
+            />
+          ))}
         <br />
         <ApplicationButton
           key="logout"

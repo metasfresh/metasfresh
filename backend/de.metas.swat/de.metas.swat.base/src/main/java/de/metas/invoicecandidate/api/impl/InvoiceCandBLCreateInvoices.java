@@ -784,6 +784,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
 			icRecord.setQtyToInvoice_Override(null);
+			icRecord.setQtyToInvoiceInUOM_Override(null);
 			icRecord.setPriceEntered_Override(null);
 			invoiceCandDAO.save(icRecord);
 		}

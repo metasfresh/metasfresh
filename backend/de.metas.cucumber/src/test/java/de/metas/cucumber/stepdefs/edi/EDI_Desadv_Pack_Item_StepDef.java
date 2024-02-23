@@ -38,14 +38,16 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.IQuery;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -143,8 +145,10 @@ public class EDI_Desadv_Pack_Item_StepDef
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID).append(" : ").append(itemRecord.getM_InOut_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID).append(" : ").append(itemRecord.getM_InOutLine_ID()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty).append(" : ").append(itemRecord.getMovementQty()).append(" ; ")
-						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU).append(" : ").append(itemRecord.getQtyCU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU).append(" : ").append(itemRecord.getQtyCUsPerTU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerTU_InInvoiceUOM()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU).append(" : ").append(itemRecord.getQtyCUsPerLU()).append(" ; ")
+						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM).append(" : ").append(itemRecord.getQtyCUsPerLU_InInvoiceUOM()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity).append(" : ").append(itemRecord.getQtyItemCapacity()).append(" ; ")
 						.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU).append(" : ").append(itemRecord.getQtyTU()).append(" ; ")
 						.append("\n"));
@@ -162,36 +166,69 @@ public class EDI_Desadv_Pack_Item_StepDef
 				.map(I_EDI_Desadv_Pack::getEDI_Desadv_Pack_ID)
 				.orElseGet(() -> Integer.parseInt(packIdentifier));
 
-		final IQuery<I_EDI_Desadv_Pack_Item> query = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
+		final IQueryBuilder<I_EDI_Desadv_Pack_Item> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packID)
-				.create();
-
-		final Supplier<Boolean> packItemFound = () -> query
-				.firstOnly(I_EDI_Desadv_Pack_Item.class) != null;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, packItemFound, () -> logCurrentContext(packID));
+				.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packID);
 
 		final BigDecimal movementQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
-		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU);
+		if (movementQty != null)
+		{
+			queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty, movementQty);
+		}
+
+		final Supplier<Boolean> packItemFound = () -> queryBuilder
+				.create()
+				.firstOnly(I_EDI_Desadv_Pack_Item.class) != null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, packItemFound, () -> logCurrentContext(packID, movementQty));
+
+		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU);
+		final BigDecimal qtyCUsPerTU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU_InInvoiceUOM);
 		final BigDecimal qtyCUsPerLU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU);
+		final BigDecimal qtyCUsPerLU_InInvoiceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU_InInvoiceUOM);
 		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity);
 		final Integer qtyTu = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU);
 
-		final I_EDI_Desadv_Pack_Item desadvPackItemRecord = query.firstNotNull(I_EDI_Desadv_Pack_Item.class);
+		final I_EDI_Desadv_Pack_Item desadvPackItemRecord = queryBuilder.create().firstOnlyNotNull(I_EDI_Desadv_Pack_Item.class);
+		final int packItemId = desadvPackItemRecord.getEDI_Desadv_Pack_Item_ID();
 
-		assertThat(desadvPackItemRecord.getMovementQty()).isEqualTo(movementQty);
-		assertThat(desadvPackItemRecord.getQtyCU()).isEqualTo(qtyCU);
-		assertThat(desadvPackItemRecord.getQtyCUsPerLU()).isEqualTo(qtyCUsPerLU);
-		assertThat(desadvPackItemRecord.getQtyItemCapacity()).isEqualTo(qtyItemCapacity);
-		assertThat(desadvPackItemRecord.getQtyTU()).isEqualTo(qtyTu);
+		final SoftAssertions softly = new SoftAssertions();
+		if (qtyCUsPerTU != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU);
+		}
+
+		if (qtyCUsPerTU_InInvoiceUOM != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyCUsPerTU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerTU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerTU_InInvoiceUOM);
+		}
+
+		if (qtyCUsPerLU != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU);
+		}
+
+		if (qtyCUsPerLU_InInvoiceUOM != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyCUsPerLU_InInvoiceUOM()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyCUsPerLU_InInvoiceUOM", packIdentifier, packItemId).isEqualByComparingTo(qtyCUsPerLU_InInvoiceUOM);
+		}
+
+		if (qtyItemCapacity != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyItemCapacity()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyItemCapacity", packIdentifier, packItemId).isEqualByComparingTo(qtyItemCapacity);
+		}
+
+		if (qtyTu != null)
+		{
+			softly.assertThat(desadvPackItemRecord.getQtyTU()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - QtyTU", packIdentifier, packItemId).isEqualByComparingTo(qtyTu);
+		}
 
 		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(shipmentIdentifier))
 		{
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
-			assertThat(desadvPackItemRecord.getM_InOut_ID()).isEqualTo(shipmentRecord.getM_InOut_ID());
+			softly.assertThat(desadvPackItemRecord.getM_InOut_ID()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - M_InOut_ID", packIdentifier, packItemId).isEqualTo(shipmentRecord.getM_InOut_ID());
 		}
 
 		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -199,13 +236,13 @@ public class EDI_Desadv_Pack_Item_StepDef
 		{
 			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier);
 
-			assertThat(desadvPackItemRecord.getM_InOutLine_ID()).isEqualTo(shipmentLine.getM_InOutLine_ID());
+			softly.assertThat(desadvPackItemRecord.getM_InOutLine_ID()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - M_InOutLine_ID", packIdentifier, packItemId).isEqualTo(shipmentLine.getM_InOutLine_ID());
 		}
 
 		final String lotNumber = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_LotNumber);
 		if (Check.isNotBlank(lotNumber))
 		{
-			assertThat(desadvPackItemRecord.getLotNumber()).isEqualTo(DataTableUtil.nullToken2Null(lotNumber));
+			softly.assertThat(desadvPackItemRecord.getLotNumber()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - LotNumber", packIdentifier, packItemId).isEqualTo(DataTableUtil.nullToken2Null(lotNumber));
 		}
 
 		final String nullableBestBeforeDateString = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate);
@@ -213,11 +250,11 @@ public class EDI_Desadv_Pack_Item_StepDef
 		{
 			if (DataTableUtil.nullToken2Null(nullableBestBeforeDateString) == null)
 			{
-				assertThat(desadvPackItemRecord.getBestBeforeDate()).isNull();
+				softly.assertThat(desadvPackItemRecord.getBestBeforeDate()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - BestBeforeDate", packIdentifier, packItemId).isNull();
 			}
 			else
 			{
-				assertThat(desadvPackItemRecord.getBestBeforeDate()).isEqualTo(TimeUtil.parseTimestamp(nullableBestBeforeDateString));
+				softly.assertThat(desadvPackItemRecord.getBestBeforeDate()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - BestBeforeDate", packIdentifier, packItemId).isEqualTo(TimeUtil.parseTimestamp(nullableBestBeforeDateString));
 			}
 		}
 
@@ -228,25 +265,34 @@ public class EDI_Desadv_Pack_Item_StepDef
 					? 0
 					: huPackagingCodeTable.get(huPackagingCodeTuIdentifier).getM_HU_PackagingCode_ID();
 
-			assertThat(desadvPackItemRecord.getM_HU_PackagingCode_TU_ID()).isEqualTo(huPackingCodeTuId);
+			softly.assertThat(desadvPackItemRecord.getM_HU_PackagingCode_TU_ID()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - M_HU_PackagingCode_TU_ID", packIdentifier, packItemId).isEqualTo(huPackingCodeTuId);
 		}
 
 		final String gtinTuPackingMaterial = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_GTIN_TU_PackingMaterial);
 		if (Check.isNotBlank(gtinTuPackingMaterial))
 		{
-			assertThat(desadvPackItemRecord.getGTIN_TU_PackingMaterial()).isEqualTo(DataTableUtil.nullToken2Null(gtinTuPackingMaterial));
+			softly.assertThat(desadvPackItemRecord.getGTIN_TU_PackingMaterial()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - GTIN_TU_PackingMaterial", packIdentifier, packItemId).isEqualTo(DataTableUtil.nullToken2Null(gtinTuPackingMaterial));
 		}
+
+		softly.assertAll();
 
 		final String packItemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		packItemTable.put(packItemIdentifier, desadvPackItemRecord);
 	}
 
-	private void logCurrentContext(@NonNull final Integer packID)
+	private void logCurrentContext(
+			@NonNull final Integer packID,
+			@Nullable final BigDecimal movementQty)
 	{
 		final StringBuilder message = new StringBuilder();
 
 		message.append("Looking for instance with:").append("\n")
 				.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID).append(" : ").append(packID).append("\n");
+
+		if (movementQty != null)
+		{
+			message.append(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty).append(" : ").append(movementQty).append("\n");
+		}
 
 		logItemRecords(message);
 	}

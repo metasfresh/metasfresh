@@ -19,6 +19,7 @@ const ButtonWithIndicator = ({
   disabled,
   onClick,
   children,
+  additionalCssClass,
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
@@ -32,13 +33,18 @@ const ButtonWithIndicator = ({
 
   return (
     <button
-      className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger })}
+      className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
       onClick={onClick}
     >
       <div className="full-size-btn">
         <div className="left-btn-side">
-          {showWarningSign && <i className="fas fa-exclamation-triangle warning-sign" />}
+          {showWarningSign && (
+            <span>
+              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing showWarningSign so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
+              <i className="fas fa-exclamation-triangle warning-sign" />
+            </span>
+          )}
           {typeFASIconName && (
             <span>
               {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing typeFASIconName so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
@@ -107,6 +113,7 @@ ButtonWithIndicator.propTypes = {
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,
   children: PropTypes.node,
+  additionalCssClass: PropTypes.string,
   onClick: PropTypes.func.isRequired,
 };
 

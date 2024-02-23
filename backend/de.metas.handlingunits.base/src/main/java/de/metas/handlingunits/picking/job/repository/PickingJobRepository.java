@@ -95,8 +95,8 @@ public class PickingJobRepository
 			@NonNull final PickingJobReferenceQuery query,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsTo(query.getPickerId()));
-		final Set<BPartnerId> onlyCustomerIds = query.getOnlyBPartnerIds(); 
+		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsToOrNull(query.getPickerId()));
+		final Set<BPartnerId> onlyCustomerIds = query.getOnlyBPartnerIds();
 		if (!onlyCustomerIds.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds);
@@ -123,21 +123,7 @@ public class PickingJobRepository
 		}
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
-				.loadByIds(pickingJobIds)
-				.stream()
-				.map(PickingJobRepository::toPickingJobReference);
-	}
-
-	private static PickingJobReference toPickingJobReference(final PickingJob pickingJob)
-	{
-		return PickingJobReference.builder()
-				.pickingJobId(pickingJob.getId())
-				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
-				.customerId(pickingJob.getCustomerId())
-				.customerName(pickingJob.getCustomerName())
-				.deliveryDate(pickingJob.getDeliveryDate())
-				.shipmentScheduleIds(pickingJob.getShipmentScheduleIds())
-				.build();
+				.streamPickingJobReferences(pickingJobIds);
 	}
 
 	public boolean hasDraftJobsUsingPickingSlot(

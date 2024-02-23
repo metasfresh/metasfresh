@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -75,7 +76,6 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -139,7 +139,6 @@ public class OrderBL implements IOrderBL
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -684,9 +683,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-																									.type(Type.SHIP_TO)
-																									.build());
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -733,11 +732,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -780,7 +779,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, final Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
@@ -820,9 +819,7 @@ public class OrderBL implements IOrderBL
 	{
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final Quantity qtyEntered = orderLineBL.getQtyEntered(orderLine);
-		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
+		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 
 		//
 		// Set QtyOrdered
@@ -1241,6 +1238,13 @@ public class OrderBL implements IOrderBL
 	public String getDocumentNoById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDocumentNo();
+	}
+
+	@Override
+	public Map<OrderId, String> getDocumentNosByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return getByIds(orderIds).stream()
+				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
 	}
 
 	@Override

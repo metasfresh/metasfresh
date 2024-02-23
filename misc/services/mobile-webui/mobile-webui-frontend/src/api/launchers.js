@@ -3,40 +3,42 @@ import { toQueryString, unboxAxiosResponse } from '../utils';
 import { apiBasePath } from '../constants';
 import { useEffect } from 'react';
 import * as ws from '../utils/websocket';
-import { toQRCodeString } from '../utils/huQRCodes';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 /**
  * @summary Get the list of available launchers
  */
 export const getLaunchers = ({ applicationId, filterByQRCode, facets }) => {
+  const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       applicationId,
       filterByQRCode: toQRCodeString(filterByQRCode),
-      facets,
+      facetIds,
     })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const countLaunchers = ({ applicationId, facets }) => {
+export const countLaunchers = ({ applicationId, facetIds }) => {
+  //console.log('countLaunchers', { applicationId, facetIds });
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       applicationId,
-      facets,
+      facetIds,
       countOnly: true,
     })
     .then((response) => unboxAxiosResponse(response))
     .then((response) => response.count);
 };
 
-export const getFacets = (applicationId) => {
+export const getFacets = ({ applicationId, activeFacetIds }) => {
   return axios
-    .get(`${apiBasePath}/userWorkflows/facets`, {
-      params: {
-        applicationId,
-      },
+    .post(`${apiBasePath}/userWorkflows/facets`, {
+      applicationId,
+      activeFacetIds,
     })
-    .then((response) => unboxAxiosResponse(response));
+    .then((response) => unboxAxiosResponse(response))
+    .then((response) => response.groups);
 };
 
 /**

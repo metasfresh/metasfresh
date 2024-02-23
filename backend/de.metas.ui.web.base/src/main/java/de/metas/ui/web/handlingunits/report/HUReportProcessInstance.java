@@ -1,28 +1,12 @@
 package de.metas.ui.web.handlingunits.report;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import de.metas.ui.web.window.model.IDocumentFieldView;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.AdProcessId;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.process.ProcessExecutionContext;
@@ -35,16 +19,28 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /*
  * #%L
@@ -162,7 +158,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final DocumentCollection documentsCollection = context.getDocumentsCollection();
 
 		final ViewId viewId = viewRowIdsSelection.getViewId();
-		final HUEditorView view = HUEditorView.cast(viewsRepo.getView(viewId));
+		final HUReportAwareView view = HUReportAwareViews.cast(viewsRepo.getView(viewId));
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
 				.adJasperProcessId(getJasperProcess_ID())
@@ -183,10 +179,10 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return lastExecutionResult = result;
 	}
 
-	private List<HUToReport> extractHUsToReport(final HUEditorView view)
+	private List<HUToReport> extractHUsToReport(final HUReportAwareView view)
 	{
 		final Set<HUToReport> husToCheck = view.streamByIds(viewRowIdsSelection.getRowIds())
-				.map(HUEditorRow::getAsHUToReportOrNull)
+				.map(HUReportAwareViewRowAsHUToReport::ofOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 

@@ -105,11 +105,14 @@ public final class PickingJob
 
 	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
 
-	public BPartnerId getCustomerId() {return header.getDeliveryBPLocationId().getBpartnerId();}
+	public BPartnerId getCustomerId() {return header.getCustomerId();}
 
 	public String getCustomerName() {return header.getCustomerName();}
 
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
+
+	@Nullable
+	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
 
 	public String getDeliveryRenderedAddress() {return header.getDeliveryRenderedAddress();}
 

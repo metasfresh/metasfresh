@@ -43,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,13 +51,14 @@ import java.util.List;
  * Abstract lock database which does not implement any database specific logic.
  *
  * @author tsa
- *
  */
 public abstract class AbstractLockDatabase implements ILockDatabase
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
-	/** Asserts given lock owner is a valid owner to be used on for Locks */
+	/**
+	 * Asserts given lock owner is a valid owner to be used on for Locks
+	 */
 	protected static void assertValidLockOwner(@NonNull final LockOwner lockOwner)
 	{
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
@@ -184,11 +186,10 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	/**
 	 * Locks a single record.
 	 *
-	 * @return
-	 *         <ul>
-	 *         <li><code>true</code> if record was locked
-	 *         <li><code>false</code> if records was NOT locked because it's already locked and {@link LockCommand#isFailIfAlreadyLocked()} is false
-	 *         </ul>
+	 * @return <ul>
+	 * <li><code>true</code> if record was locked
+	 * <li><code>false</code> if records was NOT locked because it's already locked and {@link LockCommand#isFailIfAlreadyLocked()} is false
+	 * </ul>
 	 * @throws LockFailedException if locking failed
 	 */
 	protected abstract boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record);
@@ -305,10 +306,8 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	}
 
 	@Override
-	public final String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	public final String getLockedWhereClause(final @NonNull Class<?> modelClass, final @NonNull String joinColumnNameFQ, @NonNull final LockOwner lockOwner)
 	{
-		Check.assumeNotNull(lockOwner, "Parameter lockOwner is not null");
-
 		return getLockedWhereClauseAllowNullLock(modelClass, joinColumnNameFQ, lockOwner);
 	}
 
@@ -323,7 +322,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// note: don't specify a particular ordering; leave that freedom to the caller if this method
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, contextProvider)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
+				// .addOnlyContextClientOrSystem() // avoid applying context client because in some cases context is not available
 				.filter(TypedSqlQueryFilter.of(lockedRecordsSQL));
 	}
 
@@ -378,5 +377,5 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	protected abstract <T> IQuery<T> retrieveNotLockedQuery(IQuery<T> query);
 
-	protected abstract String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner);
+	protected abstract String getLockedWhereClauseAllowNullLock(@NonNull final Class<?> modelClass, @NonNull final String joinColumnNameFQ, @Nullable final LockOwner lockOwner);
 }

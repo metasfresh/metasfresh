@@ -5,13 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.report.HUReportAwareView;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
@@ -69,7 +69,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-public class HUEditorView implements IView
+public class HUEditorView implements IView, HUReportAwareView
 {
 	public static HUEditorViewBuilder builder()
 	{
@@ -143,15 +143,9 @@ public class HUEditorView implements IView
 		return viewType;
 	}
 
-	@Override
-	public ITranslatableString getDescription()
-	{
-		return TranslatableStrings.empty();
-	}
-
 	/**
 	 * Always returns {@link I_M_HU#Table_Name}, even if the underlying {@link HUEditorRow}'s type is {@link HUEditorRowType#HUStorage}.<br>
-	 * (because i don't understand it well enough)
+	 * (because I don't understand it well enough)
 	 */
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId documentId)
@@ -197,7 +191,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, @NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return considerTableRelatedProcessDescriptors;
 	}

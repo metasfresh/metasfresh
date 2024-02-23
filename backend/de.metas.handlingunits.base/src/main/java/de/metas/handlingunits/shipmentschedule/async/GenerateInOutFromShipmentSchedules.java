@@ -3,6 +3,7 @@ package de.metas.handlingunits.shipmentschedule.async;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -43,7 +44,7 @@ import java.util.List;
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary">task</a>
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {
@@ -66,18 +67,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
 		final IParams parameters = getParameters();
-		
+
 		// Create candidates
 		final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride = extractScheduleId2QtyToDeliverOverride(parameters);
-		
+
 		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
-		
+
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
@@ -91,7 +93,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(isShipmentDateToday);
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
-		
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
@@ -102,8 +104,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
-
 		Loggables.addLog("Generated: {}", result);
+
+		if (isCloseShipmentSchedules)
+		{
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = shipmentSchedulesWithHU.stream().map(ShipmentScheduleWithHU::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
+			shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds);
+		}
+
 		return Result.SUCCESS;
 	}
 
@@ -118,7 +126,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final String advisedDocumentNo = parameters.getParameterAsString(parameterName);
 				final String shipmentScheduleIdStr = parameterName.substring(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo.length());
 				result.put(
-						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)), 
+						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)),
 						ShipmentScheduleExternalInfo.builder().documentNo(advisedDocumentNo).build());
 			}
 		}
@@ -147,7 +155,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29">task</a>
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()

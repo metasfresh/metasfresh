@@ -25,16 +25,14 @@ package org.adempiere.model;
  * #L%
  */
 
-
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.order.copy.C_OrderLine_CopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_EXP_Format;
-
-import de.metas.invoice.service.MInvoicePOCopyRecordSupport;
 
 /**
  * @author Cristina Ghita, METAS.RO
@@ -45,13 +43,10 @@ public class CopyValidator extends AbstractModelInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		CopyRecordFactory.registerCopyRecordSupport(I_C_Order.Table_Name, MOrderPOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, MOrderLinePOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_C_Invoice.Table_Name, MInvoicePOCopyRecordSupport.class);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, C_OrderLine_CopyRecordSupport.class);
 
 		// Backward compatibility
 		CopyRecordFactory.enableForTableName(I_C_Invoice.Table_Name);
-		CopyRecordFactory.enableForTableName(I_C_Order.Table_Name);
 		CopyRecordFactory.enableForTableName(I_EXP_Format.Table_Name);
 		// NOTE: Please don't add more tables here, but add them in coresponding projects/model interceptors.
 	}

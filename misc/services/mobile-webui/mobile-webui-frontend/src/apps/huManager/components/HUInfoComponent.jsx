@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';

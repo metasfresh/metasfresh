@@ -2,12 +2,13 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.dao.ValueRestriction;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
@@ -59,7 +60,8 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
-	@NonNull private HUQRCodesService huQRCodesService;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final InventoryService inventoryService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -167,6 +169,7 @@ public class PickingJobService
 				.onlyFromSalesOrder(true)
 				.lockedBy(query.getUserId())
 				.includeNotLocked(true)
+				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(query.getExcludeShipmentScheduleIds())
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
@@ -186,8 +189,14 @@ public class PickingJobService
 		{
 			builder.deliveryDays(deliveryDays);
 		}
-		
-		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
+
+		final ImmutableSet<BPartnerLocationId> locationIds = query.getOnlyHandoverLocationIds();
+		if (!locationIds.isEmpty())
+		{
+			builder.handoverLocationIds(locationIds);
+		}
+
+		final WarehouseId workplaceWarehouseId = query.getWarehouseId();
 		if (workplaceWarehouseId != null)
 		{
 			builder.warehouseId(workplaceWarehouseId);
@@ -209,9 +218,10 @@ public class PickingJobService
 				.build();
 	}
 
-	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
+	@NonNull
+	public Stream<Packageable> streamPackageable(@NonNull final PickingJobQuery query)
 	{
-		return packagingDAO.stream(toPackageableQuery(query)).collect(PickingJobFacets.collectFromPackageables());
+		return packagingDAO.stream(toPackageableQuery(query));
 	}
 
 	private static boolean computePartiallyPickedBefore(final Packageable item)
@@ -273,6 +283,7 @@ public class PickingJobService
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
+						.inventoryService(inventoryService)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -281,9 +292,15 @@ public class PickingJobService
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
+						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
+						.createInventoryForMissingQty(true)
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						.catchWeightBD(event.getCatchWeight())
+						.isSetBestBeforeDate(event.isSetBestBeforeDate())
+						.bestBeforeDate(event.getBestBeforeDate())
+						.isSetLotNo(event.isSetLotNo())
+						.lotNo(event.getLotNo())
 						//
 						.build().execute();
 				return getById(pickingJob.getId());
@@ -293,10 +310,12 @@ public class PickingJobService
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
+						.huQRCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
+						.unpickToHU(event.getUnpickToTargetQRCode())
 						//
 						.build().execute();
 			}

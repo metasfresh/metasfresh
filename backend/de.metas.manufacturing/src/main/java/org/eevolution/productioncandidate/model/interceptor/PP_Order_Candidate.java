@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.model.interceptor;
 
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -29,17 +30,20 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
+import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
@@ -135,6 +139,38 @@ public class PP_Order_Candidate
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_IsMaturing, I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID })
+	public void checkMaturingCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		if (!ppOrderCandidateRecord.isMaturing())
+		{
+			return;
+		}
+
+		final HuId issueHuId = HuId.ofRepoIdOrNull(ppOrderCandidateRecord.getIssue_HU_ID());
+		if (issueHuId == null)
+		{
+			throw new FillMandatoryException(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID);
+		}
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void onDelete(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
+
+		final PPOrderCandidateDeletedEvent ppOrderCandidateDeletedEvent = PPOrderCandidateDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
+				.ppOrderCandidate(ppOrderCandidatePojo)
+				.build();
+
+		ppOrderCandidateService.deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()));
+		materialEventService.postEventAfterNextCommit(ppOrderCandidateDeletedEvent);
+	}
+
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		validateQtyEntered(ppOrderCandidateRecord);
@@ -158,7 +194,7 @@ public class PP_Order_Candidate
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
-																					  getMaterialDispoTraceId(ppOrderCandidateRecord));
+				getMaterialDispoTraceId(ppOrderCandidateRecord));
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
 				.eventDescriptor(eventDescriptor)
@@ -181,8 +217,8 @@ public class PP_Order_Candidate
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-																			 qtyEnteredColumnTrl,
-																			 qtyProcessedColumnTrl);
+					qtyEnteredColumnTrl,
+					qtyProcessedColumnTrl);
 
 			throw new AdempiereException(message)
 					.appendParametersToMessage()

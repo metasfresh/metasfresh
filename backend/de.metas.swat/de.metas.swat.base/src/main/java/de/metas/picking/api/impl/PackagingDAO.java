@@ -8,6 +8,8 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
@@ -34,6 +36,7 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
@@ -48,15 +51,27 @@ import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_stream_BufferSize = "de.metas.picking.api.impl.PackagingDAO.stream.BufferSize";
+	private static final int DEFAULT_stream_BufferSize = 500;
 
 	@Override
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return createQuery(query)
+				.setOption(IQuery.OPTION_IteratorBufferSize, getStreamBufferSize())
 				.iterateAndStream()
 				.map(this::toPackageable);
+	}
+
+	private int getStreamBufferSize()
+	{
+		final int bufferSize = sysConfigBL.getIntValue(SYSCONFIG_stream_BufferSize, -1);
+		return bufferSize > 0 ? bufferSize : DEFAULT_stream_BufferSize;
 	}
 
 	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
@@ -130,7 +145,7 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter by Locked By
+		// Filter by Locked By User (via M_ShipmentSchedule_Lock table)
 		if (query.getLockedBy() != null)
 		{
 			if (query.isIncludeNotLocked())
@@ -144,13 +159,27 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
+		// Exclude shipment-schedules that are currently locked for processing/shipment-creation (via T_Lock table)
+		if (query.isExcludeLockedForProcessing())
+		{
+			queryBuilder.filter(lockManager.getNotLockedFilter(
+					I_M_ShipmentSchedule.Table_Name,
+					I_M_Packageable_V.Table_Name + "." + I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID));
+		}
+
+		//
 		// Filter by excludeShipmentScheduleIds
 		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
 		}
 
-		//
+		// Filter: Handover Location
+		if (!query.getHandoverLocationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
+		}
+
 		return queryBuilder.create();
 	}
 
@@ -223,6 +252,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
+		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandover_Partner_ID(), record.getHandover_Location_ID()));
 
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));

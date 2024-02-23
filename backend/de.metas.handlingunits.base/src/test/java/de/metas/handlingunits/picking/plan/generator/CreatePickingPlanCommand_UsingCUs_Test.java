@@ -126,6 +126,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.qtyPickedPlanned(zero)
 				.customerId(customerLocationId.getBpartnerId())
 				.customerLocationId(customerLocationId)
+				.handoverLocationId(customerLocationId)
 				.warehouseId(warehouseId)
 				.bestBeforePolicy(Optional.of(ShipmentAllocationBestBeforePolicy.Expiring_First))
 				.productId(productId)

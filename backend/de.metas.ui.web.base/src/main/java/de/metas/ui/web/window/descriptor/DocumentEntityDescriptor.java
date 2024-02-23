@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -45,7 +46,6 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
@@ -216,7 +216,7 @@ public class DocumentEntityDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("tableName", tableName.orElse(null))
-				.add("fields.count", fields.size()) // only fields count because else it's to long
+				.add("fields.count", fields.size()) // only fields count because else it's too long
 				// .add("entityDataBinding", dataBinding) // skip it because it's too long
 				.add("includedEntitites.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
 				.toString();
@@ -469,8 +469,6 @@ public class DocumentEntityDescriptor
 		private boolean _defaultTableCalloutsEnabled = true; // enabled by default
 
 		private AdProcessId _printProcessId = null;
-
-		private Boolean _cloneEnabled = null;
 
 		@Getter
 		private boolean singleRowDetail = false;
@@ -1119,18 +1117,8 @@ public class DocumentEntityDescriptor
 			return _printProcessId;
 		}
 
-		public Builder setCloneEnabled(final boolean cloneEnabled)
-		{
-			_cloneEnabled = cloneEnabled;
-			return this;
-		}
-
 		private boolean isCloneEnabled()
 		{
-			if (_cloneEnabled != null)
-			{
-				return _cloneEnabled;
-			}
 			return isCloneEnabled(_tableName);
 		}
 
@@ -1141,10 +1129,6 @@ public class DocumentEntityDescriptor
 				return false;
 			}
 
-			if (!CopyRecordFactory.isEnabled())
-			{
-				return false;
-			}
 			return CopyRecordFactory.isEnabledForTableName(tableName.get());
 		}
 

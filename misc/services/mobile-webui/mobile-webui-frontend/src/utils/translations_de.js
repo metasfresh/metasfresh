@@ -5,8 +5,13 @@ const translations = {
     network: {
       noResponse: 'Verbindung Fehler',
     },
+    qrCode: {
+      invalid: 'Ungültiger QR Code',
+    },
   },
   general: {
+    Yes: 'Ja',
+    No: 'Nein',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
@@ -18,8 +23,10 @@ const translations = {
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
     CatchWeight: 'Gewicht',
+    BestBeforeDate: 'MHD',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    closeText: 'Schließen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
@@ -30,6 +37,11 @@ const translations = {
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Wechseln zu...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Passwort',
+    },
   },
   logout: 'Abmelden',
   mobileui: {
@@ -47,14 +59,6 @@ const translations = {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
-    },
-    huManager: {
-      action: {
-        assignExternalLotNumber: {
-          buttonCaption: 'Assoziierte Externe Lot Nummer',
-          scanTarget: 'Assoziierte Externe Lot Nummer',
-        },
-      },
     },
   },
   activities: {
@@ -75,6 +79,14 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       Workplace: 'Arbeitsplatz',
+      switchToManualInput: 'Manuell',
+      switchToQrCodeInput: 'QR scannen',
+      skip: 'Überspringen',
+      scanTargetHU: 'Ziel HU scannen',
+      qrcode: {
+        missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
+        differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+      },
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

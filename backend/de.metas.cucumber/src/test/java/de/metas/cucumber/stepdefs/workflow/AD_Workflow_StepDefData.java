@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.material.planning.pporder.PPRoutingId;
 import org.compiere.model.I_AD_Workflow;
 
 public class AD_Workflow_StepDefData extends StepDefData<I_AD_Workflow>
@@ -30,5 +32,11 @@ public class AD_Workflow_StepDefData extends StepDefData<I_AD_Workflow>
 	public AD_Workflow_StepDefData()
 	{
 		super(I_AD_Workflow.class);
+	}
+
+	public PPRoutingId getId(final StepDefDataIdentifier identifier)
+	{
+		final I_AD_Workflow record = get(identifier);
+		return PPRoutingId.ofRepoId(record.getAD_Workflow_ID());
 	}
 }

@@ -1,8 +1,8 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;

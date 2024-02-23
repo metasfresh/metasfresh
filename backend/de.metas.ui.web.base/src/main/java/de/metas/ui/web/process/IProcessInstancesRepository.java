@@ -44,7 +44,7 @@ public interface IProcessInstancesRepository
 	 * 
 	 * @return handler type
 	 */
-	String getProcessHandlerType();
+	ProcessHandlerType getProcessHandlerType();
 
 	/**
 	 * @return process descriptor; never returns null

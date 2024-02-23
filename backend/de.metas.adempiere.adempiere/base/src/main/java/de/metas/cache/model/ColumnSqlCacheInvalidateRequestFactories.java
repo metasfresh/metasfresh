@@ -50,8 +50,6 @@ import java.util.List;
 @UtilityClass
 final class ColumnSqlCacheInvalidateRequestFactories
 {
-	private final static Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestFactories.class);
-
 	@Nullable
 	public static ModelCacheInvalidateRequestFactory ofDescriptorOrNull(@NonNull final ColumnSqlSourceDescriptor descriptor)
 	{
@@ -72,8 +70,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 			if (!targetTableInfo.isPhysicalColumn(sourceLinkColumnName))
 			{
-				logger.warn("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
-				return null;
+				throw new AdempiereException("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
 			}
 			//noinspection UnnecessaryLocalVariable
 			final String targetLinkColumnName = sourceLinkColumnName;

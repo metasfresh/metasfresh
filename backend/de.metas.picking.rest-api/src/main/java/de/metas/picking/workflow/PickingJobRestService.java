@@ -67,9 +67,13 @@ public class PickingJobRestService
 		return pickingJobService.streamPickingJobCandidates(query);
 	}
 
-	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
+	@NonNull
+	public PickingJobFacets getFacets(
+			@NonNull final PickingJobQuery query,
+			@NonNull final PickingJobFacets.CollectingParameters collectingParameters)
 	{
-		return pickingJobService.getFacets(query);
+		return pickingJobService.streamPackageable(query)
+				.collect(PickingJobFacets.collectFromPackageables(collectingParameters));
 	}
 
 	public PickingJob createPickingJob(
