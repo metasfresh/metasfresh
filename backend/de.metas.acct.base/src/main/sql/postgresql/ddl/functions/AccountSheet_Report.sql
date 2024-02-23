@@ -16,16 +16,16 @@ CREATE OR REPLACE FUNCTION report.AccountSheet_Report(
     RETURNS
         TABLE
         (
-            konto         text,
-            gegenkonto    text,
-            soll          numeric,
-            haben         numeric,
-            soll_währung  numeric,
-            haben_währung numeric,
-            währung       text,
-            Belegdatum    text,
-            Buchungsdatum text,
-            "Nr"          text
+            AccountNo          text,
+            CounterPartAccount text,
+            Debit              numeric,
+            Credit             numeric,
+            Debit_Currency     numeric,
+            Credit_Currency    numeric,
+            Currency           text,
+            DateDoc            text,
+            AccountingDate     text,
+            DocumentNo         text
         )
     LANGUAGE sql
     STABLE
@@ -33,16 +33,16 @@ CREATE OR REPLACE FUNCTION report.AccountSheet_Report(
 
 AS
 $BODY$
-SELECT t.AccountValueAndName::text                                                            AS konto,
-       t.counterpart_AccountValueAndName::text                                                AS gegenkonto,
-       t.amtacctdr                                                                            AS soll,
-       t.amtacctcr                                                                            AS haben,
-       t.amtsourcedr                                                                          AS soll_währung,
-       t.amtsourcecr                                                                          AS haben_währung,
-       (SELECT cy.iso_code FROM c_currency cy WHERE cy.c_currency_id = t.c_currency_id)::text AS währung,
-       TO_CHAR(t.datetrx, 'DD.MM.YYYY')::text                                                 AS Belegdatum,
-       TO_CHAR(t.dateacct, 'DD.MM.YYYY')::text                                                AS Buchungsdatum,
-       t.documentno::text                                                                     AS "Nr"
+SELECT t.AccountValueAndName::text                                                            AS DocumentNo,
+       t.counterpart_AccountValueAndName::text                                                AS CounterPartAccount,
+       t.amtacctdr                                                                            AS Debit,
+       t.amtacctcr                                                                            AS Credit,
+       t.amtsourcedr                                                                          AS Debit_Currency,
+       t.amtsourcecr                                                                          AS Credit_Currency,
+       (SELECT cy.iso_code FROM c_currency cy WHERE cy.c_currency_id = t.c_currency_id)::text AS Currency,
+       TO_CHAR(t.datetrx, 'DD.MM.YYYY')::text                                                 AS DateDoc,
+       TO_CHAR(t.dateacct, 'DD.MM.YYYY')::text                                                AS AccountingDate,
+       t.documentno::text                                                                     AS DocumentNo
 FROM de_metas_acct.RV_AccountSheet t
 WHERE TRUE
   AND t.PostingType = 'A'
