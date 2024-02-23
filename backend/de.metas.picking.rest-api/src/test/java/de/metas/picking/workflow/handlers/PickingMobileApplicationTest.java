@@ -92,7 +92,7 @@ class PickingMobileApplicationTest
 		recorder = helper.newTestRecorder();
 
 		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationRepository()));
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
 
 
 		// Needed because we take snapshots of date/time translatable strings,

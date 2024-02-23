@@ -220,7 +220,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 
 		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationRepository()));
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
 
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);

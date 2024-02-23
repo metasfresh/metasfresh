@@ -14,6 +14,7 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -54,7 +55,7 @@ class ManufacturingJobServiceTest
 				new HUQRCodesService(
 						new HUQRCodesRepository(),
 						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-						new QRCodeConfigurationRepository())
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository()))
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);
