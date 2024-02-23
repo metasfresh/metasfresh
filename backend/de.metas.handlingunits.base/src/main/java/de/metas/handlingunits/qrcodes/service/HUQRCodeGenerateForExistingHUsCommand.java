@@ -56,7 +56,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	@NonNull
 	private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull
-	private final QRCodeConfigurationRepository qrCodeConfigurationRepository;
+	private final QRCodeConfigurationService qrCodeConfigurationService;
 	@NonNull
 	private final IAttributeStorageFactory attributeStorageFactory;
 
@@ -71,7 +71,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 			final @NonNull IProductBL productBL,
 			final @NonNull IAttributeDAO attributeDAO,
 			final @NonNull HUQRCodesRepository huQRCodesRepository,
-			final @NonNull QRCodeConfigurationRepository qrCodeConfigurationRepository,
+			final @NonNull QRCodeConfigurationService qrCodeConfigurationService,
 			final @NonNull IAttributeStorageFactoryService attributeStorageFactoryService,
 			final @NonNull HUQRCodeGenerateForExistingHUsRequest request)
 	{
@@ -79,14 +79,14 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		this.productBL = productBL;
 		this.attributeDAO = attributeDAO;
 		this.huQRCodesRepository = huQRCodesRepository;
-		this.qrCodeConfigurationRepository = qrCodeConfigurationRepository;
+		this.qrCodeConfigurationService = qrCodeConfigurationService;
 		this.attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		this.request = request;
 	}
 
 	public HUQRCodeGenerateForExistingHUsResult execute()
 	{
-		if (qrCodeConfigurationRepository.isAtLeastOneActiveConfig())
+		if (qrCodeConfigurationService.isAtLeastOneActiveConfig())
 		{
 			return executeWithGrouping();
 		}
@@ -183,12 +183,13 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		return productId;
 	}
 
+	@NonNull
 	private HUQRCodeGenerateForExistingHUsResult executeWithGrouping()
 	{
 		final ImmutableList<ImmutableList<HUItemToGroup>> groups = groupHUsForSharingQRCodes();
 		final Set<HuId> huIds = groups.stream()
+				.map(HUQRCodeGenerateForExistingHUsCommand::getHuIds)
 				.flatMap(Collection::stream)
-				.map(HUItemToGroup::getHuId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableSetMultimap<HuId, HUQRCode> existingQRCodesByHuId = huQRCodesRepository.getQRCodeByHuIds(huIds);
@@ -208,7 +209,9 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		final HashMultimap<HuId, HUQRCode> result = HashMultimap.create();
 		if (group.size() == 1)
 		{
-			result.putAll(generateQRCodeForItem(group.get(0), existingQRCodesByHuId));
+			final HUItemToGroup singleItem = group.get(0);
+			final List<HUQRCode> qrCodes = generateQRCodeForItem(singleItem, existingQRCodesByHuId.get(singleItem.getHuId()));
+			result.putAll(singleItem.getHuId(), qrCodes);
 		}
 		else
 		{
@@ -219,7 +222,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				final ImmutableSet<HUQRCode> existingQRCodes = existingQRCodesByHuId.get(item.getHuId());
 				if (existingQRCodes.size() > 1)
 				{
-					result.putAll(generateQRCodeForItem(item, existingQRCodesByHuId));
+					result.putAll(item.getHuId(), generateQRCodeForItem(item, existingQRCodes));
 				}
 				else if (existingQRCodes.size() == 1)
 				{
@@ -236,9 +239,8 @@ public class HUQRCodeGenerateForExistingHUsCommand
 			{
 				final HUQRCode groupHUQrCode = sharedHUQrCode != null
 						? sharedHUQrCode
-						: generateQRCodeForItem(husToGenerateQRFor.get(0), ImmutableSetMultimap.of())
-						.get(husToGenerateQRFor.get(0).getHuId())
-						.iterator().next();
+						// pick the first one in the group as they are all the same
+						: generateQRCodeForItem(husToGenerateQRFor.get(0), ImmutableSet.of()).get(0);
 
 				huQRCodesRepository.assign(groupHUQrCode, getHuIds(husToGenerateQRFor));
 
@@ -250,32 +252,33 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	}
 
 	@NonNull
-	private HashMultimap<HuId, HUQRCode> generateQRCodeForItem(
+	private ImmutableList<HUQRCode> generateQRCodeForItem(
 			@NonNull final HUItemToGroup item,
-			@NonNull final ImmutableSetMultimap<HuId, HUQRCode> existingQRCodesByHuId)
+			@NonNull final ImmutableSet<HUQRCode> existingQRCodes)
 	{
-		final HashMultimap<HuId, HUQRCode> result = HashMultimap.create();
-		final ImmutableSet<HUQRCode> existingQRCodes = existingQRCodesByHuId.get(item.getHuId());
-		result.putAll(item.getHuId(), existingQRCodes);
+		final ImmutableList.Builder<HUQRCode> result = ImmutableList.builder();
+		result.addAll(existingQRCodes);
 
-		final List<HUQRCode> newQRCodes = generateRemainingQRCodes(item.getHu(), existingQRCodes.size(), item.getQrCodeConfiguration());
-		result.putAll(item.getHuId(), newQRCodes);
+		final List<HUQRCode> newQRCodes = generateRemainingQRCodes(item.getHu(), existingQRCodes.size(), item.getProductQrCodeConfiguration());
+		result.addAll(newQRCodes);
 
 		newQRCodes.forEach(newQRCode -> huQRCodesRepository.createNew(newQRCode, item.getHuId()));
-		return result;
+		return result.build();
 	}
 
 	@NonNull
 	private ImmutableList<ImmutableList<HUItemToGroup>> groupHUsForSharingQRCodes()
 	{
-		final GroupBuilder groupBuilder = GroupBuilder.ofKeyFunction(this::buildGroupKey);
-		getHUsToGroup(getId2HU()).forEach(groupBuilder::addToGroup);
-		return groupBuilder.buildGroups();
+		return GroupBuilder.ofBuildKeyFunction(this::buildGroupKey)
+				.addAllToGroups(getHUsToGroup())
+				.buildGroups();
 	}
 
 	@NonNull
-	private List<HUItemToGroup> getHUsToGroup(@NonNull final Map<HuId, I_M_HU> huId2Hu)
+	private List<HUItemToGroup> getHUsToGroup()
 	{
+		final Map<HuId, I_M_HU> huId2Hu = getId2HU();
+
 		final Map<HuId, ProductId> huId2Product = handlingUnitsBL.getStorageFactory()
 				.streamHUProductStorages(ImmutableList.copyOf(huId2Hu.values()))
 				.collect(Collectors.groupingBy(IHUProductStorage::getHuId,
@@ -294,7 +297,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.collect(ImmutableMap.toImmutableMap(product -> ProductId.ofRepoId(product.getM_Product_ID()),
 													 product -> QRCodeConfigurationId.ofRepoId(product.getQRCode_Configuration_ID())));
 
-		final Map<QRCodeConfigurationId, QRCodeConfiguration> id2Configuration = qrCodeConfigurationRepository
+		final Map<QRCodeConfigurationId, QRCodeConfiguration> id2Configuration = qrCodeConfigurationService
 				.getByIds(ImmutableSet.copyOf(productId2QRCodeConfig.values()));
 
 		final Function<ProductId, QRCodeConfiguration> getQRConfigForProduct = productId ->
@@ -307,7 +310,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.map(huId2ProductId -> HUItemToGroup.builder()
 						.hu(huId2Hu.get(huId2ProductId.getKey()))
 						.productId(huId2ProductId.getValue())
-						.qrCodeConfiguration(getQRConfigForProduct.apply(huId2ProductId.getValue()))
+						.productQrCodeConfiguration(getQRConfigForProduct.apply(huId2ProductId.getValue()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -315,7 +318,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	@NonNull
 	private GroupKey buildGroupKey(@NonNull final HUItemToGroup huItemToGroup)
 	{
-		if (!huItemToGroup.isGroupingByMatchingAttributesRequired())
+		if (!huItemToGroup.isGroupingByMatchingAttributesEnabled())
 		{
 			return SingleGroupKey.ofHuId(huItemToGroup.getHuId());
 		}
@@ -351,7 +354,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	{
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu.getHu());
 
-		final Set<AttributeId> attributeIds = hu.getAttributesAssumingGroupingIsRequired();
+		final Set<AttributeId> attributeIds = hu.getAttributesAssumingGroupingIsEnabled();
 
 		final Predicate<I_M_Attribute> qrMatchingRelevantAttributes =
 				attribute -> attributeIds.contains(AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
@@ -370,13 +373,19 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Value(staticConstructor = "ofKeyFunction")
+	@Value(staticConstructor = "ofBuildKeyFunction")
 	private static class GroupBuilder
 	{
 		@NonNull Function<HUItemToGroup, GroupKey> buildKeyFunction;
 		@NonNull Map<GroupKey, ImmutableList.Builder<HUItemToGroup>> key2Group = new HashMap<>();
 
-		public void addToGroup(@NonNull final HUItemToGroup huItemToGroup)
+		public GroupBuilder addAllToGroups(@NonNull final Collection<HUItemToGroup> items)
+		{
+			items.forEach(this::addToGroup);
+			return this;
+		}
+
+		private void addToGroup(@NonNull final HUItemToGroup huItemToGroup)
 		{
 			final GroupKey groupKey = buildKeyFunction.apply(huItemToGroup);
 			final ImmutableList.Builder<HUItemToGroup> huGroup = key2Group.getOrDefault(groupKey, ImmutableList.builder());
@@ -400,7 +409,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	{
 		@NonNull I_M_HU hu;
 		@NonNull ProductId productId;
-		@Nullable QRCodeConfiguration qrCodeConfiguration;
+		@Nullable QRCodeConfiguration productQrCodeConfiguration;
 
 		@NonNull
 		public HuId getHuId()
@@ -409,15 +418,15 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		}
 
 		@NonNull
-		public Set<AttributeId> getAttributesAssumingGroupingIsRequired()
+		public Set<AttributeId> getAttributesAssumingGroupingIsEnabled()
 		{
-			Check.assume(qrCodeConfiguration != null && qrCodeConfiguration.isGroupingByAttributesRequired(), "Assuming grouping by attributes is required!");
-			return qrCodeConfiguration.getAttributeIds();
+			Check.assume(isGroupingByMatchingAttributesEnabled(), "Assuming grouping by attributes is enabled!");
+			return productQrCodeConfiguration.getAttributeIds();
 		}
 
-		public boolean isGroupingByMatchingAttributesRequired()
+		public boolean isGroupingByMatchingAttributesEnabled()
 		{
-			return qrCodeConfiguration != null && qrCodeConfiguration.isGroupingByAttributesRequired();
+			return productQrCodeConfiguration != null && productQrCodeConfiguration.isGroupingByAttributesEnabled();
 		}
 	}
 

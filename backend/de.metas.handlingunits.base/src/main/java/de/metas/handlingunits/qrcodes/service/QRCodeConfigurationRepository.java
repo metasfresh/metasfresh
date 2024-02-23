@@ -61,7 +61,7 @@ public class QRCodeConfigurationRepository
 	}
 
 	@NonNull
-	public Map<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final Set<QRCodeConfigurationId> qrCodeConfigurationIds)
+	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> qrCodeConfigurationIds)
 	{
 		return toQRCodeConfiguration(InterfaceWrapperHelper.loadByRepoIdAwares(qrCodeConfigurationIds, I_QRCode_Configuration.class))
 				.collect(ImmutableMap.toImmutableMap(QRCodeConfiguration::getId, Function.identity()));

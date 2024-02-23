@@ -1,10 +1,8 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -24,7 +22,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -60,7 +57,6 @@ public class HUSplitBuilderCoreEngine
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
-	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService;
 
 	private final IHUContext huContextInitital;
 	private final I_M_HU huToSplit;
@@ -92,7 +88,6 @@ public class HUSplitBuilderCoreEngine
 		this.requestProvider = requestProvider;
 		this.destination = destination;
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class, null);
-		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 	}
 
 	/**
@@ -207,7 +202,7 @@ public class HUSplitBuilderCoreEngine
 					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});
 
-		propagateQrCodeAssignmentsIfRequired(huToSplit, splitHUs);
+		huQRCodesService.get().propagateQrForSplitHUs(huToSplit, splitHUs);
 
 		return splitHUs;
 	}
@@ -330,17 +325,5 @@ public class HUSplitBuilderCoreEngine
 						.runInNewTrx(() -> handlingUnitsBL
 								.destroyIfEmptyStorage(localHuContextCopy, huToSplit)));
 
-	}
-
-	private void propagateQrCodeAssignmentsIfRequired(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> newHUs)
-	{
-		final ImmutableSet<HuId> newHUIdsToShareQrCode = qrCodeConfigurationService.get().getEligibleHusForSharingQr(sourceHU, newHUs);
-		if (newHUIdsToShareQrCode.isEmpty())
-		{
-			return;
-		}
-
-		huQRCodesService.get().getFirstQRCodeByHuIdIfExists(HuId.ofRepoId(sourceHU.getM_HU_ID()))
-				.ifPresent(qrCode -> huQRCodesService.get().assign(qrCode, newHUIdsToShareQrCode));
 	}
 }

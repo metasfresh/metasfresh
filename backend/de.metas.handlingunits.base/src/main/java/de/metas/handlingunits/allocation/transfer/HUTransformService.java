@@ -1422,7 +1422,7 @@ public class HUTransformService
 			final HuId extractedTUId = splitOutTUFromAggregated(hu);
 			huQRCodesService.get().assign(huQRCode, extractedTUId);
 
-			if (!qrCodeConfigurationService.get().isOneQrCodeForMultipleHUsEnabledFor(hu))
+			if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
 			{
 				huQRCodesService.get().removeAssignment(huQRCode, ImmutableSet.of(huId));
 			}
@@ -1452,7 +1452,7 @@ public class HUTransformService
 					.setParameter("huId", aggregatedHuId);
 		}
 
-		if (!qrCodeConfigurationService.get().isOneQrCodeForMultipleHUsEnabledFor(hu))
+		if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
 		{
 			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as oneQrCodeForMultipleHUs is not enabled!")
 					.appendParametersToMessage()

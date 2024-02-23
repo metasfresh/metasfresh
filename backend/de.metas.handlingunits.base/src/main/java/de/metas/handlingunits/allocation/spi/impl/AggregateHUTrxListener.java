@@ -22,8 +22,6 @@ package de.metas.handlingunits.allocation.spi.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -43,7 +41,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -80,6 +77,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	 * Makes sure the {@link #afterLoad(IHUContext, List)} is not called recurrently.
 	 */
 	private final ThreadLocal<Boolean> withinMethod = new ThreadLocal<>();
+	private final HUQRCodesService huqrCodesService;
 
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
@@ -101,6 +99,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	private AggregateHUTrxListener()
 	{
+		this.huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	}
 
 	/**
@@ -225,16 +224,8 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				loader.load(request);
 
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(item);
-				if (includedHUs.size() == 1) { //todo temporary: to be refactored
-					final QRCodeConfigurationService qrCodeConfigurationService = SpringContextHolder.instance.getBean(QRCodeConfigurationService.class);
-					final HUQRCodesService huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-
-					final ImmutableSet<HuId> newHUIdsToShareQrCode = qrCodeConfigurationService.getEligibleHusForSharingQr(includedHUs.get(0), destination.getCreatedHUs());
-					if (!newHUIdsToShareQrCode.isEmpty())
-					{
-						huqrCodesService.getFirstQRCodeByHuIdIfExists(HuId.ofRepoId(includedHUs.get(0).getM_HU_ID()))
-								.ifPresent(qrCode -> huqrCodesService.assign(qrCode, newHUIdsToShareQrCode));
-					}
+				if (includedHUs.size() == 1) {
+					huqrCodesService.propagateQrForSplitHUs(includedHUs.get(0), destination.getCreatedHUs());
 				}
 			}
 		}

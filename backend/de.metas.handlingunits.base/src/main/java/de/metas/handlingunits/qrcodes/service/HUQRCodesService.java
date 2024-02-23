@@ -8,6 +8,7 @@ import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -39,18 +40,18 @@ public class HUQRCodesService
 	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
-	@NonNull private final QRCodeConfigurationRepository qrCodeConfigurationRepository;
+	@NonNull private final QRCodeConfigurationService qrCodeConfigurationService;
 
 	private static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
 	public HUQRCodesService(
 			final @NonNull HUQRCodesRepository huQRCodesRepository,
 			final @NonNull GlobalQRCodeService globalQRCodeService,
-			final @NonNull QRCodeConfigurationRepository qrCodeConfigurationRepository)
+			final @NonNull QRCodeConfigurationService qrCodeConfigurationService)
 	{
 		this.huQRCodesRepository = huQRCodesRepository;
 		this.globalQRCodeService = globalQRCodeService;
-		this.qrCodeConfigurationRepository = qrCodeConfigurationRepository;
+		this.qrCodeConfigurationService = qrCodeConfigurationService;
 	}
 
 	public List<HUQRCode> generate(final HUQRCodeGenerateRequest request)
@@ -76,7 +77,7 @@ public class HUQRCodesService
 				.productBL(productBL)
 				.attributeDAO(attributeDAO)
 				.huQRCodesRepository(huQRCodesRepository)
-				.qrCodeConfigurationRepository(qrCodeConfigurationRepository)
+				.qrCodeConfigurationService(qrCodeConfigurationService)
 				.attributeStorageFactoryService(attributeStorageFactoryService)
 				.request(request)
 				.build()
@@ -222,5 +223,24 @@ public class HUQRCodesService
 	{
 		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
 				.map(HUQRCodeAssignment::getSingleHUId);
+	}
+
+	public void propagateQrForSplitHUs(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> splitHUs)
+	{
+		final ImmutableSet<HuId> idCandidatesToShareQrCode = qrCodeConfigurationService.filterSplitHUsForSharingQr(sourceHU, splitHUs);
+		if (idCandidatesToShareQrCode.isEmpty())
+		{
+			return;
+		}
+		final ImmutableSet<HuId> idsWithQrAlreadyAssigned = huQRCodesRepository.getQRCodeByHuIds(idCandidatesToShareQrCode).keySet();
+		final ImmutableSet<HuId> huIdsToShareQr = idCandidatesToShareQrCode.stream()
+				.filter(huId -> !idsWithQrAlreadyAssigned.contains(huId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (!huIdsToShareQr.isEmpty())
+		{
+			getFirstQRCodeByHuIdIfExists(HuId.ofRepoId(sourceHU.getM_HU_ID()))
+					.ifPresent(qrCode -> assign(qrCode, huIdsToShareQr));
+		}
 	}
 }

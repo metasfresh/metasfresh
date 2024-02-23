@@ -44,13 +44,13 @@ public class QRCodeConfiguration
 
 	@Nullable Set<AttributeId> attributeIds;
 
-	public boolean isGroupingByAttributesRequired()
+	public boolean isGroupingByAttributesEnabled()
 	{
 		return isOneQrCodeForMatchingAttributes && !Check.isEmpty(attributeIds);
 	}
 
 	public boolean isOneQRCodeForAggregatedTUsEnabled()
 	{
-		return isOneQrCodeForAggregatedHUs || isGroupingByAttributesRequired();
+		return isOneQrCodeForAggregatedHUs || isGroupingByAttributesEnabled();
 	}
 }

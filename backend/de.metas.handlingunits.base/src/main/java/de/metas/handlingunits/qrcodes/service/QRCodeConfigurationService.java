@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -52,7 +53,7 @@ public class QRCodeConfigurationService
 	@NonNull
 	private final QRCodeConfigurationRepository repository;
 
-	public boolean isOneQrCodeForMultipleHUsEnabledFor(@NonNull final I_M_HU hu)
+	public boolean isOneQrCodeForAggregatedHUsEnabledFor(@NonNull final I_M_HU hu)
 	{
 		if (!handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
@@ -65,9 +66,9 @@ public class QRCodeConfigurationService
 	}
 
 	@NonNull
-	public ImmutableSet<HuId> getEligibleHusForSharingQr(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> newHUs)
+	public ImmutableSet<HuId> filterSplitHUsForSharingQr(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> newHUs)
 	{
-		if (!isOneQrCodeForMultipleHUsEnabledFor(sourceHU))
+		if (!isOneQrCodeForAggregatedHUsEnabledFor(sourceHU))
 		{
 			return ImmutableSet.of();
 		}
@@ -87,6 +88,17 @@ public class QRCodeConfigurationService
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public boolean isAtLeastOneActiveConfig()
+	{
+		return repository.isAtLeastOneActiveConfig();
+	}
+
+	@NonNull
+	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> qrCodeConfigurationIds)
+	{
+		return repository.getByIds(qrCodeConfigurationIds);
 	}
 
 	@NonNull
