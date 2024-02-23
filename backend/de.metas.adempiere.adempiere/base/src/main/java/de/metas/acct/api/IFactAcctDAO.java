@@ -94,7 +94,7 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @param lineId     document line's ID
 	 * @param activityId activity to set
 	 */
-	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+	void updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
 
 	void updatePOReference(@NonNull TableRecordReference recordRef, @Nullable String poReference);
 
