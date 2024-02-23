@@ -49,6 +49,7 @@ public interface IFactAcctDAO extends ISingletonService
 	 * <p>
 	 * NOTE: this method is NOT checking if the accounting period of given document is open!
 	 *
+	 * @param document
 	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
 	int deleteForDocument(IDocument document);
@@ -60,6 +61,7 @@ public interface IFactAcctDAO extends ISingletonService
 	/**
 	 * Retries all accounting records for given document.
 	 *
+	 * @param document
 	 * @return query
 	 */
 	IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(IDocument document);
@@ -71,14 +73,16 @@ public interface IFactAcctDAO extends ISingletonService
 
 	/**
 	 * Update directly all the fact accounts of the given document by setting their docStatus from document.
-	 *
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29">task</a>
+	 * 
+	 * @param document
+	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
 	 */
 	void updateDocStatusForDocument(IDocument document);
 
 	/**
 	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.
 	 *
+	 * @param ctx
 	 * @param adTableId  document header's AD_Table_ID
 	 * @param recordId   document header's ID
 	 * @param lineId     document line's ID

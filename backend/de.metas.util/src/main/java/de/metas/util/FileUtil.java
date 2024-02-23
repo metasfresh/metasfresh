@@ -26,9 +26,8 @@ package de.metas.util;
  */
 
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
-import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -40,10 +39,13 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@UtilityClass
 public final class FileUtil
 {
-	public static void copy(final File from, final OutputStream out) throws IOException
+	private FileUtil()
+	{
+	}
+
+	public static final void copy(final File from, final OutputStream out) throws IOException
 	{
 		try (final InputStream in = new FileInputStream(from))
 		{
@@ -51,7 +53,7 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(final InputStream in, final File to) throws IOException
+	public static final void copy(final InputStream in, final File to) throws IOException
 	{
 		try (final FileOutputStream out = new FileOutputStream(to))
 		{
@@ -59,10 +61,10 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(final InputStream in, final OutputStream out) throws IOException
+	public static final void copy(final InputStream in, final OutputStream out) throws IOException
 	{
 		final byte[] buf = new byte[4096];
-		int len;
+		int len = -1;
 		while ((len = in.read(buf)) > 0)
 		{
 			out.write(buf, 0, len);
@@ -116,10 +118,26 @@ public final class FileUtil
 		return prefix.toString();
 	}
 
+	public static File toTempFile(byte[] data, final String fileExtension, String title)
+	{
+		final File file = createTempFile(fileExtension, title);
+		final InputStream in = new ByteArrayInputStream(data);
+		try
+		{
+			copy(in, file);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e.getLocalizedMessage(), e);
+		}
+		return file;
+	}
+
 	/**
-	 * @return file extension (without the dot) or null if the file does not have an extension.
+	 * Gets file extension (without the dot) or null if the file does not have an extension.
+	 *
+	 * @return file extension or null
 	 */
-	@Nullable
 	public static String getFileExtension(final String filename)
 	{
 		if (filename == null)
@@ -161,7 +179,7 @@ public final class FileUtil
 	 * @param extension file extension to be used (with or without dot); in case the extension is null then it won't be appended so only the basename will be returned
 	 * @return filename with new file extension or same filename if the filename does not have an extension
 	 */
-	public static String changeFileExtension(@NonNull final String filename, @Nullable final String extension)
+	public static String changeFileExtension(final String filename, final String extension)
 	{
 		final StringBuilder sb = new StringBuilder();
 
@@ -170,7 +188,7 @@ public final class FileUtil
 		final int extensionPos = filename.lastIndexOf(".");
 		if (extensionPos > 0)
 		{
-			sb.append(filename, 0, extensionPos);
+			sb.append(filename.substring(0, extensionPos));
 		}
 		else
 		{
@@ -178,20 +196,27 @@ public final class FileUtil
 		}
 
 		// If no extension, return only the basename
-		final String extensionNorm = StringUtils.trimBlankToNull(extension);
-		if (extensionNorm == null)
+		if (extension == null)
 		{
 			return sb.toString();
 		}
 
+		// If no extension, return only the basename
+		if (Check.isBlank(extension))
+		{
+			return sb.toString();
+		}
+
+		final String trimmedExtension = extension.trim();
+
 		// Append the dot between basename and extension only if the extension does not already contain a dot
-		if (!extensionNorm.startsWith("."))
+		if (!trimmedExtension.startsWith("."))
 		{
 			sb.append(".");
 		}
 
 		// Append the extension
-		sb.append(extensionNorm);
+		sb.append(trimmedExtension);
 
 		return sb.toString();
 	}
@@ -225,7 +250,7 @@ public final class FileUtil
 
 	private static final String FILENAME_ILLEGAL_CHARACTERS = new String(new char[] { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' });
 
-	public static String stripIllegalCharacters(String filename)
+	public static final String stripIllegalCharacters(String filename)
 	{
 		if (filename == null)
 		{

@@ -18,8 +18,8 @@ import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
