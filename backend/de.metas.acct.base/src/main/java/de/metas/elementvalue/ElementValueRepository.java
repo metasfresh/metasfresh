@@ -61,7 +61,11 @@ public class ElementValueRepository
 		return load(id, I_C_Element.class);
 	}
 
+<<<<<<< HEAD
 	public void save(@NonNull final I_C_ElementValue record)
+=======
+	void save(@NonNull final I_C_ElementValue record)
+>>>>>>> 17f25c32dfe (Export all accounts (#17430))
 	{
 		saveRecord(record);
 	}
@@ -93,4 +97,87 @@ public class ElementValueRepository
 				.seqNo(record.getSeqNo())
 				.build();
 	}
+<<<<<<< HEAD
+=======
+
+	ElementValue createOrUpdate(@NonNull final ElementValueCreateOrUpdateRequest request)
+	{
+		//
+		// Validate
+		if (request.getParentId() != null)
+		{
+			final ElementValue parent = getById(request.getParentId());
+			if (!parent.isSummary())
+			{
+				throw new AdempiereException("Parent element value must be a summary element value: " + parent.getValue());
+			}
+		}
+
+		//
+		// Actual update & save
+		final ElementValueId existingElementValueId = request.getExistingElementValueId();
+		final I_C_ElementValue record = existingElementValueId != null
+				? getRecordById(existingElementValueId)
+				: InterfaceWrapperHelper.newInstance(I_C_ElementValue.class);
+
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_Element_ID(request.getChartOfAccountsId().getRepoId());
+		record.setValue(request.getValue());
+		record.setName(request.getName());
+		record.setAccountSign(request.getAccountSign());
+		record.setAccountType(request.getAccountType());
+		record.setIsSummary(request.isSummary());
+		record.setIsDocControlled(request.isDocControlled());
+		record.setPostActual(request.isPostActual());
+		record.setPostBudget(request.isPostBudget());
+		record.setPostStatistical(request.isPostStatistical());
+		record.setParent_ID(ElementValueId.toRepoId(request.getParentId()));
+		if (request.getSeqNo() != null)
+		{
+			record.setSeqNo(request.getSeqNo());
+		}
+		record.setDefault_Account(request.getDefaultAccountName());
+
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return toElementValue(record);
+	}
+
+	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
+	{
+		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+
+		final I_C_ElementValue from = queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, accountValueFrom + "%")
+				.setLimit(QueryLimit.ONE)
+				.orderBy(I_C_ElementValue.COLUMNNAME_Value)
+				.create()
+				.first();
+
+		final I_C_ElementValue to = queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, accountValueTo + "%")
+				.setLimit(QueryLimit.ONE)
+				.orderByDescending(I_C_ElementValue.COLUMNNAME_Value)
+				.create()
+				.first();
+
+		return queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
+				.create()
+				.listIds(ElementValueId::ofRepoId);
+	}
+
+	@VisibleForTesting
+	public List<I_C_ElementValue> getAllRecordsByChartOfAccountsId(final ChartOfAccountsId chartOfAccountsId)
+	{
+		return queryBL.createQueryBuilder(I_C_ElementValue.class)
+				//.addOnlyActiveRecordsFilter() // commented because we return ALL
+				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
+				.create()
+				.list();
+	}
+>>>>>>> 17f25c32dfe (Export all accounts (#17430))
 }
