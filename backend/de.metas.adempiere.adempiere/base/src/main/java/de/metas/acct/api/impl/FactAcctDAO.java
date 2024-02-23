@@ -1,5 +1,6 @@
 package de.metas.acct.api.impl;
 
+import de.metas.acct.api.AcctSchemaId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -26,7 +27,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -36,6 +36,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.document.engine.IDocument;
@@ -45,6 +47,9 @@ import lombok.NonNull;
 
 public class FactAcctDAO implements IFactAcctDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+
 	@Override
 	public I_Fact_Acct getById(final int factAcctId)
 	{
@@ -58,7 +63,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(document);
+		factAcctListenersService.fireAfterUnpost(document);
 
 		return countDeleted;
 	}
@@ -72,7 +77,21 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(documentObj);
+		factAcctListenersService.fireAfterUnpost(documentObj);
+
+		return countDeleted;
+	}
+
+	@Override
+	public int deleteForRecordRef(@NonNull final TableRecordReference recordRef)
+	{
+		final int adTableId = recordRef.getAD_Table_ID();
+		final int recordId = recordRef.getRecord_ID();
+		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+				.create()
+				.deleteDirectly();
+
+		factAcctListenersService.fireAfterUnpost(recordRef);
 
 		return countDeleted;
 	}
@@ -89,7 +108,7 @@ public class FactAcctDAO implements IFactAcctDAO
 
 	private IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
@@ -105,7 +124,7 @@ public class FactAcctDAO implements IFactAcctDAO
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int lineId = InterfaceWrapperHelper.getId(documentLine);
 
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL
 				.createQueryBuilder(I_Fact_Acct.class, documentLine)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
@@ -135,17 +154,27 @@ public class FactAcctDAO implements IFactAcctDAO
 		// Make sure we are updating the Fact_Acct records in a transaction
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int countUpdated = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId)
-				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Activity_ID, activityId)
+		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.execute();
 
 		return countUpdated;
+	}
+
+	@Override
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Instant dateAcctFrom, @NonNull final Instant dateAcctTo)
+	{
+		return queryBL
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateAcctFrom, dateAcctTo)
+				.create()
+				.listDistinct(I_Fact_Acct.COLUMNNAME_Account_ID, ElementValueId.class);
 	}
 }
