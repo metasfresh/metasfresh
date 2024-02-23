@@ -43,16 +43,21 @@ import lombok.NonNull;
 @Service
 public class ElementValueService
 {
-	private final ElementValueRepository evRepo;
+	private final ElementValueRepository elementValueRepository;
 
-	public ElementValueService(@NonNull final ElementValueRepository evRepo)
+	public ElementValueService(@NonNull final ElementValueRepository elementValueRepository)
 	{
-		this.evRepo = evRepo;
+		this.elementValueRepository = elementValueRepository;
 	}
 
+	public ElementValue getById(@NonNull final ElementValueId id)
+	{
+		return elementValueRepository.getById(id);
+	}
+	
 	public void updateElementValueAndResetSequences(@NonNull final ElementValueRequest request)
 	{
-		final Map<String, I_C_ElementValue> children = evRepo.retrieveChildren(request.getParentId());
+		final Map<String, I_C_ElementValue> children = elementValueRepository.retrieveChildren(request.getParentId());
 
 		final I_C_ElementValue record = updateElementValueAndDoNotSave(request);
 
@@ -66,7 +71,7 @@ public class ElementValueService
 
 	private I_C_ElementValue updateElementValueAndDoNotSave(@NonNull final ElementValueRequest request)
 	{
-		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
+		final I_C_ElementValue record = elementValueRepository.getElementValueRecordById(request.getElementValueId());
 		record.setParent_ID(request.getParentId().getRepoId());
 
 		return record;
@@ -78,7 +83,7 @@ public class ElementValueService
 
 		childrenSorted.forEach((value, record) -> {
 			record.setSeqNo(sequences.get(value));
-			evRepo.save(record);
+			elementValueRepository.save(record);
 		});
 	}
 
