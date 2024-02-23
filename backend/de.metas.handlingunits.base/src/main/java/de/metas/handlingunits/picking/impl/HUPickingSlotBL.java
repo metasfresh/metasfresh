@@ -564,7 +564,7 @@ public class HUPickingSlotBL
 		// There still not closed picking candidates; do nothing
 		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
-		if (pickingCandidatesRepo.hasNotClosedCandidatesForPickingSlot(pickingSlotId))
+		if (pickingCandidatesRepo.hasDraftCandidatesForPickingSlot(pickingSlotId))
 		{
 			return;
 		}
