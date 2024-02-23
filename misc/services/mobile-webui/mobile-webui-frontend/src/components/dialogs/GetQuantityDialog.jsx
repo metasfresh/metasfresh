@@ -6,6 +6,7 @@ import { trl } from '../../utils/translations';
 
 import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
+import DateInput from '../DateInput';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
@@ -55,10 +56,10 @@ const GetQuantityDialog = ({
   const onCatchWeightEntered = (qtyInfo) => setCatchWeight(qtyInfo);
 
   const [bestBeforeDate, setBestBeforeDate] = useState(bestBeforeDateParam);
-  const onBestBeforeDateEntered = (e) => {
-    const bestBeforeDateNew = e.target.value ? e.target.value : '';
-    //console.log('onBestBeforeDateEntered', { bestBeforeDateNew, e });
-    setBestBeforeDate(bestBeforeDateNew);
+  const [isBestBeforeDateValid, setIsBestBeforeDateValid] = useState(true);
+  const onBestBeforeDateEntered = ({ date, isValid }) => {
+    setBestBeforeDate(date);
+    setIsBestBeforeDateValid(isValid);
   };
 
   const [lotNo, setLotNo] = useState(lotNoParam);
@@ -74,12 +75,12 @@ const GetQuantityDialog = ({
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
       : 0;
 
-  const allValid =
-    readOnly ||
+  const isQtyValid =
     doNotValidateQty ||
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
       (!useCatchWeight || catchWeight?.isQtyValid));
+  const allValid = readOnly || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid));
 
   const onDialogYes = () => {
     if (allValid) {
@@ -285,8 +286,7 @@ const GetQuantityDialog = ({
                           <td>
                             <div className="field">
                               <div className="control">
-                                <input
-                                  className="input"
+                                <DateInput
                                   type="date"
                                   value={bestBeforeDate}
                                   disabled={readOnly}
