@@ -1660,6 +1660,14 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		return instant != null
+				? instant.atZone(zoneId).toLocalDate()
+				: null;
+	}
+
 	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)

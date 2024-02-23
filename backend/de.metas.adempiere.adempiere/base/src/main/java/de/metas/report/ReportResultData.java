@@ -83,6 +83,11 @@ public class ReportResultData
 	{
 		final String reportFilename = file.getName();
 
+		return ofFile(file, reportFilename);
+	}
+
+	public static ReportResultData ofFile(final @NonNull File file, @NonNull final String reportFilename)
+	{
 		return ReportResultData.builder()
 				.reportData(new FileSystemResource(file))
 				.reportFilename(reportFilename)

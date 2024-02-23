@@ -1174,7 +1174,7 @@ public class AcctViewer extends CFrame
 			final RModelExcelExporter exporter = RModelExcelExporter.builder()
 					.model(model)
 					.build();
-			final File file = exporter.exportToTempFile();
+			final File file = exporter.exportToTempFile("fileNamePrefix"); // this whole file is cleaned up in uat=> just fixing the compile error
 			Env.startBrowser(file);
 		}
 		catch (Exception e)
