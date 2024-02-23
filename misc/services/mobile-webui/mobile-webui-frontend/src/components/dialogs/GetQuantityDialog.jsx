@@ -222,133 +222,138 @@ const GetQuantityDialog = ({
             {isCustomView() && getCustomView()}
             {!isCustomView() && (
               <>
-                <table className="table">
-                  <tbody>
-                    {qtyCaption && (
-                      <tr>
-                        <th>{qtyCaption}</th>
-                        <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
-                      </tr>
-                    )}
-                    {userInfo &&
-                      userInfo.map((item) => (
-                        <tr key={computeKeyFromUserInfoItem(item)}>
-                          <th>{computeCaptionFromUserInfoItem(item)}</th>
-                          <td>{item.value}</td>
+                <div className="table-container">
+                  <table className="table">
+                    <tbody>
+                      {qtyCaption && (
+                        <tr>
+                          <th>{qtyCaption}</th>
+                          <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                         </tr>
-                      ))}
-                    {!hideQtyInput && (
-                      <tr>
-                        <th>Qty</th>
-                        <td>
-                          <QtyInputField
-                            qty={qtyInfos.toNumberOrString(qtyInfo)}
-                            uom={uom}
-                            validateQtyEntered={validateQtyEntered}
-                            readonly={useScaleDevice || readOnly}
-                            onQtyChange={onQtyEntered}
-                            isRequestFocus={true}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {scaleDevice && allowManualInput && (
-                      <tr>
-                        <td colSpan="2">
-                          <div className="buttons has-addons">
-                            <button
-                              className={cx('button', { 'is-success': useScaleDevice, 'is-selected': useScaleDevice })}
-                              onClick={() => setUseScaleDevice(true)}
-                            >
-                              {scaleDevice.caption}
-                            </button>
-                            <button
-                              className={cx('button', {
-                                'is-success': !useScaleDevice,
-                                'is-selected': !useScaleDevice,
-                              })}
-                              onClick={() => setUseScaleDevice(false)}
-                            >
-                              Manual
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    {isShowBestBeforeDate && (
-                      <tr>
-                        <th>{trl('general.BestBeforeDate')}</th>
-                        <td>
-                          <div className="field">
-                            <div className="control">
-                              <input
-                                className="input"
-                                type="date"
-                                value={bestBeforeDate}
-                                disabled={readOnly}
-                                onChange={onBestBeforeDateEntered}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    {isShowLotNo && (
-                      <tr>
-                        <th>{trl('general.LotNo')}</th>
-                        <td>
-                          <div className="field">
-                            <div className="control">
-                              <input
-                                className="input"
-                                type="text"
-                                value={lotNo}
-                                disabled={readOnly}
-                                onChange={onLotNoEntered}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    {useCatchWeight && (
-                      <tr>
-                        <th>{trl('general.CatchWeight')}</th>
-                        <td>
-                          <>
+                      )}
+                      {userInfo &&
+                        userInfo.map((item) => (
+                          <tr key={computeKeyFromUserInfoItem(item)}>
+                            <th>{computeCaptionFromUserInfoItem(item)}</th>
+                            <td>{item.value}</td>
+                          </tr>
+                        ))}
+                      {!hideQtyInput && (
+                        <tr>
+                          <th>Qty</th>
+                          <td>
                             <QtyInputField
-                              qty={qtyInfos.toNumberOrString(catchWeight)}
-                              uom={catchWeightUom}
-                              onQtyChange={onCatchWeightEntered}
-                              readonly={readOnly}
-                            />
-                            <button className="button" onClick={() => setShowCatchWeightQRCodeReader(true)}>
-                              {trl('activities.picking.switchToQrCodeInput')}
-                            </button>
-                          </>
-                        </td>
-                      </tr>
-                    )}
-                    {qtyRejected > 0 && (
-                      <>
-                        <tr>
-                          <th>{trl('general.QtyRejected')}</th>
-                          <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
-                        </tr>
-                        <tr>
-                          <td colSpan={2}>
-                            <QtyReasonsRadioGroup
-                              reasons={qtyRejectedReasons}
-                              selectedReason={rejectedReason}
-                              disabled={qtyRejected === 0}
-                              onReasonSelected={onReasonSelected}
+                              qty={qtyInfos.toNumberOrString(qtyInfo)}
+                              uom={uom}
+                              validateQtyEntered={validateQtyEntered}
+                              readonly={useScaleDevice || readOnly}
+                              onQtyChange={onQtyEntered}
+                              isRequestFocus={true}
                             />
                           </td>
                         </tr>
-                      </>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                      {scaleDevice && allowManualInput && (
+                        <tr>
+                          <td colSpan="2">
+                            <div className="buttons has-addons">
+                              <button
+                                className={cx('button', {
+                                  'is-success': useScaleDevice,
+                                  'is-selected': useScaleDevice,
+                                })}
+                                onClick={() => setUseScaleDevice(true)}
+                              >
+                                {scaleDevice.caption}
+                              </button>
+                              <button
+                                className={cx('button', {
+                                  'is-success': !useScaleDevice,
+                                  'is-selected': !useScaleDevice,
+                                })}
+                                onClick={() => setUseScaleDevice(false)}
+                              >
+                                Manual
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      {isShowBestBeforeDate && (
+                        <tr>
+                          <th>{trl('general.BestBeforeDate')}</th>
+                          <td>
+                            <div className="field">
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="date"
+                                  value={bestBeforeDate}
+                                  disabled={readOnly}
+                                  onChange={onBestBeforeDateEntered}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      {isShowLotNo && (
+                        <tr>
+                          <th>{trl('general.LotNo')}</th>
+                          <td>
+                            <div className="field">
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="text"
+                                  value={lotNo}
+                                  disabled={readOnly}
+                                  onChange={onLotNoEntered}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      {useCatchWeight && (
+                        <tr>
+                          <th>{trl('general.CatchWeight')}</th>
+                          <td>
+                            <>
+                              <QtyInputField
+                                qty={qtyInfos.toNumberOrString(catchWeight)}
+                                uom={catchWeightUom}
+                                onQtyChange={onCatchWeightEntered}
+                                readonly={readOnly}
+                              />
+                              <button className="button" onClick={() => setShowCatchWeightQRCodeReader(true)}>
+                                {trl('activities.picking.switchToQrCodeInput')}
+                              </button>
+                            </>
+                          </td>
+                        </tr>
+                      )}
+                      {qtyRejected > 0 && (
+                        <>
+                          <tr>
+                            <th>{trl('general.QtyRejected')}</th>
+                            <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan={2}>
+                              <QtyReasonsRadioGroup
+                                reasons={qtyRejectedReasons}
+                                selectedReason={rejectedReason}
+                                disabled={qtyRejected === 0}
+                                onReasonSelected={onReasonSelected}
+                              />
+                            </td>
+                          </tr>
+                        </>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
                 <div className="buttons is-centered">
                   <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
                     {trl('activities.picking.confirmDone')}

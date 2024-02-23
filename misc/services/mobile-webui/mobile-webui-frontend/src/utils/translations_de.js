@@ -21,7 +21,7 @@ const translations = {
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
-    QtyRejected: 'Menge verworfen',
+    QtyRejected: 'verworfen',
     CatchWeight: 'Gewicht',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
