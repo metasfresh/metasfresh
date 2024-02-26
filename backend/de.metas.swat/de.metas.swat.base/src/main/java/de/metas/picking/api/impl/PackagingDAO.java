@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -216,7 +217,7 @@ public class PackagingDAO implements IPackagingDAO
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID);
 				break;
 			case SetupPlaceNo_Descending:
-				queryBuilder.orderByDescending(I_M_Packageable_V.COLUMNNAME_Setup_Place_No);
+				queryBuilder.orderBy().addColumn(I_M_Packageable_V.COLUMNNAME_Setup_Place_No, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
 				break;
 			default:
 				throw new AdempiereException("Unknown ORDER BY: " + orderBy);
