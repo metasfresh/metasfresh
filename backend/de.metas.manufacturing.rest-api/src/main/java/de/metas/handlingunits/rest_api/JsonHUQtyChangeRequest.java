@@ -15,4 +15,5 @@ public class JsonHUQtyChangeRequest
 	@NonNull String huQRCode;
 	@NonNull JsonQuantity qty;
 	@Nullable String description;
+	boolean splitOneIfAggregated;
 }

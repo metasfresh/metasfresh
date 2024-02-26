@@ -49,6 +49,7 @@ import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
@@ -74,9 +75,10 @@ import de.metas.report.PrintCopies;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -102,7 +104,6 @@ import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStat
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
 
 @Service
-@RequiredArgsConstructor
 public class HandlingUnitsService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -111,10 +112,25 @@ public class HandlingUnitsService
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final HUQRCodesService huQRCodeService;
 	private final HUQtyService huQtyService;
 	private final HULabelService huLabelService;
+	private final HUTransformService huTransformService;
+
+	public HandlingUnitsService(
+			@NonNull final HUQRCodesService huQRCodeService,
+			@NonNull final HUQtyService huQtyService,
+			@NonNull final HULabelService huLabelService)
+	{
+		this.huQRCodeService = huQRCodeService;
+		this.huQtyService = huQtyService;
+		this.huLabelService = huLabelService;
+		this.huTransformService = HUTransformService.builder()
+				.huQRCodesService(huQRCodeService)
+				.build();
+	}
 
 	@NonNull
 	public JsonHU getFullHU(
@@ -252,11 +268,9 @@ public class HandlingUnitsService
 			throw new AdempiereException("Invalid huLabelProcessId: " + printFormatProcessId);
 		}
 
-		final HuId huId = huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()));
-
 		final HULabelDirectPrintRequest directPrintRequest = HULabelDirectPrintRequest.builder()
 				.printFormatProcessId(printFormatProcessId)
-				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(HuId.ofHUValue(request.getHuId()))))
 				.printCopies(PrintCopies.ofIntOrOne(request.getNrOfCopies()))
 				.onlyOneHUPerPrint(true)
 				.build();
@@ -534,19 +548,51 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public HuId updateQty(@NonNull final JsonHUQtyChangeRequest request)
+	public HuId updateQty(@NonNull final HuId huId, @NonNull final JsonHUQtyChangeRequest request)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> updateQtyInTrx(huId, request));
+	}
+
+	@NonNull
+	private HuId updateQtyInTrx(@NonNull final HuId huId, @NonNull final JsonHUQtyChangeRequest request)
 	{
 		final HUQRCode huqrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
-		final HuId huId = huQRCodeService.getHuIdByQRCode(huqrCode);
+
+		huQRCodeService.assertQRCodeAssignedToHU(huqrCode, huId);
+
 		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
-		huQtyService.updateQty(UpdateHUQtyRequest.builder()
-				.huId(huId)
+		final HuId huIdToUpdate = request.isSplitOneIfAggregated()
+				? huTransformService.extractToTopLevelByQRCode(huId, huqrCode)
+				: huId;
+
+		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
+				.huId(huIdToUpdate)
 				.qty(qty)
 				.description(request.getDescription())
 				.build());
 
-		return huId;
+		if (inventory != null)
+		{
+			final HuId inventoryHuId = CollectionUtils.singleElement(inventory.getHuIds());
+			if (!HuId.equals(inventoryHuId, huIdToUpdate))
+			{
+				throw new AdempiereException("The 'inventoried' HU must match the hu to update!")
+						.appendParametersToMessage()
+						.setParameter("inventoryHuId", inventoryHuId)
+						.setParameter("huIdToUpdate", huIdToUpdate);
+			}
+		}
+
+		if (!HuId.equals(huId, huIdToUpdate))
+		{
+			huQRCodeService.assign(huqrCode, huIdToUpdate);
+			final I_M_HU splitHU = handlingUnitsBL.getById(huIdToUpdate);
+			final I_M_HU initialParentHU = handlingUnitsBL.getTopLevelParent(huId);
+			huTransformService.tusToExistingLU(ImmutableList.of(splitHU), initialParentHU);
+		}
+
+		return huIdToUpdate;
 	}
 
 	@NonNull

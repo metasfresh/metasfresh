@@ -324,12 +324,15 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
-	@PutMapping("/qty")
-	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	@PutMapping("/byId/{M_HU_ID}/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(
+			@PathVariable("M_HU_ID") final int huId,
+			@RequestBody @NonNull final JsonHUQtyChangeRequest request)
 	{
-		final HuId huId = handlingUnitsService.updateQty(request);
+		final HuId huWithChangedQty = handlingUnitsService.updateQty(HuId.ofRepoId(huId), request);
 		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huId)
+				.huId(huWithChangedQty)
+				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
 				.build());
 	}
 

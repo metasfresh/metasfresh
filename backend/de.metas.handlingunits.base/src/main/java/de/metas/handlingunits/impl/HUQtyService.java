@@ -94,7 +94,7 @@ public class HUQtyService
 		new DraftInventoryLinesCreator(inventoryLinesCreationCtx).execute();
 
 		inventoryService.completeDocument(inventoryHeader.getId());
-		return inventoryHeader;
+		return inventoryService.getById(inventoryHeader.getId());
 	}
 
 	@Nullable
