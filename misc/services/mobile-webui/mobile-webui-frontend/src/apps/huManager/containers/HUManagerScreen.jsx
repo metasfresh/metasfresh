@@ -80,8 +80,8 @@ const HUManagerScreen = () => {
         description: description,
         qty: qty,
       })
-      .then((handlingUnitInfo) => {
-        handlingUnitLoaded(handlingUnitInfo);
+      .then(() => {
+        dispatch(clearLoadedData());
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => toggleChangeQtyModal(false));
