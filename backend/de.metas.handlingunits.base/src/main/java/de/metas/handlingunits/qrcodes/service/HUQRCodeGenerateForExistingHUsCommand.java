@@ -47,21 +47,14 @@ import java.util.stream.Collectors;
 
 public class HUQRCodeGenerateForExistingHUsCommand
 {
-	@NonNull
-	private final IHandlingUnitsBL handlingUnitsBL;
-	@NonNull
-	private final IProductBL productBL;
-	@NonNull
-	private final IAttributeDAO attributeDAO;
-	@NonNull
-	private final HUQRCodesRepository huQRCodesRepository;
-	@NonNull
-	private final QRCodeConfigurationService qrCodeConfigurationService;
-	@NonNull
-	private final IAttributeStorageFactory attributeStorageFactory;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IProductBL productBL;
+	@NonNull private final IAttributeDAO attributeDAO;
+	@NonNull private final HUQRCodesRepository huQRCodesRepository;
+	@NonNull private final QRCodeConfigurationService qrCodeConfigurationService;
+	@NonNull private final IAttributeStorageFactory attributeStorageFactory;
 
-	@NonNull
-	private final HUQRCodeGenerateForExistingHUsRequest request;
+	@NonNull private final HUQRCodeGenerateForExistingHUsRequest request;
 
 	private HUQRCodeGenerateCommand.Cache cache = null;
 
@@ -187,7 +180,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	private HUQRCodeGenerateForExistingHUsResult executeWithGrouping()
 	{
 		final ImmutableList<ImmutableList<HUItemToGroup>> groups = groupHUsForSharingQRCodes();
-		final Set<HuId> huIds = groups.stream()
+		final ImmutableSet<HuId> huIds = groups.stream()
 				.map(HUQRCodeGenerateForExistingHUsCommand::getHuIds)
 				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
@@ -421,7 +414,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		public Set<AttributeId> getAttributesAssumingGroupingIsEnabled()
 		{
 			Check.assume(isGroupingByMatchingAttributesEnabled(), "Assuming grouping by attributes is enabled!");
-			return productQrCodeConfiguration.getAttributeIds();
+			return productQrCodeConfiguration.getGroupByAttributeIds();
 		}
 
 		public boolean isGroupingByMatchingAttributesEnabled()

@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -38,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -66,7 +66,7 @@ public class QRCodeConfigurationService
 	}
 
 	@NonNull
-	public ImmutableSet<HuId> filterSplitHUsForSharingQr(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> newHUs)
+	public ImmutableSet<HuId> filterSplitHUsForSharingQr(@NonNull final I_M_HU sourceHU, @NonNull final ImmutableList<I_M_HU> newHUs)
 	{
 		if (!isOneQrCodeForAggregatedHUsEnabledFor(sourceHU))
 		{

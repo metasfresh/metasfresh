@@ -167,8 +167,9 @@ public abstract class AbstractHUTest
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
-		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 
 		initialize();
 	}

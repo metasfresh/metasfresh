@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.qrcodes.model;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -31,7 +32,6 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 
 @Value
 @Builder
@@ -42,11 +42,11 @@ public class QRCodeConfiguration
 	@Getter(AccessLevel.NONE) boolean isOneQrCodeForAggregatedHUs;
 	@Getter(AccessLevel.NONE) boolean isOneQrCodeForMatchingAttributes;
 
-	@Nullable Set<AttributeId> attributeIds;
+	@Nullable ImmutableSet<AttributeId> groupByAttributeIds;
 
 	public boolean isGroupingByAttributesEnabled()
 	{
-		return isOneQrCodeForMatchingAttributes && !Check.isEmpty(attributeIds);
+		return isOneQrCodeForMatchingAttributes && !Check.isEmpty(groupByAttributeIds);
 	}
 
 	public boolean isOneQRCodeForAggregatedTUsEnabled()

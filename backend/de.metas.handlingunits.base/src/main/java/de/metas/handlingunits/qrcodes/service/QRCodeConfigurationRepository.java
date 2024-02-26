@@ -25,86 +25,133 @@ package de.metas.handlingunits.qrcodes.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_QRCode_Attribute_Config;
 import de.metas.handlingunits.model.I_QRCode_Configuration;
 import de.metas.handlingunits.qrcodes.model.QRCodeConfiguration;
 import de.metas.handlingunits.qrcodes.model.QRCodeConfigurationId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Repository
 public class QRCodeConfigurationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<Integer, QRCodeConfigurationMap> cache = CCache.<Integer, QRCodeConfigurationMap>builder()
+			.tableName(I_QRCode_Configuration.Table_Name)
+			.additionalTableNameToResetFor(I_QRCode_Attribute_Config.Table_Name)
+			.build();
+
 	@NonNull
 	public QRCodeConfiguration getById(@NonNull final QRCodeConfigurationId id)
 	{
-		return toQRCodeConfiguration(ImmutableList.of(InterfaceWrapperHelper.load(id, I_QRCode_Configuration.class)))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No QRCodeConfiguration found for id!")
-						.appendParametersToMessage()
-						.setParameter("id", id));
+		return getConfigurationMap().getById(id);
 	}
 
 	@NonNull
-	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> qrCodeConfigurationIds)
+	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> ids)
 	{
-		return toQRCodeConfiguration(InterfaceWrapperHelper.loadByRepoIdAwares(qrCodeConfigurationIds, I_QRCode_Configuration.class))
-				.collect(ImmutableMap.toImmutableMap(QRCodeConfiguration::getId, Function.identity()));
+		return getConfigurationMap().getByIds(ids);
 	}
 
 	public boolean isAtLeastOneActiveConfig()
 	{
-		return queryBL.createQueryBuilder(I_QRCode_Configuration.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch();
+		return !getConfigurationMap().isEmpty();
 	}
 
 	@NonNull
-	private Stream<QRCodeConfiguration> toQRCodeConfiguration(@NonNull final List<I_QRCode_Configuration> qrCodeConfigurations)
+	private QRCodeConfigurationMap getConfigurationMap()
 	{
-		final Set<QRCodeConfigurationId> codeConfigurationIds = qrCodeConfigurations.stream()
+		return cache.getOrLoad(0, this::load);
+	}
+
+	@NonNull
+	private QRCodeConfigurationMap load()
+	{
+		final ImmutableList<I_QRCode_Configuration> configurationList = queryBL.createQueryBuilder(I_QRCode_Configuration.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listImmutable(I_QRCode_Configuration.class);
+
+		return QRCodeConfigurationMap.ofList(toQRCodeConfiguration(configurationList, getAttributeIds(configurationList)));
+	}
+
+	@NonNull
+	private ImmutableSetMultimap<QRCodeConfigurationId, AttributeId> getAttributeIds(@NonNull final Collection<I_QRCode_Configuration> qrCodeConfigurationList)
+	{
+		final ImmutableSet<QRCodeConfigurationId> codeConfigurationIds = qrCodeConfigurationList.stream()
 				.map(I_QRCode_Configuration::getQRCode_Configuration_ID)
 				.map(QRCodeConfigurationId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<QRCodeConfigurationId, Set<AttributeId>> configId2Attributes = getAttributeIds(codeConfigurationIds);
+		return queryBL.createQueryBuilder(I_QRCode_Attribute_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_QRCode_Attribute_Config.COLUMNNAME_QRCode_Configuration_ID, codeConfigurationIds)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(attributeConfig -> QRCodeConfigurationId.ofRepoId(attributeConfig.getQRCode_Configuration_ID()),
+																	 attributeConfig -> AttributeId.ofRepoId(attributeConfig.getAD_Attribute_ID())));
+	}
 
+	@NonNull
+	private static ImmutableList<QRCodeConfiguration> toQRCodeConfiguration(
+			@NonNull final ImmutableList<I_QRCode_Configuration> qrCodeConfigurations,
+			@NonNull final ImmutableSetMultimap<QRCodeConfigurationId, AttributeId> configurationId2Attributes)
+	{
 		return qrCodeConfigurations.stream()
 				.map(qrCodeConfiguration -> QRCodeConfiguration.builder()
 						.id(QRCodeConfigurationId.ofRepoId(qrCodeConfiguration.getQRCode_Configuration_ID()))
 						.name(qrCodeConfiguration.getName())
 						.isOneQrCodeForAggregatedHUs(qrCodeConfiguration.isOneQRCodeForAggregatedHUs())
 						.isOneQrCodeForMatchingAttributes(qrCodeConfiguration.isOneQRCodeForMatchingAttributes())
-						.attributeIds(configId2Attributes.get(QRCodeConfigurationId.ofRepoId(qrCodeConfiguration.getQRCode_Configuration_ID())))
-						.build());
+						.groupByAttributeIds(configurationId2Attributes.get(QRCodeConfigurationId.ofRepoId(qrCodeConfiguration.getQRCode_Configuration_ID())))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	private Map<QRCodeConfigurationId, Set<AttributeId>> getAttributeIds(@NonNull final Collection<QRCodeConfigurationId> qrCodeConfigurationIds)
+	@Value
+	private static class QRCodeConfigurationMap
 	{
-		return queryBL.createQueryBuilder(I_QRCode_Attribute_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_QRCode_Attribute_Config.COLUMNNAME_QRCode_Configuration_ID, qrCodeConfigurationIds)
-				.create()
-				.stream()
-				.collect(Collectors.groupingBy(attributeConfig -> QRCodeConfigurationId.ofRepoId(attributeConfig.getQRCode_Attribute_Config_ID()),
-											   Collectors.mapping(attributeConfig -> AttributeId.ofRepoId(attributeConfig.getAD_Attribute_ID()),
-																  Collectors.toSet())));
+		@NonNull
+		ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> id2Configuration;
+
+		@NonNull
+		public static QRCodeConfigurationMap ofList(@NonNull final ImmutableList<QRCodeConfiguration> configList)
+		{
+			final ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> id2Configuration = configList.stream()
+					.collect(ImmutableMap.toImmutableMap(QRCodeConfiguration::getId, Function.identity()));
+			return new QRCodeConfigurationMap(id2Configuration);
+		}
+
+		@NonNull
+		public QRCodeConfiguration getById(@NonNull final QRCodeConfigurationId id)
+		{
+			return Optional.ofNullable(id2Configuration.get(id))
+					.orElseThrow(() -> new AdempiereException("No QRCodeConfiguration found for id=" + id.getRepoId()));
+		}
+
+		@NonNull
+		public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final Collection<QRCodeConfigurationId> ids)
+		{
+			return ImmutableSet.copyOf(ids)
+					.stream()
+					.collect(ImmutableMap.toImmutableMap(Function.identity(), id2Configuration::get));
+		}
+
+		public boolean isEmpty()
+		{
+			return id2Configuration.isEmpty();
+		}
 	}
 }

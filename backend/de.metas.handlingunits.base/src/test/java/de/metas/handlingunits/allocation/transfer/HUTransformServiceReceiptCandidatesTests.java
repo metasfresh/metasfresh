@@ -114,8 +114,9 @@ public class HUTransformServiceReceiptCandidatesTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 
-		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 	}
 
 	private I_M_ReceiptSchedule create_receiptSchedule_for_CU(final I_M_HU cu, final String cuQtyStr)

@@ -225,7 +225,7 @@ public class HUQRCodesService
 				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 
-	public void propagateQrForSplitHUs(@NonNull final I_M_HU sourceHU, @NonNull final List<I_M_HU> splitHUs)
+	public void propagateQrForSplitHUs(@NonNull final I_M_HU sourceHU, @NonNull final ImmutableList<I_M_HU> splitHUs)
 	{
 		final ImmutableSet<HuId> idCandidatesToShareQrCode = qrCodeConfigurationService.filterSplitHUsForSharingQr(sourceHU, splitHUs);
 		if (idCandidatesToShareQrCode.isEmpty())

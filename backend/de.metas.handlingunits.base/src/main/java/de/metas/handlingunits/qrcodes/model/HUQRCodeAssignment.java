@@ -7,15 +7,22 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Collection;
 import java.util.Set;
 
-@Value(staticConstructor = "of")
+@Value
 public class HUQRCodeAssignment
 {
-	@NonNull HUQRCodeUniqueId id;
-	@NonNull Set<HuId> huIds;
+	@NonNull
+	public static HUQRCodeAssignment of(@NonNull final HUQRCodeUniqueId id, @NonNull final Collection<HuId> huIds)
+	{
+		return new HUQRCodeAssignment(id, huIds);
+	}
 
-	public HUQRCodeAssignment(@NonNull final HUQRCodeUniqueId id, @NonNull final Set<HuId> huIds)
+	@NonNull HUQRCodeUniqueId id;
+	@NonNull ImmutableSet<HuId> huIds;
+
+	private HUQRCodeAssignment(@NonNull final HUQRCodeUniqueId id, @NonNull final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -25,7 +32,7 @@ public class HUQRCodeAssignment
 		}
 
 		this.id = id;
-		this.huIds = huIds;
+		this.huIds = ImmutableSet.copyOf(huIds);
 	}
 
 	@NonNull
@@ -41,7 +48,8 @@ public class HUQRCodeAssignment
 		return huIds.contains(huId);
 	}
 
-	public Set<HuId> returnNotAssignedHUs(@NonNull final Set<HuId> huIdsToCheck)
+	@NonNull
+	public ImmutableSet<HuId> returnNotAssignedHUs(@NonNull final Set<HuId> huIdsToCheck)
 	{
 		return huIdsToCheck.stream()
 				.filter(huId -> !isAssignedToHuId(huId))

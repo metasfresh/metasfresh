@@ -88,8 +88,9 @@ public class HUReservationServiceTest
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		SpringContextHolder.registerJUnitBean(new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 	}
 
 	@Test
