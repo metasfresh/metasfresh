@@ -196,20 +196,28 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			case ProductName:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_ProductName);
+				break;
 			case PriorityRule:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PriorityRule);
+				break;
 			case DateOrdered:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_DateOrdered);
+				break;
 			case PreparationDate:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PreparationDate);
+				break;
 			case SalesOrderId:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+				break;
 			case DeliveryBPLocationId:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
+				break;
 			case WarehouseTypeId:
 				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID);
+				break;
 			case SetupPlaceNo_Descending:
 				queryBuilder.orderByDescending(I_M_Packageable_V.COLUMNNAME_Setup_Place_No);
+				break;
 			default:
 				throw new AdempiereException("Unknown ORDER BY: " + orderBy);
 		}
