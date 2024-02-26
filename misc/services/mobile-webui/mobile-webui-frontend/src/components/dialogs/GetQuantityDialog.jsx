@@ -284,28 +284,28 @@ const GetQuantityDialog = ({
                             <QtyInputField
                               qty={qtyInfos.toNumberOrString(qtyInfo)}
                               uom={uom}
-                            validateQtyEntered={actualValidateQtyEntered}
+                              validateQtyEntered={actualValidateQtyEntered}
                               readonly={useScaleDevice || readOnly}
                               onQtyChange={onQtyEntered}
                               isRequestFocus={true}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {allowTempQtyStorage && (
-                      <tr>
-                        <th>
-                          <button className="button is-danger" onClick={addQtyToTempLocalStorage}>
-                            {trl('activities.mfg.issues.addToFunnel')}
-                          </button>
-                        </th>
-                        <td>
-                          <QtyInputField
-                            qty={qtyInfos.toNumberOrString(tempQtyStorage)}
-                            uom={uom}
-                            readonly={true}
-                            onQtyChange={() => {}}
-                            isRequestFocus={true}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                      {allowTempQtyStorage && (
+                        <tr>
+                          <th>
+                            <button className="button is-danger" onClick={addQtyToTempLocalStorage}>
+                              {trl('activities.mfg.issues.addToFunnel')}
+                            </button>
+                          </th>
+                          <td>
+                            <QtyInputField
+                              qty={qtyInfos.toNumberOrString(tempQtyStorage)}
+                              uom={uom}
+                              readonly={true}
+                              onQtyChange={() => {}}
+                              isRequestFocus={true}
                             />
                           </td>
                         </tr>
