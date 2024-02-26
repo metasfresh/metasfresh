@@ -23,20 +23,21 @@ const QtyInputField = ({
       uom,
     })
   );
+
   useEffect(() => {
-    setQtyInfo(
-      computeQtyInfoFromString({
-        qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
-        integerValuesOnly,
-        prevQtyInfo: {
-          qty: qtyInfo?.qty ?? 0,
-          notValidMessage: qtyInfo?.notValidMessage ?? null,
-        },
-        validateQtyEntered,
-        uom,
-      })
-    );
+    const newQtyInfo = computeQtyInfoFromString({
+      qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+      integerValuesOnly,
+      prevQtyInfo: {
+        qty: qtyInfo?.qty ?? 0,
+        notValidMessage: qtyInfo?.notValidMessage ?? null,
+      },
+      validateQtyEntered,
+      uom,
+    });
+    setQtyInfo(newQtyInfo);
   }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid]);
+
   //
   // Inform parent about initial value
   useEffect(() => forwardQtyInfoToParent(qtyInfo), [qtyInfo]);
