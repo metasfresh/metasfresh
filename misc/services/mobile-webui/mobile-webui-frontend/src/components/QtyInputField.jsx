@@ -115,7 +115,7 @@ const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyIn
 
     const notValidMessage = validateQtyEntered ? validateQtyEntered(qty, uom) : null;
 
-    return qtyInfos.of({ qty, notValidMessage });
+    return qtyInfos.of({ qty, qtyStr: qtyInputString, notValidMessage });
   }
 };
 
