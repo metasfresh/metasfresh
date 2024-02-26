@@ -75,6 +75,7 @@ const HUManagerScreen = () => {
   const onChangeQtySubmit = ({ qty, description }) => {
     api
       .changeQty({
+        huId: handlingUnitInfo.id,
         huQRCode: handlingUnitInfo.qrCode,
         description: description,
         qty: qty,
@@ -109,6 +110,21 @@ const HUManagerScreen = () => {
     setModalToDisplay(showModal ? MODALS.CLEARANCE_STATUS : '');
   };
 
+  const computeInitialQtyForChangeModal = () => {
+    const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+    if (!isSingleStorage) {
+      toastError({ plainMessage: 'huManager.action.changeQty.allowedOnlyForSingleProducts' });
+      return 0;
+    }
+
+    const totalQty = Number(handlingUnitInfo.products[0].qty);
+    if (handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1) {
+      return totalQty / handlingUnitInfo.numberOfAggregatedHUs;
+    } else {
+      return totalQty;
+    }
+  };
+
   if (handlingUnitInfo && handlingUnitInfo.id) {
     return (
       <>
@@ -122,7 +138,7 @@ const HUManagerScreen = () => {
         ) : null}
         {modalToDisplay === MODALS.CHANGE_QTY ? (
           <ChangeHUQtyDialog
-            currentQty={Number(handlingUnitInfo.products[0].qty)}
+            currentQty={computeInitialQtyForChangeModal()}
             uom={handlingUnitInfo.products[0].uom}
             onCloseDialog={() => toggleChangeQtyModal(false)}
             onSubmit={onChangeQtySubmit}

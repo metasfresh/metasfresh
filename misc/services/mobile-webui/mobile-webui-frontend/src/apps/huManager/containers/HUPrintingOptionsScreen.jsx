@@ -60,7 +60,7 @@ const HUPrintingOptionsScreen = () => {
 
     api
       .printHULabels({
-        huQRCode: handlingUnitInfo.qrCode,
+        huId: handlingUnitInfo.id,
         huLabelProcessId: currentPrintingOption.processId,
         nrOfCopies: qty,
       })

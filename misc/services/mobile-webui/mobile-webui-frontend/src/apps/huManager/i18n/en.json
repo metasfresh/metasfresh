@@ -37,7 +37,8 @@
     "changeQty": {
       "buttonCaption": "Change qty",
       "qtyLabel": "Qty",
-      "descriptionLabel": "Description"
+      "descriptionLabel": "Description",
+      "allowedOnlyForSingleProducts": "The action can be performed only for a single product."
     },
     "printLabels": {
       "buttonCaption": "Print labels",
