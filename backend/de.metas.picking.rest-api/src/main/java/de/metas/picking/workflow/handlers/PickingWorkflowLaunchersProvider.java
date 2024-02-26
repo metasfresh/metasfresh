@@ -12,9 +12,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
-import de.metas.i18n.ITranslatableString;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.picking.config.PickingJobFieldType;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
@@ -22,6 +22,8 @@ import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
@@ -119,6 +121,7 @@ class PickingWorkflowLaunchersProvider
 
 		return WorkflowLaunchersList.builder()
 				.launchers(ImmutableList.copyOf(currentResult))
+				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
@@ -142,7 +145,7 @@ class PickingWorkflowLaunchersProvider
 			@NonNull final PickingJobReference pickingJobReference,
 			@NonNull final DisplayValueProvider displayValueProvider)
 	{
-		final ITranslatableString caption = displayValueProvider.computeLauncherCaption(pickingJobReference);
+		final WorkflowLauncherCaption caption = displayValueProvider.computeLauncherCaption(pickingJobReference);
 
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)
