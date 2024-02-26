@@ -44,14 +44,12 @@ const QtyInputField = ({
   //
   // Request Focus
   const qtyInputRef = useRef(null);
-  if (isRequestFocus) {
-    useEffect(() => {
-      if (!readonly) {
-        qtyInputRef.current.focus();
-        qtyInputRef.current.select();
-      }
-    }, [isRequestFocus, readonly]);
-  }
+  useEffect(() => {
+    if (isRequestFocus && !readonly && qtyInputRef.current) {
+      qtyInputRef.current.focus();
+      qtyInputRef.current.select();
+    }
+  }, [isRequestFocus, readonly]);
 
   const handleQtyEntered = (e) => {
     const qtyInputString = e.target.value ? e.target.value : '0';
