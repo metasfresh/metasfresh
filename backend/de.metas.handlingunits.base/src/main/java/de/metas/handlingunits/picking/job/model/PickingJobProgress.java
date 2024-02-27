@@ -30,6 +30,8 @@ public enum PickingJobProgress
 	IN_PROGRESS,
 	DONE;
 
+	public boolean isNotStarted() {return NOT_STARTED.equals(this);}
+
 	public boolean isDone() {return DONE.equals(this);}
 
 	public static PickingJobProgress reduce(Set<PickingJobProgress> progresses)

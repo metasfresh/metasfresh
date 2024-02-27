@@ -244,9 +244,11 @@ class PickingMobileApplicationTest
 		recorder.reportStep("AD_Language", Env.getAD_Language());
 
 		JsonWFProcess wfProcess = startWFProcess();
+		assertThat(wfProcess.isAllowAbort()).isTrue();
 
 		workflowRestController.abort(wfProcess.getId());
 		wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());
+		assertThat(wfProcess.isAllowAbort()).isFalse();
 		record_WFProcess_PickingJob_AllHUs("After ABORT", wfProcess);
 
 		expect.toMatchSnapshot(recorder);

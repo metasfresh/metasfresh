@@ -121,7 +121,6 @@ public class ManufacturingRestService
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.APPLICATION_ID, job.getPpOrderId()))
 				.responsibleId(job.getResponsibleId())
-				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
 				.activities(job.getActivities()
 						.stream()

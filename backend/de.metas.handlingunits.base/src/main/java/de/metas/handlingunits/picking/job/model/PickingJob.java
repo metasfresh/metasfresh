@@ -147,11 +147,20 @@ public final class PickingJob
 
 	public void assertNotProcessed()
 	{
-		if (docStatus.isProcessed())
+		if (isProcessed())
 		{
 			throw new AdempiereException("Picking Job was already processed");
 		}
 	}
+
+	public boolean isProcessed()
+	{
+		return docStatus.isProcessed();
+	}
+
+	public boolean isAllowAbort() {return !isProcessed() && isNothingPicked();}
+
+	public boolean isNothingPicked() {return getProgress().isNotStarted();}
 
 	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
 
