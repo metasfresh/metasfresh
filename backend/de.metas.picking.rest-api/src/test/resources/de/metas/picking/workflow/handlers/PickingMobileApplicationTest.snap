@@ -402,7 +402,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         } ]
       },
       "id" : "picking-1000000",
-      "isAllowAbort" : true
+      "isAllowAbort" : false
     },
     "6. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
@@ -4048,7 +4048,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         } ]
       },
       "id" : "picking-1000000",
-      "isAllowAbort" : true
+      "isAllowAbort" : false
     },
     "14. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
