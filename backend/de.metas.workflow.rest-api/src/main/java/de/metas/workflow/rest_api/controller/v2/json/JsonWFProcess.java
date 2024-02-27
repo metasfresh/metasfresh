@@ -47,6 +47,8 @@ public class JsonWFProcess
 
 	@NonNull List<JsonWFActivity> activities;
 
+	boolean isAllowAbort;
+
 	public static JsonWFProcess of(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFProcessHeaderProperties headerProperties,
@@ -63,6 +65,7 @@ public class JsonWFProcess
 								uiComponents.get(activity.getId()),
 								jsonOpts))
 						.collect(ImmutableList.toImmutableList()))
+				.isAllowAbort(wfProcess.isAllowAbort())
 				.build();
 	}
 
