@@ -171,7 +171,7 @@ const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId 
 
   //
   // Rollup:
-  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
+  updateLineFromStepsAndRollup({ draftWFProcess, activityId, lineId });
 };
 
 const updateStepStatus = ({ draftStep }) => {
@@ -204,34 +204,81 @@ export const computePickFromStatus = (pickFrom) => {
   return pickFrom.qtyPicked || pickFrom.qtyRejected ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
-const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
+const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  updateLineStatusFromSteps({ draftLine });
+  updateLineFromSteps({ draftLine });
 
   //
   // Rollup:
   updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
-const updateLineStatusFromSteps = ({ draftLine }) => {
-  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+const updateLineFromSteps = ({ draftLine }) => {
+  const lineQtys = computeLineQtys(draftLine);
+  draftLine.qtyPicked = lineQtys.qtyPicked;
+  draftLine.qtyRejected = lineQtys.qtyRejected;
+
+  draftLine.completeStatus = computeLineStatusFromStepStatuses({ draftLine });
 };
 
-const computeLineStatusFromSteps = ({ draftLine }) => {
-  const stepIds = extractDraftMapKeys(draftLine.steps);
-  if (!stepIds || stepIds.length <= 0) {
+const computeLineStatusFromStepStatuses = ({ draftLine }) => {
+  if (!draftLine.qtyPicked && !draftLine.qtyRejected) {
     return CompleteStatus.NOT_STARTED;
+  } else if (draftLine.qtyPicked + draftLine.qtyRejected >= draftLine.qtyToPick) {
+    return CompleteStatus.COMPLETED;
+  } else {
+    return CompleteStatus.IN_PROGRESS;
+  }
+};
+
+const computeLineQtys = (line) => {
+  const result = { qtyPicked: 0, qtyRejected: 0 };
+
+  if (!line.steps) {
+    return result;
   }
 
-  const stepStatuses = [];
-  stepIds.forEach((stepId) => {
-    const draftStep = draftLine.steps[stepId];
-    if (!stepStatuses.includes(draftStep.completeStatus)) {
-      stepStatuses.push(draftStep.completeStatus);
-    }
-  });
+  const stepsArray = Object.values(line.steps);
+  if (!stepsArray) {
+    return result;
+  }
 
-  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+  const stepQtysSum = stepsArray.reduce(
+    (accum, step) => {
+      const stepQtys = computeStepQtys(step);
+      accum.qtyPicked += stepQtys.qtyPicked;
+      accum.qtyRejected += stepQtys.qtyRejected;
+      return accum;
+    },
+    { qtyPicked: 0, qtyRejected: 0 }
+  );
+  result.qtyPicked = stepQtysSum.qtyPicked;
+  result.qtyRejected = stepQtysSum.qtyRejected;
+
+  return result;
+};
+
+const computeStepQtys = (step) => {
+  let qtyPicked = 0;
+  let qtyRejected = 0;
+
+  if (step.mainPickFrom.qtyPicked) {
+    qtyPicked += step.mainPickFrom.qtyPicked;
+    qtyRejected += step.mainPickFrom.qtyRejected;
+  }
+
+  if (step.pickFromAlternatives) {
+    qtyPicked += Object.values(step.pickFromAlternatives).reduce(
+      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
+      0
+    );
+    qtyRejected += Object.values(step.pickFromAlternatives).reduce(
+      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyRejected,
+      0
+    );
+  }
+
+  return { qtyPicked, qtyRejected };
 };
 
 const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
@@ -330,7 +377,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
       updateStepStatus({ draftStep });
     }
 
-    updateLineStatusFromSteps({ draftLine });
+    updateLineFromSteps({ draftLine });
   }
   updateActivityStatusFromLines({ draftActivityDataStored });
 

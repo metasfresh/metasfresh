@@ -10,6 +10,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -240,6 +241,15 @@ public class TranslatableStrings
 	public NumberTranslatableString number(final int valueInt)
 	{
 		return NumberTranslatableString.of(valueInt);
+	}
+
+	public ITranslatableString quantity(final BigDecimal valueBD, final String uom)
+	{
+		return TranslatableStrings.builder()
+				.append(NumberTranslatableString.of(valueBD, DisplayType.Quantity))
+				.append(" ")
+				.append(uom)
+				.build();
 	}
 
 	public DateTimeTranslatableString date(@NonNull final java.util.Date date)
