@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -202,7 +203,7 @@ public class HUSplitBuilderCoreEngine
 					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});
 
-		huQRCodesService.get().propagateQrForSplitHUs(huToSplit, splitHUs);
+		huQRCodesService.get().propagateQrForSplitHUs(huToSplit, ImmutableList.copyOf(splitHUs));
 
 		return splitHUs;
 	}
