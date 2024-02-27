@@ -55,6 +55,62 @@ class JsonWorkflowLaunchersListTest
 				.build();
 	}
 
+	@Nullable
+	private static ImmutableList<String> toJsonAndGetCaptions(final WorkflowLaunchersList launchers)
+	{
+		//noinspection DataFlowIssue
+		return JsonWorkflowLaunchersList.of(launchers, false, newJsonOpts())
+				.getLaunchers()
+				.stream()
+				.map(JsonWorkflowLauncher::getCaption)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Test
+	void caption_using_plainString()
+	{
+		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
+				.launchers(ImmutableList.of(
+						launcher(Captions.Part.of("caption", "C")),
+						launcher(Captions.Part.of("caption", "B")),
+						launcher(Captions.Part.of("caption", "A"))
+				))
+				.timestamp(SystemTime.asInstant())
+				.build();
+
+		Assertions.assertThat(toJsonAndGetCaptions(launchers))
+				.containsExactly("A", "B", "C");
+	}
+
+	@Test
+	void caption_using_int_compableKey()
+	{
+		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
+				.launchers(ImmutableList.of(
+						launcher(Captions.Part.of("SetupPlace", null), Captions.Part.of("DocNo", "A001"), Captions.Part.of("Addr", "000")),
+						launcher(Captions.Part.of("SetupPlace", "100", 100), Captions.Part.of("DocNo", "A222"), Captions.Part.of("Addr", "333")),
+						launcher(Captions.Part.of("SetupPlace", "1234", 1234), Captions.Part.of("DocNo", "A111"), Captions.Part.of("Addr", "4444")),
+						launcher(Captions.Part.of("SetupPlace", "100", 100), Captions.Part.of("DocNo", "A333"), Captions.Part.of("Addr", "890"))
+				))
+				.orderByField(WorkflowLauncherCaption.OrderBy.descending("SetupPlace"))
+				.timestamp(SystemTime.asInstant())
+				.build();
+
+		Assertions.assertThat(toJsonAndGetCaptions(launchers))
+				.containsExactly(
+						"1234 | A111 | 4444",
+						"100 | A222 | 333",
+						"100 | A333 | 890",
+						"A001 | 000"
+				);
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	private static class Captions
 	{
 		static WorkflowLauncherCaption of(Part... parts)
@@ -103,38 +159,5 @@ class JsonWorkflowLaunchersListTest
 				return of(field, value, null);
 			}
 		}
-	}
-
-	@Test
-	void caption_using_int_compableKey()
-	{
-		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.of(
-						launcher(Captions.Part.of("SetupPlace", null), Captions.Part.of("DocNo", "A001"), Captions.Part.of("Addr", "000")),
-						launcher(Captions.Part.of("SetupPlace", "100", 100), Captions.Part.of("DocNo", "A222"), Captions.Part.of("Addr", "333")),
-						launcher(Captions.Part.of("SetupPlace", "1234", 1234), Captions.Part.of("DocNo", "A111"), Captions.Part.of("Addr", "4444")),
-						launcher(Captions.Part.of("SetupPlace", "100", 100), Captions.Part.of("DocNo", "A333"), Captions.Part.of("Addr", "890"))
-				))
-				.orderByField(WorkflowLauncherCaption.OrderBy.descending("SetupPlace"))
-				.timestamp(SystemTime.asInstant())
-				.build();
-
-		Assertions.assertThat(toJsonAndGetCaptions(launchers))
-				.containsExactly(
-						"1234 | A111 | 4444",
-						"100 | A222 | 333",
-						"100 | A333 | 890",
-						"A001 | 000"
-				);
-	}
-
-	@Nullable
-	private static ImmutableList<String> toJsonAndGetCaptions(final WorkflowLaunchersList launchers)
-	{
-		return JsonWorkflowLaunchersList.of(launchers, false, newJsonOpts())
-				.getLaunchers()
-				.stream()
-				.map(JsonWorkflowLauncher::getCaption)
-				.collect(ImmutableList.toImmutableList());
 	}
 }
