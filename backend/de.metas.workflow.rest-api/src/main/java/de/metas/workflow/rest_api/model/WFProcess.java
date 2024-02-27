@@ -49,9 +49,6 @@ public final class WFProcess
 	@Getter
 	@Nullable private final UserId responsibleId;
 
-	@Getter
-	@NonNull private final ITranslatableString caption;
-
 	@NonNull private final WFProcessStatus status;
 
 	@NonNull private final Object document;
@@ -64,7 +61,6 @@ public final class WFProcess
 	private WFProcess(
 			@NonNull final WFProcessId id,
 			@Nullable final UserId responsibleId,
-			@NonNull final ITranslatableString caption,
 			@NonNull final Object document,
 			@NonNull final ImmutableList<WFActivity> activities)
 	{
@@ -72,7 +68,6 @@ public final class WFProcess
 
 		this.id = id;
 		this.responsibleId = responsibleId;
-		this.caption = caption;
 		this.document = document;
 		this.activities = activities;
 

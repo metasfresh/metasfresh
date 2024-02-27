@@ -41,7 +41,6 @@
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 	import de.metas.i18n.AdMessageKey;
-	import de.metas.i18n.ITranslatableString;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.picking.config.MobileUIPickingUserProfile;
@@ -232,14 +231,9 @@
 		{
 			final UserId responsibleId = pickingJob.getLockedBy();
 
-			final ITranslatableString caption = displayValueProviderService.newDisplayValueProvider(mobileUIPickingUserProfileRepository.getProfile())
-					.computeLauncherCaption(pickingJob)
-					.toTranslatableString();
-
 			return WFProcess.builder()
 					.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))
 					.responsibleId(responsibleId)
-					.caption(caption)
 					.document(pickingJob)
 					.activities(ImmutableList.of(
 							WFActivity.builder()

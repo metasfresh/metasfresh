@@ -99,7 +99,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(APPLICATION_ID, job.getDdOrderId()))
 				.responsibleId(job.getResponsibleId())
-				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
