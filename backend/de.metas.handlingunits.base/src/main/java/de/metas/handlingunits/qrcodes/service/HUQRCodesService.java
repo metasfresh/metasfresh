@@ -187,8 +187,24 @@ public class HUQRCodesService
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
 	}
 
-	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId, final boolean ensureSingleAssignment)
 	{
+		if (ensureSingleAssignment)
+		{
+			final boolean alreadyAssignedToDifferentHU = huQRCodesRepository.getHUAssignmentByQRCode(qrCode)
+					.map(HUQRCodeAssignment::getHuIds)
+					.map(assignedHUs -> assignedHUs.stream().anyMatch(assignedHuId -> !HuId.equals(assignedHuId, huId)))
+					.orElse(false);
+
+			if (alreadyAssignedToDifferentHU)
+			{
+				throw new AdempiereException("HUQRCode is already assigned to a different HU!")
+						.appendParametersToMessage()
+						.setParameter("HUQRCode", qrCode)
+						.setParameter("huId", huId);
+			}
+		}
+
 		huQRCodesRepository.assign(qrCode, huId);
 	}
 

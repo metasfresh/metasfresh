@@ -582,7 +582,6 @@ public class HandlingUnitsService
 
 		if (!HuId.equals(huId, huIdToUpdate))
 		{
-			huQRCodeService.assign(huqrCode, huIdToUpdate);
 			final I_M_HU splitHU = handlingUnitsBL.getById(huIdToUpdate);
 			final I_M_HU initialParentHU = handlingUnitsBL.getTopLevelParent(huId);
 			huTransformService.tusToExistingLU(ImmutableList.of(splitHU), initialParentHU);

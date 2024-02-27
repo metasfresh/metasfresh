@@ -1198,7 +1198,13 @@ public class HUTransformService
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			final HuId extractedTUId = splitOutTUFromAggregated(hu);
-			huQRCodesService.get().assign(huQRCode, extractedTUId);
+
+			final boolean ensureSingleAssignment = !qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu);
+			if (ensureSingleAssignment)
+			{
+				huQRCodesService.get().removeAssignment(huQRCode, ImmutableSet.of(huId));
+			}
+			huQRCodesService.get().assign(huQRCode, extractedTUId, ensureSingleAssignment);
 
 			return extractedTUId;
 		}
@@ -1419,15 +1425,7 @@ public class HUTransformService
 		}
 		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			final HuId extractedTUId = splitOutTUFromAggregated(hu);
-			huQRCodesService.get().assign(huQRCode, extractedTUId);
-
-			if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
-			{
-				huQRCodesService.get().removeAssignment(huQRCode, ImmutableSet.of(huId));
-			}
-
-			return extractedTUId;
+			return extractIfAggregatedByQRCode(huId, huQRCode);
 		}
 		else
 		{
