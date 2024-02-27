@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -50,6 +49,7 @@ public final class WFProcess
 	@Nullable private final UserId responsibleId;
 
 	@NonNull private final WFProcessStatus status;
+	@Getter private final boolean isAllowAbort;
 
 	@NonNull private final Object document;
 
@@ -62,6 +62,7 @@ public final class WFProcess
 			@NonNull final WFProcessId id,
 			@Nullable final UserId responsibleId,
 			@NonNull final Object document,
+			@Nullable final Boolean isAllowAbort,
 			@NonNull final ImmutableList<WFActivity> activities)
 	{
 		Check.assumeNotEmpty(activities, "activities is not empty");
@@ -73,6 +74,7 @@ public final class WFProcess
 
 		this.activitiesById = Maps.uniqueIndex(this.activities, WFActivity::getId);
 		this.status = computeStatusFromActivities(this.activities);
+		this.isAllowAbort = computeIsAllowAbort(isAllowAbort, this.status);
 	}
 
 	private static WFProcessStatus computeStatusFromActivities(@NonNull final ImmutableList<WFActivity> activities)
@@ -83,6 +85,18 @@ public final class WFProcess
 				.collect(ImmutableSet.toImmutableSet());
 
 		return WFProcessStatus.computeFromActivityStatuses(activityStatuses);
+	}
+
+	private static boolean computeIsAllowAbort(@Nullable final Boolean isAllowAbort, @NonNull final WFProcessStatus status)
+	{
+		if (isAllowAbort != null)
+		{
+			return isAllowAbort;
+		}
+		else
+		{
+			return status.isNotStarted();
+		}
 	}
 
 	public void assertHasAccess(@NonNull final UserId userId)

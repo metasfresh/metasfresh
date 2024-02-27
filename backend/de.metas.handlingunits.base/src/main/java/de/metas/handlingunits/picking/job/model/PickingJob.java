@@ -142,6 +142,10 @@ public final class PickingJob
 		}
 	}
 
+	public boolean isAllowAbort() {return isNothingPicked();}
+
+	public boolean isNothingPicked() {return getProgress().isNotStarted();}
+
 	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
 
 	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)

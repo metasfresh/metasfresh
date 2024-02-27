@@ -30,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -333,9 +334,33 @@ public class PickingJobService
 		trxManager.runInThreadInheritedTrx(() -> {
 			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
-				pickingJobRepository.save(job.withLockedBy(null));
+				unassignPickingJob(job);
 			}
 		});
+	}
+
+	private void unassignPickingJob(@NonNull final PickingJob jobParam)
+	{
+		PickingJob job = jobParam;
+
+		//
+		// Unassign & release picking slot
+		final PickingSlotId pickingSlotId = job.getPickingSlotId().orElse(null);
+		if (pickingSlotId != null)
+		{
+			if (job.isNothingPicked())
+			{
+				job = job.withPickingSlot(null);
+			}
+
+			pickingSlotService.release(pickingSlotId, job.getId());
+		}
+
+		//
+		// Unassign it from current user
+		job = job.withLockedBy(null);
+
+		pickingJobRepository.save(job);
 	}
 
 	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
