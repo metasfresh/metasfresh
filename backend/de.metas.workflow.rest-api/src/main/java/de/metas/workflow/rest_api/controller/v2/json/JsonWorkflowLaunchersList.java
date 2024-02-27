@@ -35,6 +35,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Comparator;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
