@@ -342,6 +342,14 @@ public class PickingJobService
 	private void unassignPickingJob(@NonNull final PickingJob jobParam)
 	{
 		PickingJob job = jobParam;
+		job.assertNotProcessed();
+
+		//
+		// Abort it if nothing picked
+		if (job.isNothingPicked())
+		{
+			job = abort(job);
+		}
 
 		//
 		// Unassign & release picking slot
