@@ -83,6 +83,41 @@ class JsonWorkflowLaunchersListTest
 	}
 
 	@Test
+	void caption_orderBy_missing_field()
+	{
+		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
+				.launchers(ImmutableList.of(
+						launcher(Captions.Part.of("field", "C")),
+						launcher(Captions.Part.of("field", "B")),
+						launcher(Captions.Part.of("field", "A"))
+				))
+				.orderByField(WorkflowLauncherCaption.OrderBy.descending("missingField"))
+				.timestamp(SystemTime.asInstant())
+				.build();
+
+		Assertions.assertThat(toJsonAndGetCaptions(launchers))
+				.containsExactly("A", "B", "C");
+	}
+
+	@Test
+	void caption_orderBy_field_withNullValues()
+	{
+		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
+				.launchers(ImmutableList.of(
+						launcher(Captions.Part.of("field", "A")),
+						launcher(Captions.Part.of("field", "B")),
+						launcher(Captions.Part.of("field", "C")),
+						launcher(Captions.Part.of("otherField", "Z"))
+				))
+				.orderByField(WorkflowLauncherCaption.OrderBy.descending("field"))
+				.timestamp(SystemTime.asInstant())
+				.build();
+
+		Assertions.assertThat(toJsonAndGetCaptions(launchers))
+				.containsExactly("C", "B", "A", "Z");
+	}
+
+	@Test
 	void caption_using_int_compableKey()
 	{
 		final WorkflowLaunchersList launchers = WorkflowLaunchersList.builder()
