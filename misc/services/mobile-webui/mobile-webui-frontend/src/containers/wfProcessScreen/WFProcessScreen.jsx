@@ -3,7 +3,7 @@ import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { pushHeaderEntry } from '../../actions/HeaderActions';
-import { getActivitiesInOrder, getWfProcess, isWorkflowNotStarted } from '../../reducers/wfProcesses';
+import { getActivitiesInOrder, getWfProcess } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
 
@@ -22,7 +22,7 @@ const WFProcessScreen = () => {
     params: { applicationId, workflowId: wfProcessId },
   } = useRouteMatch();
 
-  const { activities, isWorkflowNotStarted, headerProperties } = useSelector(
+  const { activities, isAllowAbort, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
     shallowEqual
   );
@@ -49,7 +49,7 @@ const WFProcessScreen = () => {
               isLastActivity: index === activities.length - 1,
             });
           })}
-        {isWorkflowNotStarted ? <AbortButton applicationId={applicationId} wfProcessId={wfProcessId} /> : null}
+        {isAllowAbort ? <AbortButton applicationId={applicationId} wfProcessId={wfProcessId} /> : null}
       </div>
     </div>
   );
@@ -151,7 +151,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   return {
     headerProperties: wfProcess?.headerProperties?.entries || [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
-    isWorkflowNotStarted: wfProcess ? isWorkflowNotStarted(wfProcess) : false,
+    isAllowAbort: !!wfProcess?.isAllowAbort,
   };
 };
 

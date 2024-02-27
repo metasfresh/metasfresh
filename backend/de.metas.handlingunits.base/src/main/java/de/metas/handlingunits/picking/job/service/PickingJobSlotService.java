@@ -57,7 +57,7 @@ public class PickingJobSlotService
 
 	public void release(
 			@NonNull final PickingSlotId pickingSlotId,
-			@SuppressWarnings("unused") @NonNull final PickingJobId pickingJobId)
+			@NonNull final PickingJobId pickingJobId)
 	{
 		if (!pickingJobRepository.hasDraftJobsUsingPickingSlot(pickingSlotId, pickingJobId))
 		{

@@ -94,6 +94,7 @@ const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) =>
 
 export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   draftWFProcess.headerProperties = fromWFProcess.headerProperties;
+  draftWFProcess.isAllowAbort = !!fromWFProcess.isAllowAbort;
 
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};

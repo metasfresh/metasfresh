@@ -41,6 +41,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -140,7 +142,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@NonNull
-	private static ManufacturingJob getManufacturingJob(final WFProcess wfProcess)
+	public static ManufacturingJob getManufacturingJob(final WFProcess wfProcess)
 	{
 		return wfProcess.getDocumentAs(ManufacturingJob.class);
 	}
@@ -150,6 +152,23 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	{
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
 		return remappingFunction.apply(wfProcess);
+	}
+
+	private WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final BiFunction<WFProcess, ManufacturingJob, ManufacturingJob> remappingFunction)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return mapDocument(wfProcess, job -> remappingFunction.apply(wfProcess, job));
+	}
+
+	public static WFProcess mapDocument(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<ManufacturingJob> mapper)
+	{
+		final ManufacturingJob job = getManufacturingJob(wfProcess);
+		final ManufacturingJob jobChanged = mapper.apply(job);
+		return !Objects.equals(job, jobChanged)
+				? ManufacturingRestService.toWFProcess(jobChanged)
+				: wfProcess;
 	}
 
 	@Override
@@ -173,10 +192,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
 		final WFProcess changedWFProcess = changeWFProcessById(
 				wfProcessId,
-				wfProcess -> {
+				(wfProcess, job) -> {
 					wfProcess.assertHasAccess(callerId);
-					return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingRestService.processEvent(job, event));
-				});
+					return manufacturingRestService.processEvent(job, event);
+				}
+		);
 
 		return extractProcessEventResult(changedWFProcess, event);
 	}

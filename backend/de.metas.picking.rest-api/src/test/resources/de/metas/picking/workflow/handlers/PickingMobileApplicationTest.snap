@@ -98,7 +98,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "3. After WFProcess started - PickingJob" : {
       "docStatus" : "Drafted",
@@ -400,7 +401,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "6. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
@@ -708,7 +710,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "2. After WFProcess started - PickingJob" : {
       "docStatus" : "Drafted",
@@ -1016,7 +1019,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "2. After WFProcess started - PickingJob" : {
       "docStatus" : "Drafted",
@@ -1322,7 +1326,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "5. After pick - PickingJob" : {
       "docStatus" : "Drafted",
@@ -1667,7 +1672,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "8. After Complete - PickingJob" : {
       "docStatus" : "Completed",
@@ -2014,7 +2020,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "10. After pick 2 - JsonWFProcess" : {
       "activities" : [ {
@@ -2118,7 +2125,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "11. After pick 2 - PickingJob" : {
       "docStatus" : "Drafted",
@@ -2453,7 +2461,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "14. After Complete - PickingJob" : {
       "docStatus" : "Completed",
@@ -2991,7 +3000,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "5. After Scan PickingSlot - PickingJob" : {
       "docStatus" : "Drafted",
@@ -3301,7 +3311,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "8. After pick 1 - PickingJob" : {
       "docStatus" : "Drafted",
@@ -3628,7 +3639,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "10. After unpick - JsonWFProcess" : {
       "activities" : [ {
@@ -3732,7 +3744,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "11. After unpick - PickingJob" : {
       "docStatus" : "Drafted",
@@ -4034,7 +4047,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "14. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
@@ -4541,7 +4555,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : true
     },
     "5. After Scan PickingSlot - PickingJob" : {
       "docStatus" : "Drafted",
@@ -4851,7 +4866,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         } ]
       },
-      "id" : "picking-1000000"
+      "id" : "picking-1000000",
+      "isAllowAbort" : false
     },
     "8. After pick 1 - PickingJob" : {
       "docStatus" : "Drafted",
