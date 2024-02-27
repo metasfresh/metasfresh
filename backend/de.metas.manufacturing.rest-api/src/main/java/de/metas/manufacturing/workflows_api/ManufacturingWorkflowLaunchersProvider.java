@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.product.ResourceId;
@@ -12,6 +11,7 @@ import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -88,16 +88,18 @@ public class ManufacturingWorkflowLaunchersProvider
 		}
 	}
 
-	private ITranslatableString computeCaption(@NonNull final ManufacturingJobReference manufacturingJobReference)
+	private WorkflowLauncherCaption computeCaption(@NonNull final ManufacturingJobReference manufacturingJobReference)
 	{
-		return TranslatableStrings.builder()
-				.append(manufacturingJobReference.getDocumentNo())
-				.append(" | ")
-				.append(manufacturingJobReference.getProductName())
-				.append(" | ")
-				.appendQty(manufacturingJobReference.getQtyRequiredToProduce().toBigDecimal(), manufacturingJobReference.getQtyRequiredToProduce().getUOMSymbol())
-				.append(" | ")
-				.appendDateTime(manufacturingJobReference.getDatePromised())
-				.build();
+		return WorkflowLauncherCaption.of(
+				TranslatableStrings.builder()
+						.append(manufacturingJobReference.getDocumentNo())
+						.append(" | ")
+						.append(manufacturingJobReference.getProductName())
+						.append(" | ")
+						.appendQty(manufacturingJobReference.getQtyRequiredToProduce().toBigDecimal(), manufacturingJobReference.getQtyRequiredToProduce().getUOMSymbol())
+						.append(" | ")
+						.appendDateTime(manufacturingJobReference.getDatePromised())
+						.build()
+		);
 	}
 }
