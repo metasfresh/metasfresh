@@ -89,5 +89,6 @@ public class PackageableQuery
 		SalesOrderId,
 		DeliveryBPLocationId,
 		WarehouseTypeId,
+		SetupPlaceNo_Descending,
 	}
 }
