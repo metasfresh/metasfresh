@@ -9,6 +9,7 @@ import { useBooleanSetting } from '../reducers/settings';
 import { toastError } from '../utils/toast';
 import { toQRCodeString } from '../utils/huQRCodes';
 import HUScanner from './huSelector/HUScanner';
+import BarcodeScannerComponent from './BarcodeScannerComponent';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -20,6 +21,7 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 const ScanHUAndGetQtyComponent = ({
   eligibleBarcode,
   resolveScannedBarcode,
+  useHUScanner,
   //
   userInfo,
   qtyCaption,
@@ -85,7 +87,7 @@ const ScanHUAndGetQtyComponent = ({
     scaleTolerance,
   ]);
 
-  const handleResolveScannedBarcode = ({ scannedBarcode, handlingUnitInfo }) => {
+  const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
     // If an eligible barcode was provided, make sure scanned barcode is matching it
@@ -98,7 +100,7 @@ const ScanHUAndGetQtyComponent = ({
     // noinspection UnnecessaryLocalVariableJS
     const resolvedBarcodeDataNew = {
       ...resolvedBarcodeData,
-      ...resolveScannedBarcode?.(scannedBarcode, handlingUnitInfo),
+      ...resolveScannedBarcode?.(scannedBarcode, huId),
       scannedBarcode,
     };
 
@@ -116,7 +118,7 @@ const ScanHUAndGetQtyComponent = ({
       onBarcodeScanned(
         handleResolveScannedBarcode({
           scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
-          handlingUnitInfo: handlingUnitInfo,
+          huId: handlingUnitInfo.id,
         })
       );
     } catch (e) {
@@ -207,7 +209,14 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_BARCODE: {
       return (
         <>
-          <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} eligibleBarcode={eligibleBarcode} />
+          {useHUScanner ? (
+            <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} eligibleBarcode={eligibleBarcode} />
+          ) : (
+            <BarcodeScannerComponent
+              resolveScannedBarcode={handleResolveScannedBarcode}
+              onResolvedResult={onBarcodeScanned}
+            />
+          )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: ${eligibleBarcode}`}
@@ -247,6 +256,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Props: Barcode scanning related
   eligibleBarcode: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
+  useHUScanner: PropTypes.bool,
   //
   // Props: Qty related
   userInfo: PropTypes.array,

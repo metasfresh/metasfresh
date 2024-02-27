@@ -192,11 +192,7 @@ public class HandlingUnitsService
 		}
 		if (huType != JsonHUType.LU)
 		{
-			jsonHUBuilder.topLevelParentId(Optional.ofNullable(handlingUnitsBL.getTopLevelParent(hu))
-												   .map(I_M_HU::getM_HU_ID)
-												   .filter(parentHUId -> parentHUId != hu.getM_HU_ID())
-												   .map(String::valueOf)
-												   .orElse(null));
+			jsonHUBuilder.topLevelParentId(extractTopLevelParentHUIdValue(hu));
 		}
 
 		final WarehouseAndLocatorValue warehouseAndLocatorValue = getWarehouseAndLocatorValue(hu);
@@ -642,11 +638,11 @@ public class HandlingUnitsService
 	{
 		if (HUQRCode.isTypeMatching(locatingQrCode))
 		{
-			return resolveHuIdsBy(HUQRCode.fromGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+			return resolveHuIdsByParentHUQr(HUQRCode.fromGlobalQRCode(locatingQrCode), huqrCodeAssignment);
 		}
 		else if (LocatorQRCode.isTypeMatching(locatingQrCode))
 		{
-			return resolveHuIdsBy(LocatorQRCode.ofGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+			return resolveHuIdsByLocator(LocatorQRCode.ofGlobalQRCode(locatingQrCode), huqrCodeAssignment);
 		}
 		else
 		{
@@ -657,7 +653,7 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private Set<HuId> resolveHuIdsBy(@NonNull final LocatorQRCode locatorQRCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	private ImmutableSet<HuId> resolveHuIdsByLocator(@NonNull final LocatorQRCode locatorQRCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()
 				.addOnlyHUIds(targetQrCodeAssignment.getHuIds())
@@ -667,7 +663,7 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private Set<HuId> resolveHuIdsBy(@NonNull final HUQRCode parentHUQrCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	private ImmutableSet<HuId> resolveHuIdsByParentHUQr(@NonNull final HUQRCode parentHUQrCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
 	{
 		final HUQRCodeAssignment parentQrCodeAssignment = huQRCodeService
 				.getHUAssignmentByQRCode(parentHUQrCode)
@@ -701,6 +697,16 @@ public class HandlingUnitsService
 	{
 		return Optional.ofNullable(handlingUnitsBL.getEffectivePI(hu))
 				.map(I_M_HU_PI::getName)
+				.orElse(null);
+	}
+
+	@Nullable
+	private String extractTopLevelParentHUIdValue(@NonNull final I_M_HU hu)
+	{
+		return Optional.ofNullable(handlingUnitsBL.getTopLevelParent(hu))
+				.map(I_M_HU::getM_HU_ID)
+				.filter(parentHUId -> parentHUId != hu.getM_HU_ID())
+				.map(String::valueOf)
 				.orElse(null);
 	}
 }

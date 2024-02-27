@@ -31,10 +31,10 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
-  const resolveScannedBarcode = (scannedBarcode, handlingUnitInfo) => {
+  const resolveScannedBarcode = (scannedBarcode, huId) => {
     let step;
-    if (handlingUnitInfo) {
-      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, handlingUnitInfo.id);
+    if (huId) {
+      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, huId);
     } else {
       step = getNonIssuedStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
     }
@@ -114,6 +114,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
       resolveScannedBarcode={resolveScannedBarcode}
+      useHUScanner={true}
       //
       // userInfo={userInfo}
       // qtyTarget={qtyToIssueTarget}

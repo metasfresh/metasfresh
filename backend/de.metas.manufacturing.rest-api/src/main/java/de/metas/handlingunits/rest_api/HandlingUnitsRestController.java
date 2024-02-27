@@ -388,20 +388,23 @@ public class HandlingUnitsRestController
 		}
 		catch (final Exception e)
 		{
-			final boolean multipleHusFound = Optional.of(e)
-					.filter(error -> error instanceof AdempiereException)
-					.map(error -> (AdempiereException)error)
-					.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME))
-					.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
-					.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
-					.orElse(false);
-
 			return ResponseEntity.badRequest()
 					.body(JsonGetSingleHUResponse.builder()
 								  .error(JsonErrors.ofThrowable(e, adLanguage))
-								  .multipleHUsFound(multipleHusFound)
+								  .multipleHUsFound(wereMultipleHUsFound(e))
 								  .build());
 		}
+	}
+
+	private static boolean wereMultipleHUsFound(final Exception e)
+	{
+		return Optional.of(e)
+				.filter(error -> error instanceof AdempiereException)
+				.map(error -> (AdempiereException)error)
+				.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME))
+				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
+				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
+				.orElse(false);
 	}
 
 	//

@@ -11,7 +11,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -122,20 +121,24 @@ public class MoveHUCommand
 	private List<HuId> extractHUIdsToMove()
 	{
 		return requestItems.stream()
-				.flatMap(requestItem -> {
-					if (requestItem.getNumberOfTUs() == null || requestItem.getNumberOfTUs().isOne())
-					{
-						final HuId splitHuId = huTransformService.extractToTopLevelByQRCode(requestItem.getHuIdAndQRCode().getHuId(),
-																							requestItem.getHuIdAndQRCode().getHuQRCode());
-						return Stream.of(splitHuId);
-					}
-					return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
-																			requestItem.getHuIdAndQRCode().getHuQRCode(),
-																			requestItem.getNumberOfTUs(),
-																			getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
-							.stream();
-				})
+				.flatMap(this::extractHuIdsToMove)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Stream<HuId> extractHuIdsToMove(@NonNull final MoveHURequestItem requestItem)
+	{
+		if (requestItem.getNumberOfTUs() == null || requestItem.getNumberOfTUs().isOne())
+		{
+			final HuId splitHuId = huTransformService.extractToTopLevelByQRCode(requestItem.getHuIdAndQRCode().getHuId(),
+																				requestItem.getHuIdAndQRCode().getHuQRCode());
+			return Stream.of(splitHuId);
+		}
+		return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
+																requestItem.getHuIdAndQRCode().getHuQRCode(),
+																requestItem.getNumberOfTUs(),
+																getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
+				.stream();
 	}
 
 	@NonNull
@@ -181,11 +184,7 @@ public class MoveHUCommand
 			return Optional.empty();
 		}
 
-		final I_M_HU_PI_Item luItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
-
-		return Optional.ofNullable(luItem)
-				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
-				.map(HuPackingInstructionsItemId::ofRepoId);
+		return handlingUnitsDAO.retrieveDefaultParentPIItemId(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
 	}
 
 	private static boolean shouldPlaceAggTUsOnNewLUAfterMove(

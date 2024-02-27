@@ -56,7 +56,6 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
         upperLevelLocatingQrCode: upperLevelLocatingQrCode,
       })
       .then((huList) => {
-        setLocatingQrCodeScannerInfo(undefined);
         return { huListByQRCode: huList };
       });
   };
@@ -65,6 +64,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
     console.log('onResolvedResult', { result });
 
     if (result.huListByQRCode) {
+      setLocatingQrCodeScannerInfo(undefined);
       if (!result.huListByQRCode.length) {
         toastError({ messageKey: 'general.noHUFound' });
       } else if (result.huListByQRCode.length === 1) {

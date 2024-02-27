@@ -132,7 +132,8 @@ public class ManufacturingJobService
 
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
 
-	public void assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
+	@NonNull
+	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
 		final UserId oldResponsibleId = UserId.ofRepoIdOrNull(ppOrder.getAD_User_Responsible_ID());
@@ -148,6 +149,8 @@ public class ManufacturingJobService
 					.setParameter("oldResponsibleId", oldResponsibleId)
 					.setParameter("newResponsibleId", newResponsibleId);
 		}
+
+		return newLoader().load(ppOrder);
 	}
 
 	@NonNull
