@@ -117,16 +117,6 @@ public final class WFProcess
 		return type.cast(document);
 	}
 
-	public <T> WFProcess mapDocument(@NonNull final UnaryOperator<T> remappingFunction)
-	{
-		//noinspection unchecked
-		final T document = (T)this.document;
-		final T documentNew = remappingFunction.apply(document);
-		return !Objects.equals(document, documentNew)
-				? toBuilder().document(documentNew).build()
-				: this;
-	}
-
 	public WFActivity getActivityById(@NonNull final WFActivityId id)
 	{
 		final WFActivity wfActivity = activitiesById.get(id);
