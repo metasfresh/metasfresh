@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -177,7 +178,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: Handover Location
 		if (!query.getHandoverLocationIds().isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_Handover_Location_ID, query.getHandoverLocationIds());
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
 
 		return queryBuilder.create();
@@ -187,27 +188,37 @@ public class PackagingDAO implements IPackagingDAO
 			@NonNull final IQueryBuilder<I_M_Packageable_V> queryBuilder,
 			@NonNull final ImmutableSet<PackageableQuery.OrderBy> orderBys)
 	{
-		orderBys.forEach(orderBy -> queryBuilder.orderBy(toSqlColumnName(orderBy)));
+		orderBys.forEach(orderBy -> appendOrderBy(queryBuilder, orderBy));
 	}
 
-	private static String toSqlColumnName(@NonNull final PackageableQuery.OrderBy orderBy)
+	private static void appendOrderBy(@NonNull final IQueryBuilder<I_M_Packageable_V> queryBuilder, @NonNull final PackageableQuery.OrderBy orderBy)
 	{
 		switch (orderBy)
 		{
 			case ProductName:
-				return I_M_Packageable_V.COLUMNNAME_ProductName;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_ProductName);
+				break;
 			case PriorityRule:
-				return I_M_Packageable_V.COLUMNNAME_PriorityRule;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PriorityRule);
+				break;
 			case DateOrdered:
-				return I_M_Packageable_V.COLUMNNAME_DateOrdered;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_DateOrdered);
+				break;
 			case PreparationDate:
-				return I_M_Packageable_V.COLUMNNAME_PreparationDate;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PreparationDate);
+				break;
 			case SalesOrderId:
-				return I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+				break;
 			case DeliveryBPLocationId:
-				return I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
+				break;
 			case WarehouseTypeId:
-				return I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID);
+				break;
+			case SetupPlaceNo_Descending:
+				queryBuilder.orderBy().addColumn(I_M_Packageable_V.COLUMNNAME_Setup_Place_No, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
+				break;
 			default:
 				throw new AdempiereException("Unknown ORDER BY: " + orderBy);
 		}
@@ -252,7 +263,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
-		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandover_Partner_ID(), record.getHandover_Location_ID()));
+		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()));
 
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));

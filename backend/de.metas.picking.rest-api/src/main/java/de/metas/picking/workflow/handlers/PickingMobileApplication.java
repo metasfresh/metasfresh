@@ -233,7 +233,8 @@
 			final UserId responsibleId = pickingJob.getLockedBy();
 
 			final ITranslatableString caption = displayValueProviderService.newDisplayValueProvider(mobileUIPickingUserProfileRepository.getProfile())
-					.computeLauncherCaption(pickingJob);
+					.computeLauncherCaption(pickingJob)
+					.toTranslatableString();
 
 			return WFProcess.builder()
 					.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))

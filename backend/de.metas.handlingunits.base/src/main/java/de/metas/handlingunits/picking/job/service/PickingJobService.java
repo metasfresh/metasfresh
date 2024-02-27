@@ -174,6 +174,7 @@ public class PickingJobService
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
+						PackageableQuery.OrderBy.SetupPlaceNo_Descending,
 						PackageableQuery.OrderBy.SalesOrderId,
 						PackageableQuery.OrderBy.DeliveryBPLocationId,
 						PackageableQuery.OrderBy.WarehouseTypeId));

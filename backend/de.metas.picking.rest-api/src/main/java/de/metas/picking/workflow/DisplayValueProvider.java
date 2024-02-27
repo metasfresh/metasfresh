@@ -42,6 +42,7 @@ import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.PickingJobField;
 import de.metas.picking.config.PickingJobFieldType;
 import de.metas.util.StringUtils;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -131,33 +132,42 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJob pickingJob)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
 	{
 		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobCandidate pickingJobCandidate)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return computeLauncherCaption(toContext(pickingJobCandidate));
 	}
 
 	@NonNull
-	public ITranslatableString computeLauncherCaption(@NonNull final PickingJobReference pickingJobReference)
+	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return computeLauncherCaption(toContext(pickingJobReference));
 	}
 
 	@NonNull
-	private ITranslatableString computeLauncherCaption(@NonNull final Context context)
+	private WorkflowLauncherCaption computeLauncherCaption(@NonNull final Context context)
 	{
-		final ImmutableList<ITranslatableString> parts = profile.getLauncherFieldsInOrder()
-				.stream()
-				.map(uiFiled -> getDisplayValue(uiFiled, context))
-				.filter(caption -> !TranslatableStrings.isBlank(caption))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList.Builder<String> fieldsInOrder = ImmutableList.builder();
+		@NonNull ImmutableMap.Builder<String, ITranslatableString> fieldValues = ImmutableMap.builder();
 
-		return TranslatableStrings.join(" | ", parts);
+		for (final PickingJobField field : profile.getLauncherFieldsInOrder())
+		{
+			final ITranslatableString value = getDisplayValue(field, context);
+			final String fieldType = field.getField().getCode();
+
+			fieldsInOrder.add(fieldType);
+			fieldValues.put(fieldType, value);
+		}
+
+		return WorkflowLauncherCaption.builder()
+				.fieldsInOrder(fieldsInOrder.build())
+				.fieldValues(fieldValues.build())
+				.build();
 	}
 
 	@NonNull

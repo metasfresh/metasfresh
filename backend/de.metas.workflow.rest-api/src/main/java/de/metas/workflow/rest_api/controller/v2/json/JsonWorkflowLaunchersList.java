@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.Builder;
 import lombok.NonNull;
@@ -65,9 +67,12 @@ public class JsonWorkflowLaunchersList
 
 		if (!countOnly)
 		{
+			final String adLanguage = jsonOpts.getAdLanguage();
 			builder.launchers(result.stream()
+					.sorted(Comparator.comparing(
+							WorkflowLauncher::getCaption,
+							WorkflowLauncherCaption.orderBy(adLanguage, result.getOrderByFields())))
 					.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
-					.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
 					.collect(ImmutableList.toImmutableList()));
 		}
 
