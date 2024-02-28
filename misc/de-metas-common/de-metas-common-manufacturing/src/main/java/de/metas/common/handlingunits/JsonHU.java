@@ -60,6 +60,7 @@ public class JsonHU
 	int numberOfAggregatedHUs;
 
 	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String topLevelParentId;
 
 	@NonNull
@@ -98,6 +99,7 @@ public class JsonHU
 	Boolean isDisposalPending;
 
 	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String packingInstructionName;
 
 	public JsonHU(
