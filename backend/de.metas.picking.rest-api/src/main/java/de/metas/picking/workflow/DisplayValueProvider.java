@@ -41,6 +41,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.PickingJobField;
 import de.metas.picking.config.PickingJobFieldType;
+import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
@@ -154,19 +155,26 @@ public class DisplayValueProvider
 	{
 		final ImmutableList.Builder<String> fieldsInOrder = ImmutableList.builder();
 		@NonNull ImmutableMap.Builder<String, ITranslatableString> fieldValues = ImmutableMap.builder();
+		@NonNull ImmutableMap.Builder<String, Comparable<?>> comparableKeys = ImmutableMap.builder();
 
 		for (final PickingJobField field : profile.getLauncherFieldsInOrder())
 		{
 			final ITranslatableString value = getDisplayValue(field, context);
+			final Comparable<?> comparableKey = getComparableKey(field, context);
 			final String fieldType = field.getField().getCode();
 
 			fieldsInOrder.add(fieldType);
 			fieldValues.put(fieldType, value);
+			if (comparableKey != null)
+			{
+				comparableKeys.put(fieldType, comparableKey);
+			}
 		}
 
 		return WorkflowLauncherCaption.builder()
 				.fieldsInOrder(fieldsInOrder.build())
 				.fieldValues(fieldValues.build())
+				.comparingKeys(comparableKeys.build())
 				.build();
 	}
 
@@ -246,6 +254,25 @@ public class DisplayValueProvider
 			default:
 			{
 				throw new AdempiereException("Unknown field: " + field.getField());
+			}
+		}
+	}
+
+	@Nullable
+	private Comparable<?> getComparableKey(@NonNull final PickingJobField field, @NonNull final Context pickingJob)
+	{
+		//noinspection SwitchStatementWithTooFewBranches
+		switch (field.getField())
+		{
+			case RUESTPLATZ_NR:
+			{
+				return getRuestplatz(pickingJob)
+						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
+						.orElse(null);
+			}
+			default:
+			{
+				return null;
 			}
 		}
 	}

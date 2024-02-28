@@ -1,6 +1,4 @@
 import { produce } from 'immer';
-
-import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { activityUserConfirmationReducer } from './confirmation';
@@ -33,20 +31,6 @@ export const getActivitiesInOrder = (wfProcess) => {
   const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
   const activitiesById = wfProcess.activities ?? {};
   return activityIdsInOrder.map((activityId) => activitiesById[activityId]);
-};
-
-export const isWorkflowNotStarted = (wfProcess) => {
-  const activitiesById = wfProcess?.activities ?? {};
-  const activities = Object.values(activitiesById);
-
-  for (let i = 0; i < activities.length; i += 1) {
-    const activityStatus = activities[i].dataStored.completeStatus;
-    if (activityStatus !== NOT_STARTED) {
-      return false;
-    }
-  }
-
-  return true;
 };
 
 export const getActivityById = (state, wfProcessId, activityId) => {

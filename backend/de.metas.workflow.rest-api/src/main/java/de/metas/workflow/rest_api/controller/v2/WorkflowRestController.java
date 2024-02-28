@@ -51,6 +51,7 @@ import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
@@ -137,6 +138,7 @@ public class WorkflowRestController
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
 				.facetIds(query.getFacetIds() != null ? ImmutableSet.copyOf(query.getFacetIds()) : null)
+				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
 	}
 
