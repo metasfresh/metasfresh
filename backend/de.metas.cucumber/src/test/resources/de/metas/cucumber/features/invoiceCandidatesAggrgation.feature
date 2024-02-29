@@ -34,12 +34,12 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 5.0      | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | endcustomer_1 | Endcustomer_15100 | N            | Y              | ps_1                          | D               |
+      | endcustomer_1 | Endcustomer_15100_1 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 4012345000009 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 4112345000009 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
@@ -120,12 +120,12 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 5.0      | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | endcustomer_1 | Endcustomer_15100 | N            | Y              | ps_1                          | D               |
+      | endcustomer_1 | Endcustomer_15100_2 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 4012345000009 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 4212345000009 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
@@ -207,12 +207,12 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 5.0      | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | endcustomer_1 | Endcustomer_15100 | N            | Y              | ps_1                          | D               |
+      | endcustomer_1 | Endcustomer_15100_3 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 4012345000009 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 4312345000009 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
@@ -293,12 +293,12 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 5.0      | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | endcustomer_1 | Endcustomer_15100 | N            | Y              | ps_1                          | D               |
+      | endcustomer_1 | Endcustomer_15100_4 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 4012345000009 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 4412345000009 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |
@@ -385,12 +385,12 @@ Feature: invoice generation and invoice candidates aggregation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 5.0      | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | endcustomer_1 | Endcustomer_15100 | N            | Y              | ps_1                          | D               |
+      | endcustomer_1 | Endcustomer_15100_5 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 4012345000009 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 4512345000009 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.C_PaymentTerm_ID | OPT.SalesRep_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock_15100 | 1000012              | 100             |

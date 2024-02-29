@@ -823,17 +823,31 @@ public class C_Invoice_Candidate_StepDef
 		saveRecord(invoiceCandidateRecord);
 	}
 
+	/**
+	 * Does not just find the IC, but also makes sure the IC is up2date.
+	 */
 	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
 	{
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> invoiceCandDAO
-				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())).size() > 0);
+		final ItemProvider<List<I_C_Invoice_Candidate>> provider = () -> {
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO
 				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			if (invoiceCandidates.isEmpty())
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("No C_Invoice_Candidates (yet) for C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates.stream().map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())).collect(ImmutableList.toImmutableList());
+			if (invoiceCandDAO.hasInvalidInvoiceCandidates(invoiceCandidateIds))
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID={0} is not (yet) updated; C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", invoiceCandidateIds, orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidates);
+		};
+		final List<I_C_Invoice_Candidate> invoiceCandidates = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, provider);
 
 		assertThat(invoiceCandidates.size()).isEqualTo(1);
 

@@ -1201,16 +1201,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag)
+	public final boolean hasInvalidInvoiceCandidates(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		final PInstanceId pinstanceId = InvoiceCandRecomputeTag.getPinstanceIdOrNull(tag);
-
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
+				.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
 				.anyMatch();
 	}
