@@ -3,7 +3,8 @@ Feature: attachment creation using metasfresh api
   As an API user I want to be able to create attachment entries
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: Attachment entry and attachment multiRef given base64 data

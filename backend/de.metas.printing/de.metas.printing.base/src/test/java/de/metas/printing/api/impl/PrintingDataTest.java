@@ -52,7 +52,7 @@ class PrintingDataTest
 	private Helper helper;
 
 	@BeforeEach
-	void beforeEach(TestInfo testInfo)
+	final void beforeEach(TestInfo testInfo)
 	{
 		AdempiereTestHelper.get().init();
 

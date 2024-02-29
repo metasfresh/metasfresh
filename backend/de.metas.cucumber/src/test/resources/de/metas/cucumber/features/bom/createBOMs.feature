@@ -3,7 +3,8 @@ Feature:bom create using metasfresh api
   Using default ad_orgId 1000000
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: create a ProductBOM record with existing ProductBOMVersions for productID

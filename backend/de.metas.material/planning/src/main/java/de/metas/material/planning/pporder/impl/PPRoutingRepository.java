@@ -356,6 +356,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.createQueryBuilder(I_AD_WF_Node.class, routingRecord)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId)
+				.addNotNull(I_AD_WF_Node.COLUMN_S_Resource_ID) // in the context of production and product-planning, we can't work with a resource-less AD_WF_Node
 				.orderBy(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID)
 				.create()
 				.list();

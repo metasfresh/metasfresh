@@ -3,7 +3,8 @@ Feature: invoice payment allocation
 
   Background:
 
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And metasfresh contains M_PricingSystems
       | Identifier                | Name                      | Value                     |

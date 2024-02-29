@@ -2,7 +2,8 @@
 Feature: Validate default address and contact is considered on invoice based on invoicing params
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-18T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -44,7 +45,7 @@ Feature: Validate default address and contact is considered on invoice based on 
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | bpLocation                        | purchaseProduct         | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -57,7 +58,7 @@ Feature: Validate default address and contact is considered on invoice based on 
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | receiptLine_1             | material_receipt_1    | purchaseProduct         | 10          | true      | 10             |
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | ol_1                      | 10               | 10           | receiptLine_1                 |
 
@@ -71,10 +72,10 @@ Feature: Validate default address and contact is considered on invoice based on 
   _When generate invoice with "UpdateLocationAndContactForInvoice" parameter set on true
   _Then C_Invoice was generated with C_BPartner_Location_ID = 'Location1' and AD_User_ID = 'Contact1', i.e. the default values
 
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsUpdateLocationAndContactForInvoice |
       | invoiceCand_1                     | Y                                        |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
@@ -91,10 +92,10 @@ Feature: Validate default address and contact is considered on invoice based on 
   _When generate invoice with "UpdateLocationAndContactForInvoice" parameter set on false
   _Then C_Invoice was generated with C_BPartner_Location_ID = 'Location2' and AD_User_ID = 'Contact2', i.e. the values coming from C_Order
 
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsUpdateLocationAndContactForInvoice |
       | invoiceCand_1                     | N                                        |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices

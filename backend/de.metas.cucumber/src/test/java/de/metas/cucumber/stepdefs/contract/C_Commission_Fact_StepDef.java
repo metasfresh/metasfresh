@@ -35,6 +35,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.assertj.core.api.SoftAssertions;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -82,21 +83,25 @@ public class C_Commission_Fact_StepDef
 		assertThat(commissionFacts).isNotNull();
 		assertThat(tableRows.size()).isEqualTo(commissionFacts.size());
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (int factIndex = 0; factIndex < commissionFacts.size(); factIndex++)
 		{
 			final I_C_Commission_Fact actualCommissionFact = commissionFacts.get(factIndex);
 			final Map<String, String> expectedCommissionFact = tableRows.get(factIndex);
 
 			final String commissionFactState = DataTableUtil.extractStringForColumnName(expectedCommissionFact, COLUMNNAME_Commission_Fact_State);
-			assertThat(actualCommissionFact.getCommission_Fact_State()).isEqualTo(commissionFactState);
+			softly.assertThat(actualCommissionFact.getCommission_Fact_State())
+					.as("Fact[" + factIndex + "] has state = " + commissionFactState )
+					.isEqualTo(commissionFactState);
 
 			final BigDecimal commissionPoints = DataTableUtil.extractBigDecimalForColumnName(expectedCommissionFact, COLUMNNAME_CommissionPoints);
-			assertThat(actualCommissionFact.getCommissionPoints()).isEqualTo(commissionPoints);
+			softly.assertThat(actualCommissionFact.getCommissionPoints()).isEqualTo(commissionPoints);
 
 			final String settlementIdentifier = DataTableUtil.extractStringOrNullForColumnName(expectedCommissionFact, "OPT." + COLUMNNAME_C_Invoice_Candidate_Commission_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(settlementIdentifier))
 			{
-				assertThat(actualCommissionFact.getC_Invoice_Candidate_Commission_ID()).isNotNull();
+				softly.assertThat(actualCommissionFact.getC_Invoice_Candidate_Commission_ID()).isNotNull();
 
 				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(actualCommissionFact.getC_Invoice_Candidate_Commission_ID());
 				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
@@ -105,5 +110,7 @@ public class C_Commission_Fact_StepDef
 
 			}
 		}
+
+		softly.assertAll();
 	}
 }

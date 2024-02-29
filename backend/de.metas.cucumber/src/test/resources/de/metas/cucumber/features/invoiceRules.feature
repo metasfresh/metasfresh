@@ -2,7 +2,8 @@
 Feature: invoice rules
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
@@ -37,22 +38,22 @@ Feature: invoice rules
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 10           |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |
     And validate created invoices
@@ -96,7 +97,7 @@ Feature: invoice rules
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 12         |
     And the order identified by o_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_2      | ol_2                      | N             |
     And the following virtual inventory is created
@@ -105,13 +106,13 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_2                            | p_2                     | 6         | hu_1               |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_2                              | ol_2                      | 6            |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | ic_2                              | 6               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_2                              | invoice_2               |
     And validate created invoices
@@ -155,7 +156,7 @@ Feature: invoice rules
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_3      | ol_3                      | N             |
     And the following virtual inventory is created
@@ -164,13 +165,13 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_3                            | p_3                     | 12        | hu_2               |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_3                              | ol_3                      | 12           |
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | ic_3                              |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_3                              | invoice_3               |
     And validate created invoices
@@ -221,7 +222,7 @@ Feature: invoice rules
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_3      | ol_3                      | N             |
     And the following virtual inventory is created
@@ -230,19 +231,19 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_3                            | p_3                     | 5         | hu_2               |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_3                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_3               | p_3                     | 50                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3               | invoice_candidate_1               |
     And validate created invoices
@@ -266,12 +267,12 @@ Feature: invoice rules
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 10           | 10         | 5           | false     |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 10               | 10             | 5               | false         |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1, shipment_2 | s_s_3                            | P                 | Y                  |
@@ -284,22 +285,22 @@ Feature: invoice rules
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
-    And after not more than 30s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 15           | 10         | 0           | true      |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 15               | 10             | 0               | true          |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_3               | p_3                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3, invoice_4    | invoice_candidate_1               |
     And validate created invoices

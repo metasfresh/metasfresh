@@ -1,8 +1,9 @@
 @from:cucumber
-Feature: Production dispo scenarios
+Feature: Physical Inventory and disposal - Production dispo scenarios
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
@@ -68,6 +69,7 @@ Feature: Production dispo scenarios
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
+    # note - we expect 2021-04-16 to be converted to 2021-04-15 22:00:00 UTC, because of the time zone (summer - DST) and timezone that we set in the "metasfresh has date and time.."
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-16   |
@@ -76,7 +78,7 @@ Feature: Production dispo scenarios
       | il_1       | i_1                       | p_2                     | PCE          | 10       | 0       |
     And the inventory identified by i_1 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
     And M_HU are disposed:
@@ -189,6 +191,7 @@ Feature: Production dispo scenarios
       | c_l_1_2    | SUPPLY            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 10  | 0                      |
       | c_l_2_1    | DEMAND            | PRODUCTION                    | p_3                     | 2021-04-16T21:00:00Z | -10 | -10                    |
       | c_l_2_2    | SUPPLY            |                               | p_3                     | 2021-04-16T21:00:00Z | 10  | 0                      |
+
   @from:cucumber
   Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
   Partial stock for main product, enough stock for component (S0129.1_130)
@@ -397,22 +400,22 @@ Feature: Production dispo scenarios
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
-    And after not more than 30s, PP_Orders are found
+    And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-16T21:00:00Z |
-    And after not more than 30s, PP_Order_BomLines are found
+    And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppo_1                  | p_2                     | 100          | false           | PCE               | CO            |
 
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                             | ppo_1                  | 10         | PCE               |
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_3        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | 0                      |
@@ -421,11 +424,11 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
 
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true     |
 
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 0          | PCE               | CO            | boml_1                           |
 

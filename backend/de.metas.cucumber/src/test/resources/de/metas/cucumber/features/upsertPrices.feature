@@ -3,7 +3,8 @@ Feature: Create or update using prices API
   Using default ad_orgId 1000000
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: Create price list version from external ref

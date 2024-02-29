@@ -70,6 +70,10 @@ public class C_BPartner_Location
 		}
 	}
 
+	/**
+	 * Prevents that a (the preceeding) location is terminated in the past.
+	 * This is done by preventing that the current location's validFrom is set int he past.
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
 	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
@@ -78,7 +82,11 @@ public class C_BPartner_Location
 		final Timestamp validFrom = bpLocation.getValidFrom();
 		if (validFrom != null && validFrom.before(Env.getDate()))
 		{
-			throw new AdempiereException("@AddressTerminatedInThePast@");
+			throw new AdempiereException("@AddressTerminatedInThePast@")
+					.appendParametersToMessage()
+					.setParameter("C_BPartner_Location.ValidFrom", validFrom)
+					.setParameter("Env.getDate()",Env.getDate())
+					.setParameter("C_BPartner_Location", bpLocation);
 		}
 	}
 }
