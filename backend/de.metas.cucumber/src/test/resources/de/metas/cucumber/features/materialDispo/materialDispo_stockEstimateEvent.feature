@@ -9,14 +9,13 @@ Feature: material-dispo updates on StockEstimateEvent events
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh initially has no MD_Candidate data
-    And metasfresh initially has no MD_Candidate_StockChange_detail data
-    And no product with value 'product_value1234' exists
-    And metasfresh contains M_Product with M_Product_ID '1234' and identifier 'p_1'
 
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent without stock or ATP
+    Given metasfresh contains M_Products:
+      | Identifier | Name                     |
+      | p_1        | p_create_No_Stock_160922 |
     When metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 1                  | 11                      | 2021-06-23T00:00:00.00Z | 10  |
@@ -33,7 +32,10 @@ Feature: material-dispo updates on StockEstimateEvent events
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent with stock
-    Given metasfresh initially has this MD_Candidate data
+    Given metasfresh contains M_Products:
+      | Identifier | Name                       |
+      | p_1        | p_create_With_Stock_160922 |
+    And metasfresh initially has this MD_Candidate data
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | 1234                    | 2020-12-12T00:00:00.00Z | 100 | 100                    |
     And after not more than 60s, metasfresh has this MD_Cockpit data
@@ -59,6 +61,9 @@ Feature: material-dispo updates on StockEstimateEvent events
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents without related data are ignored
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | p_delete_No_Data_160922 |
     And metasfresh initially has this MD_Candidate data
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | p_1                     | 2020-12-12T10:00:00.00Z | 100 | 100                    |
@@ -72,6 +77,9 @@ Feature: material-dispo updates on StockEstimateEvent events
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents with related data are processed
+    Given metasfresh contains M_Products:
+      | Identifier | Name                      |
+      | p_1        | p_delete_With_Data_160922 |
     And metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 4                  | 44                      | 2021-06-23T00:00:00.00Z | 90  |
@@ -92,6 +100,9 @@ Feature: material-dispo updates on StockEstimateEvent events
   @from:cucumber
   @topic:materialdispo
   Scenario: StockEstimateEvent flow with INVENTORY_UP and positive ATP
+    Given metasfresh contains M_Products:
+      | Identifier | Name                 |
+      | p_1        | p_estimate_Up_160922 |
     And metasfresh initially has this MD_Candidate data
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
@@ -121,6 +132,9 @@ Feature: material-dispo updates on StockEstimateEvent events
   @from:cucumber
   @topic:materialdispo
   Scenario: Stock estimate event with INVENTORY_DOWN and positive ATP
+    Given metasfresh contains M_Products:
+      | Identifier | Name                   |
+      | p_1        | p_estimate_Down_160922 |
     And metasfresh initially has this MD_Candidate data
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |

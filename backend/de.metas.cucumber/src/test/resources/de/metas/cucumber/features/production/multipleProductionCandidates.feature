@@ -56,7 +56,6 @@ Feature: create multiple production candidates
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
-    And metasfresh initially has no MD_Candidate data
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |

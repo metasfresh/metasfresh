@@ -18,7 +18,6 @@ Feature: create production simulation
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   Scenario:  The simulation for qty 100 is created, with duration to produce 1 qty set to 1 day, having a stock of 99 after demand date and before 'finished production' date
