@@ -231,7 +231,7 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_3                            | p_3                     | 5         | hu_2               |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_3                      |
     And recompute invoice candidates if required

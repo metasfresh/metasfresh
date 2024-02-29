@@ -2,12 +2,13 @@
 Feature: invoice generation and invoice candidates aggregation
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  Scenario:
+  Scenario: case 10
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders with the same salesRep_IDs => one invoice with the respective SalesRep_ID
     Given load C_AggregationItem
@@ -69,9 +70,21 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -81,7 +94,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 20
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders, one order with salesRep_ID set and the second one with no salesRep_ID => one invoice with no SalesRep_ID
     Given load C_AggregationItem
@@ -143,9 +156,22 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -155,7 +181,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 30
   - C_AggregationItem for SalesRep_ID is inactive
   - two sales orders with two different salesRep_ID => one invoice with SalesRep_ID is null
     Given load C_AggregationItem
@@ -217,9 +243,21 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
@@ -229,7 +267,7 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 40
   - C_AggregationItem for SalesRep_ID is active
   - two sales orders with two different salesRep_ID => two invoices with their respective SalesRep_ID
     Given load C_AggregationItem
@@ -291,9 +329,23 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1,invoice_2     |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in their own respective invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
+      | invoice_2               | invoice_candidate_2               |
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
@@ -307,7 +359,7 @@ Feature: invoice generation and invoice candidates aggregation
       | a_1                             | false    |
 
   @from:cucumber
-  Scenario:
+  Scenario: case 50
   - C_AggregationItem for SalesRep_ID is active
   - two sales orders with same salesRep_ID => one invoice with the respective SalesRep_ID
     Given load C_AggregationItem
@@ -369,9 +421,23 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1,o_2               | invoice_1               |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+      | invoice_candidate_2               | ol_2                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_candidate_1,invoice_candidate_2 |
+
+    # we expect both ICs to end up in the same invoice
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier       |
+      | invoice_1               | invoice_candidate_1,invoice_candidate_2 |
+
+
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
