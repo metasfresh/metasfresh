@@ -1644,8 +1644,46 @@ public class TimeUtil
 				: null;
 	}
 
+	@Deprecated
+	@NonNull
+	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
+	{
+		return ts.toLocalDateTime().toLocalDate();
+	}
+
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? date.toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant)
+	{
+		return instant != null
+				? instant.atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	public static LocalDate asLocalDate(@Nullable XMLGregorianCalendar calendar)
+	{
+		return calendar != null
+				? calendar.toGregorianCalendar().toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
+	{
+		return asLocalDate(obj, null);
+	}
+
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1681,6 +1719,14 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		return instant != null
+				? instant.atZone(zoneId).toLocalDate()
+				: null;
+	}
+
 	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)
@@ -1688,7 +1734,14 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
+	@Nullable
 	public static LocalTime asLocalTime(@Nullable final Object obj)
+	{
+		return asLocalTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1700,7 +1753,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalTime();
+			return asLocalDateTime(obj, zoneId).toLocalTime();
 		}
 	}
 
@@ -1715,6 +1768,12 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
+	{
+		return asLocalDateTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
