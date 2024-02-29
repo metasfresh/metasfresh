@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.postfinance
+ * de.metas.business
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,15 +20,19 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.bpartner.postfinance;
 
-public interface PostFinanceConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class PostFinanceOrgConfig
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
+	@NonNull PostFinanceOrgConfigId id;
 
-	String CUSTOMER_REGISTRATION_MESSAGE = "R";
-
-	String CUSTOMER_NBR = "CUSTOMERNBR";
-
-	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
+	@NonNull String billerId;
+	
+	boolean isArchiveData;
 }

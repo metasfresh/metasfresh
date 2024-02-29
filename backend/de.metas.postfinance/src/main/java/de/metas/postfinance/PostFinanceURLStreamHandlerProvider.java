@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.URLStreamHandler;
 import java.net.spi.URLStreamHandlerProvider;
+
 public class PostFinanceURLStreamHandlerProvider extends URLStreamHandlerProvider
 {
 	@Nullable

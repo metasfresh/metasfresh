@@ -35,9 +35,10 @@ import java.net.URLStreamHandler;
 
 public class PostFinanceURLStreamHandler extends URLStreamHandler
 {
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private static final String SYS_CONFIG_SERVICE_URL = "de.metas.postfinance.PostFinanceURLStreamHandler.B2BServiceURL";
 	private static final String SYS_CONFIG_SERVICE_URL_DEACTIVATED_VALUE = "-";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	protected URLConnection openConnection(final URL u) throws IOException
