@@ -44,7 +44,9 @@ const RawMaterialIssueActivity = (props) => {
 
   const sortedLines = useMemo(() => {
     if (lines && lines.length > 0) {
-      lines.sort((line1, line2) => line1.seqNo - line2.seqNo);
+      const sortedArray = [...lines];
+      sortedArray.sort((line1, line2) => line1.seqNo - line2.seqNo);
+      return sortedArray;
     }
     return lines;
   }, [lines]);

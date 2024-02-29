@@ -173,6 +173,7 @@ const normalizeLines = (lines) => {
       qtyToIssueMax: line.qtyToIssueMax,
       qtyToIssueTolerance: line.qtyToIssueTolerance,
       userInstructions: line.userInstructions,
+      seqNo: line.seqNo,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;
