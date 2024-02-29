@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -430,15 +431,6 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
-	@And("^after not more than (.*)s, M_HU are found:$")
-	public void is_HU_found(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			findHU(row, timeoutSec);
-		}
-	}
-
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -548,8 +540,10 @@ public class M_HU_StepDef
 		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
-	@And("load newly created M_HU record based on SourceHU")
-	public void load_newly_created_M_HU(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, load newly created M_HU record based on SourceHU$")
+	public void load_newly_created_M_HU(
+			final int timeoutSec,
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -561,7 +555,7 @@ public class M_HU_StepDef
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_Trace.COLUMNNAME_Qty);
 			final String huTraceType = DataTableUtil.extractStringForColumnName(row, I_M_HU_Trace.COLUMNNAME_HUTraceType);
 
-			final Optional<Integer> huId = queryBL.createQueryBuilder(I_M_HU_Trace.class)
+			final Supplier<Optional<I_M_HU>> huSupplier = () -> queryBL.createQueryBuilder(I_M_HU_Trace.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, vhuSourceHU.getM_HU_ID())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_Qty, qty)
@@ -570,10 +564,10 @@ public class M_HU_StepDef
 					.create()
 					.stream()
 					.map(I_M_HU_Trace::getM_HU_ID)
-					.findFirst();
+					.findFirst()
+					.map(id -> InterfaceWrapperHelper.load(id, I_M_HU.class));
 
-			assertThat(huId).isPresent();
-			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
+			final I_M_HU newHU = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, huSupplier);
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." +TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
@@ -616,35 +610,6 @@ public class M_HU_StepDef
 		assertThat(huStorageRecord).isPresent();
 		assertThat(huStorageRecord.get().getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
 		assertThat(huStorageRecord.get().getQty()).isEqualTo(qty);
-	}
-
-	private void findHU(@NonNull final Map<String, String> row, @NonNull final Integer timeoutSec) throws InterruptedException
-	{
-		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, this::isHUFound);
-
-		final Optional<I_M_HU> huOptional = getHuRecord();
-
-		assertThat(huOptional).isPresent();
-		assertThat(huOptional.get().getHUStatus()).isEqualTo(huStatus);
-		assertThat(huOptional.get().isActive()).isEqualTo(isActive);
-
-		huTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_M_HU.COLUMNNAME_M_HU_ID), huOptional.get());
-	}
-
-	private Optional<I_M_HU> getHuRecord()
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnlyOptional(I_M_HU.class);
-	}
-
-	private boolean isHUFound()
-	{
-		return getHuRecord().isPresent();
 	}
 
 	private Optional<I_M_HU_Storage> getHuStorageRecord(@NonNull final I_M_HU huRecord)

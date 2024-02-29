@@ -231,6 +231,9 @@ public class OrderCandidateRestControllerService
 	{
 		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
+		// clear the olCands and at the same time assign them to asyncBatchId
+		// the asyncBatchId will be used *not* by ProcessOLCandsWorkpackageProcessor,
+		// but by the WP-processors that it enqueues its packages for, to create actual the actual orders, shipments and invoices
 		final JsonOLCandClearingResponse clearingResponse =
 				clearOLCandidates(request.getInputDataSourceName(), request.getExternalHeaderId(), asyncBatchId);
 
@@ -249,6 +252,8 @@ public class OrderCandidateRestControllerService
 				.map(OLCandId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		//
+		// to the actual order/shipment/invoice creation
 		processValidOlCands(request, validOlCandIds);
 
 		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(validOlCandIds);
@@ -354,13 +359,20 @@ public class OrderCandidateRestControllerService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
+	/**
+	 * Enqueue and wait for a {@link  de.metas.salesorder.candidate.ProcessOLCandsWorkpackageProcessor}-Workpackage to take care of creating orders, shipments and invoices as required.
+	 */
+	private void processValidOlCands(
+			@NonNull final JsonOLCandProcessRequest request,
+			@NonNull final Set<OLCandId> validOlCandIds)
 	{
 		if (validOlCandIds.isEmpty())
 		{
 			return;
 		}
 
+		// start another async-batch - just to wait for
+		// ProcessOLCandsWorkpackageProcessor to finish doing the work and enqueing sub-processors.
 		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
 
 		final Supplier<IEnqueueResult> action = () -> {

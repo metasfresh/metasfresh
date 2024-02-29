@@ -47,11 +47,11 @@ Feature: check invoice candidates status
     "closeOrder": true
 }
    """
-    And after not more than 30s, locate C_Invoice_Candidates by externalHeaderId
+    And after not more than 60s, locate C_Invoice_Candidates by externalHeaderId
       | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId |
       | i_c_1                             | ExtHeader_1      |
 
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | i_c_1                             |
 

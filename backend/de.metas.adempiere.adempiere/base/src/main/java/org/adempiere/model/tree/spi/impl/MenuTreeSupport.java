@@ -152,13 +152,13 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		if (!useBetaFunctions)
 		{
 			// task 09088: the client doesn't "want" to use beta functions and the role doesn't override this, so we filter out features that are not marked as beta
-			windowSql.append("AND w.").append(I_AD_Window.COLUMNNAME_IsBetaFunctionality).append("=?");
+			windowSql.append("\n AND w.").append(I_AD_Window.COLUMNNAME_IsBetaFunctionality).append("=?");
 			windowSqlParams.add(false);
-			processSql.append("AND p.").append(I_AD_Process.COLUMNNAME_IsBetaFunctionality).append("=?");
+			processSql.append("\n AND p.").append(I_AD_Process.COLUMNNAME_IsBetaFunctionality).append("=?");
 			processSqlParams.add(false);
-			workflowSql.append("AND wf.").append(I_AD_Workflow.COLUMNNAME_IsBetaFunctionality).append("=?");
+			workflowSql.append("\n AND wf.").append(I_AD_Workflow.COLUMNNAME_IsBetaFunctionality).append("=?");
 			workflowSqlParams.add(false);
-			formSql.append("AND f.").append(I_AD_Form.COLUMNNAME_IsBetaFunctionality).append("=?");
+			formSql.append("\n AND f.").append(I_AD_Form.COLUMNNAME_IsBetaFunctionality).append("=?");
 			formSqlParams.add(false);
 		}
 

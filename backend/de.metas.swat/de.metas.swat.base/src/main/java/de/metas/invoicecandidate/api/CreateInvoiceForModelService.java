@@ -81,7 +81,7 @@ public class CreateInvoiceForModelService
 				.setContext(getCtx())
 				.setInvoicingParams(createDefaultIInvoicingParams())
 				.setFailIfNothingEnqueued(true)
-				.enqueueSelection(invoiceCandidatesSelectionId);
+				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
 	}
 
 	private void generateMissingInvoiceCandidatesForModel(@NonNull final List<TableRecordReference> modelReferences)

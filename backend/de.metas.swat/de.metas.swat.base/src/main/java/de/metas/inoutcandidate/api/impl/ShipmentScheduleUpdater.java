@@ -515,7 +515,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// Delivery rule: Force
 			if (deliveryRule.isForce())
 			{
-				createLine(
+				createLine( // createLine will also subtract the respective qty from storages
 						olAndSched,
 						qtyToDeliver,
 						storages,
@@ -538,7 +538,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					// we invoke createLine even if ruleComplete is true and fullLine is false,
 					// because we want the quantity to be allocated.
 					// If the created line will make it into a real shipment will be decided later.
-					createLine(
+					createLine( // createLine will also subtract the respective qty from storages
 							olAndSched,
 							qtyToDeliverEffective,
 							storages,
