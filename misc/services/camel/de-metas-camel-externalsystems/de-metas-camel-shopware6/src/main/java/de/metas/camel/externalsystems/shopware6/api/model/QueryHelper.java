@@ -29,6 +29,7 @@ import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
 
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_GTE;
@@ -70,6 +71,7 @@ public class QueryHelper
 	{
 		return MultiQueryRequest.builder()
 				.filter(JsonQuery.builder()
+								.field(FIELD_PRODUCT_ID)
 								.queryType(QueryType.EQUALS)
 								.value(parentId)
 								.build())

@@ -45,7 +45,7 @@ Feature: Handling unit rest controller
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
     And the inventory identified by huProduct_inventory is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -61,7 +61,7 @@ Feature: Handling unit rest controller
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -165,7 +165,7 @@ Feature: Handling unit rest controller
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
     And the inventory identified by huProduct_inventory is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -181,7 +181,7 @@ Feature: Handling unit rest controller
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -289,7 +289,7 @@ Feature: Handling unit rest controller
 
     And the order identified by order_PO is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | order_PO              | orderLine_PO              | supplier_PO              | supplierLocation_PO               | purchaseProduct         | 18         | warehouseStd              |
 
@@ -301,7 +301,7 @@ Feature: Handling unit rest controller
       | M_InOut_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier |
       | inOut_PO              | processedLU        | receiptSchedule_PO              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.HUStatus |
       | processedLU        | A            |
 

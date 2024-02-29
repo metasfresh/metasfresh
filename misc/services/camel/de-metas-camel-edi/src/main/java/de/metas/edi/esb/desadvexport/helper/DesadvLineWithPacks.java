@@ -1,8 +1,14 @@
 /*
  * #%L
+<<<<<<<< HEAD:misc/de-metas-common/de-metas-common-product/src/main/java/de/metas/common/product/v2/request/JsonRequestAllergenItem.java
+ * de-metas-common-product
+ * %%
+ * Copyright (C) 2023 metas GmbH
+========
  * de-metas-camel-edi
  * %%
  * Copyright (C) 2022 metas GmbH
+>>>>>>>> origin/release:misc/services/camel/de-metas-camel-edi/src/main/java/de/metas/edi/esb/desadvexport/helper/DesadvLineWithPacks.java
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

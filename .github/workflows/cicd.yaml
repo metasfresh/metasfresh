@@ -665,6 +665,7 @@ jobs:
           docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker-compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # post cucumber database will not work as is with matrix strategy
       - name: push-results
         run: |
           find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
@@ -752,11 +753,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
-#      - name: run api health checks
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./apiHealthChecks.sh
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./apiHealthChecks.sh
       - name: create docker-compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()

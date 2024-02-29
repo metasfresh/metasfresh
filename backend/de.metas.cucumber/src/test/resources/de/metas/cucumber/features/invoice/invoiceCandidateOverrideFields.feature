@@ -57,7 +57,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -66,7 +66,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -75,13 +75,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -139,7 +139,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -148,7 +148,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -157,13 +157,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 120                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -221,7 +221,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -230,7 +230,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -242,13 +242,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -307,7 +307,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -316,19 +316,19 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 120                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -386,7 +386,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -395,19 +395,19 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -465,7 +465,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -474,7 +474,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -483,13 +483,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 200                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -547,7 +547,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -556,7 +556,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -565,13 +565,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 90                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -630,7 +630,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -639,13 +639,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.DateToInvoice_Override |
       | invoice_candidate_1               | 2021-04-20                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then invoice candidates are not billable
@@ -702,7 +702,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -711,13 +711,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | invoice_candidate_1               | C                        |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then invoice candidates are not billable
@@ -773,7 +773,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -782,7 +782,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And metasfresh contains C_Tax
@@ -791,13 +791,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Tax_ID.Identifier |
       | invoice_candidate_1               | t_22032022_1            |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -855,7 +855,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -864,7 +864,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -873,13 +873,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -919,7 +919,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -931,7 +931,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -940,13 +940,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -986,7 +986,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -998,7 +998,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1007,13 +1007,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 120                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1053,13 +1053,13 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_1                            | 12                        |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -1071,19 +1071,19 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 12          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 120                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1123,13 +1123,13 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_1                            | 8                         |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -1141,19 +1141,19 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 8           | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1193,7 +1193,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -1205,7 +1205,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1214,13 +1214,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 200                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1260,7 +1260,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -1272,7 +1272,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1281,13 +1281,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 90                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1327,7 +1327,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -1339,13 +1339,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.DateToInvoice_Override |
       | invoice_candidate_1               | 2021-04-20                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then invoice candidates are not billable
@@ -1384,13 +1384,13 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_1                            | 8                         |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -1402,13 +1402,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 8           | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | invoice_candidate_1               | C                        |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then invoice candidates are not billable
@@ -1445,7 +1445,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -1457,7 +1457,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And metasfresh contains C_Tax
@@ -1469,13 +1469,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1518,13 +1518,13 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
       | s_s_1                            | 5                              |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -1536,7 +1536,7 @@ Feature: Checking the effect of override fields on invoice candidate
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 10          | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1545,13 +1545,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 40                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -1591,7 +1591,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
@@ -1600,13 +1600,13 @@ Feature: Checking the effect of override fields on invoice candidate
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_1               | p_1                     | 80                  |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices

@@ -1248,4 +1248,13 @@ public class ADWindowDAO implements IADWindowDAO
 				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
 		return ImmutableSet.copyOf(adWindowIds);
 	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
 }

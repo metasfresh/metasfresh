@@ -39,6 +39,9 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * TODO: move all "waiting" methods to de.metas.common.util.{@link de.metas.common.util.TryAndWaitUtil}.
+ */
 @UtilityClass
 public class StepDefUtil
 {

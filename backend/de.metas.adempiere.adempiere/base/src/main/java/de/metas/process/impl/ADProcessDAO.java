@@ -624,6 +624,23 @@ public class ADProcessDAO implements IADProcessDAO
 				ITrx.TRXNAME_ThreadInherited);
 	}
 
+	@Override
+	public ProcessType retrieveProcessType(@NonNull final AdProcessId processId)
+	{
+		final I_AD_Process process = InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+		return ProcessType.ofCode(process.getType());
+	}
+
+	@Override
+	public ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
+				.create()
+				.listIds(AdProcessId::ofRepoId);
+	}
+
 	@NonNull
 	@Override
 	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)

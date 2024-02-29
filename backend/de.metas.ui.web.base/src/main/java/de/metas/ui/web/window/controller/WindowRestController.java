@@ -22,16 +22,20 @@
 
 package de.metas.ui.web.window.controller;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.reflist.ReferenceId;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.debug.DebugRestController;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
@@ -60,6 +64,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -67,8 +72,10 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -80,15 +87,20 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,6 +114,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -119,7 +132,9 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
+	@NonNull private static final Logger logger = LogManager.getLogger(DebugRestController.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 	private final UserSession userSession;
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
@@ -1059,5 +1074,75 @@ public class WindowRestController
 		final JSONDocumentChangeLog json = documentChangeLogService.getJSONDocumentChangeLog(recordRef, userSession.getAD_Language());
 		json.setPath(JSONDocumentPath.ofWindowDocumentPath(documentPath));
 		return json;
+	}
+
+	@GetMapping("/health")
+	public JsonWindowsHealthResponse healthCheck(
+			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
+	)
+	{
+		final DocumentDescriptorFactory documentDescriptorFactory = documentCollection.getDocumentDescriptorFactory();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
+				AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
+				AdWindowId.ofRepoId(540674), // Shipment Schedule Editor - placeholder window
+				AdWindowId.ofRepoId(540759), // Payment Allocation - placeholder window
+				AdWindowId.ofRepoId(540485) // Picking Terminal (v2) - placeholder window
+		);
+
+		final ImmutableSet<AdWindowId> onlyAdWindowIds = RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class);
+		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
+		final ImmutableSet<AdWindowId> adWindowIds = !onlyAdWindowIds.isEmpty() ? onlyAdWindowIds : allAdWidowIds;
+
+		final ArrayList<JsonWindowsHealthResponse.Entry> errors = new ArrayList<>();
+		final int countTotal = adWindowIds.size();
+		int countCurrent = 0;
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		for (final AdWindowId adWindowId : adWindowIds)
+		{
+			countCurrent++;
+
+			if (skipAdWindowIds.contains(adWindowId))
+			{
+				continue;
+			}
+
+			final WindowId windowId = WindowId.of(adWindowId);
+			try
+			{
+				if (!allAdWidowIds.contains(adWindowId))
+				{
+					throw new AdempiereException("Not an existing/active window");
+				}
+
+				documentDescriptorFactory.invalidateForWindow(windowId);
+				final DocumentDescriptor documentDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
+				documentDescriptorFactory.invalidateForWindow(windowId);
+
+				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
+			}
+			catch (final Exception ex)
+			{
+				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
+
+				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
+				errors.add(JsonWindowsHealthResponse.Entry.builder()
+						.windowId(windowId)
+						.windowName(windowName)
+						.error(JsonErrors.ofThrowable(cause, adLanguage))
+						.build());
+			}
+		}
+
+		stopwatch.stop();
+
+		return JsonWindowsHealthResponse.builder()
+				.took(stopwatch.toString())
+				.countTotal(countTotal)
+				.errors(errors)
+				.build();
 	}
 }
