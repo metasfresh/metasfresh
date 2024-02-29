@@ -23,6 +23,7 @@
 package org.compiere;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -142,10 +143,7 @@ public final class SpringContextHolder
 		if (Adempiere.isUnitTestMode())
 		{
 			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
-			if (beanImpl != null)
-			{
-				return beanImpl;
-			}
+			return CoalesceUtil.coalesce(beanImpl, defaultImplementation);
 		}
 
 		final ApplicationContext springApplicationContext = getApplicationContext();
