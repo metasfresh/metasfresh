@@ -89,9 +89,9 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
-      | invoice_1               | p_2                     | 5           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | il_1                        | invoice_1               | p_1                     | 10          | true      |
+      | il_2                        | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
   Scenario: case 20
@@ -176,9 +176,9 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
-      | invoice_1               | p_2                     | 5           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | il_1                        | invoice_1               | p_1                     | 10          | true      |
+      | il_2                        | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
   Scenario: case 30
@@ -262,9 +262,9 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
-      | invoice_1               | p_2                     | 5           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | il_1                        | invoice_1               | p_1                     | 10          | true      |
+      | il_2                        | invoice_1               | p_2                     | 5           | true      |
 
   @from:cucumber
   Scenario: case 40
@@ -351,9 +351,9 @@ Feature: invoice generation and invoice candidates aggregation
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
       | invoice_2               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 99              |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
-      | invoice_2               | p_2                     | 5           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | il_1                        | invoice_1               | p_1                     | 10          | true      |
+      | il_2                        | invoice_2               | p_2                     | 5           | true      |
     And update C_AggregationItem
       | C_AggregationItem_ID.Identifier | IsActive |
       | a_1                             | false    |
@@ -442,9 +442,9 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
-      | invoice_1               | p_2                     | 5           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | il_1                        | invoice_1               | p_1                     | 10          | true      |
+      | il_2                        | invoice_1               | p_2                     | 5           | true      |
     And update C_AggregationItem
       | C_AggregationItem_ID.Identifier | IsActive |
       | a_1                             | false    |
