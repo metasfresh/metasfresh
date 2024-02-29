@@ -733,7 +733,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final String trxName)
 	{
-		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveIcForSelection(ctx, AD_PInstance_ID, trxName);
+		final Iterator<I_C_Invoice_Candidate> candidates =
+				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
 		return generateInvoices()
 				.setContext(ctx, trxName)
@@ -2627,11 +2628,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final org.compiere.model.I_M_InOut inOut = inoutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 
-		if (docStatus.equals(DocStatus.InProgress) || docStatus.equals(DocStatus.Reversed))
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("DocStatus for M_InOutLine_ID={} is {}", inOutLine.getM_InOutLine_ID(), docStatus.getCode());
+
+		if (docStatus.equals(DocStatus.Completed) || docStatus.equals(DocStatus.Closed))
 		{
-			return ZERO;
+			return inOutLine.getMovementQty();
 		}
 
-		return inOutLine.getMovementQty();
+		return ZERO;
 	}
 }
