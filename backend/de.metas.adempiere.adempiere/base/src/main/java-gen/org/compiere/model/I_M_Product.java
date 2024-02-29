@@ -2670,4 +2670,25 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+    /**
+     * Set QRCode_Configuration_ID.
+     *
+     * <br>Type: TableDir
+     * <br>Mandatory: false
+     * <br>Virtual Column: false
+     */
+    void setQRCode_Configuration_ID(int QRCode_Configuration_ID);
+
+    /**
+     * Get QRCode_Configuration_ID.
+     *
+     * <br>Type: TableDir
+     * <br>Mandatory: false
+     * <br>Virtual Column: false
+     */
+    int getQRCode_Configuration_ID();
+
+    ModelColumn<I_M_Product, Object> COLUMN_QRCode_Configuration_ID = new ModelColumn<>(I_M_Product.class, "QRCode_Configuration_ID", null);
+    String COLUMNNAME_QRCode_Configuration_ID = "QRCode_Configuration_ID";
 }

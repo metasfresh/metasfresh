@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -216,6 +217,7 @@ public class ManufacturingJobLoaderAndSaver
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
+		final String locatorCaption = supportingServices.getLocatorName(schedule.getIssueFromLocatorId());
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
 				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
@@ -224,14 +226,18 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-						.id(schedule.getIssueFromLocatorId())
-						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
-						.build())
+										  .id(schedule.getIssueFromLocatorId())
+										  .caption(locatorCaption)
+										  .qrCode(LocatorQRCode.builder()
+														  .locatorId(schedule.getIssueFromLocatorId())
+														  .caption(locatorCaption)
+														  .build())
+										  .build())
 				.issueFromHU(HUInfo.builder()
-						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-						.huCapacity(getHUCapacity(schedule))
-						.build())
+									 .id(schedule.getIssueFromHUId())
+									 .huCapacity(getHUCapacity(schedule))
+									 .barcode(supportingServices.getQRCodeByHuIdIfExists(schedule.getIssueFromHUId()))
+									 .build())
 				.issued(schedule.getIssued())
 				.build();
 	}

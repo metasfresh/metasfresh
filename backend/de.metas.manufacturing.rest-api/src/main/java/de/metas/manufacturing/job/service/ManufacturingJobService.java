@@ -133,6 +133,7 @@ public class ManufacturingJobService
 		return newLoader().load(ppOrderId);
 	}
 
+	@NonNull
 	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);

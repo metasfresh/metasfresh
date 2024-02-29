@@ -1778,4 +1778,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+    @Override
+    public void setQRCode_Configuration_ID (final int QRCode_Configuration_ID)
+    {
+        set_Value (COLUMNNAME_QRCode_Configuration_ID, QRCode_Configuration_ID);
+    }
+
+    @Override
+    public int getQRCode_Configuration_ID()
+    {
+        return get_ValueAsInt(COLUMNNAME_QRCode_Configuration_ID);
+    }
 }

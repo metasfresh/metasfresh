@@ -40,6 +40,7 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -57,6 +58,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -172,6 +175,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
 	// Handling Unit PI Retrieval
 
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
@@ -243,6 +248,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves the default LU.
@@ -327,4 +335,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void save(@NonNull I_M_HU_PI huPi);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
+	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
 }
