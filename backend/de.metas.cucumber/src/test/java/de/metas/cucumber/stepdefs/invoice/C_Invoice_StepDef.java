@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -74,6 +75,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -243,62 +245,8 @@ public class C_Invoice_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadInvoice(tableRow));
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadInvoice(tableRow));
 		}
-	}
-
-	@Deprecated
-	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
-	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
-
-		//make sure the given invoice candidate is ready for processing
-		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
-		{
-			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-
-			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
-
-		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
-
-		//enqueue invoice candidate
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		final Supplier<Boolean> invoiceCreated = () ->
-		{
-			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-			if (invoices.isEmpty())
-			{
-				return false;
-			}
-			assertThat(invoices.size())
-					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
-					.isEqualTo(1);
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			invoiceTable.put(invoiceIdentifier, invoices.get(0));
-			return true;
-		};
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
 	}
 
 	@And("metasfresh contains C_Invoice:")
@@ -468,7 +416,7 @@ public class C_Invoice_StepDef
 		}
 	}
 
-	public Boolean loadInvoice(@NonNull final Map<String, String> row)
+	public ProviderResult<List<I_C_Invoice>> loadInvoice(@NonNull final Map<String, String> row)
 	{
 		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
@@ -479,11 +427,15 @@ public class C_Invoice_StepDef
 		}
 
 		final boolean lookingForMultipleInvoices = invoiceIdentifiers.size() > 1;
+		if (lookingForMultipleInvoices)
+		{
+			return loadMultipleInvoices(row);
+		}
 
-		return lookingForMultipleInvoices ? loadMultipleInvoices(row) : loadSingleInvoiceByDocStatus(row);
+		return loadSingleInvoiceByDocStatus(row);
 	}
 
-	private Boolean loadMultipleInvoices(@NonNull final Map<String, String> row)
+	private ProviderResult<List<I_C_Invoice>> loadMultipleInvoices(@NonNull final Map<String, String> row)
 	{
 		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
@@ -502,7 +454,7 @@ public class C_Invoice_StepDef
 
 		if (invoiceIds.size() != invoiceIdentifiers.size())
 		{
-			return false;
+			ProviderResult.resultWasNotFound("We expected one C_Invoice for each identified, but got {0} invoices instead; C_Invoice_ID.Identifier={1} ", invoiceIds.size(), invoiceIdCandidate);
 		}
 
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
@@ -518,12 +470,19 @@ public class C_Invoice_StepDef
 			invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoices.get(invoiceIndex));
 		}
 
-		return true;
+		return ProviderResult.resultWasFound(invoices);
 	}
 
-	private Boolean loadSingleInvoiceByDocStatus(@NonNull final Map<String, String> row)
+	private ProviderResult<List<I_C_Invoice>> loadSingleInvoiceByDocStatus(@NonNull final Map<String, String> row)
 	{
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String invoiceCandIdentifierString = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ImmutableList<String> invoiceCandIdentifiers = StepDefUtil.extractIdentifiers(invoiceCandIdentifierString);
+
+		ImmutablePair<String, I_C_Invoice> lastInvoicePair = null; // needed if we have multiple IC-IDs
+
+		// if there are >1 identifiers, we expect all of them to have ended up in the same invoice
+		for (final String invoiceCandIdentifier : invoiceCandIdentifiers)
+		{
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
@@ -536,7 +495,7 @@ public class C_Invoice_StepDef
 
 		if (invoiceIds.isEmpty())
 		{
-			return false;
+				return ProviderResult.resultWasNotFound("Found no C_Invoice for C_Invoice_Candidate_ID.IDENTIFIER={0} (C_Invoice_Candidate_ID={1})", invoiceCandIdentifier, invoiceCandidate.getC_Invoice_Candidate_ID());
 		}
 
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
@@ -545,19 +504,27 @@ public class C_Invoice_StepDef
 		final String docStatus = Optional.ofNullable(invoiceStatus)
 				.orElse(X_C_Invoice.DOCACTION_Complete);
 
-		final Optional<I_C_Invoice> invoice = invoices.stream()
+			final Optional<I_C_Invoice> currentInvoice = invoices.stream()
 				.filter(i -> i.getDocStatus().equals(docStatus))
 				.findFirst();
 
-		if (!invoice.isPresent())
-		{
-			return false;
-		}
+			if (!currentInvoice.isPresent())
+			{
+				return ProviderResult.resultWasNotFound("Found no *completed* C_Invoice for C_Invoice_Candidate_ID.IDENTIFIER={0} (C_Invoice_Candidate_ID={1}). Checked invoices={2}", invoiceCandIdentifier, invoiceCandidate.getC_Invoice_Candidate_ID(), invoices);
+			}
+
+			final ImmutablePair<String, I_C_Invoice> currentInvoicePair = ImmutablePair.of(invoiceCandIdentifier, currentInvoice.get());
+
+			if (lastInvoicePair != null && lastInvoicePair.getRight().getC_Invoice_ID() != currentInvoice.get().getC_Invoice_ID())
+			{
+				return ProviderResult.resultWasNotFound("At least two different ICs ended up in different invoices: lastInfoice={0}; currentInvoice={1}", lastInvoicePair, currentInvoicePair);
+			}
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice.get());
-
-		return true;
+			invoiceTable.putOrReplace(invoiceIdentifier, currentInvoice.get());
+			lastInvoicePair = currentInvoicePair;
+		}
+		return ProviderResult.resultWasFound(ImmutableList.of(lastInvoicePair.getRight()));
 	}
 
 	private void create_C_Invoice(@NonNull final Map<String, String> row)
