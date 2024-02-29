@@ -42,7 +42,7 @@ public class C_DocType
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Document_Action_Access.class)
-				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_C_DocType_ID, docTypeRecord.getC_DocType_ID())
+				.addEqualsFilter(I_AD_Document_Action_Access.COLUMN_C_DocType_ID, docTypeRecord.getC_DocType_ID())
 				.create()
 				.delete();
 	}

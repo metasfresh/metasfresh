@@ -1,200 +1,265 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Document_Action_Access
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_AD_Document_Action_Access 
 {
 
-	String Table_Name = "AD_Document_Action_Access";
+    /** TableName=AD_Document_Action_Access */
+    public static final String Table_Name = "AD_Document_Action_Access";
 
-//	/** AD_Table_ID=53012 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=53012 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 6 - System - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Client>(I_AD_Document_Action_Access.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Document Action Access.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Document_Action_Access_ID (int AD_Document_Action_Access_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Document Action Access.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Document_Action_Access_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for AD_Document_Action_Access_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_AD_Document_Action_Access_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object>(I_AD_Document_Action_Access.class, "AD_Document_Action_Access_ID", null);
+    /** Column name AD_Document_Action_Access_ID */
+    public static final String COLUMNNAME_AD_Document_Action_Access_ID = "AD_Document_Action_Access_ID";
 
 	/**
-	 * Set Reference List.
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Org>(I_AD_Document_Action_Access.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Referenzliste.
 	 * Reference List based on Table
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Ref_List_ID (int AD_Ref_List_ID);
+	public void setAD_Ref_List_ID (int AD_Ref_List_ID);
 
 	/**
-	 * Get Reference List.
+	 * Get Referenzliste.
 	 * Reference List based on Table
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Ref_List_ID();
+	public int getAD_Ref_List_ID();
 
-	org.compiere.model.I_AD_Ref_List getAD_Ref_List();
+	public org.compiere.model.I_AD_Ref_List getAD_Ref_List();
 
-	void setAD_Ref_List(org.compiere.model.I_AD_Ref_List AD_Ref_List);
+	public void setAD_Ref_List(org.compiere.model.I_AD_Ref_List AD_Ref_List);
 
-	ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Ref_List> COLUMN_AD_Ref_List_ID = new ModelColumn<>(I_AD_Document_Action_Access.class, "AD_Ref_List_ID", org.compiere.model.I_AD_Ref_List.class);
-	String COLUMNNAME_AD_Ref_List_ID = "AD_Ref_List_ID";
+    /** Column definition for AD_Ref_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Ref_List> COLUMN_AD_Ref_List_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Ref_List>(I_AD_Document_Action_Access.class, "AD_Ref_List_ID", org.compiere.model.I_AD_Ref_List.class);
+    /** Column name AD_Ref_List_ID */
+    public static final String COLUMNNAME_AD_Ref_List_ID = "AD_Ref_List_ID";
 
 	/**
-	 * Set Role.
+	 * Set Rolle.
 	 * Responsibility Role
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Role_ID (int AD_Role_ID);
+	public void setAD_Role_ID (int AD_Role_ID);
 
 	/**
-	 * Get Role.
+	 * Get Rolle.
 	 * Responsibility Role
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Role_ID();
+	public int getAD_Role_ID();
 
-	org.compiere.model.I_AD_Role getAD_Role();
+	public org.compiere.model.I_AD_Role getAD_Role();
 
-	void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
+	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
 
-	ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_AD_Document_Action_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
-	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+    /** Column definition for AD_Role_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_Role>(I_AD_Document_Action_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+    /** Column name AD_Role_ID */
+    public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
-	 * Set Document Type.
+	 * Set Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocType_ID (int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Document Type.
+	 * Get Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_DocType_ID();
+	public int getC_DocType_ID();
 
-	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_C_DocType>(I_AD_Document_Action_Access.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_Created = new ModelColumn<>(I_AD_Document_Action_Access.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object>(I_AD_Document_Action_Access.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_User>(I_AD_Document_Action_Access.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Document_Action_Access.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object>(I_AD_Document_Action_Access.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Document_Action_Access.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, Object>(I_AD_Document_Action_Access.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Document_Action_Access, org.compiere.model.I_AD_User>(I_AD_Document_Action_Access.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
