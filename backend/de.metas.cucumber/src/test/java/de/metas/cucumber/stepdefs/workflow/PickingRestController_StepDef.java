@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -105,7 +105,8 @@ public class PickingRestController_StepDef
 				.wfProcessId(row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable).getId())
 				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getActivityId())
 				.type(JsonPickingStepEvent.EventType.PICK)
-				.pickingLineId(row.getAsIdentifier("PickingLine").lookupIn(workflowPickingLineTable).getPickingLineId())
+				// this field is and shall be present in master
+				// .pickingLineId(row.getAsIdentifier("PickingLine").lookupIn(workflowPickingLineTable).getPickingLineId())
 				.pickingStepId(row.getAsIdentifier("PickingStep").lookupIn(workflowPickingStepTable).getPickingStepId())
 				.huQRCode(row.getAsIdentifier("PickingStepQRCode").lookupIn(qrCodeTable).getCode())
 				.qtyPicked(row.getAsBigDecimal(COLUMNNAME_QtyPicked))
