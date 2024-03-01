@@ -8,4 +8,4 @@ In the `B2BService.xml` file, the credentials have to be specified in the follow
   - ` <sc1:CallbackHandler name="usernameHandler" default="userid" />`
   - ` <sc1:CallbackHandler name="passwordHandler" default="password"/>`
 
-Change `userid` and `password` according to your needs.
+Change `userid` and `password` according to your needs
