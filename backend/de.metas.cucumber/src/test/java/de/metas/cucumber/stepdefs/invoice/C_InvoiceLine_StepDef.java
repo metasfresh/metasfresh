@@ -140,7 +140,7 @@ public class C_InvoiceLine_StepDef
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
 			assertThat(productID).isNotNull();
 
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
+			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
 																				   .filter(line -> line.getM_Product_ID() == productID)
