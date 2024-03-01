@@ -81,7 +81,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
 
@@ -231,7 +231,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -343,7 +343,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -474,7 +474,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
@@ -552,7 +552,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
@@ -645,7 +645,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 888            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        | Shopware                               |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | QtyInvoiced | price | discount | currencyCode | processed |
       | c_ol_1                    | order_1               | 2021-10-13      | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
 
     And validate created invoices
@@ -653,6 +653,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

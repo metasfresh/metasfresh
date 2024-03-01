@@ -103,7 +103,7 @@ public class C_InvoiceLine_StepDef
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
+			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
 			//dev-note: we assume the tests are not using the same product and qty on different lines
 			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
@@ -158,8 +158,8 @@ public class C_InvoiceLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_C_InvoiceLine.COLUMNNAME_Processed);
 
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
