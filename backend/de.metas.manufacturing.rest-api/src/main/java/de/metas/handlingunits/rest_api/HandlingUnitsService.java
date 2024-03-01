@@ -55,6 +55,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -64,7 +65,6 @@ import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
-import de.metas.handlingunits.rest_api.move_hu.MoveHURequestItem;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
@@ -573,7 +573,7 @@ public class HandlingUnitsService
 		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
 		final HuId huIdToUpdate = request.isSplitOneIfAggregated()
-				? huTransformService.extractToTopLevelByQRCode(huId, huqrCode)
+				? huTransformService.extractToTopLevel(huId, huqrCode)
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()

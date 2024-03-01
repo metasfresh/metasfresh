@@ -3,14 +3,15 @@ package de.metas.handlingunits.qrcodes.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -26,7 +27,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
@@ -221,11 +221,7 @@ public class HUQRCodesService
 		}
 		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
 		{
-			return generateForExistingHUs(
-					HUQRCodeGenerateForExistingHUsRequest.builder()
-							.huIds(ImmutableSet.of(huId))
-							.build())
-					.getSingleQRCode(huId);
+			return generateForExistingHUs(ImmutableSet.of(huId)).getSingleQRCode(huId);
 		}
 		else
 		{

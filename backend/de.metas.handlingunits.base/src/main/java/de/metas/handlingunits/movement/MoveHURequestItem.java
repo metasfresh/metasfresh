@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,27 @@
  * #L%
  */
 
-package de.metas.handlingunits.rest_api.move_hu;
+package de.metas.handlingunits.movement;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.QtyTU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class HUIdAndQRCode
+public class MoveHURequestItem
 {
-	@NonNull HuId huId;
-	@NonNull HUQRCode huQRCode;
+	@NonNull HUIdAndQRCode huIdAndQRCode;
+	@Nullable QtyTU numberOfTUs;
+
+	@NonNull
+	public static MoveHURequestItem ofHUIdAndQRCode(@NonNull final HUIdAndQRCode huIdAndQRCode)
+	{
+		return MoveHURequestItem.builder()
+				.huIdAndQRCode(huIdAndQRCode)
+				.build();
+	}
 }

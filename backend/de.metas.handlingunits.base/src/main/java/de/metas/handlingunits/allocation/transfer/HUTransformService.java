@@ -25,7 +25,6 @@ package de.metas.handlingunits.allocation.transfer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -43,15 +42,12 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
-import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -1456,7 +1452,7 @@ public class HUTransformService
 	@NonNull
 	public Set<HuId> extractFromAggregatedByQrCode(
 			@NonNull final HuId aggregatedHuId,
-			@NonNull final HUQRCode huQRCode,
+			@Nullable final HUQRCode huQRCode,
 			@NonNull final QtyTU qtyTU,
 			@Nullable final HuPackingInstructionsItemId newLUPackingItem)
 	{
@@ -1469,14 +1465,23 @@ public class HUTransformService
 					.setParameter("huId", aggregatedHuId);
 		}
 
-		if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
+		final Consumer<ImmutableSet<HuId>> propagateQRConsumer;
+		if (huQRCode != null)
 		{
-			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as OneQrCodeForAggregatedHUs is not enabled!")
-					.appendParametersToMessage()
-					.setParameter("huId", aggregatedHuId);
-		}
+			if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
+			{
+				throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as OneQrCodeForAggregatedHUs is not enabled!")
+						.appendParametersToMessage()
+						.setParameter("huId", aggregatedHuId);
+			}
 
-		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, aggregatedHuId);
+			huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, aggregatedHuId);
+			propagateQRConsumer = (newHUIds) ->  huQRCodesService.get().assign(huQRCode, newHUIds);
+		}
+		else
+		{
+			propagateQRConsumer = (newHUIds) -> {};
+		}
 
 		if (newLUPackingItem != null)
 		{
@@ -1488,7 +1493,7 @@ public class HUTransformService
 					.map(I_M_HU::getM_HU_ID)
 					.map(HuId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
-			huQRCodesService.get().assign(huQRCode, newAggreagtedHUIds);
+			propagateQRConsumer.accept(newAggreagtedHUIds);
 			return newLUs.stream()
 					.map(I_M_HU::getM_HU_ID)
 					.map(HuId::ofRepoId)
@@ -1497,7 +1502,7 @@ public class HUTransformService
 		else
 		{
 			final ImmutableSet<HuId> splitHuIds = splitOutTUsFromAggregated(hu, qtyTU);
-			huQRCodesService.get().assign(huQRCode, splitHuIds);
+			propagateQRConsumer.accept(splitHuIds);
 			return splitHuIds;
 		}
 	}

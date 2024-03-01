@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -176,14 +177,15 @@ public class PickingJobUnPickCommand
 			return;
 		}
 
-		final ImmutableList<HUIdAndQRCode> huIdAndQRCodeList = pickedToHUs.stream()
+		final ImmutableList<MoveHURequestItem> requestItems = pickedToHUs.stream()
 				.map(PickingJobStepPickedToHU::getActualPickedHUId)
 				.map(HUIdAndQRCode::ofHuId)
+				.map(MoveHURequestItem::ofHUIdAndQRCode)
 				.collect(ImmutableList.toImmutableList());
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodesService)
-				.husToMove(huIdAndQRCodeList)
+				.requestItems(requestItems)
 				.targetQRCode(unpickToHU.toGlobalQRCode())
 				.build()
 				.execute();
