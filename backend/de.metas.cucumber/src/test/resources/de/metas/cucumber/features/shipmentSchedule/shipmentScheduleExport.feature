@@ -64,7 +64,7 @@ Feature: Shipment schedule export rest-api
       | Name                                              | AD_User_ID.Identifier |
       | de.metas.rest_api.v2.shipping.c_olcand.OxidUserId | loginUser             |
 
-    And reset all cache
+    And the metasfresh cache is reset
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -158,7 +158,7 @@ Feature: Shipment schedule export rest-api
   @Id:S0150_220
   Scenario: Export non-oxid shipment schedule from order candidate
     Given set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
-    And reset all cache
+    And the metasfresh cache is reset
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
