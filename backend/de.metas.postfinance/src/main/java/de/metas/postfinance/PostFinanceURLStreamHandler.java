@@ -43,8 +43,6 @@ public class PostFinanceURLStreamHandler extends URLStreamHandler
 	@Override
 	protected URLConnection openConnection(final URL u) throws IOException
 	{
-		//TODO: add SysConfig with value like file:/opt/metasfresh/config/B2BService.xml that can be mounted on the Server (local testing example: "file:/C:/work-metas/.testfiles/B2BService.xml")
-		//TODO: add README to explain config with B2BService.xml on test and prod Servers
 
 		final String externalURL = sysConfigBL.getValue(SYS_CONFIG_SERVICE_URL, SYS_CONFIG_SERVICE_URL_DEACTIVATED_VALUE);
 		Check.assumeNotNull(externalURL, "SysConfig value shouldn't be null");
