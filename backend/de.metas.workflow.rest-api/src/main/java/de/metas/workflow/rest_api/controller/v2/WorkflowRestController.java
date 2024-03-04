@@ -269,7 +269,6 @@ public class WorkflowRestController
 	@PostMapping("/errors")
 	public void logErrors(@RequestBody @NonNull final JsonError error)
 	{
-		System.out.println("/errors: " + error);
 		error.getErrors().stream()
 				.map(WorkflowRestController::toInsertRemoteIssueRequest)
 				.forEach(errorManager::insertRemoteIssue);
