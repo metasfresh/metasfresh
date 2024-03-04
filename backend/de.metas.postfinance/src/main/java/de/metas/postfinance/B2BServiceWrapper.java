@@ -37,11 +37,17 @@ import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_ME
 @Service
 public class B2BServiceWrapper
 {
+	private final B2BService port;
+
+	public B2BServiceWrapper()
+	{
+		port = new B2BService_Service().getUserNamePassword();
+	}
+
 	@NonNull
 	public List<DownloadFile> getCustomerRegistrationMessageFiles()
 	{
 		// TODO: add real billerId
-		final B2BService port = new B2BService_Service().getUserNamePassword();
 		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList("billerId", false);
 		return arrayOfProtocolReport.getProtocolReport()
 				.stream()
