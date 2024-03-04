@@ -16,7 +16,7 @@ export function getSettings() {
 }
 
 export const logErrorToBackend = (error, info) => {
-  console.log('logErrorToBackend', { error, info });
+  console.log('Sending error to backend...', { error, info });
 
   axios
     .post(`${API}/errors`, {
