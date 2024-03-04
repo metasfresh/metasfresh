@@ -142,10 +142,11 @@ public class MaterialCockpitFilters
 	private IQueryBuilder<I_MD_Cockpit> augmentQueryBuilderWithOrderBy(@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
 	{
 		return queryBuilder
+				.orderByDescending(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate)
 				.orderBy()
-				.addColumn(I_MD_Cockpit.COLUMN_DateGeneral)
+				.addColumn(I_MD_Cockpit.COLUMNNAME_DateGeneral)
 				.addColumn(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
-				.addColumn(I_MD_Cockpit.COLUMN_AttributesKey)
+				.addColumn(I_MD_Cockpit.COLUMNNAME_AttributesKey)
 				.endOrderBy();
 	}
 
