@@ -8,6 +8,7 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.postfinance</groupId>

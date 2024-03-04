@@ -37,6 +37,7 @@
             <groupId>de.metas.postfinance</groupId>
             <artifactId>de.metas.postfinance.protocol</artifactId>
             <version>${metasfresh.version}</version>
+            <type>jar</type>
         </dependency>
 
         <dependency>
