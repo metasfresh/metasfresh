@@ -204,5 +204,12 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<extensions>
+			<extension>
+				<groupId>de.metas.postfinance</groupId>
+				<artifactId>de.metas.postfinance.protocol</artifactId>
+				<version>${metasfresh.version}</version>
+			</extension>
+		</extensions>
 	</build>
 </project>
