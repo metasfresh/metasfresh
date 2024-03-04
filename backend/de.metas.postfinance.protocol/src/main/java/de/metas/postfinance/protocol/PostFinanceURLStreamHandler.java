@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.postfinance
+ * de.metas.postfinance.protocol
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.protocol;
 
 import de.metas.util.Check;
 import de.metas.util.Services;

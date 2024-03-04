@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.postfinance
+ * de.metas.postfinance.protocol
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.protocol;
 
-import org.jetbrains.annotations.Nullable;
-
+import javax.annotation.Nullable;
 import java.net.URLStreamHandler;
 import java.net.spi.URLStreamHandlerProvider;
 public class PostFinanceURLStreamHandlerProvider extends URLStreamHandlerProvider
