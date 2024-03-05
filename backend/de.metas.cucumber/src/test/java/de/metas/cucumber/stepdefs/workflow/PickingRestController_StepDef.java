@@ -26,8 +26,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
 import de.metas.cucumber.stepdefs.workflow.dto.WFActivityId;
 import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
@@ -56,6 +58,7 @@ public class PickingRestController_StepDef
 	private final JsonWFPickingLine_StepDefData workflowPickingLineTable;
 	private final JsonWFPickingStep_StepDefData workflowPickingStepTable;
 	private final JsonWFHQRCode_StepDefData qrCodeTable;
+	private final HUQRCode_StepDefData huQrCodeStorage;
 
 	@And("process response and extract picking step and main HU picking candidate:")
 	public void extract_picking_information(@NonNull final DataTable dataTable) throws JsonProcessingException
@@ -84,12 +87,15 @@ public class PickingRestController_StepDef
 			final JsonPickingJobLine pickingLine = objectMapper.treeToValue(pickingLinesNodes.get(0), JsonPickingJobLine.class);
 			row.getAsIdentifier("PickingLine").put(workflowPickingLineTable, pickingLine);
 
-			final JsonNode pickingStepsNodes = pickingLinesNodes.get(0).at("/steps");
-			assertThat(pickingStepsNodes.size()).isOne();
-			final JsonWFPickingStep pickingStep = objectMapper.treeToValue(pickingStepsNodes.get(0), JsonWFPickingStep.class);
+			if (row.getAsOptionalString("PickingStep").isPresent())
+			{
+				final JsonNode pickingStepsNodes = pickingLinesNodes.get(0).at("/steps");
+				assertThat(pickingStepsNodes.size()).isOne();
+				final JsonWFPickingStep pickingStep = objectMapper.treeToValue(pickingStepsNodes.get(0), JsonWFPickingStep.class);
 
-			row.getAsIdentifier("PickingStep").put(workflowPickingStepTable, pickingStep);
-			row.getAsIdentifier("PickingStepQRCode").put(qrCodeTable, pickingStep.getMainPickFrom().getHuQRCode());
+				row.getAsIdentifier("PickingStep").put(workflowPickingStepTable, pickingStep);
+				row.getAsIdentifier("PickingStepQRCode").put(qrCodeTable, pickingStep.getMainPickFrom().getHuQRCode());
+			}
 		}
 	}
 
@@ -158,8 +164,17 @@ public class PickingRestController_StepDef
 				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getActivityId())
 				.type(JsonPickingStepEvent.EventType.PICK)
 				.pickingLineId(row.getAsIdentifier("PickingLine").lookupIn(workflowPickingLineTable).getPickingLineId())
-				.pickingStepId(row.getAsIdentifier("PickingStep").lookupIn(workflowPickingStepTable).getPickingStepId())
-				.huQRCode(row.getAsIdentifier("PickingStepQRCode").lookupIn(qrCodeTable).getCode())
+				.pickingStepId(row.getAsOptionalIdentifier("PickingStep")
+									   .map(pickingStepIdentifier -> pickingStepIdentifier.lookupIn(workflowPickingStepTable))
+									   .map(JsonWFPickingStep::getPickingStepId)
+									   .orElse(null))
+				.huQRCode(row.getAsOptionalIdentifier("PickingStepQRCode")
+								  .map(pickingStepQRIdentifier -> pickingStepQRIdentifier.lookupIn(qrCodeTable))
+								  .map(JsonHUQRCode::getCode)
+								  .orElseGet(() -> row.getAsIdentifier("HUQRCode")
+										  .lookupIn(huQrCodeStorage)
+										  .toGlobalQRCode()
+										  .getAsString()))
 				.qtyPicked(row.getAsBigDecimal(COLUMNNAME_QtyPicked))
 				.build();
 	}

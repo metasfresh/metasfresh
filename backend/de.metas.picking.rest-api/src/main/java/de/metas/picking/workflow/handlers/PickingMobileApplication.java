@@ -55,6 +55,7 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
+	import de.metas.util.Check;
 	import de.metas.workflow.rest_api.model.MobileApplicationId;
 	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
@@ -367,7 +368,10 @@
 					.bestBeforeDate(json.getBestBeforeDate())
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
-					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
+					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode())
+												  .filter(Check::isNotBlank)
+												  .map(HUQRCode::fromGlobalQRCodeJsonString)
+												  .orElse(null))
 					.build();
 		}
 
