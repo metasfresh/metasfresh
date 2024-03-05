@@ -12,7 +12,6 @@ export default class CostPrice extends PureComponent {
   /**
    * @method localOnBlur
    * @summary - proxy onBlur that also sets the visibility before passing further the event to the onBlur function from the props
-   * @param {DOM event} e
    */
   localOnBlur = (e) => {
     const { onBlur } = this.props;
@@ -61,4 +60,5 @@ CostPrice.propTypes = {
   onBlur: PropTypes.func.isRequired,
   value: PropTypes.string,
   precision: PropTypes.number,
+  disabled: PropTypes.bool,
 };
