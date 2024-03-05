@@ -22,16 +22,7 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
-
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -39,6 +30,13 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /* package */class HUAttributeStorage extends AbstractHUAttributeStorage
 {

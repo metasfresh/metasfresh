@@ -39,7 +39,11 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -51,6 +55,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -67,6 +72,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 @Service
 public class ManufacturingJobService
@@ -124,6 +132,7 @@ public class ManufacturingJobService
 
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
 
+	@NonNull
 	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
@@ -184,9 +193,11 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-				.onlyCompleted(true)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.build());
+														   .onlyCompleted(true)
+														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
+														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+														   .build());
 	}
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
@@ -196,6 +207,8 @@ public class ManufacturingJobService
 	{
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
+				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
 				.responsibleId(ValueRestriction.isNull());
 
 		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();
@@ -461,10 +474,21 @@ public class ManufacturingJobService
 
 	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
 	{
+		final Quantity roundingToQty = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+				.filter(Check::isNotBlank)
+				.map(BigDecimal::new)
+				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+							.filter(Check::isNotBlank)
+							.map(Integer::parseInt)
+							.map(UomId::ofRepoId)
+							.map(uomId -> Quantitys.create(qtyBD, uomId)))
+				.orElse(null);
+
 		return ScaleDevice.builder()
 				.deviceId(deviceAccessor.getId())
 				.caption(deviceAccessor.getDisplayName())
 				.websocketEndpoint(deviceWebsocketNamingStrategy.toWebsocketEndpoint(deviceAccessor.getId()))
+				.roundingToScale(roundingToQty)
 				.build();
 	}
 

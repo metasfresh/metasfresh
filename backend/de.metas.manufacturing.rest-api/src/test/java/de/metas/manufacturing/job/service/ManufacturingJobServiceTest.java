@@ -4,6 +4,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
@@ -12,6 +13,8 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -39,7 +42,7 @@ class ManufacturingJobServiceTest
 
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService())
+				new HUQtyService(new InventoryService(new InventoryRepository(), new SourceHUsService()))
 		);
 		
 		this.manufacturingJobService = new ManufacturingJobService(
@@ -51,7 +54,8 @@ class ManufacturingJobServiceTest
 				new DeviceWebsocketNamingStrategy("/test/"),
 				new HUQRCodesService(
 						new HUQRCodesRepository(),
-						new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository()))
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

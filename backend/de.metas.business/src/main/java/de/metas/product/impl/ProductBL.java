@@ -489,8 +489,7 @@ public final class ProductBL implements IProductBL
 			return TranslatableStrings.anyLanguage("<" + productId + ">");
 		}
 
-		return InterfaceWrapperHelper.getModelTranslationMap(product)
-				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
+		return getProductNameTrl(product);
 	}
 
 	@Override
@@ -559,4 +558,17 @@ public final class ProductBL implements IProductBL
 		return productsRepo.getIssuingToleranceSpec(productId);
 	}
 
+	@Override
+	@NonNull
+	public ITranslatableString getProductNameTrl(@NonNull final I_M_Product product)
+	{
+		return InterfaceWrapperHelper.getModelTranslationMap(product)
+				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
+	}
+
+	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
+	}
 }

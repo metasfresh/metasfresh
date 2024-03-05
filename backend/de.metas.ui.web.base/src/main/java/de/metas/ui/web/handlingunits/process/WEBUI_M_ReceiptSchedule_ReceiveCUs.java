@@ -219,7 +219,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		}
 		final I_M_HU vhu = hus.get(0);
 
-		updateAttributes(vhu, receiptSchedule);
+		huReceiptScheduleBL.updatePlanningHUAttributes(vhu, receiptSchedule);
 
 		InterfaceWrapperHelper.setTrxName(vhu, ITrx.TRXNAME_None);
 		return vhu;

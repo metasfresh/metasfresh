@@ -18,6 +18,7 @@ import java.util.List;
 public class JsonRawMaterialsIssueLine
 {
 	@NonNull String productName;
+	@NonNull String productValue;
 	@NonNull String uom;
 	@NonNull List<JsonHazardSymbol> hazardSymbols;
 	@NonNull List<JsonAllergen> allergens;
@@ -30,7 +31,7 @@ public class JsonRawMaterialsIssueLine
 	@Nullable String userInstructions;
 
 	@NonNull BigDecimal qtyIssued;
-
+	int seqNo;
 	@NonNull List<JsonRawMaterialsIssueLineStep> steps;
 
 	public static JsonRawMaterialsIssueLineBuilder builderFrom(
@@ -39,6 +40,7 @@ public class JsonRawMaterialsIssueLine
 	{
 		return builder()
 				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
+				.productValue(from.getProductValue())
 				.uom(from.getQtyToIssue().getUOMSymbol())
 				.isWeightable(from.isWeightable())
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
@@ -47,6 +49,7 @@ public class JsonRawMaterialsIssueLine
 				.qtyToIssueTolerance(JsonQtyToleranceSpec.ofNullable(from.getIssuingToleranceSpec()))
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
 				.userInstructions(from.getUserInstructions())
+				.seqNo(from.getSeqNo())
 				.steps(from.getSteps()
 						.stream()
 						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))

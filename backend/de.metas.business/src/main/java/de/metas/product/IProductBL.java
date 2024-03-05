@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -204,4 +205,8 @@ public interface IProductBL extends ISingletonService
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
+
+	@NonNull List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 }

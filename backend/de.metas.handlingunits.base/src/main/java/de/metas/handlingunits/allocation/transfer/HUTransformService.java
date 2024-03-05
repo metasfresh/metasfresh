@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation.transfer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -67,6 +68,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -100,6 +102,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -139,6 +142,7 @@ public class HUTransformService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
+	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService;
 
 	private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
@@ -161,6 +165,7 @@ public class HUTransformService
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class, huQRCodesService);
+		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
@@ -190,6 +195,7 @@ public class HUTransformService
 							   @Nullable final List<TableRecordReference> referencedObjects)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
+		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 		this.huContext = huContext;
@@ -1192,7 +1198,13 @@ public class HUTransformService
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			final HuId extractedTUId = splitOutTUFromAggregated(hu);
-			huQRCodesService.get().assign(huQRCode, extractedTUId);
+
+			final boolean ensureSingleAssignment = !qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu);
+			if (ensureSingleAssignment)
+			{
+				huQRCodesService.get().removeAssignment(huQRCode, ImmutableSet.of(huId));
+			}
+			huQRCodesService.get().assign(huQRCode, extractedTUId, ensureSingleAssignment);
 
 			return extractedTUId;
 		}
@@ -1413,10 +1425,7 @@ public class HUTransformService
 		}
 		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			final HuId extractedTUId = splitOutTUFromAggregated(hu);
-			huQRCodesService.get().assign(huQRCode, extractedTUId);
-
-			return extractedTUId;
+			return extractIfAggregatedByQRCode(huId, huQRCode);
 		}
 		else
 		{
@@ -1426,11 +1435,78 @@ public class HUTransformService
 	}
 
 	@NonNull
+	public Set<HuId> extractFromAggregatedByQrCode(
+			@NonNull final HuId aggregatedHuId,
+			@NonNull final HUQRCode huQRCode,
+			@NonNull final QtyTU qtyTU,
+			@Nullable final HuPackingInstructionsItemId newLUPackingItem)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(aggregatedHuId);
+
+		if (!handlingUnitsBL.isAggregateHU(hu))
+		{
+			throw new AdempiereException("extractFromAggregatedByQrCode called for a non aggregated HU!")
+					.appendParametersToMessage()
+					.setParameter("huId", aggregatedHuId);
+		}
+
+		if (!qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(hu))
+		{
+			throw new AdempiereException("extractFromAggregatedByQrCode cannot be performed as OneQrCodeForAggregatedHUs is not enabled!")
+					.appendParametersToMessage()
+					.setParameter("huId", aggregatedHuId);
+		}
+
+		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, aggregatedHuId);
+
+		if (newLUPackingItem != null)
+		{
+			final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUPackingItem);
+			final List<I_M_HU> newLUs = tuToNewLUs(hu, qtyTU.toBigDecimal(), newLUPIItem, false);
+			final ImmutableSet<HuId> newAggreagtedHUIds = newLUs.stream()
+					.map(handlingUnitsDAO::retrieveIncludedHUs)
+					.flatMap(Collection::stream)
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+			huQRCodesService.get().assign(huQRCode, newAggreagtedHUIds);
+			return newLUs.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			final ImmutableSet<HuId> splitHuIds = splitOutTUsFromAggregated(hu, qtyTU);
+			huQRCodesService.get().assign(huQRCode, splitHuIds);
+			return splitHuIds;
+		}
+	}
+
+	@NonNull
 	private HuId splitOutTUFromAggregated(@NonNull final I_M_HU hu)
 	{
-		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
-		final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
-		return HuId.ofRepoId(extractedTU.getM_HU_ID());
+		final Set<HuId> extractedTUIds = splitOutTUsFromAggregated(hu, QtyTU.ONE);
+		 return CollectionUtils.singleElement(extractedTUIds);
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> splitOutTUsFromAggregated(@NonNull final I_M_HU hu, @NonNull final QtyTU qtyTU)
+	{
+		final QtyTU availableNrOfTUs = handlingUnitsBL.getTUsCount(hu);
+		if (qtyTU.isGreaterThan(availableNrOfTUs))
+		{
+			throw new AdempiereException("Not enough TUs available!")
+					.appendParametersToMessage()
+					.setParameter("qtyTUToMove", qtyTU.toInt())
+					.setParameter("availableQtyTU", availableNrOfTUs.toInt());
+		}
+
+		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, qtyTU.toBigDecimal());
+		return extractedTUs.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public HuId tusToNewLU(

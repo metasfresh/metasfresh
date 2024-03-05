@@ -10,3 +10,5 @@ export const unboxAxiosResponse = (axiosResponse) => {
     return axiosResponse.data;
   }
 };
+
+export const isNullOrUndefined = (arg) => arg === null || arg === undefined;

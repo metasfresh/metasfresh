@@ -103,8 +103,9 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		final ManufacturingJob job = manufacturingRestService.assignJob(toPPOrderId(wfProcessId), callerId);
-		return ManufacturingRestService.toWFProcess(job);
+		final ManufacturingJob job = manufacturingRestService.createJob(toPPOrderId(wfProcessId), callerId);
+		final ManufacturingJob updatedJob = manufacturingRestService.assignJob(job.getPpOrderId(), callerId);
+		return ManufacturingRestService.toWFProcess(updatedJob);
 	}
 
 	@Override

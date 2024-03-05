@@ -21,6 +21,7 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -61,7 +62,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -73,12 +74,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,7 +89,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class WeightHUCommandTest
 {
-	private InventoryService inventoryService;
+	private HUQtyService huQtyService;
 	private HUTestHelper helper;
 
 	@BeforeEach
@@ -97,7 +98,8 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryRepository inventoryRepo = new InventoryRepository();
-		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
+		final InventoryService inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
+		this.huQtyService = new HUQtyService(inventoryService);
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
@@ -263,7 +265,7 @@ public class WeightHUCommandTest
 	private void weight(final HuId huId, PlainWeightable targetWeight)
 	{
 		WeightHUCommand.builder()
-				.inventoryService(inventoryService)
+				.huQtyService(huQtyService)
 				.huId(huId)
 				.targetWeight(targetWeight)
 				.build()

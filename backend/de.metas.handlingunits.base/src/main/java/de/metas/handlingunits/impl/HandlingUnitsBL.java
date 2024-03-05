@@ -53,6 +53,7 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -85,6 +86,7 @@ import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -109,6 +111,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -967,6 +970,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getIncludedPI(parentPIItem);
 	}
 
+	@Nullable
+	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
+	{
+		return getEffectivePI(getById(huId));
+	}
+
 	@Override
 	public ImmutableSet<HuId> getVHUIds(@NonNull final HuId huId)
 	{
@@ -1040,15 +1049,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
+	public AttributesKey getAttributesKeyForInventory(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
-		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
+		final Predicate<I_M_Attribute> nonWeightRelatedAttr =
+				attribute -> !Weightables.isWeightRelatedAttribute(AttributeCode.ofString(attribute.getValue()));
+		final ImmutableAttributeSet requestedAttributeSet = ImmutableAttributeSet.createSubSet(attributeStorage, nonWeightRelatedAttr);
 
 		return AttributesKeys
-				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
+				.createAttributesKeyFromAttributeSet(requestedAttributeSet)
 				.orElse(AttributesKey.NONE);
 	}
 

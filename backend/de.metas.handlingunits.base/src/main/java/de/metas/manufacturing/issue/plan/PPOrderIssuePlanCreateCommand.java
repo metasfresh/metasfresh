@@ -2,6 +2,8 @@ package de.metas.manufacturing.issue.plan;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -25,6 +27,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +42,8 @@ public class PPOrderIssuePlanCreateCommand
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("PPOrderIssuePlanCreateCommand.CannotFullyAllocated");
 	private static final String SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE = "de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand.considerHUsFromTheWholeWarehouse";
@@ -88,7 +93,7 @@ public class PPOrderIssuePlanCreateCommand
 	private Stream<PPOrderIssuePlanStep> createSteps(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
-		if (!bomComponentType.isIssue())
+		if (!bomComponentType.isIssue() || !productBL.isStocked(ProductId.ofRepoId(orderBOMLine.getM_Product_ID())))
 		{
 			return Stream.of();
 		}
@@ -104,7 +109,8 @@ public class PPOrderIssuePlanCreateCommand
 															productId,
 															targetQty,
 															pickFromLocatorId,
-															planSteps);
+															planSteps,
+															true);
 
 		Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
 
@@ -121,7 +127,8 @@ public class PPOrderIssuePlanCreateCommand
 																			  productId,
 																			  qtyToAllocate,
 																			  locatorId,
-																			  planSteps);
+																			  planSteps,
+																			  false);
 
 				qtyToAllocate = qtyToAllocate.subtract(additionalAllocatedQty);
 
@@ -142,7 +149,9 @@ public class PPOrderIssuePlanCreateCommand
 					.markAsUserValidationError();
 		}
 
-		return planSteps.stream();
+		return planSteps
+				.stream()
+				.sorted(Comparator.comparing(PPOrderIssuePlanStep::isAlternative));
 	}
 
 	@NonNull
@@ -151,7 +160,8 @@ public class PPOrderIssuePlanCreateCommand
 			@NonNull final ProductId productId,
 			@NonNull final Quantity targetQty,
 			@NonNull final LocatorId pickFromLocatorId,
-			@NonNull final ArrayList<PPOrderIssuePlanStep> planSteps)
+			@NonNull final ArrayList<PPOrderIssuePlanStep> planSteps,
+			final boolean createStepsForIncludedTUs)
 	{
 		Quantity allocatedQty = targetQty.toZero();
 		final AllocableHUsList availableHUs = allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorId));
@@ -211,8 +221,21 @@ public class PPOrderIssuePlanCreateCommand
 					allocableHU.addQtyAllocated(huQtyAvailable);
 					allocatedQty = allocatedQty.add(huQtyAvailable);
 				}
-
 				planSteps.add(planStep);
+			}
+
+			if (createStepsForIncludedTUs)
+			{
+				streamIncludedTUs(allocableHU)
+						.map(tu -> PPOrderIssuePlanStep.builder()
+								.orderBOMLineId(orderBOMLineId)
+								.productId(productId)
+								.qtyToIssue(targetQty.toZero())
+								.pickFromLocatorId(allocableHU.getLocatorId())
+								.pickFromTopLevelHU(tu)
+								.isAlternative(true)
+								.build())
+						.forEach(planSteps::add);
 			}
 		}
 
@@ -222,6 +245,18 @@ public class PPOrderIssuePlanCreateCommand
 	private boolean shouldConsiderHUsFromTheWholeWarehouse()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE, false);
+	}
+
+	@NonNull
+	private Stream<I_M_HU> streamIncludedTUs(@NonNull final AllocableHU allocableHU)
+	{
+		if (!handlingUnitsBL.isLoadingUnit(allocableHU.getTopLevelHU()))
+		{
+			return Stream.empty();
+		}
+		return handlingUnitsDAO.retrieveIncludedHUs(allocableHU.getTopLevelHU())
+				.stream()
+				.filter(handlingUnitsBL::isTransportUnitOrAggregate);
 	}
 
 	private static LocatorId getPickFromLocatorId(@NonNull final I_PP_Order_BOMLine orderBOMLine)

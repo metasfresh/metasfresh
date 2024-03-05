@@ -39,8 +39,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
@@ -72,6 +74,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
@@ -83,6 +86,8 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
+
+	private static final String MORE_THAN_ONE_HU_FOUND_PARAM_NAME = "moreThanOneHUParamName";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -136,14 +141,22 @@ public class HandlingUnitsRestController
 			if (globalQRCode != null)
 			{
 				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				final HuId huId = huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
-				if (huId == null)
+				final HUQRCodeAssignment huqrCodeAssignment = huQRCodesService.getHUAssignmentByQRCode(huQRCode).orElse(null);
+				if (huqrCodeAssignment == null)
 				{
 					return null; // NOT FOUND
 				}
 
+				if (!huqrCodeAssignment.isSingleHUAssigned())
+				{
+					throw new AdempiereException("More than one HU assigned to QR")
+							.appendParametersToMessage()
+							.setParameter("huQRCode", request.getQrCode())
+							.setParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME, true);
+				}
+
 				return GetByIdRequest.builder()
-						.huId(huId)
+						.huId(huqrCodeAssignment.getSingleHUId())
 						.expectedQRCode(huQRCode)
 						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
 						.build();
@@ -285,24 +298,69 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/move")
-	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
+	public void moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-				.huId(request.getHuId())
-				.huQRCode(huQRCode)
+										  .huId(request.getHuId())
+										  .huQRCode(huQRCode)
+										  .numberOfTUs(request.getNumberOfTUs())
+										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+										  .build());
+	}
+
+	@PostMapping("/bulk/move")
+	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
+	{
+		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
+				.map(HUQRCode::fromGlobalQRCodeJsonString)
+				.collect(ImmutableList.toImmutableList());
+
+		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
+				.huQrCodes(huQrCodes)
 				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
 				.build());
+	}
 
-		// IMPORTANT: don't retrieve by ID because the ID might be different
-		// (e.g. we extracted one TU from an aggregated TU),
-		// but the QR Code is always the same.
+	@PutMapping("/byId/{M_HU_ID}/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(
+			@PathVariable("M_HU_ID") final int huId,
+			@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HuId huWithChangedQty = handlingUnitsService.updateQty(HuId.ofRepoId(huId), request);
 		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huQRCodesService.getHuIdByQRCode(huQRCode))
-				.expectedQRCode(huQRCode)
+				.huId(huWithChangedQty)
+				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
 				.build());
+	}
+
+	@PostMapping("/huLabels/print")
+	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		handlingUnitsService.printHULabels(request);
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
+	}
+
+	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")
+	public List<JsonHU> getHUsByDisplayableQrCode(@PathVariable("displayableQrCode") final String displayableQrCode)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode, adLanguage);
+	}
+
+	@PostMapping("/list/byQRCode")
+	public List<JsonHU> listByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getHUsByQrCode(request, adLanguage);
 	}
 
 	@NonNull
@@ -330,10 +388,23 @@ public class HandlingUnitsRestController
 		}
 		catch (final Exception e)
 		{
-			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(e, adLanguage))
-					.build());
+			return ResponseEntity.badRequest()
+					.body(JsonGetSingleHUResponse.builder()
+								  .error(JsonErrors.ofThrowable(e, adLanguage))
+								  .multipleHUsFound(wereMultipleHUsFound(e))
+								  .build());
 		}
+	}
+
+	private static boolean wereMultipleHUsFound(final Exception e)
+	{
+		return Optional.of(e)
+				.filter(error -> error instanceof AdempiereException)
+				.map(error -> (AdempiereException)error)
+				.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME))
+				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
+				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
+				.orElse(false);
 	}
 
 	//
@@ -345,7 +416,8 @@ public class HandlingUnitsRestController
 	private static class GetByIdRequest
 	{
 		@NonNull HuId huId;
-		@Nullable HUQRCode expectedQRCode;
+		@Nullable
+		HUQRCode expectedQRCode;
 
 		boolean includeAllowedClearanceStatuses;
 	}

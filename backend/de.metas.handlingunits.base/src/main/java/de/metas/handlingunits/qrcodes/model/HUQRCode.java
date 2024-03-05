@@ -69,6 +69,11 @@ public class HUQRCode
 				.build();
 	}
 
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
+	}
+
 	private static String extractPrintableTopText(final HUQRCode qrCode)
 	{
 		final StringBuilder result = new StringBuilder();

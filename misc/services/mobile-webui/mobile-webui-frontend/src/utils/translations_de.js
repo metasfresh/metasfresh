@@ -8,6 +8,7 @@ const translations = {
   },
   general: {
     Product: 'Produkt',
+    ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
@@ -16,11 +17,14 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
+    Qty: 'Qty',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    okText: 'OK',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    noHUFound: 'Kein HU gefunden!',
   },
   login: {
     submitButton: 'Login',
@@ -46,6 +50,10 @@ const translations = {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
+    },
+    huManager: {
+      missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
+      scanLuOrLocator: 'Scannen LU oder Lagerort',
     },
     picking: {
       PickingLine: 'Pick Zeile',
@@ -95,6 +103,9 @@ const translations = {
         qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        addToFunnel: 'Trichterwechsel',
+        noQtyEnteredCannotAddToStorage: 'Keine Menge eingegeben! Es ist nichts in den Zwischenspeicher zu legen!',
+        cannotAddToStorageDueTo: 'Kann nicht zum temporären Speicher hinzugefügt werden aufgrund von: ',
         step: {
           name: 'HU einfüllen',
         },

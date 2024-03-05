@@ -478,6 +478,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
+
+	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
 		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
@@ -588,7 +591,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
-	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
+	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
