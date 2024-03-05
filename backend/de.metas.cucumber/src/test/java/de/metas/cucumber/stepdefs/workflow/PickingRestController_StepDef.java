@@ -143,7 +143,7 @@ public class PickingRestController_StepDef
 			final String activityIdentifier = activityIdentifierGroup.replace(":", "");
 			final WFActivityId activityId = workflowActivityTable.get(activityIdentifier);
 
-			actualEndpoint = endpointPath.replace(activityIdentifierGroup, activityId.getActivityId());
+			actualEndpoint = actualEndpoint.replace(activityIdentifierGroup, activityId.getActivityId());
 		}
 
 		testContext.setEndpointPath(actualEndpoint);
