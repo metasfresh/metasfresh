@@ -233,7 +233,7 @@ Feature: workflow rest controller tests
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       |
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
-      | common/confirmButton | wf2-CompletePickingActivity |
+      | common/confirmButton | CompletePickingActivityWf2 |
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
       | pickingShipmentSchedule          | testUser_17497 | Y      |
@@ -244,7 +244,7 @@ Feature: workflow rest controller tests
     And validate picking candidate for shipment schedule:
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |
       | pickingShipmentSchedule          | 2         | A          |
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf2/:wf2-CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf2/:CompletePickingActivityWf2/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
