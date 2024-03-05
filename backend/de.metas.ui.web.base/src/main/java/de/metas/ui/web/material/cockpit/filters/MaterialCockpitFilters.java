@@ -143,11 +143,9 @@ public class MaterialCockpitFilters
 	{
 		return queryBuilder
 				.orderByDescending(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate)
-				.orderBy()
-				.addColumn(I_MD_Cockpit.COLUMNNAME_DateGeneral)
-				.addColumn(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
-				.addColumn(I_MD_Cockpit.COLUMNNAME_AttributesKey)
-				.endOrderBy();
+				.orderBy(I_MD_Cockpit.COLUMNNAME_DateGeneral)
+				.orderBy(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
+				.orderBy(I_MD_Cockpit.COLUMNNAME_AttributesKey);
 	}
 
 	public LocalDate getFilterByDate(@NonNull final DocumentFilterList filters)
