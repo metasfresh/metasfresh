@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
@@ -143,6 +144,14 @@ public class PackagingDAO implements IPackagingDAO
 		if (query.getSalesOrderId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		//
+		// Filter: sales order document no
+		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
+		if (salesOrderDocumentNo != null)
+		{
+			queryBuilder.filter(salesOrderDocumentNo.toSqlFilter(I_M_Packageable_V.COLUMN_OrderDocumentNo));
 		}
 
 		//
