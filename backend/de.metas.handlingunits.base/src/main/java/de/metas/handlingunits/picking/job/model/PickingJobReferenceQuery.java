@@ -24,6 +24,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocumentNoFilter;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,5 +40,5 @@ public class PickingJobReferenceQuery
 	@NonNull UserId pickerId;
 	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
-	@Nullable String salesOrderDocumentNo;
+	@Nullable DocumentNoFilter salesOrderDocumentNo;
 }

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
@@ -28,7 +29,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -148,10 +148,10 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: sales order document no
-		final String salesOrderDocumentNo = StringUtils.trimBlankToNull(query.getSalesOrderDocumentNo());
+		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
 		if (salesOrderDocumentNo != null)
 		{
-			queryBuilder.addStringLikeFilter(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, salesOrderDocumentNo, true);
+			queryBuilder.filter(salesOrderDocumentNo.toSqlFilter(I_M_Packageable_V.COLUMN_OrderDocumentNo));
 		}
 
 		//

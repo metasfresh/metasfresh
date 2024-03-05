@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
+import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -15,7 +16,6 @@ import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -103,7 +103,7 @@ public class PickingJobRepository
 		}
 
 		final WarehouseId warehouseId = query.getWarehouseId();
-		final String salesOrderDocumentNo = StringUtils.trimBlankToNull(query.getSalesOrderDocumentNo());
+		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
 		if (warehouseId != null || salesOrderDocumentNo != null)
 		{
 			final IQueryBuilder<I_C_Order> salesOrderQuery = queryBL.createQueryBuilder(I_C_Order.class)
@@ -114,7 +114,7 @@ public class PickingJobRepository
 			}
 			if (salesOrderDocumentNo != null)
 			{
-				salesOrderQuery.addStringLikeFilter(I_C_Order.COLUMNNAME_DocumentNo, salesOrderDocumentNo, true);
+				salesOrderQuery.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
 			}
 
 			queryBuilder.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery.create());

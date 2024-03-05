@@ -2,6 +2,7 @@ package de.metas.workflow.rest_api.controller.v2.ws;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocumentNoFilter;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.security.UserAuthToken;
 import de.metas.util.StringUtils;
@@ -69,7 +70,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 			final GlobalQRCode filterByQRCode = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_qrCode))
 					.map(GlobalQRCode::ofString)
 					.orElse(null);
-			final String filterByDocumentNo = StringUtils.trimBlankToNull(queryParams.getFirst(TOPIC_PARAM_documentNo));
+			final DocumentNoFilter filterByDocumentNo = DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo));
 			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 
 			return WorkflowLaunchersQuery.builder()
