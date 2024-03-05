@@ -125,7 +125,7 @@ public class PickingRestController_StepDef
 	@And("^store workflow endpointPath (.*) in context$")
 	public void store_workflow_endpointPath_in_context(@NonNull final String endpointPath)
 	{
-		final String regex = "(:[a-zA-Z0-9]+)";
+		final String regex = "(:[a-zA-Z0-9\\-]+)";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
