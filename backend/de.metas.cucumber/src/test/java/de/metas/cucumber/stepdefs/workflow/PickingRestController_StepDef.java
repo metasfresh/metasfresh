@@ -38,8 +38,11 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_QtyPicked;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class PickingRestController_StepDef
@@ -90,11 +93,60 @@ public class PickingRestController_StepDef
 		}
 	}
 
+	@And("process response and extract activityId:")
+	public void extract_activity(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+
+		final String content = testContext.getApiResponse().getContent();
+		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
+		final String componentType = row.getAsString("componentType");
+
+		final JsonNode wfActivities = response.at("/activities");
+		for (final JsonNode wfActivityNode : wfActivities)
+		{
+			if (!componentType.equals(wfActivityNode.at("/componentType").asText()))
+			{
+				continue;
+			}
+
+			final WFActivityId wfActivityId = WFActivityId.of(wfActivityNode.at("/activityId").asText());
+			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, wfActivityId);
+		}
+	}
+
 	@And("create JsonPickingEventsList and store it in context as request payload:")
 	public void picking_events_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		final JsonPickingStepEvent pickingEvent = extractJsonPickingStepEvent(dataTable);
 		testContext.setRequestPayload(objectMapper.writeValueAsString(pickingEvent));
+	}
+
+	@And("^store workflow endpointPath (.*) in context$")
+	public void store_workflow_endpointPath_in_context(@NonNull final String endpointPath)
+	{
+		final String regex = "(:[a-zA-Z0-9]+)";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		assertThat(matcher.find()).isTrue();
+		final String workflowIdentifierGroup = matcher.group(1);
+		final String workflowIdentifier = workflowIdentifierGroup.replace(":", "");
+		final WFProcessId wfProcessId = workflowProcessTable.get(workflowIdentifier);
+
+		String actualEndpoint = endpointPath.replace(workflowIdentifierGroup, wfProcessId.getId());
+
+		if (matcher.find())
+		{
+			final String activityIdentifierGroup = matcher.group(1);
+			final String activityIdentifier = activityIdentifierGroup.replace(":", "");
+			final WFActivityId activityId = workflowActivityTable.get(activityIdentifier);
+
+			actualEndpoint = endpointPath.replace(activityIdentifierGroup, activityId.getActivityId());
+		}
+
+		testContext.setEndpointPath(actualEndpoint);
 	}
 
 	private JsonPickingStepEvent extractJsonPickingStepEvent(final @NonNull DataTable dataTable)
