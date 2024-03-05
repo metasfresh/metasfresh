@@ -98,6 +98,7 @@ const GetDocumentNoDialog = ({ documentNo: documentNoInitial, onOK, onClear }) =
 };
 
 GetDocumentNoDialog.propTypes = {
+  documentNo: PropTypes.string,
   onOK: PropTypes.func.isRequired,
   onClear: PropTypes.func.isRequired,
 };
