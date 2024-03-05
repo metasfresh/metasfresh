@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 
@@ -26,7 +26,7 @@ const RawMaterialIssueActivity = (props) => {
   const showHazardsAndAllergens =
     lines && lines.some((lineItem) => lineItem?.hazardSymbols?.length > 0 || lineItem?.allergens?.length > 0);
 
-  const getDisabledStatus = useCallback(({ currentLine, previousLine }) => {
+  const getDisabledStatus = ({ currentLine, previousLine }) => {
     if (isAlwaysAvailableToUser) {
       return false;
     }
@@ -37,7 +37,7 @@ const RawMaterialIssueActivity = (props) => {
       return false;
     }
     return previousLine && previousLine.completeStatus !== CompleteStatus.COMPLETED;
-  }, []);
+  };
 
   const sortedLines = useMemo(() => {
     if (lines && lines.length > 0) {
