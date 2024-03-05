@@ -60,6 +60,7 @@ public class PackageableQuery
 	 */
 	boolean onlyFromSalesOrder;
 	@Nullable OrderId salesOrderId;
+	@Nullable String salesOrderDocumentNo;
 
 	/**
 	 * Consider records which were locked via M_ShipmentSchedule_Lock table.

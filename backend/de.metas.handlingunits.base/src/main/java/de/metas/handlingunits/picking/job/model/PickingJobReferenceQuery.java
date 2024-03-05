@@ -37,11 +37,7 @@ import javax.annotation.Nullable;
 public class PickingJobReferenceQuery
 {
 	@NonNull UserId pickerId;
-
-	@NonNull
-	@Builder.Default
-	ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
-
-	@Nullable
-	WarehouseId warehouseId;
+	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	@Nullable WarehouseId warehouseId;
+	@Nullable String salesOrderDocumentNo;
 }

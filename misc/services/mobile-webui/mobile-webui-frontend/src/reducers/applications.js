@@ -1,4 +1,5 @@
 import * as types from '../constants/ApplicationsActionTypes';
+import { shallowEqual, useSelector } from 'react-redux';
 
 const initialState = {
   availableApplications: {},
@@ -13,6 +14,10 @@ export const getApplicationInfoById = ({ state, applicationId }) => {
   return state.applications?.availableApplications?.[applicationId];
 };
 
+export const useApplicationInfo = ({ applicationId }) => {
+  return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
+};
+
 export default function applications(state = initialState, action) {
   const { payload } = action;
   switch (action.type) {
@@ -24,6 +29,7 @@ export default function applications(state = initialState, action) {
           iconClassNames: getIconClassNames(application.id),
           requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
           showFilters: application.showFilters,
+          showFilterByDocumentNo: application.showFilterByDocumentNo,
           showInMainMenu: application.showInMainMenu,
           applicationParameters: application.applicationParameters,
         };

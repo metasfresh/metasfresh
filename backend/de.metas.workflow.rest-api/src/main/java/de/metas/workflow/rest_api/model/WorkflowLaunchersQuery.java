@@ -44,10 +44,11 @@ public class WorkflowLaunchersQuery
 	@NonNull MobileApplicationId applicationId;
 	@NonNull UserId userId;
 	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable String filterByDocumentNo;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 
 	@Nullable @With QueryLimit limit;
-	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ZERO;
+	@NonNull @Builder.Default @With Duration maxStaleAccepted = Duration.ZERO;
 
 	public Optional<QueryLimit> getLimit() {return Optional.ofNullable(limit);}
 

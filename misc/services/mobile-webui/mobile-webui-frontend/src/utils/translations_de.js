@@ -12,6 +12,8 @@ const translations = {
   general: {
     Yes: 'Ja',
     No: 'Nein',
+    OK: 'OK',
+    DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
@@ -28,6 +30,7 @@ const translations = {
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',
+    clearText: 'Lösen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',

@@ -28,6 +28,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -143,6 +144,14 @@ public class PackagingDAO implements IPackagingDAO
 		if (query.getSalesOrderId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		//
+		// Filter: sales order document no
+		final String salesOrderDocumentNo = StringUtils.trimBlankToNull(query.getSalesOrderDocumentNo());
+		if (salesOrderDocumentNo != null)
+		{
+			queryBuilder.addStringLikeFilter(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, salesOrderDocumentNo, true);
 		}
 
 		//

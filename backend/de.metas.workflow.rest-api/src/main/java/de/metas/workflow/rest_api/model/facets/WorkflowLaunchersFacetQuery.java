@@ -38,5 +38,6 @@ public class WorkflowLaunchersFacetQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@NonNull UserId userId;
+	@Nullable String filterByDocumentNo;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> activeFacetIds;
 }

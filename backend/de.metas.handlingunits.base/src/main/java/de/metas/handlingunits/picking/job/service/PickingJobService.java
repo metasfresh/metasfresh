@@ -168,6 +168,7 @@ public class PickingJobService
 	{
 		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
+				.salesOrderDocumentNo(query.getSalesOrderDocumentNo())
 				.lockedBy(query.getUserId())
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)

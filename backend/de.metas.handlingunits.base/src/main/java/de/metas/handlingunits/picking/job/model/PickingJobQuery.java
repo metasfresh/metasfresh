@@ -53,6 +53,7 @@ public class PickingJobQuery
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
+	@Nullable String salesOrderDocumentNo;
 
 	@NonNull
 	public Set<BPartnerId> getOnlyBPartnerIdsEffective()

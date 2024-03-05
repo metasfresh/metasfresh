@@ -522,4 +522,9 @@ public final class CollectionUtils
 			}
 		}
 	}
+
+	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
+	{
+		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : null;
+	}
 }

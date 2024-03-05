@@ -92,6 +92,7 @@
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.build();
 

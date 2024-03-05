@@ -36,6 +36,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.List;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -87,6 +88,7 @@ class PickingWorkflowLaunchersProvider
 								.pickerId(userId)
 								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+								.salesOrderDocumentNo(query.getFilterByDocumentNo())
 								.build())
 				.filter(facets::isMatching)
 				.collect(PickingJobReferenceList.collect());
@@ -108,6 +110,7 @@ class PickingWorkflowLaunchersProvider
 							.facets(facets)
 							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+							.salesOrderDocumentNo(query.getFilterByDocumentNo())
 							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.collect(ImmutableList.toImmutableList());
@@ -119,6 +122,11 @@ class PickingWorkflowLaunchersProvider
 					.forEach(currentResult::add);
 		}
 
+		return newWorkflowLaunchersList(currentResult);
+	}
+
+	private static WorkflowLaunchersList newWorkflowLaunchersList(final List<WorkflowLauncher> currentResult)
+	{
 		return WorkflowLaunchersList.builder()
 				.launchers(ImmutableList.copyOf(currentResult))
 				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
@@ -171,6 +179,7 @@ class PickingWorkflowLaunchersProvider
 						.userId(userId)
 						.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
 				PickingJobFacets.CollectingParameters.builder()
