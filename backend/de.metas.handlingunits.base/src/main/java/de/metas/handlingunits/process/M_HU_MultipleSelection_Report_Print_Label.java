@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -81,7 +80,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	protected String doIt() throws Exception
 	{
 		final List<HUToReport> topLevelHus = new ArrayList<>();
-		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
+		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveActiveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
 				.peek(topLevelHus::add)
 				.flatMap(hu -> {
@@ -98,7 +97,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 				.collect(ImmutableList.toImmutableList());
 
 		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
-		huqrCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIdSet));
+		huqrCodesService.generateForExistingHUs(huIdSet);
 
 		topLevelHus.stream()
 				.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
