@@ -27,7 +27,7 @@ export default class CostPrice extends PureComponent {
   };
 
   render() {
-    const { value, precision } = this.props;
+    const { value, precision, disabled } = this.props;
     const { editMode } = this.state;
 
     return (
@@ -39,6 +39,7 @@ export default class CostPrice extends PureComponent {
             type="text"
             onChange={() => false}
             onFocus={this.focus}
+            disabled={disabled}
           />
         )}
 
