@@ -150,63 +150,78 @@ public class CustomerRegistrationMessageService
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
 			@NonNull final OrgId orgId)
 	{
-		final String qrCode;
-		final BPartnerId bPartnerId;
-		switch (SubscriptionType.ofCode(customerRegistration.subscriptionType()))
+		final SubscriptionType subscriptionType = SubscriptionType.ofCode(customerRegistration.subscriptionType()); 
+		final CustomerRegistrationMessageCreateRequest.CustomerRegistrationMessageCreateRequestBuilder builder = CustomerRegistrationMessageCreateRequest.builder()
+				.customerEBillId(customerRegistration.recipientId())
+				.subscriptionType(subscriptionType)
+				.attachmentEntryCreateRequest(attachmentEntryCreateRequest);
+
+		switch (subscriptionType)
 		{
 			case REGISTRATION ->
 			{
-				qrCode = null;
-				bPartnerId = customerRegistration.getCustomerExternalId()
-						.map(XmlCustomerSubscriptionFormField::value)
-						.map(externalId -> externalReferenceRepository.getReferencedRecordIdOrNullBy(
-								ExternalReferenceQuery.builder()
-										.orgId(orgId)
-										.externalSystem(OtherExternalSystem.OTHER)
-										.externalReference(externalId)
-										.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
-										.build()))
-						.map(BPartnerId::ofRepoId)
-						.orElse(null);
+				return builder
+						.qrCode(null)
+						.bPartnerId(getBPartnerIdByExternalId(customerRegistration, orgId)
+											.orElse(null))
+						.build();
 			}
 			case DIRECT_REGISTRATION ->
 			{
-				qrCode = customerRegistration.creditorReference();
-
-				final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
-				bPartnerId = referenceNoDAO.getReferenceNoId(qrCode, invoiceReferenceNoType)
-						.map(referenceNoDAO::retrieveDocAssignments)
-						.flatMap(list -> list
-								.stream()
-								.filter(refNoDoc -> refNoDoc.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
-								.findFirst())
-						.map(I_C_ReferenceNo_Doc::getRecord_ID)
-						.map(InvoiceId::ofRepoIdOrNull)
-						.map(invoiceBL::getById)
-						.map(I_C_Invoice::getC_BPartner_ID)
-						.map(BPartnerId::ofRepoId)
-						.orElse(null);
+				final String qrCode = customerRegistration.creditorReference();
+				return builder
+						.qrCode(qrCode)
+						.bPartnerId(getBPartnerIdByQRCode(qrCode)
+											.orElse(null))
+						.build();
 			}
 			case DE_REGISTRATION ->
 			{
-				qrCode = null;
-				bPartnerId = postFinanceBPartnerConfigRepository.getByReceiverEBillId(customerRegistration.recipientId())
-						.map(PostFinanceBPartnerConfig::getBPartnerId)
-						.orElse(null);
+				return builder
+						.qrCode(null)
+						.bPartnerId(postFinanceBPartnerConfigRepository.getByReceiverEBillId(customerRegistration.recipientId())
+											.map(PostFinanceBPartnerConfig::getBPartnerId)
+											.orElse(null))
+						.build();
 			}
 			default ->
 			{
-				qrCode = null;
-				bPartnerId = null;
+				return builder.build();
 			}
 		}
+	}
 
-		return CustomerRegistrationMessageCreateRequest.builder()
-				.customerEBillId(customerRegistration.recipientId())
-				.subscriptionType(SubscriptionType.ofCode(customerRegistration.subscriptionType()))
-				.qrCode(qrCode)
-				.bPartnerId(bPartnerId)
-				.attachmentEntryCreateRequest(attachmentEntryCreateRequest)
-				.build();
+	@NonNull
+	private Optional<BPartnerId> getBPartnerIdByExternalId(
+			@NonNull final XmlCustomerRegistration customerRegistration,
+			@NonNull final OrgId orgId)
+	{
+		return customerRegistration.getCustomerExternalId()
+				.map(XmlCustomerSubscriptionFormField::value)
+				.map(externalId -> externalReferenceRepository.getReferencedRecordIdOrNullBy(
+						ExternalReferenceQuery.builder()
+								.orgId(orgId)
+								.externalSystem(OtherExternalSystem.OTHER)
+								.externalReference(externalId)
+								.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
+								.build()))
+				.map(BPartnerId::ofRepoId);
+	}
+
+	@NonNull
+	private Optional<BPartnerId> getBPartnerIdByQRCode(@NonNull final String qrCode)
+	{
+		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
+		return referenceNoDAO.getReferenceNoId(qrCode, invoiceReferenceNoType)
+				.map(referenceNoDAO::retrieveDocAssignments)
+				.flatMap(list -> list
+						.stream()
+						.filter(refNoDoc -> refNoDoc.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+						.findFirst())
+				.map(I_C_ReferenceNo_Doc::getRecord_ID)
+				.map(InvoiceId::ofRepoIdOrNull)
+				.map(invoiceBL::getById)
+				.map(I_C_Invoice::getC_BPartner_ID)
+				.map(BPartnerId::ofRepoId);
 	}
 }
