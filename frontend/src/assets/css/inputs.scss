@@ -1005,3 +1005,7 @@ table {
 .input-qr-scanner-wrapper {
   padding: 20px 30px 20px 28px;
 }
+
+input:disabled, textarea:disabled {
+  color: black !important;
+}
