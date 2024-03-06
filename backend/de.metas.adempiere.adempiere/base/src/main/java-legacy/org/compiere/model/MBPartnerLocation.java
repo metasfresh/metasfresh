@@ -16,22 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.Builder;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -99,7 +90,8 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		if (newRecord)
 		{
 			final int cBPartnerId = getC_BPartner_ID();
-			setName(MakeUniqueNameCommand.builder()
+			// gh12157: Please, keep in sync with de.metas.bpartner.quick_input.callout.C_BPartner_Location_QuickInput.onLocationChanged
+			setName(MakeUniqueLocationNameCommand.builder()
 					.name(getName())
 					.address(getC_Location())
 					.companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
@@ -124,147 +116,5 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
 	}
 
-	@VisibleForTesting
-	final static class MakeUniqueNameCommand
-	{
-		private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 
-		private final String nameInitial;
-		private final String companyName;
-		private final I_C_Location address;
-		private final List<String> existingNames;
-		private final int maxLength;
-
-		@Builder
-		private MakeUniqueNameCommand(
-				@Nullable final String name,
-				@Nullable final String companyName,
-				@NonNull final I_C_Location address,
-				@Nullable final List<String> existingNames,
-				final int maxLength)
-		{
-			this.companyName = companyName;
-			this.address = address;
-			this.existingNames = existingNames != null ? existingNames : ImmutableList.of();
-			this.maxLength = maxLength > 0 ? maxLength : Integer.MAX_VALUE;
-
-			if (Check.isEmpty(name, true) || ".".equals(name))
-			{
-				this.nameInitial = null;
-			}
-			else
-			{
-				this.nameInitial = name.trim();
-			}
-		}
-
-		public String execute()
-		{
-			final String name = !Check.isEmpty(this.nameInitial, true)
-					? this.nameInitial.trim()
-					: buildDefaultName();
-
-			return truncateAndMakeUnique(name);
-		}
-
-		private String buildDefaultName()
-		{
-			String defaultName = "";
-
-			//
-			// City
-			defaultName = appendToName(defaultName, address.getCity());
-
-			//
-			// Address1
-			defaultName = appendToName(defaultName, address.getAddress1());
-
-			// Company Name
-			defaultName = appendToName(defaultName, companyName);
-			if (isValidUniqueName(defaultName))
-			{
-				return defaultName;
-			}
-
-			//
-			// Address2
-			{
-				defaultName = appendToName(defaultName, address.getAddress2());
-				if (isValidUniqueName(defaultName))
-				{
-					return defaultName;
-				}
-			}
-
-			//
-			// Address3
-			{
-				defaultName = appendToName(defaultName, address.getAddress3());
-				if (isValidUniqueName(defaultName))
-				{
-					return defaultName;
-				}
-			}
-
-			//
-			// Address4
-			{
-				defaultName = appendToName(defaultName, address.getAddress4());
-				if (isValidUniqueName(defaultName))
-				{
-					return defaultName;
-				}
-			}
-
-			//
-			// Country
-			if (defaultName.isEmpty())
-			{
-				final CountryId countryId = CountryId.ofRepoId(address.getC_Country_ID());
-				final String countryName = countriesRepo.getCountryNameById(countryId).getDefaultValue();
-				defaultName = appendToName(defaultName, countryName);
-			}
-
-			return defaultName;
-		}
-
-		private static String appendToName(final String name, final String namePartToAppend)
-		{
-			if (name == null || name.isEmpty())
-			{
-				return namePartToAppend != null ? namePartToAppend.trim() : "";
-			}
-			else if (Check.isEmpty(namePartToAppend, true))
-			{
-				return name.trim();
-			}
-			else
-			{
-				return name.trim() + " " + namePartToAppend.trim();
-			}
-		}
-
-		private boolean isValidUniqueName(final String name)
-		{
-			return !Check.isEmpty(name, true)
-					&& !existingNames.contains(name);
-		}
-
-		private String truncateAndMakeUnique(@NonNull final String name)
-		{
-			Check.assumeNotEmpty(name, "name is not empty");
-
-			int i = 2;
-			String nameUnique = StringUtils.trunc(name, maxLength);
-			while (existingNames.contains(nameUnique))
-			{
-				final String suffix = " (" + i + ")";
-				nameUnique = StringUtils.trunc(name, maxLength - suffix.length()) + suffix;
-				i++;
-			}
-
-			return nameUnique;
-		}
-
-	}
 }

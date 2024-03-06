@@ -23,14 +23,17 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -63,8 +66,10 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -151,7 +156,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Determine if we shall process our invoice candidates in batches and commit after each batch.
 		// i.e. we shall do this only if we were not asked to update a particular set of invoice candidates.
-		final boolean processInBatches = !icTagger.isOnlyC_Invoice_Candidate_IDs();
+		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = icTagger.getOnlyInvoiceCandidateIds();
+		final boolean processInBatches = onlyInvoiceCandidateIds == null || onlyInvoiceCandidateIds.isDatabaseSelection();
 		final int itemsPerBatch = processInBatches ? getItemsPerBatch() : Integer.MAX_VALUE;
 
 		//
@@ -400,6 +406,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	{
 		if (orderLine == null)
 		{
+			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciols.stream()
+														 .map(I_C_InvoiceCandidate_InOutLine::getC_InvoiceCandidate_InOutLine_ID)
+														 .collect(ImmutableList.toImmutableList()), ic.getC_Invoice_Candidate_ID()));
+
+			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineById(inOutLineId);
+
+				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+			}
+
 			return; // nothing to do
 		}
 
@@ -415,6 +437,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 				iciol.setC_Invoice_Candidate(ic);
 			}
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+			
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
@@ -506,20 +533,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
+		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);
 		return this;
 	}
 
-	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
-	{
-		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
-		return this;
-	}
 
 	private int getItemsPerBatch()
 	{

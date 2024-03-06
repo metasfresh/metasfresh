@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -58,7 +58,7 @@ public class JsonAttachment
 			value = "ID assigned to the attachment data by metasfresh")
 	String attachmentId;
 
-	JsonAttachmentType type;
+	JsonAttachmentSourceType type;
 
 	String filename;
 
@@ -76,7 +76,7 @@ public class JsonAttachment
 			@JsonProperty("externalReference") @NonNull final String externalReference,
 			@JsonProperty("dataSourceName") @NonNull final String dataSourceName,
 			@JsonProperty("attachmentId") @NonNull final String attachmentId,
-			@JsonProperty("type") final @NonNull JsonAttachmentType type,
+			@JsonProperty("type") final @NonNull JsonAttachmentSourceType type,
 			@JsonProperty("filename") @NonNull final String filename,
 			@JsonProperty("mimeType") @Nullable final String mimeType,
 			@JsonProperty("url") final String url)

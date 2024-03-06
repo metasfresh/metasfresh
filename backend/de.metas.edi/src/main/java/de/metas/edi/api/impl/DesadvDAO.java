@@ -45,6 +45,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -101,7 +102,7 @@ public class DesadvDAO implements IDesadvDAO
 	@Override
 	public List<I_EDI_DesadvLine> retrieveLinesByIds(@NonNull final Collection<Integer> desadvLineIds)
 	{
-		if(desadvLineIds.isEmpty())
+		if (desadvLineIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -219,9 +220,21 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull final I_EDI_DesadvLine desadvLine)
+	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull final I_EDI_DesadvLine desadvLine, @Nullable final Boolean withInOutLine)
 	{
-		return createDesadvLinePackRecordsQuery(desadvLine)
+		final IQueryBuilder<I_EDI_DesadvLine_Pack> queryBuilder = createDesadvLinePackRecordsQuery(desadvLine);
+		if (withInOutLine != null)
+		{
+			if (withInOutLine)
+			{
+				queryBuilder.addNotEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, null);
+			}
+			else
+			{
+				queryBuilder.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, null);
+			}
+		}
+		return queryBuilder
 				.create()
 				.list();
 	}

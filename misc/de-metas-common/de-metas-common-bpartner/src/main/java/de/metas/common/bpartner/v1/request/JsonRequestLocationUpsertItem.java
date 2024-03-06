@@ -24,7 +24,7 @@ package de.metas.common.bpartner.v1.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalreference.v1.JsonSingleExternalReferenceCreateReq;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;

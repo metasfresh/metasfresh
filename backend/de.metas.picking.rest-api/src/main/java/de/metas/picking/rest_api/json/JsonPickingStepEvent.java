@@ -52,10 +52,11 @@ public class JsonPickingStepEvent
 
 	//
 	// Common
-	@NonNull String huBarcode;
+	@NonNull String huQRCode;
 
 	//
 	// Event Type: PICK
 	@Nullable BigDecimal qtyPicked;
+	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
 }

@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_Processed;
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated;
 
 @Interceptor(I_MD_Candidate.class)
 @Component
@@ -77,6 +78,11 @@ public class MD_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled )
 	public void fireQtyRequiredFulfilled(@NonNull final I_MD_Candidate candidate)
 	{
+		if (MD_CANDIDATE_STATUS_Simulated.equals(candidate.getMD_Candidate_Status()))
+		{
+			return;
+		}
+
 		final CandidateType candidateType = CandidateType.ofCode(candidate.getMD_Candidate_Type());
 
 		if (!candidateType.isIncreasingStock())

@@ -23,10 +23,9 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
-import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.NonNull;
@@ -61,7 +60,6 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 				.process(this::processProductPriceUpsertCamelRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_VERSION_IDENTIFIER + "}/productPrices")
 
@@ -74,7 +72,6 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
 
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.price-list-upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_IDENTIFIER + "}/productPrices")
 

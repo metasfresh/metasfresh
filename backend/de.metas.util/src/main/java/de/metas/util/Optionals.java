@@ -30,6 +30,7 @@ import java.util.stream.Stream;
  */
 
 @UtilityClass
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class Optionals
 {
 	@SafeVarargs
@@ -55,7 +56,6 @@ public class Optionals
 	/**
 	 * To be used until we upgrade to Java9 where we have Optional.stream
 	 */
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static <T> Stream<T> stream(@NonNull final Optional<T> optional)
 	{
 		//noinspection OptionalIsPresent

@@ -98,7 +98,9 @@ import de.metas.util.Services;
 		// Create the new M_MatchInv record
 		final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class, getContextProvider());
 		matchInv.setAD_Org_ID(invoiceLine.getAD_Org_ID());
+		matchInv.setC_Invoice_ID(invoiceLine.getC_Invoice_ID());
 		matchInv.setC_InvoiceLine(invoiceLine);
+		matchInv.setM_InOut_ID(inout.getM_InOut_ID());
 		matchInv.setM_InOutLine(inoutLine);
 		matchInv.setIsSOTrx(inout.isSOTrx());
 		matchInv.setDocumentNo(inout.getDocumentNo());

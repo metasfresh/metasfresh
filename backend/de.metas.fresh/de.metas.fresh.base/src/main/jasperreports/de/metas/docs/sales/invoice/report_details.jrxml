@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -20,34 +20,117 @@
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ($P{c_invoice_id}, $P{ad_language});]]>
 	</queryString>
-	<field name="inouts" class="java.lang.String"/>
-	<field name="doctype" class="java.lang.String"/>
-	<field name="reference" class="java.lang.String"/>
-	<field name="shiplocation" class="java.lang.String"/>
-	<field name="inouts_datefrom" class="java.lang.String"/>
-	<field name="inouts_dateto" class="java.lang.String"/>
-	<field name="inouts_issamedate" class="java.lang.Boolean"/>
-	<field name="inouts_isdatacomplete" class="java.lang.Boolean"/>
-	<field name="ishu" class="java.lang.Boolean"/>
-	<field name="line" class="java.math.BigDecimal"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="huqty" class="java.math.BigDecimal"/>
-	<field name="huname" class="java.lang.String"/>
-	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal"/>
-	<field name="shipped" class="java.math.BigDecimal"/>
-	<field name="retour" class="java.math.BigDecimal"/>
-	<field name="priceactual" class="java.math.BigDecimal"/>
-	<field name="priceentered" class="java.math.BigDecimal"/>
-	<field name="discount" class="java.math.BigDecimal"/>
-	<field name="uom" class="java.lang.String"/>
-	<field name="priceuom" class="java.lang.String"/>
-	<field name="stdprecision" class="java.math.BigDecimal"/>
-	<field name="linenetamt" class="java.math.BigDecimal"/>
-	<field name="rate" class="java.math.BigDecimal"/>
-	<field name="isdiscountprinted" class="java.lang.String"/>
-	<field name="isprinttax" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
+	<field name="inouts" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="inouts"/>
+	</field>
+	<field name="doctype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="doctype"/>
+	</field>
+	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="reference"/>
+	</field>
+	<field name="shiplocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="shiplocation"/>
+	</field>
+	<field name="inouts_datefrom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="inouts_datefrom"/>
+	</field>
+	<field name="inouts_dateto" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="inouts_dateto"/>
+	</field>
+	<field name="inouts_issamedate" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.label" value="inouts_issamedate"/>
+	</field>
+	<field name="inouts_isdatacomplete" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.label" value="inouts_isdatacomplete"/>
+	</field>
+	<field name="ishu" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.label" value="ishu"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="huqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
+	</field>
+	<field name="huname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="huname"/>
+	</field>
+	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtyinvoicedinpriceuom"/>
+	</field>
+	<field name="shipped" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="shipped"/>
+	</field>
+	<field name="retour" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="retour"/>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
+	</field>
+	<field name="priceentered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="priceentered"/>
+	</field>
+	<field name="discount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="discount"/>
+	</field>
+	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom"/>
+	</field>
+	<field name="priceuom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="priceuom"/>
+	</field>
+	<field name="stdprecision" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
+	</field>
+	<field name="linenetamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
+	</field>
+	<field name="rate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="rate"/>
+	</field>
+	<field name="isdiscountprinted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
+	</field>
+	<field name="isprinttax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isprinttax"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="productdescription" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productdescription"/>
+	</field>
+	<field name="bp_product_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
+	</field>
+	<field name="bp_product_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_name"/>
+	</field>
+	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
+	</field>
+	<field name="p_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_description"/>
+	</field>
+	<field name="invoice_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="invoice_description"/>
+	</field>
+	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
+	</field>
+	<field name="iscampaignprice" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iscampaignprice"/>
+	</field>
+	<field name="isprintwhenpackingmaterial" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -113,7 +196,7 @@ $F{shiplocation}]]></textFieldExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="9" isBold="false" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+						<font fontName="SansSerif" size="9" isBold="false" isItalic="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
 				</textField>
@@ -122,7 +205,7 @@ $F{shiplocation}]]></textFieldExpression>
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="false" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+						<font size="9" isBold="false" isItalic="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 				</textField>
@@ -242,7 +325,7 @@ $F{shiplocation}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="12">
-				<printWhenExpression><![CDATA[$F{ishu}]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
 				<textField>
 					<reportElement key="textField-19" x="426" y="0" width="33" height="12" forecolor="#000000" uuid="abf845aa-feb5-4936-9920-5f767128c6e3"/>
 					<textElement textAlignment="Right" markup="none">
@@ -529,7 +612,7 @@ $F{shiplocation}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{ishu}]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
@@ -660,7 +743,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" pdfFontName="Helvetica"/>
+					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
@@ -679,7 +762,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" pdfFontName="Helvetica"/>
+					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -695,7 +778,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+					<font size="9" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 			</textField>
@@ -710,7 +793,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+					<font fontName="SansSerif" size="9" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
 			</textField>

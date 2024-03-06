@@ -57,7 +57,6 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -216,10 +215,8 @@ class OrderAttachmentRowsLoader
 				.pharmacy(extractPharmacyFromPrescriptionRequest(prescriptionRequest))
 				.filename(attachmentEntry.getFilename(recordReference))
 				.isAttachToPurchaseOrder(isAttachToPurchaseOrder)
-				.isAttachToPurchaseOrderInitial(isAttachToPurchaseOrder)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 
@@ -240,10 +237,8 @@ class OrderAttachmentRowsLoader
 				.rowId(buildRowId(attachmentEntry.getId(), getPurchaseOrderRecordRef()))
 				.filename(attachmentEntry.getFilename(getPurchaseOrderRecordRef()))
 				.isAttachToPurchaseOrder(true)
-				.isAttachToPurchaseOrderInitial(true)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 
@@ -266,10 +261,8 @@ class OrderAttachmentRowsLoader
 				.datePromised(datePromised)
 				.filename(attachmentEntry.getFilename(recordReference))
 				.isAttachToPurchaseOrder(true)
-				.isAttachToPurchaseOrderInitial(true)
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 
@@ -288,11 +281,9 @@ class OrderAttachmentRowsLoader
 				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
 				.patient(patientLookup.findById(recordReference.getRecord_ID()))
 				.filename(attachmentEntry.getFilename(recordReference))
-				.isAttachToPurchaseOrder(false)
-				.isAttachToPurchaseOrderInitial(false)
+				.isAttachToPurchaseOrder(attachmentEntry.hasLinkToRecord(getPurchaseOrderRecordRef()))
 				.selectedPurchaseOrder(purchaseOrder)
 				.attachmentEntry(attachmentEntry)
-				.salesOrderRecordRefs(salesOrderRecordRefs.keySet())
 				.build();
 	}
 

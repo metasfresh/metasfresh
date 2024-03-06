@@ -57,14 +57,26 @@ public class JsonErrors
 
 		JsonMetasfreshId adIssueId = null;
 		String issueCategory = null;
-		if (cause instanceof AdempiereException)
+		for(Throwable currentException = throwable; currentException != null; currentException = currentException.getCause())
 		{
-			final AdempiereException metasfreshException = (AdempiereException)cause;
-			adIssueId = metasfreshException.getAdIssueId() != null
-					? JsonMetasfreshId.of(metasfreshException.getAdIssueId().getRepoId())
-					: null;
+			// Stop if we found what we are looking for
+			if(adIssueId != null && issueCategory != null)
+			{
+				break;
+			}
+			else if (currentException instanceof AdempiereException)
+			{
+				final AdempiereException metasfreshException = (AdempiereException)currentException;
+				if(adIssueId == null && metasfreshException.getAdIssueId() != null)
+				{
+					adIssueId = JsonMetasfreshId.of(metasfreshException.getAdIssueId().getRepoId());
+				}
 
-			issueCategory = metasfreshException.getIssueCategory().toString();
+				if(issueCategory == null)
+				{
+					issueCategory = metasfreshException.getIssueCategory().toString();
+				}
+			}
 		}
 
 		final JsonErrorItemBuilder builder = JsonErrorItem.builder()

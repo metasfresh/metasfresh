@@ -1,13 +1,12 @@
 package org.eevolution.api;
 
-import java.time.LocalDateTime;
-
 import com.google.common.collect.ImmutableList;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -39,9 +38,9 @@ public class PPOrderScheduleChangeRequest
 	PPOrderId orderId;
 
 	@NonNull
-	LocalDateTime scheduledStartDate;
+	Instant scheduledStartDate;
 	@NonNull
-	LocalDateTime scheduledEndDate;
+	Instant scheduledEndDate;
 
 	@NonNull
 	@Singular

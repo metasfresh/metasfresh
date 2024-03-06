@@ -6,7 +6,6 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.impl.OrdersGenerator;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 {
-	public static final PMM_GenerateOrdersEnqueuer prepareEnqueuing()
+	public static PMM_GenerateOrdersEnqueuer prepareEnqueuing()
 	{
 		return new PMM_GenerateOrdersEnqueuer();
 	}
@@ -63,7 +62,7 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	private List<I_PMM_PurchaseCandidate> retrieveItems()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
+		return Services.get(IQueueDAO.class).retrieveAllItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class);
 	}
 
 	@Override

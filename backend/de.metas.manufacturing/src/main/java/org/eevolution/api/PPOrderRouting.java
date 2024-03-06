@@ -54,13 +54,16 @@ public class PPOrderRouting
 	//
 	// Activities
 	@Getter(AccessLevel.NONE)
+	@NonNull ImmutableList<PPOrderRoutingActivity> activities;
+	@Getter(AccessLevel.NONE)
 	ImmutableMap<PPOrderRoutingActivityCode, PPOrderRoutingActivity> activitiesByCode;
 	@Getter(AccessLevel.NONE)
 	PPOrderRoutingActivityCode firstActivityCode;
 	@Getter(AccessLevel.NONE)
 	ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap;
 	ImmutableList<PPOrderRoutingProduct> products;
-	@Builder
+
+	@Builder(toBuilder = true)
 	private PPOrderRouting(
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPRoutingId routingId,
@@ -76,9 +79,22 @@ public class PPOrderRouting
 		this.durationUnit = durationUnit;
 		this.qtyPerBatch = qtyPerBatch != null ? qtyPerBatch : BigDecimal.ONE;
 		this.firstActivityCode = firstActivityCode;
-		activitiesByCode = Maps.uniqueIndex(activities, PPOrderRoutingActivity::getCode);
+		this.activities = activities;
+		this.activitiesByCode = Maps.uniqueIndex(activities, PPOrderRoutingActivity::getCode);
 		this.codeToNextCodeMap = codeToNextCodeMap;
 		this.products = products;
+	}
+
+	public PPOrderRouting copy()
+	{
+		return toBuilder()
+				.activities(this.activities.stream()
+						.map(PPOrderRoutingActivity::copy)
+						.collect(ImmutableList.toImmutableList()))
+				.products(this.products.stream()
+						.map(PPOrderRoutingProduct::copy)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	public ImmutableCollection<PPOrderRoutingActivity> getActivities()
@@ -189,6 +205,11 @@ public class PPOrderRouting
 	public void reportProgress(final PPOrderActivityProcessReport report)
 	{
 		getActivityById(report.getActivityId()).reportProgress(report);
+	}
+
+	public void completeActivity(final PPOrderRoutingActivityId activityId)
+	{
+		getActivityById(activityId).completeIt();
 	}
 
 	public void closeActivity(final PPOrderRoutingActivityId activityId)

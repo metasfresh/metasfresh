@@ -6,11 +6,16 @@ import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class EDIOLCandBL implements IEDIOLCandBL
 {
+
+	private final IEDIInputDataSourceBL ediInputDataSourceBL = Services.get(IEDIInputDataSourceBL.class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@Override
-	public boolean isManualQtyItemCapacity(final I_C_OLCand olCand)
+	public boolean isManualQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 	{
 		// @formatter:off
 		// task 08147: we generally don't use the ORDERS file's QtyItemCapacity, because so far it was not reliable (it is mostly 1 and doesn't reflect the TU's actual capacity).
@@ -26,7 +31,7 @@ public class EDIOLCandBL implements IEDIOLCandBL
 
 		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand);
 		
-		return Services.get(IHUPackingAwareBL.class).isInfiniteCapacityTU(olCandHUPackingAware);
+		return huPackingAwareBL.isInfiniteCapacityTU(olCandHUPackingAware);
 	}
 
 	@Override
@@ -37,6 +42,6 @@ public class EDIOLCandBL implements IEDIOLCandBL
 			return false;
 		}
 		final int dataSourceId = olCand.getAD_InputDataSource_ID();
-		return Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(dataSourceId);
+		return ediInputDataSourceBL.isEDIInputDataSource(dataSourceId);
 	}
 }

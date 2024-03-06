@@ -32,6 +32,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -243,9 +244,13 @@ public class JsonConverters
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
+				.qtyItemCapacity(request.getQtyItemCapacity())
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)
+				.bpartnerName(request.getBpartnerName())
+				.email(request.getEmail())
+				.phone(request.getPhone())
 				;
 	}
 
@@ -360,7 +365,7 @@ public class JsonConverters
 				.productDescription(olCand.getProductDescription())
 				.qty(olCand.getQty().toBigDecimal())
 				.uomId(olCand.getQty().getUomId().getRepoId())
-				.qtyItemCapacity(olCand.getQtyItemCapacity())
+				.qtyItemCapacity(Quantitys.toBigDecimalOrNull(olCand.getQtyItemCapacityEff()))
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
 				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))

@@ -70,6 +70,11 @@ public class OrgInfo
 	String reportsPathPrefix;
 	ZoneId timeZone;
 
+	/**
+	 * If the sysconfig FlatrateTerm_Handler#SYS_Config_AUTO_INVOICE is set to N then this is ignored
+	 */
+	boolean autoInvoiceFlatrateTerms;
+
 
 	@Nullable
 	UserGroupId supplierApprovalExpirationNotifyUserGroupID;

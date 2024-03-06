@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
@@ -33,12 +34,15 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.logging.LogManager;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
@@ -49,6 +53,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -70,7 +75,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -95,6 +99,9 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new InOutLineDimensionFactory());
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		//
 		// Mimic ModelValidator behaviour
@@ -144,6 +151,9 @@ public abstract class ReceiptScheduleTestBase
 	public final void init()
 	{
 		AdempiereTestHelper.get().init(); // need to init this now
+
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 
 		// this is already done by HUTestHelper.init()
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
@@ -198,6 +208,9 @@ public abstract class ReceiptScheduleTestBase
 
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);

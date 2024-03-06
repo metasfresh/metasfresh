@@ -391,7 +391,7 @@ class DhlTestHelper
 				pickupFromLocation,
 				pickupDate,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
+				//deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,

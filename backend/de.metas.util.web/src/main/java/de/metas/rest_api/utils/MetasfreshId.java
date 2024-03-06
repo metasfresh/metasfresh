@@ -66,6 +66,17 @@ public class MetasfreshId
 	{
 		return new MetasfreshId(id.getValue());
 	}
+
+	@Nullable
+	public static MetasfreshId ofOrNull(@Nullable final JsonMetasfreshId id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+
+		return of(id);
+	}
 	
 	public static MetasfreshId of(@NonNull final RepoIdAware id)
 	{

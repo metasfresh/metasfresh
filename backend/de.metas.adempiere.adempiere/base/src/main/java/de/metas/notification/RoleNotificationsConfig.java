@@ -35,8 +35,8 @@ import lombok.Value;
 @Value
 public class RoleNotificationsConfig
 {
-	private final RoleId roleId;
-	private List<UserNotificationsGroup> notificationGroups;
+	@NonNull RoleId roleId;
+	@NonNull ImmutableList<UserNotificationsGroup> notificationGroups;
 
 	@Builder
 	public RoleNotificationsConfig(

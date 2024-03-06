@@ -31,6 +31,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidateAllocCreateRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -231,7 +232,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
-	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtysInvoiced, String note);
+	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 

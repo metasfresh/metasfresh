@@ -22,52 +22,46 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+@SuppressWarnings("unused")
 public interface IRangeAwareParams extends IParams
 {
+	@Nullable
 	Object getParameter_ToAsObject(String parameterName);
 
 	/**
-	 * @param parameterName
 	 * @return string value or <code>null</code> if parameter is missing
 	 */
+	@Nullable
 	String getParameter_ToAsString(String parameterName);
 
 	/**
-	 * @param parameterName
 	 * @return int value or <code>0</code> if parameter is missing or cannot be converted to integer
 	 */
 	int getParameter_ToAsInt(String parameterName, int defaultValue);
 
 	/**
-	 * @param parameterName
 	 * @return boolean value or <code>false</code> if parameter is missing
 	 */
 	boolean getParameter_ToAsBool(String parameterName);
 
-	/**
-	 * @param parameterName
-	 * @return timestamp value or <code>null</code> if parameter is missing
-	 */
+	@Nullable
 	Timestamp getParameter_ToAsTimestamp(String parameterName);
 
-	/**
-	 * @return {@link LocalDate} or <code>null</code> if parameter is missing
-	 */
+	@Nullable
 	LocalDate getParameter_ToAsLocalDate(String parameterName);
 
-	/**
-	 * @return {@link ZonedDateTime} or <code>null</code> if parameter is missing
-	 */
+	@Nullable
 	ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName);
 
 	/**
-	 * @param parameterName
 	 * @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal}
 	 */
+	@Nullable
 	BigDecimal getParameter_ToAsBigDecimal(String parameterName);
 }

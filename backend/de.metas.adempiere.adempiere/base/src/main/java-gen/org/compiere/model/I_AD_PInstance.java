@@ -1,345 +1,321 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_PInstance
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_PInstance 
 {
 
-    /** TableName=AD_PInstance */
-    public static final String Table_Name = "AD_PInstance";
+	String Table_Name = "AD_PInstance";
 
-    /** AD_Table_ID=282 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=282 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Client>(I_AD_PInstance.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sprache.
-	 * Sprache für diesen Eintrag
+	 * Set Language.
+	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Language (java.lang.String AD_Language);
+	void setAD_Language (@Nullable java.lang.String AD_Language);
 
 	/**
-	 * Get Sprache.
-	 * Sprache für diesen Eintrag
+	 * Get Language.
+	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAD_Language();
+	@Nullable java.lang.String getAD_Language();
 
-    /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "AD_Language", null);
-    /** Column name AD_Language */
-    public static final String COLUMNNAME_AD_Language = "AD_Language";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_AD_Language = new ModelColumn<>(I_AD_PInstance.class, "AD_Language", null);
+	String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Org>(I_AD_PInstance.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess-Instanz.
-	 * Instance of the process
+	 * Set Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_PInstance_ID (int AD_PInstance_ID);
+	void setAD_PInstance_ID (int AD_PInstance_ID);
 
 	/**
-	 * Get Prozess-Instanz.
-	 * Instance of the process
+	 * Get Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_PInstance_ID();
+	int getAD_PInstance_ID();
 
-    /** Column definition for AD_PInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_AD_PInstance_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "AD_PInstance_ID", null);
-    /** Column name AD_PInstance_ID */
-    public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_AD_PInstance.class, "AD_PInstance_ID", null);
+	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Process_ID (int AD_Process_ID);
+	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Process_ID();
+	int getAD_Process_ID();
 
-	public org.compiere.model.I_AD_Process getAD_Process();
+	org.compiere.model.I_AD_Process getAD_Process();
 
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
+	void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
 
-    /** Column definition for AD_Process_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Process>(I_AD_PInstance.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
-    /** Column name AD_Process_ID */
-    public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
+	ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new ModelColumn<>(I_AD_PInstance.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
+	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Rolle.
+	 * Set Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Role_ID (int AD_Role_ID);
+	void setAD_Role_ID (int AD_Role_ID);
 
 	/**
-	 * Get Rolle.
+	 * Get Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Role_ID();
+	int getAD_Role_ID();
 
-	public org.compiere.model.I_AD_Role getAD_Role();
+	@Nullable org.compiere.model.I_AD_Role getAD_Role();
 
-	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
+	void setAD_Role(@Nullable org.compiere.model.I_AD_Role AD_Role);
 
-    /** Column definition for AD_Role_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Role>(I_AD_PInstance.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
-    /** Column name AD_Role_ID */
-    public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_AD_PInstance.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Scheduler.
+	 * Schedule Processes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Scheduler_ID (int AD_Scheduler_ID);
+
+	/**
+	 * Get Scheduler.
+	 * Schedule Processes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Scheduler_ID();
+
+	@Nullable org.compiere.model.I_AD_Scheduler getAD_Scheduler();
+
+	void setAD_Scheduler(@Nullable org.compiere.model.I_AD_Scheduler AD_Scheduler);
+
+	ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Scheduler> COLUMN_AD_Scheduler_ID = new ModelColumn<>(I_AD_PInstance.class, "AD_Scheduler_ID", org.compiere.model.I_AD_Scheduler.class);
+	String COLUMNNAME_AD_Scheduler_ID = "AD_Scheduler_ID";
+
+	/**
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Table>(I_AD_PInstance.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User>(I_AD_PInstance.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Fenster.
-	 * Eingabe- oder Anzeige-Fenster
+	 * Set Window.
+	 * Data entry or display window
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Window_ID (int AD_Window_ID);
+	void setAD_Window_ID (int AD_Window_ID);
 
 	/**
-	 * Get Fenster.
-	 * Eingabe- oder Anzeige-Fenster
+	 * Get Window.
+	 * Data entry or display window
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Window_ID();
+	int getAD_Window_ID();
 
-	public org.compiere.model.I_AD_Window getAD_Window();
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
 
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
 
-    /** Column definition for AD_Window_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Window>(I_AD_PInstance.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
-    /** Column name AD_Window_ID */
-    public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+	ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_AD_PInstance.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_Created = new ModelColumn<>(I_AD_PInstance.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User>(I_AD_PInstance.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Fehlermeldung.
+	 * Set Error Message.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setErrorMsg (java.lang.String ErrorMsg);
+	void setErrorMsg (@Nullable java.lang.String ErrorMsg);
 
 	/**
-	 * Get Fehlermeldung.
+	 * Get Error Message.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getErrorMsg();
+	@Nullable java.lang.String getErrorMsg();
 
-    /** Column definition for ErrorMsg */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_ErrorMsg = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "ErrorMsg", null);
-    /** Column name ErrorMsg */
-    public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_ErrorMsg = new ModelColumn<>(I_AD_PInstance.class, "ErrorMsg", null);
+	String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_PInstance.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Processing.
@@ -348,7 +324,7 @@ public interface I_AD_PInstance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsProcessing (boolean IsProcessing);
+	void setIsProcessing (boolean IsProcessing);
 
 	/**
 	 * Get Processing.
@@ -357,37 +333,33 @@ public interface I_AD_PInstance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for IsProcessing */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_IsProcessing = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "IsProcessing", null);
-    /** Column name IsProcessing */
-    public static final String COLUMNNAME_IsProcessing = "IsProcessing";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_IsProcessing = new ModelColumn<>(I_AD_PInstance.class, "IsProcessing", null);
+	String COLUMNNAME_IsProcessing = "IsProcessing";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	int getRecord_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_PInstance.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Ergebnis.
@@ -397,7 +369,7 @@ public interface I_AD_PInstance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setResult (int Result);
+	void setResult (int Result);
 
 	/**
 	 * Get Ergebnis.
@@ -407,65 +379,56 @@ public interface I_AD_PInstance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getResult();
+	int getResult();
 
-    /** Column definition for Result */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_Result = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "Result", null);
-    /** Column name Result */
-    public static final String COLUMNNAME_Result = "Result";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_Result = new ModelColumn<>(I_AD_PInstance.class, "Result", null);
+	String COLUMNNAME_Result = "Result";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_Updated = new ModelColumn<>(I_AD_PInstance.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_User>(I_AD_PInstance.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Sql WHERE.
+	 * Set SQL WHERE.
 	 * Fully qualified SQL WHERE clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWhereClause (java.lang.String WhereClause);
+	void setWhereClause (@Nullable java.lang.String WhereClause);
 
 	/**
-	 * Get Sql WHERE.
+	 * Get SQL WHERE.
 	 * Fully qualified SQL WHERE clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getWhereClause();
+	@Nullable java.lang.String getWhereClause();
 
-    /** Column definition for WhereClause */
-    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_WhereClause = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "WhereClause", null);
-    /** Column name WhereClause */
-    public static final String COLUMNNAME_WhereClause = "WhereClause";
+	ModelColumn<I_AD_PInstance, Object> COLUMN_WhereClause = new ModelColumn<>(I_AD_PInstance.class, "WhereClause", null);
+	String COLUMNNAME_WhereClause = "WhereClause";
 }

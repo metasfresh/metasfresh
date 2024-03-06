@@ -28,15 +28,18 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
+@ToString
 public final class WFProcess
 {
 	@Getter
@@ -64,6 +67,8 @@ public final class WFProcess
 			@NonNull final Object document,
 			@NonNull final ImmutableList<WFActivity> activities)
 	{
+		Check.assumeNotEmpty(activities, "activities is not empty");
+
 		this.id = id;
 		this.invokerId = invokerId;
 		this.caption = caption;
@@ -81,40 +86,15 @@ public final class WFProcess
 				.map(WFActivity::getStatus)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (activityStatuses.isEmpty())
-		{
-			// shall never happen
-			return WFProcessStatus.COMPLETED;
-		}
-		else if (activityStatuses.size() == 1)
-		{
-			final WFActivityStatus activityStatus = activityStatuses.iterator().next();
-			switch (activityStatus)
-			{
-				case NOT_STARTED:
-					return WFProcessStatus.NOT_STARTED;
-				case IN_PROGRESS:
-					return WFProcessStatus.IN_PROGRESS;
-				case COMPLETED:
-					return WFProcessStatus.COMPLETED;
-				default:
-					throw new AdempiereException("Unknown activity status: " + activityStatus);
-			}
-		}
-		else
-		{
-			return WFProcessStatus.IN_PROGRESS;
-		}
+		return WFProcessStatus.computeFromActivityStatuses(activityStatuses);
 	}
 
-	public WFProcess assertHasAccess(@NonNull final UserId userId)
+	public void assertHasAccess(@NonNull final UserId userId)
 	{
 		if (!hasAccess(userId))
 		{
 			throw new AdempiereException("User does not have access");
 		}
-
-		return this;
 	}
 
 	public boolean hasAccess(@NonNull final UserId userId)

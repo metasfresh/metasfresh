@@ -8,7 +8,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -27,7 +26,6 @@ public class JsonDistributionJobStep
 	// Pick From
 	@NonNull JsonLocatorInfo pickFromLocator;
 	@NonNull JsonHUInfo pickFromHU;
-	@Nullable JsonHUInfo actualHUPicked;
 	@NonNull BigDecimal qtyPicked;
 
 	//
@@ -50,10 +48,7 @@ public class JsonDistributionJobStep
 				//
 				// Pick From
 				.pickFromLocator(JsonLocatorInfo.of(line.getPickFromLocator()))
-				.pickFromHU(JsonHUInfo.of(step.getPickFromHUId()))
-				.actualHUPicked(step.getActualHUPicked() != null
-						? JsonHUInfo.of(step.getActualHUPicked())
-						: null)
+				.pickFromHU(JsonHUInfo.of(step.getPickFromHU().getQrCode().toRenderedJson()))
 				.qtyPicked(step.getQtyPicked().toBigDecimal())
 				//
 				// Drop To

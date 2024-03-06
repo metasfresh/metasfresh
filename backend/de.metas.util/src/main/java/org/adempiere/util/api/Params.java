@@ -220,20 +220,33 @@ public final class Params implements IParams
 				: null;
 	}
 
+	@Nullable
 	@Override
 	public Instant getParameterAsInstant(final String parameterName)
 	{
 		final Timestamp value = getParameterAsTimestamp(parameterName);
-		return value != null ? value.toInstant() : null;
+		return value != null
+				? value.toInstant()
+				: null;
 	}
 
 	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
-		final Object value = getParameterAsObject(parameterName);
-		return StringUtils.toBoolean(value);
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
 	}
 
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		final Object value = getParameterAsObject(parameterName);
+		return StringUtils.toBoolean(value, defaultValue);
+	}
+
+	
+	
 	@SuppressWarnings("unused")
 	public Params withParameter(@NonNull final String parameterName, final Object value)
 	{

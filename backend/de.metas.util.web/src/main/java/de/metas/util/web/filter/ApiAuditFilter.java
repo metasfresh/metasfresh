@@ -29,6 +29,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
+import de.metas.util.web.audit.ResponseHandler;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -37,7 +38,6 @@ import org.slf4j.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -59,7 +59,7 @@ public class ApiAuditFilter implements Filter
 	}
 
 	@Override
-	public void init(final FilterConfig filterConfig) throws ServletException
+	public void init(final FilterConfig filterConfig)
 	{
 	}
 
@@ -99,13 +99,13 @@ public class ApiAuditFilter implements Filter
 				return;
 			}
 
-			apiAuditService.processHttpCall(httpServletRequest, httpServletResponse, matchingAuditConfig.get());
+			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig.get());
 		}
 		catch (final Throwable t)
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
+			ResponseHandler.writeErrorResponse(t, httpServletResponse, null, null);
 		}
 	}
 
