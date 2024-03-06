@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,16 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.job.model;
+package de.metas.cucumber.stepdefs.hu;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocumentNoFilter;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class PickingJobReferenceQuery
+public class HUQRCode_StepDefData extends StepDefData<HUQRCode>
 {
-	@NonNull UserId pickerId;
-	@NonNull @Builder.Default ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
-	@Nullable WarehouseId warehouseId;
-	@Nullable DocumentNoFilter salesOrderDocumentNo;
+	public HUQRCode_StepDefData()
+	{
+		super(HUQRCode.class);
+	}
 }
+

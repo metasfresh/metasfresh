@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
-import { getApplicationLaunchers, getApplicationLaunchersFacets } from '../../reducers/launchers';
+import { getApplicationLaunchers, getApplicationLaunchersFilters } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import { getTokenFromState } from '../../reducers/appHandler';
-import { getApplicationInfoById } from '../../reducers/applications';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeString } from '../../utils/qrCode/hu';
@@ -17,6 +16,8 @@ import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
+import GetDocumentNoDialog from './GetDocumentNoDialog';
+import { useApplicationInfo } from '../../reducers/applications';
 
 const WFLaunchersScreen = () => {
   const history = useHistory();
@@ -30,10 +31,11 @@ const WFLaunchersScreen = () => {
   const [currentPanel, setCurrentPanel] = useState('default');
   const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace();
-  const { facets } = useFacets({ applicationId });
+  const { filterByDocumentNo, facets } = useFilters({ applicationId });
   const { isLaunchersLoading, launchers, filterByQRCode, setFilterByQRCode } = useLaunchers({
     applicationId,
     requiresLaunchersQRCodeFilter,
+    filterByDocumentNo,
     facets,
     isEnabled: !isWorkplaceLoading,
   });
@@ -82,6 +84,14 @@ const WFLaunchersScreen = () => {
             }}
           />
         )}
+        {currentPanel === 'getDocumentNo' && (
+          <GetDocumentNoDialog
+            onOK={(documentNo) => {
+              console.log('onDialogYes: ' + documentNo);
+            }}
+            onClose={() => setCurrentPanel('default')}
+          />
+        )}
         {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
           <div className="mb-5">
             <ButtonWithIndicator
@@ -91,16 +101,15 @@ const WFLaunchersScreen = () => {
           </div>
         )}
         {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
-          <>
-            <WFLaunchersFilterButton
-              facets={facets}
-              onClick={() => {
-                history.push(appLaunchersFilterLocation({ applicationId }));
-              }}
-            />
-            <br />
-          </>
+          <WFLaunchersFilterButton
+            filterByDocumentNo={filterByDocumentNo}
+            facets={facets}
+            onClick={() => {
+              history.push(appLaunchersFilterLocation({ applicationId }));
+            }}
+          />
         )}
+        <br />
         {currentPanel === 'default' &&
           launchers &&
           launchers.map((launcher, index) => {
@@ -122,6 +131,12 @@ const WFLaunchersScreen = () => {
   }
 };
 
+//
+//
+// ------------------------------------------------------------------------------------------------------------------------------
+//
+//
+
 const Spinner = () => {
   return (
     <div className="loading">
@@ -130,10 +145,13 @@ const Spinner = () => {
   );
 };
 
-const useApplicationInfo = ({ applicationId }) => {
-  return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
-};
-const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, isEnabled }) => {
+//
+//
+// ------------------------------------------------------------------------------------------------------------------------------
+//
+//
+
+const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, filterByDocumentNo, isEnabled }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
@@ -158,12 +176,19 @@ const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, is
     }
 
     setLoading(true);
-    getLaunchers({ applicationId, filterByQRCode, facets })
+    getLaunchers({ applicationId, filterByQRCode, filterByDocumentNo, facets })
       .then((applicationLaunchers) => {
         onNewLaunchers({ applicationId, applicationLaunchers });
       })
       .finally(() => setLoading(false));
-  }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
+  }, [
+    isAllowQueryingLaunchers,
+    applicationId,
+    toQRCodeString(filterByQRCode),
+    filterByDocumentNo,
+    facets,
+    requestTimestamp,
+  ]);
 
   //
   // Connect to WebSocket topic
@@ -173,6 +198,7 @@ const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, is
     userToken,
     applicationId,
     filterByQRCode,
+    filterByDocumentNo,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
       onNewLaunchers({ applicationId, applicationLaunchers }),
@@ -190,8 +216,8 @@ const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, is
   };
 };
 
-const useFacets = ({ applicationId }) => {
-  const facets = useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
-  return { facets };
+const useFilters = ({ applicationId }) => {
+  return useSelector((state) => getApplicationLaunchersFilters(state, applicationId));
 };
+
 export default WFLaunchersScreen;

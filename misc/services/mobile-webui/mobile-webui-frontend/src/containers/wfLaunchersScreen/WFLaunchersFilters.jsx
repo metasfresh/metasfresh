@@ -3,6 +3,7 @@ import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import PropTypes from 'prop-types';
 import { trl } from '../../utils/translations';
 import { countLaunchers, getFacets } from '../../api/launchers';
+import GetDocumentNoDialog from './GetDocumentNoDialog';
 
 const useGroupsLoadingCounter = () => {
   const [loadingCount, setLoadingCount] = useState(0);
@@ -14,17 +15,17 @@ const useGroupsLoadingCounter = () => {
   };
 };
 
-const useGroups = ({ applicationId, activeFacetIdsInitial }) => {
+const useGroups = ({ applicationId, filterByDocumentNo, activeFacetIdsInitial }) => {
   const { groupsLoading, setGroupsLoadingStart, setGroupsLoadingFinish } = useGroupsLoadingCounter();
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    loadGroups({ activeFacetIds: activeFacetIdsInitial });
-  }, [applicationId, activeFacetIdsInitial]);
+    loadGroups({ filterByDocumentNo, activeFacetIds: activeFacetIdsInitial });
+  }, [applicationId, filterByDocumentNo, activeFacetIdsInitial]);
 
   const loadGroups = ({ activeFacetIds }) => {
     setGroupsLoadingStart();
-    getFacets({ applicationId, activeFacetIds })
+    getFacets({ applicationId, filterByDocumentNo, activeFacetIds })
       .then((groups) => setGroups(groups))
       .finally(() => setGroupsLoadingFinish());
   };
@@ -40,7 +41,7 @@ const useGroups = ({ applicationId, activeFacetIdsInitial }) => {
   return { groups, groupsLoading, toggleActiveFacet };
 };
 
-const useResultsCount = ({ applicationId, groups }) => {
+const useResultsCount = ({ applicationId, filterByDocumentNo, groups }) => {
   const [resultsCountLoading, setResultsCountLoading] = useState(false);
   const [resultsCount, setResultsCount] = useState(-1);
 
@@ -48,10 +49,10 @@ const useResultsCount = ({ applicationId, groups }) => {
     const facetIds = computeActiveFacetIdsFromGroups(groups);
 
     setResultsCountLoading(true);
-    countLaunchers({ applicationId, facetIds })
+    countLaunchers({ applicationId, filterByDocumentNo, facetIds })
       .then((count) => setResultsCount(count))
       .finally(() => setResultsCountLoading(false));
-  }, [applicationId, groups]);
+  }, [applicationId, filterByDocumentNo, groups]);
 
   return { resultsCountLoading, resultsCount };
 };
@@ -106,23 +107,60 @@ const computeActiveFacetsFromGroups = (groups) => {
   return result;
 };
 
-const WFLaunchersFilters = ({ applicationId, activeFacetIds: activeFacetIdsInitial, onDone }) => {
-  const { groups, groupsLoading, toggleActiveFacet } = useGroups({ applicationId, activeFacetIdsInitial });
-  const { resultsCountLoading, resultsCount } = useResultsCount({ applicationId, groups });
+const WFLaunchersFilters = ({
+  applicationId,
+  showFilterByDocumentNo,
+  filterByDocumentNo: filterByDocumentNoInitial,
+  activeFacetIds: activeFacetIdsInitial,
+  onDone,
+}) => {
+  const [isFilterByDocumentNoModalDisplayed, setIsFilterByDocumentNoModalDisplayed] = useState(false);
+  const [filterByDocumentNo, setFilterByDocumentNo] = useState(filterByDocumentNoInitial);
+  const { groups, groupsLoading, toggleActiveFacet } = useGroups({
+    applicationId,
+    filterByDocumentNo,
+    activeFacetIdsInitial,
+  });
+  const { resultsCountLoading, resultsCount } = useResultsCount({ applicationId, filterByDocumentNo, groups });
+
+  const onFilterByDocumentNoChanged = (filterByDocumentNoNew) => {
+    setFilterByDocumentNo(filterByDocumentNoNew);
+    onDone({ filterByDocumentNo: filterByDocumentNoNew, facets: [] });
+  };
+  const onFilterByDocumentNoCleared = () => {
+    setFilterByDocumentNo('');
+    setIsFilterByDocumentNoModalDisplayed(false);
+  };
 
   const onFacetClicked = ({ facetId }) => {
     toggleActiveFacet({ facetId });
   };
 
   const onApplyFilters = () => {
-    onDone(computeActiveFacetsFromGroups(groups));
+    onDone({ filterByDocumentNo, facets: computeActiveFacetsFromGroups(groups) });
   };
   const onClearFilters = () => {
-    onDone([]);
+    onDone({ filterByDocumentNo: null, facets: [] });
   };
 
   return (
     <div className="filters">
+      {showFilterByDocumentNo && (
+        <>
+          <ButtonWithIndicator
+            caption={filterByDocumentNo ? filterByDocumentNo : trl('general.DocumentNo')}
+            onClick={() => setIsFilterByDocumentNoModalDisplayed(true)}
+          />
+          <br />
+        </>
+      )}
+      {isFilterByDocumentNoModalDisplayed && (
+        <GetDocumentNoDialog
+          documentNo={filterByDocumentNo}
+          onOK={onFilterByDocumentNoChanged}
+          onClear={() => onFilterByDocumentNoCleared()}
+        />
+      )}
       {groups &&
         groups.map((group) => (
           <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
@@ -149,6 +187,8 @@ const WFLaunchersFilters = ({ applicationId, activeFacetIds: activeFacetIdsIniti
 
 WFLaunchersFilters.propTypes = {
   applicationId: PropTypes.string.isRequired,
+  showFilterByDocumentNo: PropTypes.bool.isRequired,
+  filterByDocumentNo: PropTypes.string,
   activeFacetIds: PropTypes.array,
   onDone: PropTypes.func.isRequired,
 };
