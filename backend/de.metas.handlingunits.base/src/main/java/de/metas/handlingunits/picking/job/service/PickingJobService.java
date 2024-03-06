@@ -190,6 +190,7 @@ public class PickingJobService
 	{
 		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
+				.salesOrderDocumentNo(query.getSalesOrderDocumentNo())
 				.lockedBy(query.getUserId())
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
@@ -357,6 +358,7 @@ public class PickingJobService
 			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
 				unassignPickingJob(job);
+				pickingJobLockService.unlockShipmentSchedules(job);
 			}
 		});
 	}
@@ -398,6 +400,8 @@ public class PickingJobService
 		PickingJob job = getById(pickingJobId);
 		if (job.getLockedBy() == null)
 		{
+			pickingJobLockService.lockShipmentSchedules(job.getShipmentScheduleIds(), newResponsibleId);
+
 			job = job.withLockedBy(newResponsibleId);
 			pickingJobRepository.save(job);
 		}

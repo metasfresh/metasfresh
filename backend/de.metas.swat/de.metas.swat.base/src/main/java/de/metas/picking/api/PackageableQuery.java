@@ -25,6 +25,7 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
@@ -60,6 +61,7 @@ public class PackageableQuery
 	 */
 	boolean onlyFromSalesOrder;
 	@Nullable OrderId salesOrderId;
+	@Nullable DocumentNoFilter salesOrderDocumentNo;
 
 	/**
 	 * Consider records which were locked via M_ShipmentSchedule_Lock table.

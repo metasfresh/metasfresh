@@ -56,6 +56,7 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
+	import de.metas.util.StringUtils;
 	import de.metas.workflow.rest_api.model.MobileApplicationId;
 	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
@@ -77,7 +78,6 @@
 
 	import java.util.Collection;
 	import java.util.Objects;
-	import java.util.Optional;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
 
@@ -93,6 +93,7 @@
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.build();
 
@@ -383,7 +384,9 @@
 					.bestBeforeDate(json.getBestBeforeDate())
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
-					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
+					.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
+												  .map(HUQRCode::fromGlobalQRCodeJsonString)
+												  .orElse(null))
 					.build();
 		}
 
