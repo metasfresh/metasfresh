@@ -5,7 +5,7 @@ import SelectHUIntermediateList from '../../apps/huManager/containers/SelectHUIn
 import React, { useState } from 'react';
 import { extractErrorResponseFromAxiosError, toastError } from '../../utils/toast';
 import * as api from '../../apps/huManager/api';
-import { isKnownQRCodeFormat } from '../../utils/huQRCodes';
+import { isKnownQRCodeFormat } from '../../utils/qrCode/hu';
 
 const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
   const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
