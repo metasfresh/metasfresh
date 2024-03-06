@@ -266,7 +266,7 @@ Feature: workflow rest controller tests
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
     And generate QR Codes for HUs
-      | M_HU_ID.Identifer      | HUQRCode.Identifier |
+      | M_HU_ID.Identifier     | HUQRCode.Identifier |
       | pickingProductHU_17497 | huToPickQR          |
     And create JsonPickingEventsList and store it in context as request payload:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
