@@ -605,11 +605,19 @@ public class C_Invoice_Candidate_StepDef
 		{
 			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
 			{
-				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+				final String invoiceCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-				invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
+						.stream()
+						.map(invoiceCandTable::get)
+						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+						.map(InvoiceCandidateId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+
+				invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+				// note: in master we have:
+				// final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+				// invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
 			}
 		}
 	}
@@ -640,7 +648,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s locate invoice candidates by order line:$")
+	@And("^after not more than (.*)s locate up2date invoice candidates by order line:$")
 	public void locate_invoice_candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -815,17 +823,31 @@ public class C_Invoice_Candidate_StepDef
 		saveRecord(invoiceCandidateRecord);
 	}
 
+	/**
+	 * Does not just find the IC, but also makes sure the IC is up2date.
+	 */
 	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
 	{
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> invoiceCandDAO
-				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())).size() > 0);
+		final ItemProvider<List<I_C_Invoice_Candidate>> provider = () -> {
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO
 				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			if (invoiceCandidates.isEmpty())
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("No C_Invoice_Candidates (yet) for C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates.stream().map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())).collect(ImmutableList.toImmutableList());
+			if (invoiceCandDAO.hasInvalidInvoiceCandidates(invoiceCandidateIds))
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID={0} is not (yet) updated; C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", invoiceCandidateIds, orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidates);
+		};
+		final List<I_C_Invoice_Candidate> invoiceCandidates = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, provider);
 
 		assertThat(invoiceCandidates.size()).isEqualTo(1);
 
