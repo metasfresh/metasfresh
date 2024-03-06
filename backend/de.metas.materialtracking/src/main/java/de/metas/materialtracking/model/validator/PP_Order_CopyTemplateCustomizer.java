@@ -31,14 +31,14 @@ public class PP_Order_CopyTemplateCustomizer implements CopyTemplateCustomizer
 		}
 	}
 
-	private static ValueToCopy computeQtyOrdered(final ValueToCopyResolveContext context)
+	private static BigDecimal computeQtyOrdered(final ValueToCopyResolveContext context)
 	{
 		final PO from = context.getFrom();
 
 		final BigDecimal qtyOrderedBeforeOrderClose = from.get_ValueAsBigDecimal(de.metas.materialtracking.model.I_PP_Order.COLUMNNAME_QtyBeforeClose);
 		final BigDecimal qtyEntered = from.get_ValueAsBigDecimal(de.metas.materialtracking.model.I_PP_Order.COLUMNNAME_QtyEntered);
 
-		return ValueToCopy.explicitValueToSet(qtyOrderedBeforeOrderClose == null || qtyOrderedBeforeOrderClose.signum() == 0 ? qtyEntered : qtyOrderedBeforeOrderClose);
+		return qtyOrderedBeforeOrderClose == null || qtyOrderedBeforeOrderClose.signum() == 0 ? qtyEntered : qtyOrderedBeforeOrderClose;
 
 	}
 
