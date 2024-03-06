@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
 import de.metas.util.Services;
@@ -31,9 +31,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_User;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -51,27 +48,29 @@ public class M_ShipmentSchedule_LockStepDef
 	@Then("validate M_ShipmentSchedule_Lock record for")
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+
+		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
 		{
-			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
-			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-			final String username = DataTableUtil.extractStringForColumnName(tableRow, I_AD_User.COLUMNNAME_Login);
+			final int shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+					.lookupIn(shipmentScheduleTable)
+					.getM_ShipmentSchedule_ID();
+
+			final String username = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
 			final int userId = queryBL.createQueryBuilder(I_AD_User.class)
 					.addEqualsFilter(I_AD_User.COLUMNNAME_Login, username)
 					.create()
 					.firstId();
 
 			final boolean lockExists = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Lock.class)
-					.addEqualsFilter(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.addEqualsFilter(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 					.addEqualsFilter(I_M_ShipmentSchedule_Lock.COLUMNNAME_LockedBy_User_ID, userId)
 					.create()
 					.anyMatch();
 
-			final boolean expecting_lockExists = DataTableUtil.extractBooleanForColumnName(tableRow, "Exists");
+			final boolean expecting_lockExists = tableRow.getAsBoolean("Exists");
 
 			assertThat(lockExists)
-					.as("Expecting M_ShipmentSchedule_Lock exists=" + expecting_lockExists + " for " + shipmentScheduleIdentifier + "; username: " + username)
+					.as("Expecting M_ShipmentSchedule_Lock exists=" + expecting_lockExists + " for " + shipmentScheduleId + "; username: " + username)
 					.isEqualTo(expecting_lockExists);
 		}
 	}
