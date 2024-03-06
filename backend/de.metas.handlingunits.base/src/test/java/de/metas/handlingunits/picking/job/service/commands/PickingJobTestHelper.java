@@ -47,6 +47,8 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -141,7 +143,10 @@ public class PickingJobTestHelper
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(
+                huQRCodesRepository,
+                new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+                new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,

@@ -15,17 +15,15 @@ import {
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
-import { isKnownQRCodeFormat } from '../../../utils/qrCode/hu';
-import SelectHUIntermediateList from './SelectHUIntermediateList';
 import { push } from 'connected-react-router';
 import { scanAnythingLocation } from '../../scanAnything/routes';
+import HUScanner from '../../../components/huSelector/HUScanner';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -38,7 +36,6 @@ const HUManagerScreen = () => {
   const [clearanceStatuses, setClearanceStatuses] = useState([]);
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [changeQtyAllowed, setChangeQtyAllowed] = useState(false);
-  const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -54,36 +51,6 @@ const HUManagerScreen = () => {
     }
     setClearanceStatuses(mergedStatuses);
   };
-
-  const resolveScannedBarcode = async ({ scannedBarcode }) => {
-    if (!isKnownQRCodeFormat(scannedBarcode)) {
-      return api.getHUsByDisplayableQRCode(scannedBarcode).then((huList) => ({ huListByQRCode: huList }));
-    }
-
-    return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-    // .catch((axiosError) => ({
-    //   error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
-    // }));
-  };
-
-  const onResolvedResult = (result) => {
-    console.log('onResolvedResult', { result });
-
-    if (result.huListByQRCode) {
-      if (!result.huListByQRCode.length) {
-        toastError({ messageKey: 'general.noHUFound' });
-      } else if (result.huListByQRCode.length === 1) {
-        dispatch(handlingUnitLoaded({ handlingUnitInfo: result.huListByQRCode[0] }));
-      } else {
-        setHuListByDisplayableQrCode(result.huListByQRCode);
-      }
-      return;
-    }
-
-    const { handlingUnitInfo } = result;
-    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-  };
-
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
   };
@@ -111,12 +78,13 @@ const HUManagerScreen = () => {
   const onChangeQtySubmit = ({ qty, description }) => {
     api
       .changeQty({
+        huId: handlingUnitInfo.id,
         huQRCode: handlingUnitInfo.qrCode,
         description: description,
         qty: qty,
       })
-      .then((handlingUnitInfo) => {
-        dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+      .then(() => {
+        dispatch(clearLoadedData());
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => toggleChangeQtyModal(false));
@@ -145,6 +113,21 @@ const HUManagerScreen = () => {
     setModalToDisplay(showModal ? MODALS.CLEARANCE_STATUS : '');
   };
 
+  const computeInitialQtyForChangeModal = () => {
+    const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+    if (!isSingleStorage) {
+      toastError({ plainMessage: 'huManager.action.changeQty.allowedOnlyForSingleProducts' });
+      return 0;
+    }
+
+    const totalQty = Number(handlingUnitInfo.products[0].qty);
+    if (handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1) {
+      return totalQty / handlingUnitInfo.numberOfAggregatedHUs;
+    } else {
+      return totalQty;
+    }
+  };
+
   if (handlingUnitInfo && handlingUnitInfo.id) {
     return (
       <>
@@ -158,7 +141,7 @@ const HUManagerScreen = () => {
         ) : null}
         {modalToDisplay === MODALS.CHANGE_QTY ? (
           <ChangeHUQtyDialog
-            currentQty={Number(handlingUnitInfo.products[0].qty)}
+            currentQty={computeInitialQtyForChangeModal()}
             uom={handlingUnitInfo.products[0].uom}
             onCloseDialog={() => toggleChangeQtyModal(false)}
             onSubmit={onChangeQtySubmit}
@@ -190,12 +173,8 @@ const HUManagerScreen = () => {
         </div>
       </>
     );
-  } else if (huListByDisplayableQrCode && huListByDisplayableQrCode.length) {
-    return <SelectHUIntermediateList huList={huListByDisplayableQrCode} />;
   } else {
-    return (
-      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onResolvedResult} />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => dispatch(handlingUnitLoaded({ handlingUnitInfo }))} />;
   }
 };
 

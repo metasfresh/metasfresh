@@ -26,12 +26,13 @@ export const getDisposalReasonsArray = () => {
 /**
  * @returns {Promise<T>} handling unit info
  */
-export const moveHU = ({ huId, huQRCode, targetQRCode }) => {
+export const moveHU = ({ huId, huQRCode, targetQRCode, numberOfTUs }) => {
   return axios
     .post(`${huAPIBasePath}/move`, {
       huId,
       huQRCode: toQRCodeString(huQRCode),
       targetQRCode: toQRCodeString(targetQRCode),
+      numberOfTUs: numberOfTUs,
     })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
@@ -65,21 +66,22 @@ export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
     .then((response) => response.result);
 };
 
-export const changeQty = ({ huQRCode, description, qty }) => {
+export const changeQty = ({ huId, huQRCode, description, qty }) => {
   return axios
-    .put(`${huAPIBasePath}/qty`, {
+    .put(`${huAPIBasePath}/byId/${huId}/qty`, {
       huQRCode: toQRCodeString(huQRCode),
       qty: qty,
       description: description,
+      splitOneIfAggregated: true,
     })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
 
-export const printHULabels = ({ huQRCode, huLabelProcessId, nrOfCopies }) => {
+export const printHULabels = ({ huId, huLabelProcessId, nrOfCopies }) => {
   return axios
     .post(`${huAPIBasePath}/huLabels/print`, {
-      huQRCode: toQRCodeString(huQRCode),
+      huId: huId,
       huLabelProcessId: huLabelProcessId,
       nrOfCopies: nrOfCopies,
     })
@@ -92,4 +94,8 @@ export const getPrintingOptions = () => {
 
 export const getHUsByDisplayableQRCode = (displayableQRCode) => {
   return axios.get(`${huAPIBasePath}/byDisplayableQrCode/${displayableQRCode}`).then(unboxAxiosResponse);
+};
+
+export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
+  return axios.post(`${huAPIBasePath}/list/byQRCode`, { qrCode, upperLevelLocatingQrCode }).then(unboxAxiosResponse);
 };

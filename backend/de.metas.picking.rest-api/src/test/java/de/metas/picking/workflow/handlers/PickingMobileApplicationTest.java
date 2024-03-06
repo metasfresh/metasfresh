@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -17,6 +18,10 @@ import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.i18n.Language;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.OrderAndLineId;
@@ -33,6 +38,7 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -53,6 +59,9 @@ import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
@@ -96,6 +105,11 @@ class PickingMobileApplicationTest
 		helper = new PickingJobTestHelper();
 		expect.serializer(PickingJobTestHelper.snapshotSerializer);
 		recorder = helper.newTestRecorder();
+
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+
 
 		// Needed because we take snapshots of date/time translatable strings,
 		// and it seems the date/time formats differs from OS to OS or from JVM impl to JVM impl

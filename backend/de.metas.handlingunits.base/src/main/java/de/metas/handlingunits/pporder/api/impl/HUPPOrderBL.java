@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -24,6 +25,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
@@ -82,6 +84,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
+	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class);
 	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
@@ -395,7 +398,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
 
 		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
+		huqrCodesService.get().removeAssignment(huqrCode, ImmutableSet.of(HuId.ofRepoId(huToBeIssued.getM_HU_ID())));
+
+		final boolean ensureSingleQrAssignment = qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(receivedHu);
+		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()), ensureSingleQrAssignment);
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}

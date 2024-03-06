@@ -1,20 +1,12 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
-import { handlingUnitLoaded } from '../actions';
-import HUButton from '../components/HUButton';
+import HUButton from '../../../components/huSelector/HUButton';
 
-const SelectHUIntermediateList = ({ huList }) => {
-  const dispatch = useDispatch();
-
+const SelectHUIntermediateList = ({ huList, onHuSelected }) => {
   return (
     <div className="pt-3 section">
       {huList.map((hu, index) => (
-        <HUButton
-          key={index}
-          handlingUnitInfo={hu}
-          onClick={() => dispatch(handlingUnitLoaded({ handlingUnitInfo: hu }))}
-        />
+        <HUButton key={index} handlingUnitInfo={hu} onClick={() => onHuSelected(hu)} />
       ))}
     </div>
   );
@@ -22,6 +14,7 @@ const SelectHUIntermediateList = ({ huList }) => {
 
 SelectHUIntermediateList.propTypes = {
   huList: PropTypes.array,
+  onHuSelected: PropTypes.func.isRequired,
 };
 
 export default SelectHUIntermediateList;

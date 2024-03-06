@@ -33,7 +33,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonPrintHULabelRequest
 {
-	@NonNull String huQRCode;
+	@NonNull String huId;
 	@NonNull JsonMetasfreshId huLabelProcessId;
 	int nrOfCopies;
 }

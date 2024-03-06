@@ -36,6 +36,8 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
@@ -117,7 +119,8 @@ public class ShipmentService implements IShipmentService
 					bpartnerBL,
 					new HUQRCodesService(
 							huQRCodesRepository,
-							new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+							new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+							new QRCodeConfigurationService(new QRCodeConfigurationRepository()))
 			);
 			return new ShipmentServiceTestImpl(
 					new ShipmentScheduleWithHUService(

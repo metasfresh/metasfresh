@@ -212,6 +212,5 @@ public interface IProductBL extends ISingletonService
 
 	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
 
-	@NonNull
-	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+	@NonNull ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }
