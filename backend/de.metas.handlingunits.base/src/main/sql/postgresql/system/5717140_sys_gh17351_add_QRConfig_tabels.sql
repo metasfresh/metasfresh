@@ -1346,3 +1346,42 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE M_HU_QRCode_Assignmnet ADD CONSTRAINT MHUQRCode_MHUQRCodeAssignmnet FOREIGN KEY (M_HU_QRCode_ID) REFERENCES public.M_HU_QRCode DEFERRABLE INITIALLY DEFERRED
 ;
 
+delete from ad_columncallout where ad_table_id=542392
+;
+delete from ad_searchdefinition where ad_table_id=542392
+;
+delete from ad_ui_element where ad_tab_id in (select ad_tab_id from ad_tab where ad_table_id=542392)
+;
+delete
+from ad_ui_elementgroup
+where ad_ui_column_id in
+      (select ad_ui_column_id
+       from ad_ui_column
+       where ad_ui_section_id in
+             (select ad_ui_section_id
+              from ad_ui_section
+              where ad_tab_id in
+                    (select ad_tab_id from ad_tab where ad_table_id = 542392)))
+;
+delete
+from ad_ui_column
+where ad_ui_section_id in
+      (select ad_ui_section_id
+       from ad_ui_section
+       where ad_tab_id in
+             (select ad_tab_id from ad_tab where ad_table_id = 542392))
+;
+delete from ad_ui_section_trl
+where ad_ui_section_id in
+      (select ad_ui_section_id
+       from ad_ui_section
+       where ad_tab_id in
+             (select ad_tab_id from ad_tab where ad_table_id = 542392))
+;
+delete from ad_ui_section where ad_tab_id in (select ad_tab_id from ad_tab where ad_table_id=542392)
+;
+delete from ad_tab where ad_table_id=542392
+;
+delete from ad_table where tablename = 'M_HU_QRCode_Assignmnet'
+;
+
