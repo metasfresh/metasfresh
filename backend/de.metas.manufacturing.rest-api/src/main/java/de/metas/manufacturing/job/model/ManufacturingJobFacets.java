@@ -3,7 +3,7 @@ package de.metas.manufacturing.job.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.planning.ResourceTypeId;
+import de.metas.resource.ResourceTypeId;
 import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;

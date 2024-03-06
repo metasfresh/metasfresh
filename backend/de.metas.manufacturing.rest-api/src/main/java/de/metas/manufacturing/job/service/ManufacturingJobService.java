@@ -31,9 +31,6 @@ import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
@@ -42,6 +39,8 @@ import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
+import de.metas.resource.ResourceTypeId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -223,7 +222,7 @@ public class ManufacturingJobService
 	@RequiredArgsConstructor
 	private static class FacetsCollector implements ManufacturingOrderCollector<ManufacturingJobFacets.Facet>
 	{
-		@NonNull private final IResourceDAO resourceDAO;
+		@NonNull private final ResourceService resourceService;
 
 		private final HashSet<ManufacturingJobFacets.Facet> result = new HashSet<>();
 		private final HashSet<ResourceId> seenResourceIds = new HashSet<>();
@@ -239,14 +238,14 @@ public class ManufacturingJobService
 				return;
 			}
 
-			final ResourceTypeId resourceTypeId = resourceDAO.getResourceTypeIdByResourceId(resourceId);
+			final ResourceTypeId resourceTypeId = resourceService.getResourceTypeIdByResourceId(resourceId);
 			if (!seenResourceTypeIds.add(resourceTypeId))
 			{
 				// already considered
 				return;
 			}
 
-			final ResourceType resourceType = resourceDAO.getResourceTypeById(resourceTypeId);
+			final ResourceType resourceType = resourceService.getResourceTypeById(resourceTypeId);
 			final ManufacturingJobFacets.Facet facet = toFacet(resourceType);
 
 			result.add(facet);
@@ -273,7 +272,7 @@ public class ManufacturingJobService
 
 	public ManufacturingJobFacets.FacetsCollection getFacets(@NonNull ManufacturingJobReferenceQuery query)
 	{
-		final FacetsCollector collector = new FacetsCollector(resourceDAO);
+		final FacetsCollector collector = new FacetsCollector(resourceService);
 		collect(query.withNoLimit(), collector);
 		return collector.toFacetsCollection();
 	}
@@ -303,11 +302,11 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-														   .onlyCompleted(true)
-														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
-														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
-														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-														   .build());
+				.onlyCompleted(true)
+				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+				.build());
 	}
 
 	private ManufacturingOrderQuery toManufacturingOrderQuery(@NonNull ManufacturingJobReferenceQuery query)
@@ -319,7 +318,7 @@ public class ManufacturingJobService
 				.responsibleId(ValueRestriction.isNull());
 
 		final ManufacturingJobDefaultFilterCollection defaultFilters = getDefaultFilters();
-		InSetPredicate<ResourceId> onlyPlantIds = computeOnlyPlantIds(query, defaultFilters, resourceDAO);
+		InSetPredicate<ResourceId> onlyPlantIds = computeOnlyPlantIds(query, defaultFilters, resourceService);
 		if (!onlyPlantIds.isAny())
 		{
 			queryBuilder.onlyPlantIds(onlyPlantIds.toSet());
@@ -337,7 +336,7 @@ public class ManufacturingJobService
 	private static InSetPredicate<ResourceId> computeOnlyPlantIds(
 			@NonNull ManufacturingJobReferenceQuery query,
 			@NonNull ManufacturingJobDefaultFilterCollection defaultFilters,
-			@NonNull IResourceDAO resourceDAO)
+			@NonNull ResourceService resourceService)
 	{
 		InSetPredicate<ResourceId> onlyPlantIds = InSetPredicate.any();
 
@@ -349,7 +348,7 @@ public class ManufacturingJobService
 		final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
 		if (!facetResourceTypeIds.isEmpty())
 		{
-			final ImmutableSet<ResourceId> facetPlantIds = resourceDAO.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
+			final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
 			onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
 		}
 
@@ -581,10 +580,10 @@ public class ManufacturingJobService
 				.filter(Check::isNotBlank)
 				.map(BigDecimal::new)
 				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
-							.filter(Check::isNotBlank)
-							.map(Integer::parseInt)
-							.map(UomId::ofRepoId)
-							.map(uomId -> Quantitys.create(qtyBD, uomId)))
+						.filter(Check::isNotBlank)
+						.map(Integer::parseInt)
+						.map(UomId::ofRepoId)
+						.map(uomId -> Quantitys.create(qtyBD, uomId)))
 				.orElse(null);
 
 		return ScaleDevice.builder()

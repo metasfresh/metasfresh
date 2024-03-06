@@ -302,6 +302,16 @@ public class ResourceService
 		return resourceRepository.getResourceIdsByUserId(userId);
 	}
 
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		return resourceRepository.getResourceTypeIdByResourceId(resourceId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(final ImmutableSet<ResourceTypeId> resourceTypeIds)
+	{
+		return resourceRepository.getResourceIdsByResourceTypeIds(resourceTypeIds);
+	}
+
 	//
 	//
 	// ------------------------------------------------------------------------
