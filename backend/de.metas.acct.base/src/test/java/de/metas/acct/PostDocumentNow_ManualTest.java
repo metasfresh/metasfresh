@@ -42,7 +42,7 @@ import de.metas.costing.methods.StandardCostingMethodHandler;
 import de.metas.currency.CurrencyRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.compiere.acct.Doc_AllocationHdr;
@@ -58,17 +58,31 @@ public class PostDocumentNow_ManualTest
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
-		final I_C_AllocationHdr documentModel = InterfaceWrapperHelper.load(1228748, I_C_AllocationHdr.class);
+		final List<I_C_AllocationHdr> records = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationHdr.class)
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID,
+						1155459,
+						1155460,
+						1155462,
+						1197998,
+						1214777,
+						1214800,
+						1214802,
+						1214803
+				)
+				.create()
+				.list();
 
-		final Doc_AllocationHdr doc = new Doc_AllocationHdr(
-				AcctDocContext.builder()
-						.services(newAcctDocRequiredServicesFacade())
-						.acctSchemas(getAcctSchemas(ClientId.ofRepoId(documentModel.getAD_Client_ID())))
-						.documentModel(documentModel)
-						.build()
-		);
+		System.out.println("Posting: " + records);
 
-		doc.post(true, true);
+		final AcctDocContext.AcctDocContextBuilder contextTemplate = AcctDocContext.builder()
+				.services(newAcctDocRequiredServicesFacade())
+				.acctSchemas(getAcctSchemas(ClientId.METASFRESH));
+
+		for (final I_C_AllocationHdr documentModel : records)
+		{
+			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(documentModel).build());
+			doc.post(true, true);
+		}
 	}
 
 	private static AcctDocRequiredServicesFacade newAcctDocRequiredServicesFacade()
