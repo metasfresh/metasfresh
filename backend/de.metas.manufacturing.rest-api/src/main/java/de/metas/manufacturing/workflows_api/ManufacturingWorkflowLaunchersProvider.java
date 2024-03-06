@@ -5,19 +5,22 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.product.ResourceId;
 import de.metas.resource.qrcode.ResourceQRCode;
-import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 public class ManufacturingWorkflowLaunchersProvider
@@ -30,11 +33,9 @@ public class ManufacturingWorkflowLaunchersProvider
 		this.manufacturingRestService = manufacturingRestService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(
-			final @NonNull UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			final @NonNull QueryLimit limit)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
+		final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
 		final ResourceId plantId;
 		final PrintableQRCode filterByPrintableQRCode;
 		if (filterByQRCode == null)
@@ -54,8 +55,16 @@ public class ManufacturingWorkflowLaunchersProvider
 		}
 
 		final Instant now = SystemTime.asInstant();
-		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(userId, plantId, now, limit)
-				.map(this::toWorkflowLauncher)
+		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(
+						ManufacturingJobReferenceQuery.builder()
+								.responsibleId(query.getUserId())
+								.plantId(plantId)
+								.now(now)
+								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
+								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+								.build()
+				)
+				.map(ManufacturingWorkflowLaunchersProvider::toWorkflowLauncher)
 				.collect(ImmutableList.toImmutableList());
 
 		return WorkflowLaunchersList.builder()
@@ -65,7 +74,7 @@ public class ManufacturingWorkflowLaunchersProvider
 				.build();
 	}
 
-	private WorkflowLauncher toWorkflowLauncher(final ManufacturingJobReference manufacturingJobReference)
+	private static WorkflowLauncher toWorkflowLauncher(final ManufacturingJobReference manufacturingJobReference)
 	{
 		if (manufacturingJobReference.isJobStarted())
 		{
@@ -88,7 +97,7 @@ public class ManufacturingWorkflowLaunchersProvider
 		}
 	}
 
-	private WorkflowLauncherCaption computeCaption(@NonNull final ManufacturingJobReference manufacturingJobReference)
+	private static WorkflowLauncherCaption computeCaption(@NonNull final ManufacturingJobReference manufacturingJobReference)
 	{
 		return WorkflowLauncherCaption.of(
 				TranslatableStrings.builder()
@@ -101,5 +110,17 @@ public class ManufacturingWorkflowLaunchersProvider
 						.appendDateTime(manufacturingJobReference.getDatePromised())
 						.build()
 		);
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
+	{
+		return manufacturingRestService.getFacets(
+						ManufacturingJobReferenceQuery.builder()
+								.responsibleId(query.getUserId())
+								.now(SystemTime.asInstant())
+								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getActiveFacetIds()))
+								.build()
+				)
+				.toWorkflowLaunchersFacetGroupList(query.getActiveFacetIds());
 	}
 }

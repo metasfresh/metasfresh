@@ -28,6 +28,8 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -80,16 +82,20 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
 				.requiresLaunchersQRCodeFilter(userProfile.isScanResourceRequired())
+				.showFilters(true)
 				.build();
 	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		@NonNull final UserId userId = query.getUserId();
-		@Nullable final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
-		@NonNull final QueryLimit suggestedLimit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
-		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
+		return wfLaunchersProvider.provideLaunchers(query);
+	}
+
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(final WorkflowLaunchersFacetQuery query)
+	{
+		return wfLaunchersProvider.getFacets(query);
 	}
 
 	@Override
