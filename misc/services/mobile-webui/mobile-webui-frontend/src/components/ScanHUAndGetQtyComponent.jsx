@@ -7,7 +7,7 @@ import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 import { toastError } from '../utils/toast';
-import { toQRCodeString } from '../utils/huQRCodes';
+import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 
