@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.workflow;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -32,9 +32,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-
-import java.util.List;
-import java.util.Map;
 
 public class WorkflowProcess_StepDef
 {
@@ -48,12 +45,10 @@ public class WorkflowProcess_StepDef
 	@Then("validate workflow process")
 	public void validateDocStatusForProcess(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		final SoftAssertions softAssertions = new SoftAssertions();
-		for (final Map<String, String> tableRow : tableRows)
+		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
 		{
-			final String workflowProcessIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "WorkflowProcess.Identifier");
-			final WFProcessId processId = workflowProcessTable.get(workflowProcessIdentifier);
+			final WFProcessId processId = tableRow.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
 
 			if (processId.getId().startsWith(PickingMobileApplication.APPLICATION_ID.getAsString()))
 			{
@@ -70,7 +65,7 @@ public class WorkflowProcess_StepDef
 
 	private void validatePickingJob(
 			@NonNull final WFProcessId processId,
-			@NonNull final Map<String, String> tableRow,
+			@NonNull final DataTableRow tableRow,
 			@NonNull final SoftAssertions assertionCollector)
 	{
 		final de.metas.workflow.rest_api.model.WFProcessId backendProcessId = de.metas.workflow.rest_api.model.WFProcessId.ofString(processId.getId());
@@ -80,7 +75,7 @@ public class WorkflowProcess_StepDef
 
 		final I_M_Picking_Job pickingJob = InterfaceWrapperHelper.load(pickingJobId, I_M_Picking_Job.class);
 
-		final String docStatus = DataTableUtil.extractStringForColumnName(tableRow, "DocStatus");
+		final String docStatus = tableRow.getAsString("DocStatus");
 
 		assertionCollector.assertThat(pickingJob.getDocStatus()).isEqualTo(docStatus);
 	}
