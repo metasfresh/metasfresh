@@ -3,7 +3,7 @@ package de.metas.inoutcandidate.api;
 import java.util.Properties;
 import java.util.Set;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;

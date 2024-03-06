@@ -25,8 +25,9 @@ package de.metas.camel.externalsystems.rabbitmq.common;
 public interface CamelConstants
 {
 	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
+	String ROUTE_PROPERTY_EXPORT_EXTERNAL_REFERENCE_CONTEXT = "ExportExternalReferenceRouteContext";
 
-	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
+	String EXPORT_INFO_RETRY_COUNT = "export.bpartner.retry.count";
 
-	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+	String EXPORT_INFO_RETRY_DELAY = "export.bpartner.retry.delay.ms";
 }

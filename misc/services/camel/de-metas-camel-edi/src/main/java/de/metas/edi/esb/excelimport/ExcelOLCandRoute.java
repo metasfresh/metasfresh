@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.
@@ -115,6 +116,8 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 					logger.info("Excel: Parsed {} rows", rows.size());
 
 					final List<Object> output = new ArrayList<>(rows.size());
+
+					final AtomicInteger lineNoCounter = new AtomicInteger(0);
 					for (final Map<String, Object> row : rows)
 					{
 						final Excel_OLCand_Row xlsRow = Excel_OLCand_Row.ofMap(row);
@@ -127,6 +130,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 						}
 
 						final XLSImpCOLCandType xmlOLCand = ExcelImpCOLCandTypeBuilder.newBuilder()
+								.setLineNo(lineNoCounter.addAndGet(10))
 								.setFromContext(ctx)
 								.setFromRow(xlsRow)
 								.build();

@@ -50,6 +50,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.payment_reservation.OrderPaymentReservationCreateResult;
@@ -146,8 +147,11 @@ public class MOrder extends X_C_Order implements IDocument
 			//
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setFreightCostRule(FreightCostRule.FreightIncluded.getCode());
-			// metas: we *never* use InvoiceRule 'Immediate', so don't use it as default.
-			setInvoiceRule(INVOICERULE_AfterDelivery);
+			// The invoiceRule should be already set. Don't change it.
+			if(getInvoiceRule() == null)
+			{
+				setInvoiceRule(INVOICERULE_AfterDelivery);
+			}
 			setPaymentRule(PaymentRule.OnCredit.getCode());
 			setPriorityRule(PRIORITYRULE_Medium);
 			setDeliveryViaRule(DeliveryViaRule.Pickup.getCode());
@@ -447,16 +451,25 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
-		ss = bp.getInvoiceRule();
-		if (!Check.isEmpty(ss, true))
+
+		final InvoiceRule invoiceRule = isSOTrx() ?
+				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
+				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
+
+		if (invoiceRule != null)
 		{
-			setInvoiceRule(ss);
+			setInvoiceRule(invoiceRule.getCode());
 		}
-		ss = bp.getPaymentRule();
-		if (!Check.isEmpty(ss, true))
+
+		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
 		{
-			setPaymentRule(ss);
+			setPaymentRule(bp.getPaymentRule());
 		}
+		else if (!isSOTrx() && Check.isNotBlank(bp.getPaymentRulePO()))
+		{
+			setPaymentRule(bp.getPaymentRulePO());
+		}
+
 		// Sales Rep
 		final int salesRepId = bp.getSalesRep_ID();
 		if (salesRepId > 0)
@@ -1013,10 +1026,10 @@ public class MOrder extends X_C_Order implements IDocument
 		if (is_ValueChanged("Description") || is_ValueChanged("POReference"))
 		{
 			final String sql = DB.convertSqlToNative("UPDATE C_Invoice i"
-					+ " SET (Description,POReference)="
-					+ "(SELECT Description,POReference "
-					+ "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
-					+ "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
+															 + " SET (Description,POReference)="
+															 + "(SELECT Description,POReference "
+															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
+															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			final int no = DB.executeUpdateEx(sql, get_TrxName());
 			log.debug("Description -> #" + no);
 		}
@@ -1027,10 +1040,10 @@ public class MOrder extends X_C_Order implements IDocument
 				|| is_ValueChanged("C_CashLine_ID"))
 		{
 			final String sql = DB.convertSqlToNative("UPDATE C_Invoice i "
-					+ "SET (PaymentRule,C_PaymentTerm_ID,DateAcct,C_Payment_ID,C_CashLine_ID)="
-					+ "(SELECT PaymentRule,C_PaymentTerm_ID,DateAcct,C_Payment_ID,C_CashLine_ID "
-					+ "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID)"
-					+ "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
+															 + "SET (PaymentRule,C_PaymentTerm_ID,DateAcct,C_Payment_ID,C_CashLine_ID)="
+															 + "(SELECT PaymentRule,C_PaymentTerm_ID,DateAcct,C_Payment_ID,C_CashLine_ID "
+															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID)"
+															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			// Don't touch Closed/Reversed entries
 			final int no = DB.executeUpdate(sql, get_TrxName());
 			log.debug("Payment -> #" + no);
@@ -1376,9 +1389,9 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 
 			log.debug("Line=" + line.getLine()
-					+ " - Target=" + target + ",Difference=" + difference
-					+ " - Ordered=" + line.getQtyOrdered()
-					+ ",Reserved=" + line.getQtyReserved() + ",Delivered=" + line.getQtyDelivered());
+							  + " - Target=" + target + ",Difference=" + difference
+							  + " - Ordered=" + line.getQtyOrdered()
+							  + ",Reserved=" + line.getQtyReserved() + ",Delivered=" + line.getQtyDelivered());
 
 			// Check Product - Stocked and Item
 			final MProduct product = line.getProduct();
@@ -1396,8 +1409,8 @@ public class MOrder extends X_C_Order implements IDocument
 					if (line.getM_AttributeSetInstance_ID() != 0)    // Get existing Location
 					{
 						M_Locator_ID = MStorage.getM_Locator_ID(line.getM_Warehouse_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								ordered, get_TrxName());
+																line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
+																ordered, get_TrxName());
 					}
 					// Get default Location
 					if (M_Locator_ID <= 0)
@@ -1804,8 +1817,8 @@ public class MOrder extends X_C_Order implements IDocument
 			// Location
 			final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(line);
 			int M_Locator_ID = MStorage.getM_Locator_ID(warehouseId.getRepoId(),
-					oLine.getM_Product_ID(), oLine.getM_AttributeSetInstance_ID(),
-					MovementQty, get_TrxName());
+														oLine.getM_Product_ID(), oLine.getM_AttributeSetInstance_ID(),
+														MovementQty, get_TrxName());
 			if (M_Locator_ID <= 0)        // Get default Location
 			{
 				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId();
@@ -1816,8 +1829,8 @@ public class MOrder extends X_C_Order implements IDocument
 			if (oLine.getQtyEntered().compareTo(oLine.getQtyOrdered()) != 0)
 			{
 				ioLine.setQtyEntered(MovementQty
-						.multiply(oLine.getQtyEntered())
-						.divide(oLine.getQtyOrdered(), 6, BigDecimal.ROUND_HALF_UP));
+											 .multiply(oLine.getQtyEntered())
+											 .divide(oLine.getQtyOrdered(), 6, BigDecimal.ROUND_HALF_UP));
 			}
 			if (!ioLine.save(get_TrxName()))
 			{
@@ -1921,7 +1934,7 @@ public class MOrder extends X_C_Order implements IDocument
 				else
 				{
 					iLine.setQtyEntered(iLine.getQtyInvoiced().multiply(oLine.getQtyEntered())
-							.divide(oLine.getQtyOrdered(), 12, BigDecimal.ROUND_HALF_UP));
+												.divide(oLine.getQtyOrdered(), 12, BigDecimal.ROUND_HALF_UP));
 				}
 				if (!iLine.save(get_TrxName()))
 				{

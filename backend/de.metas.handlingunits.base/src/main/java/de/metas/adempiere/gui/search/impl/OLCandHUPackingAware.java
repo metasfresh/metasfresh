@@ -22,6 +22,7 @@ package de.metas.adempiere.gui.search.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
@@ -30,20 +31,22 @@ import java.math.BigDecimal;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_C_OLCand;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
- * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.
+ * Wraps an {@link I_C_OLCand} and makes it behave like an {@link IHUPackingAware}.
  *
  * @author tsa
- *
  */
 public class OLCandHUPackingAware implements IHUPackingAware
 {
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	
 	private final I_C_OLCand olCand;
 
 	/**
@@ -59,7 +62,6 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public int getM_Product_ID()
 	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		return ProductId.toRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
 	}
 
@@ -114,14 +116,13 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public int getC_UOM_ID()
 	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		return olCandEffectiveValuesBL.getEffectiveUomId(olCand).getRepoId();
 	}
 
 	@Override
 	public void setC_UOM_ID(final int uomId)
 	{
-		values.setC_UOM_ID(uomId);
+		values.setUomId(UomId.ofRepoIdOrNull(uomId));
 
 		// NOTE: uom is mandatory
 		// we assume orderLine's UOM is correct
@@ -134,7 +135,7 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public BigDecimal getQtyTU()
 	{
-		return olCand.getQtyItemCapacity();
+		return Quantitys.toBigDecimalOrNull(olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCand));
 	}
 
 	@Override
@@ -146,7 +147,6 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public int getC_BPartner_ID()
 	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final BPartnerId bpartnerId = olCandEffectiveValuesBL.getBPartnerEffectiveId(olCand);
 		return BPartnerId.toRepoId(bpartnerId);
 	}
@@ -155,7 +155,7 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	public void setC_BPartner_ID(final int partnerId)
 	{
 		olCand.setC_BPartner_Override_ID(partnerId);
-		values.setC_BPartner_ID(partnerId);
+		values.setBpartnerId(BPartnerId.ofRepoIdOrNull(partnerId));
 	}
 
 	@Override

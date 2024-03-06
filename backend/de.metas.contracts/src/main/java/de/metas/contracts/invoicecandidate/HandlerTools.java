@@ -95,7 +95,9 @@ public class HandlerTools
 
 		ic.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class));
 		ic.setRecord_ID(term.getC_Flatrate_Term_ID());
-
+		
+		ic.setC_Async_Batch_ID(term.getC_Async_Batch_ID());
+		
 		ic.setM_Product_ID(term.getM_Product_ID());
 
 		ic.setC_Currency_ID(term.getC_Currency_ID());
@@ -123,6 +125,8 @@ public class HandlerTools
 
 			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
+			ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+			ic.setIncotermLocation(order.getIncotermLocation());
 
 			//DocType
 			final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(

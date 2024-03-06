@@ -36,6 +36,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
@@ -256,6 +257,46 @@ public class BpartnerRestController
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(JsonResponseCompositeList.error(JsonErrors.ofThrowable(ex, adLanguage)));
 		}
+	}
+
+	@ApiOperation("The identified bpartner products need to be in the current user's organisation.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
+	@GetMapping("{bpartnerIdentifier}/products")
+	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr)
+	{
+		return retrieveBPartnerProducts(null, bpartnerIdentifierStr);
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
+	@GetMapping("{orgCode}/{bpartnerIdentifier}/products")
+	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode, // may be null if called from other metasfresh-code
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr)
+	{
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
+
+		final JsonResponseProductBPartner bPartnerProduct = bpartnerEndpointService.retrieveBPartnerProduct(orgCode, bpartnerIdentifier);
+		return ResponseEntity.ok(bPartnerProduct);
 	}
 
 	@ApiResponses(value = {

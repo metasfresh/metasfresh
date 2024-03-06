@@ -6,7 +6,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
@@ -656,6 +656,12 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
+	/**
+	 * Enqueue one workpackage per each async batch id that was flagged for recomputing in the chunk identified by the {@code chunkUUID} param.
+	 *
+	 * dev-note: we need this one workpackage per async batch separation to be sure that any enqueued workpackage within the same certain async batch
+	 * will also wait for the {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor} to finish work.
+	 */
 	private void enqueueShipmentScheduleRecompute(
 			@NonNull final Properties context,
 			@Nullable final String trxName,

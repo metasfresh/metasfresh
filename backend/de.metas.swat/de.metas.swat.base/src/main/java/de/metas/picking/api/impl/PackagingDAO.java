@@ -6,7 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -241,8 +241,8 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()));
 		packageable.shipperName(record.getShipperName());
 
-		packageable.deliveryDate(InstantAndOrgId.ofTimestamp(record.getDeliveryDate(), orgId)); // 01676
-		packageable.preparationDate(InstantAndOrgId.ofTimestamp(record.getPreparationDate(), orgId));
+		packageable.deliveryDate(record.getDeliveryDate() != null ? InstantAndOrgId.ofTimestamp(record.getDeliveryDate(), orgId) : null); // 01676
+		packageable.preparationDate(record.getPreparationDate() != null ? InstantAndOrgId.ofTimestamp(record.getPreparationDate(), orgId) : null);
 
 		packageable.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(record.getShipmentAllocation_BestBefore_Policy()));
 
@@ -266,6 +266,10 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.freightCostRule(FreightCostRule.ofNullableCode(record.getFreightCostRule()));
 
 		packageable.pickFromOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()));
+
+		//
+		// Packing
+		packageable.packToHUPIItemProductId(record.getPackTo_HU_PI_Item_Product_ID());
 
 		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
 		packageable.lockedBy(lockedBy);

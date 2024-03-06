@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
@@ -32,7 +33,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -71,7 +72,7 @@ public class M_Transaction_PostTransactionEvent_HuDescriptorTest
 	public void init()
 	{
 		helper = new HUTestHelper();
-		huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
+		huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService(), new HUTraceRepository());
 
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);

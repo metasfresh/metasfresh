@@ -22,7 +22,6 @@ package org.eevolution.util;
  * #L%
  */
 
-
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,7 +32,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -52,7 +51,7 @@ public class PPProductPlanningBuilder
 	private BigDecimal _deliveryTime = BigDecimal.ZERO;
 	// Manufacturing
 	private String _manufactured = X_PP_Product_Planning.ISMANUFACTURED_No;
-	private I_PP_Product_BOM _productBOM;
+	private I_PP_Product_BOMVersions _productBOMVersions;
 	private I_AD_Workflow _workflow;
 	// DRP
 	private I_DD_NetworkDistribution _ddNetwork;
@@ -110,7 +109,12 @@ public class PPProductPlanningBuilder
 		//
 		// Manufacturing
 		productPlanning.setIsManufactured(_manufactured);
-		productPlanning.setPP_Product_BOM(_productBOM);
+
+		if (_productBOMVersions != null)
+		{
+			productPlanning.setPP_Product_BOMVersions_ID(_productBOMVersions.getPP_Product_BOMVersions_ID());
+		}
+
 		if (_workflow != null)
 		{
 			productPlanning.setAD_Workflow_ID(_workflow.getAD_Workflow_ID());
@@ -165,9 +169,9 @@ public class PPProductPlanningBuilder
 		return this;
 	}
 
-	public PPProductPlanningBuilder setPP_Product_BOM(final I_PP_Product_BOM productBOM)
+	public PPProductPlanningBuilder setPP_Product_BOMVersions(final I_PP_Product_BOMVersions productBomVersions)
 	{
-		this._productBOM = productBOM;
+		this._productBOMVersions = productBomVersions;
 		return this;
 	}
 

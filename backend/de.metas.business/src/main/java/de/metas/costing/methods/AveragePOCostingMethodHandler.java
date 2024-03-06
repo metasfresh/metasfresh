@@ -151,11 +151,16 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
-		final boolean isInboundTrx = request.getQty().signum() >= 0;
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
-		// final CostPrice currentCostPrice = currentCosts.getCostPrice();
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final Quantity requestQty = request.getQty();
+		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
+
+		final boolean isInboundTrx = requestQty.signum() >= 0;
 
 		final CostDetailCreateRequest requestEffective;
 
@@ -165,44 +170,51 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			if (request.getDocumentRef().isInventoryLine() && request.getQty().signum() == 0)
+			final CostAmount requestAmt = request.getAmt();
+
+			if (request.getDocumentRef().isInventoryLine())
 			{
-				requestEffective = request.withAmount(request.getAmt().toZero());
-				if (currentCosts.getCurrentQty().isZero())
+				final CostAmount effectiveAmt = explicitCostPrice != null
+						? explicitCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision())
+						: currentCosts.getCostPrice().multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+
+				requestEffective = request.withAmount(effectiveAmt);
+
+				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
-					currentCosts.setOwnCostPrice(request.getAmt());
+					currentCosts.setOwnCostPrice(explicitCostPrice);
 				}
 				else
 				{
 					// Do not change an existing positive cost price if there is also a positive qty
 				}
 			}
+
 			// In case the amount was not provided but there is a positive qty incoming
 			// use the current cost price to calculate the amount.
 			// In case of reversals, always consider the Amt.
+
 			else
 			{
-				final CostPrice price = currentCosts.getCostPrice();
-				final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
-				if (request.getAmt().isZero() && !request.isReversal())
+				if (requestAmt.isZero() && !request.isReversal())
 				{
-					final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 					requestEffective = request.withAmountAndQty(amt, qty);
 				}
 				else
 				{
 					requestEffective = request.withQty(qty);
 				}
-
-				currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 			}
+
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		}
+
 		//
 		// Outbound transactions (qty < 0)
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
@@ -304,13 +316,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-						.costSegment(outboundSegmentAndElement.toCostSegment())
-						.amount(costElement, outboundResult.getAmt())
-						.build())
+									   .costSegment(outboundSegmentAndElement.toCostSegment())
+									   .amount(costElement, outboundResult.getAmt())
+									   .build())
 				.inboundCosts(AggregatedCostAmount.builder()
-						.costSegment(inboundSegmentAndElement.toCostSegment())
-						.amount(costElement, inboundResult.getAmt())
-						.build())
+									  .costSegment(inboundSegmentAndElement.toCostSegment())
+									  .amount(costElement, inboundResult.getAmt())
+									  .build())
 				.build();
 	}
 

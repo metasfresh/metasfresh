@@ -97,7 +97,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		purchaseOrderAdvisedEventCreator
 				.createPurchaseAdvisedEvent(descriptor, mrpContext)
-				.ifPresent(postMaterialEventService::postEventNow);
+				.ifPresent(postMaterialEventService::postEventAsync);
 	}
 
 	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)

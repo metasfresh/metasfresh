@@ -73,6 +73,8 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 
 	private static final AdMessageKey MSG_MISSING_C_B_PARTNER_PRODUCT_ID = AdMessageKey.of("de.metas.order.C_Order_CreatePOFromSOs.Missing_C_BPartner_Product_ID");
 
+	private static final AdMessageKey MSG_MISSING_VENDOR_FOR_ORDERLINE_ID = AdMessageKey.of("de.metas.order.C_Order_CreatePOFromSOs.Missing_C_BPartner_Vendor_ID");
+
 	/* package */static final String KEY_SKIP = "SKIP_SALES_ORDER_LINE";
 
 	private final transient IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
@@ -117,7 +119,7 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 
 		if (p_IsVendorInOrderLinesRequired)
 		{
-			return KEY_SKIP;
+			throw new AdempiereException(MSG_MISSING_VENDOR_FOR_ORDERLINE_ID, salesOrder.getDocumentNo() + "-" + salesOrderLine.getLine());
 		}
 
 		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);

@@ -150,7 +150,7 @@ public class Order implements ModelValidator
 			{
 				//
 				// Reset IncotermLocation if Incoterm is empty
-				if (Check.isEmpty(order.getIncoterm()))
+				if (order.getC_Incoterms_ID() <= 0)
 				{
 					order.setIncotermLocation("");
 				}

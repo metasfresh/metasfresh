@@ -125,13 +125,14 @@ public final class PurchaseCandidateAdvisedHandler
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
+				.simulated(supplyRequiredDescriptor.isSimulated())
 				.build();
 
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
 			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
-			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId(), event.getEventDescriptor().getTraceId());
 		}
 	}
 }

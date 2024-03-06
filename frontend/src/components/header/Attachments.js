@@ -1,10 +1,9 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-
+import SpinnerOverlay from '../app/SpinnerOverlay';
 import { deleteRequest } from '../../api';
 import { attachmentsRequest, openFile } from '../../actions/GenericActions';
-import Loader from '../app/Loader';
 import AttachUrl from './AttachUrl';
 
 /**
@@ -224,6 +223,14 @@ class Attachments extends Component {
     </div>
   );
 
+  renderAttachmentSpinner = () => {
+    return (
+      <div className="side-attachment-wrapper">
+        <SpinnerOverlay iconSize={50} />
+      </div>
+    );
+  };
+
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -237,7 +244,7 @@ class Attachments extends Component {
       content = data.length ? this.renderData() : this.renderEmpty();
       actions = this.renderActions();
     } else {
-      content = <Loader />;
+      content = this.renderAttachmentSpinner();
     }
 
     return (

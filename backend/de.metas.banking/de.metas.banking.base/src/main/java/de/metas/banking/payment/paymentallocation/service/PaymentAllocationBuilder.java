@@ -25,7 +25,6 @@ package de.metas.banking.payment.paymentallocation.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
@@ -217,8 +216,8 @@ public class PaymentAllocationBuilder
 		}
 
 		//
-		// Make sure that we allow allocation one document per type for vendor documents
-		assertOnlyOneVendorDocType(payableDocuments, paymentDocuments);
+		// Make sure that we allow allocation one payment for vendor documents
+		assertOnlyOnePaymentVendorDocType(paymentDocuments);
 
 		final ImmutableList.Builder<AllocationLineCandidate> allocationCandidates = ImmutableList.builder();
 
@@ -255,34 +254,17 @@ public class PaymentAllocationBuilder
 	}
 
 	/***
-	 * Do not allow to allocate more then one document type for vendor documents
+	 * Do not allow to allocate more then one payment for vendor documents
 	 */
-	private void assertOnlyOneVendorDocType(
-			final List<PayableDocument> payableDocuments,
-			final List<PaymentDocument> paymentDocuments)
+	private void assertOnlyOnePaymentVendorDocType(final List<PaymentDocument> paymentDocuments)
 	{
 		final List<PaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
 				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
-		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
-		for (final PayableDocument payable : payableDocuments)
+		if (paymentVendorDocuments.size() > 1)
 		{
-			if (!payable.getSoTrx().isPurchase())
-			{
-				continue;
-			}
-
-			if (!payable.isCreditMemo())
-			{
-				payableVendorDocuments_NoCreditMemos.add(payable);
-			}
-		}
-
-		if (paymentVendorDocuments.size() > 1
-				|| payableVendorDocuments_NoCreditMemos.size() > 1)
-		{
-			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
+			throw new MultipleVendorDocumentsException(paymentVendorDocuments);
 		}
 	}
 
@@ -726,7 +708,10 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			return false;
+			if(!payable.isAllowAllocateAgainstDifferentSignumPayment())
+			{
+				return false;
+			}
 		}
 
 		//
@@ -801,9 +786,14 @@ public class PaymentAllocationBuilder
 			// Invoice(-), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
+				// case: we get an incoming payment and have a sales credit memo. Roughly speaking, without the credit memo, the payment would be  bigger.
+				// but there can be a payment-discount (skonto) from the payment of the credited invoice, and in the payment we might be back that skonto.
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.max(paymentAmountToAllocate.negate());
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
+
 				return InvoiceAndPaymentAmountsToAllocate.builder()
-						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
-						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.currencyRate(currencyRate)
 						.build();
 			}

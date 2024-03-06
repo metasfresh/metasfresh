@@ -286,6 +286,33 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
 	}
 
+	@Override
+	public org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturing_Warehouse_Group_ID, org.compiere.model.I_M_Warehouse_Group.class);
+	}
+
+	@Override
+	public void setManufacturing_Warehouse_Group(final org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturing_Warehouse_Group_ID, org.compiere.model.I_M_Warehouse_Group.class, Manufacturing_Warehouse_Group);
+	}
+
+	@Override
+	public void setManufacturing_Warehouse_Group_ID (final int Manufacturing_Warehouse_Group_ID)
+	{
+		if (Manufacturing_Warehouse_Group_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturing_Warehouse_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturing_Warehouse_Group_ID, Manufacturing_Warehouse_Group_ID);
+	}
+
+	@Override
+	public int getManufacturing_Warehouse_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Manufacturing_Warehouse_Group_ID);
+	}
+
 	/** 
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo

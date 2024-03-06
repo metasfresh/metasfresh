@@ -22,14 +22,13 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import javax.annotation.Nullable;
 
 @Getter
 @ToString
@@ -164,6 +163,33 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
+	@ApiModelProperty(position = 200, //
+			value = "Translates to C_BPartner_Location.IsEphemeral")
+	private boolean ephemeral;
+
+	@ApiModelProperty(hidden = true)
+	private boolean ephemeralSet;
+
+	@ApiModelProperty(position = 210)
+	@Nullable
+	private String email;
+
+	@ApiModelProperty(hidden = true)
+	private boolean emailSet;
+
+	@ApiModelProperty(position = 220)
+	private String phone;
+
+	@ApiModelProperty(hidden = true)
+	private boolean phoneSet;
+
+	@ApiModelProperty(position = 230, //
+			value = "Translates to C_BPartner_Location.VisitorsAddress")
+	private Boolean visitorsAddress;
+
+	@ApiModelProperty(hidden = true)
+	private boolean visitorsAddressSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -270,5 +296,29 @@ public class JsonRequestLocation
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
+	}
+
+	public void setEphemeral(final Boolean ephemeral)
+	{
+		this.ephemeral = ephemeral;
+		this.ephemeralSet = true;
+	}
+
+	public void setEmail(@Nullable final String email)
+	{
+		this.email = email;
+		this.emailSet = true;
+	}
+
+	public void setPhone(final String phone)
+	{
+		this.phone = phone;
+		this.phoneSet = true;
+	}
+
+	public void setVisitorsAddress(final Boolean visitorsAddress)
+	{
+		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressSet = true;
 	}
 }

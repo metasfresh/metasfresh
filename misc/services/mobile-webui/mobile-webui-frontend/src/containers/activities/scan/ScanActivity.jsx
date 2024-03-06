@@ -1,44 +1,47 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 import { useHistory } from 'react-router-dom';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import { trl } from '../../../utils/translations';
+import { scanBarcodeLocation } from '../../../routes/scan';
+
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 const ScanActivity = (props) => {
   const history = useHistory();
-  const { activityState } = props;
+  const { applicationId, wfProcessId, activityState } = props;
 
+  const scanButtonCaption = computeButtonCaption(activityState);
   const isUserEditable = activityState.dataStored.isUserEditable;
-
-  const scannedBarcode = activityState.dataStored.scannedBarcode;
-  const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;
-
   const activityCompleteStatus = activityState.dataStored.completeStatus;
-  const scanButtonCaption =
-    scannedBarcodeCaption ||
-    scannedBarcode ||
-    activityState.caption ||
-    counterpart.translate('activities.scanBarcode.defaultCaption');
 
   const handleClick = () => {
-    const { wfProcessId } = props;
     const { activityId } = activityState;
 
-    console.log('history:', history);
-    history.push(`/workflow/${wfProcessId}/activityId/${activityId}/scanner`);
+    history.push(scanBarcodeLocation({ applicationId, wfProcessId, activityId }));
   };
 
   return (
-    <div className="mt-0">
-      <button className="button is-outlined complete-btn" disabled={!isUserEditable} onClick={handleClick}>
-        <ButtonWithIndicator caption={scanButtonCaption} completeStatus={activityCompleteStatus} />
-      </button>
-    </div>
+    <ButtonWithIndicator
+      caption={scanButtonCaption}
+      completeStatus={activityCompleteStatus}
+      disabled={!isUserEditable}
+      onClick={handleClick}
+    />
   );
 };
 
+const computeButtonCaption = (activityState) => {
+  const currentValue = activityState.dataStored.currentValue;
+  if (currentValue && currentValue.caption) {
+    return currentValue.caption;
+  }
+
+  return activityState.caption || trl('activities.scanBarcode.defaultCaption');
+};
+
 ScanActivity.propTypes = {
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityState: PropTypes.object.isRequired,
 };

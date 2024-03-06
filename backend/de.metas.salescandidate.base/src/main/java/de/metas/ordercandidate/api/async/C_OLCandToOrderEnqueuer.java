@@ -22,10 +22,10 @@
 
 package de.metas.ordercandidate.api.async;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,22 +40,16 @@ import static org.compiere.util.Env.getCtx;
 public class C_OLCandToOrderEnqueuer
 {
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
-	public void enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	@NonNull
+	public OlCandEnqueueResult enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
 	{
-		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
-				.parameter(OLCandProcessor_ID, olCandProcessorId);
+		final I_C_Queue_WorkPackage result = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
+				.newWorkPackage()
+				.parameter(OLCandProcessor_ID, olCandProcessorId)
+				.setC_Async_Batch_ID(asyncBatchId)
+				.buildAndEnqueue();
 
-		if (asyncBatchId != null)
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-			workPackageBuilder.setC_Async_Batch(asyncBatch);
-		}
-
-		workPackageBuilder.build();
+		return new OlCandEnqueueResult(ImmutableList.of(QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID())));
 	}
 }

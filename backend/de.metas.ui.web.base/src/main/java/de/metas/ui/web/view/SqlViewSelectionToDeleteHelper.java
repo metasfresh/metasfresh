@@ -76,10 +76,9 @@ public class SqlViewSelectionToDeleteHelper
 		{
 			final SqlAndParams sql = sqlBuilder.build();
 			DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
-			sqlBuilder = null;
 		}
 
-		logger.debug("{} view selections scheduled to be deleted");
+		logger.debug("{} view selections scheduled to be deleted", selectionIds.size());
 	}
 
 	public static void deleteScheduledSelectionsNoFail()

@@ -22,7 +22,7 @@
 
 package de.metas.picking.api;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 

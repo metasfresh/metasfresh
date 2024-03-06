@@ -24,15 +24,20 @@ package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.UUID;
 
 /**
  * Send from the procurement-webui to metasfresh to request a {@link PutProductsRequest} containing all products that shall be know to the procurement-webui.
  */
 @Value
+@Builder
+@Jacksonized
 public class GetAllProductsRequest extends RequestToMetasfresh
 {
-	public static final GetAllProductsRequest INSTANCE = new GetAllProductsRequest();
-
-	private GetAllProductsRequest(){};
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
 }

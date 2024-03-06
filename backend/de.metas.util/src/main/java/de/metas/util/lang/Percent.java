@@ -170,6 +170,7 @@ public class Percent
 
 	public static final Percent ZERO = new Percent(BigDecimal.ZERO);
 
+	/** 100 based value */
 	@Getter(AccessLevel.NONE) BigDecimal value;
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
@@ -178,12 +179,14 @@ public class Percent
 		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
+	/** @return 100 based value */
 	@JsonValue
 	public BigDecimal toBigDecimal()
 	{
 		return value;
 	}
 
+	/** @return 100 based value */
 	public int toInt()
 	{
 		return value.intValue();

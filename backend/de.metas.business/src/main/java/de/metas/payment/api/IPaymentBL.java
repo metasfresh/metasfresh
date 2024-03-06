@@ -20,13 +20,11 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -39,10 +37,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -65,8 +61,6 @@ public interface IPaymentBL extends ISingletonService
 	DefaultPaymentBuilder newBuilderOfInvoice(I_C_Invoice invoice);
 
 	/**
-	 *
-	 * @param payment
 	 * @param colName source column name
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
@@ -75,32 +69,24 @@ public interface IPaymentBL extends ISingletonService
 	/**
 	 * updates amount when flag IsOverUnderPayment change
 	 *
-	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
 	 * updates amounts when currency change
-	 *
-	 * @param payment
 	 */
 	void onCurrencyChange(final I_C_Payment payment);
 
 	/**
 	 * updates amounts when PayAmt change
 	 *
-	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
 	 * check if the invoice is allocated with the specified payment
-	 *
-	 * @param payment
-	 * @param invoice
-	 * @return
 	 */
 	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
 
@@ -121,17 +107,26 @@ public interface IPaymentBL extends ISingletonService
 
 	void fullyWriteOffPayments(Iterator<I_C_Payment> payments, Instant writeOffDate);
 
+	void paymentWriteOff(
+			@NonNull final PaymentId paymentId,
+			@NonNull final Money writeOffAmt,
+			@NonNull final Instant writeOffDate,
+			@Nullable String description);
+
 	/**
 	 * WriteOff given payment.
 	 *
 	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created).
 	 *
-	 * @param payment
 	 * @param writeOffAmt amount to write-off
-	 * @param date allocation date
+	 * @param writeOffDate allocation writeOffDate
 	 * @return generated and completed allocation
 	 */
-	I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date);
+	I_C_AllocationHdr paymentWriteOff(
+			@NonNull final I_C_Payment payment,
+			@NonNull final Money writeOffAmt,
+			@NonNull final Instant writeOffDate,
+			@Nullable String description);
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 

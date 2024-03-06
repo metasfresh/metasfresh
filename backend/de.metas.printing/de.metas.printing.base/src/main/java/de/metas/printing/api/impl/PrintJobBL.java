@@ -25,32 +25,11 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import com.google.common.base.Predicates;
-import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.printing.api.IPrintClientsBL;
-import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.user.UserId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
@@ -59,10 +38,11 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.Printing_Constants;
+import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintJobBL;
-import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.async.spi.impl.PDFDocPrintingWorkpackageProcessor;
@@ -75,6 +55,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -86,8 +67,22 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Delegate;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class PrintJobBL implements IPrintJobBL
 {
@@ -302,7 +297,7 @@ public class PrintJobBL implements IPrintJobBL
 				.setContext(ctx)
 				.setC_Async_Batch_Type(Printing_Constants.C_Async_Batch_InternalName_PDFPrinting)
 				.setAD_PInstance_Creator_ID(adPInstanceId)
-				.setParentAsycnBatchId(parentAsyncBatchId)
+				.setParentAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(parentAsyncBatchId))
 				.setCountExpected(printJobCount)
 				.setName(name)
 				.build();
@@ -325,12 +320,11 @@ public class PrintJobBL implements IPrintJobBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
-		queue.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+		queue
+				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	/**

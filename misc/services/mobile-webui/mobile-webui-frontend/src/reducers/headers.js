@@ -10,18 +10,42 @@ export const initialState = {
   ],
 };
 
+const launchersUrlRegExp = /\/\w+\/launchers/gi;
+
+const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
+
+const getHeaderEntries = (state) => state.headers.entries;
+
+export const getEntryItemsFromState = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries
+    .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
+    .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
+    .filter((entryItem) => !entryItem.hidden);
+};
+
+export const getCaptionFromHeaders = (state) => {
+  // return last known caption
+  return state.headers.entries.reduce((acc, entry) => (entry.caption ? entry.caption : acc), null);
+};
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, values } = payload;
+      const { location, caption, values } = payload;
 
+      // if there are no header values, there's no reason to block space
+      const hidden = !values.length;
+
+      //
+      // Search by location and update an existing entry if possible
       let existingEntryUpdated = false;
       let newEntries = state.entries.map((entry) => {
         if (entry.location === location) {
           existingEntryUpdated = true;
-          return { ...entry, values };
+          return { ...entry, caption, values, hidden };
         } else {
           return entry;
         }
@@ -34,7 +58,7 @@ export default function reducer(state = initialState, action) {
           inclusive: false,
         });
       } else {
-        const newEntry = { location, values };
+        const newEntry = { location, caption, values, hidden };
         newEntries.push(newEntry);
         // console.log('added newEntry: ', newEntry);
       }
@@ -48,14 +72,22 @@ export default function reducer(state = initialState, action) {
         location: { pathname },
       } = payload;
 
-      const newEntries = removeEntries({
-        entriesArray: state.entries,
-        startLocation: pathname,
-        inclusive: false,
-      });
+      let newEntries = null;
 
-      // console.log('@@router/LOCATION_CHANGE: pathname=%o', pathname);
-      // console.log('@@router/LOCATION_CHANGE=>newEntries:', newEntries);
+      // clear header on main urls
+      if (pathname === '/' || isLaunchersPathname(pathname)) {
+        newEntries = [...initialState.entries];
+        //console.log('HEADERS: @@router/LOCATION_CHANGE: CLEAR!!!');
+      } else {
+        newEntries = removeEntries({
+          entriesArray: state.entries,
+          startLocation: pathname,
+          inclusive: false,
+        });
+      }
+
+      //console.log('HEADERS: @@router/LOCATION_CHANGE: pathname=%o', pathname);
+      //console.log('HEADERS: @@router/LOCATION_CHANGE=>newEntries:', newEntries);
       return { ...state, entries: newEntries };
     }
 

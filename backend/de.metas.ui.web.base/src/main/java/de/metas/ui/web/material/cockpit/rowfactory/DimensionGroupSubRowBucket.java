@@ -49,6 +49,8 @@ import static de.metas.util.Check.assumeNotNull;
 @Data
 public class DimensionGroupSubRowBucket
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		return new DimensionGroupSubRowBucket(dimensionSpecGroup);
@@ -97,8 +99,6 @@ public class DimensionGroupSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
 		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
@@ -123,9 +123,7 @@ public class DimensionGroupSubRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(stockRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 

@@ -104,7 +104,7 @@ public class BPartnerBL_UpdateNameAndGreetingFromContactsTest
 
 		refresh(partner);
 		assertThat(partner.getName()).isEqualTo(lastname + ", " + firstName);
-		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(-1);
 	}
 
 	@Test
