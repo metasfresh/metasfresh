@@ -30,6 +30,7 @@ import de.metas.postfinance.generated.ArrayOfProtocolReport;
 import de.metas.postfinance.generated.B2BService;
 import de.metas.postfinance.generated.B2BService_Service;
 import de.metas.postfinance.generated.DownloadFile;
+import de.metas.postfinance.generated.ProtocolReport;
 import de.metas.postfinance.util.XMLUtil;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -61,13 +62,12 @@ public class B2BServiceWrapper
 		return arrayOfProtocolReport.getProtocolReport()
 				.stream()
 				.filter(report -> report.getFileType().getValue().equals(CUSTOMER_REGISTRATION_MESSAGE))
-				.findFirst()
-				.map(protocolReport -> port.getRegistrationProtocol(billerId, protocolReport.getCreateDate(), isArchiveData)
+				.map(ProtocolReport::getCreateDate)
+				.distinct()
+				.map(createDate -> port.getRegistrationProtocol(billerId, createDate, isArchiveData)
 						.getDownloadFile())
-				.map(downloadFiles -> downloadFiles
-						.stream()
-						.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
-						.collect(ImmutableList.toImmutableList()))
-				.orElse(ImmutableList.of());
+				.flatMap(List::stream)
+				.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

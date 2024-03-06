@@ -27,13 +27,16 @@ import de.metas.attachments.AttachmentTags;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.postfinance.PostFinanceBPartnerConfig;
 import de.metas.bpartner.postfinance.PostFinanceBPartnerConfigRepository;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.OtherExternalSystem;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.organization.OrgId;
 import de.metas.postfinance.generated.DownloadFile;
 import de.metas.postfinance.model.XmlCustomerRegistration;
 import de.metas.postfinance.model.XmlCustomerSubscriptionFormField;
@@ -44,7 +47,6 @@ import de.metas.postfinance.repository.CustomerRegistrationMessageRepository;
 import de.metas.postfinance.util.XMLUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -61,23 +63,27 @@ public class CustomerRegistrationMessageService
 {
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final CustomerRegistrationMessageRepository customerRegistrationMessageRepository;
 	private final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository;
+	private final ExternalReferenceRepository externalReferenceRepository;
 
 	public CustomerRegistrationMessageService(
 			@NonNull final CustomerRegistrationMessageRepository customerRegistrationMessageRepository,
-			@NonNull final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository)
+			@NonNull final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository,
+			@NonNull final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.customerRegistrationMessageRepository = customerRegistrationMessageRepository;
 		this.postFinanceBPartnerConfigRepository = postFinanceBPartnerConfigRepository;
+		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
-	public void processCustomerRegistrationMessages(@NonNull final List<DownloadFile> customerRegistrationMessageFiles)
+	public void processCustomerRegistrationMessages(
+			@NonNull final List<DownloadFile> customerRegistrationMessageFiles,
+			@NonNull final OrgId orgId)
 	{
 		customerRegistrationMessageFiles
-				.forEach(this::processDownloadFie);
+				.forEach(downloadFile -> processDownloadFie(downloadFile, orgId));
 	}
 
 	public void processCustomerRegistrationMessages(@NonNull final Stream<CustomerRegistrationMessage> customerRegistrationMessages)
@@ -109,14 +115,16 @@ public class CustomerRegistrationMessageService
 		}
 	}
 
-	private void processDownloadFie(@NonNull final DownloadFile downloadFile)
+	private void processDownloadFie(
+			@NonNull final DownloadFile downloadFile,
+			@NonNull final OrgId orgId)
 	{
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = createAttachmentRequest(downloadFile);
 
 		XMLUtil.getXmlCustomerRegistrationMessage(downloadFile)
 				.customerRegistrations()
 				.stream()
-				.map(customerRegistration -> toCustomerRegistrationMessageRequest(customerRegistration, attachmentEntryCreateRequest))
+				.map(customerRegistration -> toCustomerRegistrationMessageRequest(customerRegistration, attachmentEntryCreateRequest, orgId))
 				.map(customerRegistrationMessageRepository::create)
 				.forEach(this::processIfRequired);
 	}
@@ -139,7 +147,8 @@ public class CustomerRegistrationMessageService
 	@NonNull
 	private CustomerRegistrationMessageCreateRequest toCustomerRegistrationMessageRequest(
 			@NonNull final XmlCustomerRegistration customerRegistration,
-			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull final OrgId orgId)
 	{
 		final String qrCode;
 		final BPartnerId bPartnerId;
@@ -150,9 +159,14 @@ public class CustomerRegistrationMessageService
 				qrCode = null;
 				bPartnerId = customerRegistration.getCustomerExternalId()
 						.map(XmlCustomerSubscriptionFormField::value)
-						.flatMap(externalId -> partnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-																				  .externalId(ExternalId.of(externalId))
-																				  .build()))
+						.map(externalId -> externalReferenceRepository.getReferencedRecordIdOrNullBy(
+								ExternalReferenceQuery.builder()
+										.orgId(orgId)
+										.externalSystem(OtherExternalSystem.OTHER)
+										.externalReference(externalId)
+										.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
+										.build()))
+						.map(BPartnerId::ofRepoId)
 						.orElse(null);
 			}
 			case DIRECT_REGISTRATION ->

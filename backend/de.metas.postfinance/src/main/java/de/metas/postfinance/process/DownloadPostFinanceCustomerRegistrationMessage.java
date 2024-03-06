@@ -22,6 +22,7 @@
 
 package de.metas.postfinance.process;
 
+import de.metas.organization.OrgId;
 import de.metas.postfinance.B2BServiceWrapper;
 import de.metas.postfinance.CustomerRegistrationMessageService;
 import de.metas.postfinance.generated.DownloadFile;
@@ -38,8 +39,10 @@ public class DownloadPostFinanceCustomerRegistrationMessage extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final List<DownloadFile> customerRegistrationMessageFiles = b2BServiceWrapper.getCustomerRegistrationMessageFiles(getOrgId());
-		customerRegistrationMessageService.processCustomerRegistrationMessages(customerRegistrationMessageFiles);
+		final OrgId orgId = getOrgId();
+
+		final List<DownloadFile> customerRegistrationMessageFiles = b2BServiceWrapper.getCustomerRegistrationMessageFiles(orgId);
+		customerRegistrationMessageService.processCustomerRegistrationMessages(customerRegistrationMessageFiles, orgId);
 
 		return MSG_OK;
 	}
