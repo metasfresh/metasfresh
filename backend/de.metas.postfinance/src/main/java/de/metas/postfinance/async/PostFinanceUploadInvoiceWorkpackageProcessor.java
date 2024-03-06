@@ -1,10 +1,7 @@
 /*
  * #%L
-<<<<<<<< HEAD:backend/de.metas.postfinance/src/main/java/de/metas/postfinance/async/PostFinanceUploadInvoiceWorkpackageProcessor.java
  * de.metas.postfinance
-========
  * de.metas.business
->>>>>>>> inner_silence_uat_gh17320:backend/de.metas.business/src/main/java/de/metas/bpartner/postfinance/PostFinanceOrgConfig.java
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
