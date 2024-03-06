@@ -21,7 +21,6 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialRe
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
-import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
@@ -34,8 +33,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.stream.Stream;
 
 @Service
