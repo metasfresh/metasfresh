@@ -87,7 +87,7 @@ public class PickingRestController_StepDef
 			final JsonPickingJobLine pickingLine = objectMapper.treeToValue(pickingLinesNodes.get(0), JsonPickingJobLine.class);
 			row.getAsIdentifier("PickingLine").put(workflowPickingLineTable, pickingLine);
 
-			if (row.getAsOptionalString("PickingStep").isPresent())
+			if (row.getAsOptionalIdentifier("PickingStep").isPresent())
 			{
 				final JsonNode pickingStepsNodes = pickingLinesNodes.get(0).at("/steps");
 				assertThat(pickingStepsNodes.size()).isOne();

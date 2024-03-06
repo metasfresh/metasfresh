@@ -154,7 +154,6 @@ Feature: workflow rest controller tests
       | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
 
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
-
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
@@ -207,6 +206,9 @@ Feature: workflow rest controller tests
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | salesOrder_17497      | pickingCustomer_17497    | pickingCustomer_17497Location     |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract picking step and main HU picking candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
+      | wf1                        | a1                          | line1                  | step1                  | QR                           |
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
