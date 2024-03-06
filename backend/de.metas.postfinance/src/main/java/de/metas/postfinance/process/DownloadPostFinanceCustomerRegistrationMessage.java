@@ -38,7 +38,7 @@ public class DownloadPostFinanceCustomerRegistrationMessage extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final List<DownloadFile> customerRegistrationMessageFiles = b2BServiceWrapper.getCustomerRegistrationMessageFiles();
+		final List<DownloadFile> customerRegistrationMessageFiles = b2BServiceWrapper.getCustomerRegistrationMessageFiles(getOrgId());
 		customerRegistrationMessageService.processCustomerRegistrationMessages(customerRegistrationMessageFiles);
 
 		return MSG_OK;

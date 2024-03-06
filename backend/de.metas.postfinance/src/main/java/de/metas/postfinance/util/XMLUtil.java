@@ -67,6 +67,12 @@ public class XMLUtil
 		}
 	}
 
+	public boolean isXML(@NonNull final String filename)
+	{
+		final String name = filename.trim().toLowerCase();
+		return name.endsWith(".xml");
+	}
+	
 	@NonNull
 	private Document readFromDownloadFile(@NonNull final DownloadFile downloadFile) throws ParserConfigurationException, IOException, SAXException
 	{

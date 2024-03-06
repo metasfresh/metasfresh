@@ -32,7 +32,7 @@ import lombok.NonNull;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_NBR;
+import static de.metas.postfinance.PostFinanceConstants.CUSTOM_FIELD_CBPARTNERVALUE;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record XmlCustomerRegistration(
@@ -50,11 +50,11 @@ public record XmlCustomerRegistration(
 {
 	@NonNull
 	@JsonIgnore
-	public Optional<XmlCustomerSubscriptionFormField> getCustomerNbr()
+	public Optional<XmlCustomerSubscriptionFormField> getCustomerExternalId()
 	{
-		return customerSubscriptionFormFields
-				.stream()
-				.filter(field -> CUSTOMER_NBR.equals(field.technicalId()))	// TODO: clarify which CustomerSubscriptionFormField.TechnicalID we want to be C_BPartner.Value
-				.findFirst();
+		return Optional.ofNullable(customerSubscriptionFormFields)
+				.flatMap(fields -> fields.stream()
+						.filter(field -> CUSTOM_FIELD_CBPARTNERVALUE.equals(field.technicalId()))
+						.findFirst());
 	}
 }

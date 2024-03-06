@@ -44,6 +44,7 @@ import de.metas.postfinance.repository.CustomerRegistrationMessageRepository;
 import de.metas.postfinance.util.XMLUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -147,10 +148,10 @@ public class CustomerRegistrationMessageService
 			case REGISTRATION ->
 			{
 				qrCode = null;
-				bPartnerId = customerRegistration.getCustomerNbr()
+				bPartnerId = customerRegistration.getCustomerExternalId()
 						.map(XmlCustomerSubscriptionFormField::value)
-						.flatMap(value -> partnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-																				  .bpartnerValue(value)
+						.flatMap(externalId -> partnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+																				  .externalId(ExternalId.of(externalId))
 																				  .build()))
 						.orElse(null);
 			}

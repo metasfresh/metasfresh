@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PostFinance_Org_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PostFinance_Org_Config extends org.compiere.model.PO implements I_PostFinance_Org_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 142109770L;
+	private static final long serialVersionUID = 61763720L;
 
     /** Standard Constructor */
     public X_PostFinance_Org_Config (final Properties ctx, final int PostFinance_Org_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_PostFinance_Org_Config extends org.compiere.model.PO implements I
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setIsArchiveData (final boolean IsArchiveData)
+	{
+		set_Value (COLUMNNAME_IsArchiveData, IsArchiveData);
+	}
+
+	@Override
+	public boolean isArchiveData() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArchiveData);
 	}
 
 	@Override

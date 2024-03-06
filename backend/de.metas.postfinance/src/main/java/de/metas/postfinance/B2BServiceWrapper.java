@@ -23,10 +23,14 @@
 package de.metas.postfinance;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.postfinance.PostFinanceOrgConfig;
+import de.metas.bpartner.postfinance.PostFinanceOrgConfigRepository;
+import de.metas.organization.OrgId;
 import de.metas.postfinance.generated.ArrayOfProtocolReport;
 import de.metas.postfinance.generated.B2BService;
 import de.metas.postfinance.generated.B2BService_Service;
 import de.metas.postfinance.generated.DownloadFile;
+import de.metas.postfinance.util.XMLUtil;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -37,24 +41,33 @@ import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_ME
 @Service
 public class B2BServiceWrapper
 {
-	private final B2BService port;
+	private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
 
-	public B2BServiceWrapper()
+	public B2BServiceWrapper(@NonNull final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository)
 	{
-		port = new B2BService_Service().getUserNamePassword();
+		this.postFinanceOrgConfigRepository = postFinanceOrgConfigRepository;
 	}
 
 	@NonNull
-	public List<DownloadFile> getCustomerRegistrationMessageFiles()
+	public List<DownloadFile> getCustomerRegistrationMessageFiles(@NonNull final OrgId orgId)
 	{
-		// TODO: add real billerId
-		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList("billerId", false);
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final String billerId = postFinanceOrgConfig.getBillerId();
+		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
+		
+		final B2BService port = new B2BService_Service().getUserNamePassword();
+		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList(billerId, isArchiveData);
+
 		return arrayOfProtocolReport.getProtocolReport()
 				.stream()
-				.filter(report -> report.getFileType().getValue().equals(CUSTOMER_REGISTRATION_MESSAGE)) // TODO: to be establish how to get the right ProtocolReport
+				.filter(report -> report.getFileType().getValue().equals(CUSTOMER_REGISTRATION_MESSAGE))
 				.findFirst()
-				.map(protocolReport -> port.getRegistrationProtocol("billerId", protocolReport.getCreateDate(), false)
+				.map(protocolReport -> port.getRegistrationProtocol(billerId, protocolReport.getCreateDate(), isArchiveData)
 						.getDownloadFile())
+				.map(downloadFiles -> downloadFiles
+						.stream()
+						.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
+						.collect(ImmutableList.toImmutableList()))
 				.orElse(ImmutableList.of());
 	}
 }

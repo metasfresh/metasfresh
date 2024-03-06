@@ -26,9 +26,9 @@ public interface PostFinanceConstants
 {
 	String XML_PROPERTY_VALUE_YES = "yes";
 
-	String CUSTOMER_REGISTRATION_MESSAGE = "CustomerRegistrationMessage";
+	String CUSTOMER_REGISTRATION_MESSAGE = "R";
 
-	String CUSTOMER_NBR = "CUSTOMERNBR";
+	String CUSTOM_FIELD_CBPARTNERVALUE = "CBPARTNERVALUE";
 
 	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
 }

@@ -24,8 +24,6 @@
  * #L%
  */
 
-package de.metas.postfinance.async;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import lombok.NonNull;
@@ -38,4 +36,21 @@ public class PostFinanceUploadInvoiceWorkpackageProcessor implements IWorkpackag
 	{
 		return null;
 	}
+========
+package de.metas.bpartner.postfinance;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class PostFinanceOrgConfig
+{
+	@NonNull PostFinanceOrgConfigId id;
+
+	@NonNull String billerId;
+	
+	boolean isArchiveData;
+>>>>>>>> inner_silence_uat_gh17320:backend/de.metas.business/src/main/java/de/metas/bpartner/postfinance/PostFinanceOrgConfig.java
 }
