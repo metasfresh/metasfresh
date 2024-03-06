@@ -2,9 +2,5 @@
 <wsdl:definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   name="mainclientconfig">
-<<<<<<<< HEAD:backend/de.metas.postfinance/src/test/resources/META-INF/wsit-client.xml
-    <import location="postfinance:B2BService.xml" namespace="http://ch.swisspost.ebill.b2bservice"/>
-========
     <import location="file:////opt/metasfresh/postfinance-config/B2BService.xml" namespace="http://ch.swisspost.ebill.b2bservice"/>
->>>>>>>> inner_silence_uat_gh17320:backend/de.metas.postfinance/src/main/resources/META-INF/wsit-client.xml
 </wsdl:definitions>

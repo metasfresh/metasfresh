@@ -24,19 +24,6 @@
  * #L%
  */
 
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
-import lombok.NonNull;
-import org.jetbrains.annotations.Nullable;
-
-public class PostFinanceUploadInvoiceWorkpackageProcessor implements IWorkpackageProcessor
-{
-	@Override
-	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
-	{
-		return null;
-	}
-========
 package de.metas.bpartner.postfinance;
 
 import lombok.Builder;
@@ -52,5 +39,4 @@ public class PostFinanceOrgConfig
 	@NonNull String billerId;
 	
 	boolean isArchiveData;
->>>>>>>> inner_silence_uat_gh17320:backend/de.metas.business/src/main/java/de/metas/bpartner/postfinance/PostFinanceOrgConfig.java
 }

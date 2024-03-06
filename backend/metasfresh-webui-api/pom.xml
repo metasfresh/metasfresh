@@ -78,13 +78,6 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>de.metas.postfinance</groupId>
-			<artifactId>de.metas.postfinance.protocol</artifactId>
-			<version>${metasfresh.version}</version>
-			<type>jar</type>
-		</dependency>
 	</dependencies>
 
 	<build>

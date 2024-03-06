@@ -213,7 +213,6 @@
         <module>de-metas-salesorder</module>
         <module>de.metas.postfinance</module>
         <module>de.metas.postfinance.schema.v2</module>
-        <module>de.metas.postfinance.protocol</module>
 
     </modules>
 
