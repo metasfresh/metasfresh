@@ -336,6 +336,7 @@ public class PickingJobService
 			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
 				unassignPickingJob(job);
+				pickingJobLockService.unlockShipmentSchedules(job);
 			}
 		});
 	}
@@ -377,6 +378,8 @@ public class PickingJobService
 		PickingJob job = getById(pickingJobId);
 		if (job.getLockedBy() == null)
 		{
+			pickingJobLockService.lockShipmentSchedules(job.getShipmentScheduleIds(), newResponsibleId);
+
 			job = job.withLockedBy(newResponsibleId);
 			pickingJobRepository.save(job);
 		}
