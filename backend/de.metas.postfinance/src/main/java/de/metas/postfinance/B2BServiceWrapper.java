@@ -41,13 +41,10 @@ import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_ME
 @Service
 public class B2BServiceWrapper
 {
-	private final B2BService port;
 	private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
 
 	public B2BServiceWrapper(@NonNull final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository)
 	{
-		this.port = new B2BService_Service().getUserNamePassword();
-		
 		this.postFinanceOrgConfigRepository = postFinanceOrgConfigRepository;
 	}
 
@@ -58,6 +55,7 @@ public class B2BServiceWrapper
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
 		
+		final B2BService port = new B2BService_Service().getUserNamePassword();
 		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList(billerId, isArchiveData);
 
 		return arrayOfProtocolReport.getProtocolReport()
