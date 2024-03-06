@@ -2,6 +2,7 @@ package de.metas.material.planning.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
@@ -28,6 +29,7 @@ import org.compiere.util.TimeUtil;
 
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -47,9 +49,15 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public ResourceType getResourceTypeByResourceId(final ResourceId resourceId)
 	{
-		final I_S_Resource resource = getResourceById(resourceId);
-		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
+		final ResourceTypeId resourceTypeId = getResourceTypeIdByResourceId(resourceId);
 		return getResourceTypeById(resourceTypeId);
+	}
+
+	@Override
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		final I_S_Resource resource = getResourceById(resourceId);
+		return ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
 	}
 
 	public I_S_Resource getResourceById(@NonNull final ResourceId resourceId)
@@ -57,12 +65,16 @@ public class ResourceDAO implements IResourceDAO
 		return loadOutOfTrx(resourceId, I_S_Resource.class);
 	}
 
-	private ResourceType toResourceType(I_S_ResourceType record)
+	private static ResourceType toResourceType(I_S_ResourceType record)
 	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
+
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
 		final TemporalUnit durationUnit = Services.get(IUOMDAO.class).getTemporalUnitByUomId(durationUomId);
 
 		return ResourceType.builder()
+				.id(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.caption(trls.getColumnTrl(I_S_ResourceType.COLUMNNAME_Name, record.getName()))
 				.active(record.isActive())
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.durationUomId(durationUomId)
@@ -250,4 +262,21 @@ public class ResourceDAO implements IResourceDAO
 				.create()
 				.listIds(ResourceId::ofRepoId);
 	}
+
+	@Override
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull final Collection<ResourceTypeId> resourceTypeIds)
+	{
+		if (resourceTypeIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeIds)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+	}
+
 }

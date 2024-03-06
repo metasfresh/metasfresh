@@ -26,6 +26,7 @@ import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 @Value
 @Builder
@@ -34,5 +35,7 @@ public class WorkflowLaunchersFacet
 	@NonNull WorkflowLaunchersFacetId facetId;
 	@NonNull ITranslatableString caption;
 	@Builder.Default long sortNo = 0;
-	boolean isActive;
+	@With boolean isActive;
+
+	public WorkflowLaunchersFacetGroupId getGroupId() {return facetId.getGroupId();}
 }
