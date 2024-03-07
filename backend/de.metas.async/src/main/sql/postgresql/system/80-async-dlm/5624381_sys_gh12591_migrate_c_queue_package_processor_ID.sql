@@ -31,7 +31,7 @@ WHERE c_queue_workpackage_id IN (SELECT c_queue_workpackage_id FROM backup.c_que
 --
 -- inspect the records you are about to delete
 -- they will very probably be obsolete
-select * from backup.c_queue_workpackage_delete_20230221;
+select * from backup.c_queue_workpackage_delete_20230221 order by created desc;
 
 --
 -- perform delete
