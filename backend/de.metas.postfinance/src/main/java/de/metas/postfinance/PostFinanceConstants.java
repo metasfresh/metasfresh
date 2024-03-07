@@ -28,7 +28,7 @@ public interface PostFinanceConstants
 
 	String CUSTOMER_REGISTRATION_MESSAGE = "R";
 
-	String CUSTOM_FIELD_CBPARTNERVALUE = "CBPARTNERVALUE";
+	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
 
 	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
 }

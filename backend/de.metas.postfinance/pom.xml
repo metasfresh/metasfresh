@@ -251,8 +251,8 @@
                     <wsdlUrls>
                         <wsdlUrl>https://ebill-ki.postfinance.ch/B2BService/B2BService.svc?wsdl</wsdlUrl>
                     </wsdlUrls>
-                    <packageName>de.metas.postfinance.generated</packageName>
-                    <sourceDestDir>${project.basedir}/src/main/java</sourceDestDir>
+                    <packageName>de.metas.postfinance.jaxb</packageName>
+                    <sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
                 </configuration>
             </plugin>
         </plugins>
