@@ -16,6 +16,8 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <src.dir>src/main/java-gen</src.dir>
+        <src.dir>src/main/java-xjc</src.dir>
     </properties>
 
     <dependencies>
@@ -224,7 +226,6 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
@@ -254,6 +255,23 @@
                     <packageName>de.metas.postfinance.jaxb</packageName>
                     <sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ybInvoice-v2</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatePackage>de.metas.postfinance.ybinvoice.v2</generatePackage>
+                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/postfinance/ybinvoice/v2/</schemaDirectory>
+                            <generateDirectory>src/main/java-xjc</generateDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

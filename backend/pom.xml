@@ -145,7 +145,6 @@
         <module>de.metas.payment.revolut</module>
 
         <module>de.metas.postfinance</module>
-        <module>de.metas.postfinance.schema.v2</module>
 
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>
