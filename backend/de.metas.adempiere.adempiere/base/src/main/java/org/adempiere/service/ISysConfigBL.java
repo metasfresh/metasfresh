@@ -20,6 +20,8 @@ public interface ISysConfigBL extends ISingletonService
 
 	int getIntValue(String name, int defaultValue);
 
+	int getPositiveIntValue(String name, int defaultValue);
+
 	/**
 	 * Get system configuration property of type boolean
 	 */
