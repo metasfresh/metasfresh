@@ -16,7 +16,6 @@ import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
-import GetDocumentNoDialog from './GetDocumentNoDialog';
 import { useApplicationInfo } from '../../reducers/applications';
 
 const WFLaunchersScreen = () => {
@@ -84,14 +83,6 @@ const WFLaunchersScreen = () => {
               setFilterByQRCode(scannedBarcode);
               setCurrentPanel('default');
             }}
-          />
-        )}
-        {currentPanel === 'getDocumentNo' && (
-          <GetDocumentNoDialog
-            onOK={(documentNo) => {
-              console.log('onDialogYes: ' + documentNo);
-            }}
-            onClose={() => setCurrentPanel('default')}
           />
         )}
         {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
