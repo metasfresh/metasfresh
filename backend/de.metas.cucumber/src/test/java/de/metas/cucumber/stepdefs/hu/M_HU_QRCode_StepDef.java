@@ -23,10 +23,13 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -36,11 +39,17 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsResult;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Product;
 
 import java.util.List;
@@ -51,6 +60,11 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class M_HU_QRCode_StepDef
 {
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final QRCodeConfigurationService qrCodeConfigurationService;
 	private final HUQRCodesRepository huQRCodesRepository;
 
 	private final M_HU_StepDefData huTable;
@@ -58,21 +72,26 @@ public class M_HU_QRCode_StepDef
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
 	private final M_Product_StepDefData productTable;
 	private final M_HU_PI_StepDefData huPiTable;
+	private final HUQRCode_StepDefData huQRCodeStorage;
 
 	public M_HU_QRCode_StepDef(
+			@NonNull QRCodeConfigurationService qrCodeConfigurationService,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_HU_QRCode_StepDefData qrCodesTable,
 			@NonNull final HUQRCodesRepository huQRCodesRepository,
 			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_HU_PI_StepDefData huPiTable)
+			@NonNull final M_HU_PI_StepDefData huPiTable,
+			@NonNull final HUQRCode_StepDefData huQRCodeStorage)
 	{
+		this.qrCodeConfigurationService = qrCodeConfigurationService;
 		this.huQRCodesRepository = huQRCodesRepository;
 		this.huTable = huTable;
 		this.qrCodesTable = qrCodesTable;
 		this.huPiVersionTable = huPiVersionTable;
 		this.productTable = productTable;
 		this.huPiTable = huPiTable;
+		this.huQRCodeStorage = huQRCodeStorage;
 	}
 
 	@And("metasfresh contains M_HU_QRCode")
@@ -82,6 +101,15 @@ public class M_HU_QRCode_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			createHUQRCode(row);
+		}
+	}
+
+	@And("generate QR Codes for HUs")
+	public void generate_qr_codes_for_HUs(@NonNull final DataTable dataTable)
+	{
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
+		{
+			generateQRCodes(row);
 		}
 	}
 
@@ -121,5 +149,24 @@ public class M_HU_QRCode_StepDef
 		final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		qrCodesTable.putOrReplace(qrCodeIdentifier, qrCode);
+	}
+
+	private void generateQRCodes(@NonNull final DataTableRow dataTableRow)
+	{
+		final HuId huId = HuId.ofRepoId(dataTableRow.getAsIdentifier("M_HU_ID").lookupIn(huTable).getM_HU_ID());
+		final HUQRCodeGenerateForExistingHUsResult result = HUQRCodeGenerateForExistingHUsCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.productBL(productBL)
+				.attributeDAO(attributeDAO)
+				.huQRCodesRepository(huQRCodesRepository)
+				.qrCodeConfigurationService(qrCodeConfigurationService)
+				.attributeStorageFactoryService(attributeStorageFactoryService)
+				.huId(huId)
+				.build()
+				.execute();
+
+		result.getSingleQRCode(huId);
+
+		dataTableRow.getAsIdentifier("HUQRCode").put(huQRCodeStorage, result.getSingleQRCode(huId));
 	}
 }

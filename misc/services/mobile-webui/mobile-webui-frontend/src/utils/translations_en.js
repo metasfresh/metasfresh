@@ -12,6 +12,8 @@ const translations = {
   general: {
     Yes: 'Yes',
     No: 'No',
+    OK: 'OK',
+    DocumentNo: 'Document No',
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
@@ -30,6 +32,7 @@ const translations = {
     cancelText: 'Cancel',
     okText: 'OK',
     closeText: 'Close',
+    clearText: 'Clear',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',

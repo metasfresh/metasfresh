@@ -24,11 +24,13 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -64,10 +66,12 @@ public class ResourceTypeRepository
 
 	static ResourceType fromRecord(final I_S_ResourceType record)
 	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
 
 		return ResourceType.builder()
 				.id(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.caption(trls.getColumnTrl(I_S_ResourceType.COLUMNNAME_Name, record.getName()))
 				.active(record.isActive())
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.durationUomId(durationUomId)

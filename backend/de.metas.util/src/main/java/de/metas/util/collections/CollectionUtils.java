@@ -805,4 +805,17 @@ public final class CollectionUtils
 		return result.build();
 	}
 
+
+	@Nullable
+	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
+	{
+		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : null;
+	}
+
+	@NonNull
+	public static <T> ImmutableSet<T> toImmutableSetOrEmpty(@Nullable final Collection<T> collection)
+	{
+		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : ImmutableSet.of();
+	}
+
 }

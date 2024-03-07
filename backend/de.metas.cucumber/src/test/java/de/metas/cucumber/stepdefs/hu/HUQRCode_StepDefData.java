@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,16 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.product.ProductCategoryId;
-import de.metas.uom.UomId;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 
-@Value
-@Builder
-public class ResourceType
+public class HUQRCode_StepDefData extends StepDefData<HUQRCode>
 {
-	@NonNull ResourceTypeId id;
-	@NonNull ITranslatableString caption;
-	@Getter(AccessLevel.PRIVATE) boolean active;
-
-	@NonNull ProductCategoryId productCategoryId;
-
-	@NonNull UomId durationUomId;
-
-	@NonNull ResourceWeeklyAvailability availability;
+	public HUQRCode_StepDefData()
+	{
+		super(HUQRCode.class);
+	}
 }
+
