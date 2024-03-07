@@ -103,12 +103,12 @@ public class FillMandatoryException extends AdempiereException
 		return buildMessage(fieldsAreAlreadyTranslated, fieldsArr);
 	}
 
-	public static void assumeNotNull(@Nullable final Object objectToCheck,
-			@NonNull final String... fields)
+	public static <T> T assumeNotNull(@Nullable final T objectToCheck, @NonNull final String... fields)
 	{
 		if (objectToCheck == null)
 		{
-			throw new FillMandatoryException(false, fields);
+			throw new FillMandatoryException(fields);
 		}
+		return objectToCheck;
 	}
 }
