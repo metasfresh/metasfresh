@@ -124,7 +124,7 @@ public class AsyncBatchService
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
-				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
 			else
 			{
