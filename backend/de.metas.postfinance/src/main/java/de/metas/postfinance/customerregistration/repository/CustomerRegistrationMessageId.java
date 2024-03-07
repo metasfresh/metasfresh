@@ -20,15 +20,31 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.customerregistration.repository;
 
-public interface PostFinanceConstants
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+public class CustomerRegistrationMessageId implements RepoIdAware
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
+	int repoId;
 
-	String CUSTOMER_REGISTRATION_MESSAGE = "R";
+	public static CustomerRegistrationMessageId ofRepoId(final int repoId)
+	{
+		return new CustomerRegistrationMessageId(repoId);
+	}
 
-	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
+	private CustomerRegistrationMessageId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "PostFinance_Customer_Registration_Message");
+	}
 
-	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
+	public static int toRepoId(@Nullable final CustomerRegistrationMessageId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
 }

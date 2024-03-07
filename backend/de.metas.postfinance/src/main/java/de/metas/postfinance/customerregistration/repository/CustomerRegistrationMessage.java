@@ -20,15 +20,35 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.customerregistration.repository;
 
-public interface PostFinanceConstants
+import de.metas.bpartner.BPartnerId;
+import de.metas.postfinance.customerregistration.SubscriptionType;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Builder
+@Value
+public class CustomerRegistrationMessage
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
+	@NonNull
+	CustomerRegistrationMessageId id;
+	
+	@NonNull
+	String customerEBillId;
 
-	String CUSTOMER_REGISTRATION_MESSAGE = "R";
+	@NonNull
+	SubscriptionType subscriptionType;
 
-	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
-
-	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
+	@Nullable
+	String qrCode;
+	
+	@Nullable 
+	BPartnerId bPartnerId;
+	
+	@Builder.Default
+	boolean processed = false;
 }

@@ -23,7 +23,7 @@
 package de.metas.postfinance;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.metas.postfinance.model.XmlCustomerRegistrationMessage;
+import de.metas.postfinance.customerregistration.model.XmlCustomerRegistrationMessage;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

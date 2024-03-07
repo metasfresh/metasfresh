@@ -20,15 +20,25 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.customerregistration.repository;
 
-public interface PostFinanceConstants
+import lombok.Builder;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import de.metas.postfinance.model.I_PostFinance_Customer_Registration_Message;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class CustomerRegistrationMessageQuery
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
+	@Nullable
+	IQueryBuilder<I_PostFinance_Customer_Registration_Message> queryBuilder;
 
-	String CUSTOMER_REGISTRATION_MESSAGE = "R";
+	@Nullable
+	Boolean isBPartnerIdSet;
 
-	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
-
-	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
+	@Nullable
+	Boolean processed;
 }

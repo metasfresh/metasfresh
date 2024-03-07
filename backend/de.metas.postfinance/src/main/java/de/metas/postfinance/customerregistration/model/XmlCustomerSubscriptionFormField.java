@@ -20,15 +20,14 @@
  * #L%
  */
 
-package de.metas.postfinance;
+package de.metas.postfinance.customerregistration.model;
 
-public interface PostFinanceConstants
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record XmlCustomerSubscriptionFormField(
+		@JacksonXmlProperty(localName = "TechnicalID") String technicalId,
+		@JacksonXmlProperty(localName = "Value") String value)
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
-
-	String CUSTOMER_REGISTRATION_MESSAGE = "R";
-
-	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
-
-	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
 }
