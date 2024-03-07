@@ -98,6 +98,27 @@ public interface I_PostFinance_Org_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Archive Data.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsArchiveData (boolean IsArchiveData);
+
+	/**
+	 * Get Archive Data.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isArchiveData();
+
+	ModelColumn<I_PostFinance_Org_Config, Object> COLUMN_IsArchiveData = new ModelColumn<>(I_PostFinance_Org_Config.class, "IsArchiveData", null);
+	String COLUMNNAME_IsArchiveData = "IsArchiveData";
+
+	/**
 	 * Set Use Paper Bill Service.
 	 *
 	 * <br>Type: YesNo

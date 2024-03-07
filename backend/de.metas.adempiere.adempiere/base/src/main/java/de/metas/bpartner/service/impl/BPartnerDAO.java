@@ -1553,7 +1553,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{
