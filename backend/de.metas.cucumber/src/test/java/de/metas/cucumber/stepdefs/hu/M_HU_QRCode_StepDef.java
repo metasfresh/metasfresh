@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -62,6 +63,7 @@ public class M_HU_QRCode_StepDef
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final QRCodeConfigurationService qrCodeConfigurationService;
 	private final HUQRCodesRepository huQRCodesRepository;
 
@@ -158,6 +160,7 @@ public class M_HU_QRCode_StepDef
 				.attributeDAO(attributeDAO)
 				.huQRCodesRepository(huQRCodesRepository)
 				.qrCodeConfigurationService(qrCodeConfigurationService)
+				.attributeStorageFactoryService(attributeStorageFactoryService)
 				.huId(huId)
 				.build()
 				.execute();
