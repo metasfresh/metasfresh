@@ -761,7 +761,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
-		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice());
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
