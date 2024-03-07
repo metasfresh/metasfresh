@@ -52,6 +52,32 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Workflow.
+	 * Workflow or combination of tasks
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAD_Workflow_ID (int AD_Workflow_ID);
+
+	/**
+	 * Get Workflow.
+	 * Workflow or combination of tasks
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getAD_Workflow_ID();
+
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+
+	/**
 	 * Set Orderline.
 	 *
 	 * <br>Type: Search
