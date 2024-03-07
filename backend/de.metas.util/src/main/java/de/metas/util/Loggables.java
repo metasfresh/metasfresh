@@ -87,11 +87,16 @@ public final class Loggables
 	}
 
 	/**
-	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invocations to this instance and in addition logs to the given logger.
+	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invocations to the thread-local instance and in addition logs to the given logger.
 	 */
 	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
 		return new LoggableWithLogger(get(), logger, level);
+	}
+
+	public static ILoggable withLogger(@NonNull final ILoggable loggable, @NonNull final Logger logger, @NonNull final Level level)
+	{
+		return new LoggableWithLogger(loggable, logger, level);
 	}
 
 	@NonNull
