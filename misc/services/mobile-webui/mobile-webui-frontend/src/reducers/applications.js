@@ -18,6 +18,13 @@ export const useApplicationInfo = ({ applicationId }) => {
   return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
 };
 
+export const useApplicationInfoParameters = ({ applicationId }) => {
+  return useSelector(
+    (state) => getApplicationInfoById({ state, applicationId })?.applicationParameters ?? {},
+    shallowEqual
+  );
+};
+
 export default function applications(state = initialState, action) {
   const { payload } = action;
   switch (action.type) {

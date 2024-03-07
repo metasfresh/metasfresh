@@ -68,6 +68,7 @@ public class WorkstationRestController
 		return JsonWorkstation.builder()
 				.id(workstationId)
 				.name(workstation.getName())
+				.qrCode(ResourceQRCode.ofResource(workstation).toGlobalQRCodeJsonString())
 				.isUserAssigned(userWorkstationService.isUserAssigned(Env.getLoggedUserId(), workstationId))
 				.build();
 	}
@@ -86,8 +87,7 @@ public class WorkstationRestController
 	@PostMapping("/assign")
 	public JsonWorkstation assign(@RequestBody @NonNull final JsonAssignWorkstationRequest request)
 	{
-		final ResourceQRCode qrCode = ResourceQRCode.ofGlobalQRCodeJsonString(request.getWorkstationQRCode());
-		final I_S_Resource workstation = getWorkstationById(qrCode.getResourceId());
+		final I_S_Resource workstation = getWorkstationById(request.getWorkstationIdEffective());
 
 		final UserId loggedUserId = Env.getLoggedUserId();
 		userWorkstationService.assign(loggedUserId, extractWorkstationId(workstation));

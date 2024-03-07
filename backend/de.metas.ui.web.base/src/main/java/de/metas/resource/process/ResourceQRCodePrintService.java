@@ -10,7 +10,6 @@ import de.metas.product.ResourceId;
 import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -35,20 +34,10 @@ public class ResourceQRCodePrintService
 	{
 		final ImmutableList<PrintableQRCode> printableQRCodes = resourceDAO.getByIds(resourceIds)
 				.stream()
-				.map(ResourceQRCodePrintService::toQRCode)
+				.map(ResourceQRCode::ofResource)
 				.map(ResourceQRCode::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
 
 		return globalQRCodeService.createPDF(printableQRCodes);
 	}
-
-	private static ResourceQRCode toQRCode(final I_S_Resource resourceRecord)
-	{
-		return ResourceQRCode.builder()
-				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
-				.resourceType(resourceRecord.getManufacturingResourceType())
-				.caption(resourceRecord.getName())
-				.build();
-	}
-
 }

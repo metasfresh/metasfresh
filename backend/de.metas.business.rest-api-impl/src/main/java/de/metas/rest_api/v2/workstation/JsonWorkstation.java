@@ -13,5 +13,6 @@ public class JsonWorkstation
 {
 	@NonNull ResourceId id;
 	@NonNull String name;
+	@NonNull String qrCode;
 	boolean isUserAssigned;
 }
