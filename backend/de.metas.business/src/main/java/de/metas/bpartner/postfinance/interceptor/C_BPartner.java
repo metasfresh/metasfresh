@@ -23,6 +23,7 @@
 package de.metas.bpartner.postfinance.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.postfinance.PostFinanceBPartnerConfig;
 import de.metas.bpartner.postfinance.PostFinanceBPartnerConfigRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
@@ -31,7 +32,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_PostFinance_BPartner_Config;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +61,7 @@ public class C_BPartner
 		}
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		final Optional<I_PostFinance_BPartner_Config> postFinanceConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId);
+		final Optional<PostFinanceBPartnerConfig> postFinanceConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId);
 		if (postFinanceConfigOptional.isPresent())
 		{
 			throw new AdempiereException(ERROR_ORG_BP_POST_FINANCE_CONFIG);
