@@ -287,12 +287,18 @@ public class ManufacturingJobService
 
 	private ManufacturingOrderQuery toManufacturingOrderQuery(@NonNull ManufacturingJobReferenceQuery query)
 	{
+		final ManufacturingJobDefaultFilterCollection defaultFilters = getDefaultFilters();
+
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
 				.responsibleId(ValueRestriction.isNull());
 
-		final ManufacturingJobDefaultFilterCollection defaultFilters = getDefaultFilters();
-		InSetPredicate<ResourceId> onlyPlantIds = computeOnlyPlantIds(query, defaultFilters, resourceDAO);
+		if (query.getPlantOrWorkstationId() != null)
+		{
+			queryBuilder.onlyPlantOrWorkstationId(query.getPlantOrWorkstationId());
+		}
+
+		final InSetPredicate<ResourceId> onlyPlantIds = computeOnlyPlantIds(query, defaultFilters, resourceDAO);
 		if (!onlyPlantIds.isAny())
 		{
 			queryBuilder.onlyPlantIds(onlyPlantIds.toSet());
@@ -314,16 +320,19 @@ public class ManufacturingJobService
 	{
 		InSetPredicate<ResourceId> onlyPlantIds = InSetPredicate.any();
 
-		if (query.getPlantId() != null)
-		{
-			onlyPlantIds = onlyPlantIds.intersectWith(query.getPlantId());
-		}
+		// if (query.getPlantId() != null)
+		// {
+		// 	onlyPlantIds = onlyPlantIds.intersectWith(query.getPlantId());
+		// }
 
-		final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
-		if (!facetResourceTypeIds.isEmpty())
+		if (!onlyPlantIds.isNone())
 		{
-			final ImmutableSet<ResourceId> facetPlantIds = resourceDAO.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
-			onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
+			final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
+			if (!facetResourceTypeIds.isEmpty())
+			{
+				final ImmutableSet<ResourceId> facetPlantIds = resourceDAO.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
+				onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
+			}
 		}
 
 		if (!onlyPlantIds.isNone())

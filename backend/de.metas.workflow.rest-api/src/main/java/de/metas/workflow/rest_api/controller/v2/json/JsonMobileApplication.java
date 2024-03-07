@@ -20,6 +20,7 @@ public class JsonMobileApplication
 {
 	@NonNull String id;
 	@NonNull String caption;
+	boolean requiresWorkplace;
 	boolean requiresLaunchersQRCodeFilter;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
@@ -32,6 +33,7 @@ public class JsonMobileApplication
 		return builder()
 				.id(appInfo.getId().getAsString())
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
+				.requiresWorkplace(appInfo.isRequiresWorkplace())
 				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())

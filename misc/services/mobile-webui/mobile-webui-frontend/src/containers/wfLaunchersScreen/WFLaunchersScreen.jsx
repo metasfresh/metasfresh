@@ -3,7 +3,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
-import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
+import { clearLaunchers, populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
 import { getApplicationLaunchers, getApplicationLaunchersFilters } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
@@ -30,7 +30,9 @@ const WFLaunchersScreen = () => {
 
   const [currentPanel, setCurrentPanel] = useState('default');
   const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
-  const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace();
+  const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
+    applicationId,
+  });
   const { filterByDocumentNo, facets } = useFilters({ applicationId });
   const { isLaunchersLoading, launchers, filterByQRCode, setFilterByQRCode } = useLaunchers({
     applicationId,
@@ -170,17 +172,17 @@ const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, fi
     dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
   };
   useEffect(() => {
-    if (!isAllowQueryingLaunchers) {
+    if (isAllowQueryingLaunchers) {
+      setLoading(true);
+      getLaunchers({ applicationId, filterByQRCode, filterByDocumentNo, facets })
+        .then((applicationLaunchers) => {
+          onNewLaunchers({ applicationId, applicationLaunchers });
+        })
+        .finally(() => setLoading(false));
+    } else {
       console.log('Skip fetching querying launchers is prohibited');
-      return;
+      dispatch(clearLaunchers({ applicationId }));
     }
-
-    setLoading(true);
-    getLaunchers({ applicationId, filterByQRCode, filterByDocumentNo, facets })
-      .then((applicationLaunchers) => {
-        onNewLaunchers({ applicationId, applicationLaunchers });
-      })
-      .finally(() => setLoading(false));
   }, [
     isAllowQueryingLaunchers,
     applicationId,

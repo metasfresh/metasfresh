@@ -1,18 +1,17 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for MobileUI_UserProfile_MFG
+/** Generated Interface for MobileUI_MFG_Config
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_MobileUI_UserProfile_MFG 
+public interface I_MobileUI_MFG_Config 
 {
 
-	String Table_Name = "MobileUI_UserProfile_MFG";
+	String Table_Name = "MobileUI_MFG_Config";
 
-//	/** AD_Table_ID=542263 */
+//	/** AD_Table_ID=542397 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -51,28 +50,6 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_User_ID (int AD_User_ID);
-
-	/**
-	 * Get Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_User_ID();
-
-	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -82,7 +59,7 @@ public interface I_MobileUI_UserProfile_MFG
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_Created = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "Created", null);
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_Created = new ModelColumn<>(I_MobileUI_MFG_Config.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -117,52 +94,52 @@ public interface I_MobileUI_UserProfile_MFG
 	 */
 	boolean isActive();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsActive = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsActive", null);
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsScanResourceRequired (@Nullable java.lang.String IsScanResourceRequired);
+	void setIsScanResourceRequired (boolean IsScanResourceRequired);
 
 	/**
 	 * Get Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsScanResourceRequired();
+	boolean isScanResourceRequired();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsScanResourceRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsScanResourceRequired", null);
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsScanResourceRequired = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsScanResourceRequired", null);
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
 
 	/**
-	 * Set Mobile UI User Profile - Manufacturing.
+	 * Set MobileUI Manufacturing Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMobileUI_UserProfile_MFG_ID (int MobileUI_UserProfile_MFG_ID);
+	void setMobileUI_MFG_Config_ID (int MobileUI_MFG_Config_ID);
 
 	/**
-	 * Get Mobile UI User Profile - Manufacturing.
+	 * Get MobileUI Manufacturing Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getMobileUI_UserProfile_MFG_ID();
+	int getMobileUI_MFG_Config_ID();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_MobileUI_UserProfile_MFG_ID = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "MobileUI_UserProfile_MFG_ID", null);
-	String COLUMNNAME_MobileUI_UserProfile_MFG_ID = "MobileUI_UserProfile_MFG_ID";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_MobileUI_MFG_Config_ID = new ModelColumn<>(I_MobileUI_MFG_Config.class, "MobileUI_MFG_Config_ID", null);
+	String COLUMNNAME_MobileUI_MFG_Config_ID = "MobileUI_MFG_Config_ID";
 
 	/**
 	 * Get Updated.
@@ -174,7 +151,7 @@ public interface I_MobileUI_UserProfile_MFG
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_Updated = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "Updated", null);
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_Updated = new ModelColumn<>(I_MobileUI_MFG_Config.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

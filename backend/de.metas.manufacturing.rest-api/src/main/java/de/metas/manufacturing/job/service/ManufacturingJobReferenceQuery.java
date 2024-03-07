@@ -17,7 +17,7 @@ import java.time.Instant;
 public class ManufacturingJobReferenceQuery
 {
 	@NonNull UserId responsibleId;
-	@Nullable ResourceId plantId;
+	@Nullable ResourceId plantOrWorkstationId;
 	@NonNull Instant now;
 	@NonNull @With @Builder.Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
 	@NonNull @Builder.Default ManufacturingJobFacets.FacetIdsCollection activeFacetIds = ManufacturingJobFacets.FacetIdsCollection.EMPTY;
