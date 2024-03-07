@@ -29,6 +29,11 @@ public class ResourceQRCode
 
 	public static ResourceQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return ResourceQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
 
+	public static ResourceQRCode ofGlobalQRCodeJsonString(final String qrCodeString)
+	{
+		return ResourceQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+	}
+
 	public PrintableQRCode toPrintableQRCode()
 	{
 		return PrintableQRCode.builder()

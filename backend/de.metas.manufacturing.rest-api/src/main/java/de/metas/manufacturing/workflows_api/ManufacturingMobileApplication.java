@@ -80,7 +80,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		return MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresLaunchersQRCodeFilter(config.getIsScanResourceRequired().isTrue())
+				.requiresWorkstation(config.getIsScanResourceRequired().isTrue())
 				//.showFilters(true)
 				.build();
 	}

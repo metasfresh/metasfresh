@@ -13,6 +13,7 @@ public class MobileApplicationInfo
 {
 	@NonNull MobileApplicationId id;
 	@NonNull ITranslatableString caption;
+	boolean requiresWorkstation;
 	boolean requiresWorkplace;
 	boolean requiresLaunchersQRCodeFilter;
 	boolean showFilters;

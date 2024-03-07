@@ -17,6 +17,7 @@ import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
 import { useApplicationInfo } from '../../reducers/applications';
+import { useCurrentWorkstation } from '../../api/workstation';
 
 const WFLaunchersScreen = () => {
   const history = useHistory();
@@ -29,6 +30,9 @@ const WFLaunchersScreen = () => {
 
   const [currentPanel, setCurrentPanel] = useState('default');
   const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
+  const { isWorkstationLoading, isWorkstationRequired, workstation, setWorkstationByQRCode } = useCurrentWorkstation({
+    applicationId,
+  });
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
     applicationId,
   });
@@ -49,7 +53,7 @@ const WFLaunchersScreen = () => {
           location: url,
           values: [
             {
-              caption: trl('activities.picking.Workplace'),
+              caption: trl('general.workplace'),
               value: workplaceName,
             },
           ],
@@ -58,6 +62,45 @@ const WFLaunchersScreen = () => {
     }
   }, [url, workplaceName]);
 
+  const workstationName = workstation?.name;
+  useEffect(() => {
+    if (workstationName) {
+      dispatch(
+        pushHeaderEntry({
+          location: url,
+          values: [
+            {
+              caption: trl('general.workstation'),
+              value: workstationName,
+            },
+          ],
+        })
+      );
+    }
+  }, [url, workstationName]);
+
+  //
+  // Get Workstation
+  if (isWorkstationLoading) {
+    return (
+      <div className="container launchers-container">
+        <Spinner />
+      </div>
+    );
+  } else if (isWorkstationRequired && !workstation) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => setWorkstationByQRCode(scannedBarcode)}
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkstationPlaceholder')}
+          continuousRunning={true}
+        />
+      </div>
+    );
+  }
+
+  //
+  // Get Workspace
   if (isWorkplaceLoading) {
     return (
       <div className="container launchers-container">
@@ -74,54 +117,56 @@ const WFLaunchersScreen = () => {
         />
       </div>
     );
-  } else {
-    return (
-      <div className="container launchers-container">
-        {currentPanel === 'scanQRCode' && (
-          <BarcodeScannerComponent
-            onResolvedResult={({ scannedBarcode }) => {
-              setFilterByQRCode(scannedBarcode);
-              setCurrentPanel('default');
-            }}
-          />
-        )}
-        {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
-          <div className="mb-5">
-            <ButtonWithIndicator
-              caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
-              onClick={() => setCurrentPanel('scanQRCode')}
-            />
-          </div>
-        )}
-        {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
-          <WFLaunchersFilterButton
-            filterByDocumentNo={filterByDocumentNo}
-            facets={facets}
-            onClick={() => {
-              history.push(appLaunchersFilterLocation({ applicationId }));
-            }}
-          />
-        )}
-        <br />
-        {currentPanel === 'default' &&
-          launchers &&
-          launchers.map((launcher, index) => {
-            const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-            return (
-              <WFLauncherButton
-                key={key}
-                applicationId={launcher.applicationId}
-                caption={launcher.caption}
-                startedWFProcessId={launcher.startedWFProcessId}
-                wfParameters={launcher.wfParameters}
-                showWarningSign={launcher.showWarningSign}
-              />
-            );
-          })}
-        {isLaunchersLoading && <Spinner />}
-      </div>
-    );
   }
+
+  //
+  // Launchers
+  return (
+    <div className="container launchers-container">
+      {currentPanel === 'scanQRCode' && (
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => {
+            setFilterByQRCode(scannedBarcode);
+            setCurrentPanel('default');
+          }}
+        />
+      )}
+      {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
+        <div className="mb-5">
+          <ButtonWithIndicator
+            caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
+            onClick={() => setCurrentPanel('scanQRCode')}
+          />
+        </div>
+      )}
+      {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
+        <WFLaunchersFilterButton
+          filterByDocumentNo={filterByDocumentNo}
+          facets={facets}
+          onClick={() => {
+            history.push(appLaunchersFilterLocation({ applicationId }));
+          }}
+        />
+      )}
+      <br />
+      {currentPanel === 'default' &&
+        launchers &&
+        launchers.map((launcher, index) => {
+          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          return (
+            <WFLauncherButton
+              key={key}
+              applicationId={launcher.applicationId}
+              caption={launcher.caption}
+              startedWFProcessId={launcher.startedWFProcessId}
+              wfParameters={launcher.wfParameters}
+              showWarningSign={launcher.showWarningSign}
+            />
+          );
+        })}
+      {isLaunchersLoading && <Spinner />}
+    </div>
+  );
 };
 
 //
