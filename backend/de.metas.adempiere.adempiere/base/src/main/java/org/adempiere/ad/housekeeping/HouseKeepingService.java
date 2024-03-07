@@ -43,7 +43,7 @@ public class HouseKeepingService
 {
 	private static final Logger logger = LogManager.getLogger(HouseKeepingService.class);
 
-	public static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
+	public static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping.ApiAuditHouseKeepingTask";
 
 	private final ImmutableList<IStartupHouseKeepingTask> startupTasks;
 
