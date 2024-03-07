@@ -11,6 +11,12 @@ export const WorkstationInfoComponent = ({ workstationInfo }) => {
           <th>{appTrl('workstationName')}</th>
           <td>{workstationInfo.name}</td>
         </tr>
+        {workstationInfo.workplaceName && (
+          <tr>
+            <th>{trl('general.workplace')}</th>
+            <td>{workstationInfo.workplaceName}</td>
+          </tr>
+        )}
         <tr>
           <th>{appTrl('isUserAssigned')}</th>
           <td>{trl(workstationInfo.userAssigned ? 'general.Yes' : 'general.No')}</td>

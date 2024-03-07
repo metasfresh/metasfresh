@@ -65,10 +65,14 @@ public class WorkstationRestController
 	private JsonWorkstation toJson(final I_S_Resource workstation)
 	{
 		final ResourceId workstationId = extractWorkstationId(workstation);
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoIdOrNull(workstation.getC_Workplace_ID());
+		final String workplaceName = workplaceId != null ? workplaceService.getById(workplaceId).getName() : null;
+
 		return JsonWorkstation.builder()
 				.id(workstationId)
 				.name(workstation.getName())
 				.qrCode(ResourceQRCode.ofResource(workstation).toGlobalQRCodeJsonString())
+				.workplaceName(workplaceName)
 				.isUserAssigned(userWorkstationService.isUserAssigned(Env.getLoggedUserId(), workstationId))
 				.build();
 	}

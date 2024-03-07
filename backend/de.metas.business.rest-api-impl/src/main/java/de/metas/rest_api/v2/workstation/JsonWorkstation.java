@@ -6,6 +6,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
@@ -14,5 +16,6 @@ public class JsonWorkstation
 	@NonNull ResourceId id;
 	@NonNull String name;
 	@NonNull String qrCode;
+	@Nullable String workplaceName;
 	boolean isUserAssigned;
 }
