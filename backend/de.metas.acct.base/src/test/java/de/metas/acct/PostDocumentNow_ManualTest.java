@@ -79,15 +79,12 @@ import de.metas.treenode.TreeNodeRepository;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.tools.AdempiereToolsHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.acct.Doc_AllocationHdr;
 import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.junit.jupiter.api.Disabled;
 
 import java.util.List;
@@ -120,11 +117,17 @@ public class PostDocumentNow_ManualTest
 				.services(newAcctDocRequiredServicesFacade())
 				.acctSchemas(getAcctSchemas(ClientId.METASFRESH));
 
-		for (final I_C_AllocationHdr documentModel : records)
+		for (final I_C_AllocationHdr record : records)
 		{
-			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(documentModel).build());
+			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(toAcctDocModel(record)).build());
 			doc.post(true, true);
 		}
+	}
+
+	@NonNull
+	private static POAcctDocModel toAcctDocModel(final Object record)
+	{
+		return new POAcctDocModel(LegacyAdapters.convertToPO(record));
 	}
 
 	private static AcctDocRequiredServicesFacade newAcctDocRequiredServicesFacade()
@@ -210,6 +213,7 @@ public class PostDocumentNow_ManualTest
 		);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static List<AcctSchema> getAcctSchemas(final ClientId clientId)
 	{
 		return Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
