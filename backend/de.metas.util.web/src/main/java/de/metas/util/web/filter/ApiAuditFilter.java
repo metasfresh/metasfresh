@@ -22,10 +22,12 @@
 
 package de.metas.util.web.filter;
 
+import ch.qos.logback.classic.Level;
 import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
@@ -43,6 +45,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 public class ApiAuditFilter implements Filter
 {
@@ -77,11 +80,23 @@ public class ApiAuditFilter implements Filter
 			}
 
 			final ApiRequestAuditId requestAuditId = apiAuditService.extractApiRequestAuditId(httpServletRequest).orElse(null);
+			final Optional<UserId> loggedUserId = Env.getLoggedUserIdIfExists();
 
 			// dev-note: this means the request was already filtered once
 			if (requestAuditId != null)
 			{
-				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditId, Env.getLoggedUserId());
+				final ApiAuditLoggable apiAuditLoggable;
+				if (loggedUserId.isPresent())
+				{
+					apiAuditLoggable = apiAuditService.createLogger(requestAuditId, loggedUserId.get());
+				}
+				else
+				{
+					apiAuditLoggable = apiAuditService.createLogger(requestAuditId, UserId.METASFRESH);
+					Loggables
+							.withLogger(apiAuditLoggable, logger, Level.WARN)
+							.addLog("Request contains ApiRequestAuditId={}, but there is no logged-in user - logging with AD_User_ID=", requestAuditId.getRepoId(), UserId.METASFRESH.getRepoId());
+				}
 
 				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
