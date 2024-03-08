@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_Resource
  *  @author metasfresh (generated)
@@ -89,6 +89,33 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeableQty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Workplace getC_Workplace()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
+	}
+
+	@Override
+	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
+	}
+
+	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1)
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
 	}
 
 	@Override
@@ -263,14 +290,14 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	@Override
 	public void setS_HumanResourceTestGroup_ID (final int S_HumanResourceTestGroup_ID)
 	{
-		if (S_HumanResourceTestGroup_ID < 1) 
+		if (S_HumanResourceTestGroup_ID < 1)
 			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, S_HumanResourceTestGroup_ID);
 	}
 
 	@Override
-	public int getS_HumanResourceTestGroup_ID() 
+	public int getS_HumanResourceTestGroup_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_S_HumanResourceTestGroup_ID);
 	}

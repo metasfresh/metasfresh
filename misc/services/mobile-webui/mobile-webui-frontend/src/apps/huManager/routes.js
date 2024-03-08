@@ -3,12 +3,13 @@ import HUDisposalScreen from './containers/HUDisposalScreen';
 import HUMoveScreen from './containers/HUMoveScreen';
 import HUBulkActionsScreen from './containers/HUBulkActionsScreen';
 import HUPrintingOptionsScreen from './containers/HUPrintingOptionsScreen';
+import { APPLICATION_ID } from './constants';
 
-export const huManagerLocation = () => '/huManager';
-export const huManagerDisposeLocation = () => '/huManager/dispose';
-export const huManagerMoveLocation = () => '/huManager/move';
-export const huManagerBulkActionsLocation = () => '/huManager/bulkActions';
-export const huManagerHuLabelsLocation = () => '/huManager/huLabels';
+export const huManagerLocation = () => `/${APPLICATION_ID}`;
+export const huManagerDisposeLocation = () => `/${APPLICATION_ID}/dispose`;
+export const huManagerMoveLocation = () => `/${APPLICATION_ID}/move`;
+export const huManagerBulkActionsLocation = () => `/${APPLICATION_ID}/bulkActions`;
+export const huManagerHuLabelsLocation = () => `/${APPLICATION_ID}/huLabels`;
 
 export const huManagerRoutes = [
   {

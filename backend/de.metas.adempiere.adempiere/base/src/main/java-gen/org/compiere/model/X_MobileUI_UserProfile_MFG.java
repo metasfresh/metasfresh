@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 604129218L;
+	private static final long serialVersionUID = -942272180L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -49,16 +49,25 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
+	/** 
+	 * IsScanResourceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISSCANRESOURCEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISSCANRESOURCEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISSCANRESOURCEREQUIRED_No = "N";
 	@Override
-	public void setIsScanResourceRequired (final boolean IsScanResourceRequired)
+	public void setIsScanResourceRequired (final @Nullable java.lang.String IsScanResourceRequired)
 	{
 		set_Value (COLUMNNAME_IsScanResourceRequired, IsScanResourceRequired);
 	}
 
 	@Override
-	public boolean isScanResourceRequired() 
+	public java.lang.String getIsScanResourceRequired() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsScanResourceRequired);
+		return get_ValueAsString(COLUMNNAME_IsScanResourceRequired);
 	}
 
 	@Override

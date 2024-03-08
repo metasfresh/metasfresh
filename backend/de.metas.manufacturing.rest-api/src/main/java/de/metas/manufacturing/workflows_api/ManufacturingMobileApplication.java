@@ -7,8 +7,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.config.MobileUIManufacturingUserProfile;
-import de.metas.manufacturing.config.MobileUIManufacturingUserProfileRepository;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
@@ -36,6 +36,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -53,13 +54,13 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
 
-	private final MobileUIManufacturingUserProfileRepository userProfileRepository;
+	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
 
 	public ManufacturingMobileApplication(
-			@NonNull final MobileUIManufacturingUserProfileRepository userProfileRepository,
+			@NonNull final MobileUIManufacturingConfigRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
 			@NonNull final HUQRCodesService huQRCodesService)
 	{
@@ -75,12 +76,12 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
 	{
-		final MobileUIManufacturingUserProfile userProfile = userProfileRepository.getByUserId(loggedUserId);
+		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(loggedUserId, ClientId.METASFRESH);
 		return MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresLaunchersQRCodeFilter(userProfile.isScanResourceRequired())
-				.showFilters(true)
+				.requiresWorkstation(config.getIsScanResourceRequired().isTrue())
+				//.showFilters(true)
 				.build();
 	}
 

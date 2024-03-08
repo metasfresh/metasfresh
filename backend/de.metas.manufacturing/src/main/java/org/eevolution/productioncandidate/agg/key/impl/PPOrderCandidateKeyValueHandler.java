@@ -47,6 +47,7 @@ public class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHand
 
 		values.add(orderCandidateRecord.getM_Warehouse_ID());
 		values.add(orderCandidateRecord.getS_Resource_ID());
+		values.add(Math.max(orderCandidateRecord.getWorkStation_ID(), 0));
 
 		if (orderCandidateRecord.getPP_Product_Planning_ID() > 0)
 		{
