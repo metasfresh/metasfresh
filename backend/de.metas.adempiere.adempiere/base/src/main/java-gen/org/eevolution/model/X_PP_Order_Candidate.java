@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -62557261L;
+	private static final long serialVersionUID = 63995316L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -33,6 +33,17 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
+	{
+		throw new IllegalArgumentException ("AD_Workflow_ID is virtual column");	}
+
+	@Override
+	public int getAD_Workflow_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
 	}
 
 	@Override
@@ -449,5 +460,32 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID (final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1) 
+			set_Value (COLUMNNAME_WorkStation_ID, null);
+		else 
+			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
 	}
 }

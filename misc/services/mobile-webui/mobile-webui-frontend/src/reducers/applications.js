@@ -11,11 +11,18 @@ export const getAvailableApplicationsArray = (state) => {
 };
 
 export const getApplicationInfoById = ({ state, applicationId }) => {
-  return state.applications?.availableApplications?.[applicationId];
+  return state.applications?.availableApplications?.[applicationId] ?? {};
 };
 
 export const useApplicationInfo = ({ applicationId }) => {
   return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
+};
+
+export const useApplicationInfoParameters = ({ applicationId }) => {
+  return useSelector(
+    (state) => getApplicationInfoById({ state, applicationId })?.applicationParameters ?? {},
+    shallowEqual
+  );
 };
 
 export default function applications(state = initialState, action) {
@@ -24,14 +31,8 @@ export default function applications(state = initialState, action) {
     case types.POPULATE_APPLICATIONS: {
       const availableApplications = payload.applications.reduce((acc, application) => {
         acc[application.id] = {
-          id: application.id,
-          caption: application.caption,
+          ...application,
           iconClassNames: getIconClassNames(application.id),
-          requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
-          showFilters: application.showFilters,
-          showFilterByDocumentNo: application.showFilterByDocumentNo,
-          showInMainMenu: application.showInMainMenu,
-          applicationParameters: application.applicationParameters,
         };
         return acc;
       }, {});

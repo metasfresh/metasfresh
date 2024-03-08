@@ -1,6 +1,7 @@
 import * as huManagerApp from './huManager';
 import * as scanAnythingApp from './scanAnything';
 import * as workplaceManagerApp from './workplaceManager';
+import * as workstationManagerApp from './workstationManager';
 
 const registeredApplications = {};
 
@@ -81,3 +82,4 @@ export const getApplicationReduxReducers = () => {
 registerApplication(huManagerApp.applicationDescriptor);
 registerApplication(scanAnythingApp.applicationDescriptor);
 registerApplication(workplaceManagerApp.applicationDescriptor);
+registerApplication(workstationManagerApp.applicationDescriptor);

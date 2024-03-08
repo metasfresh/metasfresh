@@ -177,6 +177,7 @@ public class RequestMaterialOrderService
 						.datePromised(groupMember.getDate())
 						.dateStartSchedule(groupMember.getDate())
 						.plantId(prodDetail.getPlantId())
+						.workstationId(prodDetail.getWorkstationId())
 						.productDescriptor(materialDescriptor)
 						.bpartnerId(materialDescriptor.getCustomerId())
 						.qtyRequired(groupMember.getQuantity())

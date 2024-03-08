@@ -55,6 +55,7 @@ public class PPOrderData
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
 	ResourceId plantId;
+	@Nullable ResourceId workstationId;
 
 	WarehouseId warehouseId;
 
@@ -100,6 +101,7 @@ public class PPOrderData
 	public PPOrderData(
 			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
 			@JsonProperty("plantId") @NonNull final ResourceId plantId,
+			@JsonProperty("workstationId") @Nullable ResourceId workstationId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
@@ -115,6 +117,7 @@ public class PPOrderData
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
+		this.workstationId = workstationId;
 		this.warehouseId = warehouseId;
 		this.bpartnerId = bpartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set

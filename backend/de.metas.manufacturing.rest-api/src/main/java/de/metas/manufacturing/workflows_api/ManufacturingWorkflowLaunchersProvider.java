@@ -36,17 +36,17 @@ public class ManufacturingWorkflowLaunchersProvider
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
 		final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
-		final ResourceId plantId;
+		final ResourceId plantOrWorkstationId;
 		final PrintableQRCode filterByPrintableQRCode;
 		if (filterByQRCode == null)
 		{
-			plantId = null;
+			plantOrWorkstationId = null;
 			filterByPrintableQRCode = null;
 		}
 		else if (ResourceQRCode.isTypeMatching(filterByQRCode))
 		{
 			final ResourceQRCode resourceQRCode = ResourceQRCode.ofGlobalQRCode(filterByQRCode);
-			plantId = resourceQRCode.getResourceId();
+			plantOrWorkstationId = resourceQRCode.getResourceId();
 			filterByPrintableQRCode = resourceQRCode.toPrintableQRCode();
 		}
 		else
@@ -58,7 +58,7 @@ public class ManufacturingWorkflowLaunchersProvider
 		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(
 						ManufacturingJobReferenceQuery.builder()
 								.responsibleId(query.getUserId())
-								.plantId(plantId)
+								.plantOrWorkstationId(plantOrWorkstationId)
 								.now(now)
 								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
 								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))

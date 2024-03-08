@@ -64,6 +64,7 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
+        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 

@@ -52,6 +52,32 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Workflow.
+	 * Workflow or combination of tasks
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAD_Workflow_ID (int AD_Workflow_ID);
+
+	/**
+	 * Get Workflow.
+	 * Workflow or combination of tasks
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getAD_Workflow_ID();
+
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+
+	/**
 	 * Set Orderline.
 	 *
 	 * <br>Type: Search
@@ -350,7 +376,7 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
 
 	/**
-	 * Set Maturing Configuration Line.
+	 * Set Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -359,7 +385,7 @@ public interface I_PP_Order_Candidate
 	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
 
 	/**
-	 * Get Maturing Configuration Line.
+	 * Get Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -696,4 +722,29 @@ public interface I_PP_Order_Candidate
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Work Station.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWorkStation_ID (int WorkStation_ID);
+
+	/**
+	 * Get Work Station.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWorkStation_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getWorkStation();
+
+	void setWorkStation(@Nullable org.compiere.model.I_S_Resource WorkStation);
+
+	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_S_Resource> COLUMN_WorkStation_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "WorkStation_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_WorkStation_ID = "WorkStation_ID";
 }

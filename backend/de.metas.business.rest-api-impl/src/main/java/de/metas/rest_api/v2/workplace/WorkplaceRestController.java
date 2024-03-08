@@ -92,6 +92,7 @@ public class WorkplaceRestController
 		return JsonWorkplace.builder()
 				.id(workplace.getId())
 				.name(workplace.getName())
+				.qrCode(WorkplaceQRCode.ofWorkplace(workplace).toGlobalQRCodeJsonString())
 				.warehouseName(workplace.getWarehouseId() != null ? warehouseService.getWarehouseName(workplace.getWarehouseId()) : null)
 				.isUserAssigned(workplaceService.isUserAssigned(Env.getLoggedUserId(), workplace.getId()))
 				.build();
