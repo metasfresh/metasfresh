@@ -157,7 +157,7 @@ public class C_OLCand_StepDef
 				.create()
 				.list();
 
-		assertThat(shipments).isNotNull();
+		assertThat(shipments).isNotEmpty();
 
 		final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
 		assertThat(identifiers).hasSameSizeAs(shipments);

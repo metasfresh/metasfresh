@@ -166,7 +166,7 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 														.huIds(ImmutableSet.copyOf(huIds))
 														.shipmentScheduleId(shipmentScheduleId)
 														.ppOrderId(ppOrderId)
-														.shouldSplitHUIfOverDelivery(!isTakeWholeHU)
+														.isTakeWholeHU(isTakeWholeHU)
 														.build());
 	}
 

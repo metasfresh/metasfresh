@@ -124,9 +124,9 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 
 	/**
 	 * Create & save a new ASI for given product. Automatically creates Lot#, Serial#.
-	 * 
+	 *
 	 * NOTE: Guarantee Date needs to be explicitly calculated and set.
-	 * 
+	 *
 	 * @param ctx
 	 * @param product
 	 * @param trxName

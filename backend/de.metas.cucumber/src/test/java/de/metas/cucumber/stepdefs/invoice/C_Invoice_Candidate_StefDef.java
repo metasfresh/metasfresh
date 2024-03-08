@@ -33,6 +33,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.assertj.core.api.SoftAssertions;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -62,6 +63,8 @@ public class C_Invoice_Candidate_StefDef
 
 		final JsonCheckInvoiceCandidatesStatusResponseItem responseItem = responseItemList.get(0);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
@@ -72,12 +75,14 @@ public class C_Invoice_Candidate_StefDef
 			final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_Processed);
 
-			assertThat(responseItem.getExternalHeaderId().getValue()).isEqualTo(externalHeaderId);
-			assertThat(responseItem.getExternalLineId().getValue()).isEqualTo(externalLineId);
-			assertThat(responseItem.getQtyToInvoice()).isEqualTo(qtyToInvoice);
-			assertThat(responseItem.getQtyInvoiced()).isEqualTo(qtyInvoiced);
-			assertThat(responseItem.getQtyEntered()).isEqualTo(qtyEntered);
-			assertThat(responseItem.isProcessed()).isEqualTo(processed);
+			softly.assertThat(responseItem.getExternalHeaderId().getValue()).as("externalHeaderId").isEqualTo(externalHeaderId);
+			softly.assertThat(responseItem.getExternalLineId().getValue()).as("externalLineId").isEqualTo(externalLineId);
+			softly.assertThat(responseItem.getQtyToInvoice()).as("qtyToInvoice").isEqualTo(qtyToInvoice);
+			softly.assertThat(responseItem.getQtyInvoiced()).as("qtyInvoiced").isEqualTo(qtyInvoiced);
+			softly.assertThat(responseItem.getQtyEntered()).as("qtyEntered").isEqualTo(qtyEntered);
+			softly.assertThat(responseItem.isProcessed()).as("processed").isEqualTo(processed);
 		}
+
+		softly.assertAll();
 	}
 }

@@ -273,7 +273,7 @@ public class M_Inventory_StepDef
 
 			inventoryLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
 		}
-		
+
 		saveRecord(inventoryLine);
 
 		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID, "M_InventoryLine"), inventoryLine);

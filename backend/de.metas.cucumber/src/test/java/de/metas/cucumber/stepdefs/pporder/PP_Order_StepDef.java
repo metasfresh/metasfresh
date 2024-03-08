@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefDat
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
@@ -254,6 +255,38 @@ public class PP_Order_StepDef
 		}
 	}
 
+	@And("validate I_PP_Order_Qty")
+	public void validate_order_qty(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order order = ppOrderTable.get(orderIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Qty.COLUMNNAME_Qty);
+
+			final String bomLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order_BOMLine bomLine = bomLineIdentifier != null ? ppOrderBomLineTable.get(bomLineIdentifier) : null;
+
+			final I_PP_Order_Qty orderQty = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnly(I_PP_Order_Qty.class);
+
+			assertThat(orderQty).isNotNull();
+			assertThat(orderQty.getQty()).isEqualTo(movementQty);
+			if (bomLine != null)
+			{
+				assertThat(orderQty.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
+			}
+		}
+	}
+
 	private void validatePP_Order_BomLine(
 			final int timeoutSec,
 			@NonNull final Map<String, String> tableRow) throws InterruptedException
@@ -388,7 +421,7 @@ public class PP_Order_StepDef
 			assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
 		}
 	}
-	
+
 	private void updatePPOrder(@NonNull final Map<String, String> row)
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

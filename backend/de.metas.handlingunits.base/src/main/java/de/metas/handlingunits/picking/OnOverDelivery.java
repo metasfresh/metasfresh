@@ -45,4 +45,9 @@ public enum OnOverDelivery implements ReferenceListAwareEnum
 		
 		return splitHUIfOverDelivery ? SPLIT_HU : TAKE_WHOLE_HU;
 	}
+
+	public static OnOverDelivery ofTakeWholeHUFlag(final boolean isTakeWholeHU)
+	{
+		return isTakeWholeHU ? TAKE_WHOLE_HU : SPLIT_HU;
+	}
 }

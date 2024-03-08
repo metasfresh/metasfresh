@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -103,25 +104,31 @@ public class AsyncBatchService
 	}
 
 	/**
-	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
-	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
+	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
+	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
+	 * <br/>
+	 * @return the enqueuing result as returned by the supplier.
 	 *
-	 * @param supplier     Supplier<>
-	 * @param asyncBatchId C_Async_Batch_ID
-	 * @param <T>          model type
-	 * @return model type of supplier
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final T result;
 		try
 		{
 			asyncBatchObserver.observeOn(asyncBatchId);
 
-			result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get); // let the supplier enqueue its workpackages
 
+			if (result.getWorkpackageEnqueuedCount() > 0)
+			{
 			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
+			else
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
+			}
 		}
 		finally
 		{
@@ -160,7 +167,6 @@ public class AsyncBatchService
 	}
 
 	/**
-	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
 	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
@@ -173,6 +179,7 @@ public class AsyncBatchService
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
 	 * <br/>
+	 *
 	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
 	 */
 	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)

@@ -87,12 +87,6 @@ public class AD_SysConfig_StepDef
 		}
 	}
 
-	@And("reset all cache")
-	public void reset_cache()
-	{
-		CacheMgt.get().reset();
-	}
-
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
