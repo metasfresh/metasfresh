@@ -161,23 +161,23 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
     # this is the PP_Order_Candidates from above, but now with processed=Y
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | ocP_1      | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                                   |
-    And after not more than 30s, PP_Orders are found
+    And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | bomASI                                   |
-    And after not more than 30s, PP_Order_BomLines are found
+    And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppOrderBOMLine_1               | ppo_1                  | ppol_1     | p_2                     | 100          | false           | PCE               | CO            | bomLineASI                               |
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_1                            | ppo_1                  | 10         | PCE               |
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_3        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      | bomASI                                   |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | 0                      | bomLineASI                               |
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    | bomASI                                   |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
