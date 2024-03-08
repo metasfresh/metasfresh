@@ -4,11 +4,11 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.product.ResourceId;
 import de.metas.resource.ManufacturingResourceType;
+import de.metas.resource.Resource;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.compiere.model.I_S_Resource;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -36,12 +36,12 @@ public class ResourceQRCode
 		return ResourceQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
 
-	public static ResourceQRCode ofResource(@NonNull final I_S_Resource record)
+	public static ResourceQRCode ofResource(@NonNull final Resource resource)
 	{
 		return ResourceQRCode.builder()
-				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
-				.resourceType(record.getManufacturingResourceType())
-				.caption(record.getName())
+				.resourceId(resource.getResourceId())
+				.resourceType(resource.getManufacturingResourceType())
+				.caption(resource.getName().getDefaultValue())
 				.build();
 	}
 

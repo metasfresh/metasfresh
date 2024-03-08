@@ -36,11 +36,14 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.util.Iterator;
+import java.util.Set;
 
 public interface IPPOrderCandidateDAO extends ISingletonService
 {
 	@NonNull
 	I_PP_Order_Candidate getById(@NonNull final PPOrderCandidateId ppOrderCandidateId);
+
+	@NonNull ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull Set<PPOrderCandidateId> ppOrderCandidateIds);
 
 	void save(@NonNull final I_PP_Order_Candidate candidateRecord);
 

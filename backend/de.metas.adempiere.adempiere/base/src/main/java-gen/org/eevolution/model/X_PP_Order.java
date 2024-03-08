@@ -879,41 +879,41 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	@Override
-	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
-	{
-		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
-	}
-
-	@Override
-	public boolean isMRP_AllowCleanup()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_AllowCleanup);
-	}
-
-	@Override
-	public void setMRP_Generated (final boolean MRP_Generated)
-	{
-		set_Value (COLUMNNAME_MRP_Generated, MRP_Generated);
-	}
-
-	@Override
-	public boolean isMRP_Generated()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_Generated);
-	}
-
-	@Override
-	public void setMRP_ToDelete (final boolean MRP_ToDelete)
-	{
-		set_Value (COLUMNNAME_MRP_ToDelete, MRP_ToDelete);
-	}
-
-	@Override
-	public boolean isMRP_ToDelete()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
-	}
+	// @Override
+	// public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
+	// {
+	// 	set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
+	// }
+	//
+	// @Override
+	// public boolean isMRP_AllowCleanup()
+	// {
+	// 	return get_ValueAsBoolean(COLUMNNAME_MRP_AllowCleanup);
+	// }
+	//
+	// @Override
+	// public void setMRP_Generated (final boolean MRP_Generated)
+	// {
+	// 	set_Value (COLUMNNAME_MRP_Generated, MRP_Generated);
+	// }
+	//
+	// @Override
+	// public boolean isMRP_Generated()
+	// {
+	// 	return get_ValueAsBoolean(COLUMNNAME_MRP_Generated);
+	// }
+	//
+	// @Override
+	// public void setMRP_ToDelete (final boolean MRP_ToDelete)
+	// {
+	// 	set_Value (COLUMNNAME_MRP_ToDelete, MRP_ToDelete);
+	// }
+	//
+	// @Override
+	// public boolean isMRP_ToDelete()
+	// {
+	// 	return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	// }
 
 	@Override
 	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)

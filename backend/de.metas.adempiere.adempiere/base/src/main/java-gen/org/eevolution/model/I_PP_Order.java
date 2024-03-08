@@ -1163,48 +1163,48 @@ public interface I_PP_Order
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	// /**
+	//  * Set Shipment Candidate.
+	//  *
+	//  * <br>Type: TableDir
+	//  * <br>Mandatory: false
+	//  * <br>Virtual Column: false
+	//  */
+	// void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+	//
+	// /**
+	//  * Get Shipment Candidate.
+	//  *
+	//  * <br>Type: TableDir
+	//  * <br>Mandatory: false
+	//  * <br>Virtual Column: false
+	//  */
+	// int getM_ShipmentSchedule_ID();
+	//
+	// ModelColumn<I_PP_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order.class, "M_ShipmentSchedule_ID", null);
+	// String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	//
+	// /**
+	//  * Set Warehouse.
+	//  * Storage Warehouse and Service Point
+	//  *
+	//  * <br>Type: TableDir
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// void setM_Warehouse_ID (int M_Warehouse_ID);
+	//
+	// /**
+	//  * Get Warehouse.
+	//  * Storage Warehouse and Service Point
+	//  *
+	//  * <br>Type: TableDir
+	//  * <br>Mandatory: true
+	//  * <br>Virtual Column: false
+	//  */
+	// int getM_Warehouse_ID();
+	//
+	// String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Modular Contract.
