@@ -74,6 +74,9 @@ public final class JSONProcessInstanceResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONResultAction action;
 
+	@JsonProperty("refreshCurrentWindowRequired")
+	private final boolean refreshCurrentWindowRequired;
+
 	private JSONProcessInstanceResult(@NonNull final ProcessInstanceResult result)
 	{
 		pinstanceId = result.getInstanceId().toJson();
@@ -82,6 +85,8 @@ public final class JSONProcessInstanceResult
 		error = result.isError();
 
 		action = toJSONResultAction(result.getAction());
+
+		refreshCurrentWindowRequired = result.isRefreshCurrentWindowRequired();
 	}
 
 	/**

@@ -109,6 +109,7 @@ public class ADProcessPostProcessService
 				.summary(extractSummary(processExecutionResult))
 				.error(processExecutionResult.isError())
 				.action(createResultAction(processInfo, processExecutionResult))
+				.refreshCurrentWindowRequired(processExecutionResult.isRefreshAllAfterExecution())
 				.build();
 	}
 

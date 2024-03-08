@@ -7,11 +7,8 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
 import org.springframework.core.io.Resource;
 
@@ -48,22 +45,25 @@ public class ProcessInstanceResult
 				.instanceId(instanceId);
 	}
 
-	DocumentId instanceId;
+	@NonNull DocumentId instanceId;
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;
+	boolean refreshCurrentWindowRequired;
 
 	@Builder
 	private ProcessInstanceResult(
 			@NonNull final DocumentId instanceId,
 			final String summary,
 			final boolean error,
-			@Nullable final ResultAction action)
+			@Nullable final ResultAction action,
+			boolean refreshCurrentWindowRequired)
 	{
 		this.instanceId = instanceId;
 		this.summary = summary;
 		this.error = error;
 		this.action = action;
+		this.refreshCurrentWindowRequired = refreshCurrentWindowRequired;
 	}
 
 	public boolean isSuccess()
