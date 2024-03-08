@@ -32,6 +32,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -163,6 +164,7 @@ class ResourceRepository
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.internalName(record.getInternalName())
 				.humanResourceTestGroupId(HumanResourceTestGroupId.ofRepoIdOrNull(record.getS_HumanResourceTestGroup_ID()))
+				.workplaceId(WorkplaceId.ofRepoIdOrNull(record.getC_Workplace_ID()))
 				.build();
 	}
 

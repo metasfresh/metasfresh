@@ -41,6 +41,8 @@ const translations = {
       showResults: 'Show results (%(count)s)',
       clearFilters: 'Clear filters',
     },
+    workplace: 'Workplace',
+    workstation: 'Workstation',
   },
   login: {
     submitButton: 'Login',
@@ -66,6 +68,7 @@ const translations = {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
+      scanWorkstationPlaceholder: 'Scan workstation...',
     },
   },
   activities: {
@@ -89,7 +92,6 @@ const translations = {
       unPickBtn: 'Unpick',
       target: 'To Pick',
       picked: 'Picked',
-      Workplace: 'Workplace',
       switchToManualInput: 'Manually',
       switchToQrCodeInput: 'Scan QR',
       skip: 'Skip',

@@ -93,6 +93,7 @@
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresWorkplace(true)
 				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.build();
@@ -385,8 +386,8 @@
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
 					.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
-												  .map(HUQRCode::fromGlobalQRCodeJsonString)
-												  .orElse(null))
+							.map(HUQRCode::fromGlobalQRCodeJsonString)
+							.orElse(null))
 					.build();
 		}
 

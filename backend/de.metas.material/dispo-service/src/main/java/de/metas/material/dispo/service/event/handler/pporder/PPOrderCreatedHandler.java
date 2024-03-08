@@ -151,6 +151,7 @@ public final class PPOrderCreatedHandler
 				.pickDirectlyIfFeasible(Flag.of(ppOrderEvent.isDirectlyPickIfFeasible()))
 				.qty(ppOrder.getPpOrderData().getQtyRequired())
 				.plantId(ppOrder.getPpOrderData().getPlantId())
+				.workstationId(ppOrder.getPpOrderData().getWorkstationId())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())

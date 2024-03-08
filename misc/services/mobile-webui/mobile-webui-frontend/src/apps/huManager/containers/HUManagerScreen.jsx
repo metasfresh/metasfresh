@@ -22,7 +22,7 @@ import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
 import { push } from 'connected-react-router';
-import { scanAnythingLocation } from '../../scanAnything/routes';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
 import HUScanner from '../../../components/huSelector/HUScanner';
 
 const MODALS = {
@@ -62,7 +62,7 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
-    dispatch(push(scanAnythingLocation()));
+    dispatch(push(scanAnythingRoutes.appLocation()));
   };
   const onPrintLabelsClicked = () => {
     history.push(huManagerHuLabelsLocation());

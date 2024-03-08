@@ -42,10 +42,21 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public BigDecimal getCapacityPerProductionCycleOverride() 
+	public BigDecimal getCapacityPerProductionCycleOverride()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycleOverride);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
+	{
+		throw new IllegalArgumentException ("AD_Workflow_ID is virtual column");	}
+
+	@Override
+	public int getAD_Workflow_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
 	}
 
 	@Override
@@ -126,7 +137,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
-	/** 
+	/**
 	 * IsLotForLot AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -142,7 +153,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public java.lang.String getIsLotForLot() 
+	public java.lang.String getIsLotForLot()
 	{
 		return get_ValueAsString(COLUMNNAME_IsLotForLot);
 	}
@@ -440,7 +451,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public BigDecimal getQtyProcessed_OnDate() 
+	public BigDecimal getQtyProcessed_OnDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -484,5 +495,32 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID (final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1)
+			set_Value (COLUMNNAME_WorkStation_ID, null);
+		else
+			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
 	}
 }

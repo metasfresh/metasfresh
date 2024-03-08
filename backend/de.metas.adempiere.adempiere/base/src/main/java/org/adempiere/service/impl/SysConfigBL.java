@@ -56,6 +56,15 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	public int getPositiveIntValue(final String name, final int defaultValue)
+	{
+		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
+				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
+				.filter(valueInt -> valueInt > 0) // positive
+				.orElse(defaultValue);
+	}
+
+	@Override
 	public boolean getBooleanValue(final String name, final boolean defaultValue)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
