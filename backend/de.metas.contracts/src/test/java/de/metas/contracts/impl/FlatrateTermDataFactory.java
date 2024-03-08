@@ -6,6 +6,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -368,6 +369,7 @@ public class FlatrateTermDataFactory
 		productPrice.setPriceList(BigDecimal.valueOf(2));
 		productPrice.setPriceStd(BigDecimal.valueOf(2));
 		productPrice.setIsAttributeDependant(false);
+		productPrice.setUseScalePrice(ScalePriceUsage.DONT_USE_SCALE_PRICE.getCode());
 		save(productPrice);
 		return productPrice;
 	}

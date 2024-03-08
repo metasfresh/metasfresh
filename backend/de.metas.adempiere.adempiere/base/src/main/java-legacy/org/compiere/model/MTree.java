@@ -16,22 +16,19 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.sql.RowSet;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -42,42 +39,31 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Supplier;
 
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
-/**
- * Builds Tree.
- * Creates tree structure - maintained in VTreePanel
- *
- * @author Jorg Janke
- * @version $Id: MTree.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
- */
-@SuppressWarnings("serial")
 public class MTree extends MTree_Base
 {
 	private static final Logger log = LogManager.getLogger(MTree.class);
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/**
 	 * Default Constructor.
-	 * Need to call loadNodes explicitly
-	 *
-	 * @param ctx context for security
-	 * @param AD_Tree_ID The tree to build
-	 * @param trxName transaction
+	 * Need to call retrieveRootWithChildren explicitly
 	 */
 	public MTree(final Properties ctx, final int AD_Tree_ID, final String trxName)
 	{
@@ -100,25 +86,16 @@ public class MTree extends MTree_Base
 		reload();
 	}   // MTree
 
-	/** Is Tree editable */
+	/**
+	 * Is Tree editable
+	 */
 	private final boolean m_editable;
 	private final boolean m_allNodes;
 	private final boolean m_clientTree;
 	private final String _adLanguage;
 	private final IUserRolePermissions _userRolePermissions;
 
-	/** Root Node */
-	private MTreeNode m_root = null;
-	/** Buffer while loading tree */
-	private final List<MTreeNode> m_buffer = new ArrayList<>();
-	/** Prepared Statement for Node Details */
-	private RowSet m_nodeRowSet;
-	/** The tree is displayed on the Java Client (i.e. not web) */
-
-	private Map<Integer, List<Integer>> m_nodeIdMap;
-
-	/** Logger */
-	private static final transient Logger s_log = LogManager.getLogger(MTree.class);
+	private MTreeNode _rootNode = null;
 
 	/**************************************************************************
 	 * Get default (oldest) complete AD_Tree_ID for KeyColumn.
@@ -130,7 +107,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultAD_Tree_ID(final int AD_Client_ID, final String keyColumnName)
 	{
-		s_log.trace("Getting default AD_Tree_ID for AD_Client_ID={}, keyColumnName={}", AD_Client_ID, keyColumnName);
+		log.trace("Getting default AD_Tree_ID for AD_Client_ID={}, keyColumnName={}", AD_Client_ID, keyColumnName);
 		if (keyColumnName == null || keyColumnName.length() == 0)
 		{
 			return 0;
@@ -150,7 +127,7 @@ public class MTree extends MTree_Base
 		//
 		if (TreeType == null)
 		{
-			s_log.error("Could not map {}", keyColumnName);
+			log.error("Could not map {}", keyColumnName);
 			return 0;
 		}
 
@@ -173,7 +150,7 @@ public class MTree extends MTree_Base
 		}
 		catch (final SQLException e)
 		{
-			s_log.error(sql, e);
+			log.error(sql, e);
 		}
 		finally
 		{
@@ -186,13 +163,11 @@ public class MTree extends MTree_Base
 	/**
 	 * Get or create default tree for given table
 	 *
-	 * @param AD_Client_ID
-	 * @param tableName
 	 * @return AD_Tree_ID
 	 */
-	public static int getDefaultByTableName(final int AD_Client_ID, final String tableName)
+	private static int getDefaultByTableName(final int AD_Client_ID, final String tableName)
 	{
-		s_log.trace("TableName={}", tableName);
+		log.trace("TableName={}", tableName);
 		if (tableName == null)
 		{
 			return 0;
@@ -201,7 +176,7 @@ public class MTree extends MTree_Base
 				+ " FROM AD_Tree tr INNER JOIN AD_Table tb ON (tr.AD_Table_ID=tb.AD_Table_ID) "
 				+ " WHERE tr.AD_Client_ID=? AND tb.TableName=? AND tr.IsActive='Y' AND tr.IsAllNodes='Y' "
 				+ " ORDER BY tr.IsDefault DESC, tr.AD_Tree_ID";
-		int AD_Tree_ID = DB.getSQLValue(null, sql, AD_Client_ID, tableName);
+		int AD_Tree_ID = DB.getSQLValue(ITrx.TRXNAME_None, sql, AD_Client_ID, tableName);
 		if (AD_Tree_ID <= 0)
 		{
 			final MClient client = MClient.get(Env.getCtx(), AD_Client_ID);
@@ -219,24 +194,31 @@ public class MTree extends MTree_Base
 		return AD_Tree_ID;
 	}
 
-	/*************************************************************************
-	 * Load Nodes and Bar
-	 *
-	 * @param userId user for tree bar
-	 */
-	private void loadNodes(final UserId userId)
+	private MTreeNode retrieveRootWithChildren(@Nullable final UserId userId)
 	{
-		// SQL for TreeNodes
-		final StringBuilder sql = new StringBuilder("SELECT "
-				+ "tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive "
-				+ "FROM ").append(getNodeTableName()).append(" tn"
-						+ " LEFT OUTER JOIN " + I_AD_TreeBar.Table_Name + " tb ON (tn.Node_ID=tb.Node_ID " + (userId != null ? " AND tb.AD_User_ID=? " : "") + ") " // #1 (conditional)
-						+ "WHERE tn.AD_Tree_ID=?");								// #2
+		final MTreeNode root = new MTreeNode(0, 0, getName(), getDescription(), 0, true, null, false, null);
+		final HashMap<Integer, MTreeNode> nodesById = new HashMap<>(retrieveNodesById()); // all nodes indexed by Node_ID
+		final ArrayList<MTreeNode> buffer = new ArrayList<>(); // buffer of nodes for whom the parent was not yet loaded
 
+		// SQL to retrieve nodes tree structure
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final StringBuilder sql = new StringBuilder("SELECT tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive FROM ").append(getNodeTableName()).append(" tn");
+
+		sql.append(" LEFT OUTER JOIN " + I_AD_TreeBar.Table_Name + " tb ON (tn.Node_ID=tb.Node_ID ");
+		if (userId != null)
+		{
+			sql.append(" AND tb.AD_User_ID=? ");
+			sqlParams.add(userId);
+		}
+		sql.append(") ");
+
+		sql.append(" WHERE tn.AD_Tree_ID=?");
+		sqlParams.add(getAD_Tree_ID());
 		if (!m_editable)
 		{
 			sql.append(" AND tn.IsActive='Y'");
 		}
+
 		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
 		log.trace("sql: {}", sql);
 
@@ -245,21 +227,10 @@ public class MTree extends MTree_Base
 		ResultSet rs = null;
 		try
 		{
-			// load Node details - addToTree -> getNodeDetail
-			getNodeDetails();
-			//
-			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-			int idx = 1;
-			if (userId != null)
-			{
-				pstmt.setInt(idx++, userId.getRepoId());
-			}
-			pstmt.setInt(idx++, getAD_Tree_ID());
-			// Get Tree & Bar
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final boolean isSummary = true;
-			m_root = new MTreeNode(0, 0, getName(), getDescription(), 0, isSummary, null, false, null);
 			while (rs.next())
 			{
 				final int node_ID = rs.getInt(1);
@@ -269,141 +240,120 @@ public class MTree extends MTree_Base
 				//
 				if (node_ID == 0 && parent_ID == 0)
 				{
-					;
+					// skip root node
 				}
 				else
 				{
-					addToTree(node_ID, parent_ID, seqNo, onBar);	// calls getNodeDetail
+					final MTreeNode node = nodesById.remove(node_ID);
+					if (node != null)
+					{
+						node.setSeqNo(seqNo);
+						node.setParent_ID(parent_ID);
+						node.setOnBar(onBar);
+
+						addToTree(root, node, buffer);
+					}
 				}
 			}
 		}
 		catch (final SQLException e)
 		{
-			log.error("", e);
-			m_nodeRowSet = null;
-			m_nodeIdMap = null;
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-			//
-			// closing the rowset will also close connection for oracle rowset implementation
-			// m_nodeRowSet.close();
-			m_nodeRowSet = null;
-			m_nodeIdMap = null;
 		}
 
 		// Done with loading - add remainder from buffer
-		if (!m_buffer.isEmpty())
+		if (!buffer.isEmpty())
 		{
-			log.trace("clearing buffer - Adding to: {}", m_root);
-			for (int i = 0; i < m_buffer.size(); i++)
+			log.trace("clearing buffer - Adding to: {}", root);
+			for (int i = 0; i < buffer.size(); i++)
 			{
-				final MTreeNode node = m_buffer.get(i);
-				final MTreeNode parent = m_root.findNode(node.getParent_ID());
+				final MTreeNode node = buffer.get(i);
+				final MTreeNode parent = root.findNode(node.getParent_ID());
 				if (parent != null && parent.getAllowsChildren())
 				{
 					parent.add(node);
-					final int sizeBeforeCheckBuffer = m_buffer.size();
-					checkBuffer(node);
-					if (sizeBeforeCheckBuffer == m_buffer.size())
+					final int sizeBeforeCheckBuffer = buffer.size();
+					checkBuffer(buffer, node);
+					if (sizeBeforeCheckBuffer == buffer.size())
 					{
-						m_buffer.remove(i);
+						buffer.remove(i);
 					}
-					i = -1;		// start again with i=0
+					i = -1;        // start again with i=0
 				}
 			}
 		}
 
 		// Nodes w/o parent
-		if (!m_buffer.isEmpty())
+		if (!buffer.isEmpty())
 		{
-			log.error("Nodes w/o parent - adding to root - {}", m_buffer);
-			for (int i = 0; i < m_buffer.size(); i++)
+			log.error("Nodes w/o parent - adding to root - {}", buffer);
+			for (int i = 0; i < buffer.size(); i++)
 			{
-				final MTreeNode node = m_buffer.get(i);
-				m_root.add(node);
-				final int sizeBeforeCheckBuffer = m_buffer.size();
-				checkBuffer(node);
-				if (sizeBeforeCheckBuffer == m_buffer.size())
+				final MTreeNode node = buffer.get(i);
+				root.add(node);
+				final int sizeBeforeCheckBuffer = buffer.size();
+				checkBuffer(buffer, node);
+				if (sizeBeforeCheckBuffer == buffer.size())
 				{
-					m_buffer.remove(i);
+					buffer.remove(i);
 				}
 				i = -1;
 			}
-			if (!m_buffer.isEmpty())
+			if (!buffer.isEmpty())
 			{
-				log.error("Still nodes in Buffer - {}", m_buffer);
+				log.error("Still nodes in Buffer - {}", buffer);
 			}
-		}    	// nodes w/o parents
+		}        // nodes w/o parents
 
 		// clean up
-		if (!m_editable && m_root.getChildCount() > 0)
+		if (!m_editable && root.getChildCount() > 0)
 		{
 			trimTree();
 		}
-		// diagPrintTree();
-		if (log.isDebugEnabled() || m_root.getChildCount() == 0)
+		if (log.isDebugEnabled() || root.getChildCount() == 0)
 		{
-			log.debug("ChildCount={}", m_root.getChildCount());
+			log.debug("ChildCount={}", root.getChildCount());
 		}
-	}   // loadNodes
 
-	/**
-	 * Add Node to Tree.
-	 * If not found add to buffer
-	 *
-	 * @param node_ID Node_ID
-	 * @param parent_ID Parent_ID
-	 * @param seqNo SeqNo
-	 * @param onBar on bar
-	 */
-	private void addToTree(final int node_ID, final int parent_ID, final int seqNo, final boolean onBar)
+		//
+		return root;
+	}
+
+	private static void addToTree(@NonNull final MTreeNode root, @NonNull final MTreeNode nodeToAdd, @NonNull final ArrayList<MTreeNode> buffer)
 	{
-		// Create new Node
-		final MTreeNode child = getNodeDetail(node_ID, parent_ID, seqNo, onBar);
-		if (child == null)
-		{
-			return;
-		}
-
-		// Add to Tree
-		MTreeNode parent = null;
-		if (m_root != null)
-		{
-			parent = m_root.findNode(parent_ID);
-		}
-		// Parent found
+		final MTreeNode parent = root.findNode(nodeToAdd.getParent_ID());
 		if (parent != null && parent.getAllowsChildren())
 		{
-			parent.add(child);
+			parent.add(nodeToAdd);
 			// see if we can add nodes from buffer
-			if (m_buffer.size() > 0)
+			if (buffer.size() > 0)
 			{
-				checkBuffer(child);
+				checkBuffer(buffer, nodeToAdd);
 			}
 		}
 		else
 		{
-			m_buffer.add(child);
+			buffer.add(nodeToAdd);
 		}
-	}   // addToTree
+	}
 
 	/**
 	 * Check the buffer for nodes which have newNode as Parents
 	 *
 	 * @param newNode new node
 	 */
-	private void checkBuffer(final MTreeNode newNode)
+	private static void checkBuffer(@NonNull final ArrayList<MTreeNode> m_buffer, @NonNull final MTreeNode newNode)
 	{
 		// Ability to add nodes
 		if (!newNode.isSummary() || !newNode.getAllowsChildren())
 		{
 			return;
 		}
-		//
+
 		for (int i = 0; i < m_buffer.size(); i++)
 		{
 			final MTreeNode node = m_buffer.get(i);
@@ -423,21 +373,7 @@ public class MTree extends MTree_Base
 		}
 	}   // checkBuffer
 
-	/**************************************************************************
-	 * Get Node Detail.
-	 * Loads data into RowSet m_nodeRowSet
-	 * Columns:
-	 * - ID
-	 * - Name
-	 * - Description
-	 * - IsSummary
-	 * - ImageIndicator
-	 * - additional for Menu
-	 * Parameter:
-	 * - Node_ID
-	 * The SQL contains security/access control
-	 */
-	private void getNodeDetails()
+	private ImmutableMap<Integer, MTreeNode> retrieveNodesById()
 	{
 		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
 
@@ -446,93 +382,81 @@ public class MTree extends MTree_Base
 
 		final List<Object> sqlParams = new ArrayList<>();
 		String sql = poTreeSupport.getNodeInfoSelectSQL(this, sqlParams);
-		if (!m_editable)    	// editable = menu/etc. window
+		if (!m_editable)        // editable = menu/etc. window
 		{
 			sql = getUserRolePermissions().addAccessSQL(sql, sourceTable, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
-		log.debug("SQL={}", sql);
+		log.debug("SQL={} -- {}", sql, sqlParams);
 
-		m_nodeRowSet = DB.getRowSet(sql, sqlParams);
-		m_nodeIdMap = new HashMap<>(50);
-		try
-		{
-			m_nodeRowSet.beforeFirst();
-			int i = 0;
-			while (m_nodeRowSet.next())
-			{
-				i++;
-				final int nodeId = m_nodeRowSet.getInt(1);
-				final List<Integer> list = m_nodeIdMap.computeIfAbsent(nodeId, key -> new ArrayList<>(5));
-				list.add(i);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error("", e);
-		}
-	}   // getNodeDetails
+		final ImmutableList<MTreeNode> nodes = DB.retrieveRows(
+				sql,
+				sqlParams,
+				rs -> poTreeSupport.loadNodeInfo(this, rs));
 
-	/**
-	 * Get Menu Node Details.
-	 * As SQL contains security access, not all nodes will be found
-	 *
-	 * @param node_ID Key of the record
-	 * @param parent_ID Parent ID of the record
-	 * @param seqNo Sort index
-	 * @param onBar Node also on Shortcut bar
-	 * @return Node
-	 */
-	private MTreeNode getNodeDetail(final int node_ID, final int parent_ID, final int seqNo, final boolean onBar)
-	{
-		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
+		return Maps.uniqueIndex(nodes, MTreeNode::getNode_ID);
+	}
 
-		final IPOTreeSupport poTreeNodeSupport = treeSupportFactory.get(getSourceTableName());
-		MTreeNode retValue = null;
-		try
-		{
-			final List<Integer> nodeList = m_nodeIdMap.get(node_ID);
-			final int size = nodeList != null ? nodeList.size() : 0;
-			int i = 0;
-			while (i < size)
-			{
-				final int pos = nodeList.get(i);
-				i++;
-				m_nodeRowSet.absolute(pos);
-
-				retValue = poTreeNodeSupport.loadNodeInfo(this, m_nodeRowSet);
-				if (retValue == null)
-				{
-					return null;
-				}
-				if (node_ID != retValue.getNode_ID())
-				{
-					continue;	// search for correct one
-				}
-
-				retValue.setSeqNo(seqNo);
-				retValue.setParent_ID(parent_ID);
-				retValue.setOnBar(onBar);
-			}
-		}
-		catch (final Exception e)
-		{
-			log.error("", e);
-		}
-
-		return retValue;
-	}   // getNodeDetails
+	// /**
+	//  * Get Menu Node Details.
+	//  * As SQL contains security access, not all nodes will be found
+	//  *
+	//  * @param node_ID   Key of the record
+	//  * @param parent_ID Parent ID of the record
+	//  * @param seqNo     Sort index
+	//  * @param onBar     Node also on Shortcut bar
+	//  * @return Node
+	//  */
+	// private MTreeNode getNodeDetail(final int node_ID, final int parent_ID, final int seqNo, final boolean onBar)
+	// {
+	// 	final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
+	//
+	// 	final IPOTreeSupport poTreeNodeSupport = treeSupportFactory.get(getSourceTableName());
+	// 	MTreeNode treeNode = null;
+	// 	try
+	// 	{
+	// 		final List<Integer> nodeList = m_nodeIdMap.get(node_ID);
+	// 		final int size = nodeList != null ? nodeList.size() : 0;
+	// 		int i = 0;
+	// 		while (i < size)
+	// 		{
+	// 			final int pos = nodeList.get(i);
+	// 			i++;
+	// 			m_nodeRowSet.absolute(pos);
+	//
+	// 			treeNode = poTreeNodeSupport.loadNodeInfo(this, m_nodeRowSet);
+	// 			if (treeNode == null)
+	// 			{
+	// 				return null;
+	// 			}
+	// 			if (node_ID != treeNode.getNode_ID())
+	// 			{
+	// 				continue;    // search for correct one
+	// 			}
+	//
+	// 			treeNode.setSeqNo(seqNo);
+	// 			treeNode.setParent_ID(parent_ID);
+	// 			treeNode.setOnBar(onBar);
+	// 		}
+	// 	}
+	// 	catch (final Exception e)
+	// 	{
+	// 		log.error("", e);
+	// 	}
+	//
+	// 	return treeNode;
+	// }   // retrieveNodesById
 
 	/**************************************************************************
 	 * Trim tree of empty summary nodes
 	 */
 	public void trimTree()
 	{
-		boolean needsTrim = m_root != null;
+		boolean needsTrim = _rootNode != null;
 		while (needsTrim)
 		{
 			needsTrim = false;
-			final Enumeration<?> en = m_root.preorderEnumeration();
-			while (m_root.getChildCount() > 0 && en.hasMoreElements())
+			final Enumeration<?> en = _rootNode.preorderEnumeration();
+			while (_rootNode.getChildCount() > 0 && en.hasMoreElements())
 			{
 				final MTreeNode nd = (MTreeNode)en.nextElement();
 				if (nd.isSummary() && nd.getChildCount() == 0)
@@ -544,51 +468,26 @@ public class MTree extends MTree_Base
 		}
 	}   // trimTree
 
-	/**
-	 * Get Root node
-	 *
-	 * @return root
-	 */
 	public MTreeNode getRoot()
 	{
-		return m_root;
-	}   // getRoot
+		return _rootNode;
+	}
 
-	/**
-	 * Is Menu Tree
-	 *
-	 * @return true if menu
-	 */
 	public boolean isMenu()
 	{
 		return TREETYPE_Menu.equals(getTreeType());
-	}	// isMenu
+	}
 
-	/**
-	 * Is Product Tree
-	 *
-	 * @return true if product
-	 */
 	public boolean isProduct()
 	{
 		return TREETYPE_Product.equals(getTreeType());
-	}	// isProduct
+	}
 
-	/**
-	 * Is Business Partner Tree
-	 *
-	 * @return true if partner
-	 */
 	public boolean isBPartner()
 	{
 		return TREETYPE_BPartner.equals(getTreeType());
-	}	// isBPartner
+	}
 
-	/**
-	 * String representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
@@ -598,7 +497,9 @@ public class MTree extends MTree_Base
 				.toString();
 	}
 
-	private static final Supplier<Set<Integer>> s_TableIDsSupplier = Suppliers.<Set<Integer>> memoize(() -> {
+	private static final Supplier<ImmutableSet<Integer>> s_TableIDsSupplier = Suppliers.memoize(() -> {
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 		final ImmutableSet.Builder<Integer> tableIds = ImmutableSet.builder();
 		final String sql = "SELECT DISTINCT TreeType, AD_Table_ID FROM AD_Tree";
 		PreparedStatement pstmt = null;
@@ -616,7 +517,7 @@ public class MTree extends MTree_Base
 					final String tableName = getSourceTableName(treeType, -1);
 					if (tableName != null)
 					{
-						AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+						AD_Table_ID = adTableDAO.retrieveTableId(tableName);
 					}
 				}
 				if (AD_Table_ID <= 0)
@@ -636,12 +537,10 @@ public class MTree extends MTree_Base
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	});
 
-	public static boolean hasTree(final int AD_Table_ID)
+	static boolean hasTree(final int AD_Table_ID)
 	{
 		return s_TableIDsSupplier.get().contains(AD_Table_ID);
 	}
@@ -652,7 +551,8 @@ public class MTree extends MTree_Base
 	 * @param AD_Table_ID table
 	 * @return node table name, e.g. AD_TreeNode
 	 */
-	static public String getNodeTableName(final int AD_Table_ID)
+	@Nullable
+	static String getNodeTableName(final int AD_Table_ID)
 	{
 		String nodeTableName = "AD_TreeNode";
 		if (getTableId(I_AD_Menu.class) == AD_Table_ID)
@@ -692,7 +592,7 @@ public class MTree extends MTree_Base
 			}
 		}
 		return nodeTableName;
-	}	// getNodeTableName
+	}    // getNodeTableName
 
 	public boolean isEditable()
 	{
@@ -706,9 +606,9 @@ public class MTree extends MTree_Base
 
 	public final String getAD_Language()
 	{
-		if(_adLanguage == null)
+		if (_adLanguage == null)
 		{
-			return Env.getAD_Language(getCtx());
+			return Env.getADLanguageOrBaseLanguage(getCtx());
 		}
 		return _adLanguage;
 	}
@@ -725,7 +625,7 @@ public class MTree extends MTree_Base
 			userId = getUserRolePermissions().getUserId();
 		}
 		log.trace("Reloaded tree for AD_User_ID={}", userId);
-		loadNodes(userId);
+		this._rootNode = retrieveRootWithChildren(userId);
 	}
 
 	public final IUserRolePermissions getUserRolePermissions()
@@ -736,6 +636,12 @@ public class MTree extends MTree_Base
 		}
 		return _userRolePermissions;
 	}
+
+	//
+	//
+	//
+	//
+	//
 
 	public static final class Builder
 	{
@@ -779,7 +685,7 @@ public class MTree extends MTree_Base
 			return this;
 		}
 
-		public final IUserRolePermissions getUserRolePermissions()
+		public IUserRolePermissions getUserRolePermissions()
 		{
 			if (userRolePermissions == null)
 			{
@@ -817,7 +723,7 @@ public class MTree extends MTree_Base
 
 		/**
 		 * @param editable True, if tree can be modified
-		 *            - includes inactive and empty summary nodes
+		 *                 - includes inactive and empty summary nodes
 		 */
 		public Builder setEditable(final boolean editable)
 		{
@@ -863,9 +769,9 @@ public class MTree extends MTree_Base
 
 		private String getAD_Language()
 		{
-			if(adLanguage == null)
+			if (adLanguage == null)
 			{
-				return Env.getAD_Language(getCtx());
+				return Env.getADLanguageOrBaseLanguage(getCtx());
 			}
 			return adLanguage;
 		}

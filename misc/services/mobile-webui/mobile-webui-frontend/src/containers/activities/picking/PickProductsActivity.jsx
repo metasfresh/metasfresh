@@ -1,19 +1,21 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
-
-import PickLineButton from './PickLineButton';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
+import { pickingLineScreenLocation } from '../../../routes/picking';
+import { useHistory } from 'react-router-dom';
 
-const getLinePickingQuantities = (line) => {
+const computeLineQuantities = (line) => {
   let picked = 0;
   let toPick = 0;
   let uom = '';
 
   forEach(line.steps, (step) => {
-    const { qtyPicked, qtyToPick, uom: stepUom } = step;
+    const { qtyToPick, uom: stepUom } = step;
 
-    picked += qtyPicked;
+    picked += computeStepQtyPickedTotal(step);
     toPick += qtyToPick;
     uom = stepUom;
   });
@@ -21,51 +23,64 @@ const getLinePickingQuantities = (line) => {
   return { picked, toPick, uom };
 };
 
-class PickProductsActivity extends Component {
-  render() {
-    const {
-      componentProps: { lines },
-      activityState,
-      wfProcessId,
-      activityId,
-    } = this.props;
-    const dataStored = activityState ? activityState.dataStored : {};
-    const { completeStatus, isUserEditable } = dataStored;
+const computeStepQtyPickedTotal = (step) => {
+  let qtyPickedTotal = 0;
 
-    return (
-      <div className="pick-products-activity-container mt-5">
-        {activityState && lines.length > 0
-          ? lines.map((lineItem, lineIndex) => {
-              const lineId = '' + lineIndex;
-              const { picked, toPick, uom } = getLinePickingQuantities(dataStored.lines[lineIndex]);
-
-              return (
-                <PickLineButton
-                  key={lineId}
-                  wfProcessId={wfProcessId}
-                  activityId={activityId}
-                  lineId={lineId}
-                  caption={lineItem.caption}
-                  isUserEditable={isUserEditable}
-                  completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  qtyPicked={picked}
-                  qtyToPick={toPick}
-                  uom={uom}
-                />
-              );
-            })
-          : null}
-      </div>
-    );
+  if (step.mainPickFrom.qtyPicked) {
+    qtyPickedTotal += step.mainPickFrom.qtyPicked;
   }
-}
+
+  if (step.pickFromAlternatives) {
+    const qtyPickedInAltSteps = Object.values(step.pickFromAlternatives).reduce(
+      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
+      0
+    );
+
+    qtyPickedTotal += qtyPickedInAltSteps;
+  }
+
+  return qtyPickedTotal;
+};
+
+const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
+  const {
+    dataStored: { lines, completeStatus, isUserEditable },
+  } = activityState;
+
+  const history = useHistory();
+  const onButtonClick = ({ lineId }) => {
+    history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  };
+
+  return (
+    <div className="mt-5">
+      {lines && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+            const { picked, toPick, uom } = computeLineQuantities(lineItem);
+
+            return (
+              <ButtonWithIndicator
+                key={lineId}
+                caption={lineItem.caption}
+                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                disabled={!isUserEditable}
+                onClick={() => onButtonClick({ lineId })}
+              >
+                <ButtonQuantityProp qtyCurrent={picked} qtyTarget={toPick} uom={uom} applicationId={applicationId} />
+              </ButtonWithIndicator>
+            );
+          })
+        : null}
+    </div>
+  );
+};
 
 PickProductsActivity.propTypes = {
-  wfProcessId: PropTypes.string,
-  activityId: PropTypes.string,
-  caption: PropTypes.string,
-  componentProps: PropTypes.object,
-  activityState: PropTypes.object,
+  applicationId: PropTypes.string.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
+  activityId: PropTypes.string.isRequired,
+  activityState: PropTypes.object.isRequired,
 };
 
 export default PickProductsActivity;

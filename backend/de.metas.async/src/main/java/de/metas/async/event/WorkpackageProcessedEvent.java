@@ -22,9 +22,11 @@
 
 package de.metas.async.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.async.QueueWorkPackageId;
+import de.metas.event.impl.IQueueWorkPackageIdProvider;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,7 +38,7 @@ import java.util.UUID;
 @Value
 @Builder
 @JsonDeserialize(builder = WorkpackageProcessedEvent.WorkpackageProcessedEventBuilder.class)
-public class WorkpackageProcessedEvent
+public class WorkpackageProcessedEvent implements IQueueWorkPackageIdProvider
 {
 	public enum Status
 	{
@@ -45,10 +47,16 @@ public class WorkpackageProcessedEvent
 
 	@JsonProperty("status")
 	Status status;
-	
+
 	@JsonProperty("workPackageId")
 	QueueWorkPackageId workPackageId;
 
 	@JsonProperty("correlationId")
 	UUID correlationId;
+
+	@JsonIgnore
+	public QueueWorkPackageId getQueueWorkPackageId()
+	{
+		return workPackageId;
+	}
 }

@@ -64,6 +64,8 @@ public class SubscriptionCommandTest
 		subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 		term = newInstance(I_C_Flatrate_Term.class);
+		term.setBill_BPartner_ID(123);
+		term.setC_Flatrate_Data_ID(321);
 		save(term);
 
 		first = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-10", 1);

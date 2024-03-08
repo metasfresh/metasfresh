@@ -539,7 +539,10 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		final String sqlTableAlias = getTableAlias();
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
-		final FilterSql filterSql = toFilterSql(filters, filterConverterCtx, SqlOptions.usingTableName(getTableName()));
+		final FilterSql filterSql = toFilterSql(
+				filters,
+				filterConverterCtx.withUserRolePermissionsKey(viewEvalCtx.getPermissionsKey()),
+				SqlOptions.usingTableName(getTableName()));
 
 		final DocumentQueryOrderByList orderBysEffective = orderBys.stream()
 				.flatMap(this::flatMapEffectiveFieldNames)
@@ -586,9 +589,10 @@ public final class SqlViewSelectionQueryBuilder
 
 				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()) && !sqlSelectValue.isVirtualColumn())
 				{
-					sqlSourceTableBuilder.append("\n, ").append(sqlSelectDisplayValue
-							.withJoinOnTableNameOrAlias(getTableName())
-							.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
+					sqlSourceTableBuilder.append("\n, ")
+							.append(sqlSelectDisplayValue
+									.withJoinOnTableNameOrAlias(getTableName())
+									.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
 				}
 
 				if (addedFieldNames.add(sqlSelectValue.getColumnNameAlias()))

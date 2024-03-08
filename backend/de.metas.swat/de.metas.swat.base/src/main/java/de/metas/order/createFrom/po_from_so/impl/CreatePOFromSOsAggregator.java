@@ -107,18 +107,17 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 
 		return Optional.of(skippedSalesOrderLinesByOrder.entrySet()
-								   .stream()
-								   .map(entry -> {
-									   final I_C_Order salesOrder = entry.getKey();
-									   final List<I_C_OrderLine> salesOrderLines = entry.getValue();
+				.stream()
+				.map(entry -> {
+					final I_C_Order salesOrder = entry.getKey();
+					final List<I_C_OrderLine> salesOrderLines = entry.getValue();
 
-									   return salesOrderLines.stream()
-											   .map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
-											   .collect(Collectors.joining(", "));
-								   })
-								   .collect(Collectors.joining(", ")));
+					return salesOrderLines.stream()
+							.map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
+							.collect(Collectors.joining(", "));
+				})
+				.collect(Collectors.joining(", ")));
 	}
-
 
 	@Override
 	public String toString()
@@ -279,6 +278,16 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
 
+		// FW dropship ad
+		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase)
+				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+		{
+			purchaseOrder.setIsDropShip(true);
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(purchaseOrder)
+					.setFromDeliveryLocation(salesOrder);
+		}
+
 		// Drop Ship
 		if (p_IsDropShip)
 		{
@@ -308,6 +317,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 			}
 		}
+
 		// References
 		purchaseOrder.setC_Activity_ID(salesOrder.getC_Activity_ID());
 		purchaseOrder.setC_Campaign_ID(salesOrder.getC_Campaign_ID());
@@ -336,6 +346,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	{
 		final List<I_C_OrderLine> skippedOrderLinesFromCurrentOrder = new ArrayList<>();
 		skippedOrderLinesFromCurrentOrder.add(salesOrderLine);
-		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {oldList.addAll(newList); return oldList;});
+		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {
+			oldList.addAll(newList);
+			return oldList;
+		});
 	}
 }

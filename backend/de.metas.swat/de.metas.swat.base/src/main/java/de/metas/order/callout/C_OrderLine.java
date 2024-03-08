@@ -87,4 +87,11 @@ public class C_OrderLine
 	{
 		documentLocationBL.updateCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
+
+	@CalloutMethod(columnNames = {I_C_OrderLine.COLUMNNAME_C_BPartner_ID},
+			skipIfCopying = true)
+	public void updateBPartnerLocation(final I_C_OrderLine orderLine)
+	{
+		orderLineBL.setBPLocation(orderLine);
+	}
 }

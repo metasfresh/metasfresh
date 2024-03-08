@@ -7,9 +7,8 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
 /**
- * 
  * @author ad
- * @task http://dewiki908/mediawiki/index.php/03000:_ADempiere_Replication_understandable_Errormessages_% 282012071810000029%29
+ * task http://dewiki908/mediawiki/index.php/03000:_ADempiere_Replication_understandable_Errormessages_% 282012071810000029%29
  */
 public class ReplicationException extends AdempiereException
 {
@@ -35,9 +34,6 @@ public class ReplicationException extends AdempiereException
 
 	/**
 	 * Constructs a new exception with the specified detail message and cause.
-	 * 
-	 * @param adMessage
-	 * @param cause
 	 */
 	public ReplicationException(final String adMessage, final Throwable cause)
 	{

@@ -1,15 +1,17 @@
 package org.adempiere.ad.dao.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -93,6 +95,83 @@ public class TypedSqlQueryTests
 		{
 			assertThatInliningSqlParams("SELECT * FROM Table where c=?", 1, "str", 3)
 					.isEqualTo("SELECT * FROM Table where c=1 -- Exceeding params: 'str', 3");
+		}
+	}
+
+	@Nested
+	public class union
+	{
+		@Test
+		public void givenUnionQueryWithOrderByOnRoot_whenBuildingSQL_thenUnionOrderByClauseIsIgnored()
+		{
+			final Properties ctx = new Properties();
+			final String trxName = ITrx.TRXNAME_None;
+
+			//given
+			final TypedSqlQuery<I_C_OrderLine> query = new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName);
+			query.setOrderBy("C_OrderLine_ID");
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName).setOrderBy("M_Product_ID"), true);
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName).setOrderBy("M_Product_ID"), true);
+
+			//when
+			final String sql = query.buildSQL(
+					"avoidDBConnection",
+					null,
+					null/* groupByClause */,
+					true);
+
+			//then
+			assertThat(sql).isEqualTo("avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + "UNION DISTINCT\n"
+											  + "(\n"
+											  + "avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + ")\n"
+											  + "\n"
+											  + "UNION DISTINCT\n"
+											  + "(\n"
+											  + "avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + ")\n"
+											  + "\n"
+											  + " ORDER BY C_OrderLine_ID");
+		}
+
+		@Test
+		public void givenUnionQueryWithNoOrderByOnRoot_whenBuildingSQL_thenUnionOrderByClauseAreConsidered()
+		{
+			final Properties ctx = new Properties();
+			final String trxName = ITrx.TRXNAME_None;
+
+			//given
+			final TypedSqlQuery<I_C_OrderLine> query = new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName);
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName).setOrderBy("M_Product_ID"), true);
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1000002", trxName).setOrderBy("C_OrderLine_ID"), true);
+
+			//when
+			final String sql = query.buildSQL(
+					"avoidDBConnection",
+					null,
+					null/* groupByClause */,
+					true);
+
+			//then
+			assertThat(sql).isEqualTo("avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + "UNION DISTINCT\n"
+											  + "(\n"
+											  + "avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + " ORDER BY M_Product_ID\n"
+											  + ")\n"
+											  + "\n"
+											  + "UNION DISTINCT\n"
+											  + "(\n"
+											  + "avoidDBConnection  FROM C_OrderLine\n"
+											  + " WHERE (M_Product_ID=1000002)\n"
+											  + " ORDER BY C_OrderLine_ID\n"
+											  + ")\n");
 		}
 	}
 }

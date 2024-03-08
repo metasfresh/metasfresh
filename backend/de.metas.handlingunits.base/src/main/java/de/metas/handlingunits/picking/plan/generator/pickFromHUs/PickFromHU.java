@@ -35,7 +35,7 @@ import java.time.LocalDate;
 @Value
 public class PickFromHU
 {
-	@NonNull HuId huId;
+	@NonNull HuId topLevelHUId;
 	@With
 	boolean huReservedForThisLine;
 	@NonNull LocatorId locatorId;
@@ -53,7 +53,7 @@ public class PickFromHU
 
 	@Builder
 	private PickFromHU(
-			@NonNull final HuId huId,
+			@NonNull final HuId topLevelHUId,
 			final boolean huReservedForThisLine,
 			@NonNull final LocatorId locatorId,
 			@Nullable final String huCode,
@@ -63,10 +63,10 @@ public class PickFromHU
 			@Nullable final String repackNumber,
 			@Nullable final AlternativePickFromKeys alternatives)
 	{
-		this.huId = huId;
+		this.topLevelHUId = topLevelHUId;
 		this.huReservedForThisLine = huReservedForThisLine;
 		this.locatorId = locatorId;
-		this.huCode = huCode != null ? huCode : huId.toHUValue();
+		this.huCode = huCode != null ? huCode : topLevelHUId.toHUValue();
 		this.expiringDate = expiringDate;
 		this.serialNo = serialNo;
 		this.lotNumber = lotNumber;

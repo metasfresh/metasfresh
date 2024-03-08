@@ -1,5 +1,6 @@
 package org.adempiere.warehouse.api.impl;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -24,15 +25,22 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
-import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroup;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignment;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.WarehouseGroupId;
+import org.adempiere.warehouse.groups.WarehouseGroupsIndex;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupsIndex;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_Group;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.model.I_M_Warehouse_Type;
 import org.compiere.util.DB;
@@ -100,6 +108,14 @@ public class WarehouseDAO implements IWarehouseDAO
 			.tableName(I_M_Warehouse_Type.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+	private final CCache<Integer, WarehousePickingGroupsIndex> allWarehousePickingGroups = CCache.<Integer, WarehousePickingGroupsIndex>builder()
+			.tableName(I_M_Warehouse_Group.Table_Name)
+			.additionalTableNameToResetFor(I_M_Warehouse.Table_Name)
+			.build();
+	private final CCache<Integer, WarehouseGroupsIndex> allWarehouseGroups = CCache.<Integer, WarehouseGroupsIndex>builder()
+			.tableName(I_M_Warehouse_Group.Table_Name)
+			.additionalTableNameToResetFor(I_M_Warehouse.Table_Name)
 			.build();
 
 	@Override
@@ -436,6 +452,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
+	@Override
 	public Set<WarehouseId> getAllWarehouseIds()
 	{
 		return queryBL
@@ -445,9 +462,12 @@ public class WarehouseDAO implements IWarehouseDAO
 				.listIds(WarehouseId::ofRepoId);
 	}
 
-	// TODO: implement a way to reset a cache when I_M_Warehouse_PickingGroup is changed
-	@Cached(cacheName = I_M_Warehouse.Table_Name)
-	public WarehousePickingGroupsIndex retrieveWarehouseGroups()
+	private WarehousePickingGroupsIndex getWarehousePickingGroupsIndex()
+	{
+		return allWarehousePickingGroups.getOrLoad(0, this::retrieveWarehousePickingGroups0);
+	}
+
+	private WarehousePickingGroupsIndex retrieveWarehousePickingGroups0()
 	{
 		final ImmutableSetMultimap<Integer, WarehouseId> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
@@ -480,13 +500,59 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public WarehousePickingGroup getWarehousePickingGroupById(@NonNull final WarehousePickingGroupId warehousePickingGroupId)
 	{
-		return retrieveWarehouseGroups().getById(warehousePickingGroupId);
+		return getWarehousePickingGroupsIndex().getById(warehousePickingGroupId);
 	}
 
 	@Override
 	public Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(@NonNull final WarehouseId warehouseId)
 	{
-		return retrieveWarehouseGroups().getWarehouseIdsOfSamePickingGroup(warehouseId);
+		return getWarehousePickingGroupsIndex().getWarehouseIdsOfSamePickingGroup(warehouseId);
+	}
+
+	@Override
+	public ImmutableSet<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull final WarehouseId warehouseId, @NonNull final WarehouseGroupAssignmentType assignmentType)
+	{
+		return getWarehouseGroupsIndex().getWarehouseIdsOfSameGroup(warehouseId, assignmentType);
+	}
+
+	private WarehouseGroupsIndex getWarehouseGroupsIndex()
+	{
+		return allWarehouseGroups.getOrLoad(0, this::retrieveWarehouseGroupsIndex);
+	}
+
+	private WarehouseGroupsIndex retrieveWarehouseGroupsIndex()
+	{
+		final HashMultimap<WarehouseGroupId, WarehouseGroupAssignment> assignmentsByGroupId = HashMultimap.create();
+
+		queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse.COLUMNNAME_Manufacturing_Warehouse_Group_ID)
+				.forEach(record -> {
+					final WarehouseGroupId manufacturingGroupId = WarehouseGroupId.optionalOfRepoIdObject(record.get(I_M_Warehouse.COLUMNNAME_Manufacturing_Warehouse_Group_ID)).orElse(null);
+					if (manufacturingGroupId != null)
+					{
+						final WarehouseId warehouseId = WarehouseId.ofRepoId((int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID));
+						assignmentsByGroupId.put(manufacturingGroupId, WarehouseGroupAssignment.of(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING));
+					}
+				});
+
+		final List<WarehouseGroup> groups = queryBL.createQueryBuilder(I_M_Warehouse_Group.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(warehouseGroupRecord -> {
+					final WarehouseGroupId groupId = WarehouseGroupId.ofRepoId(warehouseGroupRecord.getM_Warehouse_Group_ID());
+					return WarehouseGroup.builder()
+							.id(groupId)
+							.name(warehouseGroupRecord.getName())
+							.description(warehouseGroupRecord.getDescription())
+							.assignments(assignmentsByGroupId.get(groupId))
+							.build();
+				})
+				.collect(ImmutableList.toImmutableList());
+
+		return WarehouseGroupsIndex.ofList(groups);
 	}
 
 	@Override
@@ -629,7 +695,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public final I_M_Warehouse retrieveWarehouseForIssues(Properties ctx)
+	public final I_M_Warehouse retrieveWarehouseForIssues(final Properties ctx)
 	{
 		final I_M_Warehouse warehouse = retrieveWarehouseForIssuesOrNull(ctx);
 		if (warehouse == null)

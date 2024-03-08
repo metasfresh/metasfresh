@@ -26,6 +26,8 @@ import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
+import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -53,7 +55,6 @@ public interface IAttributesBL extends ISingletonService
 	/**
 	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
 	 *
-	 * @param attribute
 	 * @return {@link IAttributeValuesProvider} or null
 	 */
 	IAttributeValuesProvider createAttributeValuesProvider(org.compiere.model.I_M_Attribute attribute);
@@ -64,14 +65,23 @@ public interface IAttributesBL extends ISingletonService
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
 	 *
-	 * @param product
-	 * @param attributeId
 	 * @return {@link I_M_Attribute} or null
 	 */
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
 
+	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
+
+	boolean isMandatoryOnReceipt(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
+	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
+
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
+
+	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
 	/**
-	 * @param attribute
 	 * @return math context of this attribute or DEFAULT_MATHCONTEXT if the attribute's UOM is null
 	 */
 	MathContext getMathContext(org.compiere.model.I_M_Attribute attribute);
@@ -79,10 +89,6 @@ public interface IAttributesBL extends ISingletonService
 	/**
 	 * Calculates Best-Before date for given product and bpartner.
 	 *
-	 * @param ctx
-	 * @param productId
-	 * @param vendorBPartnerId
-	 * @param dateReceipt
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
 	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);

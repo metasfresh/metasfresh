@@ -4,11 +4,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,10 +19,17 @@ import org.springframework.stereotype.Service;
 public class PickingJobSlotService
 {
 	private final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final PickingJobRepository pickingJobRepository;
 
-	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotBarcode pickingSlotBarcode)
+	public PickingJobSlotService(
+			@NonNull final PickingJobRepository pickingJobRepository)
 	{
-		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotBarcode.getPickingSlotId());
+		this.pickingJobRepository = pickingJobRepository;
+	}
+
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotQRCode pickingSlotQRCode)
+	{
+		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotQRCode.getPickingSlotId());
 	}
 
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
@@ -31,14 +39,12 @@ public class PickingJobSlotService
 
 	public void allocate(
 			@NonNull final PickingSlotIdAndCaption pickingSlot,
-			@NonNull final BPartnerLocationId deliveryBPLocationId,
-			@NonNull final PickingJobId pickingJobId)
+			@NonNull final BPartnerLocationId deliveryBPLocationId)
 	{
 		final BooleanWithReason allocated = pickingSlotBL.allocatePickingSlotIfPossible(
 				PickingSlotAllocateRequest.builder()
 						.pickingSlotId(pickingSlot.getPickingSlotId())
 						.bpartnerAndLocationId(deliveryBPLocationId)
-						.pickingJobId(pickingJobId)
 						.build());
 		if (allocated.isFalse())
 		{
@@ -49,9 +55,14 @@ public class PickingJobSlotService
 		}
 	}
 
-	public void release(@NonNull final PickingSlotId pickingSlotId, @NonNull final PickingJobId pickingJobId)
+	public void release(
+			@NonNull final PickingSlotId pickingSlotId,
+			@SuppressWarnings("unused") @NonNull final PickingJobId pickingJobId)
 	{
-		pickingSlotBL.releasePickingSlotFromJob(pickingSlotId, pickingJobId);
+		if (!pickingJobRepository.hasDraftJobsUsingPickingSlot(pickingSlotId, pickingJobId))
+		{
+			pickingSlotBL.releasePickingSlotIfPossible(pickingSlotId);
+		}
 	}
 
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.Instant;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
@@ -64,7 +65,7 @@ public class UserNotificationTest
 				.detailADMessageParam("value2")
 				.targetType(UserNotificationTargetType.Window)
 				.targetRecord(TableRecordReference.of("MyTable", 444))
-				.targetWindowId(555)
+				.targetWindowId(AdWindowId.ofRepoId(555))
 				.build());
 	}
 
@@ -82,7 +83,7 @@ public class UserNotificationTest
 				.detailADMessageParam("value1")
 				.detailADMessageParam("value2")
 				.targetType(UserNotificationTargetType.View)
-				.targetWindowId(555)
+				.targetWindowId(AdWindowId.ofRepoId(555))
 				.targetViewId("555-123")
 				.build());
 	}

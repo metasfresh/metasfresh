@@ -12,6 +12,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 
@@ -42,7 +43,13 @@ import java.util.Comparator;
 public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggregationKey>
 {
 	OrgId orgId;
+	
+	@Nullable
 	ExternalId externalId;
+	
+	@Nullable
+	String poReference;
+	
 	WarehouseId warehouseId;
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
@@ -54,7 +61,8 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
-			.thenComparing(PurchaseOrderAggregationKey::getDimension)
+			.thenComparing(PurchaseOrderAggregationKey::getDimension, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
 
@@ -69,6 +77,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
 				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
+				.poReference(purchaseOrderItem.getPOReference())
 				.build();
 	}
 
@@ -77,6 +86,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseCandidate.getOrgId())
 				.externalId(purchaseCandidate.getExternalHeaderId())
+				.poReference(purchaseCandidate.getPOReference())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())

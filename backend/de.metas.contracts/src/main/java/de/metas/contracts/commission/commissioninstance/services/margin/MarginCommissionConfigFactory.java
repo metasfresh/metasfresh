@@ -141,7 +141,8 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 	@Override
 	public boolean appliesFor(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
-		return SUPPORTED_TRIGGER_TYPES.contains(contractRequest.getCommissionTriggerType());
+		return SUPPORTED_TRIGGER_TYPES.contains(contractRequest.getCommissionTriggerType())
+				&& !contractRequest.isCustomerTheSalesRep();
 	}
 
 	@Override
@@ -212,7 +213,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 	@NonNull
 	private I_C_Flatrate_Term getContractToEnforce(@NonNull final ImmutableList<I_C_Flatrate_Term> marginCommissionContracts)
 	{
-		// dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term#ensureOneMediatedContract(I_C_Flatrate_Term term)
+		// dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term#ensureOneContract(I_C_Flatrate_Term term)
 		Check.assume(marginCommissionContracts.size() == 1, "One salesRep should have only one margin commission contract for the same time period of time");
 
 		return marginCommissionContracts.get(0);

@@ -1,0 +1,18 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "GRSSignum",
+  "externalSystemChildConfigValue": "grsValue",
+  "command": "exportBPartner",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
+  "parameters": {
+    "RemoteURL": "https://grs",
+    "BPartnerId": "bpIdentifier",
+    "AuthToken": "authToken",
+    "ChildConfigValue": "grsValue",
+    "TenantId": "myTenant",
+    "JsonExportDirectorySettings": null
+  }
+}

@@ -24,6 +24,7 @@ package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -53,7 +54,12 @@ public class JsonRequestProductUpsertItem
 	@Nullable
 	String externalReferenceUrl;
 
-	@ApiModelProperty(position = 30)
+	@ApiModelProperty(position = 30, //
+			value = "ID of the external system config.")
+	@Nullable
+	JsonMetasfreshId externalSystemConfigId;
+	
+	@ApiModelProperty(position = 50)
 	@NonNull
 	JsonRequestProduct requestProduct;
 
@@ -62,11 +68,13 @@ public class JsonRequestProductUpsertItem
 			@NonNull @JsonProperty("productIdentifier") final String productIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
+			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
 			@NonNull @JsonProperty("requestProduct") final JsonRequestProduct requestProduct)
 	{
 		this.productIdentifier = productIdentifier;
 		this.externalVersion = externalVersion;
 		this.requestProduct = requestProduct;
 		this.externalReferenceUrl = externalReferenceUrl;
+		this.externalSystemConfigId = externalSystemConfigId;
 	}
 }

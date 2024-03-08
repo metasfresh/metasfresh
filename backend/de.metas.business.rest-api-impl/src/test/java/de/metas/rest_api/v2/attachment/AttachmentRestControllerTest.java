@@ -30,7 +30,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;

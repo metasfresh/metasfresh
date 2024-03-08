@@ -99,7 +99,6 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	public void put(final IView view)
 	{
 		defaultViewsRepositoryStorage.put(view);
-
 	}
 
 	@Nullable
@@ -126,5 +125,4 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	{
 		defaultViewsRepositoryStorage.invalidateView(viewId);
 	}
-
 }

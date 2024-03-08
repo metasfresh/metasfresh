@@ -1,13 +1,12 @@
 package de.metas.marketing.base.interceptor;
 
+import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
-
-import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -66,6 +65,5 @@ public class MKTG_Campaign_ContactPerson
 		}
 
 		campaignContactPerson.setAD_User_ID(adUserId);
-		return;
 	}
 }
