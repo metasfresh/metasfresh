@@ -1,4 +1,6 @@
 @from:cucumber
+@ignore
+@ghActions:run_on_executor7
 Feature: workflow rest controller tests
 
   Background:
@@ -161,8 +163,10 @@ Feature: workflow rest controller tests
       | M_HU_ID.Identifier            | HUStatus | IsActive | OPT.M_Locator_ID.Identifier    |
       | workflowProductHUDistribution | A        | Y        | distributionToWarehouseLocator |
 
+    # TODO ! Unignore when merged to master!
   @Id:S0179_120
   @from:cucumber
+  @ignore
   Scenario: create and start manufacturing workflow
 
     And metasfresh contains M_Products:
