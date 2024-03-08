@@ -177,7 +177,6 @@ export const getLayoutAndData = (state, isModal = false) => {
   return state.windowHandler[selector] ?? {};
 };
 
-
 export const getInlineTabLayout = ({
   state,
   inlineTabId,
@@ -224,7 +223,7 @@ const selectWidgetData = (data, layout) => {
     }, []);
   }
 
-  if (!widgetData.length) {
+  if (!widgetData || !widgetData.length) {
     widgetData = [{}];
   }
 

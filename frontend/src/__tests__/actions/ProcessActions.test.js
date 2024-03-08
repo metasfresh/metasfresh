@@ -5,7 +5,10 @@ import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { initialState } from '../../reducers/viewHandler';
 import { initialState as appInitialState } from '../../reducers/appHandler';
-import { createProcess, handleProcessResponse } from '../../actions/ProcessActions';
+import {
+  createProcess,
+  handleProcessResponse
+} from '../../actions/ProcessActions';
 import { setProcessPending, setProcessSaved } from '../../actions/AppActions';
 
 const createState = (state = {}) => merge(
