@@ -5,18 +5,20 @@ import {
 } from './AppActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { findViewByViewId } from '../reducers/viewHandler';
-import { openInNewTab } from '../utils';
+import { getTab, openInNewTab } from '../utils';
 import history from '../services/History';
 import { setIncludedView, unsetIncludedView } from './ViewActions';
 import { getTableId } from '../reducers/tables';
-import { updateTableSelection } from './TableActions';
+import { updateTableSelection, updateTabTableData } from './TableActions';
 import {
   closeModal,
+  fireUpdateData,
   initDataSuccess,
   initLayoutSuccess,
   openModal,
   openRawModal,
   toggleOverlay,
+  updateTabLayout,
 } from './WindowActions';
 import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 import {
@@ -25,15 +27,21 @@ import {
   getProcessLayout,
   startProcess,
 } from '../api/process';
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { getTabRequest } from '../api';
+import { getLayoutAndData } from '../reducers/windowHandler';
 
 export const handleProcessResponse = ({
   response,
   processId,
   pinstanceId,
   parentId,
+  contextWindowId,
+  contextViewId,
 }) => {
   return async (dispatch) => {
-    const { error, summary, action } = response.data;
+    const { error, summary, action, refreshCurrentWindowRequired } =
+      response.data;
 
     if (error) {
       await dispatch(addNotification('Process error', summary, 5000, 'error'));
@@ -156,6 +164,12 @@ export const handleProcessResponse = ({
         }
       }
 
+      if (refreshCurrentWindowRequired) {
+        dispatch(
+          refreshContextWindowOrView({ contextWindowId, contextViewId })
+        );
+      }
+
       if (summary) {
         await dispatch(addNotification('Process', summary, 5000, 'primary'));
       }
@@ -238,6 +252,8 @@ export const createProcess = ({
               processId,
               pinstanceId,
               parentId,
+              contextWindowId: parentId,
+              contextViewId: viewId,
             })
           );
         } catch (error) {
@@ -274,6 +290,57 @@ export const createProcess = ({
         }
       }
     }
+  };
+};
+
+const refreshContextWindowOrView = ({ contextWindowId, contextViewId }) => {
+  console.log('refreshContextWindowOrView', { contextWindowId, contextViewId });
+
+  if (contextWindowId == null) {
+    return;
+  }
+
+  return (dispatch, getState) => {
+    if (contextViewId == null) {
+      const state = getState();
+      const { layout, docId } = getLayoutAndData(state, false);
+      if (layout?.windowId === contextWindowId) {
+        dispatch(
+          fireUpdateData({
+            windowId: layout.windowId,
+            documentId: docId,
+          })
+        );
+
+        dispatch(refreshActiveTab({ layout, docId }));
+      } else {
+        console.log('Refreshing (possible) modal is not implemented');
+      }
+    } else {
+      // contextViewId != null
+      console.log('Refreshing view is not implemented');
+    }
+  };
+};
+
+const refreshActiveTab = ({ layout, docId }) => {
+  console.log('refreshActiveTab', { layout, docId });
+  const windowId = layout.windowId;
+  const tabId = layout.activeTab;
+  if (!windowId || !tabId) {
+    return;
+  }
+
+  const tabLayout = getTab(layout, tabId);
+  const tabOrderBy = toOrderBysCommaSeparatedString(tabLayout?.orderBy);
+
+  const tableId = getTableId({ windowId, docId, tabId });
+
+  return (dispatch) => {
+    dispatch(updateTabLayout(windowId, tabId))
+      .then(() => getTabRequest(tabId, windowId, docId, tabOrderBy))
+      .then((rows) => dispatch(updateTabTableData(tableId, rows)))
+      .catch((error) => error);
   };
 };
 
