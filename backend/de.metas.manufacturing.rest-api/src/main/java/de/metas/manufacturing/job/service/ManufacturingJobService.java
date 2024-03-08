@@ -304,6 +304,11 @@ public class ManufacturingJobService
 			queryBuilder.onlyPlantIds(onlyPlantIds.toSet());
 		}
 
+		if (query.getWorkstationId() != null)
+		{
+			queryBuilder.onlyWorkstationId(query.getWorkstationId());
+		}
+
 		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDatePromised))
 		{
 			queryBuilder.datePromisedDay(query.getNow());
