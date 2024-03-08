@@ -117,7 +117,7 @@ class WidgetRenderer extends PureComponent {
       disconnected,
       isFilterActive, // flag used to identify if the component belongs to an active filter
       updateItems,
-      suppressChange,
+      isEdited,
     } = this.props;
 
     const filterActiveState =
@@ -192,24 +192,22 @@ class WidgetRenderer extends PureComponent {
     };
 
     const attributesProps = {
-      value: widgetData[0].value,
       entity,
       fields,
       dataId,
+      widgetData: widgetData[0],
       docType: windowType,
       tabId,
       rowId,
       fieldName: widgetField,
       handleBackdropLock,
-      patch: (value) => onPatch(widgetField, value),
-      isModal,
+      patch: (option) => onPatch(widgetField, option),
       openModal,
       closeModal,
       tabIndex,
       autoFocus,
       readonly,
       disconnected,
-      setTableNavigation: this.props.setTableNavigation,
     };
 
     switch (widgetType) {
@@ -341,9 +339,7 @@ class WidgetRenderer extends PureComponent {
           />
         );
       }
-      case 'Lookup': {
-        const { typeaheadSupplier } = this.props;
-
+      case 'Lookup':
         return (
           <Lookup
             {...listAndLookupsProps}
@@ -365,21 +361,16 @@ class WidgetRenderer extends PureComponent {
             closeTableField={closeTableField}
             onBlurWidget={onBlurWidget}
             onClickOutside={onClickOutside}
-            typeaheadSupplier={typeaheadSupplier}
           />
         );
-      }
       case 'List':
       case 'MultiListValue': {
-        const { dropdownValuesSupplier } = this.props;
-
         const commonProps = {
           ...listAndLookupsProps,
           widgetField,
           defaultValue: fields[0].emptyText,
           properties: fields[0],
           emptyText: fields[0].emptyText,
-          dropdownValuesSupplier,
         };
         const typeProps = {};
 
@@ -434,7 +425,7 @@ class WidgetRenderer extends PureComponent {
             >
               {renderContent}
             </div>
-            {charsTyped && charsTyped >= 0 ? (
+            {maxLength > 0 && charsTyped && charsTyped >= 0 ? (
               <CharacterLimitInfo
                 charsTyped={charsTyped}
                 maxLength={maxLength}
@@ -496,7 +487,7 @@ class WidgetRenderer extends PureComponent {
               filterWidget,
               isFilterActive: filterActiveState,
               updateItems,
-              suppressChange,
+              isEdited,
             }}
             widgetData={widgetData[0]}
             handlePatch={onPatch}
@@ -696,7 +687,6 @@ WidgetRenderer.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
 
   //
   // from RawWidget
