@@ -44,7 +44,7 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-    - "${SEARCH_PORT}:9200"
+      - "${SEARCH_PORT}:9200"
     volumes:
       - metasfresh_elasticsearch:/usr/share/elasticsearch/data
     environment:
