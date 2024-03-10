@@ -49,21 +49,18 @@ public class ProcessInstanceResult
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;
-	boolean refreshCurrentWindowRequired;
 
 	@Builder
 	private ProcessInstanceResult(
 			@NonNull final DocumentId instanceId,
 			final String summary,
 			final boolean error,
-			@Nullable final ResultAction action,
-			boolean refreshCurrentWindowRequired)
+			@Nullable final ResultAction action)
 	{
 		this.instanceId = instanceId;
 		this.summary = summary;
 		this.error = error;
 		this.action = action;
-		this.refreshCurrentWindowRequired = refreshCurrentWindowRequired;
 	}
 
 	public boolean isSuccess()

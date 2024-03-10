@@ -106,7 +106,6 @@ public class ADProcessPostProcessService
 				.summary(extractSummary(processExecutionResult))
 				.error(processExecutionResult.isError())
 				.action(createResultAction(processInfo, processExecutionResult))
-				.refreshCurrentWindowRequired(processExecutionResult.isRefreshAllAfterExecution())
 				.build();
 	}
 
@@ -402,7 +401,7 @@ public class ADProcessPostProcessService
 		}
 		//
 		// Close underlying modal view
-		else if(processExecutionResult.isCloseWebuiModalView())
+		else if (processExecutionResult.isCloseWebuiModalView())
 		{
 			return ProcessInstanceResult.CloseViewAction.instance;
 		}
