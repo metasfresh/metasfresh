@@ -1,9 +1,13 @@
 package de.metas.ui.web.window.events;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.Services;
+import de.metas.websocket.sender.WebsocketSender;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -11,14 +15,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.stereotype.Component;
 
-import de.metas.websocket.sender.WebsocketSender;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -46,7 +45,6 @@ import lombok.NonNull;
  * Publishes document related events to websocket endpoints.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Component
 public class DocumentWebsocketPublisher
@@ -115,7 +113,12 @@ public class DocumentWebsocketPublisher
 
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
-		forCollector(collector -> collector.staleRootDocument(windowId, documentId));
+		staleRootDocument(windowId, documentId, false);
+	}
+
+	public void staleRootDocument(final WindowId windowId, final DocumentId documentId, final boolean markActiveTabStaled)
+	{
+		forCollector(collector -> collector.staleRootDocument(windowId, documentId, markActiveTabStaled));
 	}
 
 	public void staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)

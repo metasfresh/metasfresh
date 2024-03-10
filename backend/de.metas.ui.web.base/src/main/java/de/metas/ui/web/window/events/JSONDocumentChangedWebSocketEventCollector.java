@@ -1,14 +1,6 @@
 package de.metas.ui.web.window.events;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -17,6 +9,11 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -50,7 +47,7 @@ final class JSONDocumentChangedWebSocketEventCollector
 
 	//@formatter:off
 	@Value
-	private static final class EventKey { WindowId windowId; DocumentId documentId; }
+	private static class EventKey { WindowId windowId; DocumentId documentId; }
 	//@formatter:on
 
 	private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events;
@@ -106,13 +103,17 @@ final class JSONDocumentChangedWebSocketEventCollector
 
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
-		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
-		event.markRootDocumentAsStaled();
+		staleRootDocument(windowId, documentId, false);
 	}
 
-	public void staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)
+	public void staleRootDocument(final WindowId windowId, final DocumentId documentId, final boolean markActiveTabStaled)
 	{
-		staleTabs(windowId, documentId, ImmutableSet.of(tabId));
+		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
+		event.markRootDocumentAsStaled();
+		if (markActiveTabStaled)
+		{
+			event.markActiveTabStaled();
+		}
 	}
 
 	public void staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)
