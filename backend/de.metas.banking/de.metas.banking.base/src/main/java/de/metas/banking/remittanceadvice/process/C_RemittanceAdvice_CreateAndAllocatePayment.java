@@ -259,7 +259,9 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
 				.payAmt(remittanceAdvice.getRemittedAmountSum())
-				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
+				.dateAcct(remittanceAdvice.getPaymentDate() != null 
+								  ? TimeUtil.asLocalDate(remittanceAdvice.getPaymentDate())
+								  : TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
 				.createAndProcess();
