@@ -34,6 +34,22 @@ import {
 } from './view';
 import { getUserSession } from './login';
 import {
+  checkLoginRequest,
+  getAvailableLang,
+  getAvatar,
+  getResetPasswordInfo,
+  getUserLang,
+  getUserSession,
+  loginCompletionRequest,
+  loginRequest,
+  loginWithToken,
+  logoutRequest,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
+} from './login';
+import {
   breadcrumbRequest,
   elementPathRequest,
   getNotificationsEndpointRequest,
@@ -61,6 +77,7 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
+  getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
@@ -83,5 +100,9 @@ export {
   queryPathsRequest,
   quickActionsRequest,
   rootRequest,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
   topActionsRequest,
 };
