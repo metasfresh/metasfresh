@@ -22,7 +22,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /*
@@ -86,7 +85,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	 */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Map<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
+	private HashMap<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
 
 	@JsonProperty("activeTabStaled")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -115,6 +114,8 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 			includedTabsInfoByTabId = new HashMap<>();
 			from.includedTabsInfoByTabId.forEach((key, tabInfo) -> includedTabsInfoByTabId.put(key, tabInfo.copy()));
 		}
+
+		activeTabStaled = from.activeTabStaled;
 	}
 
 	public JSONDocumentChangedWebSocketEvent copy()
@@ -122,17 +123,19 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		return new JSONDocumentChangedWebSocketEvent(this);
 	}
 
-	void markRootDocumentAsStaled()
+	JSONDocumentChangedWebSocketEvent markRootDocumentAsStaled()
 	{
 		stale = Boolean.TRUE;
+		return this;
 	}
 
-	void markActiveTabStaled()
+	JSONDocumentChangedWebSocketEvent markActiveTabStaled()
 	{
 		activeTabStaled = Boolean.TRUE;
+		return this;
 	}
 
-	private Map<String, JSONIncludedTabInfo> getIncludedTabsInfo()
+	private HashMap<String, JSONIncludedTabInfo> getIncludedTabsInfo()
 	{
 		if (includedTabsInfoByTabId == null)
 		{
@@ -195,5 +198,10 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		}
 
 		from.getIncludedTabsInfo().values().forEach(this::addIncludedTabInfo);
+
+		if (from.activeTabStaled != null && from.activeTabStaled)
+		{
+			activeTabStaled = from.activeTabStaled;
+		}
 	}
 }
