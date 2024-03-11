@@ -46,11 +46,15 @@ import {
 import { createView, patchViewAction } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
+<<<<<<< HEAD
 import {
   getInvalidDataItem,
   getScope,
   parseToDisplay,
 } from '../utils/documentListHelper';
+=======
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 
 import {
   formatParentUrl,
@@ -281,7 +285,7 @@ export function sortTab(scope, tabId, field, asc) {
   };
 }
 
-export function updateDataProperty(property, value, scope) {
+function updateDataProperty(property, value, scope) {
   return {
     type: UPDATE_DATA_PROPERTY,
     property,
@@ -444,7 +448,7 @@ export function updateTabLayout(windowId, tabId) {
   };
 }
 
-export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
+function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
     dispatch({ type: INIT_WINDOW });
 

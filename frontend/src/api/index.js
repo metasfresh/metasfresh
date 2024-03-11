@@ -32,7 +32,26 @@ import {
   patchViewAttributesRequest,
   quickActionsRequest,
 } from './view';
+<<<<<<< HEAD
 import { getUserSession } from './login';
+=======
+import {
+  checkLoginRequest,
+  getAvailableLang,
+  getAvatar,
+  getResetPasswordInfo,
+  getUserLang,
+  getUserSession,
+  loginCompletionRequest,
+  loginRequest,
+  loginWithToken,
+  logoutRequest,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
+} from './login';
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 import {
   breadcrumbRequest,
   elementPathRequest,
@@ -61,6 +80,10 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
+<<<<<<< HEAD
+=======
+  getResetPasswordInfo,
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
@@ -83,5 +106,12 @@ export {
   queryPathsRequest,
   quickActionsRequest,
   rootRequest,
+<<<<<<< HEAD
+=======
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
   topActionsRequest,
 };

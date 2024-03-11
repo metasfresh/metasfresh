@@ -5,6 +5,7 @@ import {
 } from './AppActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { findViewByViewId } from '../reducers/viewHandler';
+<<<<<<< HEAD
 import { buildURL, getQueryString, openInNewTab } from '../utils';
 import history from '../services/History';
 import {
@@ -12,6 +13,11 @@ import {
   setIncludedView,
   unsetIncludedView,
 } from './ViewActions';
+=======
+import { openInNewTab } from '../utils';
+import history from '../services/History';
+import { setIncludedView, unsetIncludedView } from './ViewActions';
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 import { getTableId } from '../reducers/tables';
 import { updateTableSelection } from './TableActions';
 import {
@@ -35,8 +41,13 @@ export const handleProcessResponse = ({
   processId,
   pinstanceId,
   parentId,
+<<<<<<< HEAD
   contextWindowId,
   contextViewId,
+=======
+  // contextWindowId,
+  // contextViewId,
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 }) => {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
@@ -52,6 +63,7 @@ export const handleProcessResponse = ({
 
       if (action) {
         switch (action.type) {
+<<<<<<< HEAD
           case 'openCalendar': {
             await dispatch(closeModal());
             // eslint-disable-next-line no-unused-vars
@@ -61,6 +73,8 @@ export const handleProcessResponse = ({
             return;
             //break;
           }
+=======
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
           case 'displayQRCode': {
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
@@ -85,6 +99,7 @@ export const handleProcessResponse = ({
             }
             break;
           }
+<<<<<<< HEAD
           case 'closeView': {
             await dispatch(
               closeViewModal({
@@ -96,6 +111,8 @@ export const handleProcessResponse = ({
             );
             break;
           }
+=======
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
           case 'openReport': {
             openProcessFile({
               processId,
@@ -179,6 +196,7 @@ export const handleProcessResponse = ({
 
             break;
           }
+<<<<<<< HEAD
           case 'newRecord': {
             const { stopHere } = handleProcessResponse_newRecord(action);
             if (stopHere) {
@@ -190,6 +208,8 @@ export const handleProcessResponse = ({
             console.warn('Unhandled action', action);
             break;
           }
+=======
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
         }
       }
 
@@ -206,6 +226,7 @@ export const handleProcessResponse = ({
   };
 };
 
+<<<<<<< HEAD
 const handleProcessResponse_newRecord = (action) => {
   //console.log('handleProcessResponse_newRecord', { action });
 
@@ -230,6 +251,8 @@ const handleProcessResponse_newRecord = (action) => {
   }
 };
 
+=======
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 export const createProcess = ({
   ids,
   processType: processId,

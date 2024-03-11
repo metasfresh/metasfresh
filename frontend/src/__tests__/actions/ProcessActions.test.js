@@ -5,7 +5,14 @@ import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { initialState } from '../../reducers/viewHandler';
 import { initialState as appInitialState } from '../../reducers/appHandler';
+<<<<<<< HEAD
 import { createProcess, handleProcessResponse } from '../../actions/ProcessActions';
+=======
+import {
+  createProcess,
+  handleProcessResponse
+} from '../../actions/ProcessActions';
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 import { setProcessPending, setProcessSaved } from '../../actions/AppActions';
 
 const createState = (state = {}) => merge(

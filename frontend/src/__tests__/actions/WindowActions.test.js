@@ -233,6 +233,10 @@ describe('WindowActions thunks', () => {
     //@ TODO: loading top actions
   });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
   describe('Printing Actions', () => {
     it('setting printing options in the store', () => {
       const state = createState();

@@ -5,9 +5,18 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
+<<<<<<< HEAD
 import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
+=======
+import { processNewRecord } from '../../actions/GenericActions';
+import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
+import {
+  closeModal,
+  createWindow,
+  fetchChangeLog,
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
   callAPI,
   closeModal,
   createWindow,

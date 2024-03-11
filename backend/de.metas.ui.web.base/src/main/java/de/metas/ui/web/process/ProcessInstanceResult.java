@@ -9,7 +9,10 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
 import lombok.NonNull;
+<<<<<<< HEAD
 import lombok.Singular;
+=======
+>>>>>>> 65fa2912674 (Handle AD_Process.RefreshAllAfterExecution on FE side; process C_Order_CreateCompensationMultiGroups - refresh current doc&active tab after execution (#17566))
 import lombok.Value;
 import lombok.experimental.Delegate;
 import org.springframework.core.io.Resource;
@@ -48,7 +51,7 @@ public class ProcessInstanceResult
 				.instanceId(instanceId);
 	}
 
-	DocumentId instanceId;
+	@NonNull DocumentId instanceId;
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;
