@@ -4,14 +4,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
+import { startProcess } from '../../api/process';
 import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   closeModal,
-  createProcess,
   createWindow,
-  handleProcessResponse,
   fetchChangeLog,
   callAPI,
   patch,
@@ -36,6 +34,10 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -451,12 +453,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 

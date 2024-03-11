@@ -3,33 +3,35 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
-import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
-  CLOSE_MODAL,
-  CLOSE_PROCESS_MODAL,
-  CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DISABLE_SHORTCUT,
+  CLOSE_MODAL,
+  CLOSE_RAW_MODAL,
   DISABLE_OUTSIDE_CLICK,
-  INIT_WINDOW,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  INIT_WINDOW,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
+  RESET_PRINTING_OPTIONS,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -40,49 +42,37 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-  SET_PRINTING_OPTIONS,
-  RESET_PRINTING_OPTIONS,
-  TOGGLE_PRINTING_OPTION,
-  SET_SPINNER,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
-  getData,
-  patchRequest,
-  getLayout,
-  getProcessData,
-  getTabRequest,
-  startProcess,
   formatParentUrl,
+  getData,
+  getLayout,
   getTabLayoutRequest,
+  getTabRequest,
+  patchRequest,
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
-import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
-  setNotificationProgress,
-  setProcessPending,
-  setProcessSaved,
   deleteNotification,
+  setNotificationProgress,
 } from './AppActions';
-import { openFile } from './GenericActions';
-import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
-  updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
+  updateCommentsPanelTextInput,
 } from './CommentsPanelActions';
 import {
   createTabTable,
-  updateTabTable,
-  updateTableSelection,
   updateTableRowProperty,
+  updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 
@@ -287,7 +277,7 @@ export function sortTab(scope, tabId, field, asc) {
   };
 }
 
-export function updateDataProperty(property, value, scope) {
+function updateDataProperty(property, value, scope) {
   return {
     type: UPDATE_DATA_PROPERTY,
     property,
@@ -381,12 +371,6 @@ export function openModal({
   };
 }
 
-export function closeProcessModal() {
-  return {
-    type: CLOSE_PROCESS_MODAL,
-  };
-}
-
 export function closeModal() {
   return {
     type: CLOSE_MODAL,
@@ -456,7 +440,7 @@ export function updateTabLayout(windowId, tabId) {
   };
 }
 
-export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
+function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
     dispatch({ type: INIT_WINDOW });
 
@@ -1186,243 +1170,6 @@ export function attachFileAction(windowType, docId, data) {
           );
         }
       });
-  };
-}
-
-// PROCESS ACTIONS
-
-export function createProcess({
-  ids,
-  processType,
-  rowId,
-  tabId,
-  documentType,
-  viewId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  let pid = null;
-
-  return async (dispatch, getState) => {
-    // creation of processes can be done only if there isn't any pending process
-    // https://github.com/metasfresh/metasfresh/issues/10116
-    const { processStatus } = getState().appHandler;
-    if (processStatus === 'pending') {
-      return false;
-    }
-
-    await dispatch(setProcessPending());
-
-    let response;
-
-    try {
-      response = await getProcessData({
-        ids,
-        processId: processType,
-        rowId,
-        tabId,
-        documentType,
-        viewId,
-        selectedTab,
-        childViewId,
-        childViewSelectedIds,
-        parentViewId,
-        parentViewSelectedIds,
-      });
-    } catch (error) {
-      // Close process modal in case when process start failed
-      await dispatch(closeModal());
-      await dispatch(setProcessSaved());
-
-      throw error;
-    }
-
-    if (response.data) {
-      const preparedData = parseToDisplay(response.data.fieldsByName);
-
-      pid = response.data.pinstanceId;
-
-      if (response.data.startProcessDirectly) {
-        let response;
-
-        try {
-          response = await startProcess(processType, pid);
-
-          // processes opening included views need the id of the parent view
-          const id = parentViewId ? parentViewId : viewId;
-          const parentView = id && findViewByViewId(getState(), id);
-          const parentId = parentView ? parentView.windowId : documentType;
-
-          await dispatch(
-            handleProcessResponse(response, processType, pid, parentId)
-          );
-        } catch (error) {
-          await dispatch(closeModal());
-          await dispatch(setProcessSaved());
-
-          throw error;
-        }
-      } else {
-        await dispatch(
-          initDataSuccess({
-            data: preparedData,
-            scope: 'modal',
-          })
-        );
-
-        let response;
-
-        try {
-          response = await getLayout(PROCESS_NAME, processType);
-
-          await dispatch(setProcessSaved());
-
-          const preparedLayout = {
-            ...response.data,
-            pinstanceId: pid,
-          };
-
-          await dispatch(initLayoutSuccess(preparedLayout, 'modal'));
-        } catch (error) {
-          await dispatch(setProcessSaved());
-
-          throw error;
-        }
-      }
-    }
-  };
-}
-
-export function handleProcessResponse(response, type, id, parentId) {
-  return async (dispatch) => {
-    const { error, summary, action } = response.data;
-
-    if (error) {
-      await dispatch(addNotification('Process error', summary, 5000, 'error'));
-      await dispatch(setProcessSaved());
-
-      // Close process modal in case when process has failed
-      await dispatch(closeModal());
-    } else {
-      let keepProcessModal = false;
-
-      if (action) {
-        const { windowId, viewId, documentId, targetTab } = action;
-        let urlPath;
-
-        switch (action.type) {
-          case 'displayQRCode':
-            dispatch(toggleOverlay({ type: 'qr', data: action.code }));
-            break;
-          case 'openView': {
-            await dispatch(closeModal());
-            urlPath = `/window/${windowId}/?viewId=${viewId}`;
-            if (targetTab === 'NEW_TAB') {
-              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
-              return;
-            }
-            if (targetTab === 'SAME_TAB') {
-              window.open(urlPath, '_self');
-              return;
-            }
-
-            if (targetTab === 'SAME_TAB_OVERLAY') {
-              await dispatch(
-                openRawModal({ windowId, viewId, profileId: action.profileId })
-              );
-            }
-            break;
-          }
-          case 'openReport':
-            openFile(PROCESS_NAME, type, id, 'print', action.filename);
-
-            break;
-          case 'openDocument':
-            await dispatch(closeModal());
-            urlPath = `/window/${windowId}/${documentId}`;
-
-            if (targetTab === 'NEW_TAB') {
-              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
-              return false;
-            }
-
-            if (targetTab === 'SAME_TAB') {
-              window.open(urlPath, '_self');
-              return false;
-            }
-
-            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
-              // Do not close process modal,
-              // since it will be re-used with document view
-              keepProcessModal = true;
-
-              await dispatch(
-                openModal({
-                  windowId: action.windowId,
-                  modalType: 'window',
-                  isAdvanced: action.advanced ? action.advanced : false,
-                  dataId: action.documentId,
-                })
-              );
-            } else {
-              history.push(`/window/${action.windowId}/${action.documentId}`);
-            }
-            break;
-          case 'openIncludedView':
-            await dispatch(
-              setIncludedView({
-                windowId: action.windowId,
-                viewId: action.viewId,
-                viewProfileId: action.profileId,
-                parentId,
-              })
-            );
-
-            break;
-          case 'closeIncludedView':
-            await dispatch(
-              unsetIncludedView({
-                windowId: action.windowId,
-                viewId: action.viewId,
-              })
-            );
-
-            break;
-          case 'selectViewRows': {
-            // eslint-disable-next-line no-console
-            console.info(
-              '@TODO: `selectViewRows` - check if selection worked ok'
-            );
-            const { windowId, viewId, rowIds } = action;
-            const tableId = getTableId({ windowId, viewId });
-
-            dispatch(
-              updateTableSelection({
-                id: tableId,
-                selection: rowIds,
-                windowId,
-                viewId,
-              })
-            );
-
-            break;
-          }
-        }
-      }
-
-      if (summary) {
-        await dispatch(addNotification('Process', summary, 5000, 'primary'));
-      }
-
-      await dispatch(setProcessSaved());
-
-      if (!keepProcessModal) {
-        await dispatch(closeProcessModal());
-      }
-    }
   };
 }
 
