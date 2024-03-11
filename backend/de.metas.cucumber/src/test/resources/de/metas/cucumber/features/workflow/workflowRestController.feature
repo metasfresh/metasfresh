@@ -28,7 +28,7 @@ Feature: workflow rest controller tests
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
-
+    
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy |
       | N                   | DO_NOT_CREATE        |
