@@ -650,7 +650,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId(), true));
 	}
 
 	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)

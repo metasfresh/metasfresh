@@ -148,66 +148,6 @@ export function formatParentUrl({ windowId, docId, rowId, target }) {
   return parentUrl;
 }
 
-export function startProcess(processType, pinstanceId) {
-  return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
-}
-
-export function getProcessData({
-  processId,
-  viewId,
-  viewOrderBy,
-  documentType,
-  ids,
-  tabId,
-  rowId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  const payload = {
-    processId: processId,
-  };
-
-  if (viewId) {
-    payload.viewId = viewId;
-    payload.viewOrderBy = viewOrderBy;
-    payload.viewDocumentIds = ids;
-
-    if (childViewId) {
-      payload.childViewId = childViewId;
-      payload.childViewSelectedIds = childViewSelectedIds;
-    }
-
-    if (parentViewId) {
-      payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds =
-        parentViewSelectedIds instanceof Array
-          ? parentViewSelectedIds
-          : [parentViewSelectedIds];
-    }
-  } else {
-    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = documentType;
-    payload.tabId = tabId;
-    payload.rowId = rowId;
-  }
-
-  if (selectedTab) {
-    const { tabId, rowIds } = selectedTab;
-
-    if (tabId && rowIds) {
-      payload.selectedTab = {
-        tabId,
-        rowIds,
-      };
-    }
-  }
-
-  return post(`${config.API_URL}/process/${processId}`, payload);
-}
-
 /**
  * @method getPrintingOptions
  * @summary Get the printing options for a specified entity

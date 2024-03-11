@@ -1,36 +1,36 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
-@import './focus.css';
+@import 'focus.scss';
 
-@import './board.css';
-@import './charts.css';
-@import './charts.css';
-@import './datepicker.css';
-@import './daterangepicker.css';
-@import './datetime.css';
-@import './draggable.css';
-@import './font-meta.css';
-@import './header.css';
-@import './inbox.css';
+@import 'board.scss';
+@import 'charts.scss';
+@import 'charts.scss';
+@import 'datepicker.scss';
+@import 'daterangepicker.scss';
+@import 'datetime.scss';
+@import 'draggable.scss';
+@import 'font-meta.scss';
+@import 'header.scss';
+@import 'inbox.scss';
 @import 'indicator.scss';
 @import 'window-indicator.scss';
 @import './inputs.scss';
-@import './notification.css';
+@import 'notification.scss';
 @import './panel.css';
-@import './overlayfield.css';
+@import 'overlayfield.scss';
 @import './sitemap.css';
 @import './table.css';
 @import './tabs.css';
 @import './tag.css';
 @import './tooltip.css';
-@import './image.css';
-@import './email.css';
-@import './letter.css';
-@import './attachments.css';
-@import './labels.css';
-@import './filtersitem.css';
+@import 'image.scss';
+@import 'email.scss';
+@import 'letter.scss';
+@import 'attachments.scss';
+@import 'labels.scss';
+@import 'filtersitem.scss';
 
-@import './intro.css';
+@import 'intro.scss';
 
 /**
 *  IMPORTANT NOTE

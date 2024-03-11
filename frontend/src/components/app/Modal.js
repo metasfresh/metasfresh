@@ -4,17 +4,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
+import { startProcess } from '../../api/process';
 import { openFile, processNewRecord } from '../../actions/GenericActions';
-import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
+import {
+  updateCommentsPanelOpenFlag
+} from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,
-  createProcess,
   createWindow,
   fetchChangeLog,
   fireUpdateData,
-  handleProcessResponse,
   patch,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
@@ -39,6 +39,10 @@ import ChangeCurrentWorkplace, {
   STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
 } from './ChangeCurrentWorkplace';
 import { getIndicatorFromState } from '../../reducers/windowHandler';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -456,12 +460,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 
