@@ -16,7 +16,9 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonH
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
+import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
+import de.metas.resource.UserWorkstationService;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -58,16 +60,19 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
+	private final UserWorkstationService userWorkstationService;
 
 	public ManufacturingMobileApplication(
 			@NonNull final MobileUIManufacturingConfigRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
-			@NonNull final HUQRCodesService huQRCodesService)
+			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final UserWorkstationService userWorkstationService)
 	{
 		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
+		this.userWorkstationService = userWorkstationService;
 	}
 
 	@Override
@@ -88,7 +93,17 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		return wfLaunchersProvider.provideLaunchers(query);
+		final ResourceId workstationId = getFilterByWorkstationId(query.getUserId());
+		return wfLaunchersProvider.provideLaunchers(query, workstationId);
+	}
+
+	@Nullable
+	private ResourceId getFilterByWorkstationId(final UserId userId)
+	{
+		final MobileApplicationInfo applicationInfo = getApplicationInfo(userId);
+		return applicationInfo.isRequiresWorkstation()
+				? userWorkstationService.getUserWorkstationId(userId).orElse(null)
+				: null;
 	}
 
 	@Override
