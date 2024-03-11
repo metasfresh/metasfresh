@@ -135,6 +135,12 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantIds());
 		}
 
+		// Workstation
+		if (!query.getOnlyWorkstationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_WorkStation_ID, query.getOnlyWorkstationIds());
+		}
+
 		// Plant or workstation
 		if (!query.getOnlyPlantOrWorkstationIds().isEmpty())
 		{

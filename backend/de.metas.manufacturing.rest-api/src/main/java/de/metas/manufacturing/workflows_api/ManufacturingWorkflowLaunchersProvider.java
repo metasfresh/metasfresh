@@ -21,6 +21,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 public class ManufacturingWorkflowLaunchersProvider
@@ -33,7 +34,9 @@ public class ManufacturingWorkflowLaunchersProvider
 		this.manufacturingRestService = manufacturingRestService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
+	public WorkflowLaunchersList provideLaunchers(
+			@NonNull WorkflowLaunchersQuery query,
+			@Nullable final ResourceId workstationId)
 	{
 		final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
 		final ResourceId plantOrWorkstationId;
@@ -59,6 +62,7 @@ public class ManufacturingWorkflowLaunchersProvider
 						ManufacturingJobReferenceQuery.builder()
 								.responsibleId(query.getUserId())
 								.plantOrWorkstationId(plantOrWorkstationId)
+								.workstationId(workstationId)
 								.now(now)
 								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
 								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
