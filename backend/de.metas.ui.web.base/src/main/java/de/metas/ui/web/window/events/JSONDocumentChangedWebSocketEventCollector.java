@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.events;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -11,8 +12,8 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 
 /*
@@ -50,31 +51,30 @@ final class JSONDocumentChangedWebSocketEventCollector
 	private static class EventKey { WindowId windowId; DocumentId documentId; }
 	//@formatter:on
 
-	private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events;
+	@Nullable private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events; // null means collector closed
 
 	private JSONDocumentChangedWebSocketEventCollector()
 	{
 		_events = new LinkedHashMap<>();
 	}
 
-	public List<JSONDocumentChangedWebSocketEvent> getEventsAndClear()
+	public ImmutableList<JSONDocumentChangedWebSocketEvent> getEventsAndClose()
 	{
-		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
-		if (events == null || events.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		else
-		{
-			final List<JSONDocumentChangedWebSocketEvent> eventsList = ImmutableList.copyOf(events.values());
-			events.clear();
-			return eventsList;
-		}
+		final ImmutableList<JSONDocumentChangedWebSocketEvent> events = getEvents();
+		markAsClosed();
+		return events;
 	}
 
 	public void markAsClosed()
 	{
-		_events = null;
+		this._events = null;
+	}
+
+	@VisibleForTesting
+	ImmutableList<JSONDocumentChangedWebSocketEvent> getEvents()
+	{
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		return events != null && !events.isEmpty() ? ImmutableList.copyOf(events.values()) : ImmutableList.of();
 	}
 
 	public boolean isEmpty()
