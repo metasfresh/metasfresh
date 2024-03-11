@@ -74,6 +74,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.common.product</groupId>
+			<artifactId>de-metas-common-product</artifactId>
+			<version>${metasfresh-common.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

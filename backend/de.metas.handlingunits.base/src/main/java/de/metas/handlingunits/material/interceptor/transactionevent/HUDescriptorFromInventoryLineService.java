@@ -51,10 +51,16 @@ public class HUDescriptorFromInventoryLineService
 		this.huDescriptorService = huDescriptorService;
 	}
 
+	@NonNull
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInventoryLine(
 			@NonNull final I_M_InventoryLine inventoryLineRecord,
 			final boolean deleted)
 	{
+		if (deleted)
+		{
+			return ImmutableList.of();
+		}
+
 		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(
 				InterfaceWrapperHelper.create(inventoryLineRecord, de.metas.handlingunits.model.I_M_InventoryLine.class));
 
@@ -64,7 +70,7 @@ public class HUDescriptorFromInventoryLineService
 		return handlingUnitsDAO
 				.getByIds(huIds)
 				.stream()
-				.flatMap(huRecord -> huDescriptorService.createHuDescriptors(huRecord, deleted).stream())
+				.flatMap(huRecord -> huDescriptorService.createHuDescriptors(huRecord).stream())
 				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -491,6 +491,26 @@ DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=625047
 INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543908,625048,563010,0,540334,TO_TIMESTAMP('2018-12-05 16:53:57','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-12-05 16:53:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+INSERT INTO ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) SELECT 1000295, 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, null, 'D', 'Geplante Menge', 'Geplante Menge', '', '', null, null, null, null, null, null, null, null, null
+WHERE not exists (select 1 from ad_element where ad_element_id=1000295);
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000295, 'de_CH', 0, 0, 'Y', '2021-07-26 09:18:13.210779 +00:00', -1, '2021-07-26 09:18:13.210779 +00:00', -1, 'Geplante Menge', 'Geplante Menge', '', '', null, null, null, null, 'N', null, null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000295 and ad_language='de_CH');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000295, 'de_DE', 0, 0, 'Y', '2018-11-26 07:57:00.353716 +00:00', 100, '2018-11-26 07:57:00.353716 +00:00', 100, 'Geplante Menge', 'Geplante Menge', '', '', null, null, null, null, 'N', null, null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000295 and ad_language='de_DE');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000295, 'en_US', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Planned Quantity', 'Planned Quantity', 'Planned quantity for this project', 'The Planned Quantity indicates the anticipated quantity for this project or project line', null, null, null, null, 'Y', null, null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000295 and ad_language='en_US');
+
+INSERT INTO ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000295, 'nl_NL', 0, 0, 'Y', '2021-07-26 09:18:17.647262 +00:00', -1, '2021-07-26 09:18:17.647262 +00:00', -1, 'Geplante Menge', 'Geplante Menge', '', '', null, null, null, null, 'N', null, null, null, null
+WHERE not exists (select 1 from ad_element_trl where ad_element_id=1000295 and ad_language='nl_NL');
+
 -- 2018-12-05T16:54:04.190
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET AD_Name_ID=1000295, Name='Geplante Menge',Updated=TO_TIMESTAMP('2018-12-05 16:54:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563010

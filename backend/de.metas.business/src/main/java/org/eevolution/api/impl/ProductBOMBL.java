@@ -268,16 +268,13 @@ public class ProductBOMBL implements IProductBOMBL
 		final HashMap<ProductBOMId, I_PP_Product_BOM> boms = new HashMap<>();
 
 		final List<I_M_Product> finishGoods = productDAO.getByIds(finishGoodIds);
+
 		for (final I_M_Product finishGood : finishGoods)
 		{
-			final I_PP_Product_BOM bom = bomDAO.getDefaultBOM(finishGood, bomType).orElse(null);
-			if (bom == null)
-			{
-				continue;
-			}
+			final ProductId finishedGoodProductId = ProductId.ofRepoId(finishGood.getM_Product_ID());
 
-			final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
-			boms.put(bomId, bom);
+			bomDAO.getDefaultBOM(finishedGoodProductId, bomType)
+					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()), bom));
 		}
 
 		if (boms.isEmpty())

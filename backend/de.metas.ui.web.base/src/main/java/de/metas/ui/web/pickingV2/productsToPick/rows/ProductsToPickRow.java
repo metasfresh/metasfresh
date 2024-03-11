@@ -30,12 +30,12 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
+import de.metas.handlingunits.picking.PickingCandidateSnapshot;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
-import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -53,6 +53,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
@@ -117,21 +118,21 @@ public class ProductsToPickRow implements IViewRow
 
 	public static final String FIELD_SerialNo = "serialNo";
 	@ViewColumn(fieldName = FIELD_SerialNo, widgetType = DocumentFieldWidgetType.Text,
-			captionKey = ProductsToPickRowsDataFactory.ATTR_SerialNo_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			captionKey = AttributeConstants.ATTR_SerialNo_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
 			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
 			widgetSize = WidgetSize.Small)
 	private final String serialNo;
 
 	public static final String FIELD_LotNumber = "lotNumber";
 	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text,
-			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			captionKey = AttributeConstants.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
 			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
 			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	public static final String FIELD_ExpiringDate = "expiringDate";
 	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate,
-			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			captionKey = AttributeConstants.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
 			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
 			widgetSize = WidgetSize.Small)
 	@Getter
@@ -139,7 +140,7 @@ public class ProductsToPickRow implements IViewRow
 
 	public static final String FIELD_RepackNumber = "repackNumber";
 	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text,
-			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			captionKey = AttributeConstants.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
 			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
 			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
@@ -372,7 +373,7 @@ public class ProductsToPickRow implements IViewRow
 		return qtyOverride != null ? qtyOverride : qty;
 	}
 
-	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(@Nullable final PickingCandidate pickingCandidate)
+	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(@Nullable final PickingCandidateSnapshot pickingCandidate)
 	{
 		return pickingCandidate != null
 				? withUpdatesFromPickingCandidate(pickingCandidate)
@@ -381,11 +382,16 @@ public class ProductsToPickRow implements IViewRow
 
 	public ProductsToPickRow withUpdatesFromPickingCandidate(@NonNull final PickingCandidate pickingCandidate)
 	{
+		return withUpdatesFromPickingCandidate(pickingCandidate.snapshot());
+	}
+
+	public ProductsToPickRow withUpdatesFromPickingCandidate(@NonNull final PickingCandidateSnapshot pickingCandidate)
+	{
 		return toBuilder()
 				.qtyReview(pickingCandidate.getQtyReview())
 				.pickStatus(pickingCandidate.getPickStatus())
 				.approvalStatus(pickingCandidate.getApprovalStatus())
-				.processed(!pickingCandidate.isDraft())
+				.processed(!pickingCandidate.getProcessingStatus().isDraft())
 				.pickingCandidateId(pickingCandidate.getId())
 				.build();
 	}

@@ -1,0 +1,10 @@
+-- 2021-12-15T13:23:37.735Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=547724, SeqNo=30,Updated=TO_TIMESTAMP('2021-12-15 15:23:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=594991
+;
+
+-- 2021-12-15T13:24:04.293Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=5,Updated=TO_TIMESTAMP('2021-12-15 15:24:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=594991
+;
+

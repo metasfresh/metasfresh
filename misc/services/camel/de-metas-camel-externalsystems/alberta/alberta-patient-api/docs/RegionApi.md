@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 <a name="getRegion"></a>
 # **getRegion**
-> Region getRegion(albertaApiKey, tenant, _id)
+> Region getRegion(albertaApiKey, _id)
 
 Daten einer einzelnen Region abrufen
 
@@ -23,10 +23,9 @@ Szenario - das WaWi fragt bei Alberta nach, wie die Daten der Region mit der ang
 
 RegionApi apiInstance = new RegionApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 String _id = "_id_example"; // String | eindeutige id der Region
 try {
-    Region result = apiInstance.getRegion(albertaApiKey, tenant, _id);
+    Region result = apiInstance.getRegion(albertaApiKey, _id);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling RegionApi#getRegion");
@@ -39,7 +38,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **_id** | **String**| eindeutige id der Region |
 
 ### Return type

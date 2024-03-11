@@ -271,7 +271,6 @@ public class FlatrateBLTest extends ContractsTestBase
 		final boolean isSOTrx = true;
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						any(Properties.class),
 						any(I_C_Flatrate_Term.class),
 						any(TaxCategoryId.class),
 						anyInt(),

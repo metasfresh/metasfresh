@@ -31,6 +31,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,50 +39,72 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
 public class CommissionConfigProvider
 {
 	@NonNull
-	private final List<ICommissionConfigFactory> factories;
+	private final List<ICommissionConfigFactory> priorityOrderedConfigFactories;
 
 	public CommissionConfigProvider(@NonNull final List<ICommissionConfigFactory> factories)
 	{
-		this.factories = factories;
-	}
-
-	@NonNull
-	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
-	{
-		return factories.stream()
-				.filter(commissionConfigFactory -> commissionConfigFactory.appliesFor(contractRequest))
-				.map(commissionConfigFactory -> commissionConfigFactory.createForNewCommissionInstances(contractRequest))
-				.flatMap(ImmutableList::stream)
+		this.priorityOrderedConfigFactories = factories.stream()
+				.sorted(Comparator.comparing(ICommissionConfigFactory::getPriority).reversed())
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExistingInstance(@NonNull final CommissionConfigProvider.ConfigRequestForExistingInstance request)
+	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
-		final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> contractId2CommissionConfigBuilder = ImmutableMap.builder();
+		final Iterator<ICommissionConfigFactory> configFactoryIterator = priorityOrderedConfigFactories.iterator();
+		final ImmutableList.Builder<CommissionConfig> commissionConfigCollector = ImmutableList.builder();
+		boolean nextAllowed = true;
 
-		factories.stream()
-				.map(commissionConfigFactory -> commissionConfigFactory.createForExistingInstance(request))
-				.forEach(contractId2CommissionConfigBuilder::putAll);
+		while (configFactoryIterator.hasNext() && nextAllowed)
+		{
+			final ICommissionConfigFactory currentConfigFactory = configFactoryIterator.next();
 
-		final ImmutableMap<FlatrateTermId, CommissionConfig> contractId2CommissionConfig = contractId2CommissionConfigBuilder.build();
+			if (!currentConfigFactory.appliesFor(contractRequest))
+			{
+				continue;
+			}
 
-		if (contractId2CommissionConfig.isEmpty())
+			final ImmutableList<CommissionConfig> configs = currentConfigFactory.createForNewCommissionInstances(contractRequest);
+
+			if (!Check.isEmpty(configs))
+			{
+				commissionConfigCollector.addAll(configs);
+				nextAllowed = currentConfigFactory.isFurtherSearchForConfigTypesAllowed();
+			}
+		}
+
+		return commissionConfigCollector.build();
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExistingInstance(@NonNull final CommissionConfigProvider.ConfigRequestForExistingInstance commissionConfigRequest)
+	{
+		final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> resultBuilder = ImmutableMap.builder();
+
+		priorityOrderedConfigFactories.stream()
+				.map(configFactory -> configFactory.createForExistingInstance(commissionConfigRequest))
+				.forEach(resultBuilder::putAll);
+
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = resultBuilder.build();
+
+		if (result.isEmpty())
 		{
 			throw new AdempiereException("The given commissionConfigRequest needs at least one commissionConfig")
 					.appendParametersToMessage()
-					.setParameter("result.size()", contractId2CommissionConfig.size())
-					.setParameter("commissionConfigRequest", request)
-					.setParameter("result", contractId2CommissionConfig);
+					.setParameter("result.size()", result.size())
+					.setParameter("commissionConfigRequest", commissionConfigRequest)
+					.setParameter("result", result);
 		}
 
-		return contractId2CommissionConfig;
+		return result;
 	}
 
 	@Builder
@@ -114,6 +137,11 @@ public class CommissionConfigProvider
 
 		@NonNull
 		CommissionTriggerType commissionTriggerType;
+
+		public boolean isCustomerTheSalesRep()
+		{
+			return customerBPartnerId.equals(salesRepBPartnerId);
+		}
 	}
 
 	@Builder

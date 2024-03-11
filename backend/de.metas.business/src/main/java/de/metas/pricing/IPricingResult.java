@@ -24,6 +24,7 @@ package de.metas.pricing;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -184,14 +185,6 @@ public interface IPricingResult
 
 	ImmutableList<String> getLoggableMessages();
 
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
-
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
-
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
-
-	Percent getTradedCommissionPercent();
-
 	/**
 	 * @return {@code true} if the current discount should not be overridden by any other pricing rule, {@code false} otherwise.
 	 */
@@ -201,4 +194,8 @@ public interface IPricingResult
 	 * Can specify if the discount in the pricing rule can be overridden by any other pricing rule.
 	 */
 	void setDontOverrideDiscountAdvice(boolean dontOverrideDiscountAdvice);
+
+	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
+
+	HUPIItemProductId getPackingMaterialId();
 }

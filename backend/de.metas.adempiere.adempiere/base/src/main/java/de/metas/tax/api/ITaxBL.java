@@ -49,7 +49,7 @@ public interface ITaxBL extends ISingletonService
 	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
 	@NonNull
-	TaxId getTaxNotNull(Properties ctx,
+	TaxId getTaxNotNull(
 			@Nullable Object model,
 			@Nullable TaxCategoryId taxCategoryId,
 			int productId,

@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;

@@ -100,11 +100,13 @@
 		<!-- Swagger -->
 		<dependency>
 			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${springfox-swagger.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${springfox-swagger.version}</version>
 		</dependency>
 
 		<dependency>
@@ -123,6 +125,12 @@
 			<!-- Required for org.compiere.server.AcctProcessor -->
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.device.webui</groupId>
+			<artifactId>de.metas.device.webui</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

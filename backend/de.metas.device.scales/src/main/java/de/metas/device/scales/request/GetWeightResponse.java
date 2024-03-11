@@ -22,13 +22,12 @@ package de.metas.device.scales.request;
  * #L%
  */
 
+import de.metas.device.api.ISingleValueResponse;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import de.metas.device.api.ISingleValueResponse;
-
-public class GetWeightResponse implements ISingleValueResponse<BigDecimal>
+public class GetWeightResponse implements ISingleValueResponse
 {
 	private final BigDecimal weight;
 	private final String uom;

@@ -5,6 +5,28 @@ import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
+function formatFilterParameter(filterParameter, filterData) {
+  const { parameterName, value, valueTo } = filterParameter;
+  const dataFilterParameter = filterData.parameters.find(
+    (param) => param.parameterName === parameterName
+  );
+  const { widgetType } = dataFilterParameter;
+
+  if (DATE_FIELD_TYPES.includes(widgetType)) {
+    const dateFormat = getFormatForDateField(widgetType);
+    const date = getFormattedDate(value, dateFormat);
+    const dateTo = getFormattedDate(valueTo, dateFormat);
+
+    filterParameter = {
+      parameterName,
+      value: date,
+      valueTo: dateTo,
+    };
+  }
+
+  return filterParameter;
+}
+
 /**
  * @method formatFilters
  * @summary This function exists due to the fact, that initial date filters have
@@ -16,40 +38,20 @@ import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 export function formatFilters({ filtersData, filtersActive = [] }) {
   // for inline filters (if they were modified) in the response data we're getting a filter with
   // empty parameters
-  const filters = filtersActive
-    .filter((filter) => filter.parameters && filter.parameters.length)
-    .map((filter) => {
-      if (filter.parameters && filter.parameters.length) {
-        const filterData = getParentFilterFromFilterData({
-          filterId: filter.filterId,
-          filterData: filtersData,
-        });
-
-        filter.parameters = filter.parameters.map((filterParameter) => {
-          const { parameterName, value, valueTo } = filterParameter;
-          const dataFilterParameter = filterData.parameters.find(
-            (param) => param.parameterName === parameterName
-          );
-          const { widgetType } = dataFilterParameter;
-
-          if (DATE_FIELD_TYPES.includes(widgetType)) {
-            const dateFormat = getFormatForDateField(widgetType);
-            const date = getFormattedDate(value, dateFormat);
-            const dateTo = getFormattedDate(valueTo, dateFormat);
-
-            filterParameter = {
-              parameterName,
-              value: date,
-              valueTo: dateTo,
-            };
-          }
-
-          return filterParameter;
-        });
-      }
-
-      return filter;
+  const filters = filtersActive.map((filter) => {
+    const filterData = getParentFilterFromFilterData({
+      filterId: filter.filterId,
+      filterData: filtersData,
     });
+
+    if (filter.parameters && filter.parameters.length) {
+      filter.parameters = filter.parameters.map((parameter) =>
+        formatFilterParameter(parameter, filterData)
+      );
+    }
+
+    return filter;
+  });
 
   return filters;
 }
@@ -88,13 +90,15 @@ export function getParentFilterFromFilterData({ filterId, filterData }) {
 export function populateFiltersCaptions(filters) {
   const filtersCaptions = {};
   if (!filters) return {};
+
   const { filterData, filtersActive } = filters;
   if (!filtersActive) return {};
 
   if (filtersActive.length) {
     const removeDefault = {};
 
-    filtersActive.forEach((filter, filterId) => {
+    filtersActive.forEach((filter, filterIdx) => {
+      const { filterId } = filter;
       let captionsArray = ['', ''];
 
       if (filter.parameters && filter.parameters.length) {
@@ -103,9 +107,9 @@ export function populateFiltersCaptions(filters) {
 
           if (!defaultValue && filterData) {
             // we don't want to show captions, nor show filter button as active for default values
-            removeDefault[filterId] = true;
+            removeDefault[filterIdx] = true;
             const parentFilter = getParentFilterFromFilterData({
-              filterId: filter.filterId, // we pass the actual key not the index
+              filterId, // we pass the actual key not the index
               filterData,
             });
 
@@ -164,15 +168,26 @@ export function populateFiltersCaptions(filters) {
           }
         });
       } else {
-        const originalFilter = filterData.filter(
-          (item) => item.filterId === filterId
-        );
+        let originalFilter;
+
+        filterData.forEach((filter) => {
+          if (filter.filterId === filterId) {
+            originalFilter = filter;
+          } else if (filter.includedFilters) {
+            filter.includedFilters.forEach((included) => {
+              if (included.filterId === filterId) {
+                originalFilter = included;
+              }
+            });
+          }
+        });
+
         captionsArray = [originalFilter.caption, originalFilter.caption];
       }
 
       if (captionsArray.join('').length) {
-        filtersCaptions[filter.filterId] = captionsArray;
         filtersCaptions[filterId] = captionsArray;
+        filtersCaptions[filterIdx] = captionsArray;
       }
     });
   }

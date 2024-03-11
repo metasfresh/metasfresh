@@ -1,22 +1,22 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import static de.metas.quantity.Quantity.addToNullable;
-import static de.metas.util.Check.assumeNotNull;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static de.metas.quantity.Quantity.addToNullable;
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -49,6 +49,8 @@ import lombok.NonNull;
 @Data
 public class DimensionGroupSubRowBucket
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		return new DimensionGroupSubRowBucket(dimensionSpecGroup);
@@ -59,17 +61,30 @@ public class DimensionGroupSubRowBucket
 	// Zusage Lieferant
 	private Quantity pmmQtyPromised;
 
-	private Quantity qtyReservedSale;
+	private Quantity qtyDemandSalesOrder;
 
-	private Quantity qtyReservedPurchase;
+	private Quantity qtyDemandDDOrder;
+
+	private Quantity qtyDemandSum;
+	// MRP MEnge
+	private Quantity qtyDemandPPOrder;
+
+	private Quantity qtySupplyPPOrder;
+
+	private Quantity qtySupplyPurchaseOrder;
+
+	private Quantity qtySupplyDDOrder;
+
+	private Quantity qtySupplySum;
+
+	private Quantity qtySupplyRequired;
+
+	private Quantity qtySupplyToSchedule;
 
 	private Quantity qtyMaterialentnahme;
 
-	// MRP MEnge
-	private Quantity qtyRequiredForProduction;
-
 	// zusagbar Zaehlbestand
-	private Quantity qtyAvailableToPromiseEstimate;
+	private Quantity qtyExpectedSurplus;
 
 	private Quantity qtyOnHandStock;
 
@@ -84,25 +99,31 @@ public class DimensionGroupSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(cockpitRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
 		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
 		qtyMaterialentnahme = addToNullable(qtyMaterialentnahme, cockpitRecord.getQtyMaterialentnahme(), uom);
-		qtyRequiredForProduction = addToNullable(qtyRequiredForProduction, cockpitRecord.getQtyRequiredForProduction(), uom);
-		qtyReservedPurchase = addToNullable(qtyReservedPurchase, cockpitRecord.getQtyReserved_Purchase(), uom);
-		qtyReservedSale = addToNullable(qtyReservedSale, cockpitRecord.getQtyReserved_Sale(), uom);
-		qtyAvailableToPromiseEstimate = addToNullable(qtyAvailableToPromiseEstimate, cockpitRecord.getQtyAvailableToPromiseEstimate(), uom);
+
+		qtyDemandPPOrder = addToNullable(qtyDemandPPOrder, cockpitRecord.getQtyDemand_PP_Order(), uom);
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, cockpitRecord.getQtyDemand_SalesOrder(), uom);
+		qtyDemandDDOrder = addToNullable(qtyDemandDDOrder, cockpitRecord.getQtyDemand_DD_Order(), uom);
+		qtyDemandSum = addToNullable(qtyDemandSum, cockpitRecord.getQtyDemandSum(), uom);
+
+		qtySupplyPPOrder = addToNullable(qtySupplyPPOrder, cockpitRecord.getQtySupply_PP_Order(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, cockpitRecord.getQtySupply_PurchaseOrder(), uom);
+		qtySupplyDDOrder = addToNullable(qtySupplyDDOrder, cockpitRecord.getQtySupply_DD_Order(), uom);
+		qtySupplySum = addToNullable(qtySupplySum, cockpitRecord.getQtySupplySum(), uom);
+		qtySupplyRequired = addToNullable(qtySupplyRequired, cockpitRecord.getQtySupplyRequired(), uom);
+		qtySupplyToSchedule = addToNullable(qtySupplyToSchedule, cockpitRecord.getQtySupplyToSchedule(), uom);
+
+		qtyExpectedSurplus = addToNullable(qtyExpectedSurplus, cockpitRecord.getQtyExpectedSurplus(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(stockRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 
@@ -122,10 +143,18 @@ public class DimensionGroupSubRowBucket
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromised(getPmmQtyPromised())
 				.qtyMaterialentnahme(getQtyMaterialentnahme())
-				.qtyRequiredForProduction(getQtyRequiredForProduction())
-				.qtyReservedPurchase(getQtyReservedPurchase())
-				.qtyReservedSale(getQtyReservedSale())
+				.qtyDemandPPOrder(getQtyDemandPPOrder())
+				.qtySupplyPurchaseOrder(getQtySupplyPurchaseOrder())
+				.qtyDemandSalesOrder(getQtyDemandSalesOrder())
+				.qtyDemandDDOrder(getQtyDemandDDOrder())
+				.qtyDemandSum(getQtyDemandSum())
+				.qtySupplyPPOrder(getQtySupplyPPOrder())
+				.qtySupplyDDOrder(getQtySupplyDDOrder())
+				.qtySupplySum(getQtySupplySum())
+				.qtySupplyRequired(getQtySupplyRequired())
+				.qtySupplyToSchedule(getQtySupplyToSchedule())
 				.qtyOnHandStock(getQtyOnHandStock())
+				.qtyExpectedSurplus(getQtyExpectedSurplus())
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
 				.build();

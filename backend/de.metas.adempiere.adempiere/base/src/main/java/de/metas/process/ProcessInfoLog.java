@@ -16,6 +16,8 @@
  *****************************************************************************/
 package de.metas.process;
 
+import de.metas.common.util.time.SystemTime;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -30,9 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings("serial")
 public final class ProcessInfoLog implements Serializable
 {
-	public static final ProcessInfoLog ofMessage(final String message)
+	public static ProcessInfoLog ofMessage(final String message)
 	{
-		final Timestamp date = null;
+		final Timestamp date = SystemTime.asTimestamp();
 		final BigDecimal number = null;
 		return new ProcessInfoLog(date, number, message);
 	}

@@ -2,6 +2,7 @@ package de.metas.handlingunits.reservation;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -37,11 +38,7 @@ public class RetrieveHUsQtyRequest
 	/** mandatory, if the given HUs contain different products. */
 	ProductId productId;
 
-	/**
-	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
-	 * The actual reservation is done on VHU level.
-	 */
-	List<HuId> huIds;
+	ImmutableList<HuId> huIds;
 
 	@Builder
 	private RetrieveHUsQtyRequest(
@@ -49,6 +46,6 @@ public class RetrieveHUsQtyRequest
 			@Singular final List<HuId> huIds)
 	{
 		this.productId = productId;
-		this.huIds = huIds;
+		this.huIds = ImmutableList.copyOf(huIds);
 	}
 }

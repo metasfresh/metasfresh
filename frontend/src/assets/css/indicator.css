@@ -4,7 +4,8 @@
 }
 
 .kpis-wrapper {
-    height: 100%;
+    clear: both;
+    height: auto;
     margin: -.5rem;
     display: flex;
     flex-direction: row;
@@ -38,6 +39,10 @@
     border-radius: 5px;
     box-shadow: 0 2px 7px 0 rgba(0,0,0,0.2);
     margin-right: 10px;
+    max-width: 380px;
+    min-width: 230px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
 .indicator-draggable {
@@ -52,6 +57,10 @@
     clear: both;
     padding-top: 0;
     margin-top: -0.3rem;
+}
+
+.indicator-card {
+    max-width: 380px;
 }
 
 .indicator-amount {
@@ -127,7 +136,7 @@
 @media screen and (max-width: 901px) {
     .indicator {
         border-right: 1px solid $brand-border-color;
-        width: calc(50% - 1rem);
+        width: calc(100% - 1rem);
         margin: .5rem;
         display: inline-block;
         text-align: center;

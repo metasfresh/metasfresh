@@ -40,9 +40,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermPricing;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
@@ -221,7 +221,7 @@ public class OrgChangeCommand
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(request.getStartDate())))
-				.isCloseInvoiceCandidate(true)
+				.isCloseInvoiceCandidate(request.isCloseInvoiceCandidate())
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_OrgChange)
 				.isCreditOpenInvoices(false)
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
@@ -466,6 +466,7 @@ public class OrgChangeCommand
 
 				matchingContact.setContactType(newContactType);
 				matchingContact.setGreetingId(sourceContact.getGreetingId());
+				matchingContact.setTitleId(sourceContact.getTitleId());
 				matchingContact.setFirstName(sourceContact.getFirstName());
 				matchingContact.setLastName(sourceContact.getLastName());
 				matchingContact.setMembershipContact(sourceContact.isMembershipContact());
