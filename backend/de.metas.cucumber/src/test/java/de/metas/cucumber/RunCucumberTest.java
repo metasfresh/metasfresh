@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,12 @@ import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
+/**
+ * Use this class to run cucumber tests as junit-4 tests.
+ * But note that in IntelliJ you can also run scenarios directly from the feature file.
+ * Just make sure that your {@code Scenario} or {@code Background} contain the Step
+ * {@code Given infrastructure and metasfresh are running}.
+ */
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		glue = "de.metas.cucumber.stepdefs",
@@ -33,10 +39,10 @@ import org.junit.runner.RunWith;
 		//tags = "@dev:runThisOne", // use this tag to run only particular scenarios
 		plugin = {
 				"html:target/cucumber.html",
-				"json:target/cucumber.json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
+				"json:target/cucumber.1json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
 				"junit:target/cucumber-junit.xml" /* thx to https://stackoverflow.com/a/52676659/1012103 */,
-				"message:target/cucumber.message",
-				"de.metas.cucumber.CucumberLifeCycleSupport" })
+				"message:target/cucumber.message"
+		})
 public class RunCucumberTest
 {
 }

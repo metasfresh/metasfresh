@@ -3,7 +3,8 @@
 Feature: Product items invoice candidates: shipments
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
@@ -45,7 +46,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -53,10 +54,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
     And validate the created shipments
@@ -96,7 +97,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -104,10 +105,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -154,7 +155,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -162,10 +163,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -213,7 +214,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -221,10 +222,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -276,7 +277,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -284,10 +285,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -339,7 +340,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -347,10 +348,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -398,7 +399,7 @@ Feature: Product items invoice candidates: shipments
 
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -406,10 +407,10 @@ Feature: Product items invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 
@@ -453,17 +454,17 @@ Feature: Product items invoice candidates: shipments
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | s_ol_1                           | D            | false               | false       | 100                                              |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 0            |
 

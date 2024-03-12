@@ -114,7 +114,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 					.setContext(Env.getCtx())
 					.setInvoicingParams(createDefaultInvoicingParams())
 					.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
-					.enqueueSelection(selectionId);
+					.prepareAndEnqueueSelection(selectionId);
 			enqueueResultRef.setValue(result);
 		});
 
@@ -156,7 +156,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 				.setContext(Env.getCtx())
 				.setInvoicingParams(createDefaultInvoicingParams())
 				.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
-				.enqueueSelection(selectionId));
+				.prepareAndEnqueueSelection(selectionId));
 
 		InterfaceWrapperHelper.refresh(ic1);
 		assertThat(ic1.isApprovalForInvoicing()).isTrue();

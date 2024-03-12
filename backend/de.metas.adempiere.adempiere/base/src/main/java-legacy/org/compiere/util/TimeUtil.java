@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -839,7 +840,7 @@ public class TimeUtil
 	{
 		if (dateTime == null)
 		{
-			dateTime = new Timestamp(System.currentTimeMillis());
+			dateTime = new Timestamp(Instant.now().toEpochMilli());
 		}
 		if (offset == 0)
 		{
@@ -1509,13 +1510,27 @@ public class TimeUtil
 	}
 
 	/**
-	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
+	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
 	 */
+	@Deprecated
 	public static Timestamp parseTimestamp(@NonNull final String date)
+	{
+		return parseTimestamp(date, SystemTime.zoneId());
+	}
+
+	/**
+	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * The returned timestamp is 00:00 at the given date and timezone.
+	 */
+	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
 	{
 		try
 		{
-			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
+
+			final Date parsedDate = simpleDateFormat.parse(date);
 			return new Timestamp(parsedDate.getTime());
 		}
 		catch (final ParseException e)
