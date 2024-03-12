@@ -230,13 +230,18 @@ public class InventoryRepository
 
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLineRecord.getM_Locator_ID());
 
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
+
 		final InventoryLineBuilder lineBuilder = InventoryLine.builder()
 				.id(extractInventoryLineIdOrNull(inventoryLineRecord))
 				.orgId(OrgId.ofRepoId(inventoryLineRecord.getAD_Org_ID()))
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
+				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
+				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
+
 
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);

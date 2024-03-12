@@ -42,6 +42,14 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "huAggregationType" : "MULTI_HU",
         "inventoryType" : "PHYSICAL",
         "counted" : true,
+        "qtyBookFixed" : {
+          "qty" : "30",
+          "uomId" : 100003
+        },
+        "qtyCountFixed" : {
+          "qty" : "3",
+          "uomId" : 100003
+        },
         "inventoryLineHUs" : [
           {
             "id" : 100019,

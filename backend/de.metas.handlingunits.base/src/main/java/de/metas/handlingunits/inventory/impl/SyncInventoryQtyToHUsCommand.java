@@ -102,7 +102,7 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
 			if (qtyDiff.signum() == 0
-					|| (inventoryLine.getQtyBook().signum()<0 && inventoryLine.getQtyCount().signum() == 0)) // do no
+					|| (inventoryLine.getQtyBookFixed().signum() < 0 && inventoryLine.getQtyCountFixed().signum() == 0))
 			{
 				continue;
 			}
