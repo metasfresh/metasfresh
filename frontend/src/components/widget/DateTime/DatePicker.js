@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
+import Moment from 'moment-timezone';
 import onClickOutsideHOC from 'react-onclickoutside';
 
 import TetheredDateTime from './TetheredDateTime';
@@ -11,10 +12,6 @@ import {
   DATE_TIMEZONE_FORMAT,
   TIME_FORMAT,
 } from '../../../constants/Constants';
-import {
-  convertMomentToTimezone,
-  setTimezoneToMoment,
-} from '../../../utils/dateHelpers';
 
 class DatePicker extends PureComponent {
   constructor(props) {
@@ -53,28 +50,12 @@ class DatePicker extends PureComponent {
   handleDateChange = (dateObj) => {
     // console.log('handleDateChange', { dateObj });
     if (!dateObj) {
-      // console.log('handleDateChange - calling patch with null param');
       this.callPatchIfNeeded(null);
     } else {
-      let dateAsMoment = this.convertToMoment(dateObj, true);
-      // const dateAsMoment_BeforeSetTZ = dateAsMoment;
-
-      // IMPORTANT: because the date is coming from TetheredDateTime/DateTime(react-datetime),
-      // and because that component is returning a Moment using browser's timezone but with date/time correct for our timezone,
-      // we have to simply change the timezone to our timezone preserving the time.
-      dateAsMoment = this.setTimezone(dateAsMoment);
-
-      // console.log('handleDateChange - calling patch', {
-      //   dateAsMoment: dateAsMoment.format(this.getMomentNormalizedFormat()),
-      //   dateAsMoment_BeforeSetTZ: dateAsMoment_BeforeSetTZ.format(
-      //     this.getMomentNormalizedFormat()
-      //   ),
-      // });
-
+      const dateAsMoment = this.convertToMoment(dateObj, true);
+      // console.log('handleDateChange', { dateAsMoment });
       if (dateAsMoment && dateAsMoment.isValid()) {
         this.callPatchIfNeeded(dateAsMoment);
-      } else {
-        // console.log('handleDateChange - not calling patch', { dateAsMoment });
       }
     }
   };
@@ -87,7 +68,7 @@ class DatePicker extends PureComponent {
       if (!datePatched) {
         inputValue = '';
         selectedDate = null;
-      } else if (MomentTZ.isMoment(datePatched)) {
+      } else if (Moment.isMoment(datePatched)) {
         inputValue = datePatched.isValid()
           ? datePatched.format(this.getMomentDisplayFormat())
           : '';
@@ -105,19 +86,15 @@ class DatePicker extends PureComponent {
     const { patch, field, handleChange } = this.props;
     const { datePatched } = this.state;
     try {
-      // console.log('callPatchIfNeeded: checking', { date, datePatched });
+      //console.log('callPatchIfNeeded: checking', { date, datePatched });
       if (!this.isSameMoment(date, datePatched)) {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
-        //console.log('callPatchIfNeeded: patching date', { date, datePatched });
+        // console.log('callPatchIfNeeded: patching date', { date, datePatched });
         patch && patch(date);
-      } else {
-        // console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', {
-        //   date,
-        //   datePatched,
-        // });
       }
+      //else { console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', { date, datePatched }); }
     } catch (error) {
       console.log(`callPatchIfNeeded: error patching field ${field}`, {
         date,
@@ -154,89 +131,56 @@ class DatePicker extends PureComponent {
     //console.log('convertToMoment --------------------', { value, strict });
     if (!value) {
       return null;
-    } else if (MomentTZ.isMoment(value)) {
-      // console.log('convertToMoment: (2) returning valid moment', { value });
-      return value;
+    } else if (Moment.isMoment(value)) {
+      const moment = value;
+      //console.log('moment', moment);
+      if (moment.isValid()) {
+        //console.log('convertToMoment: (1) valid moment => ', { momentNorm: this.normalizeMomentFormat(moment) });
+        return this.normalizeMomentFormat(moment);
+      } else {
+        //console.log('convertToMoment: (2) invalid moment => ', { moment });
+        return moment;
+      }
     } else {
       MomentTZ.locale(getCurrentActiveLocale());
 
       //
       // Try converting using display format
-      let moment = MomentTZ(
-        value,
-        this.getMomentDisplayFormat(value),
-        strict,
-        this.props.timeZone
-      );
+      let moment = MomentTZ(value, this.getMomentDisplayFormat(value), strict);
       if (moment && moment.isValid()) {
-        // IMPORTANT: display format might not contain timezone so make sure we set it to our timezone.
-        // noinspection UnnecessaryLocalVariableJS
-        const momentNorm = this.setTimezone(moment);
-
-        // console.log('convertToMoment: (3) returning valid moment', {
-        //   toString: momentNorm.format(this.getMomentNormalizedFormat()),
-        //   momentNorm,
-        //   format: this.getMomentDisplayFormat(value),
-        //   moment_beforeSetTZ: moment.format(this.getMomentNormalizedFormat()),
-        //   value,
-        //   strict,
-        // });
-
-        return momentNorm;
+        // console.log('convertToMoment: (3) valid', this.normalizeMomentFormat(moment));
+        return this.normalizeMomentFormat(moment);
       }
 
       //
       // Try converting using normalized format
       moment = MomentTZ(value, this.getMomentNormalizedFormat(), strict);
       if (moment && moment.isValid()) {
-        // console.log('convertToMoment: (4) returning valid moment', {
-        //   toString: moment.format(this.getMomentNormalizedFormat()),
-        //   moment,
-        //   format: this.getMomentNormalizedFormat(),
-        //   value,
-        //   strict,
-        // });
-
+        //console.log('convertToMoment: (4) valid', { moment, format: this.getMomentNormalizedFormat() });
         return moment;
       }
 
       //
       // Last try, try converting using standard ISO format
       moment = MomentTZ(value, DATE_TIMEZONE_FORMAT, strict);
-      // console.log('convertToMoment: (5) try using ISO format', {
-      //   toString: moment.format(this.getMomentNormalizedFormat()),
-      //   moment,
-      //   isValid: moment && moment.isValid(),
-      // });
-
+      //console.log('convertToMoment: try using ISO format', { moment, isValid: moment && moment.isValid() });
       return moment;
     }
   };
 
-  setTimezone = (moment) => {
-    if (!moment) {
-      return null;
-    }
+  normalizeMomentFormat = (moment) => {
+    const format = this.getMomentNormalizedFormat();
+
+    MomentTZ.locale(getCurrentActiveLocale());
+    const normalizedString = moment.format(format);
+    let momentNorm = MomentTZ(normalizedString, format);
 
     const { dateFormat, timeFormat, timeZone } = this.props;
     if (dateFormat && timeFormat && timeZone) {
-      return setTimezoneToMoment(moment, timeZone);
-    } else {
-      return moment;
-    }
-  };
-
-  convertToTimezone = (moment) => {
-    if (!moment) {
-      return null;
+      momentNorm = momentNorm.tz(timeZone, true);
     }
 
-    const { dateFormat, timeFormat, timeZone } = this.props;
-    if (dateFormat && timeFormat && timeZone) {
-      return convertMomentToTimezone(moment, timeZone);
-    } else {
-      return moment;
-    }
+    return momentNorm;
   };
 
   getMomentDisplayFormat = (dateToParse = null) => {
@@ -356,24 +300,11 @@ class DatePicker extends PureComponent {
   };
 
   renderInputDateString = (valueOrig) => {
-    let valueAsMoment = this.convertToMoment(valueOrig, true);
-    //valueAsMoment = this.setTimezone(valueAsMoment);
+    const valueAsMoment = this.convertToMoment(valueOrig, true);
 
-    // noinspection UnnecessaryLocalVariableJS
-    const valueAsString =
-      valueAsMoment && valueAsMoment.isValid()
-        ? valueAsMoment.format(this.getMomentDisplayFormat())
-        : `${valueOrig}`;
-
-    // console.log('renderInputDateString', {
-    //   valueOrig,
-    //   valueAsMoment_toString: valueAsMoment.format(
-    //     this.getMomentNormalizedFormat()
-    //   ),
-    //   valueAsString,
-    // });
-
-    return valueAsString;
+    return valueAsMoment && valueAsMoment.isValid()
+      ? valueAsMoment.format(this.getMomentDisplayFormat())
+      : `${valueOrig}`;
   };
 
   render() {
@@ -382,25 +313,11 @@ class DatePicker extends PureComponent {
 
     const isTimeOnly = !dateFormat && timeFormat;
 
-    // IMPORTANT: convert the value property to our timezone
-    // this will lead to getting right date/time rendered by react-datetime component.
-    let valueNorm = this.convertToTimezone(this.props.value);
-    // console.log(`render ${this.props.field}`, {
-    //   valueNorm,
-    //   valueNorm_toString: valueNorm?.format(this.getMomentNormalizedFormat()),
-    //   value: this.props.value,
-    //   value_toString: this.props.value?.format(
-    //     this.getMomentNormalizedFormat()
-    //   ),
-    //   props: this.props,
-    // });
-
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
-          ref={(picker) => (this.picker = picker)}
           {...this.props}
-          value={valueNorm}
+          ref={(picker) => (this.picker = picker)}
           closeOnSelect={true}
           closeOnTab={true}
           open={isCalendarOpen}
