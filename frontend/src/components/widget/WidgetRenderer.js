@@ -117,7 +117,7 @@ class WidgetRenderer extends PureComponent {
       disconnected,
       isFilterActive, // flag used to identify if the component belongs to an active filter
       updateItems,
-      isEdited,
+      suppressChange,
     } = this.props;
 
     const filterActiveState =
@@ -192,22 +192,24 @@ class WidgetRenderer extends PureComponent {
     };
 
     const attributesProps = {
+      value: widgetData[0].value,
       entity,
       fields,
       dataId,
-      widgetData: widgetData[0],
       docType: windowType,
       tabId,
       rowId,
       fieldName: widgetField,
       handleBackdropLock,
-      patch: (option) => onPatch(widgetField, option),
+      patch: (value) => onPatch(widgetField, value),
+      isModal,
       openModal,
       closeModal,
       tabIndex,
       autoFocus,
       readonly,
       disconnected,
+      setTableNavigation: this.props.setTableNavigation,
     };
 
     switch (widgetType) {
@@ -339,7 +341,9 @@ class WidgetRenderer extends PureComponent {
           />
         );
       }
-      case 'Lookup':
+      case 'Lookup': {
+        const { typeaheadSupplier } = this.props;
+
         return (
           <Lookup
             {...listAndLookupsProps}
@@ -361,16 +365,21 @@ class WidgetRenderer extends PureComponent {
             closeTableField={closeTableField}
             onBlurWidget={onBlurWidget}
             onClickOutside={onClickOutside}
+            typeaheadSupplier={typeaheadSupplier}
           />
         );
+      }
       case 'List':
       case 'MultiListValue': {
+        const { dropdownValuesSupplier } = this.props;
+
         const commonProps = {
           ...listAndLookupsProps,
           widgetField,
           defaultValue: fields[0].emptyText,
           properties: fields[0],
           emptyText: fields[0].emptyText,
+          dropdownValuesSupplier,
         };
         const typeProps = {};
 
@@ -487,7 +496,7 @@ class WidgetRenderer extends PureComponent {
               filterWidget,
               isFilterActive: filterActiveState,
               updateItems,
-              isEdited,
+              suppressChange,
             }}
             widgetData={widgetData[0]}
             handlePatch={onPatch}
@@ -687,6 +696,7 @@ WidgetRenderer.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
+  lastFormField: PropTypes.bool,
 
   //
   // from RawWidget
