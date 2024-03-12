@@ -170,7 +170,7 @@ public class InventoryLine
 
 	public Quantity getQtyBookFixed()
 	{
-		if (getQtyBookFixed() == null)
+		if (qtyBookFixed == null)
 		{
 			return Quantity.zero(getQtyBook().getUOM());
 		}
