@@ -239,7 +239,7 @@ public class InventoryRepository
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
 				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
-				.qtyBookedFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
+				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
 
 
