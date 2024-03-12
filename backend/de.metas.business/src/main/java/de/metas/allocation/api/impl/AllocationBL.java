@@ -154,7 +154,7 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	/**
-	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules or those which does not have a Bank Account
+	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
 	 */
 	@VisibleForTesting
 	static void applyBankAccountInvoiceAutoAllocRules(
