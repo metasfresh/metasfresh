@@ -39,21 +39,23 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Default implementation.
@@ -143,14 +145,18 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		}
 
 		candidate.setAD_Org_ID(sourceDoc.getAD_Org_ID());
-		candidate.setDunningDate(TimeUtil.asTimestamp(context.getDunningDate()));
+		candidate.setDunningDate(Optional.ofNullable(context.getDunningDate())
+										 .map(date -> date.toTimestamp(orgDAO::getTimeZone))
+										 .orElse(null));
 		candidate.setC_BPartner_ID(sourceDoc.getC_BPartner_ID());
 		candidate.setC_BPartner_Location_ID(sourceDoc.getC_BPartner_Location_ID());
 		candidate.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(sourceDoc.getC_BPartner_ID()))
 												  .map(UserId::getRepoId)
 												  .orElse(sourceDoc.getContact_ID()));
 		candidate.setDueDate(sourceDoc.getDueDate().toTimestamp(orgDAO::getTimeZone));
-		candidate.setDunningGrace(sourceDoc.getGraceDate().toTimestamp(orgDAO::getTimeZone));
+		candidate.setDunningGrace(Optional.ofNullable(sourceDoc.getGraceDate())
+										  .map(date -> date.toTimestamp(orgDAO::getTimeZone))
+										  .orElse(null));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
 		candidate.setIsWriteOff(dunningLevel.isWriteOff());
 
@@ -218,15 +224,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 		//
 		// Validate DunningGrace
-		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(dunningLevel.getAD_Org_ID()));
-		final LocalDate dunningDate = TimeUtil.asLocalDate(context.getDunningDate(), zoneId);
-		if (dunningDate == null)
-		{
-			logger.info("Skip because context DunningDate is null");
-			return false;
-		}
-
-		if (sourceDoc.getGraceDate() != null && sourceDoc.getGraceDate().toLocalDate().compareTo(dunningDate) >= 0)
+		if (sourceDoc.getGraceDate() != null && sourceDoc.getGraceDate().compareTo(context.getDunningDate()) >= 0)
 		{
 			logger.info("Skip because DunnableDoc's grace date is >= context DunningDate");
 			return false;
@@ -323,7 +321,10 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		return requiredDaysBetweenDunnings;
 	}
 
-	protected boolean isDaysBetweenDunningsRespected(final Date dunningDate, final int requiredDaysBetweenDunnings, final List<I_C_Dunning_Candidate> candidates)
+	protected boolean isDaysBetweenDunningsRespected(
+			@Nullable final LocalDateAndOrgId dunningDate,
+			final int requiredDaysBetweenDunnings,
+			@NonNull final List<I_C_Dunning_Candidate> candidates)
 	{
 		if (candidates.isEmpty())
 		{
@@ -355,9 +356,12 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		return false;
 	}
 
-	protected Date getLastDunningDateEffective(final List<I_C_Dunning_Candidate> candidates)
+	@Nullable
+	protected LocalDate getLastDunningDateEffective(
+			@NonNull final List<I_C_Dunning_Candidate> candidates,
+			@NonNull final OrgId orgId)
 	{
-		Date lastDunningDateEffective = null;
+		LocalDate lastDunningDateEffective = null;
 		for (final I_C_Dunning_Candidate candidate : candidates)
 		{
 			// When we are calculating the effective date, we consider only candidates that have processed dunning docs
@@ -366,14 +370,14 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 				continue;
 			}
 
-			final Date dunningDateEffective = candidate.getDunningDateEffective();
+			final LocalDate dunningDateEffective = TimeUtil.asLocalDate(candidate.getDunningDateEffective(), orgDAO.getTimeZone(orgId));
 			Check.assumeNotNull(dunningDateEffective, "DunningDateEffective shall be available for candidate with dunning docs processed: {}", candidate);
 
 			if (lastDunningDateEffective == null)
 			{
 				lastDunningDateEffective = dunningDateEffective;
 			}
-			else if (lastDunningDateEffective.before(dunningDateEffective))
+			else if (lastDunningDateEffective.isBefore(dunningDateEffective))
 			{
 				lastDunningDateEffective = dunningDateEffective;
 			}
@@ -389,15 +393,21 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 	 * @param candidates
 	 * @return days after DunningDateEffective or {@link #DAYS_NotAvailable} if not available
 	 */
-	protected int getDaysAfterLastDunningEffective(final Date dunningDate, final List<I_C_Dunning_Candidate> candidates)
+	protected int getDaysAfterLastDunningEffective(
+			@Nullable final LocalDateAndOrgId dunningDate,
+			@NonNull final List<I_C_Dunning_Candidate> candidates)
 	{
-		final Date lastDunningDate = getLastDunningDateEffective(candidates);
+		if (dunningDate == null)
+		{
+			return DAYS_NotAvailable; 
+		}
+		
+		final LocalDate lastDunningDate = getLastDunningDateEffective(candidates, dunningDate.getOrgId());
 		if (lastDunningDate == null)
 		{
 			return DAYS_NotAvailable;
 		}
 
-		final int daysAfterLast = TimeUtil.getDaysBetween(lastDunningDate, dunningDate);
-		return daysAfterLast;
+		return TimeUtil.getDaysBetween(lastDunningDate, dunningDate.toLocalDate());
 	}
 }

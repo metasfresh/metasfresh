@@ -25,32 +25,9 @@ package de.metas.dunning.test.integration;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
@@ -65,8 +42,29 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author tsa
@@ -110,6 +108,12 @@ public class TestDunning extends DunningTestBase
 	// Candidate for level 2
 	private I_C_Dunning_Candidate candidate2_2;
 
+	@Override
+	protected void createMasterData()
+	{
+		createOrgInfo();
+	}
+	
 	@Test
 	public void testCreateInvoices()
 	{
@@ -192,7 +196,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Assert candidate with dunning grace not processed.
-		Assert.assertEquals("Candidate4 - processed", false, candidate4.isProcessed());
+		Assert.assertFalse("Candidate4 - processed", candidate4.isProcessed());
 
 	}
 
@@ -212,9 +216,9 @@ public class TestDunning extends DunningTestBase
 		processDunningDocs();
 		loadDunningCandidates();
 		Assert.assertTrue("Candidate1 - IsDunningDocProcessed", candidate1.isDunningDocProcessed());
-		Assert.assertEquals("Candidate1 - DunningDateEffective", dunningContext.getDunningDate(), candidate1.getDunningDateEffective());
+		Assert.assertEquals("Candidate1 - DunningDateEffective", dunningContext.getDunningDate(), LocalDateAndOrgId.ofTimestamp(candidate1.getDunningDateEffective(), OrgId.MAIN, orgDAO::getTimeZone));
 		Assert.assertTrue("Candidate2 - IsDunningDocProcessed", candidate2.isDunningDocProcessed());
-		Assert.assertEquals("Candidate2 - DunningDateEffective", dunningContext.getDunningDate(), candidate2.getDunningDateEffective());
+		Assert.assertEquals("Candidate2 - DunningDateEffective", dunningContext.getDunningDate(), LocalDateAndOrgId.ofTimestamp(candidate2.getDunningDateEffective(), OrgId.MAIN, orgDAO::getTimeZone));
 
 	}
 
@@ -260,9 +264,9 @@ public class TestDunning extends DunningTestBase
 		candidate2_2 = dao.retrieveDunningCandidate(dunningContext, invoice2, dunningLevel2);
 		Assert.assertNotNull("Candidate2_2 - not null", candidate2_2);
 		assertThat("Candidate2_2 references wrong invoice", candidate2_2.getRecord_ID(), is(invoice2.getC_Invoice_ID()));
-		Assert.assertEquals("Candidate2_2 - processed", false, candidate2_2.isProcessed());
+		Assert.assertFalse("Candidate2_2 - processed", candidate2_2.isProcessed());
 		Assert.assertEquals("Candidate2_2 - invalid dunning level", dunningLevel2, candidate2_2.getC_DunningLevel());
-		Assert.assertEquals("Candidate2 - WriteOff", true, candidate2_2.isWriteOff());
+		Assert.assertTrue("Candidate2 - WriteOff", candidate2_2.isWriteOff());
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate2_2);
 	}
 
@@ -297,9 +301,9 @@ public class TestDunning extends DunningTestBase
 			Assert.assertEquals("Only one candidate shall be in writeoff list", 1, sourcesToWriteOff.size());
 
 			final I_C_DunningDoc_Line_Source sourceToWriteOff = sourcesToWriteOff.get(0);
-			Assert.assertEquals("Source to writeoff - Invalid - Processed", true, sourceToWriteOff.isProcessed());
-			Assert.assertEquals("Source to writeoff - Invalid - IsWriteOff", true, sourceToWriteOff.isWriteOff());
-			Assert.assertEquals("Source to writeoff - Invalid - IsWriteOffApplied", false, sourceToWriteOff.isWriteOffApplied());
+			Assert.assertTrue("Source to writeoff - Invalid - Processed", sourceToWriteOff.isProcessed());
+			Assert.assertTrue("Source to writeoff - Invalid - IsWriteOff", sourceToWriteOff.isWriteOff());
+			Assert.assertFalse("Source to writeoff - Invalid - IsWriteOffApplied", sourceToWriteOff.isWriteOffApplied());
 			Assert.assertEquals("Source to writeoff - Invalid - C_Dunning_Candidate_ID", candidate2_2.getC_Dunning_Candidate_ID(), sourceToWriteOff.getC_Dunning_Candidate_ID());
 		}
 	}
@@ -383,7 +387,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Setup dunning context
-		final Date dunningDate = TimeUtil.getDay(2012, 02, 01);
+		final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofTimestamp(TimeUtil.getDay(2012, 02, 01), OrgId.MAIN, orgDAO::getTimeZone);
 		dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(dunningDate);
 
@@ -459,7 +463,7 @@ public class TestDunning extends DunningTestBase
 
 		documents.add(createDunningDoc(invoice2, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 25, null));
 
-		documents.add(createDunningDoc(invoice3, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2014, 01, 01), OrgId.ANY)));
+		documents.add(createDunningDoc(invoice3, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2014, 01, 01), OrgId.MAIN)));
 
 		documents.add(createDunningDoc(invoice4, LocalDateAndOrgId.ofLocalDate(LocalDate.of(2012, 01, 01), OrgId.MAIN), 15, null));
 

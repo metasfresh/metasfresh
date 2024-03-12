@@ -38,16 +38,16 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.X_C_DunningDoc;
 import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -141,10 +141,11 @@ public class DefaultDunningProducer implements IDunningProducer
 		}
 
 		// Use DunningDate from context (if available), else candidate's dunning date shall be used
-		final Date contextDunningDate = context.getDunningDate();
+		final LocalDateAndOrgId contextDunningDate = context.getDunningDate();
 		if (contextDunningDate != null)
 		{
-			doc.setDunningDate(TimeUtil.asTimestamp(contextDunningDate));
+			final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+			doc.setDunningDate(contextDunningDate.toTimestamp(orgDAO::getTimeZone));
 		}
 		else
 		{

@@ -28,6 +28,7 @@ package de.metas.dunning.api.impl;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 
@@ -164,6 +165,7 @@ public class DunnableDoc implements IDunnableDoc
 	}
 
 	@Override
+	@NonNull
 	public LocalDateAndOrgId getDueDate()
 	{
 		return dueDate;

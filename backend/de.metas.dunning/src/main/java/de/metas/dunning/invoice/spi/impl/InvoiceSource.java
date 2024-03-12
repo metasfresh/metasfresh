@@ -110,12 +110,11 @@ public class InvoiceSource extends AbstractDunnableSource
 
 		final LocalDateAndOrgId systemTime = LocalDateAndOrgId.ofLocalDate(SystemTime.asLocalDate(orgDAO.getTimeZone(adOrgId)), adOrgId);
 		final LocalDateAndOrgId dueDate = LocalDateAndOrgId.ofNullableTimestamp(candidate.getDueDate(), adOrgId, orgDAO::getTimeZone);
-		final LocalDateAndOrgId dunningDate = Optional.ofNullable(TimeUtil.asTimestamp(context.getDunningDate()))
-				.map(date -> LocalDateAndOrgId.ofTimestamp(date, adOrgId, orgDAO::getTimeZone))
+		final LocalDateAndOrgId dunningDate = Optional.ofNullable(context.getDunningDate())
 				.orElse(systemTime);
 
 		final int daysDue = Optional.ofNullable(dueDate)
-				.map(date -> Period.between(date.toLocalDate(), dunningDate.toLocalDate()).getDays())
+				.map(date -> TimeUtil.getDaysBetween(dueDate.toLocalDate(), dunningDate.toLocalDate()))
 				.orElse(0);
 
 		final LocalDateAndOrgId dunningGrace = LocalDateAndOrgId.ofNullableTimestamp(candidate.getDunningGrace(), adOrgId, orgDAO::getTimeZone);
