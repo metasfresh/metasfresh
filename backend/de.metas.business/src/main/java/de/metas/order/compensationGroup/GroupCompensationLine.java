@@ -1,11 +1,7 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.util.lang.RepoIdAware;
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -13,11 +9,16 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -44,7 +45,9 @@ import lombok.ToString;
 @ToString
 public final class GroupCompensationLine
 {
-	/** Repository ID */
+	/**
+	 * Repository ID
+	 */
 	@Getter
 	@Setter
 	private RepoIdAware repoId;
@@ -64,11 +67,15 @@ public final class GroupCompensationLine
 	@Getter
 	private final Percent percentage;
 
-	/** Base amount for percentage calculation */
+	/**
+	 * Base amount for percentage calculation
+	 */
 	@Getter
 	private BigDecimal baseAmt;
 
-	/** Might be {@code null} for {@link GroupCompensationAmtType#Percent}*/
+	/**
+	 * Might be {@code null} for {@link GroupCompensationAmtType#Percent}
+	 */
 	@Getter
 	private BigDecimal qtyEntered;
 
@@ -77,8 +84,8 @@ public final class GroupCompensationLine
 	@Getter
 	private BigDecimal lineNetAmt;
 
-	@Getter
-	private final GroupTemplateLineId groupTemplateLineId;
+	@Nullable @Getter private final GroupTemplateLineId groupTemplateLineId;
+	@Nullable @Getter private final ManualCompensationLinePosition manualCompensationLinePosition;
 
 	@Builder
 	public GroupCompensationLine(
@@ -93,7 +100,8 @@ public final class GroupCompensationLine
 			final BigDecimal qtyEntered,
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
-			final GroupTemplateLineId groupTemplateLineId)
+			@Nullable final GroupTemplateLineId groupTemplateLineId,
+			@Nullable final ManualCompensationLinePosition manualCompensationLinePosition)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
@@ -129,6 +137,15 @@ public final class GroupCompensationLine
 		else
 		{
 			throw new AdempiereException("Unknown " + GroupCompensationAmtType.class + ": " + amtType);
+		}
+
+		if (OrderGroupCompensationUtils.isGeneratedLine(getGroupTemplateLineId()))
+		{
+			this.manualCompensationLinePosition = null;
+		}
+		else
+		{
+			this.manualCompensationLinePosition = CoalesceUtil.coalesceNotNull(manualCompensationLinePosition, ManualCompensationLinePosition.DEFAULT);
 		}
 	}
 
