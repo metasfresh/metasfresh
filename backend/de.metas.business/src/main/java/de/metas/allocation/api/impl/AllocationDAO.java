@@ -169,7 +169,6 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, paymentDirection.isReceipt())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAutoAllocateAvailableAmt, true)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
-				.addNotNull(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.orderBy(I_C_Payment.COLUMNNAME_DateTrx)
 				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.create()

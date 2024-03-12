@@ -36,7 +36,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class AllocationBL implements IAllocationBL
 {
@@ -169,9 +168,10 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
-		eligiblePayments.removeIf(payment -> Optional.ofNullable(BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID()))
-				.map(bankAccountId -> !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId))
-				.orElse(true));
+		eligiblePayments.removeIf(payment -> {
+			final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
+			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+		});
 	}
 
 	public void autoAllocateSpecificPayment(

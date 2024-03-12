@@ -31,6 +31,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -56,10 +57,15 @@ public class BankAccountInvoiceAutoAllocRules
 	}
 
 	public boolean isAutoAllocate(
-			@NonNull final BankAccountId bankAccountId,
+			@Nullable final BankAccountId bankAccountId,
 			@NonNull final DocTypeId invoiceDocTypeId)
 	{
 		final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForInvoiceDocTypeId = rulesByInvoiceDocTypeId.get(invoiceDocTypeId);
+		if (bankAccountId == null)
+		{
+			return rulesForInvoiceDocTypeId.isEmpty();
+		}
+		
 		if (rulesForInvoiceDocTypeId.isEmpty())
 		{
 			final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForBankAccountId = rulesByBankAccountId.get(bankAccountId);
