@@ -61,7 +61,7 @@ public class BankAccountInvoiceAutoAllocRules
 			@NonNull final DocTypeId invoiceDocTypeId)
 	{
 		final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForInvoiceDocTypeId = rulesByInvoiceDocTypeId.get(invoiceDocTypeId);
-		if (bankAccountId == null)
+		if (bankAccountId == null) // no bankAccountId - let the allocation go through if there is no restriction for the given doctype
 		{
 			return rulesForInvoiceDocTypeId.isEmpty();
 		}
