@@ -86,6 +86,9 @@ public class InventoryLine
 
 	boolean counted;
 
+	@Nullable Quantity qtyBookFixed;
+	@Nullable Quantity qtyCountFixed;
+
 	@NonNull
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
 
@@ -99,6 +102,8 @@ public class InventoryLine
 			@NonNull final LocatorId locatorId,
 			@Nullable final HUAggregationType huAggregationType,
 			final boolean counted,
+			@Nullable final Quantity qtyBookedFixed,
+			@Nullable final Quantity qtyCountFixed,
 			@Singular("inventoryLineHU") @NonNull final ImmutableList<InventoryLineHU> inventoryLineHUs)
 	{
 		Check.assumeNotEmpty(inventoryLineHUs, "inventoryLineHUs is not empty");
@@ -113,6 +118,9 @@ public class InventoryLine
 
 		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
 		this.counted = counted;
+		this.qtyBookFixed = qtyBookedFixed;
+		this.qtyCountFixed = qtyCountFixed;
+
 		this.inventoryLineHUs = inventoryLineHUs;
 
 		if (HUAggregationType.SINGLE_HU.equals(huAggregationType) && inventoryLineHUs.size() > 1)
