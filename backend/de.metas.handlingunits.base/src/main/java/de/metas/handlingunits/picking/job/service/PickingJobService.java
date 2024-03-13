@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -341,6 +342,17 @@ public class PickingJobService
 		});
 	}
 
+	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean abortOngoingPickingJobs)
+	{
+		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());
+		if (pickingJobs.isEmpty())
+		{
+			return true;
+		}
+
+		return pickingJobs.stream().allMatch(job -> removePickingSlotAssignment(job, abortOngoingPickingJobs));
+	}
+
 	private void unassignPickingJob(@NonNull final PickingJob jobParam)
 	{
 		PickingJob job = jobParam;
@@ -391,5 +403,26 @@ public class PickingJobService
 		}
 
 		return job;
+	}
+
+	private boolean removePickingSlotAssignment(
+			@NonNull final PickingJob pickingJob,
+			final boolean abortOngoingPickingJobs)
+	{
+		if (pickingJob.isNothingPicked())
+		{
+			pickingJobRepository.save(pickingJob.withPickingSlot(null));
+			return true;
+		}
+		else if (abortOngoingPickingJobs)
+		{
+			final PickingJob abortedPickingJob = abort(pickingJob);
+			Check.assume(!abortedPickingJob.getPickingSlotId().isPresent(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

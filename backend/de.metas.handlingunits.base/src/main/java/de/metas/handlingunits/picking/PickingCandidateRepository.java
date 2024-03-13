@@ -512,6 +512,34 @@ public class PickingCandidateRepository
 				.anyMatch();
 	}
 
+	@NonNull
+	public ImmutableList<PickingCandidate> getByHuIdAndPickingSlotId(
+			@Nullable final HuId huId,
+			@Nullable final PickingSlotId pickingSlotId)
+	{
+		if (huId == null && pickingSlotId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (huId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId);
+		}
+		if (pickingSlotId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId);
+		}
+
+		return queryBuilder.create()
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()
 	{
 		final Supplier<ArrayList<PickingCandidate>> supplier = ArrayList::new;
