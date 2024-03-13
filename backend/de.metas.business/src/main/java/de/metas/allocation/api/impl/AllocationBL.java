@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
