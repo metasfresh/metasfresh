@@ -22,13 +22,14 @@ package org.adempiere.ad.expression.exceptions;
  * #L%
  */
 
+import de.metas.i18n.ITranslatableString;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Root of all expression exceptions
  *
  * @author tsa
- *
  */
 public class ExpressionException extends AdempiereException
 {
@@ -44,4 +45,8 @@ public class ExpressionException extends AdempiereException
 		super(msg, cause);
 	}
 
+	protected ExpressionException(final @NonNull ITranslatableString message, final boolean userValidationError)
+	{
+		super(message, userValidationError);
+	}
 }
