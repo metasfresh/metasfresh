@@ -165,6 +165,6 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(BigDecimal.ZERO)
 				.setOpenAmt(BigDecimal.ZERO)
-				.setDueDate(LocalDateAndOrgId.now(OrgId.ANY));
+				.setDueDate(LocalDateAndOrgId.now(OrgId.MAIN));
 	}
 }

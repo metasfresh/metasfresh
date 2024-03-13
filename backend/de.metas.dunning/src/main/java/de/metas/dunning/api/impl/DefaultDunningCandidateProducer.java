@@ -146,18 +146,14 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		}
 
 		candidate.setAD_Org_ID(sourceDoc.getAD_Org_ID());
-		candidate.setDunningDate(Optional.ofNullable(context.getDunningDate())
-										 .map(date -> date.toTimestamp(orgDAO::getTimeZone))
-										 .orElse(null));
+		candidate.setDunningDate(LocalDateAndOrgId.toTimestamp(context.getDunningDate(), orgDAO::getTimeZone));
 		candidate.setC_BPartner_ID(sourceDoc.getC_BPartner_ID());
 		candidate.setC_BPartner_Location_ID(sourceDoc.getC_BPartner_Location_ID());
 		candidate.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(sourceDoc.getC_BPartner_ID()))
 												  .map(UserId::getRepoId)
 												  .orElse(sourceDoc.getContact_ID()));
 		candidate.setDueDate(sourceDoc.getDueDate().toTimestamp(orgDAO::getTimeZone));
-		candidate.setDunningGrace(Optional.ofNullable(sourceDoc.getGraceDate())
-										  .map(date -> date.toTimestamp(orgDAO::getTimeZone))
-										  .orElse(null));
+		candidate.setDunningGrace(LocalDateAndOrgId.toTimestamp(sourceDoc.getGraceDate(), orgDAO::getTimeZone));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
 		candidate.setIsWriteOff(dunningLevel.isWriteOff());
 

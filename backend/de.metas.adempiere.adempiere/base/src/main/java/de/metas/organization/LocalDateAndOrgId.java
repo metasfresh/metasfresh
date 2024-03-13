@@ -54,6 +54,14 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 	{
 		return ofLocalDate(LocalDate.now(), orgId);
 	}
+
+	@Nullable
+	public static Timestamp toTimestamp(
+			@Nullable final LocalDateAndOrgId localDateAndOrgId,
+			@NonNull final Function<OrgId, ZoneId> orgMapper)
+	{
+		return localDateAndOrgId != null ? localDateAndOrgId.toTimestamp(orgMapper) : null;
+	}
 	
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{

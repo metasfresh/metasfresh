@@ -55,6 +55,8 @@ public class DefaultDunningProducer implements IDunningProducer
 {
 	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	
 	private IDunningContext dunningContext;
 
 	private final CompositeDunningAggregator dunningAggregators = new CompositeDunningAggregator();
@@ -144,7 +146,6 @@ public class DefaultDunningProducer implements IDunningProducer
 		final LocalDateAndOrgId contextDunningDate = context.getDunningDate();
 		if (contextDunningDate != null)
 		{
-			final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 			doc.setDunningDate(contextDunningDate.toTimestamp(orgDAO::getTimeZone));
 		}
 		else

@@ -41,7 +41,6 @@ import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.time.Period;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -109,13 +108,10 @@ public class InvoiceSource extends AbstractDunnableSource
 		}
 
 		final LocalDateAndOrgId systemTime = LocalDateAndOrgId.ofLocalDate(SystemTime.asLocalDate(orgDAO.getTimeZone(adOrgId)), adOrgId);
-		final LocalDateAndOrgId dueDate = LocalDateAndOrgId.ofNullableTimestamp(candidate.getDueDate(), adOrgId, orgDAO::getTimeZone);
-		final LocalDateAndOrgId dunningDate = Optional.ofNullable(context.getDunningDate())
-				.orElse(systemTime);
+		final LocalDateAndOrgId dueDate = LocalDateAndOrgId.ofTimestamp(candidate.getDueDate(), adOrgId, orgDAO::getTimeZone);
+		final LocalDateAndOrgId dunningDate = Optional.ofNullable(context.getDunningDate()).orElse(systemTime);
 
-		final int daysDue = Optional.ofNullable(dueDate)
-				.map(date -> TimeUtil.getDaysBetween(dueDate, dunningDate))
-				.orElse(0);
+		final int daysDue = TimeUtil.getDaysBetween(dueDate, dunningDate);
 
 		final LocalDateAndOrgId dunningGrace = LocalDateAndOrgId.ofNullableTimestamp(candidate.getDunningGrace(), adOrgId, orgDAO::getTimeZone);
 

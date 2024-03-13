@@ -363,7 +363,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate before context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, -1), OrgId.ANY, orgDAO::getTimeZone))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, -1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNotNull("GraceDate before context DunningDate - candidate shall be generated", candidate);
@@ -371,7 +371,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate equals context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(dunningDate, OrgId.ANY, orgDAO::getTimeZone))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(dunningDate, OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNull("GraceDate equals with context DunningDate - candidate shall NOT be generated", candidate);
@@ -379,7 +379,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		// GraceDate after context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
-					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, 1), OrgId.ANY, orgDAO::getTimeZone))
+					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, 1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
 					);
 			Assert.assertNull("GraceDate after context DunningDate - candidate shall NOT be generated", candidate);
