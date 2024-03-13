@@ -37,11 +37,11 @@ public class ClearPickingSlot extends JavaProcess implements IProcessPreconditio
 {
 	private final SpringContextHolder.Lazy<PickingSlotService> pickingSlotServiceLazy = SpringContextHolder.lazyBean(PickingSlotService.class);
 
-	@Param(parameterName = "abortOngoingPickingJobs", mandatory = true)
+	@Param(parameterName = "AbortOngoingPickingJobs")
 	private boolean abortOngoingPickingJobs;
-	@Param(parameterName = "removeUnprocessedHUsFromSlot", mandatory = true)
+	@Param(parameterName = "RemoveUnprocessedHUsFromSlot")
 	private boolean removeUnprocessedHUsFromSlot;
-	@Param(parameterName = "removeQueuedHUsFromSlot", mandatory = true)
+	@Param(parameterName = "RemoveQueuedHUsFromSlot")
 	private boolean removeQueuedHUsFromSlot;
 
 	@Override

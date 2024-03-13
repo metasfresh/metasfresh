@@ -42,7 +42,7 @@ public class PickingSlot_ChangeIsDynamic extends JavaProcess implements IProcess
 {
 	private final static AdMessageKey SLOT_CANNOT_BE_RELEASED = AdMessageKey.of("de.metas.handlingunits.picking.process.SLOT_CANNOT_BE_RELEASED");
 
-	@Param(parameterName = "isDynamic", mandatory = true)
+	@Param(parameterName = "IsDynamic")
 	private boolean isDynamic;
 
 	private final IPickingSlotDAO slotDAO = Services.get(IPickingSlotDAO.class);
