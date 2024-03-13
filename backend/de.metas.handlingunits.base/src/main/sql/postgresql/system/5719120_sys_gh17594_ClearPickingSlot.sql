@@ -80,24 +80,18 @@ UPDATE AD_Process SET Description='If none of the parameters is checked, metasfr
 
 -- Process: ClearPickingSlot(de.metas.handlingunits.picking.process.ClearPickingSlot)
 -- 2024-03-13T12:09:11.292Z
-UPDATE AD_Process_Trl SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.
-
-Übersetzt mit DeepL.com (kostenlose Version)',Updated=TO_TIMESTAMP('2024-03-13 14:09:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585360
+UPDATE AD_Process_Trl SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.',Updated=TO_TIMESTAMP('2024-03-13 14:09:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585360
 ;
 
 -- Value: ClearPickingSlot
 -- Classname: de.metas.handlingunits.picking.process.ClearPickingSlot
 -- 2024-03-13T12:09:13.627Z
-UPDATE AD_Process SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.
-
-Übersetzt mit DeepL.com (kostenlose Version)', Help=NULL, Name='ClearPickingSlot',Updated=TO_TIMESTAMP('2024-03-13 14:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585360
+UPDATE AD_Process SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.', Help=NULL, Name='ClearPickingSlot',Updated=TO_TIMESTAMP('2024-03-13 14:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585360
 ;
 
 -- Process: ClearPickingSlot(de.metas.handlingunits.picking.process.ClearPickingSlot)
 -- 2024-03-13T12:09:13.623Z
-UPDATE AD_Process_Trl SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.
-
-Übersetzt mit DeepL.com (kostenlose Version)',Updated=TO_TIMESTAMP('2024-03-13 14:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585360
+UPDATE AD_Process_Trl SET Description='Wenn keiner der Parameter geprüft wird, versucht metasfresh, den Kommissionier-Slot wie folgt zu relaisieren: Zunächst wird geprüft, ob es sich um einen zugewiesenen, aber nicht gestarteten Kommissionierauftrag handelt (d. h. einen Auftrag, bei dem nichts kommissioniert wurde), und es wird eine "Abbruch"-Operation durchgeführt. Wenn der Slot dann keinen anderen laufenden Aufträgen oder laufenden Kommissionierungen im Kommissionierterminal zugewiesen ist und keine HUs bereits kommissioniert wurden und in der Warteschlange stehen, wird der Slot freigegeben.',Updated=TO_TIMESTAMP('2024-03-13 14:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585360
 ;
 
 -- Process: ClearPickingSlot(de.metas.handlingunits.picking.process.ClearPickingSlot)
