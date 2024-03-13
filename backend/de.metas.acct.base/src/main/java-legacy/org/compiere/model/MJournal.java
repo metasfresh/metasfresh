@@ -421,7 +421,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		final ImmutableList<I_GL_JournalLine> lines = getActiveLines();
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// Make sure the line period is the same as header period, else

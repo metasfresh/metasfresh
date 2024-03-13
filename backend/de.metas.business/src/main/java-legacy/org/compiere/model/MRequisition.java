@@ -217,7 +217,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		final List<I_M_RequisitionLine> lines = getLines();
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// Std Period open?

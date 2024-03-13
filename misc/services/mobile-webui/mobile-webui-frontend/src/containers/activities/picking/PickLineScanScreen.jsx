@@ -30,6 +30,7 @@ import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from 
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useBooleanSetting } from '../../../reducers/settings';
 
 const isShowBestBeforeDate = true; // TODO make it configurable
 const isShowLotNo = true; // TODO make it configurable
@@ -114,6 +115,13 @@ const PickLineScanScreen = () => {
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 
+  const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
+  const onClose = () => {
+    if (isGotoPickingJobOnClose) {
+      history.go(-2); // go to picking job screen
+    }
+  };
+
   return (
     <ScanHUAndGetQtyComponent
       qtyCaption={trl('general.QtyToPick')}
@@ -128,6 +136,7 @@ const PickLineScanScreen = () => {
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
+      onClose={onClose}
     />
   );
 };

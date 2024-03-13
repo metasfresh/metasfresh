@@ -183,6 +183,8 @@ class InventoryRepositoryTest
 				.storageAttributesKey(storageAttributesKey)
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.counted(true)
+				.qtyBookFixed(Quantity.of("30", uomRecord))
+				.qtyCountFixed(Quantity.of("3", uomRecord))
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))

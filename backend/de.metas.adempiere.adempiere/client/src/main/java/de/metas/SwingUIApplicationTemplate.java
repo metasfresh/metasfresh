@@ -116,6 +116,10 @@ public abstract class SwingUIApplicationTemplate
 			DB.setDBTarget(cc); // set the connection to DB to have early access to it (for messages, languages etc)
 			Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
 
+			Ini.setProperty(Ini.P_SHOW_TRL, true);
+			Ini.setProperty(Ini.P_SHOW_ADVANCED, true);
+			Ini.setProperty(Ini.P_CACHE_WINDOW, false);
+
 			final Properties ctx = Env.getCtx();
 			Env.setClientId(ctx, ClientId.SYSTEM);
 			Env.setAD_Language(ctx, Language.AD_Language_en_US);
