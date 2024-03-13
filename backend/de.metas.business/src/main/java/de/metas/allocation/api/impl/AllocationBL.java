@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -158,7 +159,7 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	/**
-	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
+	 * Iterate eligible payments and eliminate those which do not complain to BankAccount Invoice Auto Allocation rules
 	 */
 	@VisibleForTesting
 	static void applyBankAccountInvoiceAutoAllocRules(
@@ -173,7 +174,7 @@ public class AllocationBL implements IAllocationBL
 
 		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
 		eligiblePayments.removeIf(payment -> {
-			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+			final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
 			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
 		});
 	}
