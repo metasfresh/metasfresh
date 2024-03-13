@@ -62,7 +62,7 @@ public class C_PaySelection
 
 		if (joiner.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, new Object[] { joiner.toString() });
+			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, joiner.toString());
 		}
 
 	}
