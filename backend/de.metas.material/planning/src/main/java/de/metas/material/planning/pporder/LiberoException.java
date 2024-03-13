@@ -22,11 +22,6 @@ public class LiberoException extends AdempiereException
 		super(message);
 	}
 
-	public LiberoException(AdMessageKey message)
-	{
-		super(message);
-	}
-
 	public LiberoException(ITranslatableString message)
 	{
 		super(message);

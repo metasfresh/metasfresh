@@ -270,28 +270,29 @@ public class AdempiereException extends RuntimeException
 	{
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
-		this(message, true);
+		this(message, true, null);
 	}
 
 	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	{
+		this(message, userValidationError, null);
+	}
+
+	private AdempiereException(
+			@NonNull final ITranslatableString message,
+			final boolean userValidationError,
+			@Nullable final String errorCode)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.userValidationError = userValidationError;
 		this.mdcContextMap = captureMDCContextMap();
-
-		// when this constructor is called, usually we have nice error messages,
-		// so we can consider those user-friendly errors
-		this.userValidationError = true;
-
-		this.errorCode = null;
+		this.errorCode = errorCode;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
-		this(TranslatableStrings.adMessage(messageKey), true);
-
-		this.errorCode = messageKey.toAD_Message();
+		this(TranslatableStrings.adMessage(messageKey), true, messageKey.toAD_Message());
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
