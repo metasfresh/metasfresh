@@ -69,6 +69,6 @@ public class RemoveHUFromPickingSlotCommand
 
 	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.getByHuIdAndPickingSlotId(huId, pickingSlotId);
+		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(huId, pickingSlotId);
 	}
 }

@@ -91,9 +91,7 @@ public class PickingSlot_ChangeIsDynamic extends JavaProcess implements IProcess
 	{
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 
-		final boolean released = pickingSlotServiceLazy.get().releasePickingSlot(ReleasePickingSlotRequest.builder()
-																						 .pickingSlotId(pickingSlotId)
-																						 .build());
+		final boolean released = pickingSlotServiceLazy.get().releasePickingSlot(ReleasePickingSlotRequest.ofSlotId(pickingSlotId));
 		if (!released)
 		{
 			throw new AdempiereException(SLOT_CANNOT_BE_RELEASED)

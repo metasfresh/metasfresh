@@ -31,6 +31,14 @@ import lombok.Value;
 @Builder
 public class ReleasePickingSlotRequest
 {
+	@NonNull
+	public static ReleasePickingSlotRequest ofSlotId(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return ReleasePickingSlotRequest.builder()
+				.pickingSlotId(pickingSlotId)
+				.build();
+	}
+
 	@NonNull PickingSlotId pickingSlotId;
 	boolean abortOngoingPickingJobs;
 	boolean removeUnprocessedHUsFromSlot;

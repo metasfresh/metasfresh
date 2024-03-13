@@ -142,9 +142,9 @@ public class PickingCandidateRepository
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
 				.pickFrom(PickFrom.builder()
-						.huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
-						.pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
-						.build())
+								  .huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
+								  .pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
+								  .build())
 				//
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
@@ -447,7 +447,7 @@ public class PickingCandidateRepository
 
 		//
 		// Only Picking Slots
-		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		if (!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
 		}
@@ -459,8 +459,8 @@ public class PickingCandidateRepository
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.qrCode(pickingSlotQRCode)
-					.build());
+																									.qrCode(pickingSlotQRCode)
+																									.build());
 			if (pickingSlotIds.isEmpty())
 			{
 				return ImmutableList.of();
@@ -513,7 +513,7 @@ public class PickingCandidateRepository
 	}
 
 	@NonNull
-	public ImmutableList<PickingCandidate> getByHuIdAndPickingSlotId(
+	public ImmutableList<PickingCandidate> getDraftedByHuIdAndPickingSlotId(
 			@Nullable final HuId huId,
 			@Nullable final PickingSlotId pickingSlotId)
 	{
@@ -523,7 +523,8 @@ public class PickingCandidateRepository
 		}
 
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, PickingCandidateStatus.Draft);
 
 		if (huId != null)
 		{

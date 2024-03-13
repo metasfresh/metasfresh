@@ -60,6 +60,9 @@ public class ClearPickingSlot extends JavaProcess implements IProcessPreconditio
 	{
 		pickingSlotServiceLazy.get().releasePickingSlot(ReleasePickingSlotRequest.builder()
 																.pickingSlotId(PickingSlotId.ofRepoId(getRecord_ID()))
+																.abortOngoingPickingJobs(abortOngoingPickingJobs)
+																.removeUnprocessedHUsFromSlot(removeUnprocessedHUsFromSlot)
+																.removeQueuedHUsFromSlot(removeQueuedHUsFromSlot)
 																.build());
 
 		return MSG_OK;
