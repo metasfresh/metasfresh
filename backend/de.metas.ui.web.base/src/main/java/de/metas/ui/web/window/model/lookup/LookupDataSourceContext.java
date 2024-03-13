@@ -675,7 +675,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			{
 				if (failIfNotFound)
 				{
-					throw new ExpressionEvaluationException("@NotFound@: " + variableName);
+					throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + variableName);
 				}
 			}
 			else
