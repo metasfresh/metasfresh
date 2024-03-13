@@ -445,8 +445,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		MAllocationLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Stop the Document Workflow if invoice to allocate is as paid
@@ -613,7 +612,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
 		if(docStatus.isCompletedOrClosedReversedOrVoided())
 		{
-			throw new AdempiereException("Document Closed: " + docStatus);
+			throw AdempiereException.newWithPlainMessage("Document Closed: " + docStatus);
 		}
 		// Not Processed
 		else if(docStatus.isNotProcessed())
@@ -795,7 +794,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 		catch (final Exception e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF", e);
 		}
 		return null;
 	}	// getPDF
@@ -1018,7 +1017,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 
 		if (!reversal.processIt(DOCACTION_Complete))
 		{
-			throw new AdempiereException(reversal.getProcessMsg());
+			throw AdempiereException.newWithTranslatableMessage(reversal.getProcessMsg());
 		}
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
