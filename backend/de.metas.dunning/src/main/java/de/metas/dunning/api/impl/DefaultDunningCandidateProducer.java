@@ -54,6 +54,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -357,10 +358,12 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 	}
 
 	@Nullable
-	protected LocalDate getLastDunningDateEffective(
+	protected LocalDateAndOrgId getLastDunningDateEffective(
 			@NonNull final List<I_C_Dunning_Candidate> candidates,
 			@NonNull final OrgId orgId)
 	{
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
 		LocalDate lastDunningDateEffective = null;
 		for (final I_C_Dunning_Candidate candidate : candidates)
 		{
@@ -370,7 +373,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 				continue;
 			}
 
-			final LocalDate dunningDateEffective = TimeUtil.asLocalDate(candidate.getDunningDateEffective(), orgDAO.getTimeZone(orgId));
+			final LocalDate dunningDateEffective = TimeUtil.asLocalDate(candidate.getDunningDateEffective(), zoneId);
 			Check.assumeNotNull(dunningDateEffective, "DunningDateEffective shall be available for candidate with dunning docs processed: {}", candidate);
 
 			if (lastDunningDateEffective == null)
@@ -383,7 +386,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			}
 		}
 
-		return lastDunningDateEffective;
+		return LocalDateAndOrgId.ofNullableLocalDate(lastDunningDateEffective, orgId);
 	}
 
 	/**
@@ -402,12 +405,12 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			return DAYS_NotAvailable; 
 		}
 		
-		final LocalDate lastDunningDate = getLastDunningDateEffective(candidates, dunningDate.getOrgId());
+		final LocalDateAndOrgId lastDunningDate = getLastDunningDateEffective(candidates, dunningDate.getOrgId());
 		if (lastDunningDate == null)
 		{
 			return DAYS_NotAvailable;
 		}
 
-		return TimeUtil.getDaysBetween(lastDunningDate, dunningDate.toLocalDate());
+		return TimeUtil.getDaysBetween(lastDunningDate, dunningDate);
 	}
 }

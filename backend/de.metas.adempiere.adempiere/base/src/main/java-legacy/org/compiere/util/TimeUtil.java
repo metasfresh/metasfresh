@@ -541,12 +541,14 @@ public class TimeUtil
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
 		final LocalDate d1 = LocalDateTime.ofInstant(start, SystemTime.zoneId()).toLocalDate();
 		final LocalDate d2 = LocalDateTime.ofInstant(end, SystemTime.zoneId()).toLocalDate();
-		return getDaysBetween(d1, d2);
+		return Period.between(d1, d2).getDays();
 	}
 
-	public static int getDaysBetween(@NonNull final LocalDate start, @NonNull final LocalDate end)
+	public static int getDaysBetween(@NonNull final LocalDateAndOrgId start, @NonNull final LocalDateAndOrgId end)
 	{
-		return Period.between(start, end).getDays();
+		final LocalDate d1 = start.toLocalDate();
+		final LocalDate d2 = end.toLocalDate();
+		return Period.between(d1, d2).getDays();
 	}
 	
 	/**

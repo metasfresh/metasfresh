@@ -390,7 +390,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	public void test_getLastDunningDateEffective_emptyCollection()
 	{
 		final List<I_C_Dunning_Candidate> candidates = Collections.emptyList();
-		final LocalDate lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
+		final LocalDateAndOrgId lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
 		Assert.assertNull("Last DunningDateEffective shall be null for an empty collection", lastDate);
 	}
 
@@ -435,8 +435,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			candidates.add(c);
 		}
 
-		final LocalDate lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
-		Assert.assertEquals("Last DunningDateEffective shall be null for an empty collection", LocalDate.of(2013, 1, 4), lastDate);
+		final LocalDateAndOrgId lastDate = producer.getLastDunningDateEffective(candidates, OrgId.MAIN);
+		Assert.assertEquals("Last DunningDateEffective shall be null for an empty collection", LocalDate.of(2013, 1, 4), lastDate.toLocalDate());
 	}
 
 	@Test(expected = AdempiereException.class)
