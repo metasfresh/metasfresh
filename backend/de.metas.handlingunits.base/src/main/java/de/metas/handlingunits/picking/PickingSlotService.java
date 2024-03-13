@@ -50,19 +50,19 @@ public class PickingSlotService
 		final boolean clearedAllPickingJobs = pickingJobService.clearAssignmentsForSlot(request.getPickingSlotId(), request.isAbortOngoingPickingJobs());
 		if (!clearedAllPickingJobs)
 		{
-			throw new AdempiereException("There are ongoing picking jobs with qty already picked! You can abort them by enabling the 'abortOngoingPickingJobs' option.");
+			throw new AdempiereException(ONGOING_PICKING_JOBS_ERR_MSG).markAsUserValidationError();
 		}
 
 		final boolean clearedAllUnprocessedHUs = pickingCandidateService.clearPickingSlot(request.getPickingSlotId(), request.isRemoveUnprocessedHUsFromSlot());
 		if (!clearedAllUnprocessedHUs)
 		{
-			throw new AdempiereException("There are drafted picking candidates allocated to the target slot! You can delete them by enabling the 'removeUnprocessedHUsFromSlot' option.");
+			throw new AdempiereException(DRAFTED_PICKING_CANDIDATES_ERR_MSG).markAsUserValidationError();
 		}
 
 		final boolean clearedAllQueuedHUs = huPickingSlotBL.clearPickingSlotQueue(request.getPickingSlotId(), request.isRemoveQueuedHUsFromSlot());
 		if (!clearedAllQueuedHUs)
 		{
-			throw new AdempiereException("There are queued HUs on the target slot! You can remove them by enabling the 'removeQueuedHUsFromSlot' option.");
+			throw new AdempiereException(QUEUED_HUS_ON_SLOT_ERR_MSG).markAsUserValidationError();
 		}
 
 		huPickingSlotBL.releasePickingSlotIfPossible(request.getPickingSlotId());
