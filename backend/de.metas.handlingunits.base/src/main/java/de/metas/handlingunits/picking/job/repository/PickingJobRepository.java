@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
@@ -160,5 +161,20 @@ public class PickingJobRepository
 				.create()
 				.firstIdOnlyOptional(PickingJobId::ofRepoIdOrNull)
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
+	}
+
+	@NonNull
+	public List<PickingJob> getDraftedByPickingSlotId(
+			@NonNull final PickingSlotId slotId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		final ImmutableSet<PickingJobId> pickingJobIds = queryBL.createQueryBuilder(I_M_Picking_Job.class)
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
+				.create()
+				.listIds(PickingJobId::ofRepoId);
+
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds);
 	}
 }
