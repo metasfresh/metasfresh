@@ -124,12 +124,23 @@ import java.util.stream.Collectors;
 	{
 		assertJUnitMode();
 
-		final List<Object> beanObjs = map.values()
-				.stream()
-				.filter(Objects::nonNull)
-				.flatMap(Collection::stream)
-				.filter(impl -> beanType.isAssignableFrom(impl.getClass()))
-				.collect(Collectors.toList());
+		List<Object> beanObjs = map.get(ClassReference.of(beanType));
+		if (beanObjs == null)
+		{
+			final List<Object> assignableBeans = map.values()
+					.stream()
+					.filter(Objects::nonNull)
+					.flatMap(Collection::stream)
+					.filter(impl -> beanType.isAssignableFrom(impl.getClass()))
+					.collect(Collectors.toList());
+
+			if (assignableBeans.isEmpty())
+			{
+				return null;
+			}
+
+			beanObjs = assignableBeans;
+		}
 
 		return beanObjs
 				.stream()
