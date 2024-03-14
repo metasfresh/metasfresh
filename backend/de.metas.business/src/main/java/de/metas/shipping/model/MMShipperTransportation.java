@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
@@ -341,8 +342,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		final List<I_M_ShippingPackage> lines = getLines(true);
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);

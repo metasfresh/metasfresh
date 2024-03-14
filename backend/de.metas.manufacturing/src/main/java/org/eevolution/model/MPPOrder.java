@@ -29,6 +29,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -161,7 +162,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final List<I_PP_Order_BOMLine> lines = getLines();
 		if (lines.isEmpty())
 		{
-			throw new LiberoException("@NoLines@");
+			throw new LiberoException(LiberoException.MSG_NoLines);
 		}
 
 		//
@@ -173,10 +174,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			{
 				if (line.getM_Warehouse_ID() != getM_Warehouse_ID())
 				{
-					throw new LiberoException("@CannotChangeDocType@"
+					throw new LiberoException(TranslatableStrings.parse("@CannotChangeDocType@"
 							+ "\n@PP_Order_BOMLine_ID@: " + line
 							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
-							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
+							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID()));
 				}
 			}
 		}

@@ -165,7 +165,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@: " + sepaDocument);
+			throw AdempiereException.newWithTranslatableMessage("@NoLines@: " + sepaDocument);
 		}
 
 		for (final I_SEPA_Export_Line line : sepaDocumentLines)
