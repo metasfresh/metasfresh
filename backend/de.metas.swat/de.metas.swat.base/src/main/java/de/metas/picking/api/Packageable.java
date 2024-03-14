@@ -159,6 +159,7 @@ public class Packageable
 	public Quantity getQtyToPick()
 	{
 		return qtyToDeliver
+				// .subtract(qtyPickedNotDelivered) don't subtract the qtyPickedNotDelivered as it was already subtracted from the qtyToDeliver
 				// IMPORTANT: don't subtract the Qty PickedPlanned
 				// because we will also allocate existing DRAFT picking candidates
 				// .subtract(qtyPickedPlanned)

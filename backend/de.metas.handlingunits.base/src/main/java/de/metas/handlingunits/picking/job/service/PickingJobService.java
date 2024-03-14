@@ -342,6 +342,9 @@ public class PickingJobService
 		});
 	}
 
+	/**
+	 * @return true, if all picking jobs have been removed form the slot, false otherwise
+	 */
 	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean abortOngoingPickingJobs)
 	{
 		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());

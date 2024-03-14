@@ -89,6 +89,7 @@ public class HUPickingSlotBL
 {
 	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+	private ImmutableList<PickingSlotConnectedComponent> pickingSlotConnectedComponents = null; // lazy
 
 	public static final class QueueActionResult implements IHUPickingSlotBL.IQueueActionResult
 	{
@@ -571,8 +572,7 @@ public class HUPickingSlotBL
 			return;
 		}
 
-		final boolean isSlotAllocatedByAConnectedComponent = SpringContextHolder.instance
-				.getBeansOfType(PickingSlotConnectedComponent.class)
+		final boolean isSlotAllocatedByAConnectedComponent = getPickingSlotConnectedComponents()
 				.stream()
 				.anyMatch(component -> component.hasAllocationsForSlot(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID())));
 		if (isSlotAllocatedByAConnectedComponent)
@@ -676,5 +676,16 @@ public class HUPickingSlotBL
 		}
 
 		return huPickingSlotDAO.isEmpty(slot);
+	}
+
+	@NonNull
+	private List<PickingSlotConnectedComponent> getPickingSlotConnectedComponents()
+	{
+		if (pickingSlotConnectedComponents == null)
+		{
+			pickingSlotConnectedComponents = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(PickingSlotConnectedComponent.class));
+		}
+
+		return pickingSlotConnectedComponents;
 	}
 }

@@ -113,10 +113,9 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
-	public I_M_PickingSlot save(@NonNull final I_M_PickingSlot slot)
+	public void save(@NonNull final I_M_PickingSlot slot)
 	{
 		InterfaceWrapperHelper.save(slot);
-		return slot;
 	}
 
 	private static Predicate<I_M_PickingSlot> toPredicate(final PickingSlotQuery query)

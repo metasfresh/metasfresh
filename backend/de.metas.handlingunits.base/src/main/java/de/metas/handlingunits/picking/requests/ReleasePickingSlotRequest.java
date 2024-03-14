@@ -32,7 +32,7 @@ import lombok.Value;
 public class ReleasePickingSlotRequest
 {
 	@NonNull
-	public static ReleasePickingSlotRequest ofSlotId(@NonNull final PickingSlotId pickingSlotId)
+	public static ReleasePickingSlotRequest ofPickingSlotId(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return ReleasePickingSlotRequest.builder()
 				.pickingSlotId(pickingSlotId)

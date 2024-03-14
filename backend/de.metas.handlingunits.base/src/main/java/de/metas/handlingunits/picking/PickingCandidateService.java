@@ -384,6 +384,9 @@ public class PickingCandidateService
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 
+	/**
+	 * @return true, if all drafted picking candidates have been removed from the slot, false otherwise
+	 */
 	public boolean clearPickingSlot(@NonNull final PickingSlotId pickingSlotId, final boolean removeUnprocessedHUsFromSlot)
 	{
 		if (removeUnprocessedHUsFromSlot)

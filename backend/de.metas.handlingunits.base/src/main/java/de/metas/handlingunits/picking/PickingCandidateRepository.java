@@ -517,10 +517,7 @@ public class PickingCandidateRepository
 			@Nullable final HuId huId,
 			@Nullable final PickingSlotId pickingSlotId)
 	{
-		if (huId == null && pickingSlotId == null)
-		{
-			return ImmutableList.of();
-		}
+		Check.assume(huId != null || pickingSlotId != null, "At least one of HuId and pickingSlotId must be set!");
 
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
