@@ -48,6 +48,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
@@ -336,8 +337,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		final List<I_M_ShippingPackage> lines = getLines(true);
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);

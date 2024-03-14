@@ -44,6 +44,7 @@ const ScanHUAndGetQtyComponent = ({
   invalidQtyMessageKey,
   //
   onResult,
+  onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
@@ -224,6 +225,7 @@ const ScanHUAndGetQtyComponent = ({
 
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_BARCODE);
+    onCloseCallback?.();
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
@@ -313,6 +315,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   //
   // Functions
   onResult: PropTypes.func,
+  onClose: PropTypes.func,
 };
 
 export default ScanHUAndGetQtyComponent;

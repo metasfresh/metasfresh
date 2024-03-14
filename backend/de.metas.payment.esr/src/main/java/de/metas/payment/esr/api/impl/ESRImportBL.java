@@ -467,7 +467,7 @@ public class ESRImportBL implements IESRImportBL
 	{
 		if (esrImport.isProcessed())
 		{
-			throw new AdempiereException("@Processed@: @Y@");
+			throw AdempiereException.newWithTranslatableMessage("@Processed@: @Y@");
 		}
 
 		final List<I_ESR_ImportFile> allFiles = esrImportDAO.retrieveActiveESRImportFiles(esrImport);
@@ -504,7 +504,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			if (allLines.isEmpty())
 			{
-				throw new AdempiereException("@NoLines@");
+				throw AdempiereException.noLines();
 			}
 
 			for (final I_ESR_ImportLine line : allLines)
@@ -964,7 +964,7 @@ public class ESRImportBL implements IESRImportBL
 	{
 		if (esrImport.isProcessed())
 		{
-			throw new AdempiereException("@Processed@: @Y@");
+			throw AdempiereException.newWithTranslatableMessage("@Processed@: @Y@");
 		}
 
 		process(esrImport);
@@ -1033,7 +1033,7 @@ public class ESRImportBL implements IESRImportBL
 			{
 				if (invPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 				{
-					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
+					final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
 					logger.warn(ex.getLocalizedMessage(), ex);
 					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 					esrImportDAO.save(line);
@@ -1045,7 +1045,7 @@ public class ESRImportBL implements IESRImportBL
 			{
 				if (paymentPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 				{
-					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
+					final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
 					logger.warn(ex.getLocalizedMessage(), ex);
 					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 					esrImportDAO.save(line);
@@ -1057,7 +1057,7 @@ public class ESRImportBL implements IESRImportBL
 		final String actionType = line.getESR_Payment_Action();
 		if (Check.isEmpty(actionType, true))
 		{
-			final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
+			final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
 			logger.warn(ex.getLocalizedMessage(), ex);
 			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 			esrImportDAO.save(line);
@@ -1067,7 +1067,7 @@ public class ESRImportBL implements IESRImportBL
 		final IESRActionHandler handler = handlers.get(actionType);
 		if (handler == null)
 		{
-			final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
+			final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@NotSupported@ @ESR_Payment_Action@: " + actionType);
 			logger.warn(ex.getLocalizedMessage(), ex);
 			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 			esrImportDAO.save(line);

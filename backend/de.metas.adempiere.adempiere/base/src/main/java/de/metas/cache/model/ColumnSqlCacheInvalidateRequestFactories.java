@@ -87,7 +87,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		}
 		else
 		{
-			throw new AdempiereException("Fetch method not supported for " + descriptor);
+			throw AdempiereException.newWithPlainMessage("Fetch method not supported for " + descriptor);
 		}
 	}
 
