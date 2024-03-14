@@ -32,7 +32,6 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -232,17 +231,23 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
+		return retrieveOrderLinesByOrderIds(orderIds, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds, Class<T> type)
+	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+		return queryBL.createQueryBuilder(type)
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.create()
-				.listImmutable(I_C_OrderLine.class);
+				.listImmutable(type);
 	}
 
 	@Override
