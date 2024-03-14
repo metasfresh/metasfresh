@@ -37,7 +37,7 @@ public class PickingSlot_ChangeIsDynamic extends JavaProcess implements IProcess
 	@Param(parameterName = "IsDynamic")
 	private boolean isDynamic;
 
-	private final SpringContextHolder.Lazy<PickingSlotService> pickingSlotServiceLazy = SpringContextHolder.lazyBean(PickingSlotService.class);
+	private final PickingSlotService pickingSlotService = SpringContextHolder.instance.getBean(PickingSlotService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -53,7 +53,7 @@ public class PickingSlot_ChangeIsDynamic extends JavaProcess implements IProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		pickingSlotServiceLazy.get().switchDynamicAllocation(PickingSlotId.ofRepoId(getRecord_ID()), isDynamic);
+		pickingSlotService.switchDynamicAllocation(PickingSlotId.ofRepoId(getRecord_ID()), isDynamic);
 		return MSG_OK;
 	}
 }
