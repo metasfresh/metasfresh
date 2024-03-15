@@ -9,8 +9,10 @@ import { getLineById } from '../../../reducers/wfProcesses';
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
-import { getQtyPickedOrRejectedTotalForLine } from '../../../utils/picking';
+import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const PickLineScreen = () => {
   const {
@@ -18,10 +20,17 @@ const PickLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, allowPickingAnyHU, steps, catchWeightUOM, qtyToPick, qtyPicked, uom } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
+  const {
+    caption,
+    allowPickingAnyHU,
+    steps,
+    catchWeightUOM,
+    qtyToPick,
+    qtyPicked,
+    qtyToPickRemaining,
+    uom,
+    manuallyClosed,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -36,10 +45,23 @@ const PickLineScreen = () => {
       })
     );
 
+  const dispatch = useDispatch();
+  const onClose = () => {
+    closePickingJobLine({ wfProcessId, lineId }).then((wfProcess) => {
+      dispatch(updateWFProcess({ wfProcess }));
+    });
+  };
+
+  const onReOpen = () => {
+    openPickingJobLine({ wfProcessId, lineId }).then((wfProcess) => {
+      dispatch(updateWFProcess({ wfProcess }));
+    });
+  };
+
   return (
     <div className="section pt-2">
       <div className="buttons">
-        {allowPickingAnyHU && (
+        {!manuallyClosed && allowPickingAnyHU && (
           <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
         )}
         {steps.length > 0 &&
@@ -47,6 +69,7 @@ const PickLineScreen = () => {
             return (
               <PickStepButton
                 key={idx}
+                disabled={manuallyClosed}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
@@ -61,6 +84,8 @@ const PickLineScreen = () => {
               />
             );
           })}
+        {!manuallyClosed && qtyToPickRemaining > 0 && <ButtonWithIndicator caption={'Close'} onClick={onClose} />}
+        {manuallyClosed && <ButtonWithIndicator caption={'Re-open'} onClick={onReOpen} />}
       </div>
     </div>
   );
@@ -78,6 +103,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     uom: line.uom,
     qtyToPick: line.qtyToPick,
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
+    qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
+    manuallyClosed: line.manuallyClosed,
   };
 };
 
