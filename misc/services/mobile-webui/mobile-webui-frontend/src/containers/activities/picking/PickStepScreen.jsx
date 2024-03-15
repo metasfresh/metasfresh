@@ -10,7 +10,7 @@ import { pickingStepScanScreenLocation } from '../../../routes/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
-import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
@@ -152,8 +152,8 @@ const PickStepScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, altStepId }) => {
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
   return {
-    pickFrom: stepProps != null ? getPickFrom({ stepProps, altStepId }) : null,
-    qtyToPick: stepProps != null ? getQtyToPick({ stepProps, altStepId }) : 0,
+    pickFrom: stepProps != null ? getPickFromForStep({ stepProps, altStepId }) : null,
+    qtyToPick: stepProps != null ? getQtyToPickForStep({ stepProps, altStepId }) : 0,
     uom: stepProps?.uom ?? '',
   };
 };
