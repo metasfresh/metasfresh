@@ -31,6 +31,7 @@ import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
+import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
 
 const isShowBestBeforeDate = true; // TODO make it configurable
 const isShowLotNo = true; // TODO make it configurable
@@ -147,13 +148,11 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
-  const qtyPickedOrRejectedTotal = Object.values(line.steps)
-    .map((step) => step.mainPickFrom.qtyPicked + step.mainPickFrom.qtyRejected)
-    .reduce((acc, qtyPickedOrRejected) => acc + qtyPickedOrRejected, 0);
-
   return {
     productId: line.productId,
-    qtyToPickRemaining: line.qtyToPick - qtyPickedOrRejectedTotal,
+    qtyToPick: line.qtyToPick,
+    qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
+    qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     uom: line.uom,
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,

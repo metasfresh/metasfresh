@@ -9,6 +9,8 @@ import { getLineById } from '../../../reducers/wfProcesses';
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
+import { getQtyPickedOrRejectedTotalForLine } from '../../../utils/picking';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 
 const PickLineScreen = () => {
   const {
@@ -16,27 +18,12 @@ const PickLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, allowPickingAnyHU, steps, catchWeightUOM } = useSelector(
+  const { caption, allowPickingAnyHU, steps, catchWeightUOM, qtyToPick, qtyPicked, uom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.PickingLine'),
-        values: [
-          {
-            caption: trl('activities.picking.PickingLine'),
-            value: caption,
-            bold: true,
-          },
-        ],
-      })
-    );
-  }, [url, caption]);
+  useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const history = useHistory();
   const onScanButtonClick = () =>
@@ -80,15 +67,45 @@ const PickLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const lineProps = getLineById(state, wfProcessId, activityId, lineId);
-  const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
+  const line = getLineById(state, wfProcessId, activityId, lineId);
+  const stepsById = line != null && line.steps ? line.steps : {};
 
   return {
-    caption: lineProps?.caption,
-    allowPickingAnyHU: lineProps?.allowPickingAnyHU ?? false,
+    caption: line?.caption,
+    allowPickingAnyHU: line?.allowPickingAnyHU ?? false,
     steps: Object.values(stepsById),
-    catchWeightUOM: lineProps.catchWeightUOM,
+    catchWeightUOM: line.catchWeightUOM,
+    uom: line.uom,
+    qtyToPick: line.qtyToPick,
+    qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
   };
+};
+
+const useHeaderUpdate = ({ url, caption, uom, qtyToPick, qtyPicked }) => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        caption: trl('activities.picking.PickingLine'),
+        values: [
+          {
+            caption: trl('activities.picking.PickingLine'),
+            value: caption,
+            bold: true,
+          },
+          {
+            caption: trl('activities.picking.target'),
+            value: formatQtyToHumanReadableStr({ qty: qtyToPick, uom }),
+          },
+          {
+            caption: trl('activities.picking.picked'),
+            value: formatQtyToHumanReadableStr({ qty: qtyPicked, uom }),
+          },
+        ],
+      })
+    );
+  }, [url, caption]);
 };
 
 export default PickLineScreen;
