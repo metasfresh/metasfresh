@@ -1,5 +1,4 @@
-DROP VIEW RV_Storage
-;
+DROP VIEW RV_Storage;
 
 CREATE OR REPLACE VIEW RV_Storage AS
 SELECT s.ad_client_id,
@@ -30,8 +29,8 @@ SELECT s.ad_client_id,
        s.datelastinventory,
        s.m_attributesetinstance_id,
        asi.m_attributeset_id,
-       NULL                        AS shelflifedays,
-       NULL                        AS goodfordays,
+       NULL::numeric               AS shelflifedays,
+       NULL::numeric               AS goodfordays,
        NULL::numeric
                                    AS shelfliferemainingpct
 FROM m_storage s
