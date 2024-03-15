@@ -19,8 +19,8 @@ SELECT sectionGroupPartner.c_bpartner_id                                        
        sectionPartner.c_bpartner_id as C_BPartner_CreditLimit_Departments_V_ID,
        now() as Created,
        now() as Updated,
-       1000000 as CreatedBy,
-       1000000 as UpdatedBy,
+       1000000::numeric as CreatedBy,
+       1000000::numeric as UpdatedBy,
        'Y'::char as IsActive,
        sectionGroupPartner.ad_client_id as AD_Client_ID,
        sectionGroupPartner.ad_org_id as AD_Org_ID
