@@ -1,8 +1,15 @@
 package de.metas.ui.web.window.exceptions;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -30,13 +37,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.FORBIDDEN)
 public class DocumentFieldReadonlyException extends AdempiereException
 {
-	public DocumentFieldReadonlyException(final String fieldName, final Object value)
+	public static final AdMessageKey CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR = AdMessageKey.of("de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg");
+
+	public DocumentFieldReadonlyException(@NonNull final String fieldName, @Nullable final Object value)
 	{
 		super(buildMsg(fieldName, value));
 	}
 
-	private static String buildMsg(final String fieldName, final Object value)
+	private static ITranslatableString buildMsg(@NonNull final String fieldName, @Nullable final Object value)
 	{
-		return "Changing " + fieldName + " to '" + value + "' is not allowed because the field is readonly";
+		return Services.get(IMsgBL.class).getTranslatableMsgText(CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR, fieldName, value);
 	}
 }
+
