@@ -445,7 +445,7 @@ public class C_OrderLine
 			return;
 		}
 
-		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		groupChangesHandler.scheduleOrderLinesRenumbering(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
