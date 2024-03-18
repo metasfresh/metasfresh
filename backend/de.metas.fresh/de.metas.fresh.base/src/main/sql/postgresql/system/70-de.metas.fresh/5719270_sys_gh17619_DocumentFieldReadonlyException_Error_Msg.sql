@@ -12,3 +12,13 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Changing {0} to {1} is not allowed because the field is readonly.',Updated=TO_TIMESTAMP('2024-03-15 17:03:48.838000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545382
 ;
 
+-- Value: de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg
+-- 2024-03-15T17:03:48.838Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-03-15 17:03:48.838000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545382
+;
+
+-- Value: de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg
+-- 2024-03-15T17:03:48.838Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-03-15 17:03:48.838000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545382
+;
+
