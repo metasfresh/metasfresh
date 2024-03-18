@@ -9,7 +9,11 @@ import { getLineById } from '../../../reducers/wfProcesses';
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
-import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
+import {
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickRemainingForLine,
+  isAllowPickingAnyHUForLine,
+} from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
@@ -97,7 +101,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: line?.caption,
-    allowPickingAnyHU: line?.allowPickingAnyHU ?? false,
+    allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
     catchWeightUOM: line.catchWeightUOM,
     uom: line.uom,

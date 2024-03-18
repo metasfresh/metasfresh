@@ -3,6 +3,10 @@ import PickStepScanScreen from '../containers/activities/picking/PickStepScanScr
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
 import PickLineScanScreen from '../containers/activities/picking/PickLineScanScreen';
+import PickProductsScanScreen from '../containers/activities/picking/PickProductsScanScreen';
+
+export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
 
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
@@ -26,6 +30,14 @@ export const pickingStepScanScreenLocation = ({
 };
 
 export const pickingRoutes = [
+  {
+    path: pickingScanScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+    }),
+    Component: PickProductsScanScreen,
+  },
   {
     path: pickingLineScreenLocation({
       applicationId: ':applicationId',

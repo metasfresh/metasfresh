@@ -45,6 +45,7 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
+    lineId: null,
     userInfo,
     qtyCaption,
     qtyTarget,
@@ -63,6 +64,7 @@ const ScanHUAndGetQtyComponent = ({
 
   useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
+      lineId: prevState?.lineId,
       userInfo,
       qtyCaption,
       qtyTarget,
@@ -114,7 +116,7 @@ const ScanHUAndGetQtyComponent = ({
       scannedBarcode,
     };
 
-    // console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
+    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
   };

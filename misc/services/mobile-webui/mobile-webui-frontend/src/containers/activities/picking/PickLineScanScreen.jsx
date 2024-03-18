@@ -32,9 +32,7 @@ import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
 import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
-
-const isShowBestBeforeDate = true; // TODO make it configurable
-const isShowLotNo = true; // TODO make it configurable
+import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 
 const PickLineScanScreen = () => {
   const {
@@ -63,59 +61,9 @@ const PickLineScanScreen = () => {
     [productId]
   );
 
+  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId });
+
   const history = useHistory();
-  const onResult = ({
-    qty = 0,
-    qtyRejected,
-    reason = null,
-    scannedBarcode = null,
-    catchWeight = null,
-    catchWeightUom = null,
-    isTUToBePickedAsWhole = false,
-    bestBeforeDate = null,
-    lotNo = null,
-    gotoPickingLineScreen = true,
-    ...others
-  }) => {
-    console.log('onResult', {
-      qty,
-      reason,
-      scannedBarcode,
-      catchWeight,
-      catchWeightUom,
-      isShowBestBeforeDate,
-      bestBeforeDate,
-      isShowLotNo,
-      lotNo,
-      gotoPickingLineScreen,
-      ...others,
-    });
-
-    return postStepPicked({
-      wfProcessId,
-      activityId,
-      lineId,
-      //stepId,
-      huQRCode: scannedBarcode,
-      qtyPicked: qty,
-      qtyRejectedReasonCode: reason,
-      qtyRejected,
-      catchWeight,
-      pickWholeTU: isTUToBePickedAsWhole,
-      checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
-      setBestBeforeDate: isShowBestBeforeDate,
-      bestBeforeDate,
-      setLotNo: isShowLotNo,
-      lotNo,
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      if (gotoPickingLineScreen) {
-        history.go(-1);
-      }
-    });
-    //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
-  };
-
   const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
   const onClose = () => {
     if (isGotoPickingJobOnClose) {
@@ -160,8 +108,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
-  const result = {};
-
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
   //console.log('resolveScannedBarcode', { parsedHUQRCode });
 
@@ -169,19 +115,88 @@ const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProduct
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  if (parsedHUQRCode.weightNet != null) {
-    result['catchWeight'] = parsedHUQRCode.weightNet;
+  return convertQRCodeObjectToResolvedResult({ parsedHUQRCode });
+};
+
+export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
+  const result = {};
+
+  if (qrCodeObj.weightNet != null) {
+    result['catchWeight'] = qrCodeObj.weightNet;
   }
 
-  if (parsedHUQRCode.isTUToBePickedAsWhole === true) {
+  if (qrCodeObj.isTUToBePickedAsWhole === true) {
     result['isTUToBePickedAsWhole'] = true;
   }
 
-  result['bestBeforeDate'] = parsedHUQRCode.bestBeforeDate;
-  result['lotNo'] = parsedHUQRCode.lotNo;
+  result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
+  result['lotNo'] = qrCodeObj.lotNo;
 
-  //console.log('resolveScannedBarcode', { result, parsedHUQRCode });
+  //console.log('resolveScannedBarcode', { result, qrCodeObj });
   return result;
+};
+
+export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null }) => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+
+  return ({
+    lineId = null,
+    qty = 0,
+    qtyRejected,
+    reason = null,
+    scannedBarcode = null,
+    catchWeight = null,
+    catchWeightUom = null,
+    isTUToBePickedAsWhole = false,
+    bestBeforeDate = null,
+    lotNo = null,
+    gotoPickingLineScreen = true,
+    resolvedBarcodeData,
+    ...others
+  }) => {
+    const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
+    console.log('usePostQtyPicked.onResult', {
+      lineIdEffective,
+      lineId,
+      lineIdParam,
+      qty,
+      reason,
+      scannedBarcode,
+      catchWeight,
+      catchWeightUom,
+      isShowBestBeforeDate,
+      bestBeforeDate,
+      isShowLotNo,
+      lotNo,
+      gotoPickingLineScreen,
+      ...others,
+    });
+
+    return postStepPicked({
+      wfProcessId,
+      activityId,
+      lineId: lineIdEffective,
+      //stepId,
+      huQRCode: scannedBarcode,
+      qtyPicked: qty,
+      qtyRejectedReasonCode: reason,
+      qtyRejected,
+      catchWeight,
+      pickWholeTU: isTUToBePickedAsWhole,
+      checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
+      setBestBeforeDate: isShowBestBeforeDate,
+      bestBeforeDate,
+      setLotNo: isShowLotNo,
+      lotNo,
+    }).then((wfProcess) => {
+      dispatch(updateWFProcess({ wfProcess }));
+      if (gotoPickingLineScreen) {
+        history.go(-1);
+      }
+    });
+    //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
+  };
 };
 
 export default PickLineScanScreen;
