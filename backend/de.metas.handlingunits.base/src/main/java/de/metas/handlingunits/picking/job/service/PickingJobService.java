@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
@@ -41,6 +42,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -427,5 +429,29 @@ public class PickingJobService
 		{
 			return false;
 		}
+	}
+
+	public PickingJob closeLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(true));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(false));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
 	}
 }
