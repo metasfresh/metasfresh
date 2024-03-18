@@ -75,9 +75,9 @@ public final class TableRecordIdDescriptor
 				.build();
 	}
 
-	private final String originTableName;
-	private final String recordIdColumnName;
-	private final String targetTableName;
+	String originTableName;
+	String recordIdColumnName;
+	String targetTableName;
 
 	@Builder
 	private TableRecordIdDescriptor(
@@ -85,9 +85,9 @@ public final class TableRecordIdDescriptor
 			final String originTableName,
 			final String recordIdColumnName)
 	{
-		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not null");
-		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not null");
-		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not null");
+		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not empty");
+		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not empty");
+		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not empty");
 
 		this.targetTableName = targetTableName;
 		this.originTableName = originTableName;

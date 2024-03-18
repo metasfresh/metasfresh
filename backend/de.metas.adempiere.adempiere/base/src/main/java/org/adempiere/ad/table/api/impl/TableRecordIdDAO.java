@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.cache.CCache;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -26,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -54,9 +57,28 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	private static final String DB_FUNCTION_RETRIEVE_DISTINCT_IDS = "table_record_reference_retrieve_distinct_ids";
 
 	private CCache<String, ImmutableList<TableRecordIdDescriptor>> tableRecordIdDescriptorsByOriginTableName = CCache.<String, ImmutableList<TableRecordIdDescriptor>>builder()
-			.tableName(I_AD_Table.Table_Name)
+			.cacheName("TableRecordIdDAO_tableRecordIdDescriptorsByOriginTableName")
 			.build();
 
+	public TableRecordIdDAO()
+	{
+		CacheMgt.get().addCacheResetListener(this::onCacheReset);
+	}
+
+	private long onCacheReset(@NonNull final CacheInvalidateMultiRequest multiRequest)
+	{
+		if (multiRequest.isResetAll())
+		{
+			return tableRecordIdDescriptorsByOriginTableName.reset();
+		}
+		else
+		{
+			final Set<String> tableNamesEffective = multiRequest.getTableNamesEffective();
+			tableRecordIdDescriptorsByOriginTableName.removeAll(tableNamesEffective);
+			return tableNamesEffective.size();
+		}
+	}
+	
 	@Override
 	public List<TableRecordIdDescriptor> getTableRecordIdReferences(@NonNull final String tableName)
 	{
@@ -135,7 +157,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	 * <p>
 	 * ..just faster.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/3389
+	 * See <a href="https://github.com/metasfresh/metasfresh/issues/3389">https://github.com/metasfresh/metasfresh/issues/3389</a>	 
 	 */
 	@VisibleForTesting
 	ImmutableSet<AdTableId> retrieveDistinctIds(

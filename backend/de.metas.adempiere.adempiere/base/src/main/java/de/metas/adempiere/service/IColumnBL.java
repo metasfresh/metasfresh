@@ -83,8 +83,10 @@ public interface IColumnBL extends ISingletonService
 	String getSingleKeyColumn(String tableName);
 
 	/**
-	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>.
+	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>.<br/>
 	 * Do not fail if this column can't be found.
+	 * <p/>
+	 * E.g. for {@code recordColumnName=Record_ID}, the method will probably return {@code AD_Table_ID}.
 	 */
 	Optional<String> getTableIdColumnName(String tableName, String recordColumnName);
 
