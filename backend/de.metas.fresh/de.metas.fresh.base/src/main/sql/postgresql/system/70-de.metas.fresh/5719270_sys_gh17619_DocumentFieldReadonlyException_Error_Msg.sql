@@ -1,6 +1,6 @@
 -- Value: de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg
 -- 2024-03-15T17:03:08.991Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545382,0,TO_TIMESTAMP('2024-03-15 17:03:08.788000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Die Änderung von {0} in {1} ist nicht zulässig, da das Feld schreibgeschützt ist.','E',TO_TIMESTAMP('2024-03-15 17:03:08.788000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545382,0,TO_TIMESTAMP('2024-03-15 17:03:08.788000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Die Änderung von {0} zu {1} ist nicht zulässig, da das Feld schreibgeschützt ist.','E',TO_TIMESTAMP('2024-03-15 17:03:08.788000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException.Msg')
 ;
 
 -- 2024-03-15T17:03:08.995Z
