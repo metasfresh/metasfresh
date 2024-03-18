@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1514,6 +1513,12 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartnerIds;
 	}
 
+	@NonNull
+	public Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull final GLNQuery query)
+	{
+		return glnsLoadingCache.getSingleBPartnerLocationId(query);
+	}
+	
 	private static GLNQuery toGLNQuery(@NonNull final BPartnerQuery query)
 	{
 		return GLNQuery.builder()

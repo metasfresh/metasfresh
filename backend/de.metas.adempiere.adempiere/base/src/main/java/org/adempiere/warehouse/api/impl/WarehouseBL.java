@@ -39,8 +39,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.Warehouse;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -231,7 +233,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
-
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -266,5 +267,31 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@NonNull
+	public Optional<WarehouseId> getOptionalIdByValue(@NonNull final String value)
+	{
+		return warehouseDAO.getOptionalIdByValue(value);
+	}
+
+	@NonNull
+	public Warehouse getByIdNotNull(@NonNull final WarehouseId id)
+	{
+		return warehouseDAO.getOptionalById(id)
+				.orElseThrow(() -> new AdempiereException("No warehouse found for ID !")
+						.appendParametersToMessage()
+						.setParameter("WarehouseId", id));
+	}
+
+	public void updateWarehouse(@NonNull final Warehouse request)
+	{
+		warehouseDAO.updateWarehouse(request);
+	}
+
+	@NonNull
+	public Warehouse createWarehouse(@NonNull final CreateWarehouseRequest request)
+	{
+		return warehouseDAO.createWarehouse(request);
 	}
 }
