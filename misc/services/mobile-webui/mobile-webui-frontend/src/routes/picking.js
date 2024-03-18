@@ -4,6 +4,7 @@ import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
 import PickLineScanScreen from '../containers/activities/picking/PickLineScanScreen';
 import PickProductsScanScreen from '../containers/activities/picking/PickProductsScanScreen';
+import { toUrl } from '../utils';
 
 export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
@@ -11,8 +12,11 @@ export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activity
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
 
-export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`;
+export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, qrCode }) =>
+  toUrl({
+    urlBase: getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`,
+    queryParams: { qrCode },
+  });
 
 export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>
   pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) +

@@ -33,12 +33,16 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
 import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
 import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
+import { useSearchParams } from '../../../hooks/useSearchParams';
 
 const PickLineScanScreen = () => {
   const {
     url,
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
+
+  const [urlParams] = useSearchParams();
+  const qrCode = urlParams.get('qrCode');
 
   const { productId, qtyToPickRemaining, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
@@ -50,7 +54,7 @@ const PickLineScanScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: trl('activities.picking.scanQRCode'),
+        caption: trl('activities.picking.PickingLine'),
         values: [],
       })
     );
@@ -73,6 +77,7 @@ const PickLineScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
+      scannedBarcode={qrCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPickRemaining}
       qtyTarget={qtyToPickRemaining}

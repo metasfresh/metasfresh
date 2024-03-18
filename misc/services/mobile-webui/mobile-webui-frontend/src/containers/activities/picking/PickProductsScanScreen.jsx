@@ -1,24 +1,18 @@
 import React, { useEffect } from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
+import { getActivityById } from '../../../reducers/wfProcesses';
+import { getLinesByProductId, isAllowPickingAnyHUForLine, isLineNotCompleted } from '../../../utils/picking';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
-import { getActivityById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
-import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
-import { convertQRCodeObjectToResolvedResult, usePostQtyPicked } from './PickLineScanScreen';
-import {
-  getLinesByProductId,
-  getQtyToPickRemainingForLine,
-  isAllowPickingAnyHUForLine,
-  isLineNotCompleted,
-} from '../../../utils/picking';
+import { pickingLineScanScreenLocation } from '../../../routes/picking';
 
 const PickProductsScanScreen = () => {
   const {
     url,
-    params: { workflowId: wfProcessId, activityId },
+    params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
   const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
@@ -34,40 +28,19 @@ const PickProductsScanScreen = () => {
     );
   }, []);
 
-  const resolveScannedBarcode = (scannedBarcode) => {
+  const history = useHistory();
+  const onBarcodeScanned = ({ scannedBarcode }) => {
     const qrCode = parseQRCodeString(scannedBarcode);
     const line = getEligibleLineByProductId({ activity, productId: qrCode.productId });
-    const qtyToPickRemaining = getQtyToPickRemainingForLine({ line });
-    // console.log('resolveScannedBarcode', { qrCode, line, qtyToPickRemaining });
+    const lineId = line.pickingLineId;
+    console.log('onBarcodeScanned', { lineId, line, scannedBarcode });
 
-    return {
-      qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),
-      lineId: line.pickingLineId,
-      productId: line.productId,
-      uom: line.uom,
-      catchWeightUom: line.catchWeightUOM,
-      qtyTarget: qtyToPickRemaining,
-      qtyMax: qtyToPickRemaining,
-      ...convertQRCodeObjectToResolvedResult(qrCode),
-    };
+    history.push(
+      pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, qrCode: scannedBarcode })
+    );
   };
 
-  const onResult = usePostQtyPicked({ wfProcessId, activityId });
-
-  const onClose = () => {
-    history.go(-1); // go to picking job screen
-  };
-
-  return (
-    <ScanHUAndGetQtyComponent
-      qtyCaption={trl('general.QtyToPick')}
-      isShowBestBeforeDate={isShowBestBeforeDate}
-      isShowLotNo={isShowLotNo}
-      resolveScannedBarcode={resolveScannedBarcode}
-      onResult={onResult}
-      onClose={onClose}
-    />
-  );
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId }) => {
