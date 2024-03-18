@@ -1,9 +1,6 @@
 package de.metas.ui.web.window.exceptions;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
@@ -41,12 +38,7 @@ public class DocumentFieldReadonlyException extends AdempiereException
 
 	public DocumentFieldReadonlyException(@NonNull final String fieldName, @Nullable final Object value)
 	{
-		super(buildMsg(fieldName, value));
-	}
-
-	private static ITranslatableString buildMsg(@NonNull final String fieldName, @Nullable final Object value)
-	{
-		return Services.get(IMsgBL.class).getTranslatableMsgText(CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR, fieldName, value);
+		super(CHANGING_READONLY_FIELD_NOT_ALLOWED_ERROR, fieldName, value);
 	}
 }
 
