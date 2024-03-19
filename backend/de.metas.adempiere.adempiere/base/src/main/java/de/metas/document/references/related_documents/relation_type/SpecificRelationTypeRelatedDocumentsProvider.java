@@ -386,8 +386,14 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			return windowName;
 		}
 
-		public boolean matchesAsSource(final IZoomSource zoomSource)
+		public boolean matchesAsSource(@NonNull final IZoomSource zoomSource)
 		{
+			if(!tableRefInfo.getTableName().equals(zoomSource.getTableName()))
+			{
+				logger.debug("matchesAsSource - return false because zoomSource.tableName={}; this={}", zoomSource.getTableName(), this);
+				return false;
+			}
+
 			if (tableRecordIdTarget)
 			{
 				// the source always matches if the target is ReferenceTarget
@@ -402,21 +408,21 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			}
 
 			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
-			if (Check.isEmpty(keyColumnName, true))
+			if (Check.isBlank(keyColumnName))
 			{
 				logger.warn("matchesAsSource - return false because zoomSource.getKeyColumnNameOrNull()==null; this={}; zoomSource={}", this, zoomSource);
 				return false;
 			}
-
+			
 			final String whereClause = tableRefInfo.getWhereClause();
-			if (Check.isEmpty(whereClause, true))
+			if (Check.isBlank(whereClause))
 			{
 				logger.debug("matchesAsSource - return true because tableRefInfo.whereClause is empty; this={}", this);
 				return true;
 			}
 
 			final String parsedWhere = parseWhereClause(zoomSource, whereClause, false);
-			if (Check.isEmpty(parsedWhere))
+			if (Check.isBlank(parsedWhere))
 			{
 				return false;
 			}
@@ -424,7 +430,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			final StringBuilder whereClauseEffective = new StringBuilder();
 			whereClauseEffective.append(parsedWhere);
 			whereClauseEffective.append(" AND ( ").append(keyColumnName).append("=").append(zoomSource.getRecord_ID()).append(" )");
-
+			
 			final boolean match = new Query(zoomSource.getCtx(), zoomSource.getTableName(), whereClauseEffective.toString(), zoomSource.getTrxName())
 					.anyMatch();
 
