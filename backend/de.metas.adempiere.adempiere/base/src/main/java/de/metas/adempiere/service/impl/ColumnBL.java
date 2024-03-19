@@ -55,7 +55,7 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		final String prefix = extractPrefixFromRecordColumn(columnName);
+		final String prefix = extractPrefixFromRecordIdColumnName(columnName);
 
 		String tableColumnName;
 		int contextADTableID;
@@ -85,7 +85,7 @@ public class ColumnBL implements IColumnBL
 		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordIdColumnName);
 		Check.assumeNotEmpty(recordIdColumnName, "Paramter 'recordColumnName' is empty; tableName={}", recordIdColumnName, tableName);
 
-		final String prefix = extractPrefixFromRecordColumn(recordIdColumnName);
+		final String prefix = extractPrefixFromRecordIdColumnName(recordIdColumnName);
 
 		if (Adempiere.isUnitTestMode())
 		{
@@ -110,13 +110,10 @@ public class ColumnBL implements IColumnBL
 		return Optional.empty();
 	}
 
-	private String extractPrefixFromRecordColumn(final String columnName)
+	private static String extractPrefixFromRecordIdColumnName(final String columnName)
 	{
 		final int recordStringIndex = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
-
-		final String prefix = columnName.substring(0, recordStringIndex);
-
-		return prefix;
+		return columnName.substring(0, recordStringIndex);
 	}
 
 	@Override

@@ -128,14 +128,14 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 
 			final String tableName = adTable.getTableName();
 			final String recordIdColumnName = recordIdColumn.getColumnName();
-			final String tableColumnName = columnBL.getTableIdColumnName(tableName, recordIdColumnName).orElse(null);
-			if (tableColumnName == null)
+			final String tableIdColumnName = columnBL.getTableIdColumnName(tableName, recordIdColumnName).orElse(null);
+			if (tableIdColumnName == null)
 			{
 				continue;
 			}
 
 			// now we know for sure that the records "table" of table can reference other records via Table_ID/Record_ID
-			retrieveDistinctIds(tableName, tableColumnName)
+			retrieveDistinctIds(tableName, tableIdColumnName)
 					.stream()
 					.map(referencedTableId -> adTableDAO.getTableNameIfPresent(referencedTableId).orElse(null))
 					.filter(Objects::nonNull)
