@@ -15,7 +15,7 @@ const ErrorScreen = ({ /*error,*/ resetErrorBoundary }) => {
   );
 };
 ErrorScreen.propTypes = {
-  error: PropTypes.string,
+  error: PropTypes.object,
   resetErrorBoundary: PropTypes.func,
 };
 
