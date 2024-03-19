@@ -19,10 +19,27 @@ const getHeaderEntries = (state) => state.headers.entries;
 
 export const getEntryItemsFromState = (state) => {
   const headersEntries = getHeaderEntries(state);
-  return headersEntries
+
+  let nextUniqueId = 1;
+  const itemsByKey = {};
+
+  headersEntries
     .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
     .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
-    .filter((entryItem) => !entryItem.hidden);
+    .filter((entryItem) => !entryItem.hidden)
+    .forEach((entryItem) => {
+      const caption = entryItem.caption;
+      let key;
+      if (!caption) {
+        key = 'unique-' + nextUniqueId++;
+      } else {
+        key = caption;
+      }
+
+      itemsByKey[key] = entryItem;
+    });
+
+  return Object.values(itemsByKey);
 };
 
 export const getCaptionFromHeaders = (state) => {
