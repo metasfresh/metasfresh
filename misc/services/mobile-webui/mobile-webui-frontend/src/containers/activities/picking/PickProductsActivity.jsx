@@ -28,7 +28,11 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   return (
     <div className="mt-5">
       {allowPickingAnyHU && (
-        <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+        <ButtonWithIndicator
+          caption={trl('activities.picking.scanQRCode')}
+          disabled={!isUserEditable}
+          onClick={onScanButtonClick}
+        />
       )}
       {lines &&
         lines.map((lineItem) => {
