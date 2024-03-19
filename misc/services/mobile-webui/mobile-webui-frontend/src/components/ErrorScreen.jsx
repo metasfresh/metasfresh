@@ -9,7 +9,7 @@ const ErrorScreen = ({ /*error,*/ resetErrorBoundary }) => {
     <div className="error-screen">
       <div className="message">{userFriendlyError}</div>
       <button className="button" onClick={() => resetErrorBoundary()}>
-        Retry...
+        {trl('errorScreen.retryButton')}
       </button>
     </div>
   );
