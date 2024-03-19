@@ -222,7 +222,9 @@ const updateLineFromSteps = ({ draftLine }) => {
 };
 
 const computeLineStatusFromStepStatuses = ({ draftLine }) => {
-  if (!draftLine.qtyPicked && !draftLine.qtyRejected) {
+  if (draftLine.manuallyClosed) {
+    return CompleteStatus.COMPLETED;
+  } else if (!draftLine.qtyPicked && !draftLine.qtyRejected) {
     return CompleteStatus.NOT_STARTED;
   } else if (draftLine.qtyPicked + draftLine.qtyRejected >= draftLine.qtyToPick) {
     return CompleteStatus.COMPLETED;
@@ -383,6 +385,12 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
 
   return draftActivityDataStored;
 };
+
+//
+//
+// ------------------------------------------------------------------------------------
+//
+//
 
 registerHandler({
   componentType: COMPONENT_TYPE,

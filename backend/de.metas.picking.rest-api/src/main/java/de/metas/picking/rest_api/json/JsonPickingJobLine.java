@@ -50,6 +50,7 @@ public class JsonPickingJobLine
 	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean allowPickingAnyHU;
+	boolean manuallyClosed;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -68,6 +69,7 @@ public class JsonPickingJobLine
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
-						.collect(ImmutableList.toImmutableList()));
+						.collect(ImmutableList.toImmutableList()))
+				.manuallyClosed(line.isManuallyClosed());
 	}
 }

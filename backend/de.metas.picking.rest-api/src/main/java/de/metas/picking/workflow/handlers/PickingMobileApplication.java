@@ -46,6 +46,8 @@
 	import de.metas.picking.config.MobileUIPickingUserProfile;
 	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
+	import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
+	import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 	import de.metas.picking.workflow.DisplayValueProvider;
 	import de.metas.picking.workflow.DisplayValueProviderService;
@@ -392,5 +394,26 @@
 		{
 			pickingJobRestService.unassignAllByUserId(userId);
 			wfLaunchersProvider.invalidateCacheByUserId(userId);
+		}
+
+		public WFProcess closeLine(@NonNull final JsonPickingLineCloseRequest request, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					request.getWfProcessId(),
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closeLine(pickingJob, request.getPickingLineId());
+					});
+		}
+
+		public WFProcess openLine(@NonNull final JsonPickingLineOpenRequest request, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					request.getWfProcessId(),
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.openLine(pickingJob, request.getPickingLineId());
+					});
+
 		}
 	}
