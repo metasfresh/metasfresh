@@ -93,12 +93,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	@NonNull
 	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
 	{
-		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
-		if (poInfo == null)
-		{
-			throw new AdempiereException("No POInfo found for " + tableName);
-		}
-		return poInfo;
+		return getPOInfoMap().getByTableName(tableName);
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -181,7 +176,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 	private final POTrlInfo trlInfo;
 
-	private static POInfoMap getPOInfoMap()
+	public static POInfoMap getPOInfoMap()
 	{
 		return poInfoMapCache.getOrLoad(0, POInfo::retrievePOInfoMap);
 	}
@@ -680,7 +675,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return column
 	 */
-	// metas: making getColumn public to enable easier testing (was protected)
 	@Nullable
 	public POInfoColumn getColumn(final int index)
 	{
@@ -689,7 +683,25 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			return null;
 		}
 		return m_columns.get(index);
-	}   // getColumn
+	}
+
+	@Nullable
+	public POInfoColumn getColumn(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return columnIndex >= 0 ? m_columns.get(columnIndex) : null;
+	}
+
+	@NonNull
+	public POInfoColumn getColumnNotNull(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new AdempiereException("No column info found for " + getTableName() + "." + columnName);
+		}
+		return m_columns.get(columnIndex);
+	}
 
 	/**
 	 * @return immutable set of all column names
@@ -711,6 +723,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		if (index < 0 || index >= m_columns.size())
 		{
 			return null;
+		}
+		return m_columns.get(index).getColumnName();
+	}
+
+	@NonNull
+	public String getColumnNameNotNull(final int index)
+	{
+		if (index < 0 || index >= m_columns.size())
+		{
+			throw new AdempiereException("index out of bound");
 		}
 		return m_columns.get(index).getColumnName();
 	}   // getColumnName
@@ -981,6 +1003,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return true if column is allowed to be logged
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isAllowLogging(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
@@ -1208,6 +1231,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns.get(index).IsUseDocumentSequence;
 	}
 
+	public boolean isUseDocSequence(final String columnName)
+	{
+		return isUseDocSequence(getColumnIndex(columnName));
+	}
+
 	/**
 	 * @return true if we shall re-load the model after save
 	 */
@@ -1338,6 +1366,15 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return Optional.ofNullable(singleColumnName);
 	}
 
+	public boolean isParentLinkColumn(final String columnName)
+	{
+		final POInfoColumn column = getColumn(columnName);
+		return column != null && column.isParent();
+	}
+
+	@NonNull
+	public ImmutableList<POInfoColumn> getColumns() {return m_columns;}
+
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
@@ -1357,7 +1394,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		int webuiViewPageLength;
 	}
 
-	private static class POInfoMap
+	public static class POInfoMap
 	{
 		private final ImmutableMap<AdTableId, POInfo> byTableId;
 		private final ImmutableMap<String, POInfo> byTableNameUC;
@@ -1387,5 +1424,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return byTableNameUC.get(tableName.toUpperCase());
 		}
+
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
+		}
+
+		public Stream<POInfo> stream() {return byTableId.values().stream();}
+
+		public int size() {return byTableId.size();}
 	}
 }   // POInfo
