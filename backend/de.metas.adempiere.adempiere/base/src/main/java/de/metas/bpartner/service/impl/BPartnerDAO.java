@@ -1539,6 +1539,12 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartnerIds;
 	}
 
+	@NonNull
+	public Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull final GLNQuery query)
+	{
+		return glnsLoadingCache.getSingleBPartnerLocationId(query);
+	}
+	
 	private static GLNQuery toGLNQuery(@NonNull final BPartnerQuery query)
 	{
 		return GLNQuery.builder()
