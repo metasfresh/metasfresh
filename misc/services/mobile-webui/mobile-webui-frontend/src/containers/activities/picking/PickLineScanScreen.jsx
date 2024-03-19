@@ -68,19 +68,9 @@ const PickLineScanScreen = () => {
     [productId]
   );
 
-  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId });
+  const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId });
 
-  const history = useHistory();
-  const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
-  const onClose = () => {
-    const nextLineId = getNextEligibleLineToPick({ activity, excludeLineId: lineId })?.pickingLineId;
-    console.log('onClose', { nextLineId, isGotoPickingJobOnClose });
-    if (nextLineId) {
-      history.replace(pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId: nextLineId }));
-    } else if (isGotoPickingJobOnClose) {
-      history.go(-2); // go to picking job screen
-    }
-  };
+  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, onClose });
 
   return (
     <ScanHUAndGetQtyComponent
@@ -150,9 +140,31 @@ export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   return result;
 };
 
-export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null }) => {
-  const dispatch = useDispatch();
+export const useOnClose = ({ applicationId, wfProcessId, activity, lineId }) => {
   const history = useHistory();
+  const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
+  return () => {
+    const nextLineId = getNextEligibleLineToPick({ activity, excludeLineId: lineId })?.pickingLineId;
+    console.log('onClose', { nextLineId, isGotoPickingJobOnClose });
+    if (nextLineId) {
+      const url = pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId: activity.activityId,
+        lineId: nextLineId,
+      });
+      console.log('onClose: going to URL', { url });
+      history.replace(url);
+    } else if (isGotoPickingJobOnClose) {
+      history.go(-2); // go to picking job screen
+    } else {
+      history.go(-1); // go to picking line screen
+    }
+  };
+};
+
+export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null, onClose }) => {
+  const dispatch = useDispatch();
 
   return ({
     lineId = null,
@@ -165,7 +177,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
     isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
     lotNo = null,
-    gotoPickingLineScreen = true,
+    isDone = true,
     resolvedBarcodeData,
     ...others
   }) => {
@@ -183,7 +195,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       bestBeforeDate,
       isShowLotNo,
       lotNo,
-      gotoPickingLineScreen,
+      isDone,
       ...others,
     });
 
@@ -205,11 +217,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       lotNo,
     })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => {
-        if (gotoPickingLineScreen) {
-          history.go(-1);
-        }
-      });
+      .then(() => isDone && onClose());
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 };
