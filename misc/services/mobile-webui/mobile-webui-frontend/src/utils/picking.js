@@ -20,9 +20,19 @@ export const getQtyToPickRemainingForLine = ({ line }) => {
   return qtyToPickRemaining > 0 ? qtyToPickRemaining : 0;
 };
 
-export const getLinesByProductId = (activity, productId) => {
-  const lines = getLinesArrayFromActivity(activity);
-  return lines.filter((line) => String(line.productId) === String(productId));
+export const getNextEligibleLineToPick = ({ activity, productId, excludeLineId }) => {
+  let lines = getLinesArrayFromActivity(activity).filter(
+    (line) => isLineNotCompleted({ line }) && isAllowPickingAnyHUForLine({ line })
+  );
+
+  if (lines.length > 0 && productId) {
+    lines = lines.filter((line) => String(line.productId) === String(productId));
+  }
+  if (lines.length > 0 && excludeLineId) {
+    lines = lines.filter((line) => String(line.pickingLineId) !== String(excludeLineId));
+  }
+
+  return lines.length > 0 ? lines[0] : null;
 };
 
 export const isAllowPickingAnyHUForActivity = ({ activity }) => {

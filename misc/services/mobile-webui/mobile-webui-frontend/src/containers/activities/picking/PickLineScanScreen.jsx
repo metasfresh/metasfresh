@@ -22,8 +22,7 @@
 
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import React, { useCallback, useEffect } from 'react';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import React, { useCallback } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
@@ -31,34 +30,38 @@ import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
-import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
+import {
+  getNextEligibleLineToPick,
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickRemainingForLine,
+} from '../../../utils/picking';
 import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 import { useSearchParams } from '../../../hooks/useSearchParams';
+import { useHeaderUpdate } from './PickLineScreen';
+import { pickingLineScanScreenLocation } from '../../../routes/picking';
 
 const PickLineScanScreen = () => {
   const {
     url,
-    params: { workflowId: wfProcessId, activityId, lineId },
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
 
-  const { productId, qtyToPickRemaining, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
+  const {
+    activity,
+    caption,
+    productId,
+    qtyToPick,
+    qtyPicked,
+    qtyToPickRemaining,
+    uom,
+    qtyRejectedReasons,
+    catchWeightUom,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.PickingLine'),
-        values: [],
-      })
-    );
-  }, []);
+  useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
     (scannedBarcode) => convertScannedBarcodeToResolvedResult({ scannedBarcode, expectedProductId: productId }),
@@ -70,7 +73,11 @@ const PickLineScanScreen = () => {
   const history = useHistory();
   const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
   const onClose = () => {
-    if (isGotoPickingJobOnClose) {
+    const nextLineId = getNextEligibleLineToPick({ activity, excludeLineId: lineId })?.pickingLineId;
+    console.log('onClose', { nextLineId, isGotoPickingJobOnClose });
+    if (nextLineId) {
+      history.replace(pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId: nextLineId }));
+    } else if (isGotoPickingJobOnClose) {
       history.go(-2); // go to picking job screen
     }
   };
@@ -102,6 +109,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
   return {
+    activity,
+    caption: line?.caption,
     productId: line.productId,
     qtyToPick: line.qtyToPick,
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
@@ -194,12 +203,13 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       bestBeforeDate,
       setLotNo: isShowLotNo,
       lotNo,
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      if (gotoPickingLineScreen) {
-        history.go(-1);
-      }
-    });
+    })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .then(() => {
+        if (gotoPickingLineScreen) {
+          history.go(-1);
+        }
+      });
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 };

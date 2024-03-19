@@ -4,7 +4,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import { getActivityById } from '../../../reducers/wfProcesses';
-import { getLinesByProductId, isAllowPickingAnyHUForLine, isLineNotCompleted } from '../../../utils/picking';
+import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
@@ -31,7 +31,11 @@ const PickProductsScanScreen = () => {
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     const qrCode = parseQRCodeString(scannedBarcode);
-    const line = getEligibleLineByProductId({ activity, productId: qrCode.productId });
+    const line = getNextEligibleLineToPick({ activity, productId: qrCode.productId });
+    if (!line) {
+      throw 'No matching lines found'; // TODO trl
+    }
+
     const lineId = line.pickingLineId;
     console.log('onBarcodeScanned', { lineId, line, scannedBarcode });
 
@@ -46,20 +50,6 @@ const PickProductsScanScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   return { activity };
-};
-
-const getEligibleLineByProductId = ({ activity, productId }) => {
-  const eligibleLines = getLinesByProductId(activity, productId).filter(
-    (line) => isLineNotCompleted({ line }) && isAllowPickingAnyHUForLine({ line })
-  );
-
-  // console.log('getEligibleLineByProductId', { eligibleLines });
-
-  if (!eligibleLines?.length) {
-    throw 'No matching lines found'; // TODO trl
-  } else {
-    return eligibleLines[0];
-  }
 };
 
 export default PickProductsScanScreen;

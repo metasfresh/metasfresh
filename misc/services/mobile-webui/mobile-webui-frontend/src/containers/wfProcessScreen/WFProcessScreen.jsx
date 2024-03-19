@@ -7,8 +7,8 @@ import { getActivitiesInOrder, getWfProcess } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
 
-import ScanActivity from '../activities/scan/ScanActivity';
-import PickProductsActivity from '../activities/picking/PickProductsActivity';
+import ScanActivity, { COMPONENTTYPE_ScanBarcode } from '../activities/scan/ScanActivity';
+import PickProductsActivity, { COMPONENTTYPE_PickProducts } from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
 import GenerateHUQRCodesActivity from '../activities/manufacturing/generateHUQRCodes/GenerateHUQRCodesActivity';
 import RawMaterialIssueActivity from '../activities/manufacturing/issue/RawMaterialIssueActivity';
@@ -57,7 +57,7 @@ const WFProcessScreen = () => {
 
 const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isLastActivity }) => {
   switch (activityItem.componentType) {
-    case 'common/scanBarcode':
+    case COMPONENTTYPE_ScanBarcode:
       return (
         <ScanActivity
           key={activityItem.activityId}
@@ -66,7 +66,7 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           activityState={activityItem}
         />
       );
-    case 'picking/pickProducts':
+    case COMPONENTTYPE_PickProducts:
       return (
         <PickProductsActivity
           key={activityItem.activityId}
