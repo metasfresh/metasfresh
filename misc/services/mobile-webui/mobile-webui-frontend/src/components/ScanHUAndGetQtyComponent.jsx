@@ -9,6 +9,7 @@ import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 
+const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
 
@@ -17,6 +18,7 @@ const DEFAULT_MSG_notPositiveQtyNotAllowed = 'activities.picking.notPositiveQtyN
 const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcode';
 
 const ScanHUAndGetQtyComponent = ({
+  scannedBarcode: scannedBarcodeParam,
   eligibleBarcode,
   resolveScannedBarcode,
   //
@@ -43,8 +45,9 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
-  const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
+  const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
+    lineId: null,
     userInfo,
     qtyCaption,
     qtyTarget,
@@ -62,7 +65,16 @@ const ScanHUAndGetQtyComponent = ({
   });
 
   useEffect(() => {
+    if (scannedBarcodeParam) {
+      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
+    } else {
+      setProgressStatus(STATUS_READ_BARCODE);
+    }
+  }, [scannedBarcodeParam]);
+
+  useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
+      lineId: prevState?.lineId,
       userInfo,
       qtyCaption,
       qtyTarget,
@@ -114,7 +126,7 @@ const ScanHUAndGetQtyComponent = ({
       scannedBarcode,
     };
 
-    // console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
+    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
   };
@@ -242,6 +254,7 @@ const ScanHUAndGetQtyComponent = ({
 ScanHUAndGetQtyComponent.propTypes = {
   //
   // Props: Barcode scanning related
+  scannedBarcode: PropTypes.string,
   eligibleBarcode: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
   //

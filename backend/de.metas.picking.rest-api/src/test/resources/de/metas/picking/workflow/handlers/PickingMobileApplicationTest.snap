@@ -15,6 +15,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -124,6 +125,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -318,6 +320,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -427,6 +430,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -627,6 +631,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -736,6 +741,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -936,6 +942,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -1045,6 +1052,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -1239,6 +1247,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -1352,6 +1361,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "DONE",
@@ -1585,6 +1595,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -1698,6 +1709,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "DONE",
@@ -1937,6 +1949,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -2042,6 +2055,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -2151,6 +2165,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "DONE",
@@ -2378,6 +2393,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -2487,6 +2503,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "DONE",
@@ -2718,6 +2735,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -2917,6 +2935,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -3026,6 +3045,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -3228,6 +3248,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -3337,6 +3358,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "IN_PROGRESS",
@@ -3556,6 +3578,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -3661,6 +3684,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -3770,6 +3794,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -3964,6 +3989,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -4073,6 +4099,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -4273,6 +4300,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -4472,6 +4500,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -4581,6 +4610,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "NOT_STARTED",
@@ -4783,6 +4813,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "lines" : [ {
             "allowPickingAnyHU" : false,
             "caption" : "P1",
+            "manuallyClosed" : false,
             "pickingLineId" : "1000000",
             "productId" : "1000000",
             "qtyToPick" : 100.000,
@@ -4892,6 +4923,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "id" : 1000000,
       "lines" : [ {
         "id" : 1000000,
+        "isManuallyClosed" : false,
         "productId" : 1000000,
         "productName" : "P1",
         "progress" : "IN_PROGRESS",

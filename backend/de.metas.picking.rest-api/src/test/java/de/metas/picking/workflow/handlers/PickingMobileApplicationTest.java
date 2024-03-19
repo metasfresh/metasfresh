@@ -6,6 +6,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -52,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.util.Env;
@@ -66,7 +68,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 //@ExtendWith(AdempiereTestWatcher.class)
 class PickingMobileApplicationTest
@@ -128,6 +130,8 @@ class PickingMobileApplicationTest
 		pickingRestController = new PickingRestController(pickingMobileApplication, workflowRestController);
 
 		createMasterdata();
+
+		SpringContextHolder.registerJUnitBean((PickingSlotConnectedComponent)slotId -> false);
 	}
 
 	private void createMasterdata()

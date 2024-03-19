@@ -26,6 +26,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
@@ -101,6 +102,16 @@ public class PickingJobRestService
 			@NonNull final List<PickingJobStepEvent> events)
 	{
 		return pickingJobService.processStepEvents(pickingJob, events);
+	}
+
+	public PickingJob closeLine(@NonNull final PickingJob pickingJob, @NonNull final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.closeLine(pickingJob, pickingLineId);
+	}
+
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
 
 	public void abort(@NonNull final PickingJob pickingJob)

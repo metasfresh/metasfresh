@@ -21,6 +21,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   "id" : 1000000,
   "lines" : [ {
     "id" : 1000000,
+    "isManuallyClosed" : false,
     "productId" : 6,
     "productName" : "productName-6",
     "progress" : "NOT_STARTED",
