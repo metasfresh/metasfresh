@@ -24,10 +24,16 @@ package de.metas.workflow.rest_api.controller.v2;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.RestUtils;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.document.DocumentNoFilter;
+import de.metas.error.IErrorManager;
+import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
@@ -75,6 +81,7 @@ public class WorkflowRestController
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
@@ -261,4 +268,25 @@ public class WorkflowRestController
 		final Map<String, String> map = sysConfigBL.getValuesForPrefix(SYSCONFIG_SETTINGS_PREFIX, true, Env.getClientAndOrgId());
 		return JsonSettings.ofMap(map);
 	}
+
+	@PostMapping("/errors")
+	public void logErrors(@RequestBody @NonNull final JsonError error)
+	{
+		error.getErrors().stream()
+				.map(WorkflowRestController::toInsertRemoteIssueRequest)
+				.forEach(errorManager::insertRemoteIssue);
+	}
+
+	private static InsertRemoteIssueRequest toInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem)
+	{
+		return InsertRemoteIssueRequest.builder()
+				.issueCategory(jsonErrorItem.getIssueCategory())
+				.issueSummary(StringUtils.trimBlankToOptional(jsonErrorItem.getMessage()).orElse("Error"))
+				.sourceClassName(jsonErrorItem.getSourceClassName())
+				.sourceMethodName(jsonErrorItem.getSourceMethodName())
+				.stacktrace(jsonErrorItem.getStackTrace())
+				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
+				.build();
+	}
+
 }
