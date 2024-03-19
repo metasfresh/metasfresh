@@ -40,6 +40,7 @@ public class JsonLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable String filterByDocumentNo;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
 
 	boolean countOnly;

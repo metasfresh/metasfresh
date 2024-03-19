@@ -46,6 +46,8 @@
 	import de.metas.picking.config.MobileUIPickingUserProfile;
 	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
+	import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
+	import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 	import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 	import de.metas.picking.workflow.DisplayValueProvider;
 	import de.metas.picking.workflow.DisplayValueProviderService;
@@ -55,6 +57,7 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
+	import de.metas.util.StringUtils;
 	import de.metas.workflow.rest_api.model.MobileApplicationId;
 	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
@@ -76,7 +79,6 @@
 
 	import java.util.Collection;
 	import java.util.Objects;
-	import java.util.Optional;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
 
@@ -92,6 +94,7 @@
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.build();
 
@@ -367,7 +370,9 @@
 					.bestBeforeDate(json.getBestBeforeDate())
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
-					.unpickToTargetQRCode(Optional.ofNullable(json.getUnpickToTargetQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
+					.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
+							.map(HUQRCode::fromGlobalQRCodeJsonString)
+							.orElse(null))
 					.build();
 		}
 
@@ -388,5 +393,26 @@
 		{
 			pickingJobRestService.unassignAllByUserId(userId);
 			wfLaunchersProvider.invalidateCacheByUserId(userId);
+		}
+
+		public WFProcess closeLine(@NonNull final JsonPickingLineCloseRequest request, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					request.getWfProcessId(),
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closeLine(pickingJob, request.getPickingLineId());
+					});
+		}
+
+		public WFProcess openLine(@NonNull final JsonPickingLineOpenRequest request, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					request.getWfProcessId(),
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.openLine(pickingJob, request.getPickingLineId());
+					});
+
 		}
 	}

@@ -397,6 +397,11 @@ public class TranslatableStrings
 		return builder.build();
 	}
 
+	public static boolean isPossibleTranslatableString(final String text)
+	{
+		return text != null && text.indexOf('@') >= 0;
+	}
+
 	public static ITranslatableString adElementOrMessage(@NonNull final String columnName)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);

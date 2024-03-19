@@ -16,3 +16,14 @@ export const unboxAxiosResponse = (axiosResponse) => {
 export const toQueryString = (query) => {
   return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
 };
+
+export const toUrl = ({ urlBase, queryParams }) => {
+  let url = urlBase;
+
+  const queryParamsStr = queryParams ? toQueryString(queryParams) : null;
+  if (queryParamsStr) {
+    url += '?' + queryParamsStr;
+  }
+
+  return url;
+};

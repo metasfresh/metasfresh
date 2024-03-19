@@ -15,6 +15,7 @@ public class MobileApplicationInfo
 	@NonNull ITranslatableString caption;
 	boolean requiresLaunchersQRCodeFilter;
 	boolean showFilters;
+	boolean showFilterByDocumentNo;
 	@Builder.Default boolean showInMainMenu = true;
 	@Builder.Default int sortNo = 100;
 	@NonNull @Singular ImmutableMap<String, Object> applicationParameters;

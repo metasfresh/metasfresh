@@ -23,17 +23,18 @@
 package de.metas.workflow.rest_api.controller.v2;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
@@ -144,7 +145,8 @@ public class WorkflowRestController
 				.applicationId(query.getApplicationId())
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
-				.facetIds(query.getFacetIds() != null ? ImmutableSet.copyOf(query.getFacetIds()) : null)
+				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
 				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
 	}
@@ -156,7 +158,8 @@ public class WorkflowRestController
 				WorkflowLaunchersFacetQuery.builder()
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
-						.activeFacetIds(query.getActiveFacetIds() != null ? ImmutableSet.copyOf(query.getActiveFacetIds()) : ImmutableSet.of())
+						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);
 		return JsonWorkflowLaunchersFacetGroupList.of(result, newJsonOpts());

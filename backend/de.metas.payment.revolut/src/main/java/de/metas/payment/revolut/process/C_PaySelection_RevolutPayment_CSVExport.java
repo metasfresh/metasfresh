@@ -67,7 +67,7 @@ public class C_PaySelection_RevolutPayment_CSVExport extends JavaProcess impleme
 		else
 		{
 			final I_C_PaySelection paySelection = paySelectionDAO.getById(PaySelectionId.ofRepoId(context.getSingleSelectedRecordId()))
-					.orElseThrow(() -> new AdempiereException("No paySelection found for selected record")
+					.orElseThrow(() -> AdempiereException.newWithPlainMessage("No paySelection found for selected record")
 							.appendParametersToMessage()
 							.setParameter("recordId", context.getSingleSelectedRecordId()));
 			if(!DocStatus.ofNullableCodeOrUnknown(paySelection.getDocStatus()).isCompletedOrClosed())

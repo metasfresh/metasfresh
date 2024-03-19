@@ -3,8 +3,9 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
-import { setActiveFacets } from '../../actions/LauncherActions';
-import { getApplicationLaunchersFacetIds } from '../../reducers/launchers';
+import { setActiveFilters } from '../../actions/LauncherActions';
+import { getApplicationLaunchersFacetIds, getApplicationLaunchersFilterByDocumentNo } from '../../reducers/launchers';
+import { useApplicationInfo } from '../../reducers/applications';
 
 const WFLaunchersFiltersScreen = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,8 @@ const WFLaunchersFiltersScreen = () => {
     params: { applicationId },
   } = useRouteMatch();
 
+  const { showFilterByDocumentNo } = useApplicationInfo({ applicationId });
+  const filterByDocumentNo = useSelector((state) => getApplicationLaunchersFilterByDocumentNo(state, applicationId));
   const activeFacetIds = useSelector((state) => getApplicationLaunchersFacetIds(state, applicationId), shallowEqual);
 
   useEffect(() => {
@@ -29,9 +32,11 @@ const WFLaunchersFiltersScreen = () => {
     <div className="container filters-container">
       <WFLaunchersFilters
         applicationId={applicationId}
+        showFilterByDocumentNo={showFilterByDocumentNo}
+        filterByDocumentNo={filterByDocumentNo}
         activeFacetIds={activeFacetIds}
-        onDone={(facets) => {
-          dispatch(setActiveFacets({ applicationId, facets }));
+        onDone={({ facets, filterByDocumentNo }) => {
+          dispatch(setActiveFilters({ applicationId, facets, filterByDocumentNo }));
           history.go(-1);
         }}
       />
