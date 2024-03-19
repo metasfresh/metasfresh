@@ -386,6 +386,12 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   return draftActivityDataStored;
 };
 
+//
+//
+// ------------------------------------------------------------------------------------
+//
+//
+
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state

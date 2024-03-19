@@ -9,7 +9,11 @@ import { getLineById } from '../../../reducers/wfProcesses';
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
-import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
+import {
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickRemainingForLine,
+  isAllowPickingAnyHUForLine,
+} from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
@@ -84,8 +88,10 @@ const PickLineScreen = () => {
               />
             );
           })}
-        {!manuallyClosed && qtyToPickRemaining > 0 && <ButtonWithIndicator caption={'Close'} onClick={onClose} />}
-        {manuallyClosed && <ButtonWithIndicator caption={'Re-open'} onClick={onReOpen} />}
+        {!manuallyClosed && qtyToPickRemaining > 0 && (
+          <ButtonWithIndicator caption={trl('general.closeText')} onClick={onClose} />
+        )}
+        {manuallyClosed && <ButtonWithIndicator caption={trl('general.reOpenText')} onClick={onReOpen} />}
       </div>
     </div>
   );
@@ -97,7 +103,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: line?.caption,
-    allowPickingAnyHU: line?.allowPickingAnyHU ?? false,
+    allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
     catchWeightUOM: line.catchWeightUOM,
     uom: line.uom,

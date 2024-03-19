@@ -31,6 +31,7 @@ const translations = {
     cancelText: 'Cancel',
     closeText: 'Close',
     clearText: 'Clear',
+    reOpenText: 'Re-open',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
