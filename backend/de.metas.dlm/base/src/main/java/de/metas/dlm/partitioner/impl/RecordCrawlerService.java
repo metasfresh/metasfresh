@@ -51,6 +51,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -124,7 +125,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 					// if that is the case, then we need to verify that the AD_Table_ID of 'record' actually points to the table named 'forwardTableName'
 					if (IColumnBL.isRecordIdColumnName(forwardColumnName))
 					{
-						final String tableColumnName = columnBL.getTableIdColumnName(currentTableName, forwardColumnName)
+						final String tableColumnName = POInfo.getPOInfoNotNull(currentTableName).getTableIdColumnName(forwardColumnName)
 								.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", currentTableName, forwardColumnName));
 
 						final Integer tableId = InterfaceWrapperHelper.getValueOrNull(currentRecord, tableColumnName);
@@ -218,7 +219,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 				if (IColumnBL.isRecordIdColumnName(backwardColumnName))
 				{
 					// note that referencedTableColumnName = AD_Table_ID, in most cases
-					final String referencedTableColumnName = columnBL.getTableIdColumnName(backwardTableName, backwardRef.getReferencingColumnName())
+					final String referencedTableColumnName = POInfo.getPOInfoNotNull(backwardTableName).getTableIdColumnName(backwardRef.getReferencingColumnName())
 							.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", backwardTableName, backwardColumnName));
 
 					final int referencedTableID = adTableDAO.retrieveTableId(currentTableName);

@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
@@ -55,6 +54,7 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
 import org.compiere.model.MQuery;
+import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -271,7 +271,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 			if (originRecordIdName != null)
 			{
-				final String tableIdColumnName = Services.get(IColumnBL.class).getTableIdColumnName(originTableName, originRecordIdName).orElse(null);
+				final String tableIdColumnName = POInfo.getPOInfoNotNull(originTableName).getTableIdColumnName(originRecordIdName).orElse(null);
 				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName);
 
 				queryWhereClause

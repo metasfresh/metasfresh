@@ -2,8 +2,10 @@ package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import de.metas.ad_reference.ReferenceId;
@@ -20,12 +22,14 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.TableAndColumnName;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -152,6 +156,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final ImmutableList<POInfoColumn> m_columns;
 	private final ImmutableMap<String, Integer> columnName2columnIndex;
 	private final ImmutableMap<AdColumnId, Integer> adColumnId2columnIndex;
+	@Getter
+	private final ImmutableSet<TableAndColumnName> tableAndRecordColumnNames;
 	private final ImmutableList<String> m_keyColumnNames;
 	/**
 	 * Single Primary Key.
@@ -217,7 +223,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
- 				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
+				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -401,6 +407,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		trlInfo = !translatedColumnNames.isEmpty()
 				? POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames)
 				: POTrlInfo.NOT_TRANSLATED;
+
+		tableAndRecordColumnNames = computeTableAndRecordIdColumnNames(columnName2columnIndex.keySet());
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
@@ -475,6 +483,58 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		col.IsStaleable = isStaleableColumn; // metas: 01537
 		col.IsSelectionColumn = isSelectionColumn;
 		return col;
+	}
+
+	private static ImmutableSet<TableAndColumnName> computeTableAndRecordIdColumnNames(final ImmutableSet<String> columnNames)
+	{
+		final ImmutableSet.Builder<TableAndColumnName> result = ImmutableSet.builder();
+		for (final String columnName : columnNames)
+		{
+			final int idx = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
+			final String prefix;
+			if (idx < 0)
+			{
+				continue;
+			}
+			else if (idx == 0)
+			{
+				prefix = "";
+			}
+			else
+			{
+				prefix = columnName.substring(0, idx);
+			}
+
+			final String tableIdColumnName = getTableIdColumnNameByPrefix(prefix, columnNames);
+			if (tableIdColumnName == null)
+			{
+				continue;
+			}
+
+			result.add(TableAndColumnName.ofTableAndColumnStrings(tableIdColumnName, columnName));
+		}
+
+		return result.build();
+	}
+
+	@Nullable
+	private static String getTableIdColumnNameByPrefix(final String prefix, final ImmutableSet<String> columnNames)
+	{
+		// Try with Prefix_AD_Table_ID
+		String tableColumnName = prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID;
+		if (columnNames.contains(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		// try with Prefix_Table_ID
+		tableColumnName = prefix + "Table_ID";
+		if (columnNames.contains(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		return null;
 	}
 
 	@Override
@@ -1382,6 +1442,14 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.filter(poInfoColumnPredicate);
 	}
 
+	public Optional<String> getTableIdColumnName(@NonNull final String recordIdColumnName)
+	{
+		return tableAndRecordColumnNames.stream()
+				.filter(tableAndRecordColumnName -> tableAndRecordColumnName.equalsByColumnName(recordIdColumnName))
+				.map(TableAndColumnName::getTableNameAsString)
+				.findFirst();
+	}
+
 	@Value
 	@Builder
 	private static class POInfoHeader
@@ -1439,5 +1507,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		public Stream<POInfo> stream() {return byTableId.values().stream();}
 
 		public int size() {return byTableId.size();}
+
+		public ImmutableCollection<POInfo> toCollection() {return byTableId.values();}
 	}
 }   // POInfo
