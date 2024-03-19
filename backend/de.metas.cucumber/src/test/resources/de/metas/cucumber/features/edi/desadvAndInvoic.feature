@@ -54,7 +54,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | 4010001                     | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_1 x 10 PCE | false                   |
+      | hu_pi_item_product_1               | 4010001                     | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_1 x 10 PCE | false                   |
 
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -222,12 +222,15 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 0.1          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
+      | huPiItemTU                    | 2002669                       | 0   | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 4010002                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
+      | 4010002                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1                   |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
@@ -384,7 +387,7 @@ Feature: desadv and invoic
       | p_1        | desadvProduct_03052022_3 | true      |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 4010003                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_3 x 10 PCE | false                   |
+      | 4010003                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_3 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -552,7 +555,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 4010005                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_4 x 10 PCE | false                   |
+      | 4010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_4 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | KGM               | Normal                        |
@@ -719,7 +722,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 4010005                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
+      | 4010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -888,7 +891,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | TU                   | 1            |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 4010006                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | true                   | false                 | IFCO_Test_6 x 10 PCE | false                   |
+      | 4010006                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | true                   | false                 | IFCO_Test_6 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
