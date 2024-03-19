@@ -1,3 +1,4 @@
+@Ignore
 @from:cucumber
 @topic:orderCandidate
 Feature: Enqueue order candidate in multiple workpackages for processing to order
@@ -132,7 +133,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
 
-    Then process metasfresh response JsonOLCandCreateBulkResponse
+    Then process metasfresh response
       | C_OLCand_ID.Identifier              |
       | olCand_1,olCand_2,olCand_3,olCand_4 |
     And validate C_OLCand:

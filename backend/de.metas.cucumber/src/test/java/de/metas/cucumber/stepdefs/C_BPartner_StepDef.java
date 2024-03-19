@@ -61,7 +61,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -245,7 +245,9 @@ public class C_BPartner_StepDef
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
 		{
-			final int pricingSystemId = pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID();
+			final int pricingSystemId = pricingSystemTable.getOptional(pricingSystemIdentifier)
+					.map(I_M_PricingSystem::getM_PricingSystem_ID)
+					.orElseGet(() -> Integer.parseInt(pricingSystemIdentifier));
 			bPartnerRecord.setM_PricingSystem_ID(pricingSystemId);
 			bPartnerRecord.setPO_PricingSystem_ID(pricingSystemId);
 		}
