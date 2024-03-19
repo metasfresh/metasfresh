@@ -133,7 +133,7 @@ public class WarehouseRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final Warehouse warehouse = syncWarehouseWithJson(jsonRequestWarehouse, existingWarehouse.get(), org);
-				warehouseBL.updateWarehouse(warehouse);
+				warehouseBL.save(warehouse);
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}

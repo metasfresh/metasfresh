@@ -814,9 +814,9 @@ public class WarehouseDAO implements IWarehouseDAO
 				.map(WarehouseDAO::ofRecord);
 	}
 
-	public void updateWarehouse(@NonNull final Warehouse request)
+	public void save(@NonNull final Warehouse warehouse)
 	{
-		final I_M_Warehouse record = toRecord(request);
+		final I_M_Warehouse record = toRecord(warehouse);
 		saveRecord(record);
 	}
 

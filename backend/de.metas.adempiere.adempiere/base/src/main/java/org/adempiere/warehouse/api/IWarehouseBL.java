@@ -91,7 +91,7 @@ public interface IWarehouseBL extends ISingletonService
 	@NonNull
 	Warehouse getByIdNotNull(@NonNull WarehouseId id);
 
-	void updateWarehouse(@NonNull Warehouse request);
+	void save(@NonNull Warehouse warehouse);
 
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);

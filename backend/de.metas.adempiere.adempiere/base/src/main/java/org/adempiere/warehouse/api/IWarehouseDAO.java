@@ -212,7 +212,7 @@ public interface IWarehouseDAO extends ISingletonService
 	@NonNull
 	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
 
-	void updateWarehouse(@NonNull Warehouse request);
+	void save(@NonNull Warehouse warehouse);
 
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);

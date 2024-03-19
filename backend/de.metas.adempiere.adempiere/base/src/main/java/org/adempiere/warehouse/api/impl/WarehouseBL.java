@@ -37,6 +37,7 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
@@ -53,8 +54,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -258,7 +257,7 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		warehouse.setC_Location_ID(locationId.getRepoId());
 
-		save(warehouse);
+		InterfaceWrapperHelper.save(warehouse);
 	}
 
 	@NonNull
@@ -284,9 +283,9 @@ public class WarehouseBL implements IWarehouseBL
 						.setParameter("WarehouseId", id));
 	}
 
-	public void updateWarehouse(@NonNull final Warehouse request)
+	public void save(@NonNull final Warehouse warehouse)
 	{
-		warehouseDAO.updateWarehouse(request);
+		warehouseDAO.save(warehouse);
 	}
 
 	@NonNull
