@@ -219,4 +219,16 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
 }
