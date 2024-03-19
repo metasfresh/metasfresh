@@ -210,7 +210,7 @@ public class SyncInventoryQtyToHUsCommand
 		final InventoryLine resultInventoryLine = inventoryLine.withInventoryLineHUs(resultInventoryLineHUs);
 
 		if (!Objects.equals(inventoryLine, resultInventoryLine)
-				|| inventoryLine.getQtyCountFixed().equals(resultInventoryLine.getQtyCount()) // do not adjust quantity in inventory line
+				&& inventoryLine.getQtyCountFixed().equals(resultInventoryLine.getQtyCount()) // do not adjust quantity in inventory line
 		)
 		{
 			inventoryRepository.saveInventoryLine(resultInventoryLine, inventory.getId());
