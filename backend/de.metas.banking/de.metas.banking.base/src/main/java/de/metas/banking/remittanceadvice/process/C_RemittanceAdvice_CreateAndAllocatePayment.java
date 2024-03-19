@@ -34,6 +34,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -259,7 +260,8 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
 				.payAmt(remittanceAdvice.getRemittedAmountSum())
-				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
+				.dateAcct(CoalesceUtil.coalesce(TimeUtil.asLocalDate(remittanceAdvice.getPaymentDate()),
+												TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate())))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
 				.createAndProcess();
