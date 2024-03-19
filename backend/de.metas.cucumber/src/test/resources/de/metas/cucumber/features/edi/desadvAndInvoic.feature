@@ -2,9 +2,11 @@
 Feature: desadv and invoic
 
   Background:
+    Given infrastructure and metasfresh are running
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+
 
   @from:cucumber
   Scenario:
@@ -52,6 +54,13 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |
@@ -225,9 +234,16 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 0.1          |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
-      | huPiItemTU                    | 2002669                       | 0   | MI       |
+      | huPiItemTU                    | packingVersionTU                       | 0   | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
       | 4010002                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
@@ -388,6 +404,13 @@ Feature: desadv and invoic
     Given metasfresh contains M_Products:
       | Identifier | Name                     | IsStocked |
       | p_1        | desadvProduct_03052022_3 | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |
@@ -559,6 +582,13 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |
@@ -729,6 +759,13 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |
@@ -901,6 +938,13 @@ Feature: desadv and invoic
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 1            |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |
