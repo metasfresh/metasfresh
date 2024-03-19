@@ -88,8 +88,10 @@ const PickLineScreen = () => {
               />
             );
           })}
-        {!manuallyClosed && qtyToPickRemaining > 0 && <ButtonWithIndicator caption={'Close'} onClick={onClose} />}
-        {manuallyClosed && <ButtonWithIndicator caption={'Re-open'} onClick={onReOpen} />}
+        {!manuallyClosed && qtyToPickRemaining > 0 && (
+          <ButtonWithIndicator caption={trl('general.closeText')} onClick={onClose} />
+        )}
+        {manuallyClosed && <ButtonWithIndicator caption={trl('general.reOpenText')} onClick={onReOpen} />}
       </div>
     </div>
   );
