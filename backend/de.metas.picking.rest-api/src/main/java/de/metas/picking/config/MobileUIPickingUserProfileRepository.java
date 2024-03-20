@@ -111,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 		{
 			profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		}
+		profileRecord.setIsAlwaysSplitHUsEnabled(profile.isAlwaysSplitHUsEnabled());
 		profileRecord.setName(profile.getName());
 		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
 		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());

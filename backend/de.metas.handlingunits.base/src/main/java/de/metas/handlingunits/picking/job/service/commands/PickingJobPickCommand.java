@@ -138,9 +138,9 @@ public class PickingJobPickCommand
 			final boolean isPickWholeTU,
 			final @Nullable Boolean checkIfAlreadyPacked,
 			final boolean createInventoryForMissingQty,
-			boolean isSetBestBeforeDate,
+			final boolean isSetBestBeforeDate,
 			final @Nullable LocalDate bestBeforeDate,
-			boolean isSetLotNo,
+			final boolean isSetLotNo,
 			final @Nullable String lotNo)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -571,9 +571,7 @@ public class PickingJobPickCommand
 	private void validatePickedHU()
 	{
 		final HuId huIdToBePicked = getHuIdToBePicked();
-		final I_M_HU hu = handlingUnitsDAO.getById(huIdToBePicked);
-
-		final boolean isDestroyed = handlingUnitsBL.isDestroyed(hu);
+		final boolean isDestroyed = handlingUnitsBL.isDestroyed(handlingUnitsDAO.getById(huIdToBePicked));
 		if (isDestroyed)
 		{
 			return;
@@ -583,7 +581,7 @@ public class PickingJobPickCommand
 				.huReservationService(huReservationService)
 				.build();
 
-		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(hu));
+		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
 		if (pickFromHUS.isEmpty())
 		{
 			throw new AdempiereException("HU cannot be picked!");
@@ -604,12 +602,12 @@ public class PickingJobPickCommand
 	}
 
 	@NonNull
-	private PickFromHUsGetRequest getPickFromHUValidateRequest(@NonNull final I_M_HU hu)
+	private PickFromHUsGetRequest getPickFromHUValidateRequest(@NonNull final HuId huId)
 	{
 		final Packageable packageable = packagingDAO.getByShipmentScheduleId(getShipmentScheduleId());
 
 		return PickFromHUsGetRequest.builder()
-				.pickFromLocatorId(warehouseBL.getLocatorIdByRepoId(hu.getM_Locator_ID()))
+				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
 				.partnerId(packageable.getCustomerId())
 				.productId(packageable.getProductId())
 				.asiId(packageable.getAsiId())
@@ -617,7 +615,7 @@ public class PickingJobPickCommand
 										  .orElseGet(() -> bPartnerBL.getBestBeforePolicy(packageable.getCustomerId())))
 				.reservationRef(Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId))
 				.enforceMandatoryAttributesOnPicking(true)
-				.onlyHuIds(ImmutableSet.of(HuId.ofRepoId(hu.getM_HU_ID())))
+				.onlyHuIds(ImmutableSet.of(huId))
 				.build();
 	}
 

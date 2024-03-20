@@ -33,6 +33,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -54,6 +55,9 @@ public class MobileUIPickingUserProfile_StepDef
 		StringUtils.trimBlankToOptional(DataTableUtil.extractNullableStringForColumnName(row, "CreateShipmentPolicy"))
 				.map(CreateShipmentPolicy::ofCodeOrName)
 				.ifPresent(newProfileBuilder::createShipmentPolicy);
+		StringUtils.trimBlankToOptional(DataTableUtil.extractNullableStringForColumnName(row, I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled))
+				.map(StringUtils::toBoolean)
+				.ifPresent(newProfileBuilder::isAlwaysSplitHUsEnabled);
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		repo.save(newProfile);

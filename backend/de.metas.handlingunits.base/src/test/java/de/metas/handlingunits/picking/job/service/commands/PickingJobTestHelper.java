@@ -139,7 +139,7 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
-		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
+		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -161,7 +161,8 @@ public class PickingJobTestHelper
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
-				inventoryService);
+				inventoryService,
+				huReservationService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)

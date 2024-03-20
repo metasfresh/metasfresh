@@ -35,6 +35,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -190,6 +191,17 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 			validateShipmentScheduleQtyPickedRecord(row, shipmentScheduleQtyPicked);
 		}
+	}
+
+	@And("^load M_HU as (.*) from M_ShipmentSchedule_QtyPicked identified by (.*)$")
+	public void load_HU_from_ShipmentScheduleQtyPicked(
+			@NonNull final String huIdentifier,
+			@NonNull final String shipmentScheduleQtyPickedIdentifier)
+	{
+		final I_M_ShipmentSchedule_QtyPicked qtyPicked = shipmentScheduleQtyPickedTable.get(shipmentScheduleQtyPickedIdentifier);
+		assertThat(qtyPicked.getVHU_ID()).isGreaterThan(0);
+
+		huTable.put(huIdentifier, InterfaceWrapperHelper.load(qtyPicked.getVHU_ID(), I_M_HU.class));
 	}
 
 	private void validateNoShipmentScheduleQtyPickedRecords(@NonNull final Map<String, String> tableRow)
