@@ -3,6 +3,7 @@ import { getNextEligibleLineToPick } from '../../utils/picking';
 import { getActivityById, getFirstActivityByComponentType } from '../../reducers/wfProcesses';
 import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
+import { NEXT_NextPickingLine } from '../../containers/activities/picking/PickLineScanScreen';
 
 const APPLICATION_ID_Picking = 'picking';
 
@@ -47,6 +48,12 @@ const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId
   }
 
   history.replace(
-    pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId: pickActivity.activityId, lineId })
+    pickingLineScanScreenLocation({
+      applicationId,
+      wfProcessId,
+      activityId: pickActivity.activityId,
+      lineId,
+      next: NEXT_NextPickingLine,
+    })
   );
 };

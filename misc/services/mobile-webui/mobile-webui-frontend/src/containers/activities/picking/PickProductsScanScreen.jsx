@@ -8,6 +8,7 @@ import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
+import { NEXT_PickingJob } from './PickLineScanScreen';
 
 const PickProductsScanScreen = () => {
   const {
@@ -40,7 +41,14 @@ const PickProductsScanScreen = () => {
     console.log('onBarcodeScanned', { lineId, line, scannedBarcode });
 
     history.push(
-      pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, qrCode: scannedBarcode })
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: scannedBarcode,
+        next: NEXT_PickingJob,
+      })
     );
   };
 

@@ -39,6 +39,10 @@ import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+
+export const NEXT_PickingJob = 'pickingJob';
+export const NEXT_NextPickingLine = 'nextPickingLine';
 
 const PickLineScanScreen = () => {
   const {
@@ -48,6 +52,7 @@ const PickLineScanScreen = () => {
 
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
+  const next = urlParams.get('next');
 
   const {
     activity,
@@ -68,12 +73,13 @@ const PickLineScanScreen = () => {
     [productId]
   );
 
-  const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId });
+  const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, onClose });
 
   return (
     <ScanHUAndGetQtyComponent
+      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`}
       scannedBarcode={qrCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPickRemaining}
@@ -140,25 +146,41 @@ export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   return result;
 };
 
-export const useOnClose = ({ applicationId, wfProcessId, activity, lineId }) => {
+export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   const history = useHistory();
   const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
-  return () => {
+
+  const gotoPickingJob = () => {
+    history.replace(getWFProcessScreenLocation({ applicationId, wfProcessId }));
+  };
+
+  const gotoNextPickingLine = () => {
     const nextLineId = getNextEligibleLineToPick({ activity, excludeLineId: lineId })?.pickingLineId;
-    console.log('onClose', { nextLineId, isGotoPickingJobOnClose });
     if (nextLineId) {
-      const url = pickingLineScanScreenLocation({
-        applicationId,
-        wfProcessId,
-        activityId: activity.activityId,
-        lineId: nextLineId,
-      });
-      console.log('onClose: going to URL', { url });
-      history.replace(url);
-    } else if (isGotoPickingJobOnClose) {
-      history.go(-2); // go to picking job screen
+      history.replace(
+        pickingLineScanScreenLocation({
+          applicationId,
+          wfProcessId,
+          activityId: activity.activityId,
+          lineId: nextLineId,
+        })
+      );
     } else {
-      history.go(-1); // go to picking line screen
+      gotoPickingJob();
+    }
+  };
+
+  return () => {
+    if (next === NEXT_PickingJob) {
+      gotoPickingJob();
+    } else if (next === NEXT_NextPickingLine) {
+      gotoNextPickingLine();
+    } else {
+      if (isGotoPickingJobOnClose) {
+        gotoPickingJob();
+      } else {
+        history.go(-1); // go to picking line screen
+      }
     }
   };
 };
