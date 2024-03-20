@@ -29,6 +29,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -243,6 +244,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -465,6 +467,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -725,6 +728,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "DONE",
@@ -978,6 +982,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
