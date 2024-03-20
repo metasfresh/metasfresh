@@ -1,4 +1,0 @@
-# Integrate
-FROM_BRANCH=intensive_care_hotfix
-TARGET_BRANCH=intensive_care_uat
-MERGE_BRANCH=intensive_care_uat_mergeFrom_intensive_care_hotfix_cdb8416a1c7
