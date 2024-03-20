@@ -293,6 +293,7 @@ public class PickingJobService
 						.huQRCodesService(huQRCodesService)
 						.inventoryService(inventoryService)
 						.huReservationService(huReservationService)
+						.pickingConfigRepo(pickingConfigRepo)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
