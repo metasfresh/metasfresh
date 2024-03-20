@@ -120,7 +120,7 @@ const GetQuantityDialog = ({
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
         lotNo: qrCode.lotNo,
-        gotoPickingLineScreen: false,
+        isDone: false,
       });
     },
     [catchWeightUom, onQtyChange]

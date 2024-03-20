@@ -3,11 +3,11 @@ import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
-import { getCaptionFromHeaders } from '../../reducers/headers';
+import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
+import { useApplicationInfo } from '../../reducers/applications';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -26,7 +26,8 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     return null;
   }
 
-  const applicationInfo = getApplicationInfo(applicationId) ?? {};
+  const applicationInfo = useApplicationInfo({ applicationId });
+  const homeLocation = useHomeLocation();
 
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
   const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
@@ -65,9 +66,9 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </button>
           </div>
           <div className="column is-half">
-            <button className="button is-fullwidth" onClick={() => history.push('/')}>
+            <button className="button is-fullwidth" onClick={() => history.push(homeLocation.location)}>
               <span className="icon">
-                <i className="fas fa-home" />
+                <i className={homeLocation.iconClassName} />
               </span>
               <span>{trl('general.Home')}</span>
             </button>
@@ -81,18 +82,6 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
 ApplicationLayout.propTypes = {
   applicationId: PropTypes.string,
   Component: PropTypes.any.isRequired,
-};
-
-const getApplicationInfo = (knownApplicationId) => {
-  let applicationId;
-  if (knownApplicationId) {
-    applicationId = knownApplicationId;
-  } else {
-    const routerMatch = useRouteMatch();
-    applicationId = routerMatch.params.applicationId;
-  }
-
-  return useSelector((state) => getApplicationInfoById({ state, applicationId }));
 };
 
 const isWFProcessRequiredButNotLoaded = () => {

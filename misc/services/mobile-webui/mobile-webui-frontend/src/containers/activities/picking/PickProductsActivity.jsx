@@ -9,6 +9,8 @@ import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import { isAllowPickingAnyHUForActivity } from '../../../utils/picking';
 
+export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
+
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const {
     dataStored: { isUserEditable },
