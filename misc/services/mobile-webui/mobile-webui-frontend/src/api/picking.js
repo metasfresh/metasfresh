@@ -54,3 +54,15 @@ export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQR
 const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };
+
+export const closePickingJobLine = ({ wfProcessId, lineId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/closeLine`, { wfProcessId, pickingLineId: lineId })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const openPickingJobLine = ({ wfProcessId, lineId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/openLine`, { wfProcessId, pickingLineId: lineId })
+    .then((response) => unboxAxiosResponse(response));
+};

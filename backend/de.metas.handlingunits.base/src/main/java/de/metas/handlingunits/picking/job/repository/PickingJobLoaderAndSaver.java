@@ -165,7 +165,7 @@ class PickingJobLoaderAndSaver
 			Check.assumeNotNull(existingRecord, "line record shall exist for {}", line);
 
 			// NOTE: atm we have nothing to sync on line level
-			updateRecord(existingRecord, docStatus);
+			updateRecord(existingRecord, line, docStatus);
 			InterfaceWrapperHelper.save(existingRecord);
 
 			saveSteps(line.getSteps(), pickingJobId, line.getId(), orgId, docStatus);
@@ -506,14 +506,19 @@ class PickingJobLoaderAndSaver
 						.stream()
 						.map(this::loadStep)
 						.collect(ImmutableList.toImmutableList()))
+				.isManuallyClosed(record.isManuallyClosed())
 				.build();
 	}
 
-	private void updateRecord(
-			final I_M_Picking_Job_Line record,
-			final PickingJobDocStatus docStatus)
+	private static void updateRecord(
+			@NonNull final I_M_Picking_Job_Line record,
+			@NonNull final PickingJobLine line,
+			@NonNull final PickingJobDocStatus docStatus)
 	{
-		record.setProcessed(docStatus.isProcessed());
+		final boolean isManuallyClosed = line.isManuallyClosed();
+		record.setIsManuallyClosed(isManuallyClosed);
+
+		record.setProcessed(isManuallyClosed || docStatus.isProcessed());
 	}
 
 	private PickingJobStep loadStep(@NonNull final I_M_Picking_Job_Step record)

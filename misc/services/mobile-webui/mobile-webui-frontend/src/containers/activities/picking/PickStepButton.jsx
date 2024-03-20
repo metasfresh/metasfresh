@@ -21,6 +21,7 @@ const PickStepButton = ({
   qtyToPick,
   pickFrom,
   catchWeightUOM,
+  disabled,
 }) => {
   const history = useHistory();
   const handleClick = () => {
@@ -42,6 +43,7 @@ const PickStepButton = ({
         caption={(isAlternative ? 'ALT:' : '') + captionToUse}
         completeStatus={completeStatus}
         onClick={handleClick}
+        disabled={disabled}
       >
         <ButtonQuantityProp
           qtyCurrent={pickFrom.qtyPicked}
@@ -59,6 +61,7 @@ const PickStepButton = ({
           stepId={stepId}
           pickFromAlternatives={pickFromAlternatives}
           uom={uom}
+          disabled={disabled}
         />
       )}
     </>
@@ -77,6 +80,7 @@ PickStepButton.propTypes = {
   pickFromAlternatives: PropTypes.object,
   uom: PropTypes.string.isRequired,
   catchWeightUOM: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default PickStepButton;
