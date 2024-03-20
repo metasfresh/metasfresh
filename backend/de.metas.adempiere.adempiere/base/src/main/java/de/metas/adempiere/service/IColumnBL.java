@@ -5,7 +5,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -81,12 +80,6 @@ public interface IColumnBL extends ISingletonService
 	 * @throws org.adempiere.ad.table.exception.NoSingleKeyColumnException if the given table does not have exactly one key column.
 	 */
 	String getSingleKeyColumn(String tableName);
-
-	/**
-	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>.
-	 * Do not fail if this column can't be found.
-	 */
-	Optional<String> getTableIdColumnName(String tableName, String recordColumnName);
 
 	boolean getDefaultAllowLoggingByColumnName(String columnName);
 
