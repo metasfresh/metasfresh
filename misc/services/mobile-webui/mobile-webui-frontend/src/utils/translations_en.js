@@ -9,6 +9,9 @@ const translations = {
       invalid: 'Invalid QR Code',
     },
   },
+  errorScreen: {
+    retryButton: 'Retry...',
+  },
   general: {
     Yes: 'Yes',
     No: 'No',

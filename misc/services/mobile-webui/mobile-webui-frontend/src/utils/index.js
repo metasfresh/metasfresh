@@ -25,3 +25,14 @@ export const toUrlQueryParams = (queryParams) => {
 export const toUrl = (path, queryParams) => {
   return `${path}${toUrlQueryParams(queryParams)}`;
 };
+
+export const toUrl = ({ urlBase, queryParams }) => {
+  let url = urlBase;
+
+  const queryParamsStr = queryParams ? toQueryString(queryParams) : null;
+  if (queryParamsStr) {
+    url += '?' + queryParamsStr;
+  }
+
+  return url;
+};
