@@ -1,6 +1,7 @@
 import * as types from '../constants/HeaderActionTypes';
 import { shallowEqual, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
+import { LOCATION_CHANGE } from 'connected-react-router';
 
 const DEFAULT_homeIconClassName = 'fas fa-home';
 export const initialState = {
@@ -125,7 +126,7 @@ export default function reducer(state = initialState, action) {
       return { ...state, entries: newEntries };
     }
 
-    case '@@router/LOCATION_CHANGE': {
+    case LOCATION_CHANGE: {
       const {
         location: { pathname },
       } = payload;
