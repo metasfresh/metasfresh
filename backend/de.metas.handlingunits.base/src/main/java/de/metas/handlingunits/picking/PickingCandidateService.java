@@ -44,6 +44,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -414,5 +415,22 @@ public class PickingCandidateService
 																 .filter(Objects::nonNull)
 																 .collect(ImmutableSet.toImmutableSet());
 													 }));
+	}
+
+	/**
+	 * @return true, if all drafted picking candidates have been removed from the slot, false otherwise
+	 */
+	public boolean clearPickingSlot(@NonNull final PickingSlotId pickingSlotId, final boolean removeUnprocessedHUsFromSlot)
+	{
+		if (removeUnprocessedHUsFromSlot)
+		{
+			RemoveHUFromPickingSlotCommand.builder()
+					.pickingCandidateRepository(pickingCandidateRepository)
+					.pickingSlotId(pickingSlotId)
+					.build()
+					.perform();
+		}
+
+		return !pickingCandidateRepository.hasDraftCandidatesForPickingSlot(pickingSlotId);
 	}
 }

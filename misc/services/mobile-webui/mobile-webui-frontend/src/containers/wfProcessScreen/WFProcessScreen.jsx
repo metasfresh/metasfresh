@@ -73,7 +73,7 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           applicationId={applicationId}
           wfProcessId={wfProcessId}
           activityId={activityItem.activityId}
-          activityState={activityItem}
+          activity={activityItem}
         />
       );
     case 'common/confirmButton':

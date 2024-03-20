@@ -9,6 +9,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -59,11 +60,9 @@ import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.util.Env;
@@ -143,6 +142,8 @@ class PickingMobileApplicationTest
 		pickingRestController = new PickingRestController(pickingMobileApplication, workflowRestController);
 
 		createMasterdata();
+
+		SpringContextHolder.registerJUnitBean((PickingSlotConnectedComponent)slotId -> false);
 	}
 
 	private void createMasterdata()

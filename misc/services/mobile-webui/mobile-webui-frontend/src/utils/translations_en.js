@@ -9,6 +9,9 @@ const translations = {
       invalid: 'Invalid QR Code',
     },
   },
+  errorScreen: {
+    retryButton: 'Retry...',
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -33,6 +36,7 @@ const translations = {
     okText: 'OK',
     closeText: 'Close',
     clearText: 'Clear',
+    reOpenText: 'Re-open',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',

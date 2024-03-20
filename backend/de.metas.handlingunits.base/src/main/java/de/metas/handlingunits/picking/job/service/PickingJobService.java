@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -11,6 +12,7 @@ import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
@@ -41,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -363,6 +366,20 @@ public class PickingJobService
 		});
 	}
 
+	/**
+	 * @return true, if all picking jobs have been removed form the slot, false otherwise
+	 */
+	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean abortOngoingPickingJobs)
+	{
+		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());
+		if (pickingJobs.isEmpty())
+		{
+			return true;
+		}
+
+		return pickingJobs.stream().allMatch(job -> removePickingSlotAssignment(job, abortOngoingPickingJobs));
+	}
+
 	private void unassignPickingJob(@NonNull final PickingJob jobParam)
 	{
 		PickingJob job = jobParam;
@@ -425,4 +442,49 @@ public class PickingJobService
 		return pickingJobRepository.getByIsReadyToReview(pickingJobIds, loadingSupportingServices);
 	}
 
+
+	private boolean removePickingSlotAssignment(
+			@NonNull final PickingJob pickingJob,
+			final boolean abortOngoingPickingJobs)
+	{
+		if (pickingJob.isNothingPicked())
+		{
+			pickingJobRepository.save(pickingJob.withPickingSlot(null));
+			return true;
+		}
+		else if (abortOngoingPickingJobs)
+		{
+			final PickingJob abortedPickingJob = abort(pickingJob);
+			Check.assume(!abortedPickingJob.getPickingSlotId().isPresent(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public PickingJob closeLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(true));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(false));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
 }

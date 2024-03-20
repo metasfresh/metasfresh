@@ -9,6 +9,9 @@ const translations = {
       invalid: 'Ungültiger QR Code',
     },
   },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -33,6 +36,7 @@ const translations = {
     okText: 'OK',
     closeText: 'Schließen',
     clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',

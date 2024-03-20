@@ -43,6 +43,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * General Utilities
@@ -436,9 +437,14 @@ public class Util
 	 *
 	 * @return true if objects are the same (i.e. o1 == o2)
 	 */
-	public static boolean same(Object o1, Object o2)
+	public static <T> boolean same(@Nullable final T o1, @Nullable final T o2)
 	{
 		return o1 == o2;
+	}
+
+	public static <T> boolean equals(@Nullable final T o1, @Nullable final T o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	/**
