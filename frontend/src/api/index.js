@@ -32,18 +32,9 @@ import {
   patchViewAttributesRequest,
   quickActionsRequest,
 } from './view';
-import { getUserSession } from './login';
 import {
-  checkLoginRequest,
-  getAvailableLang,
-  getAvatar,
   getResetPasswordInfo,
-  getUserLang,
   getUserSession,
-  loginCompletionRequest,
-  loginRequest,
-  loginWithToken,
-  logoutRequest,
   resetPasswordComplete,
   resetPasswordGetAvatar,
   resetPasswordRequest,

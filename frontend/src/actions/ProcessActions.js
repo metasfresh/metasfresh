@@ -2,18 +2,18 @@ import {
   addNotification,
   setProcessPending,
   setProcessSaved,
-} from "./AppActions";
-import { parseToDisplay } from "../utils/documentListHelper";
-import { findViewByViewId } from "../reducers/viewHandler";
-import { buildURL, getQueryString, openInNewTab } from "../utils";
-import history from "../services/History";
+} from './AppActions';
+import { parseToDisplay } from '../utils/documentListHelper';
+import { findViewByViewId } from '../reducers/viewHandler';
+import { buildURL, getQueryString, openInNewTab } from '../utils';
+import history from '../services/History';
 import {
   closeViewModal,
   setIncludedView,
   unsetIncludedView,
-} from "./ViewActions";
-import { getTableId } from "../reducers/tables";
-import { updateTableSelection } from "./TableActions";
+} from './ViewActions';
+import { getTableId } from '../reducers/tables';
+import { updateTableSelection } from './TableActions';
 import {
   closeModal,
   initDataSuccess,
@@ -21,14 +21,14 @@ import {
   openModal,
   openRawModal,
   toggleOverlay,
-} from "./WindowActions";
-import { CLOSE_PROCESS_MODAL } from "../constants/ActionTypes";
+} from './WindowActions';
+import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 import {
   getProcessData,
   getProcessFileUrl,
   getProcessLayout,
   startProcess,
-} from "../api/process";
+} from '../api/process';
 
 export const handleProcessResponse = ({
   response,

@@ -11,13 +11,14 @@ import {
 } from "../../actions/ProcessActions";
 import { setProcessPending, setProcessSaved } from "../../actions/AppActions";
 
-const createState = (state = {}) => merge(
+const createState = (state = {}) =>
+  merge(
     {
-        viewHandler: initialState,
-        appHandler: appInitialState,
+      viewHandler: initialState,
+      appHandler: appInitialState,
     },
     state
-);
+  );
 
 describe('WindowActions thunks', () => {
     const mockStore = configureStore([thunk]);

@@ -1,8 +1,8 @@
-import axios from "axios";
-import counterpart from "counterpart";
-import currentDevice from "current-device";
+import axios from 'axios';
+import counterpart from 'counterpart';
+import currentDevice from 'current-device';
 
-import history from "../services/History";
+import history from '../services/History';
 
 import {
   ACTIVATE_TAB,
@@ -42,15 +42,15 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-} from "../constants/ActionTypes";
-import { createView, patchViewAction } from "./ViewActions";
-import { PROCESS_NAME } from "../constants/Constants";
-import { preFormatPostDATA, toggleFullScreen } from "../utils";
+} from '../constants/ActionTypes';
+import { createView, patchViewAction } from './ViewActions';
+import { PROCESS_NAME } from '../constants/Constants';
+import { preFormatPostDATA, toggleFullScreen } from '../utils';
 import {
   getInvalidDataItem,
   getScope,
   parseToDisplay,
-} from "../utils/documentListHelper";
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
@@ -59,26 +59,26 @@ import {
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
-} from "../api";
+} from '../api';
 
-import { getTableId } from "../reducers/tables";
+import { getTableId } from '../reducers/tables';
 import {
   addNotification,
   deleteNotification,
   setNotificationProgress,
-} from "./AppActions";
-import { getWindowBreadcrumb } from "./MenuActions";
+} from './AppActions';
+import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
   updateCommentsPanelOpenFlag,
   updateCommentsPanelTextInput,
-} from "./CommentsPanelActions";
+} from './CommentsPanelActions';
 import {
   createTabTable,
   updateTableRowProperty,
   updateTabTable,
-} from "./TableActions";
-import { inlineTabAfterGetLayout, patchInlineTab } from "./InlineTabActions";
+} from './TableActions';
+import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 
 export function toggleOverlay(data) {
   return {

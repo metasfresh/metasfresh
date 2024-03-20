@@ -22,7 +22,8 @@ import dataFixtures from "../../../test_setup/fixtures/master_window/data.json";
 import layoutFixtures from "../../../test_setup/fixtures/master_window/layout.json";
 import printingOptions from "../../../test_setup/fixtures/window/printingOptions.json";
 
-const createState = (state = {}) => merge(
+const createState = (state = {}) =>
+  merge(
     {
       viewHandler: initialState,
       windowHandler: windowState,
