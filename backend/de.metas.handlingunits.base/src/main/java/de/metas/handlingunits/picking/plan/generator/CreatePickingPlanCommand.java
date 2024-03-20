@@ -139,7 +139,7 @@ public class CreatePickingPlanCommand
 				.build();
 	}
 
-	private static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
+	public static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
 	{
 		return AllocablePackageable.builder()
 				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
@@ -150,6 +150,24 @@ public class CreatePickingPlanCommand
 				.warehouseId(packageable.getWarehouseId())
 				.pickFromOrderId(packageable.getPickFromOrderId())
 				.qtyToAllocateTarget(packageable.getQtyToPick())
+				.build();
+	}
+
+	@NonNull
+	public static PickFromHUsGetRequest getPickFromHUsGetRequest(
+			@NonNull final AllocablePackageable packageable,
+			@NonNull final IWarehouseBL warehouseBL,
+			@NonNull final IBPartnerBL partnerBL)
+	{
+		return PickFromHUsGetRequest.builder()
+				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
+				.partnerId(packageable.getCustomerId())
+				.productId(packageable.getProductId())
+				.asiId(packageable.getAsiId())
+				.bestBeforePolicy(packageable.getBestBeforePolicy()
+										  .orElseGet(() -> partnerBL.getBestBeforePolicy(packageable.getCustomerId())))
+				.reservationRef(packageable.getReservationRef())
+				.enforceMandatoryAttributesOnPicking(true)
 				.build();
 	}
 
@@ -272,16 +290,8 @@ public class CreatePickingPlanCommand
 			return ImmutableList.of();
 		}
 
-		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
-				PickFromHUsGetRequest.builder()
-						.pickFromLocatorIds(getPickFromLocatorIds(packageable))
-						.partnerId(packageable.getCustomerId())
-						.productId(packageable.getProductId())
-						.asiId(packageable.getAsiId())
-						.bestBeforePolicy(getBestBeforePolicy(packageable))
-						.reservationRef(packageable.getReservationRef())
-						.enforceMandatoryAttributesOnPicking(true)
-						.build());
+		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUsGetRequest(
+				packageable, warehouseBL, bpartnersService));
 
 		return husEligibleToPick.stream()
 				.map(pickFromHU -> createZeroQtyLineFromHU(packageable, pickFromHU))

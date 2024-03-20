@@ -26,6 +26,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -38,6 +39,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
@@ -97,6 +99,7 @@ public class PickingJobPickCommand
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	//
 	// Params
 	@NonNull private final PickingJobLineId lineId;
@@ -127,6 +130,7 @@ public class PickingJobPickCommand
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
 			final @NonNull HUReservationService huReservationService,
+			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId pickingJobLineId,
@@ -152,6 +156,7 @@ public class PickingJobPickCommand
 		this.pickingCandidateService = pickingCandidateService;
 		this.huQRCodesService = huQRCodesService;
 		this.huReservationService = huReservationService;
+		this.pickingConfigRepo = pickingConfigRepo;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
@@ -581,6 +586,7 @@ public class PickingJobPickCommand
 
 		final PickFromHUsSupplier pickFromHUsSupplier = PickFromHUsSupplier.builder()
 				.huReservationService(huReservationService)
+				.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
 				.build();
 
 		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
@@ -613,16 +619,10 @@ public class PickingJobPickCommand
 				? Optional.of(HUReservationDocRef.ofPickingJobStepId(stepId))
 				: Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId);
 
-		return PickFromHUsGetRequest.builder()
-				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
-				.partnerId(packageable.getCustomerId())
-				.productId(packageable.getProductId())
-				.asiId(packageable.getAsiId())
-				.bestBeforePolicy(packageable.getBestBeforePolicy()
-										  .orElseGet(() -> bPartnerBL.getBestBeforePolicy(packageable.getCustomerId())))
-				.reservationRef(reservationDocRef)
-				.enforceMandatoryAttributesOnPicking(true)
+		return CreatePickingPlanCommand.getPickFromHUsGetRequest(CreatePickingPlanCommand.toAllocablePackageable(packageable), warehouseBL, bPartnerBL)
+				.toBuilder()
 				.onlyHuIds(ImmutableSet.of(huId))
+				.reservationRef(reservationDocRef)
 				.build();
 	}
 

@@ -36,11 +36,11 @@ public class PickFromHUsGetRequest
 	 */
 	boolean enforceMandatoryAttributesOnPicking;
 	
-	@Builder
+	@Builder(toBuilder = true)
 	private PickFromHUsGetRequest(
 			@NonNull @Singular final ImmutableSet<LocatorId> pickFromLocatorIds,
 			@NonNull final ProductId productId,
-			@Nullable final BPartnerId partnerId,
+			@NonNull final BPartnerId partnerId,
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy,
 			@NonNull final Optional<HUReservationDocRef> reservationRef, 
